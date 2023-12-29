@@ -1,0 +1,31 @@
+{
+  "name": "studio-extension",
+  "displayName": "studio extension",
+  "description": "Podman Desktop Studio Extension",
+  "version": "0.1.0-next",
+  "icon": "icon.png",
+  "publisher": "redhat",
+  "license": "Apache-2.0",
+  "engines": {
+    "podman-desktop": "^1.6.0"
+  },
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {},
+    "menus": {}
+  },
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest watch --coverage",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format:fix": "prettier --write \"src/**/*.ts\"",
+    "lint:check": "eslint . --ext js,ts,tsx",
+    "lint:fix": "eslint . --fix --ext js,ts,tsx",
+    "watch": "vite --mode development build -w"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@podman-desktop/api": "^1.6.3"
+  }
+}

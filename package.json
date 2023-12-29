@@ -1,0 +1,39 @@
+{
+  "name": "studio-extension-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18.12.0",
+    "npm": ">=8.19.2"
+  },
+  "scripts": {
+    "build": "concurrently \"yarn --cwd packages/frontend build\" \"yarn --cwd packages/backend build\"",
+    "watch": "concurrently \"yarn --cwd packages/frontend watch\" \"yarn --cwd packages/backend watch\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format:fix": "prettier --write \"src/**/*.ts\"",
+    "lint:check": "eslint . --ext js,ts,tsx",
+    "lint:fix": "eslint . --fix --ext js,ts,tsx"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "@vitest/coverage-v8": "^1.1.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.56.0",
+    "eslint-import-resolver-custom-alias": "^1.3.2",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-etc": "^2.0.3",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-redundant-undefined": "^1.0.0",
+    "eslint-plugin-sonarjs": "^0.23.0",
+    "prettier": "^3.1.1",
+    "typescript": "5.3.3",
+    "vite": "^5.0.10",
+    "vitest": "^1.1.0"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  }
+}

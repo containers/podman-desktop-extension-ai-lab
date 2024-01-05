@@ -1,1 +1,1 @@
-# boot-c extension
+# studio extension

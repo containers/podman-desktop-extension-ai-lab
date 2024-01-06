@@ -32,8 +32,8 @@ vi.mock('@podman-desktop/api', async () => {
       static joinPath = vi.fn();
     },
     window: {
-      createWebviewPanel : vi.fn(),
-    }
+      createWebviewPanel: vi.fn(),
+    },
   };
 });
 

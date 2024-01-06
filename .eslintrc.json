@@ -19,7 +19,7 @@
     "ecmaVersion": 12,
     "sourceType": "module",
     "project": [
-      "./tsconfig.json"
+      "packages/*/tsconfig.json"
     ]
   },
   "settings": {
@@ -32,7 +32,7 @@
           "/@gen": "./src-generated"
         },
         "extensions": [".ts"],
-        "packages": ["packages/*", "extensions/*"]
+        "packages": ["packages/*"]
       }
     }
   },

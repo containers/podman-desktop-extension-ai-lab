@@ -16,41 +16,34 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { ExtensionContext, Uri, WebviewOptions } from '@podman-desktop/api';
-import {WebviewPanel,  window } from '@podman-desktop/api';
-import {promises} from 'node:fs';
+import type { ExtensionContext, WebviewOptions , WebviewPanel} from '@podman-desktop/api';
+import { Uri , window } from '@podman-desktop/api';
+import { promises } from 'node:fs';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
 
-  #panel : WebviewPanel | undefined;
+  #panel: WebviewPanel | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
-
   }
 
   public async activate(): Promise<void> {
     console.log('starting studio extension');
 
-
     const extensionUri = this.#extensionContext.extensionUri;
 
-          // register webview
-          this.#panel = window.createWebviewPanel(
-            'studio',
-            'Studio extension',
-            this.getWebviewOptions(extensionUri)
-          );
+    // register webview
+    this.#panel = window.createWebviewPanel('studio', 'Studio extension', this.getWebviewOptions(extensionUri));
 
-          // update html
+    // update html
 
-          const indexHtmlUri = Uri.joinPath(extensionUri, 'media', 'index.html');
-            const indexHtmlPath = indexHtmlUri.fsPath;
-          const indexHtml = await promises.readFile(indexHtmlPath, 'utf8');
+    const indexHtmlUri = Uri.joinPath(extensionUri, 'media', 'index.html');
+    const indexHtmlPath = indexHtmlUri.fsPath;
+    const indexHtml = await promises.readFile(indexHtmlPath, 'utf8');
 
-          this.#panel.webview.html = indexHtml;
-
+    this.#panel.webview.html = indexHtml;
   }
 
   public async deactivate(): Promise<void> {
@@ -66,5 +59,4 @@ export class Studio {
       localResourceRoots: [Uri.joinPath(extensionUri, 'media')],
     };
   }
-
 }

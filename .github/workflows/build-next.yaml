@@ -58,7 +58,7 @@ jobs:
       - name: Publish Image
         id: publish-image
         run: |
-          IMAGE_NAME=quay.io/bootsy/bootc-extension
+          IMAGE_NAME=quay.io/bootsy/studio-extension
           IMAGE_LATEST=${IMAGE_NAME}:latest
           IMAGE_SHA=${IMAGE_NAME}:${GITHUB_SHA}
           podman build -t $IMAGE_LATEST .

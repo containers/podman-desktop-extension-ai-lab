@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ExtensionContext, WebviewOptions , WebviewPanel} from '@podman-desktop/api';
-import { Uri , window } from '@podman-desktop/api';
+import type { ExtensionContext, WebviewOptions, WebviewPanel } from '@podman-desktop/api';
+import { Uri, window } from '@podman-desktop/api';
 import { promises } from 'node:fs';
 
 export class Studio {
@@ -41,9 +41,47 @@ export class Studio {
 
     const indexHtmlUri = Uri.joinPath(extensionUri, 'media', 'index.html');
     const indexHtmlPath = indexHtmlUri.fsPath;
-    const indexHtml = await promises.readFile(indexHtmlPath, 'utf8');
+
+    let indexHtml = await promises.readFile(indexHtmlPath, 'utf8');
+
+    // replace links with webView Uri links
+    // in the content <script type="module" crossorigin src="./index-RKnfBG18.js"></script> replace src with webview.asWebviewUri
+    const scriptLink = indexHtml.match(/<script.*?src="(.*?)".*?>/g);
+    if (scriptLink) {
+      scriptLink.forEach(link => {
+        const src = link.match(/src="(.*?)"/);
+        if (src) {
+          const webviewSrc = this.#panel?.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', src[1]));
+          indexHtml = indexHtml.replace(src[1], webviewSrc.toString());
+        }
+      });
+    }
+
+    // and now replace for css file as well
+    const cssLink = indexHtml.match(/<link.*?href="(.*?)".*?>/g);
+    if (cssLink) {
+      cssLink.forEach(link => {
+        const href = link.match(/href="(.*?)"/);
+        if (href) {
+          const webviewHref = this.#panel?.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', href[1]));
+          indexHtml = indexHtml.replace(href[1], webviewHref.toString());
+        }
+      });
+    }
+
+    console.log('updated indexHtml to', indexHtml);
 
     this.#panel.webview.html = indexHtml;
+
+    // send a message to the webview 10s after it is created
+    setTimeout(() => {
+      this.#panel?.webview.postMessage({ command: 'hello' });
+    }, 10000);
+
+    // handle messages from the webview
+    this.#panel.webview.onDidReceiveMessage(message => {
+      console.log('received message from webview', message);
+    });
   }
 
   public async deactivate(): Promise<void> {

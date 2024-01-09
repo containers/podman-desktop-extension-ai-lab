@@ -17,7 +17,7 @@ export let searchEnabled = true;
           {#if searchEnabled}
             <div class="flex flex-row" role="region" aria-label="search">
               <div class="pl-5 lg:w-[35rem] w-[22rem] flex justify-end items-center">
-                <div class="flex items-center bg-charcoal-800 text-gray-700 rounded-sm">
+                <div class="w-full flex items-center bg-charcoal-800 text-gray-700 rounded-sm">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="w-5 h-5 ml-2 mr-2"

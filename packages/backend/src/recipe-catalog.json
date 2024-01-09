@@ -1,192 +1,192 @@
 {
-  "Categories" : [
+  "categories" : [
     {
-      "Description" : "Models that work with text: classify, summarize, translate, or generate text.",
-      "Name" : "Natural Language Processing",
-      "Recipes" : [
+      "description" : "Models that work with text: classify, summarize, translate, or generate text.",
+      "name" : "Natural Language Processing",
+      "recipes" : [
         {
-          "Applications" : [],
-          "Description" : "Is that string token a date, a name, a place, a verb? These models can tell you!",
-          "Name" : "Token classification"
+          "applications" : [],
+          "description" : "Is that string token a date, a name, a place, a verb? These models can tell you!",
+          "name" : "Token classification"
         },
         {
-          "Applications" : [],
-          "Description" : "Determine if text data is positive, negative, or neutral.",
-          "Name" : "Sentiment Analysis"
+          "applications" : [],
+          "description" : "Determine if text data is positive, negative, or neutral.",
+          "name" : "Sentiment Analysis"
         },
         {
-          "Applications" : [],
-          "Description" : "Generate a narrative text based on a prompt.",
-          "Name" : "Story Generation"
+          "applications" : [],
+          "description" : "Generate a narrative text based on a prompt.",
+          "name" : "Story Generation"
         },
         {
-          "Applications" : [],
-          "Description" : "Generate a TLDR; text summary for a large set of text data.",
-          "Name" : "Text summarization"
+          "applications" : [],
+          "description" : "Generate a TLDR; text summary for a large set of text data.",
+          "name" : "Text summarization"
         },
         {
-          "Applications" : [],
-          "Description" : "Offer your users auto-complete suggestions based on their text input.",
-          "Name" : "Auto-complete suggestions"
+          "applications" : [],
+          "description" : "Offer your users auto-complete suggestions based on their text input.",
+          "name" : "Auto-complete suggestions"
         },
         {
-          "Applications" : [],
-          "Description" : "Offer data from a data table in response to natural language questions.",
-          "Name" : "Tabular data answer lookup"
+          "applications" : [],
+          "description" : "Offer data from a data table in response to natural language questions.",
+          "name" : "Tabular data answer lookup"
         }
       ]
     },
     {
-      "Description" : "Process images, from classification to object detection and segmentation.",
-      "Name" : "Computer Vision",
-      "Recipes" : [
+      "description" : "Process images, from classification to object detection and segmentation.",
+      "name" : "Computer Vision",
+      "recipes" : [
         {
-          "Applications" : [],
-          "Description" : "Is that image a person, a cat, or a landscape? Generate keyword labels.",
-          "Name" : "Image classification"
+          "applications" : [],
+          "description" : "Is that image a person, a cat, or a landscape? Generate keyword labels.",
+          "name" : "Image classification"
         },
         {
-          "Applications" : [],
-          "Description" : "Is it a bird, is it a plane, is it a superhero? Detect specific objects in an image.",
-          "Name" : "Object detection"
+          "applications" : [],
+          "description" : "Is it a bird, is it a plane, is it a superhero? Detect specific objects in an image.",
+          "name" : "Object detection"
         },
         {
-          "Applications" : [],
-          "Description" : "Segment an image into foreground and background and remove the background.",
-          "Name" : "Image background removal"
+          "applications" : [],
+          "description" : "Segment an image into foreground and background and remove the background.",
+          "name" : "Image background removal"
         },
         {
-          "Applications" : [],
-          "Description" : "Bring color to black & white or historical photography.",
-          "Name" : "Image colorization"
+          "applications" : [],
+          "description" : "Bring color to black & white or historical photography.",
+          "name" : "Image colorization"
         },
         {
-          "Applications" : [],
-          "Description" : "Increase the dimensions of an image to higher resolution.",
-          "Name" : "Image resolution improvement"
+          "applications" : [],
+          "description" : "Increase the dimensions of an image to higher resolution.",
+          "name" : "Image resolution improvement"
         },
         {
-          "Applications" : [],
-          "Description" : "Remove unwanted objects (including dust / scratches) from an image.",
-          "Name" : "Remove unwanted objects"
+          "applications" : [],
+          "description" : "Remove unwanted objects (including dust / scratches) from an image.",
+          "name" : "Remove unwanted objects"
         },
         {
-          "Applications" : [],
-          "Description" : "Recreate an image to mimic the style of another.",
-          "Name" : "Style transfer"
+          "applications" : [],
+          "description" : "Recreate an image to mimic the style of another.",
+          "name" : "Style transfer"
         },
         {
-          "Applications" : [],
-          "Description" : "Create a 3-dimensional representation of a 2-dimensional image.",
-          "Name" : "2D to 3D"
+          "applications" : [],
+          "description" : "Create a 3-dimensional representation of a 2-dimensional image.",
+          "name" : "2D to 3D"
         },
         {
-          "Applications" : [
+          "applications" : [
             {
-              "AppStack" : {
-                "Tags" : []
+              "appStack" : {
+                "tags" : []
               },
-              "Description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
-              "Images" : [],
-              "Input" : {},
-              "Models" : [
+              "description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
+              "images" : [],
+              "input" : {},
+              "models" : [
                 {
-                  "Name" : "stable-diffusion2",
-                  "Rating" : "3 stars",
-                  "Retrain" : {
-                    "Dataset" : {
-                      "Reqs" : [
+                  "name" : "stable-diffusion2",
+                  "rating" : "3 stars",
+                  "retrain" : {
+                    "dataset" : {
+                      "reqs" : [
                         {
-                          "Description" : "800 x 600 pixels",
-                          "Name" : "Dimensions"
+                          "description" : "800 x 600 pixels",
+                          "name" : "Dimensions"
                         },
                         {
-                          "Description" : "*.PNG",
-                          "Name" : "File Format"
+                          "description" : "*.PNG",
+                          "name" : "File Format"
                         },
                         {
-                          "Description" : "RGB",
-                          "Name" : "Colorspace"
+                          "description" : "RGB",
+                          "name" : "Colorspace"
                         },
                         {
-                          "Description" : "8-bit",
-                          "Name" : "Bitdepth"
+                          "description" : "8-bit",
+                          "name" : "Bitdepth"
                         }
                       ],
-                      "SampleDataset" : {
-                        "Icon" : "$APPDATA/ai-studio/recipes/provider-icons/github.png",
-                        "Provider" : "GitHub",
-                        "URL" : "https://github.com/redhat-ai/dog-on-the-moon/my-doggo"
+                      "sampleDataset" : {
+                        "icon" : "$APPDATA/ai-studio/recipes/provider-icons/github.png",
+                        "provider" : "GitHub",
+                        "url" : "https://github.com/redhat-ai/dog-on-the-moon/my-doggo"
                       }
                     },
-                    "Description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
-                    "Headline" : "Retrain with your own images",
-                    "Restrainable" : true,
-                    "TrainingEnv" : {
-                      "Description" : "You can pull and run the model training environment in Podman Desktop",
-                      "Size" : "1.23 GB",
-                      "Tag" : "latest",
-                      "URL" : "https://quay.io/redhat-ai/stable-diffusion2-model-env"
+                    "description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
+                    "headline" : "Retrain with your own images",
+                    "restrainable" : true,
+                    "trainingEnv" : {
+                      "description" : "You can pull and run the model training environment in Podman Desktop",
+                      "size" : "1.23 GB",
+                      "tag" : "latest",
+                      "url" : "https://quay.io/redhat-ai/stable-diffusion2-model-env"
                     }
                   },
-                  "Status" : "Default",
-                  "Tags" : [
+                  "status" : "Default",
+                  "tags" : [
                     {
-                      "Name" : "Image",
+                      "name" : "Image",
                       "Type" : "Category"
                     },
                     {
-                      "Name" : "Meta License",
+                      "name" : "Meta License",
                       "Type" : "License"
                     }
                   ]
                 },
                 {
-                  "Name" : "unstable-diffusion3",
-                  "Rating" : "3 stars",
-                  "Retrain" : {
-                    "Description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
-                    "Headline" : "Retrain with your own images",
-                    "Restrainable" : true
+                  "name" : "unstable-diffusion3",
+                  "rating" : "3 stars",
+                  "retrain" : {
+                    "description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
+                    "headline" : "Retrain with your own images",
+                    "restrainable" : true
                   },
-                  "Status" : "Non-default",
-                  "Tags" : [
+                  "status" : "Non-default",
+                  "tags" : [
                     {
-                      "Name" : "Image",
+                      "name" : "Image",
                       "Type" : "Category"
                     },
                     {
-                      "Name" : "MIT License",
+                      "name" : "MIT License",
                       "Type" : "License"
                     }
                   ]
                 }
               ],
-              "Name" : "stable-diffusion2-model",
-              "Output" : {},
-              "Repo" : {},
-              "Thumbnails" : []
+              "name" : "stable-diffusion2-model",
+              "output" : {},
+              "repo" : {},
+              "thumbnails" : []
             }
           ],
-          "Description" : "Generate images based on a text prompt. Create a new image composition.",
-          "Name" : "Image generation"
+          "description" : "Generate images based on a text prompt. Create a new image composition.",
+          "name" : "Image generation"
         },
         {
-          "Applications" : [],
-          "Description" : "Extract text from an image.",
-          "Name" : "Text extract"
+          "applications" : [],
+          "description" : "Extract text from an image.",
+          "name" : "Text extract"
         }
       ]
     },
     {
-      "Description" : "Recognize speech or classify audio with audio models.",
-      "Name" : "Audio",
-      "Recipes" : []
+      "description" : "Recognize speech or classify audio with audio models.",
+      "name" : "Audio",
+      "recipes" : []
     },
     {
-      "Description" : "Stuff about multimodal models goes here omfg yes amazing.",
-      "Name" : "Multimodal",
-      "Recipes" : []
+      "description" : "Stuff about multimodal models goes here omfg yes amazing.",
+      "name" : "Multimodal",
+      "recipes" : []
     }
   ]
 }

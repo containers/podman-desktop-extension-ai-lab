@@ -2,4 +2,4 @@
 
 Run in development mode:
 
-`yarn watch --extension-folder ~/git/projectatomic/studio-extension`
+`yarn watch --extension-folder ~/git/projectatomic/packages/backend`

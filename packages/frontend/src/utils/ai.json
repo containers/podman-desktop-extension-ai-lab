@@ -1,0 +1,154 @@
+{
+  "recipes": [
+    {
+      "id": "token-classification",
+      "description" : "Is that string token a date, a name, a place, a verb? These models can tell you!",
+      "name" : "Token classification",
+      "categories": [
+        "natural-language-processing"
+      ]
+    },
+    {
+      "id": "sentiment-analysis",
+      "description" : "Determine if text data is positive, negative, or neutral.",
+      "name" : "Sentiment Analysis",
+      "categories": [
+        "natural-language-processing"
+      ]
+    },
+    {
+      "id": "story-generation",
+      "description" : "Generate a narrative text based on a prompt. Very interesting",
+      "name" : "Story Generation",
+      "categories": [
+        "natural-language-processing"
+      ]
+    },
+    {
+      "id": "text-summarization",
+      "description" : "Generate a TLDR; text summary for a large set of text data.",
+      "name" : "Text summarization",
+      "categories": [
+        "natural-language-processing"
+      ]
+    },
+    {
+      "id": "auto-complete-suggestions",
+      "description" : "Offer your users auto-complete suggestions based on their text input.",
+      "name" : "Auto-complete suggestions",
+      "categories": [
+        "natural-language-processing"
+      ]
+    },
+    {
+      "id": "tabular-data-answer-lookup",
+      "description" : "Offer data from a data table in response to natural language questions.",
+      "name" : "Tabular data answer lookup",
+      "categories": [
+        "natural-language-processing"
+      ]
+    },
+    {
+      "id": "image-classification",
+      "description" : "Is that image a person, a cat, or a landscape? Generate keyword labels.",
+      "name" : "Image classification",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "object-detection",
+      "description" : "Is it a bird, is it a plane, is it a superhero? Detect specific objects in an image.",
+      "name" : "Object detection",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "image-background-removal",
+      "description" : "Segment an image into foreground and background and remove the background.",
+      "name" : "Image background removal",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "image-colorization",
+      "description" : "Bring color to black & white or historical photography.",
+      "name" : "Image colorization",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "image-resolution-improvement",
+      "description" : "Increase the dimensions of an image to higher resolution.",
+      "name" : "Image resolution improvement",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "remove-unwanted-objects",
+      "description" : "Remove unwanted objects (including dust / scratches) from an image.",
+      "name" : "Remove unwanted objects",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "style-transfer",
+      "description" : "Recreate an image to mimic the style of another.",
+      "name" : "Style transfer",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "2d-to-3d",
+      "description" : "Create a 3-dimensional representation of a 2-dimensional image.",
+      "name" : "2D to 3D",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "image-generation",
+      "description" : "Generate images based on a text prompt. Create a new image composition.",
+      "name" : "Image generation",
+      "categories": [
+        "computer-vision"
+      ]
+    },
+    {
+      "id": "text-extract",
+      "description" : "Extract text from an image.",
+      "name" : "Text extract",
+      "categories": [
+        "computer-vision"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "natural-language-processing",
+      "name": "Natural Language Processing",
+      "description" : "Models that work with text: classify, summarize, translate, or generate text."
+    },
+    {
+      "id": "computer-vision",
+      "description" : "Process images, from classification to object detection and segmentation.",
+      "name" : "Computer Vision"
+    },
+    {
+      "id": "audio",
+      "description" : "Recognize speech or classify audio with audio models.",
+      "name" : "Audio"
+    },
+    {
+      "id": "multimodal",
+      "description" : "Stuff about multimodal models goes here omg yes amazing.",
+      "name" : "Multimodal"
+    }
+  ]
+}

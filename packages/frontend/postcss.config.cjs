@@ -16,18 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import sveltePreprocess from 'svelte-preprocess';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-console.log('__dirname', __dirname);
-export default {
-  // Consult https://github.com/sveltejs/svelte-preprocess
-  // for more information about preprocessors
-  preprocess: sveltePreprocess({
-    postcss: {
-      configFilePath: join(__dirname, 'postcss.config.cjs'),
-    },
-  }),
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    'postcss-import': {},
+    autoprefixer: {},
+  },
 };

@@ -1,0 +1,192 @@
+{
+  "Categories" : [
+    {
+      "Description" : "Models that work with text: classify, summarize, translate, or generate text.",
+      "Name" : "Natural Language Processing",
+      "Recipes" : [
+        {
+          "Applications" : [],
+          "Description" : "Is that string token a date, a name, a place, a verb? These models can tell you!",
+          "Name" : "Token classification"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Determine if text data is positive, negative, or neutral.",
+          "Name" : "Sentiment Analysis"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Generate a narrative text based on a prompt.",
+          "Name" : "Story Generation"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Generate a TLDR; text summary for a large set of text data.",
+          "Name" : "Text summarization"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Offer your users auto-complete suggestions based on their text input.",
+          "Name" : "Auto-complete suggestions"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Offer data from a data table in response to natural language questions.",
+          "Name" : "Tabular data answer lookup"
+        }
+      ]
+    },
+    {
+      "Description" : "Process images, from classification to object detection and segmentation.",
+      "Name" : "Computer Vision",
+      "Recipes" : [
+        {
+          "Applications" : [],
+          "Description" : "Is that image a person, a cat, or a landscape? Generate keyword labels.",
+          "Name" : "Image classification"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Is it a bird, is it a plane, is it a superhero? Detect specific objects in an image.",
+          "Name" : "Object detection"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Segment an image into foreground and background and remove the background.",
+          "Name" : "Image background removal"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Bring color to black & white or historical photography.",
+          "Name" : "Image colorization"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Increase the dimensions of an image to higher resolution.",
+          "Name" : "Image resolution improvement"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Remove unwanted objects (including dust / scratches) from an image.",
+          "Name" : "Remove unwanted objects"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Recreate an image to mimic the style of another.",
+          "Name" : "Style transfer"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Create a 3-dimensional representation of a 2-dimensional image.",
+          "Name" : "2D to 3D"
+        },
+        {
+          "Applications" : [
+            {
+              "AppStack" : {
+                "Tags" : []
+              },
+              "Description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
+              "Images" : [],
+              "Input" : {},
+              "Models" : [
+                {
+                  "Name" : "stable-diffusion2",
+                  "Rating" : "3 stars",
+                  "Retrain" : {
+                    "Dataset" : {
+                      "Reqs" : [
+                        {
+                          "Description" : "800 x 600 pixels",
+                          "Name" : "Dimensions"
+                        },
+                        {
+                          "Description" : "*.PNG",
+                          "Name" : "File Format"
+                        },
+                        {
+                          "Description" : "RGB",
+                          "Name" : "Colorspace"
+                        },
+                        {
+                          "Description" : "8-bit",
+                          "Name" : "Bitdepth"
+                        }
+                      ],
+                      "SampleDataset" : {
+                        "Icon" : "$APPDATA/ai-studio/recipes/provider-icons/github.png",
+                        "Provider" : "GitHub",
+                        "URL" : "https://github.com/redhat-ai/dog-on-the-moon/my-doggo"
+                      }
+                    },
+                    "Description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
+                    "Headline" : "Retrain with your own images",
+                    "Restrainable" : true,
+                    "TrainingEnv" : {
+                      "Description" : "You can pull and run the model training environment in Podman Desktop",
+                      "Size" : "1.23 GB",
+                      "Tag" : "latest",
+                      "URL" : "https://quay.io/redhat-ai/stable-diffusion2-model-env"
+                    }
+                  },
+                  "Status" : "Default",
+                  "Tags" : [
+                    {
+                      "Name" : "Image",
+                      "Type" : "Category"
+                    },
+                    {
+                      "Name" : "Meta License",
+                      "Type" : "License"
+                    }
+                  ]
+                },
+                {
+                  "Name" : "unstable-diffusion3",
+                  "Rating" : "3 stars",
+                  "Retrain" : {
+                    "Description" : "Ready to get images of your own doggo (or other loved pet!) into this sample application? You'll need to retrain the model. Check out the Retrain tab to get started.",
+                    "Headline" : "Retrain with your own images",
+                    "Restrainable" : true
+                  },
+                  "Status" : "Non-default",
+                  "Tags" : [
+                    {
+                      "Name" : "Image",
+                      "Type" : "Category"
+                    },
+                    {
+                      "Name" : "MIT License",
+                      "Type" : "License"
+                    }
+                  ]
+                }
+              ],
+              "Name" : "stable-diffusion2-model",
+              "Output" : {},
+              "Repo" : {},
+              "Thumbnails" : []
+            }
+          ],
+          "Description" : "Generate images based on a text prompt. Create a new image composition.",
+          "Name" : "Image generation"
+        },
+        {
+          "Applications" : [],
+          "Description" : "Extract text from an image.",
+          "Name" : "Text extract"
+        }
+      ]
+    },
+    {
+      "Description" : "Recognize speech or classify audio with audio models.",
+      "Name" : "Audio",
+      "Recipes" : []
+    },
+    {
+      "Description" : "Stuff about multimodal models goes here omfg yes amazing.",
+      "Name" : "Multimodal",
+      "Recipes" : []
+    }
+  ]
+}

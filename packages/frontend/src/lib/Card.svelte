@@ -2,7 +2,7 @@
 import Fa from 'svelte-fa';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 
-export let title: string;
+export let title: string | undefined = undefined;
 export let classes: string = "";
 
 export let href: string | undefined = undefined;
@@ -21,14 +21,16 @@ export let primaryBackground: string = "bg-charcoal-800"
             <Fa size="20" class="text-purple-500 cursor-pointer" icon="{icon}" />
           </div>
         {/if}
-        <div class="flex flex-col text-gray-400 whitespace-nowrap" aria-label="context-name">
-          <div class="flex flex-row items-center">
-            {title}
+        {#if title}
+          <div class="flex flex-col text-gray-400 whitespace-nowrap" aria-label="context-name">
+            <div class="flex flex-row items-center">
+              {title}
+            </div>
           </div>
-        </div>
+        {/if}
       </div>
     </div>
-    <div class="flex overflow-auto" role="region" aria-label="content">
+    <div class="flex overflow-hidden" role="region" aria-label="content">
       <slot name="content" />
     </div>
   </div>

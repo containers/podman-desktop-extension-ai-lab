@@ -15,8 +15,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-
+const defaultTheme = require('tailwindcss/defaultTheme');
 const tailwindColors = require('tailwindcss/colors')
+const tailwindTypography = require('@tailwindcss/typography')
 
 module.exports = {
   content: [
@@ -42,6 +43,19 @@ module.exports = {
         'leftnavbar': '54px',
         'leftsidebar': '225px',
       },
+      fontFamily: {
+        sans: ['Montserrat', ...defaultTheme.fontFamily.sans],
+      },
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            color: tailwindColors.gray[100],
+            '--tw-prose-headings': tailwindColors.gray[100],
+            '--tw-prose-bold': tailwindColors.gray[100],
+            // ...
+          },
+        },
+      }),
     },
     colors: {
       // The "status" colours to be used for Podman and Kubernetes containers
@@ -210,5 +224,7 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    tailwindTypography
+  ],
 };

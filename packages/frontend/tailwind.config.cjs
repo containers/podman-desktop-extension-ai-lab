@@ -52,6 +52,8 @@ module.exports = {
             color: tailwindColors.gray[100],
             '--tw-prose-headings': tailwindColors.gray[100],
             '--tw-prose-bold': tailwindColors.gray[100],
+            '--tw-prose-links': tailwindColors.purple[500],
+            '--tw-prose-code': tailwindColors.purple[400],
             // ...
           },
         },

@@ -63,7 +63,7 @@ onDestroy(() => {
     <Route path="/" breadcrumb="Summary" >
       <div class="flex flex-row w-full">
         <div class="flex-grow p-5">
-          <MarkdownRenderer/>
+          <MarkdownRenderer source="{recipe?.readme}"/>
         </div>
         <!-- Right column -->
         <div class="border-l border-l-charcoal-400 px-5 min-w-80">

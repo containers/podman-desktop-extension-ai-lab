@@ -23,7 +23,9 @@ import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
 import { GitManager } from './managers/gitManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
+
 import * as fs from 'node:fs';
+import * as https from 'node:https';
 import * as path from 'node:path';
 import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
 
@@ -113,6 +115,23 @@ export class Studio {
       // And restrict the webview to only loading content from our extension's `media` directory.
       localResourceRoots: [Uri.joinPath(extensionUri, 'media')],
     };
+  }
+
+
+  downloadModel(modelId: string, url: string) {
+    const destDir = path.resolve(this.#extensionContext.storagePath, 'models', modelId);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    const destFile = path.resolve(destDir, path.basename(url));
+    const file = fs.createWriteStream(destFile);
+    https.get(url, (resp) => {
+      resp.pipe(file);
+      file.on('finish', () => {
+        file.close();
+        console.log('model saved');
+      });
+    });
   }
 
   getLocalModels(): LocalModelInfo[] {

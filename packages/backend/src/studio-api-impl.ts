@@ -11,7 +11,7 @@ export class StudioApiImpl implements StudioAPI {
   private status: Map<string, Task[]> = new Map<string, Task[]>();
 
   async getPullingStatus(recipeId: string): Promise<Task[]> {
-      return [];
+      return this.status.get(recipeId) || [];
   }
 
   async ping(): Promise<string> {
@@ -44,6 +44,8 @@ export class StudioApiImpl implements StudioAPI {
 
   async pullApplication(recipeId: string): Promise<void> {
     const recipe: Recipe = await this.getRecipeById(recipeId);
+    this.status.set(recipeId, [{state: 'loading', name: 'Pulling application'}]);
+
 
     //todo: stuff here
     return Promise.resolve(undefined);

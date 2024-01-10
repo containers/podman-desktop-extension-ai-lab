@@ -9,7 +9,6 @@
       "webworker"
     ],
     "sourceMap": true,
-    "rootDir": "src",
     "outDir": "dist",
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,

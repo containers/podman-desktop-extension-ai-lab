@@ -18,9 +18,11 @@
 
 import type { ExtensionContext, WebviewOptions, WebviewPanel } from '@podman-desktop/api';
 import { Uri, window } from '@podman-desktop/api';
-import { promises } from 'node:fs';
 import { RpcExtension } from '@shared/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -48,7 +50,7 @@ export class Studio {
     const indexHtmlUri = Uri.joinPath(extensionUri, 'media', 'index.html');
     const indexHtmlPath = indexHtmlUri.fsPath;
 
-    let indexHtml = await promises.readFile(indexHtmlPath, 'utf8');
+    let indexHtml = await fs.promises.readFile(indexHtmlPath, 'utf8');
 
     // replace links with webView Uri links
     // in the content <script type="module" crossorigin src="./index-RKnfBG18.js"></script> replace src with webview.asWebviewUri
@@ -98,5 +100,24 @@ export class Studio {
       // And restrict the webview to only loading content from our extension's `media` directory.
       localResourceRoots: [Uri.joinPath(extensionUri, 'media')],
     };
+  }
+
+  getLocalModels(): LocalModelInfo[] {
+    const result: LocalModelInfo[] = [];
+    const modelsDir = path.resolve(this.#extensionContext.storagePath, 'models');
+    const entries = fs.readdirSync(modelsDir, { withFileTypes: true });
+    const dirs = entries.filter(dir => dir.isDirectory());
+    for (const d of dirs) {
+      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
+      if (modelEntries.length != 1) {
+        // we support models with one file only for now
+        continue;
+      }
+      result.push({
+        id: d.name,
+        file: modelEntries[0],
+      })
+    }
+    return result;
   }
 }

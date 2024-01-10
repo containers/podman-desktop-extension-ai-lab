@@ -1,3 +1,5 @@
+import type { ModelInfo } from './IModelInfo';
+
 export interface Recipe {
   id?: string,
   name: string,
@@ -6,4 +8,5 @@ export interface Recipe {
   icon?: string,
   repository: string,
   readme: string,
+  models?: ModelInfo[],
 }

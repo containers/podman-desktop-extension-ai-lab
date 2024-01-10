@@ -15,6 +15,7 @@ import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import type { Task } from '@shared/models/ITask';
 import Button from '/@/lib/button/Button.svelte';
 import { getDisplayName } from '/@/utils/versionControlUtils';
+import RecipeModels from './RecipeModels.svelte';
 
 export let recipeId: string;
 
@@ -101,7 +102,7 @@ onDestroy(() => {
       </div>
     </Route>
     <Route path="/models" breadcrumb="History">
-      <span>Models: models</span>
+      <RecipeModels models={recipe?.models} />
     </Route>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">

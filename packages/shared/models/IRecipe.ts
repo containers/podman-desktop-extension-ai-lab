@@ -3,5 +3,6 @@ export interface Recipe {
   name: string,
   categories: string[],
   description: string,
-  icon?: string
+  icon?: string,
+  repository?: string,
 }

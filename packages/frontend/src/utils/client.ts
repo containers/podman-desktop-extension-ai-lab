@@ -6,7 +6,7 @@ import type { StudioAPI } from '@shared/StudioAPI';
 export const RECENT_CATEGORY_ID = 'recent-category';
 
 export class StudioClient implements StudioAPI {
-  podmanDesktopApi = acquirePodmanDesktopApi();
+  // podmanDesktopApi = acquirePodmanDesktopApi?.();
 
   async ping(): Promise<string> {
     return 'pong';

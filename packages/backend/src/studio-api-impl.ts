@@ -44,7 +44,7 @@ export class StudioApiImpl implements StudioAPI {
 
   async pullApplication(recipeId: string): Promise<void> {
     const recipe: Recipe = await this.getRecipeById(recipeId);
-    this.status.set(recipeId, [{state: 'loading', name: 'Pulling image'}]);
+    this.status.set(recipeId, [{state: 'loading', name: 'Pulling application'}]);
 
     //todo: stuff here
     return Promise.resolve(undefined);

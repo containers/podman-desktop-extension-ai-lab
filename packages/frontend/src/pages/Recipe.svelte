@@ -1,6 +1,6 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
-import { onMount } from 'svelte';
+import { onDestroy, onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
 import type { Recipe as RecipeModel } from '@shared/models/IRecipe';
 import Tab from '/@/lib/Tab.svelte';
@@ -13,23 +13,36 @@ import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import type { Task } from '@shared/models/ITask';
+import Spinner from '/@/lib/progress/Spinner.svelte';
 
 export let recipeId: string;
 
 let recipe: RecipeModel | undefined = undefined;
-let pulling: Task[] = [];
+let pulling: Task[] | undefined = undefined;
 
 $: categories = [] as Category[]
 
+let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
 
 onMount(async () => {
   recipe = await studioClient.getRecipeById(recipeId);
   categories = await studioClient.getCategories();
+
+  intervalId = setInterval(async () => {
+    pulling = await studioClient.getPullingStatus(recipeId);
+  }, 1000);
 })
 
-const onPullingRequest = () => {
-  studioClient.pullApplication(recipeId);
+const onPullingRequest = async () => {
+  await studioClient.pullApplication(recipeId);
 }
+
+onDestroy(() => {
+  if(intervalId !== undefined) {
+    clearInterval(intervalId);
+    intervalId = undefined;
+  }
+});
 </script>
 
 <NavPage title="{recipe?.name || ''}">
@@ -54,13 +67,18 @@ const onPullingRequest = () => {
               </div>
             </div>
           </Card>
-          {#if pulling.length === 0}
+          {#if pulling?.length === 0}
             <button
+              disabled="{pulling === undefined}"
               on:click={() => onPullingRequest()}
               class="mt-4 p-2 flex w-full flex-row hover:text-gray-300 bg-purple-500 hover:bg-charcoal-500 rounded-md cursor-pointer">
-              <div class="mr-2">
-                <Fa size="20" icon="{faDownload}"/>
-              </div>
+              {#if pulling === undefined}
+                <Spinner/>
+              {:else}
+                <div class="mr-2">
+                  <Fa size="20" icon="{faDownload}"/>
+                </div>
+              {/if}
               Pull application
             </button>
           {:else}

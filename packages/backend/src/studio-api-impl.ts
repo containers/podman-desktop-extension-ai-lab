@@ -2,10 +2,15 @@ import type { StudioAPI } from '@shared/StudioAPI';
 import { Category } from '@shared/models/ICategory';
 import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
+import { Task } from '@shared/models/ITask';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
 export class StudioApiImpl implements StudioAPI {
+  async getPullingStatus(recipeId: string): Promise<Task[]> {
+      return [];
+  }
+
   async ping(): Promise<string> {
     return 'pong';
   }

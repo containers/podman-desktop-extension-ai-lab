@@ -1,5 +1,6 @@
 import type { PodmanDesktopApi } from '../../types/podman-desktop-api';
 import type { Webview } from '@podman-desktop/api';
+import { Studio } from '../backend/src/studio';
 
 export interface IMessage {
   id: number;

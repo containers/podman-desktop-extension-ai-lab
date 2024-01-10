@@ -1,5 +1,5 @@
 <script lang="ts">
-feaimport './app.css';
+import './app.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { router } from 'tinro';
 import Route from '/@/Route.svelte';

@@ -25,6 +25,7 @@
     "src/**/*.ts",
     "src/**/*.js",
     "src/**/*.svelte",
-    "../../types/**/*.d.ts"
+    "../../types/**/*.d.ts",
+    "../shared/**/*.ts"
   ]
 }

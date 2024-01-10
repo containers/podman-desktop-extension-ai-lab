@@ -1,7 +1,7 @@
 // podman-desktop-api.d.ts
 
 declare global {
-  interface PodmanDesktopApi {
+  export interface PodmanDesktopApi {
     getState: () => any;
     postMessage: (msg: any) => void;
     setState: (newState: any) => void;
@@ -10,4 +10,4 @@ declare global {
   function acquirePodmanDesktopApi(): PodmanDesktopApi;
 }
 
-export {};
+export { PodmanDesktopApi };

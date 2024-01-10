@@ -1,0 +1,35 @@
+{
+  "recipes": [
+    {
+      "id": "chatbot",
+      "description" : "Chat bot application",
+      "name" : "ChatBot",
+      "repository": "https://github.com/michaelclifford/locallm",
+      "categories": [
+        "natural-language-processing"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "natural-language-processing",
+      "name": "Natural Language Processing",
+      "description" : "Models that work with text: classify, summarize, translate, or generate text."
+    },
+    {
+      "id": "computer-vision",
+      "description" : "Process images, from classification to object detection and segmentation.",
+      "name" : "Computer Vision"
+    },
+    {
+      "id": "audio",
+      "description" : "Recognize speech or classify audio with audio models.",
+      "name" : "Audio"
+    },
+    {
+      "id": "multimodal",
+      "description" : "Stuff about multimodal models goes here omg yes amazing.",
+      "name" : "Multimodal"
+    }
+  ]
+}

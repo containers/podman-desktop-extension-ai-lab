@@ -33,6 +33,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
+      '@shared/': join(PACKAGE_ROOT, '../shared') + '/',
     },
   },
   plugins: [svelte({ hot: !process.env.VITEST })],

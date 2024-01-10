@@ -7,6 +7,9 @@ import { Task } from '@shared/models/ITask';
 export const RECENT_CATEGORY_ID = 'recent-category';
 
 export class StudioApiImpl implements StudioAPI {
+
+  private status: Map<string, Task[]> = new Map<string, Task[]>();
+
   async getPullingStatus(recipeId: string): Promise<Task[]> {
       return [];
   }
@@ -37,5 +40,12 @@ export class StudioApiImpl implements StudioAPI {
 
   async searchRecipes(query: string): Promise<Recipe[]> {
     return []; // todo: not implemented
+  }
+
+  async pullApplication(recipeId: string): Promise<void> {
+    const recipe: Recipe = await this.getRecipeById(recipeId);
+
+    //todo: stuff here
+    return Promise.resolve(undefined);
   }
 }

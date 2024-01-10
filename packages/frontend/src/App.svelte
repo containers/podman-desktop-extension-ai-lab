@@ -1,36 +1,18 @@
 <script lang="ts">
-  import './app.css';
-import { onMount } from 'svelte';
+import './app.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { router } from 'tinro';
 import Route from '/@/Route.svelte';
 import Navigation from '/@/lib/Navigation.svelte';
-  import Dashboard from '/@/pages/Dashboard.svelte';
-  import Recipes from '/@/pages/Recipes.svelte';
-  import Environments from '/@/pages/Environments.svelte';
-  import Preferences from '/@/pages/Preferences.svelte';
-  import Registries from '/@/pages/Registries.svelte';
-  import Models from '/@/pages/Models.svelte';
-  import Recipe from '/@/pages/Recipe.svelte';
+import Dashboard from '/@/pages/Dashboard.svelte';
+import Recipes from '/@/pages/Recipes.svelte';
+import Environments from '/@/pages/Environments.svelte';
+import Preferences from '/@/pages/Preferences.svelte';
+import Registries from '/@/pages/Registries.svelte';
+import Models from '/@/pages/Models.svelte';
+import Recipe from '/@/pages/Recipe.svelte';
 
 router.mode.hash();
-
-onMount(() => {
-  const podmanDesktopApi = acquirePodmanDesktopApi();
-
-  // Update state
-  podmanDesktopApi.setState({ studioValue: 1 });
-
-  // Handle messages sent from the extension to the webview
-  window.addEventListener('message', event => {
-    console.log('received the message from the backend with data:', event.data);
-  });
-
-  // after 20s, send a message to the backend
-  setTimeout(() => {
-    podmanDesktopApi.postMessage({ message: 'Hello from the webview!' });
-  }, 20000);
-});
 </script>
 
 

@@ -5,33 +5,39 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "lib": [
-        "ES2017",
-        "webworker"
+      "ES2017",
+      "webworker"
     ],
     "sourceMap": true,
     "rootDir": "src",
     "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "types": [
-        "node",
-    ]
-},
-"include": [
+      "node",
+    ],
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    }
+  },
+  "include": [
     "src",
     "types/*.d.ts",
-    "../../types/**/*.d.ts"
-],
-"ts-node": {
-  "compilerOptions": {
-    "module": "CommonJS",
-    "lib": [
-      "ES2020",
-      "DOM"
-    ],
-    "types": [
-      "node"
-    ]
+    "../../types/**/*.d.ts",
+    "../shared/*.ts",
+    "../shared/**/*.ts"
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS",
+      "lib": [
+        "ES2020",
+        "DOM"
+      ],
+      "types": [
+        "node"
+      ]
+    }
   }
-}
 
 }

@@ -19,11 +19,16 @@
 import type { ExtensionContext, WebviewOptions, WebviewPanel } from '@podman-desktop/api';
 import { Uri, window } from '@podman-desktop/api';
 import { promises } from 'node:fs';
+import { RpcExtension } from '@shared/MessageProxy';
+import { StudioApiImpl } from './studio-api-impl';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
 
   #panel: WebviewPanel | undefined;
+
+  rpcExtension: RpcExtension;
+  studioApi: StudioApiImpl;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -36,7 +41,6 @@ export class Studio {
 
     // register webview
     this.#panel = window.createWebviewPanel('studio', 'Studio extension', this.getWebviewOptions(extensionUri));
-    this.#extensionContext.subscriptions.push(this.#panel);
 
     // update html
 
@@ -74,15 +78,11 @@ export class Studio {
 
     this.#panel.webview.html = indexHtml;
 
-    // send a message to the webview 10s after it is created
-    setTimeout(() => {
-      this.#panel?.webview.postMessage({ command: 'hello' });
-    }, 10000);
-
-    // handle messages from the webview
-    this.#panel.webview.onDidReceiveMessage(message => {
-      console.log('received message from webview', message);
-    });
+    // Let's create the api that the front will be able to call
+    this.rpcExtension = new RpcExtension(this.#panel.webview);
+    this.studioApi = new StudioApiImpl();
+    // Register the instance
+    this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
   }
 
   public async deactivate(): Promise<void> {

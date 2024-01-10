@@ -28,12 +28,7 @@ onMount(async () => {
 })
 
 const onPullingRequest = () => {
-  pulling = [
-    {state: 'success', name: 'Pulling image:latest'},
-    {state: 'error', name: 'Pulling database:latest'},
-    {state: 'loading', name: 'Pulling redis:latest'},
-    {state: 'loading', name: 'Downloading model:latest'},
-  ]
+  studioClient.pullApplication(recipeId);
 }
 </script>
 

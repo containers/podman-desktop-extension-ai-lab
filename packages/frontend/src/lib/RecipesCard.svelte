@@ -1,10 +1,10 @@
 <script lang="ts">
 import Card from '/@/lib/Card.svelte';
-import type { Recipe } from '/@/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import { getIcon } from '/@/utils/categoriesUtils';
 import { onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
-import type { Category } from '/@/models/ICategory';
+import type { Category } from '@shared/models/ICategory';
 
 export let category: Category
 

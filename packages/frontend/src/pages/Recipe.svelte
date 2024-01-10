@@ -2,17 +2,17 @@
 import NavPage from '/@/lib/NavPage.svelte';
 import { onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
-import type { Recipe as RecipeModel } from '/@/models/IRecipe';
+import type { Recipe as RecipeModel } from '@shared/models/IRecipe';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
-import type { Category } from '/@/models/ICategory';
+import type { Category } from '@shared/models/ICategory';
 import Card from '/@/lib/Card.svelte';
 import MarkdownRenderer from '/@/lib/MarkdownRenderer.svelte';
 import Fa from 'svelte-fa';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
-import type { Task } from '/@/models/ITask';
+import type { Task } from '@shared/models/ITask';
 
 export let recipeId: string;
 

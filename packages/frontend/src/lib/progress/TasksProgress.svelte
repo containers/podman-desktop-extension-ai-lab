@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Task } from '/@/models/ITask';
+  import type { Task } from '@shared/models/ITask';
 
   export let tasks: Task[] = [];
 </script>

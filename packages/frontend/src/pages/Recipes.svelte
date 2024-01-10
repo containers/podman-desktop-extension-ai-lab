@@ -1,10 +1,9 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
-import type { Recipe } from '/@/models/IRecipe';
 import RecipesCard from '/@/lib/RecipesCard.svelte';
 import { onMount } from 'svelte';
 import { RECENT_CATEGORY_ID, studioClient } from '/@/utils/client';
-import type { Category } from '/@/models/ICategory';
+import type { Category } from '@shared/models/ICategory';
 
 $: categories = [] as Category[]
 

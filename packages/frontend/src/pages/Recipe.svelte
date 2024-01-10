@@ -14,6 +14,7 @@ import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import type { Task } from '@shared/models/ITask';
 import Button from '/@/lib/button/Button.svelte';
+import { getDisplayName } from '/@/utils/versionControlUtils';
 
 export let recipeId: string;
 
@@ -72,7 +73,9 @@ onDestroy(() => {
               <div class="text-base mb-2">Repository</div>
               <div class="cursor-pointer flex text-nowrap items-center">
                 <Fa size="20" icon="{faGithub}"/>
-                <span class="ml-2">redhat-ia/{recipe?.id}</span>
+                <div class="ml-2">
+                  <a href="{recipe?.repository}" target="_blank">{getDisplayName(recipe?.repository)}</a>
+                </div>
               </div>
             </div>
           </Card>
@@ -91,7 +94,7 @@ onDestroy(() => {
               class="w-full mt-4 p-2"
               icon="{faDownload}"
             >
-              Pull application
+              {#if loading}Loading{:else}Pull application{/if}
             </Button>
           {/if}
         </div>

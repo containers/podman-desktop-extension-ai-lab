@@ -67,7 +67,14 @@ onDestroy(() => {
               </div>
             </div>
           </Card>
-          {#if pulling?.length === 0}
+          {#if pulling !== undefined && pulling.length > 0}
+            <Card classes="bg-charcoal-800 mt-4">
+              <div slot="content" class="text-base font-normal p-2">
+                <div class="text-base mb-2">Repository</div>
+                <TasksProgress tasks="{pulling}"/>
+              </div>
+            </Card>
+          {:else}
             <button
               disabled="{pulling === undefined}"
               on:click={() => onPullingRequest()}
@@ -81,13 +88,6 @@ onDestroy(() => {
               {/if}
               Pull application
             </button>
-          {:else}
-            <Card classes="bg-charcoal-800 mt-4">
-              <div slot="content" class="text-base font-normal p-2">
-                <div class="text-base mb-2">Repository</div>
-                <TasksProgress tasks="{pulling}"/>
-              </div>
-            </Card>
           {/if}
         </div>
       </div>

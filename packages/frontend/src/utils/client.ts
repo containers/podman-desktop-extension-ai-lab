@@ -7,12 +7,3 @@ const podmanDesktopApi = acquirePodmanDesktopApi();
 const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);
 
 export const studioClient: StudioAPI = rpcBrowser.getProxy<StudioAPI>();
-/*      {
-          id: 'stable-diffusion-xl-base-1.0',
-          file: 'stable-diffusion-xl-base-1.0.model'
-      },
-      {
-          id: 'albedobase-xl-1.3',
-          file: 'albedobase-xl-1.3.model'
-      },
-*/

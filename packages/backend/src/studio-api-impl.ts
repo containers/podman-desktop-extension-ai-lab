@@ -3,6 +3,7 @@ import { Category } from '@shared/models/ICategory';
 import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
 import { Task } from '@shared/models/ITask';
+import { ModelInfo } from '@shared/models/IModelInfo';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -49,5 +50,21 @@ export class StudioApiImpl implements StudioAPI {
 
     //todo: stuff here
     return Promise.resolve(undefined);
+  }
+
+  async getLocalModels(): Promise<ModelInfo[]> {
+    // todo(feloy): get from disk
+    const local = [
+      {
+          id: 'stable-diffusion-xl-base-1.0',
+          file: 'stable-diffusion-xl-base-1.0.model'
+      },
+      {
+          id: 'albedobase-xl-1.3',
+          file: 'albedobase-xl-1.3.model'
+      }
+    ];
+    const localIds = local.map(l => l.id);
+    return content.recipes.flatMap(r => r.models.filter(m => localIds.includes(m.id)));
   }
 }

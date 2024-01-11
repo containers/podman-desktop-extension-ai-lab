@@ -25,6 +25,14 @@
           "registry": "Civital",
           "popularity": 3,
           "license": "openrail++"
+        },
+        {
+          "id": "sdxl-turbo",
+          "name": "SDXL Turbo",
+          "hw": "CPU",
+          "registry": "Hugging Face",
+          "popularity": 3,
+          "license": "sai-c-community"
         }
       ]
     }

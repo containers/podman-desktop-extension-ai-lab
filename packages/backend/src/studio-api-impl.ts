@@ -2,7 +2,6 @@ import type { StudioAPI } from '@shared/StudioAPI';
 import { Category } from '@shared/models/ICategory';
 import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
-import { Task } from '@shared/models/ITask';
 import { ApplicationManager } from './managers/applicationManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { RecipeStatus } from '@shared/models/IRecipeStatus';

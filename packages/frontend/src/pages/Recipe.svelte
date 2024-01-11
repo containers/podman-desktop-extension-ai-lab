@@ -10,7 +10,7 @@ import Card from '/@/lib/Card.svelte';
 import MarkdownRenderer from '/@/lib/MarkdownRenderer.svelte';
 import Fa from 'svelte-fa';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import { faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Button from '/@/lib/button/Button.svelte';
 import { getDisplayName } from '/@/utils/versionControlUtils';
@@ -84,6 +84,15 @@ onDestroy(() => {
               <div slot="content" class="text-base font-normal p-2">
                 <div class="text-base mb-2">Repository</div>
                 <TasksProgress tasks="{recipeStatus.tasks}"/>
+                {#if recipeStatus.state === 'error'}
+                  <Button
+                    disabled="{loading}"
+                    inProgress="{loading}"
+                    on:click={() => onPullingRequest()}
+                    class="w-full mt-4 p-2"
+                    icon="{faRefresh}"
+                  >Retry</Button>
+                {/if}
               </div>
             </Card>
           {:else}

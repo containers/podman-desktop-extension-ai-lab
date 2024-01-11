@@ -33,8 +33,6 @@ export class RpcExtension {
 
   init() {
     this.webview.onDidReceiveMessage(async (message: any) => {
-      console.log('RpcExtension onDidReceiveMessage', message);
-
       if(!isMessageRequest(message)) {
         console.error("Received incompatible message.", message);
         return;
@@ -75,7 +73,6 @@ export class RpcExtension {
   }
 
   register(channel: string, method: (body: any) => any) {
-    console.log(`RpcExtension register "${channel}"`);
     this.methods.set(channel, method);
   }
 }

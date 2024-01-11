@@ -105,7 +105,11 @@ export class ApplicationManager {
     const connections = provider.getContainerConnections();
     const connection = connections[0];
 
-    aiConfig.application.containers.forEach((container) => {
+    // Filter the containers based on architecture
+    const filteredContainers = aiConfig.application.containers
+      .filter((container) => container.arch === undefined || container.arch === arch())
+
+    filteredContainers.forEach((container) => {
      taskUtil.setTask({
        id: container.name,
        state: 'loading',
@@ -115,16 +119,24 @@ export class ApplicationManager {
 
     // Promise all the build images
     return Promise.all(
-      aiConfig.application.containers.map((container) =>
+      filteredContainers.map((container) =>
         {
           // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
           const context = path.join(getParentDirectory(configFile), container.contextdir);
           console.log(`Application Manager using context ${context} for container ${container.name}`);
+
+          // Ensure the context provided exist otherwise throw an Error
+          if(!fs.existsSync(context)) {
+            console.error('The context provided does not exist.');
+            taskUtil.setTaskState(container.name, 'error');
+            throw new Error('Context configured does not exist.');
+          }
+
           return containerEngine.buildImage(
             context,
             container.containerfile,
             `${container.name}:latest`,
-            arch(),
+            '', // keep empty chain so it use default
             connection.connection,
             (event, data) => {
               // todo: do something with the event
@@ -132,7 +144,7 @@ export class ApplicationManager {
           ).then(() => {
             taskUtil.setTaskState(container.name, 'success');
           }).catch(err => {
-            console.error(`Something went wrong while building the image ${String(err)}`);
+            console.error(`Something went wrong while building the image: `, err);
             taskUtil.setTaskState(container.name, 'error');
           });
         }

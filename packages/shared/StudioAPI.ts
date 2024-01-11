@@ -1,6 +1,6 @@
 import type { Recipe } from '@shared/models/IRecipe';
 import type { Category } from '@shared/models/ICategory';
-import { Task } from '@shared/models/ITask';
+import { RecipeStatus } from '@shared/models/IRecipeStatus';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -9,7 +9,7 @@ export abstract class StudioAPI {
   abstract getRecipesByCategory(categoryId: string): Promise<Recipe[]>;
   abstract getRecipeById(recipeId: string): Promise<Recipe>;
   abstract searchRecipes(query: string): Promise<Recipe[]>;
-  abstract getPullingStatus(recipeId: string): Promise<Task[]>
+  abstract getPullingStatus(recipeId: string): Promise<RecipeStatus>
   abstract pullApplication(recipeId: string): Promise<void>;
 }
 

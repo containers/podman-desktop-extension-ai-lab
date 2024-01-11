@@ -3,9 +3,9 @@ import { Category } from '@shared/models/ICategory';
 import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
 import { Task } from '@shared/models/ITask';
-import { GitManager } from './managers/gitManager';
 import { ApplicationManager } from './managers/applicationManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
+import { RecipeStatus } from '@shared/models/IRecipeStatus';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -15,8 +15,8 @@ export class StudioApiImpl implements StudioAPI {
     private recipeStatusRegistry: RecipeStatusRegistry,
   ) {}
 
-  async getPullingStatus(recipeId: string): Promise<Task[]> {
-      return this.recipeStatusRegistry.getStatus(recipeId) || [];
+  async getPullingStatus(recipeId: string): Promise<RecipeStatus> {
+      return this.recipeStatusRegistry.getStatus(recipeId);
   }
 
   async ping(): Promise<string> {

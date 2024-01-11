@@ -25,5 +25,7 @@
   "dependencies": {
     "simple-git": "^3.22.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/node": "^18"
+  }
 }

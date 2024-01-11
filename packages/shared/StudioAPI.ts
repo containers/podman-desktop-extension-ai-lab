@@ -17,5 +17,8 @@ export abstract class StudioAPI {
    * Get the information of models saved locally into the extension's storage directory 
    */
   abstract getLocalModels(): Promise<ModelInfo[]>;
+
+  abstract startPlayground(modelId: string): Promise<void>;
+  abstract askPlayground(modelId: string, prompt: string): Promise<any>;
 }
 

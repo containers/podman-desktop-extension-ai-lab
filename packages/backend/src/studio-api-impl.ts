@@ -5,6 +5,8 @@ import content from './ai.json';
 import { Task } from '@shared/models/ITask';
 import { ModelInfo } from '@shared/models/IModelInfo';
 import { Studio } from './studio';
+import * as path from 'node:path';
+import * as http from 'node:http';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -66,5 +68,63 @@ export class StudioApiImpl implements StudioAPI {
     const local = this.studio.getLocalModels();
     const localIds = local.map(l => l.id);
     return content.recipes.flatMap(r => r.models.filter(m => localIds.includes(m.id)));
+  }
+
+  async startPlayground(modelId: string): Promise<void> {
+    const locals = this.studio.getLocalModels();
+    const localModelInfo = this.studio.getLocalModels().filter(m => m.id === modelId);
+    if (localModelInfo.length !== 1) {
+      throw new Error('model not found');
+    }
+    const modelPath = path.resolve(this.studio.extensionContext.storagePath, 'models', localModelInfo[0].id, localModelInfo[0].file);
+    this.studio.playgroundManager.startPlayground(modelId, modelPath);
+  }
+
+  askPlayground(modelId: string, prompt: string): Promise<any> {
+    return new Promise((resolve,reject) => {
+      const locals = this.studio.getLocalModels();
+      const localModelInfo = this.studio.getLocalModels().filter(m => m.id === modelId);
+      if (localModelInfo.length !== 1) {
+        throw new Error('model not found');
+      }
+      var post_data = JSON.stringify({
+        "model": localModelInfo[0].file,
+        "prompt": prompt,
+        "temperature": 0.7
+      });
+
+      var post_options: http.RequestOptions = {
+        host: 'localhost',
+        port: '9000',
+        path: '/v1/completions',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+
+      var post_req = http.request(post_options, function(res) {
+        res.setEncoding('utf8');
+        const chunks = [];
+        res.on('data', (data) => chunks.push(data));
+        res.on('end', () => {
+          let resBody = chunks.join();
+          switch(res.headers['content-type']) {
+              case 'application/json':
+                  const result = JSON.parse(resBody);
+                  console.log('result', result);
+                  resolve(result);
+                  break;
+          }
+        });
+      });
+      // post the data
+      console.log('send data', post_data);
+      post_req.on('socket', function (socket) {
+        socket.setTimeout(1000000);  
+      });
+      post_req.write(post_data);
+      post_req.end();
+    });
   }
 }

@@ -1,8 +1,13 @@
 <script lang="ts">
   import type { ModelInfo } from "@shared/models/IModelInfo";
+  import { router } from "tinro";
   export let object: ModelInfo;
+
+  function openDetails() {
+    router.goto(`/models/${object.id}`);
+  }
 </script>
 
-<div class="text-sm text-gray-700">
+<button class="text-sm text-gray-700" on:click="{() => openDetails()}">
   {object.name}
-</div>
+</button>

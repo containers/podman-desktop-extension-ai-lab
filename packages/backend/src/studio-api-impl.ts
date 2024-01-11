@@ -42,6 +42,13 @@ export class StudioApiImpl implements StudioAPI {
     throw new Error('Not found');
   }
 
+  async getModelById(modelId: string): Promise<ModelInfo> {
+    const model = content.recipes.flatMap(r => (r.models as ModelInfo[]).filter(m => modelId === m.id));
+    if (model.length === 1) return model[0];
+    if (model.length === 0) throw new Error('Not found');
+    throw new Error('several models with same id');
+  }
+
   async searchRecipes(query: string): Promise<Recipe[]> {
     return []; // todo: not implemented
   }

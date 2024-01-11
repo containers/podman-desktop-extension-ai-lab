@@ -9,6 +9,7 @@ export abstract class StudioAPI {
   abstract getCategories(): Promise<Category[]>;
   abstract getRecipesByCategory(categoryId: string): Promise<Recipe[]>;
   abstract getRecipeById(recipeId: string): Promise<Recipe>;
+  abstract getModelById(modelId: string): Promise<ModelInfo>;
   abstract searchRecipes(query: string): Promise<Recipe[]>;
   abstract getPullingStatus(recipeId: string): Promise<Task[]>
   abstract pullApplication(recipeId: string): Promise<void>;

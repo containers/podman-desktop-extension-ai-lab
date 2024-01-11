@@ -81,7 +81,7 @@ export class ApplicationManager {
 
     // Promise all the build images
     return Promise.all(
-      aiConfig.application.containers.map((container) => {
+      aiConfig.application.containers.map((container) =>
         containerEngine.buildImage(
           path.join(localFolder, container.contextdir),
           container.containerfile,
@@ -96,7 +96,7 @@ export class ApplicationManager {
           console.error(`Something went wrong while building the image ${String(err)}`);
           taskUtil.setTaskState(container.name, 'error');
         })
-      })
+      )
     )
   }
 }

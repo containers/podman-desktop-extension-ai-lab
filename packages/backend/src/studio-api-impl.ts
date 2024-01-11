@@ -2,16 +2,20 @@ import type { StudioAPI } from '@shared/StudioAPI';
 import { Category } from '@shared/models/ICategory';
 import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
-import { Task } from '@shared/models/ITask';
+import { ApplicationManager } from './managers/applicationManager';
+import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
+import { RecipeStatus } from '@shared/models/IRecipeStatus';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
 export class StudioApiImpl implements StudioAPI {
+  constructor(
+    private applicationManager: ApplicationManager,
+    private recipeStatusRegistry: RecipeStatusRegistry,
+  ) {}
 
-  private status: Map<string, Task[]> = new Map<string, Task[]>();
-
-  async getPullingStatus(recipeId: string): Promise<Task[]> {
-      return this.status.get(recipeId) || [];
+  async getPullingStatus(recipeId: string): Promise<RecipeStatus> {
+      return this.recipeStatusRegistry.getStatus(recipeId);
   }
 
   async ping(): Promise<string> {
@@ -19,7 +23,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getRecentRecipes(): Promise<Recipe[]> {
-    return content.recipes.toSpliced(0, 10);
+    return []; // no recent implementation for now
   }
 
   async getCategories(): Promise<Category[]> {
@@ -43,11 +47,15 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async pullApplication(recipeId: string): Promise<void> {
+    console.log('StudioApiImpl pullApplication', recipeId);
     const recipe: Recipe = await this.getRecipeById(recipeId);
-    this.status.set(recipeId, [{state: 'loading', name: 'Pulling application'}]);
+    console.log('StudioApiImpl recipe', recipe);
 
+    // Do not wait for the pull application, run it separately
+    new Promise(() => {
+      this.applicationManager.pullApplication(recipe);
+    });
 
-    //todo: stuff here
     return Promise.resolve(undefined);
   }
 }

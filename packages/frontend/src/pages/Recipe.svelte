@@ -10,11 +10,11 @@ import Card from '/@/lib/Card.svelte';
 import MarkdownRenderer from '/@/lib/MarkdownRenderer.svelte';
 import Fa from 'svelte-fa';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import { faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
-import type { Task } from '@shared/models/ITask';
 import Button from '/@/lib/button/Button.svelte';
 import { getDisplayName } from '/@/utils/versionControlUtils';
+import type { RecipeStatus } from '@shared/models/IRecipeStatus';
 
 export let recipeId: string;
 
@@ -25,7 +25,7 @@ let recipe: RecipeModel | undefined = undefined;
 let loading: boolean = true;
 
 // The pulling tasks
-let pulling: Task[] | undefined = undefined;
+let recipeStatus: RecipeStatus | undefined = undefined;
 
 $: categories = [] as Category[]
 
@@ -37,7 +37,7 @@ onMount(async () => {
 
   // Pulling update
   intervalId = setInterval(async () => {
-    pulling = await studioClient.getPullingStatus(recipeId);
+    recipeStatus = await studioClient.getPullingStatus(recipeId);
     loading = false;
   }, 1000);
 })
@@ -79,11 +79,20 @@ onDestroy(() => {
               </div>
             </div>
           </Card>
-          {#if pulling !== undefined && pulling.length > 0}
+          {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
             <Card classes="bg-charcoal-800 mt-4">
               <div slot="content" class="text-base font-normal p-2">
                 <div class="text-base mb-2">Repository</div>
-                <TasksProgress tasks="{pulling}"/>
+                <TasksProgress tasks="{recipeStatus.tasks}"/>
+                {#if recipeStatus.state === 'error'}
+                  <Button
+                    disabled="{loading}"
+                    inProgress="{loading}"
+                    on:click={() => onPullingRequest()}
+                    class="w-full mt-4 p-2"
+                    icon="{faRefresh}"
+                  >Retry</Button>
+                {/if}
               </div>
             </Card>
           {:else}

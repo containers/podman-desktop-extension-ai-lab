@@ -21,6 +21,10 @@ import { Uri, window } from '@podman-desktop/api';
 import { promises } from 'node:fs';
 import { RpcExtension } from '@shared/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
+import { ApplicationManager } from './managers/applicationManager';
+import { GitManager } from './managers/gitManager';
+import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
+
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -42,7 +46,7 @@ export class Studio {
     // register webview
     this.#panel = window.createWebviewPanel('studio', 'Studio extension', this.getWebviewOptions(extensionUri));
     this.#extensionContext.subscriptions.push(this.#panel);
-    
+
     // update html
 
     const indexHtmlUri = Uri.joinPath(extensionUri, 'media', 'index.html');
@@ -81,7 +85,16 @@ export class Studio {
 
     // Let's create the api that the front will be able to call
     this.rpcExtension = new RpcExtension(this.#panel.webview);
-    this.studioApi = new StudioApiImpl();
+    const gitManager = new GitManager();
+    const recipeStatusRegistry = new RecipeStatusRegistry();
+    const applicationManager = new ApplicationManager(
+      gitManager,
+      recipeStatusRegistry
+    )
+    this.studioApi = new StudioApiImpl(
+      applicationManager,
+      recipeStatusRegistry
+    );
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
   }

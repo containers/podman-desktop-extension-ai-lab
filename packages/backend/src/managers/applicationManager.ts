@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { containerEngine, provider } from '@podman-desktop/api';
 import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
+import { parseYaml } from '../models/AIConfig';
 
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
 export const CONFIG_FILENAME = "ai-studio.yaml";
@@ -55,54 +56,31 @@ export class ApplicationManager {
       throw new Error(`The file located at ${configFile} does not exist.`);
     }
 
-    const configuration = fs.readFileSync(configFile, 'utf-8');
+    // Parsing the configuration
+    const rawConfiguration = fs.readFileSync(configFile, 'utf-8');
+    const aiConfig = parseYaml(rawConfiguration, arch());
 
-    try {
+    // Getting the provider to use for building
+    const connections = provider.getContainerConnections();
+    const connection = connections[0];
 
-      // parse the content using jsYaml
-      const defaultArch = arch();
-      const aiStudioConfig = jsYaml.load(configuration);
-      const application = aiStudioConfig?.["application"];
-      if (application) {
-        const containers = application["containers"] ?? [];
-        // Todo: build in parallels
-        for (const container of containers) {
-          const arch = container["arch"] ?? defaultArch;
-          if (arch === defaultArch) {
-            const isModelService = container["model-service"] ?? false;
-            if (isModelService) {
-              // download the model ?? or find it ??
-              return;
-            }
-            const contextDir  = container["contextdir"];
-            const nameImage = container["name"];
-            if (contextDir) {
-              const connections = provider.getContainerConnections();
-              const connection = connections[0];
-              await containerEngine.buildImage(
-                'C:\\Users\\baldr\\Work\\github.com\\containers\\hackaton\\locallm\\chatbot\\ai_applications',
-                'builds\\Containerfile',
-                `quay.io/lstocchi/${nameImage}:latest`,
-                connection.connection,
-                (event, data) => {
-                  // todo: do something with the event
-                }
-              )
-            }
+    // Promise all the build images
+    return Promise.all(
+      aiConfig.application.containers.map((container) => {
+        containerEngine.buildImage(
+          path.join(localFolder, container.contextdir),
+          container.containerfile,
+          `${container.name}:latest`,
+          connection.connection,
+          (event, data) => {
+            // todo: do something with the event
           }
-        }
-      }
-    } catch (e) {
-      console.error("Something went wrong", e);
-      this.recipeStatusRegistry.setStatus(
-        recipe.id,
-        [
-          {state: 'success', name: 'Checkout repository'},
-          {state: 'error', name: 'Building image(s)'}
-        ]
-      );
-    }
-
+        ).then(() => {
+          // todo: update status
+        }).catch(err => {
+          //todo: update status
+        })
+      })
+    )
   }
-
 }

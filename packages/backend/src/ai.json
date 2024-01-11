@@ -5,6 +5,7 @@
       "description" : "Chat bot application",
       "name" : "ChatBot",
       "repository": "https://github.com/axel7083/locallm",
+      "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
       ],

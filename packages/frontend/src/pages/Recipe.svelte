@@ -15,6 +15,7 @@ import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Button from '/@/lib/button/Button.svelte';
 import { getDisplayName } from '/@/utils/versionControlUtils';
 import type { RecipeStatus } from '@shared/models/IRecipeStatus';
+import { getIcon } from '/@/utils/categoriesUtils';
 
 export let recipeId: string;
 
@@ -53,9 +54,13 @@ onDestroy(() => {
     intervalId = undefined;
   }
 });
+
+const onClickRepository = () => {
+  studioClient.openURL(recipe?.repository);
+}
 </script>
 
-<NavPage title="{recipe?.name || ''}">
+<NavPage title="{recipe?.name || ''}" icon="{getIcon(recipe?.icon)}">
   <svelte:fragment slot="tabs">
     <Tab title="Summary" url="{recipeId}" />
     <Tab title="Models" url="{recipeId}/models" />
@@ -74,7 +79,7 @@ onDestroy(() => {
               <div class="cursor-pointer flex text-nowrap items-center">
                 <Fa size="20" icon="{faGithub}"/>
                 <div class="ml-2">
-                  <a href="{recipe?.repository}" target="_blank">{getDisplayName(recipe?.repository)}</a>
+                  <a on:click={onClickRepository}>{getDisplayName(recipe?.repository)}</a>
                 </div>
               </div>
             </div>

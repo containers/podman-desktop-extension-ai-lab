@@ -5,6 +5,7 @@ import content from './ai.json';
 import { ApplicationManager } from './managers/applicationManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { RecipeStatus } from '@shared/models/IRecipeStatus';
+import {exec} from 'child_process';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -13,6 +14,12 @@ export class StudioApiImpl implements StudioAPI {
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
   ) {}
+
+  async openURL(url: string): Promise<void> {
+    // TODO: probably not really secure, ask the user to validate opening
+    exec(`start "${url}"`);
+    return;
+  }
 
   async getPullingStatus(recipeId: string): Promise<RecipeStatus> {
       return this.recipeStatusRegistry.getStatus(recipeId);

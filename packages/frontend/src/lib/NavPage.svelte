@@ -1,15 +1,25 @@
 <script lang="ts">
+import Fa from 'svelte-fa';
+import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
+
 export let title: string;
 export let searchTerm = '';
 export let searchEnabled = true;
+export let icon: IconDefinition | undefined = undefined;
 </script>
 
 <div class="flex flex-col w-full h-full shadow-pageheader">
   <div class="flex flex-col w-full h-full pt-4" role="region" aria-label="{title}">
     <div class="flex pb-2 px-5" role="region" aria-label="header">
-
         <div class="flex flex-col">
-          <h1 class="text-xl first-letter:uppercase">{title}</h1>
+          <div class="flex flex-row">
+            {#if icon}
+              <div class="bg-charcoal-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                <Fa size="20" class="text-purple-500" icon="{icon}" />
+              </div>
+            {/if}
+            <h1 class="text-xl first-letter:uppercase">{title}</h1>
+          </div>
           <slot name="subtitle" />
         </div>
 

@@ -1,13 +1,13 @@
-import { Task } from '@shared/models/ITask';
+import { RecipeStatus } from '@shared/models/IRecipeStatus';
 
 export class RecipeStatusRegistry {
-  private statuses: Map<string, Task[]> = new Map<string, Task[]>();
+  private statuses: Map<string, RecipeStatus> = new Map<string, RecipeStatus>();
 
-  setStatus(recipeId: string, tasks: Task[]) {
-    this.statuses.set(recipeId, tasks);
+  setStatus(recipeId: string, status: RecipeStatus) {
+    this.statuses.set(recipeId, status);
   }
 
-  getStatus(recipeId: string): Task[] | undefined {
+  getStatus(recipeId: string): RecipeStatus | undefined {
     return this.statuses.get(recipeId);
   }
 }

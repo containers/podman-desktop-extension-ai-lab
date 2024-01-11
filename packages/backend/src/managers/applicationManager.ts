@@ -1,6 +1,5 @@
 import { Recipe } from '@shared/models/IRecipe';
 import { arch } from 'node:os';
-import * as jsYaml from 'js-yaml';
 import { GitManager } from './gitManager';
 import os from 'os';
 import path from 'path';
@@ -8,6 +7,8 @@ import fs from 'fs';
 import { containerEngine, provider } from '@podman-desktop/api';
 import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import { parseYaml } from '../models/AIConfig';
+import { Task } from '@shared/models/ITask';
+import { TaskUtils } from '../utils/taskUtils';
 
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
 export const CONFIG_FILENAME = "ai-studio.yaml";
@@ -20,10 +21,15 @@ export class ApplicationManager {
   }
 
   async pullApplication(recipe: Recipe) {
-    this.recipeStatusRegistry.setStatus(
-      recipe.id,
-      [{state: 'loading', name: 'Checkout repository'}]
-    );
+    // Create a TaskUtils object to help us
+    const taskUtil = new TaskUtils(recipe.id, this.recipeStatusRegistry);
+    // Adding checkout task
+    const checkoutTask: Task = {
+      id: 'checkout',
+      name: 'Checkout repository',
+      state: 'loading',
+    }
+    taskUtil.setTask(checkoutTask);
 
     const localFolder = path.join(this.homeDirectory, AI_STUDIO_FOLDER, recipe.id);
     // Create folder
@@ -32,10 +38,17 @@ export class ApplicationManager {
     // Clone the repository
     await this.git.cloneRepository(recipe.repository, localFolder);
 
-    this.recipeStatusRegistry.setStatus(
-      recipe.id,
-      [{state: 'success', name: 'Checkout repository'}]
-    );
+    // Update checkout state
+    checkoutTask.state = 'success';
+    taskUtil.setTask(checkoutTask);
+
+    // Adding loading configuration task
+    const loadingConfiguration: Task = {
+      id: 'loading-config',
+      name: 'Loading configuration',
+      state: 'loading',
+    }
+    taskUtil.setTask(loadingConfiguration);
 
     let configFile: string;
     if(recipe.config !== undefined) {
@@ -45,14 +58,8 @@ export class ApplicationManager {
     }
 
     if(!fs.existsSync(configFile)) {
-      // todo: inform user
-      this.recipeStatusRegistry.setStatus(
-        recipe.id,
-        [
-          {state: 'success', name: 'Checkout repository'},
-          {state: 'error', name: 'Reading configuration'}
-        ]
-      );
+      loadingConfiguration.state = 'error';
+      taskUtil.setTask(loadingConfiguration);
       throw new Error(`The file located at ${configFile} does not exist.`);
     }
 
@@ -63,6 +70,14 @@ export class ApplicationManager {
     // Getting the provider to use for building
     const connections = provider.getContainerConnections();
     const connection = connections[0];
+
+    aiConfig.application.containers.forEach((container) => {
+     taskUtil.setTask({
+       id: container.name,
+       state: 'loading',
+       name: `Building ${container.name}`,
+     })
+    })
 
     // Promise all the build images
     return Promise.all(
@@ -76,9 +91,10 @@ export class ApplicationManager {
             // todo: do something with the event
           }
         ).then(() => {
-          // todo: update status
+          taskUtil.setTaskState(container.name, 'success');
         }).catch(err => {
-          //todo: update status
+          console.error(`Something went wrong while building the image ${String(err)}`);
+          taskUtil.setTaskState(container.name, 'error');
         })
       })
     )

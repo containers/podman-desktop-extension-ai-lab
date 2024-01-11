@@ -35,9 +35,9 @@ export function parseYaml(raw: string, defaultArch: string): AIConfig {
   return {
     application: {
       containers: containers.map((container) => ({
-        arch: assertString(container["arch"]) ?? defaultArch,
+        arch: isString(container["arch"])?container["arch"]:defaultArch,
         modelService: container["model-service"] === true,
-        containerfile:  assertString(container["containerfile"]),
+        containerfile: isString(container["containerfile"])?container["containerfile"]:undefined,
         contextdir:  assertString(container["contextdir"]),
         name:  assertString(container["name"]),
       }))

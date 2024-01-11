@@ -48,7 +48,9 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async pullApplication(recipeId: string): Promise<void> {
+    console.log('StudioApiImpl pullApplication', recipeId);
     const recipe: Recipe = await this.getRecipeById(recipeId);
+    console.log('StudioApiImpl recipe', recipe);
 
     // Do not wait for the pull application, run it separately
     new Promise(() => {

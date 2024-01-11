@@ -6,7 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import { containerEngine, provider } from '@podman-desktop/api';
 import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
-import { parseYaml } from '../models/AIConfig';
+import { AIConfig, parseYaml } from '../models/AIConfig';
 import { Task } from '@shared/models/ITask';
 import { TaskUtils } from '../utils/taskUtils';
 import { getParentDirectory } from '../utils/pathUtils';
@@ -15,8 +15,7 @@ import { getParentDirectory } from '../utils/pathUtils';
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
 export const CONFIG_FILENAME = "ai-studio.yaml";
 export class ApplicationManager {
-
-  private homeDirectory: string; // todo: make configurable
+  private readonly homeDirectory: string; // todo: make configurable
 
   constructor(private git: GitManager, private recipeStatusRegistry: RecipeStatusRegistry,) {
     this.homeDirectory = os.homedir();
@@ -25,6 +24,9 @@ export class ApplicationManager {
   async pullApplication(recipe: Recipe) {
     // Create a TaskUtils object to help us
     const taskUtil = new TaskUtils(recipe.id, this.recipeStatusRegistry);
+
+    const localFolder = path.join(this.homeDirectory, AI_STUDIO_FOLDER, recipe.id);
+
     // Adding checkout task
     const checkoutTask: Task = {
       id: 'checkout',
@@ -33,15 +35,23 @@ export class ApplicationManager {
     }
     taskUtil.setTask(checkoutTask);
 
-    const localFolder = path.join(this.homeDirectory, AI_STUDIO_FOLDER, recipe.id);
-    // Create folder
-    fs.mkdirSync(localFolder);
+    // We might already have the repository cloned
+    if(fs.existsSync(localFolder) && fs.statSync(localFolder).isDirectory()) {
+      // Update checkout state
+      checkoutTask.name = 'Checkout repository (cached).';
+      checkoutTask.state = 'success';
+    } else {
+      // Create folder
+      fs.mkdirSync(localFolder, {recursive: true});
 
-    // Clone the repository
-    await this.git.cloneRepository(recipe.repository, localFolder);
+      // Clone the repository
+      console.log(`Cloning repository ${recipe.repository} in ${localFolder}.`);
+      await this.git.cloneRepository(recipe.repository, localFolder);
 
-    // Update checkout state
-    checkoutTask.state = 'success';
+      // Update checkout state
+      checkoutTask.state = 'success';
+    }
+    // Update task
     taskUtil.setTask(checkoutTask);
 
     // Adding loading configuration task
@@ -66,7 +76,7 @@ export class ApplicationManager {
     }
 
     // If the user configured the config as a directory we check for "ai-studio.yaml" inside.
-    if(fs.lstatSync(configFile).isDirectory()) {
+    if(fs.statSync(configFile).isDirectory()) {
       const tmpPath = path.join(configFile, CONFIG_FILENAME);
       // If it has the ai-studio.yaml we use it.
       if(fs.existsSync(tmpPath)) {
@@ -75,8 +85,21 @@ export class ApplicationManager {
     }
 
     // Parsing the configuration
+    console.log(`Reading configuration from ${configFile}.`);
     const rawConfiguration = fs.readFileSync(configFile, 'utf-8');
-    const aiConfig = parseYaml(rawConfiguration, arch());
+    let aiConfig: AIConfig;
+    try {
+      aiConfig = parseYaml(rawConfiguration, arch());
+    } catch (err) {
+      // Mask task as failed
+      loadingConfiguration.state = 'error';
+      taskUtil.setTask(loadingConfiguration);
+      throw new Error('Cannot load configuration file.');
+    }
+
+    // Mark as success
+    loadingConfiguration.state = 'success';
+    taskUtil.setTask(loadingConfiguration);
 
     // Getting the provider to use for building
     const connections = provider.getContainerConnections();
@@ -101,6 +124,7 @@ export class ApplicationManager {
             context,
             container.containerfile,
             `${container.name}:latest`,
+            arch(),
             connection.connection,
             (event, data) => {
               // todo: do something with the event

@@ -4,14 +4,12 @@ import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 
 
 export class TaskUtils {
-  private tasks: Map<string, Task>
+  private tasks: Map<string, Task> = new Map<string, Task>();
   private state: RecipeStatusState = 'loading';
 
-  constructor(private recipeId: string, private recipeStatusRegistry: RecipeStatusRegistry) {
-    this.update();
-  }
+  constructor(private recipeId: string, private recipeStatusRegistry: RecipeStatusRegistry) {}
 
-  protected update() {
+  update() {
     this.recipeStatusRegistry.setStatus(this.recipeId, this.toRecipeStatus());
   }
 

@@ -4,7 +4,7 @@
       "id": "chatbot",
       "description" : "Chat bot application",
       "name" : "ChatBot",
-      "repository": "https://github.com/michaelclifford/locallm",
+      "repository": "https://github.com/axel7083/locallm",
       "categories": [
         "natural-language-processing"
       ],

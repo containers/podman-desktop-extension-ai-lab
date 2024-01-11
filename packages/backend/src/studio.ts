@@ -83,7 +83,7 @@ export class Studio {
 
     // Let's create the api that the front will be able to call
     this.rpcExtension = new RpcExtension(this.#panel.webview);
-    this.studioApi = new StudioApiImpl();
+    this.studioApi = new StudioApiImpl(this);
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
   }

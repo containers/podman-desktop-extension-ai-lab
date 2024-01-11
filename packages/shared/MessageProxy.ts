@@ -1,5 +1,6 @@
 import type { PodmanDesktopApi } from '../../types/podman-desktop-api';
 import type { Webview } from '@podman-desktop/api';
+import { Studio } from '../backend/src/studio';
 
 export interface IMessage {
   id: number;
@@ -64,7 +65,7 @@ export class RpcExtension {
     });
   }
 
-  registerInstance<T>(classType: { new (): T }, instance: T) {
+  registerInstance<T>(classType: { new (instance: Studio): T }, instance: T) {
     const methodNames = Object.getOwnPropertyNames(classType.prototype)
       .filter(name => name !== 'constructor' && typeof instance[name] === 'function');
 

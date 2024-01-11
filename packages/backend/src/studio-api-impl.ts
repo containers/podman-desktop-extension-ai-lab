@@ -4,12 +4,15 @@ import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
 import { Task } from '@shared/models/ITask';
 import { ModelInfo } from '@shared/models/IModelInfo';
+import { Studio } from './studio';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
 export class StudioApiImpl implements StudioAPI {
 
   private status: Map<string, Task[]> = new Map<string, Task[]>();
+
+  constructor(private studio: Studio) {}
 
   async getPullingStatus(recipeId: string): Promise<Task[]> {
       return this.status.get(recipeId) || [];
@@ -53,17 +56,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {
-    // todo(feloy): get from disk
-    const local = [
-      {
-          id: 'stable-diffusion-xl-base-1.0',
-          file: 'stable-diffusion-xl-base-1.0.model'
-      },
-      {
-          id: 'albedobase-xl-1.3',
-          file: 'albedobase-xl-1.3.model'
-      }
-    ];
+    const local = this.studio.getLocalModels();
     const localIds = local.map(l => l.id);
     return content.recipes.flatMap(r => r.models.filter(m => localIds.includes(m.id)));
   }

@@ -41,7 +41,8 @@ export class Studio {
 
     // register webview
     this.#panel = window.createWebviewPanel('studio', 'Studio extension', this.getWebviewOptions(extensionUri));
-
+    this.#extensionContext.subscriptions.push(this.#panel);
+    
     // update html
 
     const indexHtmlUri = Uri.joinPath(extensionUri, 'media', 'index.html');

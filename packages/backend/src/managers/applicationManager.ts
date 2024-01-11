@@ -9,7 +9,9 @@ import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import { parseYaml } from '../models/AIConfig';
 import { Task } from '@shared/models/ITask';
 import { TaskUtils } from '../utils/taskUtils';
+import { getParentDirectory } from '../utils/pathUtils';
 
+// TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
 export const CONFIG_FILENAME = "ai-studio.yaml";
 export class ApplicationManager {
@@ -63,6 +65,15 @@ export class ApplicationManager {
       throw new Error(`The file located at ${configFile} does not exist.`);
     }
 
+    // If the user configured the config as a directory we check for "ai-studio.yaml" inside.
+    if(fs.lstatSync(configFile).isDirectory()) {
+      const tmpPath = path.join(configFile, CONFIG_FILENAME);
+      // If it has the ai-studio.yaml we use it.
+      if(fs.existsSync(tmpPath)) {
+        configFile = tmpPath;
+      }
+    }
+
     // Parsing the configuration
     const rawConfiguration = fs.readFileSync(configFile, 'utf-8');
     const aiConfig = parseYaml(rawConfiguration, arch());
@@ -82,20 +93,25 @@ export class ApplicationManager {
     // Promise all the build images
     return Promise.all(
       aiConfig.application.containers.map((container) =>
-        containerEngine.buildImage(
-          path.join(localFolder, container.contextdir),
-          container.containerfile,
-          `${container.name}:latest`,
-          connection.connection,
-          (event, data) => {
-            // todo: do something with the event
-          }
-        ).then(() => {
-          taskUtil.setTaskState(container.name, 'success');
-        }).catch(err => {
-          console.error(`Something went wrong while building the image ${String(err)}`);
-          taskUtil.setTaskState(container.name, 'error');
-        })
+        {
+          // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
+          const context = path.join(getParentDirectory(configFile), container.contextdir);
+          console.log(`Application Manager using context ${context} for container ${container.name}`);
+          return containerEngine.buildImage(
+            context,
+            container.containerfile,
+            `${container.name}:latest`,
+            connection.connection,
+            (event, data) => {
+              // todo: do something with the event
+            }
+          ).then(() => {
+            taskUtil.setTaskState(container.name, 'success');
+          }).catch(err => {
+            console.error(`Something went wrong while building the image ${String(err)}`);
+            taskUtil.setTaskState(container.name, 'error');
+          });
+        }
       )
     )
   }

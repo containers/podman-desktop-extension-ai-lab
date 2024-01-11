@@ -3,15 +3,20 @@ import { Category } from '@shared/models/ICategory';
 import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
 import { Task } from '@shared/models/ITask';
+import { GitManager } from './managers/gitManager';
+import { ApplicationManager } from './managers/applicationManager';
+import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
 export class StudioApiImpl implements StudioAPI {
-
-  private status: Map<string, Task[]> = new Map<string, Task[]>();
+  constructor(
+    private applicationManager: ApplicationManager,
+    private recipeStatusRegistry: RecipeStatusRegistry,
+  ) {}
 
   async getPullingStatus(recipeId: string): Promise<Task[]> {
-      return this.status.get(recipeId) || [];
+      return this.recipeStatusRegistry.getStatus(recipeId) || [];
   }
 
   async ping(): Promise<string> {
@@ -44,10 +49,12 @@ export class StudioApiImpl implements StudioAPI {
 
   async pullApplication(recipeId: string): Promise<void> {
     const recipe: Recipe = await this.getRecipeById(recipeId);
-    this.status.set(recipeId, [{state: 'loading', name: 'Pulling application'}]);
 
+    // Do not wait for the pull application, run it separately
+    new Promise(() => {
+      this.applicationManager.pullApplication(recipe);
+    });
 
-    //todo: stuff here
     return Promise.resolve(undefined);
   }
 }

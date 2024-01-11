@@ -64,7 +64,7 @@ export class RpcExtension {
     });
   }
 
-  registerInstance<T>(classType: { new (): T }, instance: T) {
+  registerInstance<T>(classType: { new (...args: any[]): T }, instance: T) {
     const methodNames = Object.getOwnPropertyNames(classType.prototype)
       .filter(name => name !== 'constructor' && typeof instance[name] === 'function');
 

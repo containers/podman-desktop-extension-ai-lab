@@ -6,4 +6,5 @@ export interface Recipe {
   icon?: string,
   repository: string,
   readme: string,
+  config?: string,
 }

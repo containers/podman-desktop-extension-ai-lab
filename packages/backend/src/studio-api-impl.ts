@@ -24,7 +24,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getRecentRecipes(): Promise<Recipe[]> {
-    return content.recipes.toSpliced(0, 10);
+    return []; // no recent implementation for now
   }
 
   async getCategories(): Promise<Category[]> {

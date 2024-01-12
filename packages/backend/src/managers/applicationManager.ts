@@ -12,6 +12,7 @@ import { Task } from '@shared/models/ITask';
 import { TaskUtils } from '../utils/taskUtils';
 import { getParentDirectory } from '../utils/pathUtils';
 import { a } from 'vitest/dist/suite-dF4WyktM';
+import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
@@ -117,26 +118,29 @@ export class ApplicationManager {
     const filteredContainers = aiConfig.application.containers
       .filter((container) => container.arch === undefined || container.arch === arch())
 
-    filteredContainers.forEach((container) => {
-     taskUtil.setTask({
-       id: container.name,
-       state: 'loading',
-       name: `Building ${container.name}`,
-     })
-    })
+    // Download first model available (if exist)
+    if(recipe.models && recipe.models.length > 0) {
+      const model = recipe.models[0];
+      taskUtil.setTask({
+        id: model.id,
+        state: 'loading',
+        name: `Downloading model ${model.name}`,
+      });
 
-    // start downloading the model
-    const modelId = 'id';
-    taskUtil.setTask({
-      id: 'id',
-      state: 'loading',
-      name: `Downloading model ${modelId}`,
-    })
+      await this.downloadModelMain(model.id, model.url, taskUtil)
+    }
+
+    filteredContainers.forEach((container) => {
+      taskUtil.setTask({
+        id: container.name,
+        state: 'loading',
+        name: `Building ${container.name}`,
+      })
+    });
 
     // Promise all the build images
     return Promise.all(
-      [this.downloadModelMain('id', 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf', taskUtil),
-      ...filteredContainers.map((container) =>
+      filteredContainers.map((container) =>
         {
           // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
           const context = path.join(getParentDirectory(configFile), container.contextdir);
@@ -166,15 +170,10 @@ export class ApplicationManager {
           });
         }
       )
-    ]
-      
-
-
-
     )
   }
 
-  
+
   downloadModelMain(modelId: string, url: string, taskUtil: TaskUtils, destFileName?: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const downloadCallback = (result: DownloadModelResult) => {
@@ -184,14 +183,15 @@ export class ApplicationManager {
         } else {
           taskUtil.setTaskState(modelId, 'error');
           reject(result.error)
-        }        
+        }
       }
-      this.downloadModel(modelId, url, downloadCallback, destFileName)
+
+      this.downloadModel(modelId, url, taskUtil, downloadCallback, destFileName)
     })
   }
 
-  downloadModel(modelId: string, url: string, callback: (message: DownloadModelResult) => void, destFileName?: string) {
-    const destDir = path.resolve(this.extensionContext.storagePath, 'models', modelId);
+  downloadModel(modelId: string, url: string, taskUtil: TaskUtils, callback: (message: DownloadModelResult) => void, destFileName?: string) {
+    const destDir = path.join(this.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
@@ -204,17 +204,20 @@ export class ApplicationManager {
     let progress = 0;
     https.get(url, (resp) => {
       if (resp.headers.location) {
-        this.downloadModel(modelId, resp.headers.location, callback, destFileName);
+        this.downloadModel(modelId, resp.headers.location, taskUtil, callback, destFileName);
         return;
       } else {
         if (totalFileSize === 0 && resp.headers['content-length']) {
           totalFileSize = parseFloat(resp.headers['content-length']);
         }
       }
-      
+
       resp.on('data', (chunk) => {
-        progress += chunk.length;        
+        progress += chunk.length;
         const progressValue = progress * 100 / totalFileSize;
+
+        taskUtil.setTaskProgress(modelId, progressValue);
+
         // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
         //this.sendProgress(progressValue);
         if (progressValue === 100) {
@@ -223,7 +226,7 @@ export class ApplicationManager {
           });
         }
       });
-      file.on('finish', () => {        
+      file.on('finish', () => {
         file.close();
       });
       file.on('error', (e) => {
@@ -234,5 +237,25 @@ export class ApplicationManager {
       })
       resp.pipe(file);
     });
+  }
+
+  // todo: move somewhere else (dedicated to models)
+  getLocalModels(): LocalModelInfo[] {
+    const result: LocalModelInfo[] = [];
+    const modelsDir = path.join(this.homeDirectory, AI_STUDIO_FOLDER, 'models');
+    const entries = fs.readdirSync(modelsDir, { withFileTypes: true });
+    const dirs = entries.filter(dir => dir.isDirectory());
+    for (const d of dirs) {
+      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
+      if (modelEntries.length != 1) {
+        // we support models with one file only for now
+        continue;
+      }
+      result.push({
+        id: d.name,
+        file: modelEntries[0],
+      })
+    }
+    return result;
   }
 }

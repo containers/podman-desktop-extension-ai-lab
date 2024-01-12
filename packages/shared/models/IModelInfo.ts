@@ -5,4 +5,5 @@ export interface ModelInfo {
   registry: string;
   popularity: number;
   license: string;
+  url: string;
 }

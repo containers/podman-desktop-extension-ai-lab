@@ -98,7 +98,6 @@ export class Studio {
     this.studioApi = new StudioApiImpl(
       applicationManager,
       recipeStatusRegistry,
-      this
     );
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
@@ -116,24 +115,5 @@ export class Studio {
       // And restrict the webview to only loading content from our extension's `media` directory.
       localResourceRoots: [Uri.joinPath(extensionUri, 'media')],
     };
-  }
-
-  getLocalModels(): LocalModelInfo[] {
-    const result: LocalModelInfo[] = [];
-    const modelsDir = path.resolve(this.#extensionContext.storagePath, 'models');
-    const entries = fs.readdirSync(modelsDir, { withFileTypes: true });
-    const dirs = entries.filter(dir => dir.isDirectory());
-    for (const d of dirs) {
-      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
-      if (modelEntries.length != 1) {
-        // we support models with one file only for now
-        continue;
-      }
-      result.push({
-        id: d.name,
-        file: modelEntries[0],
-      })
-    }
-    return result;
   }
 }

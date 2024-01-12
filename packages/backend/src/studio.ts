@@ -28,6 +28,7 @@ import * as fs from 'node:fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
 import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
+import { PlayGroundManager } from './playground';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -36,9 +37,11 @@ export class Studio {
 
   rpcExtension: RpcExtension;
   studioApi: StudioApiImpl;
+  playgroundManager: PlayGroundManager;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
+    this.playgroundManager = new PlayGroundManager();
   }
 
   public async activate(): Promise<void> {
@@ -98,6 +101,7 @@ export class Studio {
     this.studioApi = new StudioApiImpl(
       applicationManager,
       recipeStatusRegistry,
+      this,
     );
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

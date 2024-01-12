@@ -2,10 +2,13 @@ import type { StudioAPI } from '@shared/StudioAPI';
 import { Category } from '@shared/models/ICategory';
 import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
-import { ApplicationManager } from './managers/applicationManager';
+import { AI_STUDIO_FOLDER, ApplicationManager } from './managers/applicationManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { RecipeStatus } from '@shared/models/IRecipeStatus';
 import { ModelInfo } from '@shared/models/IModelInfo';
+import { Studio } from './studio';
+import * as path from 'node:path';
+import { ModelResponse } from '@shared/models/IModelResponse';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -13,6 +16,7 @@ export class StudioApiImpl implements StudioAPI {
   constructor(
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
+    private studio: Studio,
   ) {}
 
   async openURL(url: string): Promise<void> {
@@ -48,6 +52,13 @@ export class StudioApiImpl implements StudioAPI {
     throw new Error('Not found');
   }
 
+  async getModelById(modelId: string): Promise<ModelInfo> {
+    const model = content.recipes.flatMap(r => (r.models as ModelInfo[]).filter(m => modelId === m.id));
+    if (model.length === 1) return model[0];
+    if (model.length === 0) throw new Error('Not found');
+    throw new Error('several models with same id');
+  }
+
   async searchRecipes(query: string): Promise<Recipe[]> {
     return []; // todo: not implemented
   }
@@ -71,4 +82,21 @@ export class StudioApiImpl implements StudioAPI {
     return content.recipes.flatMap(r => r.models.filter(m => localIds.includes(m.id)));
   }
 
+  async startPlayground(modelId: string): Promise<void> {
+    const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
+    if (localModelInfo.length !== 1) {
+      throw new Error('model not found');
+    }
+    const destDir = path.join();
+    const modelPath = path.resolve(this.applicationManager.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId, localModelInfo[0].file);
+    this.studio.playgroundManager.startPlayground(modelId, modelPath);
+  }
+
+  askPlayground(modelId: string, prompt: string): Promise<ModelResponse> {
+    const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
+    if (localModelInfo.length !== 1) {
+      throw new Error('model not found');
+    }
+    return this.studio.playgroundManager.askPlayground(localModelInfo[0], prompt);
+  }
 }

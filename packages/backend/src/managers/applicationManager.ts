@@ -191,6 +191,12 @@ export class ApplicationManager {
         }
       }
 
+      if(fs.existsSync(destFileName)) {
+        taskUtil.setTaskState(modelId, 'success');
+        taskUtil.setTaskProgress(modelId, 100);
+        return;
+      }
+
       this.downloadModel(modelId, url, taskUtil, downloadCallback, destFileName)
     })
   }

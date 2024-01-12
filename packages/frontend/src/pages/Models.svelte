@@ -17,6 +17,7 @@ import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import { faRefresh } from '@fortawesome/free-solid-svg-icons';
 import Card from '/@/lib/Card.svelte';
 import Button from '/@/lib/button/Button.svelte';
+import LinearProgress from '/@/lib/progress/LinearProgress.svelte';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
@@ -27,25 +28,39 @@ const columns: Column<ModelInfo>[] = [
 ];
 const row = new Row<ModelInfo>({});
 
+let loading: boolean = true;
 let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
 
 $: tasks = [] as Task[];
 $: models = [] as ModelInfo[];
+$: filteredModels = [] as ModelInfo[];
 
-function filterModels(tasks: Task[], models: ModelInfo[]): void {
-  const dict: {[id: number]: Task} = Object.fromEntries(tasks.map((task) => [task.id, task]));
-  models = models.filter((model) => model.id in dict);
+function filterModels(): void {
+  // Let's collect the models we do not want to show (loading, error).
+  const modelsId: string[] = tasks.reduce((previousValue, currentValue) => {
+    if(currentValue.state === 'success')
+      return previousValue;
+
+    if(currentValue.labels) {
+      previousValue.push(currentValue.labels["model-pulling"])
+    }
+    return previousValue;
+  }, [] as string[]);
+  filteredModels = models.filter((model) => !(model.id in modelsId));
 }
 
 onMount(() => {
   // Pulling update
   intervalId = setInterval(async () => {
     tasks = await studioClient.getTasksByLabel("model-pulling");
-    filterModels(tasks, models);
+    loading = false;
+    filterModels();
   }, 1000);
 
+  // Subscribe to the models store
   return localModels.subscribe((value) => {
-    filterModels(tasks, value);
+    models = value;
+    filterModels();
   })
 });
 
@@ -61,6 +76,9 @@ onDestroy(() => {
 <NavPage title="Models on disk">
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
+      {#if loading}
+        <LinearProgress/>
+      {/if}
       <div class="mt-4 px-5 space-y-5 h-full">
         {#if tasks.length > 0}
           <div class="mx-4">
@@ -72,10 +90,10 @@ onDestroy(() => {
             </Card>
           </div>
         {/if}
-        {#if models.length > 0}
+        {#if filteredModels.length > 0}
         <Table
           kind="model"
-          data="{models}"
+          data="{filteredModels}"
           columns="{columns}"
           row={row}>
         </Table>

@@ -103,7 +103,8 @@ export class Studio {
     this.studioApi = new StudioApiImpl(
       applicationManager,
       recipeStatusRegistry,
-      taskRegistry
+      taskRegistry,
+      this.playgroundManager,
     );
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

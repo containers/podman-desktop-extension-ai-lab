@@ -3,6 +3,7 @@ import type { Category } from '@shared/models/ICategory';
 import { RecipeStatus } from '@shared/models/IRecipeStatus';
 import { ModelInfo } from '@shared/models/IModelInfo';
 import { ModelResponse } from '@shared/models/IModelResponse';
+import { Task } from './models/ITask';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;

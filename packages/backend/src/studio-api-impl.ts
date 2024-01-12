@@ -11,6 +11,7 @@ import { Task } from '@shared/models/ITask';
 import { Studio } from './studio';
 import * as path from 'node:path';
 import { ModelResponse } from '@shared/models/IModelResponse';
+import { PlayGroundManager } from './playground';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -19,6 +20,7 @@ export class StudioApiImpl implements StudioAPI {
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private taskRegistry: TaskRegistry,
+    private playgroundManager: PlayGroundManager,
   ) {}
 
   async openURL(url: string): Promise<void> {
@@ -93,9 +95,10 @@ export class StudioApiImpl implements StudioAPI {
     if (localModelInfo.length !== 1) {
       throw new Error('model not found');
     }
-    const destDir = path.join();
+
     const modelPath = path.resolve(this.applicationManager.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId, localModelInfo[0].file);
-    this.studio.playgroundManager.startPlayground(modelId, modelPath);
+
+    await this.playgroundManager.startPlayground(modelId, modelPath);
   }
 
   askPlayground(modelId: string, prompt: string): Promise<ModelResponse> {
@@ -103,6 +106,6 @@ export class StudioApiImpl implements StudioAPI {
     if (localModelInfo.length !== 1) {
       throw new Error('model not found');
     }
-    return this.studio.playgroundManager.askPlayground(localModelInfo[0], prompt);
+    return this.playgroundManager.askPlayground(localModelInfo[0], prompt);
   }
 }

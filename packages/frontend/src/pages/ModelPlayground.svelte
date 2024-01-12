@@ -7,6 +7,7 @@
 
   let prompt = '';
   let result = '';
+  let inProgress = false;
 
   onMount(() => {
     if (!model) {
@@ -21,7 +22,10 @@
     if (!model) {
       return;
     }
+    inProgress = true;
+    result = '';
     const res = await studioClient.askPlayground(model.id, prompt)
+    inProgress = false;
     result = res.choices[0].text;
   }
 </script>
@@ -35,7 +39,7 @@
     placeholder="Type your prompt here"></textarea>
   
   <div class="mt-4 text-right"> 
-    <Button on:click={() => askPlayground()}>Send Request</Button>
+    <Button inProgress={inProgress} on:click={() => askPlayground()}>Send Request</Button>
   </div>
 
   {#if result}

@@ -2,22 +2,31 @@ import { Recipe } from '@shared/models/IRecipe';
 import { arch } from 'node:os';
 import { GitManager } from './gitManager';
 import os from 'os';
-import path from 'path';
 import fs from 'fs';
-import { containerEngine, provider } from '@podman-desktop/api';
+import * as https from 'node:https';
+import * as path from 'node:path';
+import { containerEngine, ExtensionContext, provider } from '@podman-desktop/api';
 import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import { AIConfig, parseYaml } from '../models/AIConfig';
 import { Task } from '@shared/models/ITask';
 import { TaskUtils } from '../utils/taskUtils';
 import { getParentDirectory } from '../utils/pathUtils';
+import { a } from 'vitest/dist/suite-dF4WyktM';
+import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
 export const CONFIG_FILENAME = "ai-studio.yaml";
+
+interface DownloadModelResult {
+  result: 'ok' | 'failed';
+  error?: string;
+}
+
 export class ApplicationManager {
   private readonly homeDirectory: string; // todo: make configurable
 
-  constructor(private git: GitManager, private recipeStatusRegistry: RecipeStatusRegistry,) {
+  constructor(private git: GitManager, private recipeStatusRegistry: RecipeStatusRegistry, private extensionContext: ExtensionContext) {
     this.homeDirectory = os.homedir();
   }
 
@@ -109,13 +118,25 @@ export class ApplicationManager {
     const filteredContainers = aiConfig.application.containers
       .filter((container) => container.arch === undefined || container.arch === arch())
 
+    // Download first model available (if exist)
+    if(recipe.models && recipe.models.length > 0) {
+      const model = recipe.models[0];
+      taskUtil.setTask({
+        id: model.id,
+        state: 'loading',
+        name: `Downloading model ${model.name}`,
+      });
+
+      await this.downloadModelMain(model.id, model.url, taskUtil)
+    }
+
     filteredContainers.forEach((container) => {
-     taskUtil.setTask({
-       id: container.name,
-       state: 'loading',
-       name: `Building ${container.name}`,
-     })
-    })
+      taskUtil.setTask({
+        id: container.name,
+        state: 'loading',
+        name: `Building ${container.name}`,
+      })
+    });
 
     // Promise all the build images
     return Promise.all(
@@ -150,5 +171,91 @@ export class ApplicationManager {
         }
       )
     )
+  }
+
+
+  downloadModelMain(modelId: string, url: string, taskUtil: TaskUtils, destFileName?: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const downloadCallback = (result: DownloadModelResult) => {
+        if (result.result) {
+          taskUtil.setTaskState(modelId, 'success');
+          resolve('');
+        } else {
+          taskUtil.setTaskState(modelId, 'error');
+          reject(result.error)
+        }
+      }
+
+      this.downloadModel(modelId, url, taskUtil, downloadCallback, destFileName)
+    })
+  }
+
+  downloadModel(modelId: string, url: string, taskUtil: TaskUtils, callback: (message: DownloadModelResult) => void, destFileName?: string) {
+    const destDir = path.join(this.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    if (!destFileName) {
+      destFileName =  path.basename(url);
+    }
+    const destFile = path.resolve(destDir, destFileName);
+    const file = fs.createWriteStream(destFile);
+    let totalFileSize = 0;
+    let progress = 0;
+    https.get(url, (resp) => {
+      if (resp.headers.location) {
+        this.downloadModel(modelId, resp.headers.location, taskUtil, callback, destFileName);
+        return;
+      } else {
+        if (totalFileSize === 0 && resp.headers['content-length']) {
+          totalFileSize = parseFloat(resp.headers['content-length']);
+        }
+      }
+
+      resp.on('data', (chunk) => {
+        progress += chunk.length;
+        const progressValue = progress * 100 / totalFileSize;
+
+        taskUtil.setTaskProgress(modelId, progressValue);
+
+        // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
+        //this.sendProgress(progressValue);
+        if (progressValue === 100) {
+          callback({
+            result: 'ok'
+          });
+        }
+      });
+      file.on('finish', () => {
+        file.close();
+      });
+      file.on('error', (e) => {
+        callback({
+          result: 'failed',
+          error: e.message,
+        });
+      })
+      resp.pipe(file);
+    });
+  }
+
+  // todo: move somewhere else (dedicated to models)
+  getLocalModels(): LocalModelInfo[] {
+    const result: LocalModelInfo[] = [];
+    const modelsDir = path.join(this.homeDirectory, AI_STUDIO_FOLDER, 'models');
+    const entries = fs.readdirSync(modelsDir, { withFileTypes: true });
+    const dirs = entries.filter(dir => dir.isDirectory());
+    for (const d of dirs) {
+      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
+      if (modelEntries.length != 1) {
+        // we support models with one file only for now
+        continue;
+      }
+      result.push({
+        id: d.name,
+        file: modelEntries[0],
+      })
+    }
+    return result;
   }
 }

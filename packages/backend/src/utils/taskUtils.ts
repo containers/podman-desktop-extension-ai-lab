@@ -37,6 +37,16 @@ export class TaskUtils {
     })
   }
 
+  setTaskProgress(taskId: string, value: number) {
+    if(!this.tasks.has(taskId))
+      throw new Error('task not found.');
+    const task = this.tasks.get(taskId);
+    this.setTask({
+      ...task,
+      progress: value,
+    })
+  }
+
   toRecipeStatus(): RecipeStatus {
     return {
       recipeId: this.recipeId,

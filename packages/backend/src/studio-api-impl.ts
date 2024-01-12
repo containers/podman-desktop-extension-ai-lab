@@ -5,9 +5,7 @@ import content from './ai.json';
 import { ApplicationManager } from './managers/applicationManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { RecipeStatus } from '@shared/models/IRecipeStatus';
-import { Task } from '@shared/models/ITask';
 import { ModelInfo } from '@shared/models/IModelInfo';
-import { Studio } from './studio';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -15,7 +13,6 @@ export class StudioApiImpl implements StudioAPI {
   constructor(
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
-    private studio: Studio,
   ) {}
 
   async openURL(url: string): Promise<void> {
@@ -69,8 +66,9 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {
-    const local = this.studio.getLocalModels();
+    const local = this.applicationManager.getLocalModels();
     const localIds = local.map(l => l.id);
     return content.recipes.flatMap(r => r.models.filter(m => localIds.includes(m.id)));
   }
+
 }

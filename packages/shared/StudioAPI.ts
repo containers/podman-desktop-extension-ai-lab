@@ -16,11 +16,17 @@ export abstract class StudioAPI {
   abstract pullApplication(recipeId: string): Promise<void>;
   abstract openURL(url: string): Promise<void>;
   /**
-   * Get the information of models saved locally into the extension's storage directory 
+   * Get the information of models saved locally into the extension's storage directory
    */
   abstract getLocalModels(): Promise<ModelInfo[]>;
 
   abstract startPlayground(modelId: string): Promise<void>;
   abstract askPlayground(modelId: string, prompt: string): Promise<ModelResponse>;
+
+  /**
+   * Get task by label
+   * @param label
+   */
+  abstract getTasksByLabel(label: string): Promise<Task[]>;
 }
 

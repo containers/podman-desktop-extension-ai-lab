@@ -3,7 +3,7 @@ import type { Task, TaskState } from '@shared/models/ITask';
 import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 
 
-export class TaskUtils {
+export class RecipeStatusUtils {
   private tasks: Map<string, Task> = new Map<string, Task>();
   private state: RecipeStatusState = 'loading';
 

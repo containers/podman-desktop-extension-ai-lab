@@ -73,7 +73,7 @@ const onClickRepository = () => {
           <MarkdownRenderer source="{recipe?.readme}"/>
         </div>
         <!-- Right column -->
-        <div class="border-l border-l-charcoal-400 px-5 min-w-80">
+        <div class="border-l border-l-charcoal-400 px-5 max-w-80 min-w-80">
           <Card classes="bg-charcoal-800 mt-5">
             <div slot="content" class="text-base font-normal p-2">
               <div class="text-base mb-2">Repository</div>

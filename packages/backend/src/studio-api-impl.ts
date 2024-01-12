@@ -2,7 +2,7 @@ import type { StudioAPI } from '@shared/StudioAPI';
 import { Category } from '@shared/models/ICategory';
 import { Recipe } from '@shared/models/IRecipe';
 import content from './ai.json';
-import { ApplicationManager } from './managers/applicationManager';
+import { AI_STUDIO_FOLDER, ApplicationManager } from './managers/applicationManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { RecipeStatus } from '@shared/models/IRecipeStatus';
 import { ModelInfo } from '@shared/models/IModelInfo';
@@ -87,7 +87,8 @@ export class StudioApiImpl implements StudioAPI {
     if (localModelInfo.length !== 1) {
       throw new Error('model not found');
     }
-    const modelPath = path.resolve(this.studio.extensionContext.storagePath, 'models', localModelInfo[0].id, localModelInfo[0].file);
+    const destDir = path.join();
+    const modelPath = path.resolve(this.applicationManager.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId, localModelInfo[0].file);
     this.studio.playgroundManager.startPlayground(modelId, modelPath);
   }
 

@@ -24,7 +24,7 @@ interface DownloadModelResult {
 }
 
 export class ApplicationManager {
-  private readonly homeDirectory: string; // todo: make configurable
+  readonly homeDirectory: string; // todo: make configurable
 
   constructor(private git: GitManager, private recipeStatusRegistry: RecipeStatusRegistry, private extensionContext: ExtensionContext) {
     this.homeDirectory = os.homedir();

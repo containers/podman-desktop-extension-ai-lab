@@ -92,7 +92,8 @@ export class Studio {
     const recipeStatusRegistry = new RecipeStatusRegistry();
     const applicationManager = new ApplicationManager(
       gitManager,
-      recipeStatusRegistry
+      recipeStatusRegistry,
+      this.#extensionContext,
     )
     this.studioApi = new StudioApiImpl(
       applicationManager,
@@ -115,42 +116,6 @@ export class Studio {
       // And restrict the webview to only loading content from our extension's `media` directory.
       localResourceRoots: [Uri.joinPath(extensionUri, 'media')],
     };
-  }
-
-  downloadModel(modelId: string, url: string, destFileName?: string) {
-    const destDir = path.resolve(this.#extensionContext.storagePath, 'models', modelId);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
-    if (!destFileName) {
-      destFileName =  path.basename(url);
-    }
-    const destFile = path.resolve(destDir, destFileName);
-    const file = fs.createWriteStream(destFile);
-    let totalFileSize = 0;
-    let progress = 0;
-    https.get(url, (resp) => {
-      if (resp.headers.location) {
-        this.downloadModel(modelId, resp.headers.location, destFileName);
-      } else {
-        if (totalFileSize === 0 && resp.headers['content-length']) {
-          totalFileSize = parseFloat(resp.headers['content-length']);
-        }
-      }
-
-      resp.on('data', (chunk) => {
-        progress += chunk.length;
-        const progressValue = progress * 100 / totalFileSize;
-        // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
-        //this.sendProgress(progressValue);
-      });
-      file.on('finish', () => {
-        file.close();
-      });
-      file.on('error', (e) => {
-      })
-      resp.pipe(file);
-    });
   }
 
   getLocalModels(): LocalModelInfo[] {

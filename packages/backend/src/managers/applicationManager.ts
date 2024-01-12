@@ -2,22 +2,30 @@ import { Recipe } from '@shared/models/IRecipe';
 import { arch } from 'node:os';
 import { GitManager } from './gitManager';
 import os from 'os';
-import path from 'path';
 import fs from 'fs';
-import { containerEngine, provider } from '@podman-desktop/api';
+import * as https from 'node:https';
+import * as path from 'node:path';
+import { containerEngine, ExtensionContext, provider } from '@podman-desktop/api';
 import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import { AIConfig, parseYaml } from '../models/AIConfig';
 import { Task } from '@shared/models/ITask';
 import { TaskUtils } from '../utils/taskUtils';
 import { getParentDirectory } from '../utils/pathUtils';
+import { a } from 'vitest/dist/suite-dF4WyktM';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
 export const CONFIG_FILENAME = "ai-studio.yaml";
+
+interface DownloadModelResult {
+  result: 'ok' | 'failed';
+  error?: string;
+}
+
 export class ApplicationManager {
   private readonly homeDirectory: string; // todo: make configurable
 
-  constructor(private git: GitManager, private recipeStatusRegistry: RecipeStatusRegistry,) {
+  constructor(private git: GitManager, private recipeStatusRegistry: RecipeStatusRegistry, private extensionContext: ExtensionContext) {
     this.homeDirectory = os.homedir();
   }
 
@@ -117,9 +125,18 @@ export class ApplicationManager {
      })
     })
 
+    // start downloading the model
+    const modelId = 'id';
+    taskUtil.setTask({
+      id: 'id',
+      state: 'loading',
+      name: `Downloading model ${modelId}`,
+    })
+
     // Promise all the build images
     return Promise.all(
-      filteredContainers.map((container) =>
+      [this.downloadModelMain('id', 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf', taskUtil),
+      ...filteredContainers.map((container) =>
         {
           // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
           const context = path.join(getParentDirectory(configFile), container.contextdir);
@@ -149,6 +166,73 @@ export class ApplicationManager {
           });
         }
       )
+    ]
+      
+
+
+
     )
+  }
+
+  
+  downloadModelMain(modelId: string, url: string, taskUtil: TaskUtils, destFileName?: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const downloadCallback = (result: DownloadModelResult) => {
+        if (result.result) {
+          taskUtil.setTaskState(modelId, 'success');
+          resolve('');
+        } else {
+          taskUtil.setTaskState(modelId, 'error');
+          reject(result.error)
+        }        
+      }
+      this.downloadModel(modelId, url, downloadCallback, destFileName)
+    })
+  }
+
+  downloadModel(modelId: string, url: string, callback: (message: DownloadModelResult) => void, destFileName?: string) {
+    const destDir = path.resolve(this.extensionContext.storagePath, 'models', modelId);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    if (!destFileName) {
+      destFileName =  path.basename(url);
+    }
+    const destFile = path.resolve(destDir, destFileName);
+    const file = fs.createWriteStream(destFile);
+    let totalFileSize = 0;
+    let progress = 0;
+    https.get(url, (resp) => {
+      if (resp.headers.location) {
+        this.downloadModel(modelId, resp.headers.location, callback, destFileName);
+        return;
+      } else {
+        if (totalFileSize === 0 && resp.headers['content-length']) {
+          totalFileSize = parseFloat(resp.headers['content-length']);
+        }
+      }
+      
+      resp.on('data', (chunk) => {
+        progress += chunk.length;        
+        const progressValue = progress * 100 / totalFileSize;
+        // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
+        //this.sendProgress(progressValue);
+        if (progressValue === 100) {
+          callback({
+            result: 'ok'
+          });
+        }
+      });
+      file.on('finish', () => {        
+        file.close();
+      });
+      file.on('error', (e) => {
+        callback({
+          result: 'failed',
+          error: e.message,
+        });
+      })
+      resp.pipe(file);
+    });
   }
 }

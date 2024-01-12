@@ -10,6 +10,7 @@ export abstract class StudioAPI {
   abstract getCategories(): Promise<Category[]>;
   abstract getRecipesByCategory(categoryId: string): Promise<Recipe[]>;
   abstract getRecipeById(recipeId: string): Promise<Recipe>;
+  abstract getModelById(modelId: string): Promise<ModelInfo>;
   abstract searchRecipes(query: string): Promise<Recipe[]>;
   abstract getPullingStatus(recipeId: string): Promise<RecipeStatus>
   abstract pullApplication(recipeId: string): Promise<void>;
@@ -18,5 +19,8 @@ export abstract class StudioAPI {
    * Get the information of models saved locally into the extension's storage directory 
    */
   abstract getLocalModels(): Promise<ModelInfo[]>;
+
+  abstract startPlayground(modelId: string): Promise<void>;
+  abstract askPlayground(modelId: string, prompt: string): Promise<any>;
 }
 

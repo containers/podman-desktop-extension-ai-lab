@@ -13,7 +13,7 @@ function findFirstProvider(): ProviderContainerConnection | undefined {
 
 export class PlayGroundManager {
   async selectImage(connection: ProviderContainerConnection, image: string): Promise<ImageInfo | undefined> {
-    const images = (await containerEngine.listImages()).filter(im => im.RepoTags.some(tag => tag === image));
+    const images = (await containerEngine.listImages()).filter(im => im.RepoTags && im.RepoTags.some(tag => tag === image));
     return images.length > 0 ? images[0] : undefined;
   }
 
@@ -34,7 +34,7 @@ export class PlayGroundManager {
     const result = await containerEngine.createContainer(image.engineId, {
       Image: image.Id,
       Detach: true,
-      ExposedPorts: { '9000': '8080' },
+      ExposedPorts: { '9000': {} },
       HostConfig: {
         AutoRemove: true,
         Mounts: [
@@ -44,6 +44,13 @@ export class PlayGroundManager {
             Type: 'bind',
           },
         ],
+        PortBindings: {
+          '8080/tcp': [
+            {
+              HostPort: '9000'
+            }
+          ]
+        }
       },
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
     });

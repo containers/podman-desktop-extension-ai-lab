@@ -11,6 +11,7 @@ import Preferences from '/@/pages/Preferences.svelte';
 import Registries from '/@/pages/Registries.svelte';
 import Models from '/@/pages/Models.svelte';
 import Recipe from '/@/pages/Recipe.svelte';
+  import Model from './pages/Model.svelte';
 
 router.mode.hash();
 </script>
@@ -53,6 +54,10 @@ router.mode.hash();
 
       <Route path="/recipes/:id/*" breadcrumb="Recipe Details" let:meta>
         <Recipe recipeId="{meta.params.id}"/>
+      </Route>
+
+      <Route path="/models/:id/*" breadcrumb="Model Details" let:meta>
+        <Model modelId="{meta.params.id}"/>
       </Route>
     </div>
   </main>

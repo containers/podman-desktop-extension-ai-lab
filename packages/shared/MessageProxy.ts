@@ -149,7 +149,7 @@ export class RpcBrowser {
         return;
       reject(new Error('Timeout'));
       this.promises.delete(requestId);
-    }, 10000);
+    }, 10000000);
 
     // Create a Promise
     return new Promise((resolve, reject) => {

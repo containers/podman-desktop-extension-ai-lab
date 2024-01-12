@@ -25,12 +25,16 @@
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="mt-4 px-5 space-y-5 h-full">
+        {#if $localModels && $localModels.length}
         <Table
           kind="model"
           data="{$localModels}"
           columns="{columns}"
           row={row}>
-      </Table>
+        </Table>
+        {:else}
+        <div>There is no model yet</div>
+        {/if}
       </div>
     </div>
   </div>

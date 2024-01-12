@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { ModelInfo } from '@shared/models/IModelInfo';
+  import type { ModelResponseChoice } from '@shared/models/IModelResponse';
   import Button from '../lib/button/Button.svelte';
   import { onMount } from 'svelte';
   import { studioClient } from '../utils/client';
   export let model: ModelInfo | undefined;
 
   let prompt = '';
-  let result = '';
+  let result: ModelResponseChoice | undefined = undefined;
   let inProgress = false;
 
   onMount(() => {
@@ -21,10 +22,12 @@
       return;
     }
     inProgress = true;
-    result = '';
+    result = undefined;
     const res = await studioClient.askPlayground(model.id, prompt)
     inProgress = false;
-    result = res.choices[0].text;
+    if (res.choices.length) {
+      result = res.choices[0];
+    }
   }
 </script>
 
@@ -41,14 +44,12 @@
   </div>
 
   {#if result}
-  <div class="mt-4 mb-2">Output</div>
-  <textarea
-    readonly
-    disabled
-    rows="20"
-    bind:value={result}
-    class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"></textarea>
+    <div class="mt-4 mb-2">Output</div>
+    <textarea
+      readonly
+      disabled
+      rows="20"
+      bind:value={result.text}
+      class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"></textarea>
   {/if}
 </div>
-
-

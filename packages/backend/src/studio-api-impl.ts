@@ -8,7 +8,7 @@ import { RecipeStatus } from '@shared/models/IRecipeStatus';
 import { ModelInfo } from '@shared/models/IModelInfo';
 import { Studio } from './studio';
 import * as path from 'node:path';
-import * as http from 'node:http';
+import { ModelResponse } from '@shared/models/IModelResponse';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -91,50 +91,11 @@ export class StudioApiImpl implements StudioAPI {
     this.studio.playgroundManager.startPlayground(modelId, modelPath);
   }
 
-  askPlayground(modelId: string, prompt: string): Promise<any> {
-    return new Promise((resolve,reject) => {
-      const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
-      if (localModelInfo.length !== 1) {
-        throw new Error('model not found');
-      }
-      var post_data = JSON.stringify({
-        "model": localModelInfo[0].file,
-        "prompt": prompt,
-        "temperature": 0.7
-      });
-
-      var post_options: http.RequestOptions = {
-        host: 'localhost',
-        port: '9000',
-        path: '/v1/completions',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-      };
-
-      var post_req = http.request(post_options, function(res) {
-        res.setEncoding('utf8');
-        const chunks = [];
-        res.on('data', (data) => chunks.push(data));
-        res.on('end', () => {
-          let resBody = chunks.join();
-          switch(res.headers['content-type']) {
-              case 'application/json':
-                  const result = JSON.parse(resBody);
-                  console.log('result', result);
-                  resolve(result);
-                  break;
-          }
-        });
-      });
-      // post the data
-      console.log('send data', post_data);
-      post_req.on('socket', function (socket) {
-        socket.setTimeout(1000000);
-      });
-      post_req.write(post_data);
-      post_req.end();
-    });
+  askPlayground(modelId: string, prompt: string): Promise<ModelResponse> {
+    const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
+    if (localModelInfo.length !== 1) {
+      throw new Error('model not found');
+    }
+    return this.studio.playgroundManager.askPlayground(localModelInfo[0], prompt);
   }
 }

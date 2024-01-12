@@ -1,8 +1,8 @@
 import type { Recipe } from '@shared/models/IRecipe';
 import type { Category } from '@shared/models/ICategory';
 import { RecipeStatus } from '@shared/models/IRecipeStatus';
-import { Task } from '@shared/models/ITask';
-import { ModelInfo } from './models/IModelInfo';
+import { ModelInfo } from '@shared/models/IModelInfo';
+import { ModelResponse } from '@shared/models/IModelResponse';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -21,6 +21,6 @@ export abstract class StudioAPI {
   abstract getLocalModels(): Promise<ModelInfo[]>;
 
   abstract startPlayground(modelId: string): Promise<void>;
-  abstract askPlayground(modelId: string, prompt: string): Promise<any>;
+  abstract askPlayground(modelId: string, prompt: string): Promise<ModelResponse>;
 }
 

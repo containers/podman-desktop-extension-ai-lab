@@ -1,5 +1,9 @@
 import { provider, containerEngine, type ProviderContainerConnection, type ImageInfo } from '@podman-desktop/api';
+import { LocalModelInfo } from '@shared/models/ILocalModelInfo';
+import { ModelResponse } from '@shared/models/IModelResponse';
+
 import path from 'node:path';
+import * as http from 'node:http';
 
 const LOCALAI_IMAGE = 'quay.io/go-skynet/local-ai:v2.5.1';
 
@@ -63,5 +67,44 @@ export class PlayGroundManager {
       throw new Error('Unable to find an engine to start playground');
     }
     return containerEngine.stopContainer(connection.providerId, playgroundId);
+  }
+
+  async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<ModelResponse> {
+    return new Promise(resolve => {
+      var post_data = JSON.stringify({
+        "model": modelInfo.file,
+        "prompt": prompt,
+        "temperature": 0.7
+      });
+
+      var post_options: http.RequestOptions = {
+        host: 'localhost',
+        port: '9000',
+        path: '/v1/completions',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+
+      var post_req = http.request(post_options, function (res) {
+        res.setEncoding('utf8');
+        const chunks = [];
+        res.on('data', (data) => chunks.push(data));
+        res.on('end', () => {
+          let resBody = chunks.join();
+          switch (res.headers['content-type']) {
+            case 'application/json':
+              const result = JSON.parse(resBody);
+              console.log('result', result);
+              resolve(result as ModelResponse);
+              break;
+          }
+        });
+      });
+      // post the data
+      post_req.write(post_data);
+      post_req.end();
+    });
   }
 }

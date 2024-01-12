@@ -16,6 +16,7 @@ import Button from '/@/lib/button/Button.svelte';
 import { getDisplayName } from '/@/utils/versionControlUtils';
 import type { RecipeStatus } from '@shared/models/IRecipeStatus';
 import { getIcon } from '/@/utils/categoriesUtils';
+import RecipeModels from './RecipeModels.svelte';
 
 export let recipeId: string;
 
@@ -115,7 +116,7 @@ const onClickRepository = () => {
       </div>
     </Route>
     <Route path="/models" breadcrumb="History">
-      <span>Models: models</span>
+      <RecipeModels models={recipe?.models} />
     </Route>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">

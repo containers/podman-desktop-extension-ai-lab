@@ -71,13 +71,13 @@ export class PlayGroundManager {
 
   async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<ModelResponse> {
     return new Promise(resolve => {
-      var post_data = JSON.stringify({
+      let post_data = JSON.stringify({
         "model": modelInfo.file,
         "prompt": prompt,
         "temperature": 0.7
       });
 
-      var post_options: http.RequestOptions = {
+      let post_options: http.RequestOptions = {
         host: 'localhost',
         port: '9000',
         path: '/v1/completions',
@@ -87,7 +87,7 @@ export class PlayGroundManager {
         }
       };
 
-      var post_req = http.request(post_options, function (res) {
+      let post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         const chunks = [];
         res.on('data', (data) => chunks.push(data));

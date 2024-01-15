@@ -31,9 +31,9 @@ const row = new Row<ModelInfo>({});
 let loading: boolean = true;
 let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
 
-$: tasks = [] as Task[];
-$: models = [] as ModelInfo[];
-$: filteredModels = [] as ModelInfo[];
+let tasks: Task[] = [];
+let models: ModelInfo[] = [];
+let filteredModels: ModelInfo[] = [];
 
 function filterModels(): void {
   // Let's collect the models we do not want to show (loading, error).

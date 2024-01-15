@@ -152,7 +152,8 @@ export class ApplicationManager {
             taskUtil.setTaskState(container.name, 'error');
             throw new Error('Context configured does not exist.');
           }
-
+          
+          let isErrored = false;
           return containerEngine.buildImage(
             context,
             container.containerfile,
@@ -161,10 +162,16 @@ export class ApplicationManager {
             connection.connection,
             (event, data) => {
               // todo: do something with the event
+              if (event === 'error') {
+                console.error(`Something went wrong while building the image: `, data);
+                taskUtil.setTaskState(container.name, 'error');
+                isErrored = true;
+              }
+              if (event === 'finish' && !isErrored) {
+                taskUtil.setTaskState(container.name, 'success');
+              }
             }
-          ).then(() => {
-            taskUtil.setTaskState(container.name, 'success');
-          }).catch(err => {
+          ).catch(err => {
             console.error(`Something went wrong while building the image: `, err);
             taskUtil.setTaskState(container.name, 'error');
           });

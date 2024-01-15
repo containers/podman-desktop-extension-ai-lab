@@ -41,7 +41,7 @@ export class RpcExtension {
 
       if(!this.methods.has(message.channel)) {
         console.error(`Trying to call on an unknown channel ${message.channel}. Available: ${Array.from(this.methods.keys())}`);
-        return;
+        throw new Error('channel does not exist.');
       }
 
       try {
@@ -149,7 +149,7 @@ export class RpcBrowser {
         return;
       reject(new Error('Timeout'));
       this.promises.delete(requestId);
-    }, 10000000);
+    }, 5000);
 
     // Create a Promise
     return new Promise((resolve, reject) => {

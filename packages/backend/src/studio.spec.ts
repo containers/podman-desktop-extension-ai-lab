@@ -22,7 +22,11 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { Studio } from './studio';
 import type { ExtensionContext } from '@podman-desktop/api';
 
-const mockedExtensionContext = {} as unknown as ExtensionContext;
+const mockedExtensionContext = {
+  subscriptions: {
+    push: vi.fn()
+  }
+} as unknown as ExtensionContext;
 
 const studio = new Studio(mockedExtensionContext);
 

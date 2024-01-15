@@ -41,8 +41,8 @@ function filterModels(): void {
     if(currentValue.state === 'success')
       return previousValue;
 
-    if(currentValue.labels) {
-      previousValue.push(currentValue.labels["model-pulling"])
+    if(currentValue.labels !== undefined) {
+      previousValue.push(currentValue.labels["model-pulling"]);
     }
     return previousValue;
   }, [] as string[]);
@@ -80,25 +80,27 @@ onDestroy(() => {
         <LinearProgress/>
       {/if}
       <div class="mt-4 px-5 space-y-5 h-full">
-        {#if tasks.length > 0}
-          <div class="mx-4">
-            <Card classes="bg-charcoal-800 mt-4">
-              <div slot="content" class="text-base font-normal p-2">
-                <div class="text-base mb-2">Downloading models</div>
-                <TasksProgress tasks="{tasks}"/>
-              </div>
-            </Card>
-          </div>
-        {/if}
-        {#if filteredModels.length > 0}
-        <Table
-          kind="model"
-          data="{filteredModels}"
-          columns="{columns}"
-          row={row}>
-        </Table>
-        {:else}
-        <div>There is no model yet</div>
+        {#if !loading}
+          {#if tasks.length > 0}
+            <div class="mx-4">
+              <Card classes="bg-charcoal-800 mt-4">
+                <div slot="content" class="text-base font-normal p-2">
+                  <div class="text-base mb-2">Downloading models</div>
+                  <TasksProgress tasks="{tasks}"/>
+                </div>
+              </Card>
+            </div>
+          {/if}
+          {#if filteredModels.length > 0}
+            <Table
+              kind="model"
+              data="{filteredModels}"
+              columns="{columns}"
+              row={row}>
+            </Table>
+          {:else}
+            <div>There is no model yet</div>
+          {/if}
         {/if}
       </div>
     </div>

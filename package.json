@@ -15,7 +15,8 @@
     "format:check": "prettier --check \"**/src/**/*.ts\"",
     "format:fix": "prettier --write \"**/src/**/*.ts\"",
     "lint:check": "eslint . --ext js,ts,tsx",
-    "lint:fix": "eslint . --fix --ext js,ts,tsx"
+    "lint:fix": "eslint . --fix --ext js,ts,tsx",
+    "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.16.0",

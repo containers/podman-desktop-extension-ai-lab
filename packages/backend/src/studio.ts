@@ -28,6 +28,7 @@ import * as fs from 'node:fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
 import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
+import { TaskRegistry } from './registries/TaskRegistry';
 import { PlayGroundManager } from './playground';
 
 export class Studio {
@@ -92,7 +93,8 @@ export class Studio {
     // Let's create the api that the front will be able to call
     this.rpcExtension = new RpcExtension(this.#panel.webview);
     const gitManager = new GitManager();
-    const recipeStatusRegistry = new RecipeStatusRegistry();
+    const taskRegistry = new TaskRegistry();
+    const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry);
     const applicationManager = new ApplicationManager(
       gitManager,
       recipeStatusRegistry,
@@ -101,7 +103,8 @@ export class Studio {
     this.studioApi = new StudioApiImpl(
       applicationManager,
       recipeStatusRegistry,
-      this,
+      taskRegistry,
+      this.playgroundManager,
     );
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

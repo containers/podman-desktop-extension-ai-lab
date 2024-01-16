@@ -9,9 +9,8 @@ import { containerEngine, ExtensionContext, provider } from '@podman-desktop/api
 import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import { AIConfig, parseYaml } from '../models/AIConfig';
 import { Task } from '@shared/models/ITask';
-import { TaskUtils } from '../utils/taskUtils';
+import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import { getParentDirectory } from '../utils/pathUtils';
-import { a } from 'vitest/dist/suite-dF4WyktM';
 import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
 
 // TODO: Need to be configured
@@ -32,7 +31,7 @@ export class ApplicationManager {
 
   async pullApplication(recipe: Recipe) {
     // Create a TaskUtils object to help us
-    const taskUtil = new TaskUtils(recipe.id, this.recipeStatusRegistry);
+    const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
 
     const localFolder = path.join(this.homeDirectory, AI_STUDIO_FOLDER, recipe.id);
 
@@ -41,6 +40,9 @@ export class ApplicationManager {
       id: 'checkout',
       name: 'Checkout repository',
       state: 'loading',
+      labels: {
+        'git': 'checkout',
+      },
     }
     taskUtil.setTask(checkoutTask);
 
@@ -125,6 +127,9 @@ export class ApplicationManager {
         id: model.id,
         state: 'loading',
         name: `Downloading model ${model.name}`,
+        labels: {
+          "model-pulling": model.id,
+        }
       });
 
       await this.downloadModelMain(model.id, model.url, taskUtil)
@@ -181,7 +186,7 @@ export class ApplicationManager {
   }
 
 
-  downloadModelMain(modelId: string, url: string, taskUtil: TaskUtils, destFileName?: string): Promise<string> {
+  downloadModelMain(modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const downloadCallback = (result: DownloadModelResult) => {
         if (result.result) {
@@ -193,11 +198,17 @@ export class ApplicationManager {
         }
       }
 
+      if(fs.existsSync(destFileName)) {
+        taskUtil.setTaskState(modelId, 'success');
+        taskUtil.setTaskProgress(modelId, 100);
+        return;
+      }
+
       this.downloadModel(modelId, url, taskUtil, downloadCallback, destFileName)
     })
   }
 
-  downloadModel(modelId: string, url: string, taskUtil: TaskUtils, callback: (message: DownloadModelResult) => void, destFileName?: string) {
+  private downloadModel(modelId: string, url: string, taskUtil: RecipeStatusUtils, callback: (message: DownloadModelResult) => void, destFileName?: string) {
     const destDir = path.join(this.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });

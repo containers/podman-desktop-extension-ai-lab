@@ -8,7 +8,6 @@ import { RecipeStatus } from '@shared/models/IRecipeStatus';
 import { ModelInfo } from '@shared/models/IModelInfo';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { Task } from '@shared/models/ITask';
-import { Studio } from './studio';
 import * as path from 'node:path';
 import { ModelResponse } from '@shared/models/IModelResponse';
 import { PlayGroundManager } from './playground';
@@ -58,11 +57,12 @@ export class StudioApiImpl implements StudioAPI {
     throw new Error('Not found');
   }
 
-  async getModelById(modelId: string): Promise<ModelInfo> {
-    const model = content.recipes.flatMap(r => (r.models as ModelInfo[]).filter(m => modelId === m.id));
-    if (model.length === 1) return model[0];
-    if (model.length === 0) throw new Error('Not found');
-    throw new Error('several models with same id');
+  getModelById(modelId: string): ModelInfo {
+    const model = content.models.find(m => modelId === m.id);
+    if (!model) {
+      throw new Error(`No model found having id ${modelId}`);
+    }
+    return model;
   }
 
   async searchRecipes(query: string): Promise<Recipe[]> {
@@ -74,9 +74,13 @@ export class StudioApiImpl implements StudioAPI {
     const recipe: Recipe = await this.getRecipeById(recipeId);
     console.log('StudioApiImpl recipe', recipe);
 
+    // the user should have selected one model, we use the first one for the moment
+    const modelId = recipe.models[0];
+    const model = this.getModelById(modelId);
+
     // Do not wait for the pull application, run it separately
     new Promise(() => {
-      this.applicationManager.pullApplication(recipe);
+      this.applicationManager.pullApplication(recipe, model);
     });
 
     return Promise.resolve(undefined);
@@ -85,7 +89,7 @@ export class StudioApiImpl implements StudioAPI {
   async getLocalModels(): Promise<ModelInfo[]> {
     const local = this.applicationManager.getLocalModels();
     const localIds = local.map(l => l.id);
-    return content.recipes.flatMap(r => r.models.filter(m => localIds.includes(m.id)));
+    return content.models.filter(m => localIds.includes(m.id));
   }
 
   async getTasksByLabel(label: string): Promise<Task[]> {

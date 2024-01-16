@@ -22,10 +22,10 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { Studio } from './studio';
 import type { ExtensionContext } from '@podman-desktop/api';
 
+import * as fs from 'node:fs';
+
 const mockedExtensionContext = {
-  subscriptions: {
-    push: vi.fn()
-  }
+  subscriptions: [],
 } as unknown as ExtensionContext;
 
 const studio = new Studio(mockedExtensionContext);
@@ -33,10 +33,15 @@ const studio = new Studio(mockedExtensionContext);
 vi.mock('@podman-desktop/api', async () => {
   return {
     Uri: class {
-      static joinPath = vi.fn();
+      static joinPath = () => ({ fsPath: '.' });
     },
     window: {
-      createWebviewPanel: vi.fn(),
+      createWebviewPanel: () => ({
+        webview: {
+          html: '',
+          onDidReceiveMessage: vi.fn()
+        }
+      }),
     },
   };
 });
@@ -55,6 +60,9 @@ afterEach(() => {
 });
 
 test('check activate ', async () => {
+  vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
+    return "<html></html>";
+  });
   await studio.activate();
 
   // expect the activate method to be called on the studio class

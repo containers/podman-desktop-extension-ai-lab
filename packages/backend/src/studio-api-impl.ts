@@ -10,9 +10,9 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
 import * as path from 'node:path';
-import type { ModelResponse } from '@shared/src/models/IModelResponse';
 import type { PlayGroundManager } from './playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
+import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -115,11 +115,15 @@ export class StudioApiImpl implements StudioAPI {
     await this.playgroundManager.startPlayground(modelId, modelPath);
   }
 
-  askPlayground(modelId: string, prompt: string): Promise<ModelResponse> {
+  askPlayground(modelId: string, prompt: string): Promise<number> {
     const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
     if (localModelInfo.length !== 1) {
       throw new Error('model not found');
     }
     return this.playgroundManager.askPlayground(localModelInfo[0], prompt);
+  }
+
+  async getPlaygroundStates(): Promise<QueryState[]> {
+    return this.playgroundManager.getState();
   }
 }

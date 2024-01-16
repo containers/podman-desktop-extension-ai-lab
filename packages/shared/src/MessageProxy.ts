@@ -35,6 +35,11 @@ export interface IMessageResponse extends IMessageRequest {
   body: unknown;
 }
 
+export interface ISubscribedMessage {
+  id: string;
+  body: any;
+}
+
 export function isMessageRequest(content: unknown): content is IMessageRequest {
   return (
     content !== undefined && content !== null && typeof content === 'object' && 'id' in content && 'channel' in content
@@ -101,9 +106,14 @@ export class RpcExtension {
   }
 }
 
+export interface Subscriber {
+  unsubscribe(): void;
+}
+
 export class RpcBrowser {
   counter: number = 0;
   promises: Map<number, { resolve: (value: unknown) => unknown; reject: (value: unknown) => void }> = new Map();
+  subscribers: Map<string, (msg: any) => void> = new Map();
 
   getUniqueId(): number {
     return ++this.counter;
@@ -119,24 +129,27 @@ export class RpcBrowser {
   init() {
     this.window.addEventListener('message', (event: MessageEvent) => {
       const message = event.data;
-      if (!isMessageResponse(message)) {
+      if (isMessageResponse(message)) {
+        if (!this.promises.has(message.id)) {
+          console.error('Unknown message id.');
+          return;
+        }
+
+        const { resolve, reject } = this.promises.get(message.id) || {};
+
+        if (message.status === 'error') {
+          reject?.(message.error);
+        } else {
+          resolve?.(message.body);
+        }
+        this.promises.delete(message.id);
+      } else if (this.isSubscribedMessage(message)) {
+        const handler = this.subscribers.get(message.id);
+        handler?.(message.body);
+      } else {
         console.error('Received incompatible message.', message);
         return;
       }
-
-      if (!this.promises.has(message.id)) {
-        console.error('Unknown message id.');
-        return;
-      }
-
-      const { resolve, reject } = this.promises.get(message.id) || {};
-
-      if (message.status === 'error') {
-        reject?.(message.error);
-      } else {
-        resolve?.(message.body);
-      }
-      this.promises.delete(message.id);
     });
   }
 
@@ -182,5 +195,25 @@ export class RpcBrowser {
     return new Promise((resolve, reject) => {
       this.promises.set(requestId, { resolve, reject });
     });
+  }
+
+  // TODO(feloy) need to subscribe several times?
+  subscribe(msgId: string, f: (msg: any) => void): Subscriber {
+    this.subscribers.set(msgId, f);
+    return {
+      unsubscribe: () => {
+        this.subscribers.delete(msgId);
+      },
+    };
+  }
+
+  isSubscribedMessage(content: any): content is ISubscribedMessage {
+    return (
+      content !== undefined &&
+      content !== null &&
+      'id' in content &&
+      'body' in content &&
+      this.subscribers.has(content.id)
+    );
   }
 }

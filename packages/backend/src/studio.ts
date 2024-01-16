@@ -39,7 +39,6 @@ export class Studio {
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
-    this.playgroundManager = new PlayGroundManager();
   }
 
   public async activate(): Promise<void> {
@@ -93,6 +92,7 @@ export class Studio {
     const taskRegistry = new TaskRegistry();
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry);
     const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
+    this.playgroundManager = new PlayGroundManager(this.#panel.webview);
     this.studioApi = new StudioApiImpl(applicationManager, recipeStatusRegistry, taskRegistry, this.playgroundManager);
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

@@ -2,11 +2,11 @@
   import type { ModelInfo } from '@shared/src/models/IModelInfo';
   import Table from '../lib/table/Table.svelte';
   import { Column, Row } from '../lib/table/table';
-  import ModelColumnName from './ModelColumnName.svelte';
-  import ModelColumnRegistry from './ModelColumnRegistry.svelte';
-  import ModelColumnPopularity from './ModelColumnPopularity.svelte';
-  import ModelColumnLicense from './ModelColumnLicense.svelte';
-  import ModelColumnHw from './ModelColumnHW.svelte';
+  import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
+  import ModelColumnRegistry from '../lib/table/model/ModelColumnRegistry.svelte';
+  import ModelColumnPopularity from '../lib/table/model/ModelColumnPopularity.svelte';
+  import ModelColumnLicense from '../lib/table/model/ModelColumnLicense.svelte';
+  import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
   import { onMount } from 'svelte';
   import { studioClient } from '../utils/client';
 
@@ -16,7 +16,7 @@
   onMount(async () => {
     if (modelsIds && modelsIds.length > 0) {
       models = await studioClient.getModelsByIds(modelsIds);
-    }    
+    }
   })
 
   const columns: Column<ModelInfo>[] = [

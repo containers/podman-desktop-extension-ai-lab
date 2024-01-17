@@ -6,7 +6,8 @@
     "resolveJsonModule": true,
     "lib": [
       "ES2017",
-      "webworker"
+      "webworker",
+      "dom",
     ],
     "sourceMap": true,
     "outDir": "dist",

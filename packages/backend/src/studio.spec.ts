@@ -61,7 +61,7 @@ afterEach(() => {
 
 test('check activate ', async () => {
   vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
-    return '<html></html>';
+    return Promise.resolve('<html></html>');
   });
   await studio.activate();
 

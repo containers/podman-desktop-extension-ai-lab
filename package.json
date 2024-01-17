@@ -19,12 +19,13 @@
     "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage",
     "test:shared": "vitest run -r packages/shared --passWithNoTests --coverage",
     "test:unit": "npm run test:backend && npm run test:shared",
-    "typecheck:shared": "tsc --noEmit -p packages/shared/tsconfig.json",
-    "typecheck:frontend": "tsc --noEmit -p packages/frontend/tsconfig.json",
-    "typecheck:backend": "tsc --noEmit -p packages/backend/tsconfig.json",
+    "typecheck:shared": "tsc --noEmit --project packages/shared",
+    "typecheck:frontend": "tsc --noEmit --project packages/frontend",
+    "typecheck:backend": "tsc --noEmit --project packages/backend",
     "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
   "devDependencies": {
+    "@podman-desktop/api": "1.6.0",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
     "@vitest/coverage-v8": "^1.1.0",

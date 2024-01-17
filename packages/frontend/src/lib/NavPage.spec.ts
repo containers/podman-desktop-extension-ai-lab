@@ -5,7 +5,7 @@ import NavPage from '/@/lib/NavPage.svelte';
 
 test('NavPage should have linear progress', async () => {
   // render the component
-  render(NavPage, {loading: true, title: 'dummy'});
+  render(NavPage, { loading: true, title: 'dummy' });
 
   const content = await screen.findByLabelText('content');
   expect(content).toBeDefined();
@@ -14,7 +14,7 @@ test('NavPage should have linear progress', async () => {
 
 test('NavPage should not have linear progress', async () => {
   // render the component
-  render(NavPage, {title: 'dummy'});
+  render(NavPage, { title: 'dummy' });
 
   const content = await screen.findByLabelText('content');
   expect(content).toBeDefined();

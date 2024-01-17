@@ -57,7 +57,9 @@ onDestroy(() => {
 });
 
 const onClickRepository = () => {
-  studioClient.openURL(recipe?.repository);
+  if (recipe) {
+    studioClient.openURL(recipe.repository);
+  }  
 }
 </script>
 

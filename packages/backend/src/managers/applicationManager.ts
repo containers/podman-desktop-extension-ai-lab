@@ -1,22 +1,23 @@
-import { Recipe } from '@shared/models/IRecipe';
+import type { Recipe } from '@shared/src/models/IRecipe';
 import { arch } from 'node:os';
-import { GitManager } from './gitManager';
+import type { GitManager } from './gitManager';
 import os from 'os';
 import fs from 'fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
-import { containerEngine, ExtensionContext, provider } from '@podman-desktop/api';
-import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
-import { AIConfig, parseYaml } from '../models/AIConfig';
-import { Task } from '@shared/models/ITask';
+import { containerEngine, type ExtensionContext, provider } from '@podman-desktop/api';
+import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
+import type { AIConfig } from '../models/AIConfig';
+import { parseYaml } from '../models/AIConfig';
+import type { Task } from '@shared/src/models/ITask';
 import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import { getParentDirectory } from '../utils/pathUtils';
-import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
-import { ModelInfo } from '@shared/models/IModelInfo';
+import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
-export const CONFIG_FILENAME = "ai-studio.yaml";
+export const CONFIG_FILENAME = 'ai-studio.yaml';
 
 interface DownloadModelResult {
   result: 'ok' | 'failed';
@@ -26,7 +27,11 @@ interface DownloadModelResult {
 export class ApplicationManager {
   readonly homeDirectory: string; // todo: make configurable
 
-  constructor(private git: GitManager, private recipeStatusRegistry: RecipeStatusRegistry, private extensionContext: ExtensionContext) {
+  constructor(
+    private git: GitManager,
+    private recipeStatusRegistry: RecipeStatusRegistry,
+    private extensionContext: ExtensionContext,
+  ) {
     this.homeDirectory = os.homedir();
   }
 
@@ -42,19 +47,19 @@ export class ApplicationManager {
       name: 'Checkout repository',
       state: 'loading',
       labels: {
-        'git': 'checkout',
+        git: 'checkout',
       },
-    }
+    };
     taskUtil.setTask(checkoutTask);
 
     // We might already have the repository cloned
-    if(fs.existsSync(localFolder) && fs.statSync(localFolder).isDirectory()) {
+    if (fs.existsSync(localFolder) && fs.statSync(localFolder).isDirectory()) {
       // Update checkout state
       checkoutTask.name = 'Checkout repository (cached).';
       checkoutTask.state = 'success';
     } else {
       // Create folder
-      fs.mkdirSync(localFolder, {recursive: true});
+      fs.mkdirSync(localFolder, { recursive: true });
 
       // Clone the repository
       console.log(`Cloning repository ${recipe.repository} in ${localFolder}.`);
@@ -71,27 +76,27 @@ export class ApplicationManager {
       id: 'loading-config',
       name: 'Loading configuration',
       state: 'loading',
-    }
+    };
     taskUtil.setTask(loadingConfiguration);
 
     let configFile: string;
-    if(recipe.config !== undefined) {
+    if (recipe.config !== undefined) {
       configFile = path.join(localFolder, recipe.config);
     } else {
       configFile = path.join(localFolder, CONFIG_FILENAME);
     }
 
-    if(!fs.existsSync(configFile)) {
+    if (!fs.existsSync(configFile)) {
       loadingConfiguration.state = 'error';
       taskUtil.setTask(loadingConfiguration);
       throw new Error(`The file located at ${configFile} does not exist.`);
     }
 
     // If the user configured the config as a directory we check for "ai-studio.yaml" inside.
-    if(fs.statSync(configFile).isDirectory()) {
+    if (fs.statSync(configFile).isDirectory()) {
       const tmpPath = path.join(configFile, CONFIG_FILENAME);
       // If it has the ai-studio.yaml we use it.
-      if(fs.existsSync(tmpPath)) {
+      if (fs.existsSync(tmpPath)) {
         configFile = tmpPath;
       }
     }
@@ -109,7 +114,7 @@ export class ApplicationManager {
       throw new Error('Cannot load configuration file.');
     }
 
-    // Mark as success
+    // Mark as success.
     loadingConfiguration.state = 'success';
     taskUtil.setTask(loadingConfiguration);
 
@@ -118,8 +123,9 @@ export class ApplicationManager {
     const connection = connections[0];
 
     // Filter the containers based on architecture
-    const filteredContainers = aiConfig.application.containers
-      .filter((container) => container.arch === undefined || container.arch === arch())
+    const filteredContainers = aiConfig.application.containers.filter(
+      container => container.arch === undefined || container.arch === arch(),
+    );
 
     // Download model
     taskUtil.setTask({
@@ -127,38 +133,37 @@ export class ApplicationManager {
       state: 'loading',
       name: `Downloading model ${model.name}`,
       labels: {
-        "model-pulling": model.id,
-      }
+        'model-pulling': model.id,
+      },
     });
 
-    await this.downloadModelMain(model.id, model.url, taskUtil)
-    
+    await this.downloadModelMain(model.id, model.url, taskUtil);
 
-    filteredContainers.forEach((container) => {
+    filteredContainers.forEach(container => {
       taskUtil.setTask({
         id: container.name,
         state: 'loading',
         name: `Building ${container.name}`,
-      })
+      });
     });
 
     // Promise all the build images
     return Promise.all(
-      filteredContainers.map((container) =>
-        {
-          // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
-          const context = path.join(getParentDirectory(configFile), container.contextdir);
-          console.log(`Application Manager using context ${context} for container ${container.name}`);
+      filteredContainers.map(container => {
+        // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
+        const context = path.join(getParentDirectory(configFile), container.contextdir);
+        console.log(`Application Manager using context ${context} for container ${container.name}`);
 
-          // Ensure the context provided exist otherwise throw an Error
-          if(!fs.existsSync(context)) {
-            console.error('The context provided does not exist.');
-            taskUtil.setTaskState(container.name, 'error');
-            throw new Error('Context configured does not exist.');
-          }
+        // Ensure the context provided exist otherwise throw an Error
+        if (!fs.existsSync(context)) {
+          console.error('The context provided does not exist.');
+          taskUtil.setTaskState(container.name, 'error');
+          throw new Error('Context configured does not exist.');
+        }
 
-          let isErrored = false;
-          return containerEngine.buildImage(
+        let isErrored = false;
+        return containerEngine
+          .buildImage(
             context,
             container.containerfile,
             `${container.name}:latest`,
@@ -167,23 +172,22 @@ export class ApplicationManager {
             (event, data) => {
               // todo: do something with the event
               if (event === 'error' || (event === 'finish' && data !== '')) {
-                console.error(`Something went wrong while building the image: `, data);
+                console.error('Something went wrong while building the image: ', data);
                 taskUtil.setTaskState(container.name, 'error');
                 isErrored = true;
               }
               if (event === 'finish' && !isErrored) {
-                taskUtil.setTaskState(container.name, 'success');            
+                taskUtil.setTaskState(container.name, 'success');
               }
-            }
-          ).catch(err => {
-            console.error(`Something went wrong while building the image: `, err);
+            },
+          )
+          .catch((err: unknown) => {
+            console.error('Something went wrong while building the image: ', err);
             taskUtil.setTaskState(container.name, 'error');
           });
-        }
-      )
-    )
+      }),
+    );
   }
-
 
   downloadModelMain(modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -193,33 +197,39 @@ export class ApplicationManager {
           resolve('');
         } else {
           taskUtil.setTaskState(modelId, 'error');
-          reject(result.error)
+          reject(result.error);
         }
-      }
+      };
 
-      if(fs.existsSync(destFileName)) {
+      if (fs.existsSync(destFileName)) {
         taskUtil.setTaskState(modelId, 'success');
         taskUtil.setTaskProgress(modelId, 100);
         return;
       }
 
-      this.downloadModel(modelId, url, taskUtil, downloadCallback, destFileName)
-    })
+      this.downloadModel(modelId, url, taskUtil, downloadCallback, destFileName);
+    });
   }
 
-  private downloadModel(modelId: string, url: string, taskUtil: RecipeStatusUtils, callback: (message: DownloadModelResult) => void, destFileName?: string) {
+  private downloadModel(
+    modelId: string,
+    url: string,
+    taskUtil: RecipeStatusUtils,
+    callback: (message: DownloadModelResult) => void,
+    destFileName?: string,
+  ) {
     const destDir = path.join(this.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
     if (!destFileName) {
-      destFileName =  path.basename(url);
+      destFileName = path.basename(url);
     }
     const destFile = path.resolve(destDir, destFileName);
     const file = fs.createWriteStream(destFile);
     let totalFileSize = 0;
     let progress = 0;
-    https.get(url, (resp) => {
+    https.get(url, resp => {
       if (resp.headers.location) {
         this.downloadModel(modelId, resp.headers.location, taskUtil, callback, destFileName);
         return;
@@ -229,9 +239,9 @@ export class ApplicationManager {
         }
       }
 
-      resp.on('data', (chunk) => {
+      resp.on('data', chunk => {
         progress += chunk.length;
-        const progressValue = progress * 100 / totalFileSize;
+        const progressValue = (progress * 100) / totalFileSize;
 
         taskUtil.setTaskProgress(modelId, progressValue);
 
@@ -239,19 +249,19 @@ export class ApplicationManager {
         //this.sendProgress(progressValue);
         if (progressValue === 100) {
           callback({
-            result: 'ok'
+            result: 'ok',
           });
         }
       });
       file.on('finish', () => {
         file.close();
       });
-      file.on('error', (e) => {
+      file.on('error', e => {
         callback({
           result: 'failed',
           error: e.message,
         });
-      })
+      });
       resp.pipe(file);
     });
   }
@@ -271,7 +281,7 @@ export class ApplicationManager {
       result.push({
         id: d.name,
         file: modelEntries[0],
-      })
+      });
     }
     return result;
   }

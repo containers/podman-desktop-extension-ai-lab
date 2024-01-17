@@ -16,7 +16,13 @@
     "format:fix": "prettier --write \"**/src/**/*.ts\"",
     "lint:check": "eslint . --ext js,ts,tsx",
     "lint:fix": "eslint . --fix --ext js,ts,tsx",
-    "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage"
+    "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage",
+    "test:shared": "vitest run -r packages/shared --passWithNoTests --coverage",
+    "test:unit": "npm run test:backend && npm run test:shared",
+    "typecheck:shared": "tsc --noEmit -p packages/shared/tsconfig.json",
+    "typecheck:frontend": "tsc --noEmit -p packages/frontend/tsconfig.json",
+    "typecheck:backend": "tsc --noEmit -p packages/backend/tsconfig.json",
+    "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.16.0",

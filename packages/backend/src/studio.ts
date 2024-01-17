@@ -18,16 +18,13 @@
 
 import type { ExtensionContext, WebviewOptions, WebviewPanel } from '@podman-desktop/api';
 import { Uri, window } from '@podman-desktop/api';
-import { RpcExtension } from '@shared/MessageProxy';
+import { RpcExtension } from '@shared/src/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
 import { GitManager } from './managers/gitManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 
 import * as fs from 'node:fs';
-import * as https from 'node:https';
-import * as path from 'node:path';
-import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { PlayGroundManager } from './playground';
 
@@ -95,17 +92,8 @@ export class Studio {
     const gitManager = new GitManager();
     const taskRegistry = new TaskRegistry();
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry);
-    const applicationManager = new ApplicationManager(
-      gitManager,
-      recipeStatusRegistry,
-      this.#extensionContext,
-    )
-    this.studioApi = new StudioApiImpl(
-      applicationManager,
-      recipeStatusRegistry,
-      taskRegistry,
-      this.playgroundManager,
-    );
+    const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
+    this.studioApi = new StudioApiImpl(applicationManager, recipeStatusRegistry, taskRegistry, this.playgroundManager);
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
   }

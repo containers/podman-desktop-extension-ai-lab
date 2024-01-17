@@ -1,6 +1,6 @@
 import { provider, containerEngine, type ProviderContainerConnection, type ImageInfo } from '@podman-desktop/api';
-import { LocalModelInfo } from '@shared/models/ILocalModelInfo';
-import { ModelResponse } from '@shared/models/IModelResponse';
+import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
+import type { ModelResponse } from '@shared/src/models/IModelResponse';
 
 import path from 'node:path';
 import * as http from 'node:http';
@@ -17,7 +17,7 @@ function findFirstProvider(): ProviderContainerConnection | undefined {
 
 export class PlayGroundManager {
   async selectImage(connection: ProviderContainerConnection, image: string): Promise<ImageInfo | undefined> {
-    const images = (await containerEngine.listImages()).filter(im => im.RepoTags && im.RepoTags.some(tag => tag === image));
+    const images = (await containerEngine.listImages()).filter(im => im.RepoTags?.some(tag => tag === image));
     return images.length > 0 ? images[0] : undefined;
   }
 
@@ -51,10 +51,10 @@ export class PlayGroundManager {
         PortBindings: {
           '8080/tcp': [
             {
-              HostPort: '9000'
-            }
-          ]
-        }
+              HostPort: '9000',
+            },
+          ],
+        },
       },
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
     });
@@ -71,32 +71,32 @@ export class PlayGroundManager {
 
   async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<ModelResponse> {
     return new Promise(resolve => {
-      let post_data = JSON.stringify({
-        "model": modelInfo.file,
-        "prompt": prompt,
-        "temperature": 0.7
+      const post_data = JSON.stringify({
+        model: modelInfo.file,
+        prompt: prompt,
+        temperature: 0.7,
       });
 
-      let post_options: http.RequestOptions = {
+      const post_options: http.RequestOptions = {
         host: 'localhost',
         port: '9000',
         path: '/v1/completions',
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       };
 
-      let post_req = http.request(post_options, function (res) {
+      const post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         const chunks = [];
-        res.on('data', (data) => chunks.push(data));
+        res.on('data', data => chunks.push(data));
         res.on('end', () => {
-          let resBody = chunks.join();
+          const resBody = chunks.join();
+          const result = JSON.parse(resBody);
+          console.log('result', result);
           switch (res.headers['content-type']) {
             case 'application/json':
-              const result = JSON.parse(resBody);
-              console.log('result', result);
               resolve(result as ModelResponse);
               break;
           }

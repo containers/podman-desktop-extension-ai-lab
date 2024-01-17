@@ -3,7 +3,7 @@ import NavPage from '/@/lib/NavPage.svelte';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
-import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { studioClient } from '../utils/client';
 import { onMount } from 'svelte';
 import ModelPlayground from './ModelPlayground.svelte';

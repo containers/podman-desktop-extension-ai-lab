@@ -1,9 +1,9 @@
-import type { Recipe } from '@shared/models/IRecipe';
-import type { Category } from '@shared/models/ICategory';
-import { RecipeStatus } from '@shared/models/IRecipeStatus';
-import { ModelInfo } from '@shared/models/IModelInfo';
-import { ModelResponse } from '@shared/models/IModelResponse';
-import { Task } from './models/ITask';
+import type { Recipe } from './models/IRecipe';
+import type { Category } from './models/ICategory';
+import type { RecipeStatus } from './models/IRecipeStatus';
+import type { ModelInfo } from './models/IModelInfo';
+import type { ModelResponse } from './models/IModelResponse';
+import type { Task } from './models/ITask';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -14,7 +14,7 @@ export abstract class StudioAPI {
   abstract getModelById(modelId: string): Promise<ModelInfo>;
   abstract getModelsByIds(ids: string[]): Promise<ModelInfo[]>;
   abstract searchRecipes(query: string): Promise<Recipe[]>;
-  abstract getPullingStatus(recipeId: string): Promise<RecipeStatus>
+  abstract getPullingStatus(recipeId: string): Promise<RecipeStatus>;
   abstract pullApplication(recipeId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
   /**
@@ -31,4 +31,3 @@ export abstract class StudioAPI {
    */
   abstract getTasksByLabel(label: string): Promise<Task[]>;
 }
-

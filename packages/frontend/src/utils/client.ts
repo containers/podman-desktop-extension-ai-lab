@@ -1,6 +1,5 @@
-import type { StudioAPI } from '@shared/StudioAPI';
-import { RpcBrowser } from '@shared/MessageProxy';
-import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { StudioAPI } from '@shared/src/StudioAPI';
+import { RpcBrowser } from '@shared/src/MessageProxy';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 const podmanDesktopApi = acquirePodmanDesktopApi();

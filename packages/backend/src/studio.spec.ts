@@ -39,8 +39,8 @@ vi.mock('@podman-desktop/api', async () => {
       createWebviewPanel: () => ({
         webview: {
           html: '',
-          onDidReceiveMessage: vi.fn()
-        }
+          onDidReceiveMessage: vi.fn(),
+        },
       }),
     },
   };

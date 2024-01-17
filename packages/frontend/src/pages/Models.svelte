@@ -73,7 +73,7 @@ onDestroy(() => {
 
 </script>
 
-<NavPage title="Models on disk">
+<NavPage title="Models on disk" searchEnabled="{false}">
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       {#if loading}

@@ -61,7 +61,7 @@ const onClickRepository = () => {
 }
 </script>
 
-<NavPage title="{recipe?.name || ''}" icon="{getIcon(recipe?.icon)}">
+<NavPage title="{recipe?.name || ''}" icon="{getIcon(recipe?.icon)}" searchEnabled="{false}">
   <svelte:fragment slot="tabs">
     <Tab title="Summary" url="{recipeId}" />
     <Tab title="Models" url="{recipeId}/models" />

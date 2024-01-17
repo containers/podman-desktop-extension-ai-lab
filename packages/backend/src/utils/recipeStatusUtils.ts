@@ -1,13 +1,15 @@
-import type { RecipeStatus, RecipeStatusState } from '@shared/models/IRecipeStatus';
-import type { Task, TaskState } from '@shared/models/ITask';
-import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
-
+import type { RecipeStatus, RecipeStatusState } from '@shared/src/models/IRecipeStatus';
+import type { Task, TaskState } from '@shared/src/models/ITask';
+import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 
 export class RecipeStatusUtils {
   private tasks: Map<string, Task> = new Map<string, Task>();
   private state: RecipeStatusState = 'loading';
 
-  constructor(private recipeId: string, private recipeStatusRegistry: RecipeStatusRegistry) {}
+  constructor(
+    private recipeId: string,
+    private recipeStatusRegistry: RecipeStatusRegistry,
+  ) {}
 
   update() {
     this.recipeStatusRegistry.setStatus(this.recipeId, this.toRecipeStatus());
@@ -21,30 +23,27 @@ export class RecipeStatusUtils {
   setTask(task: Task) {
     this.tasks.set(task.id, task);
 
-    if(task.state === 'error')
-      this.setStatus('error');
+    if (task.state === 'error') this.setStatus('error');
 
     this.update();
   }
 
   setTaskState(taskId: string, state: TaskState) {
-    if(!this.tasks.has(taskId))
-      throw new Error('task not found.');
+    if (!this.tasks.has(taskId)) throw new Error('task not found.');
     const task = this.tasks.get(taskId);
     this.setTask({
       ...task,
-      state: state
-    })
+      state: state,
+    });
   }
 
   setTaskProgress(taskId: string, value: number) {
-    if(!this.tasks.has(taskId))
-      throw new Error('task not found.');
+    if (!this.tasks.has(taskId)) throw new Error('task not found.');
     const task = this.tasks.get(taskId);
     this.setTask({
       ...task,
       progress: value,
-    })
+    });
   }
 
   toRecipeStatus(): RecipeStatus {
@@ -52,6 +51,6 @@ export class RecipeStatusUtils {
       recipeId: this.recipeId,
       state: this.state,
       tasks: Array.from(this.tasks.values()),
-    }
+    };
   }
 }

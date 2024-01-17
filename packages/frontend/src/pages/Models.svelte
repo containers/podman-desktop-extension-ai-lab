@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import NavPage from '../lib/NavPage.svelte';
 import Table from '../lib/table/Table.svelte';
 import { Column, Row } from '../lib/table/table';

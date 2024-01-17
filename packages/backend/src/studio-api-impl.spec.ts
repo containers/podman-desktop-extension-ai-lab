@@ -20,59 +20,61 @@
 
 import { expect, test, vi } from 'vitest';
 import content from './ai-test.json';
-import { ApplicationManager } from './managers/applicationManager';
-import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
+import type { ApplicationManager } from './managers/applicationManager';
+import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { StudioApiImpl } from './studio-api-impl';
-import { PlayGroundManager } from './playground';
-import { TaskRegistry } from './registries/TaskRegistry';
+import type { PlayGroundManager } from './playground';
+import type { TaskRegistry } from './registries/TaskRegistry';
 
 vi.mock('./ai.json', () => {
-    return {
-        default: content
-    };
+  return {
+    default: content,
+  };
 });
 
 const studioApiImpl = new StudioApiImpl(
-    {} as unknown as ApplicationManager,
-    {} as unknown as RecipeStatusRegistry,
-    {} as unknown as TaskRegistry,
-    {} as unknown as PlayGroundManager,
-)
+  {} as unknown as ApplicationManager,
+  {} as unknown as RecipeStatusRegistry,
+  {} as unknown as TaskRegistry,
+  {} as unknown as PlayGroundManager,
+);
 
-test('expect correct model is returned with valid id', async () => {    
-    const model = await studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
-    expect(model).toBeDefined();
-    expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
-    expect(model.registry).toEqual('Hugging Face');
-    expect(model.url).toEqual('https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf')
+test('expect correct model is returned with valid id', async () => {
+  const model = await studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
+  expect(model).toBeDefined();
+  expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
+  expect(model.registry).toEqual('Hugging Face');
+  expect(model.url).toEqual(
+    'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+  );
 });
 
 test('expect error if id does not correspond to any model', async () => {
-    await expect(() => studioApiImpl.getModelById('unknown')).rejects.toThrowError(
-        'No model found having id unknown',
-    );
-})
+  await expect(() => studioApiImpl.getModelById('unknown')).rejects.toThrowError('No model found having id unknown');
+});
 
-test('expect array of models based on list of ids', async () => {    
-    const models = await studioApiImpl.getModelsByIds(['llama-2-7b-chat.Q5_K_S', 'albedobase-xl-1.3']);
-    expect(models).toBeDefined();
-    expect(models.length).toBe(2);
-    expect(models[0].name).toEqual('Llama-2-7B-Chat-GGUF');
-    expect(models[0].registry).toEqual('Hugging Face');
-    expect(models[0].url).toEqual('https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf');
-    expect(models[1].name).toEqual('AlbedoBase XL 1.3');
-    expect(models[1].registry).toEqual('Civital');
-    expect(models[1].url).toEqual('');
+test('expect array of models based on list of ids', async () => {
+  const models = await studioApiImpl.getModelsByIds(['llama-2-7b-chat.Q5_K_S', 'albedobase-xl-1.3']);
+  expect(models).toBeDefined();
+  expect(models.length).toBe(2);
+  expect(models[0].name).toEqual('Llama-2-7B-Chat-GGUF');
+  expect(models[0].registry).toEqual('Hugging Face');
+  expect(models[0].url).toEqual(
+    'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+  );
+  expect(models[1].name).toEqual('AlbedoBase XL 1.3');
+  expect(models[1].registry).toEqual('Civital');
+  expect(models[1].url).toEqual('');
 });
 
 test('expect empty array if input list is empty', async () => {
-    const models = await studioApiImpl.getModelsByIds([]);
-    expect(models).toBeDefined();
-    expect(models.length).toBe(0);
+  const models = await studioApiImpl.getModelsByIds([]);
+  expect(models).toBeDefined();
+  expect(models.length).toBe(0);
 });
 
 test('expect empty array if input list has ids that are not in the catalog', async () => {
-    const models = await studioApiImpl.getModelsByIds(['1', '2']);
-    expect(models).toBeDefined();
-    expect(models.length).toBe(0);
+  const models = await studioApiImpl.getModelsByIds(['1', '2']);
+  expect(models).toBeDefined();
+  expect(models.length).toBe(0);
 });

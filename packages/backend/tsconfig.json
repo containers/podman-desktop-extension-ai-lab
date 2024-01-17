@@ -6,7 +6,8 @@
     "resolveJsonModule": true,
     "lib": [
       "ES2017",
-      "webworker"
+      "webworker",
+      "dom",
     ],
     "sourceMap": true,
     "outDir": "dist",
@@ -22,21 +23,9 @@
   "include": [
     "src",
     "types/*.d.ts",
-    "../../types/**/*.d.ts",
+    "../../types/*.d.ts",
     "../shared/*.ts",
     "../shared/**/*.ts"
   ],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "CommonJS",
-      "lib": [
-        "ES2020",
-        "DOM"
-      ],
-      "types": [
-        "node"
-      ]
-    }
-  }
 
 }

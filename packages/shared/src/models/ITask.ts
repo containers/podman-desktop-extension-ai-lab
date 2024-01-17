@@ -1,9 +1,9 @@
-export type TaskState = 'loading' | 'error' | 'success'
+export type TaskState = 'loading' | 'error' | 'success';
 
 export interface Task {
   id: string;
   state: TaskState;
   progress?: number;
   name: string;
-  labels?: {[id: string]: string}
+  labels?: { [id: string]: string };
 }

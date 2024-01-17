@@ -1,16 +1,17 @@
-import type { StudioAPI } from '@shared/StudioAPI';
-import { Category } from '@shared/models/ICategory';
-import { Recipe } from '@shared/models/IRecipe';
+import type { StudioAPI } from '@shared/src/StudioAPI';
+import type { Category } from '@shared/src/models/ICategory';
+import type { Recipe } from '@shared/src/models/IRecipe';
 import content from './ai.json';
-import { AI_STUDIO_FOLDER, ApplicationManager } from './managers/applicationManager';
-import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
-import { RecipeStatus } from '@shared/models/IRecipeStatus';
-import { ModelInfo } from '@shared/models/IModelInfo';
-import { TaskRegistry } from './registries/TaskRegistry';
-import { Task } from '@shared/models/ITask';
+import type { ApplicationManager } from './managers/applicationManager';
+import { AI_STUDIO_FOLDER } from './managers/applicationManager';
+import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
+import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { TaskRegistry } from './registries/TaskRegistry';
+import type { Task } from '@shared/src/models/ITask';
 import * as path from 'node:path';
-import { ModelResponse } from '@shared/models/IModelResponse';
-import { PlayGroundManager } from './playground';
+import type { ModelResponse } from '@shared/src/models/IModelResponse';
+import type { PlayGroundManager } from './playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
@@ -24,13 +25,11 @@ export class StudioApiImpl implements StudioAPI {
   ) {}
 
   async openURL(url: string): Promise<boolean> {
-    return await podmanDesktopApi.env.openExternal(
-      podmanDesktopApi.Uri.parse(url)
-    );
+    return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(url));
   }
 
   async getPullingStatus(recipeId: string): Promise<RecipeStatus> {
-      return this.recipeStatusRegistry.getStatus(recipeId);
+    return this.recipeStatusRegistry.getStatus(recipeId);
   }
 
   async ping(): Promise<string> {
@@ -69,7 +68,8 @@ export class StudioApiImpl implements StudioAPI {
     return content.models.filter(m => ids.includes(m.id)) ?? [];
   }
 
-  async searchRecipes(query: string): Promise<Recipe[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async searchRecipes(_query: string): Promise<Recipe[]> {
     return []; // todo: not implemented
   }
 
@@ -83,9 +83,7 @@ export class StudioApiImpl implements StudioAPI {
     const model = await this.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
-    new Promise(() => {
-      this.applicationManager.pullApplication(recipe, model);
-    });
+    this.applicationManager.pullApplication(recipe, model).catch((error: unknown) => console.warn(error));
 
     return Promise.resolve(undefined);
   }
@@ -106,7 +104,13 @@ export class StudioApiImpl implements StudioAPI {
       throw new Error('model not found');
     }
 
-    const modelPath = path.resolve(this.applicationManager.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId, localModelInfo[0].file);
+    const modelPath = path.resolve(
+      this.applicationManager.homeDirectory,
+      AI_STUDIO_FOLDER,
+      'models',
+      modelId,
+      localModelInfo[0].file,
+    );
 
     await this.playgroundManager.startPlayground(modelId, modelPath);
   }

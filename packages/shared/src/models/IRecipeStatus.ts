@@ -1,4 +1,4 @@
-import { Task } from './ITask';
+import type { Task } from './ITask';
 
 export type RecipeStatusState = 'none' | 'loading' | 'pulled' | 'running' | 'error';
 

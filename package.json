@@ -16,9 +16,17 @@
     "format:fix": "prettier --write \"**/src/**/*.ts\"",
     "lint:check": "eslint . --ext js,ts,tsx",
     "lint:fix": "eslint . --fix --ext js,ts,tsx",
-    "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage"
+    "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage",
+    "test:frontend": "vitest run -r packages/frontend --passWithNoTests --coverage",
+    "test:shared": "vitest run -r packages/shared --passWithNoTests --coverage",
+    "test:unit": "npm run test:backend && npm run test:shared && npm run test:frontend",
+    "typecheck:shared": "tsc --noEmit --project packages/shared",
+    "typecheck:frontend": "tsc --noEmit --project packages/frontend",
+    "typecheck:backend": "tsc --noEmit --project packages/backend",
+    "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
   "devDependencies": {
+    "@podman-desktop/api": "1.6.4",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
     "@vitest/coverage-v8": "^1.1.0",

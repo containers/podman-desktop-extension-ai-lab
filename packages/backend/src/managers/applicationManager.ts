@@ -12,6 +12,7 @@ import { Task } from '@shared/models/ITask';
 import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import { getParentDirectory } from '../utils/pathUtils';
 import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
+import { ModelInfo } from '@shared/models/IModelInfo';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
@@ -29,7 +30,7 @@ export class ApplicationManager {
     this.homeDirectory = os.homedir();
   }
 
-  async pullApplication(recipe: Recipe) {
+  async pullApplication(recipe: Recipe, model: ModelInfo) {
     // Create a TaskUtils object to help us
     const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
 
@@ -120,20 +121,18 @@ export class ApplicationManager {
     const filteredContainers = aiConfig.application.containers
       .filter((container) => container.arch === undefined || container.arch === arch())
 
-    // Download first model available (if exist)
-    if(recipe.models && recipe.models.length > 0) {
-      const model = recipe.models[0];
-      taskUtil.setTask({
-        id: model.id,
-        state: 'loading',
-        name: `Downloading model ${model.name}`,
-        labels: {
-          "model-pulling": model.id,
-        }
-      });
+    // Download model
+    taskUtil.setTask({
+      id: model.id,
+      state: 'loading',
+      name: `Downloading model ${model.name}`,
+      labels: {
+        "model-pulling": model.id,
+      }
+    });
 
-      await this.downloadModelMain(model.id, model.url, taskUtil)
-    }
+    await this.downloadModelMain(model.id, model.url, taskUtil)
+    
 
     filteredContainers.forEach((container) => {
       taskUtil.setTask({

@@ -7,8 +7,17 @@
   import ModelColumnPopularity from './ModelColumnPopularity.svelte';
   import ModelColumnLicense from './ModelColumnLicense.svelte';
   import ModelColumnHw from './ModelColumnHW.svelte';
+  import { onMount } from 'svelte';
+  import { studioClient } from '../utils/client';
 
-  export let models: ModelInfo[] | undefined;
+  export let modelsIds: string[] | undefined;
+  let models: ModelInfo[] = [];
+
+  onMount(async () => {
+    if (modelsIds && modelsIds.length > 0) {
+      models = await studioClient.getModelsByIds(modelsIds);
+    }    
+  })
 
   const columns: Column<ModelInfo>[] = [
     new Column<ModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),

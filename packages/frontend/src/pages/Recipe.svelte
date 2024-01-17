@@ -116,7 +116,7 @@ const onClickRepository = () => {
       </div>
     </Route>
     <Route path="/models" breadcrumb="History">
-      <RecipeModels models={recipe?.models} />
+      <RecipeModels modelsIds={recipe?.models} />
     </Route>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">

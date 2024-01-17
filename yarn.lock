@@ -322,7 +322,7 @@
 
 "@jridgewell/resolve-uri@^3.1.0":
   version "3.1.1"
-  resolved "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.1.tgz"
+  resolved "https://registry.yarnpkg.com/@jridgewell/resolve-uri/-/resolve-uri-3.1.1.tgz#c08679063f279615a3326583ba3a90d1d82cc721"
   integrity sha512-dSYZh7HhCDtCKm4QakX0xFpsRDqjjtZf/kjI/v3T3Nwt5r8/qz/M19F9ySyOqU94SXBmeG9ttTul+YnR4LOxFA==
 
 "@jridgewell/set-array@^1.0.1":
@@ -401,10 +401,10 @@
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@podman-desktop/api@1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.6.0.tgz#4c41957c488b830b7525f6de0aed739bcea1c366"
-  integrity sha512-UNZ61fjmJ+vRjxQhcKqr7ifr+ZDKO9DREHrW0jHqdaVTXS8llw0b9w8DOEOjzB76IY+MgEIrXNW8L5t5S7bCuQ==
+"@podman-desktop/api@1.6.4":
+  version "1.6.4"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.6.4.tgz#f6da8228523e787f408d366f1d99d12a7b9e6924"
+  integrity sha512-8sxPcFvepxVM0iANq9h+QbnxAPAEE03KhrDTUp8AEzMPHZhascBSi11xhaLaDUujXVaKHUysEt0hh+0ccL479w==
 
 "@rollup/rollup-android-arm-eabi@4.9.1":
   version "4.9.1"

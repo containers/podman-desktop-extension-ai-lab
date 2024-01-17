@@ -68,14 +68,14 @@ export class RpcExtension {
 
       try {
         const result = await this.methods.get(message.channel)?.(...message.args);
-        this.webview.postMessage({
+        await this.webview.postMessage({
           id: message.id,
           channel: message.channel,
           body: result,
           status: 'success',
         } as IMessageResponse);
       } catch (e) {
-        this.webview.postMessage({
+        await this.webview.postMessage({
           id: message.id,
           channel: message.channel,
           body: undefined,

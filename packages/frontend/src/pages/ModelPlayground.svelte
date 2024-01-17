@@ -4,9 +4,12 @@
   import Button from '../lib/button/Button.svelte';
   import { onMount } from 'svelte';
   import { studioClient } from '../utils/client';
+  import { playgroundQueries } from '../stores/playground-queries';
+  import type { QueryState } from '@shared/models/IPlaygroundQueryState';
   export let model: ModelInfo | undefined;
 
   let prompt = '';
+  let queryId: number;
   let result: ModelResponseChoice | undefined = undefined;
   let inProgress = false;
 
@@ -15,7 +18,39 @@
       return;
     }
     studioClient.startPlayground(model.id);
+
+    const unsubscribe = playgroundQueries.subscribe((queries: QueryState[]) => {
+      if (queryId === -1) {
+        return;
+      }
+      let myQuery = queries.find(q => q.id === queryId);
+      if (!myQuery) {
+        myQuery = queries.findLast(q => q.modelId === model?.id);
+      }
+      if (!myQuery) {
+        return;
+      }
+      displayQuery(myQuery);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   });
+
+  function displayQuery(query: QueryState) {
+    if (query.response) {
+      inProgress = false;
+      prompt = query.prompt;
+      if (query.response?.choices.length) {
+        result = query.response?.choices[0];
+      }
+    } else {
+      inProgress = true;
+      prompt = query.prompt;
+      queryId = query.id;
+    }
+  }
 
   async function askPlayground() {
     if (!model) {
@@ -23,17 +58,17 @@
     }
     inProgress = true;
     result = undefined;
-    const res = await studioClient.askPlayground(model.id, prompt)
-    inProgress = false;
-    if (res.choices.length) {
-      result = res.choices[0];
-    }
+    // do not display anything before we get a response from askPlayground
+    // (we can receive a new queryState before the new QueryId)
+    queryId = -1; 
+    queryId = await studioClient.askPlayground(model.id, prompt);
   }
 </script>
 
 <div class="m-4 w-full flew flex-col">
   <div class="mb-2">Prompt</div>
   <textarea
+    aria-label="prompt"
     bind:value={prompt}
     rows="4"
     class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"
@@ -46,6 +81,7 @@
   {#if result}
     <div class="mt-4 mb-2">Output</div>
     <textarea
+      aria-label="response"
       readonly
       disabled
       rows="20"

@@ -57,12 +57,16 @@ export class StudioApiImpl implements StudioAPI {
     throw new Error('Not found');
   }
 
-  getModelById(modelId: string): ModelInfo {
+  async getModelById(modelId: string): Promise<ModelInfo> {
     const model = content.models.find(m => modelId === m.id);
     if (!model) {
       throw new Error(`No model found having id ${modelId}`);
     }
     return model;
+  }
+
+  async getModelsByIds(ids: string[]): Promise<ModelInfo[]> {
+    return content.models.filter(m => ids.includes(m.id)) ?? [];
   }
 
   async searchRecipes(query: string): Promise<Recipe[]> {
@@ -76,7 +80,7 @@ export class StudioApiImpl implements StudioAPI {
 
     // the user should have selected one model, we use the first one for the moment
     const modelId = recipe.models[0];
-    const model = this.getModelById(modelId);
+    const model = await this.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
     new Promise(() => {

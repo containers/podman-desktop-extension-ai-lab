@@ -11,8 +11,8 @@ import ModelPlayground from './ModelPlayground.svelte';
 export let modelId: string;
 let model: ModelInfo | undefined = undefined;
 
-onMount(() => {
-  model = studioClient.getModelById(modelId);
+onMount(async () => {
+  model = await studioClient.getModelById(modelId);
 })
 </script>
 

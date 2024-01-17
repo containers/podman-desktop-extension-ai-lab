@@ -7,7 +7,7 @@ import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
 import type { Category } from '@shared/models/ICategory';
 import Card from '/@/lib/Card.svelte';
-import MarkdownRenderer from '/@/lib/MarkdownRenderer.svelte';
+import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import Fa from 'svelte-fa';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faDownload, faRefresh } from '@fortawesome/free-solid-svg-icons';

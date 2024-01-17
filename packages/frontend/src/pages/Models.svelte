@@ -4,11 +4,11 @@ import NavPage from '../lib/NavPage.svelte';
 import Table from '../lib/table/Table.svelte';
 import { Column, Row } from '../lib/table/table';
 import { localModels } from '../stores/local-models';
-import ModelColumnName from './ModelColumnName.svelte';
-import ModelColumnRegistry from './ModelColumnRegistry.svelte';
-import ModelColumnPopularity from './ModelColumnPopularity.svelte';
-import ModelColumnLicense from './ModelColumnLicense.svelte';
-import ModelColumnHw from './ModelColumnHW.svelte';
+import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
+import ModelColumnRegistry from '../lib/table/model/ModelColumnRegistry.svelte';
+import ModelColumnPopularity from '../lib/table/model/ModelColumnPopularity.svelte';
+import ModelColumnLicense from '../lib/table/model/ModelColumnLicense.svelte';
+import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
 import { onDestroy, onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
 import type { Category } from '@shared/models/ICategory';
@@ -73,12 +73,9 @@ onDestroy(() => {
 
 </script>
 
-<NavPage title="Models on disk" searchEnabled="{false}">
+<NavPage title="Models on disk" searchEnabled="{false}" loading="{loading}">
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
-      {#if loading}
-        <LinearProgress/>
-      {/if}
       <div class="mt-4 px-5 space-y-5 h-full">
         {#if !loading}
           {#if tasks.length > 0}

@@ -16,7 +16,7 @@ onMount(async () => {
 })
 </script>
 
-<NavPage title="{model?.name || ''}" searchEnabled="{false}">
+<NavPage title="{model?.name || ''}" searchEnabled="{false}" loading="{model === undefined}">
   <svelte:fragment slot="tabs">
     <Tab title="Summary" url="{modelId}" />
     <Tab title="Playground" url="{modelId}/playground" />

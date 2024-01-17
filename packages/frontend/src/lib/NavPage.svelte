@@ -1,10 +1,12 @@
 <script lang="ts">
 import Fa from 'svelte-fa';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
+import LinearProgress from '/@/lib/progress/LinearProgress.svelte';
 
 export let title: string;
 export let searchTerm = '';
 export let searchEnabled = true;
+export let loading = false;
 export let icon: IconDefinition | undefined = undefined;
 </script>
 
@@ -57,7 +59,11 @@ export let icon: IconDefinition | undefined = undefined;
       <slot name="tabs" />
     </div>
     <div class="flex w-full h-full overflow-auto" role="region" aria-label="content">
-      <slot name="content" />
+      {#if loading}
+        <LinearProgress/>
+      {:else}
+        <slot name="content" />
+      {/if}
     </div>
   </div>
 </div>

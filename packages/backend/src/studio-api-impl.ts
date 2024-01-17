@@ -12,6 +12,7 @@ import { Studio } from './studio';
 import * as path from 'node:path';
 import { ModelResponse } from '@shared/models/IModelResponse';
 import { PlayGroundManager } from './playground';
+import * as podmanDesktopApi from '@podman-desktop/api';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -23,9 +24,10 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundManager: PlayGroundManager,
   ) {}
 
-  async openURL(url: string): Promise<void> {
-    // TODO: open a browser page
-    return;
+  async openURL(url: string): Promise<boolean> {
+    return await podmanDesktopApi.env.openExternal(
+      podmanDesktopApi.Uri.parse(url)
+    );
   }
 
   async getPullingStatus(recipeId: string): Promise<RecipeStatus> {

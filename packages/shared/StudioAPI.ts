@@ -15,7 +15,7 @@ export abstract class StudioAPI {
   abstract searchRecipes(query: string): Promise<Recipe[]>;
   abstract getPullingStatus(recipeId: string): Promise<RecipeStatus>
   abstract pullApplication(recipeId: string): Promise<void>;
-  abstract openURL(url: string): Promise<void>;
+  abstract openURL(url: string): Promise<boolean>;
   /**
    * Get the information of models saved locally into the extension's storage directory
    */

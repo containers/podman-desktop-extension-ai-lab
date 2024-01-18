@@ -18,13 +18,16 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import content from './ai-test.json';
+import userContent from './ai-user-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './playground';
 import type { TaskRegistry } from './registries/TaskRegistry';
+
+import * as fs from 'node:fs';
 
 vi.mock('./ai.json', () => {
   return {
@@ -32,14 +35,71 @@ vi.mock('./ai.json', () => {
   };
 });
 
-const studioApiImpl = new StudioApiImpl(
-  {} as unknown as ApplicationManager,
-  {} as unknown as RecipeStatusRegistry,
-  {} as unknown as TaskRegistry,
-  {} as unknown as PlayGroundManager,
-);
+let studioApiImpl: StudioApiImpl;
 
-test('expect correct model is returned with valid id', async () => {
+beforeEach(async () => {
+  studioApiImpl = new StudioApiImpl(
+    {
+      appUserDirectory: '.',
+    } as unknown as ApplicationManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as TaskRegistry,
+    {} as unknown as PlayGroundManager,
+  );
+  vi.resetAllMocks();
+  vi.mock('node:fs');
+});
+
+describe('invalid user catalog', () => {
+  beforeEach(async () => {
+    vi.spyOn(fs.promises, 'readFile').mockResolvedValue('invalid json');
+    await studioApiImpl.loadCatalog();
+  });
+
+  test('expect correct model is returned with valid id', async () => {
+    const model = await studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
+    expect(model).toBeDefined();
+    expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
+    expect(model.registry).toEqual('Hugging Face');
+    expect(model.url).toEqual(
+      'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+    );
+  });
+
+  test('expect error if id does not correspond to any model', async () => {
+    await expect(() => studioApiImpl.getModelById('unknown')).rejects.toThrowError('No model found having id unknown');
+  });
+
+  test('expect array of models based on list of ids', async () => {
+    const models = await studioApiImpl.getModelsByIds(['llama-2-7b-chat.Q5_K_S', 'albedobase-xl-1.3']);
+    expect(models).toBeDefined();
+    expect(models.length).toBe(2);
+    expect(models[0].name).toEqual('Llama-2-7B-Chat-GGUF');
+    expect(models[0].registry).toEqual('Hugging Face');
+    expect(models[0].url).toEqual(
+      'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+    );
+    expect(models[1].name).toEqual('AlbedoBase XL 1.3');
+    expect(models[1].registry).toEqual('Civital');
+    expect(models[1].url).toEqual('');
+  });
+
+  test('expect empty array if input list is empty', async () => {
+    const models = await studioApiImpl.getModelsByIds([]);
+    expect(models).toBeDefined();
+    expect(models.length).toBe(0);
+  });
+
+  test('expect empty array if input list has ids that are not in the catalog', async () => {
+    const models = await studioApiImpl.getModelsByIds(['1', '2']);
+    expect(models).toBeDefined();
+    expect(models.length).toBe(0);
+  });
+});
+
+test('expect correct model is returned from default catalog with valid id when no user catalog exists', async () => {
+  vi.spyOn(fs, 'existsSync').mockReturnValue(false);
+  await studioApiImpl.loadCatalog();
   const model = await studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
   expect(model).toBeDefined();
   expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
@@ -49,32 +109,13 @@ test('expect correct model is returned with valid id', async () => {
   );
 });
 
-test('expect error if id does not correspond to any model', async () => {
-  await expect(() => studioApiImpl.getModelById('unknown')).rejects.toThrowError('No model found having id unknown');
-});
-
-test('expect array of models based on list of ids', async () => {
-  const models = await studioApiImpl.getModelsByIds(['llama-2-7b-chat.Q5_K_S', 'albedobase-xl-1.3']);
-  expect(models).toBeDefined();
-  expect(models.length).toBe(2);
-  expect(models[0].name).toEqual('Llama-2-7B-Chat-GGUF');
-  expect(models[0].registry).toEqual('Hugging Face');
-  expect(models[0].url).toEqual(
-    'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
-  );
-  expect(models[1].name).toEqual('AlbedoBase XL 1.3');
-  expect(models[1].registry).toEqual('Civital');
-  expect(models[1].url).toEqual('');
-});
-
-test('expect empty array if input list is empty', async () => {
-  const models = await studioApiImpl.getModelsByIds([]);
-  expect(models).toBeDefined();
-  expect(models.length).toBe(0);
-});
-
-test('expect empty array if input list has ids that are not in the catalog', async () => {
-  const models = await studioApiImpl.getModelsByIds(['1', '2']);
-  expect(models).toBeDefined();
-  expect(models.length).toBe(0);
+test('expect correct model is returned with valid id when the user catalog is valid', async () => {
+  vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+  vi.spyOn(fs.promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+  await studioApiImpl.loadCatalog();
+  const model = await studioApiImpl.getModelById('model1');
+  expect(model).toBeDefined();
+  expect(model.name).toEqual('Model 1');
+  expect(model.registry).toEqual('Hugging Face');
+  expect(model.url).toEqual('https://model1.example.com');
 });

@@ -1,0 +1,49 @@
+{
+  "recipes": [
+    {
+      "id": "recipe 1",
+      "description" : "Recipe 1",
+      "name" : "Recipe 1",
+      "repository": "https://recipe1.example.com",
+      "icon": "natural-language-processing",
+      "categories": [
+        "category1"
+      ],
+      "config": "chatbot/ai-studio.yaml",
+      "readme": "Readme for recipe 1",
+      "models": [
+        "model1",
+        "model2"
+      ]
+    }
+  ],
+  "models": [
+    {
+      "id": "model1",
+      "name": "Model 1",
+      "description": "Readme for model 1",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "popularity": 3,
+      "license": "?",
+      "url": "https://model1.example.com"
+    },
+    {
+      "id": "model2",
+      "name": "Model 2",
+      "description": "Readme for model 2",
+      "hw": "CPU",
+      "registry": "Civital",
+      "popularity": 3,
+      "license": "?",
+      "url": ""
+    }
+  ],
+  "categories": [
+    {
+      "id": "category1",
+      "name": "Category 1",
+      "description" : "Readme for category 1"
+    }
+  ]
+}

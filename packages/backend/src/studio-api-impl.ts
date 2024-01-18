@@ -1,28 +1,61 @@
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { Category } from '@shared/src/models/ICategory';
 import type { Recipe } from '@shared/src/models/IRecipe';
-import content from './ai.json';
+import defaultCatalog from './ai.json';
 import type { ApplicationManager } from './managers/applicationManager';
-import { AI_STUDIO_FOLDER } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
-import * as path from 'node:path';
 import type { PlayGroundManager } from './playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
+import type { Catalog } from '@shared/src/models/ICatalog';
+
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
 export class StudioApiImpl implements StudioAPI {
+  private catalog: Catalog;
+
   constructor(
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private taskRegistry: TaskRegistry,
     private playgroundManager: PlayGroundManager,
-  ) {}
+  ) {
+    // We start with an empty catalog, for the methods to work before the catalog is loaded
+    this.catalog = {
+      categories: [],
+      models: [],
+      recipes: [],
+    };
+  }
+
+  async loadCatalog() {
+    const catalogPath = path.resolve(this.applicationManager.appUserDirectory, 'catalog.json');
+    try {
+      if (!fs.existsSync(catalogPath)) {
+        this.setCatalog(defaultCatalog);
+        return;
+      }
+      // TODO(feloy): watch catalog file and update catalog with new content
+      const data = await fs.promises.readFile(catalogPath, 'utf-8');
+      const cat = JSON.parse(data) as Catalog;
+      this.setCatalog(cat);
+    } catch (err: unknown) {
+      console.error('unable to read catalog file, reverting to default catalog', err);
+      this.setCatalog(defaultCatalog);
+    }
+  }
+
+  setCatalog(newCatalog: Catalog) {
+    // TODO(feloy): send message to frontend with new catalog
+    this.catalog = newCatalog;
+  }
 
   async openURL(url: string): Promise<boolean> {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(url));
@@ -41,23 +74,23 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getCategories(): Promise<Category[]> {
-    return content.categories;
+    return this.catalog.categories;
   }
 
   async getRecipesByCategory(categoryId: string): Promise<Recipe[]> {
     if (categoryId === RECENT_CATEGORY_ID) return this.getRecentRecipes();
 
-    return content.recipes.filter(recipe => recipe.categories.includes(categoryId));
+    return this.catalog.recipes.filter(recipe => recipe.categories.includes(categoryId));
   }
 
   async getRecipeById(recipeId: string): Promise<Recipe> {
-    const recipe = (content.recipes as Recipe[]).find(recipe => recipe.id === recipeId);
+    const recipe = (this.catalog.recipes as Recipe[]).find(recipe => recipe.id === recipeId);
     if (recipe) return recipe;
     throw new Error('Not found');
   }
 
   async getModelById(modelId: string): Promise<ModelInfo> {
-    const model = content.models.find(m => modelId === m.id);
+    const model = this.catalog.models.find(m => modelId === m.id);
     if (!model) {
       throw new Error(`No model found having id ${modelId}`);
     }
@@ -65,7 +98,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getModelsByIds(ids: string[]): Promise<ModelInfo[]> {
-    return content.models.filter(m => ids.includes(m.id)) ?? [];
+    return this.catalog.models.filter(m => ids.includes(m.id)) ?? [];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -91,7 +124,7 @@ export class StudioApiImpl implements StudioAPI {
   async getLocalModels(): Promise<ModelInfo[]> {
     const local = this.applicationManager.getLocalModels();
     const localIds = local.map(l => l.id);
-    return content.models.filter(m => localIds.includes(m.id));
+    return this.catalog.models.filter(m => localIds.includes(m.id));
   }
 
   async getTasksByLabel(label: string): Promise<Task[]> {
@@ -104,13 +137,7 @@ export class StudioApiImpl implements StudioAPI {
       throw new Error('model not found');
     }
 
-    const modelPath = path.resolve(
-      this.applicationManager.homeDirectory,
-      AI_STUDIO_FOLDER,
-      'models',
-      modelId,
-      localModelInfo[0].file,
-    );
+    const modelPath = path.resolve(this.applicationManager.appUserDirectory, 'models', modelId, localModelInfo[0].file);
 
     await this.playgroundManager.startPlayground(modelId, modelPath);
   }

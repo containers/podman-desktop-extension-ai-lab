@@ -25,21 +25,21 @@ interface DownloadModelResult {
 }
 
 export class ApplicationManager {
-  readonly homeDirectory: string; // todo: make configurable
+  readonly appUserDirectory: string; // todo: make configurable
 
   constructor(
     private git: GitManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private extensionContext: ExtensionContext,
   ) {
-    this.homeDirectory = os.homedir();
+    this.appUserDirectory = path.join(os.homedir(), AI_STUDIO_FOLDER);
   }
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
     // Create a TaskUtils object to help us
     const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
 
-    const localFolder = path.join(this.homeDirectory, AI_STUDIO_FOLDER, recipe.id);
+    const localFolder = path.join(this.appUserDirectory, recipe.id);
 
     // Adding checkout task
     const checkoutTask: Task = {
@@ -218,7 +218,7 @@ export class ApplicationManager {
     callback: (message: DownloadModelResult) => void,
     destFileName?: string,
   ) {
-    const destDir = path.join(this.homeDirectory, AI_STUDIO_FOLDER, 'models', modelId);
+    const destDir = path.join(this.appUserDirectory, 'models', modelId);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
@@ -269,7 +269,7 @@ export class ApplicationManager {
   // todo: move somewhere else (dedicated to models)
   getLocalModels(): LocalModelInfo[] {
     const result: LocalModelInfo[] = [];
-    const modelsDir = path.join(this.homeDirectory, AI_STUDIO_FOLDER, 'models');
+    const modelsDir = path.join(this.appUserDirectory, 'models');
     const entries = fs.readdirSync(modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {

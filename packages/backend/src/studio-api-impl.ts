@@ -7,7 +7,7 @@ import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
-import type { PlayGroundManager } from './playground';
+import type { PlayGroundManager } from './managers/playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import type { Catalog } from '@shared/src/models/ICatalog';

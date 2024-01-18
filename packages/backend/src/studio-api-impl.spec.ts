@@ -24,7 +24,7 @@ import userContent from './ai-user-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { StudioApiImpl } from './studio-api-impl';
-import type { PlayGroundManager } from './playground';
+import type { PlayGroundManager } from './managers/playground';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { Webview } from '@podman-desktop/api';
 

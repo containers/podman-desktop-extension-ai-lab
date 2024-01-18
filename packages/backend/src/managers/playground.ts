@@ -10,7 +10,7 @@ import type { ModelResponse } from '@shared/src/models/IModelResponse';
 
 import path from 'node:path';
 import * as http from 'node:http';
-import { getFreePort } from './utils/ports';
+import { getFreePort } from '../utils/ports';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import { MSG_NEW_PLAYGROUND_QUERIES_STATE } from '@shared/Messages';
 

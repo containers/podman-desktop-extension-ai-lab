@@ -17,7 +17,6 @@
  ***********************************************************************/
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { PodmanDesktopApi } from '../../../types/podman-desktop-api';
 import type { Webview } from '@podman-desktop/api';
 
 export interface IMessage {
@@ -39,6 +38,8 @@ export interface ISubscribedMessage {
   id: string;
   body: any;
 }
+
+type UnaryRPC = (...args: unknown[]) => Promise<unknown>;
 
 export function isMessageRequest(content: unknown): content is IMessageRequest {
   return (
@@ -90,7 +91,7 @@ export class RpcExtension {
     });
   }
 
-  registerInstance<T>(classType: { new (...args: any[]): T }, instance: T) {
+  registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: { new (...args: any[]): T }, instance: T) {
     const methodNames = Object.getOwnPropertyNames(classType.prototype).filter(
       name => name !== 'constructor' && typeof instance[name as keyof T] === 'function',
     );
@@ -156,8 +157,7 @@ export class RpcBrowser {
   getProxy<T>(): T {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const thisRef = this;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const proxyHandler: ProxyHandler<any> = {
+    const proxyHandler: ProxyHandler<object> = {
       get(target, prop, receiver) {
         if (typeof prop === 'string') {
           return (...args: unknown[]) => {

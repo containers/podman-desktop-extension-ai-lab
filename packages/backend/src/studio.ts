@@ -18,7 +18,7 @@
 
 import type { ExtensionContext, WebviewOptions, WebviewPanel } from '@podman-desktop/api';
 import { Uri, window } from '@podman-desktop/api';
-import { RpcExtension } from '@shared/src/MessageProxy';
+import { RpcExtension } from '@shared/src/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
 import { GitManager } from './managers/gitManager';
@@ -26,7 +26,7 @@ import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 
 import * as fs from 'node:fs';
 import { TaskRegistry } from './registries/TaskRegistry';
-import { PlayGroundManager } from './playground';
+import { PlayGroundManager } from './managers/playground';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;

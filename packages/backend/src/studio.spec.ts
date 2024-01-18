@@ -40,6 +40,7 @@ vi.mock('@podman-desktop/api', async () => {
         webview: {
           html: '',
           onDidReceiveMessage: vi.fn(),
+          postMessage: vi.fn(),
         },
       }),
     },

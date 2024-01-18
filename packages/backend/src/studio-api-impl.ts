@@ -1,5 +1,4 @@
 import type { StudioAPI } from '@shared/src/StudioAPI';
-import type { Category } from '@shared/src/models/ICategory';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import defaultCatalog from './ai.json';
 import type { ApplicationManager } from './managers/applicationManager';
@@ -12,6 +11,7 @@ import type { PlayGroundManager } from './playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import type { Catalog } from '@shared/src/models/ICatalog';
+import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
 
 import * as path from 'node:path';
 import * as fs from 'node:fs';
@@ -26,6 +26,7 @@ export class StudioApiImpl implements StudioAPI {
     private recipeStatusRegistry: RecipeStatusRegistry,
     private taskRegistry: TaskRegistry,
     private playgroundManager: PlayGroundManager,
+    private webview: podmanDesktopApi.Webview,
   ) {
     // We start with an empty catalog, for the methods to work before the catalog is loaded
     this.catalog = {
@@ -39,22 +40,25 @@ export class StudioApiImpl implements StudioAPI {
     const catalogPath = path.resolve(this.applicationManager.appUserDirectory, 'catalog.json');
     try {
       if (!fs.existsSync(catalogPath)) {
-        this.setCatalog(defaultCatalog);
+        await this.setCatalog(defaultCatalog);
         return;
       }
       // TODO(feloy): watch catalog file and update catalog with new content
       const data = await fs.promises.readFile(catalogPath, 'utf-8');
       const cat = JSON.parse(data) as Catalog;
-      this.setCatalog(cat);
+      await this.setCatalog(cat);
     } catch (err: unknown) {
       console.error('unable to read catalog file, reverting to default catalog', err);
-      this.setCatalog(defaultCatalog);
+      await this.setCatalog(defaultCatalog);
     }
   }
 
-  setCatalog(newCatalog: Catalog) {
-    // TODO(feloy): send message to frontend with new catalog
+  async setCatalog(newCatalog: Catalog) {
     this.catalog = newCatalog;
+    await this.webview.postMessage({
+      id: MSG_NEW_CATALOG_STATE,
+      body: this.catalog,
+    });
   }
 
   async openURL(url: string): Promise<boolean> {
@@ -69,27 +73,17 @@ export class StudioApiImpl implements StudioAPI {
     return 'pong';
   }
 
-  async getRecentRecipes(): Promise<Recipe[]> {
-    return []; // no recent implementation for now
+  async getCatalog(): Promise<Catalog> {
+    return this.catalog;
   }
 
-  async getCategories(): Promise<Category[]> {
-    return this.catalog.categories;
-  }
-
-  async getRecipesByCategory(categoryId: string): Promise<Recipe[]> {
-    if (categoryId === RECENT_CATEGORY_ID) return this.getRecentRecipes();
-
-    return this.catalog.recipes.filter(recipe => recipe.categories.includes(categoryId));
-  }
-
-  async getRecipeById(recipeId: string): Promise<Recipe> {
+  getRecipeById(recipeId: string): Recipe {
     const recipe = (this.catalog.recipes as Recipe[]).find(recipe => recipe.id === recipeId);
     if (recipe) return recipe;
     throw new Error('Not found');
   }
 
-  async getModelById(modelId: string): Promise<ModelInfo> {
+  getModelById(modelId: string): ModelInfo {
     const model = this.catalog.models.find(m => modelId === m.id);
     if (!model) {
       throw new Error(`No model found having id ${modelId}`);
@@ -97,23 +91,14 @@ export class StudioApiImpl implements StudioAPI {
     return model;
   }
 
-  async getModelsByIds(ids: string[]): Promise<ModelInfo[]> {
-    return this.catalog.models.filter(m => ids.includes(m.id)) ?? [];
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async searchRecipes(_query: string): Promise<Recipe[]> {
-    return []; // todo: not implemented
-  }
-
   async pullApplication(recipeId: string): Promise<void> {
     console.log('StudioApiImpl pullApplication', recipeId);
-    const recipe: Recipe = await this.getRecipeById(recipeId);
+    const recipe: Recipe = this.getRecipeById(recipeId);
     console.log('StudioApiImpl recipe', recipe);
 
     // the user should have selected one model, we use the first one for the moment
     const modelId = recipe.models[0];
-    const model = await this.getModelById(modelId);
+    const model = this.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
     this.applicationManager.pullApplication(recipe, model).catch((error: unknown) => console.warn(error));

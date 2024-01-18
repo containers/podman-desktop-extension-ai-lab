@@ -39,31 +39,16 @@ export class StudioApiImpl implements StudioAPI {
     const catalogPath = path.resolve(this.applicationManager.appUserDirectory, 'catalog.json');
     try {
       // TODO(feloy): watch catalog file and update catalog with new content
-      await fs.promises
-        .readFile(catalogPath, 'utf-8')
-        .then((data: string) => {
-          try {
-            const cat = JSON.parse(data) as Catalog;
-            // TODO(feloy): check version and format
-            console.log('using user catalog');
-            this.setNewCatalog(cat);
-          } catch (err: unknown) {
-            console.error('unable to parse catalog file, reverting to default catalog', err);
-            this.setNewCatalog(defaultCatalog);
-          }
-        })
-        .catch((err: unknown) => {
-          console.error('got err', err);
-          console.error('unable to read catalog file, reverting to default catalog', err);
-          this.setNewCatalog(defaultCatalog);
-        });
+      const data = await fs.promises.readFile(catalogPath, 'utf-8');
+      const cat = JSON.parse(data) as Catalog;
+      this.setCatalog(cat);
     } catch (err: unknown) {
       console.error('unable to read catalog file, reverting to default catalog', err);
-      this.setNewCatalog(defaultCatalog);
+      this.setCatalog(defaultCatalog);
     }
   }
 
-  setNewCatalog(newCatalog: Catalog) {
+  setCatalog(newCatalog: Catalog) {
     // TODO(feloy): send message to frontend with new catalog
     this.catalog = newCatalog;
   }

@@ -1,6 +1,8 @@
 <script lang="ts">
 import Fa from 'svelte-fa';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
+import { createEventDispatcher } from 'svelte'
+const dispatch = createEventDispatcher()
 
 export let title: string | undefined = undefined;
 export let classes: string = "";
@@ -17,9 +19,9 @@ export let primaryBackground: string = "bg-charcoal-800"
     <div class="flex flex-row">
       <div class="flex flex-row items-center">
         {#if icon}
-          <div class="{primaryBackground} rounded-full w-8 h-8 flex items-center justify-center mr-3">
+          <button on:click={() => dispatch('click')} class="{primaryBackground} rounded-full w-8 h-8 flex items-center justify-center mr-3">
             <Fa size="20" class="text-purple-500 cursor-pointer" icon="{icon}" />
-          </div>
+          </button>
         {/if}
         {#if title}
           <div class="flex flex-col text-gray-400 whitespace-nowrap" aria-label="context-name">

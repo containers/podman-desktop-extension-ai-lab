@@ -30,7 +30,8 @@ import path from 'node:path';
 import * as http from 'node:http';
 import { getFreePort } from '../utils/ports';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
-import { MSG_NEW_PLAYGROUND_QUERIES_STATE } from '@shared/Messages';
+import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '@shared/Messages';
+import { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 
 // TODO: this should not be hardcoded
 const LOCALAI_IMAGE = 'quay.io/go-skynet/local-ai:v2.5.1';
@@ -43,14 +44,10 @@ function findFirstProvider(): ProviderContainerConnection | undefined {
   return engines.length > 0 ? engines[0] : undefined;
 }
 
-export interface PlaygroundState {
-  containerId: string;
-  port: number;
-}
-
 export class PlayGroundManager {
   private queryIdCounter = 0;
 
+  // Map<modelId, state>
   private playgrounds: Map<string, PlaygroundState>;
   private queries: Map<number, QueryState>;
 
@@ -64,14 +61,25 @@ export class PlayGroundManager {
     return images.length > 0 ? images[0] : undefined;
   }
 
+  updatePlaygroundState(modelId: string, state: PlaygroundState) {
+    this.playgrounds.set(modelId, state);
+    return this.webview.postMessage({
+      id: MSG_PLAYGROUNDS_STATE_UPDATE,
+      body: this.getPlaygroundsState(),
+    });
+  }
+
   async startPlayground(modelId: string, modelPath: string): Promise<string> {
     // TODO(feloy) remove previous query from state?
-
     if (this.playgrounds.has(modelId)) {
       throw new Error('model is already running');
     }
+
+    this.updatePlaygroundState(modelId, { status: 'starting', modelId });
+
     const connection = findFirstProvider();
     if (!connection) {
+      this.updatePlaygroundState(modelId, { status: 'error', modelId });
       throw new Error('Unable to find an engine to start playground');
     }
 
@@ -80,9 +88,11 @@ export class PlayGroundManager {
       await containerEngine.pullImage(connection.connection, LOCALAI_IMAGE, () => {});
       image = await this.selectImage(connection, LOCALAI_IMAGE);
       if (!image) {
+        this.updatePlaygroundState(modelId, { status: 'error', modelId });
         throw new Error(`Unable to find ${LOCALAI_IMAGE} image`);
       }
     }
+
     const freePort = await getFreePort();
     const result = await containerEngine.createContainer(image.engineId, {
       Image: image.Id,
@@ -107,10 +117,16 @@ export class PlayGroundManager {
       },
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
     });
-    this.playgrounds.set(modelId, {
-      containerId: result.id,
-      port: freePort,
+
+    this.updatePlaygroundState(modelId, {
+      container: {
+        containerId: result.id,
+        port: freePort,
+      },
+      status: 'running',
+      modelId
     });
+
     return result.id;
   }
 
@@ -124,7 +140,7 @@ export class PlayGroundManager {
 
   async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<number> {
     const state = this.playgrounds.get(modelInfo.id);
-    if (!state) {
+    if (!state || !state.container) {
       throw new Error('model is not running');
     }
 
@@ -142,7 +158,7 @@ export class PlayGroundManager {
 
     const post_options: http.RequestOptions = {
       host: 'localhost',
-      port: '' + state.port,
+      port: '' + state.container.port,
       path: '/v1/completions',
       method: 'POST',
       headers: {
@@ -164,7 +180,7 @@ export class PlayGroundManager {
           }
           q.response = result as ModelResponse;
           this.queries.set(query.id, q);
-          this.sendState().catch((err: unknown) => {
+          this.sendQueriesState().catch((err: unknown) => {
             console.error('playground: unable to send the response to the frontend', err);
           });
         }
@@ -175,20 +191,25 @@ export class PlayGroundManager {
     post_req.end();
 
     this.queries.set(query.id, query);
-    await this.sendState();
+    await this.sendQueriesState();
     return query.id;
   }
 
   getNextQueryId() {
     return ++this.queryIdCounter;
   }
-  getState(): QueryState[] {
+  getQueriesState(): QueryState[] {
     return Array.from(this.queries.values());
   }
-  async sendState() {
+
+  getPlaygroundsState(): PlaygroundState[] {
+    return Array.from(this.playgrounds.values());
+  }
+
+  async sendQueriesState() {
     await this.webview.postMessage({
       id: MSG_NEW_PLAYGROUND_QUERIES_STATE,
-      body: this.getState(),
+      body: this.getQueriesState(),
     });
   }
 }

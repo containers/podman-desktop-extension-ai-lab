@@ -32,6 +32,7 @@ import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import * as path from 'node:path';
 import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
+import { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -122,14 +123,20 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async startPlayground(modelId: string): Promise<void> {
+    // TODO: improve the following
     const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
     if (localModelInfo.length !== 1) {
       throw new Error('model not found');
     }
 
+    // TODO: we need to stop doing that.
     const modelPath = path.resolve(this.applicationManager.appUserDirectory, 'models', modelId, localModelInfo[0].file);
 
     await this.playgroundManager.startPlayground(modelId, modelPath);
+  }
+
+  async stopPlayground(modelId: string): Promise<void> {
+    await this.playgroundManager.stopPlayground(modelId);
   }
 
   askPlayground(modelId: string, prompt: string): Promise<number> {
@@ -140,8 +147,12 @@ export class StudioApiImpl implements StudioAPI {
     return this.playgroundManager.askPlayground(localModelInfo[0], prompt);
   }
 
-  async getPlaygroundStates(): Promise<QueryState[]> {
-    return this.playgroundManager.getState();
+  async getPlaygroundQueriesState(): Promise<QueryState[]> {
+    return this.playgroundManager.getQueriesState();
+  }
+
+  async getPlaygroundsState(): Promise<PlaygroundState[]> {
+    return this.playgroundManager.getPlaygroundsState();
   }
 
   async getCatalog(): Promise<Catalog> {

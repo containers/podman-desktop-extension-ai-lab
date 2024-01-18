@@ -3,6 +3,7 @@ import type { ModelInfo } from './models/IModelInfo';
 import type { Task } from './models/ITask';
 import type { QueryState } from './models/IPlaygroundQueryState';
 import type { Catalog } from './models/ICatalog';
+import type { PlaygroundState } from './models/IPlaygroundState';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -16,6 +17,7 @@ export abstract class StudioAPI {
   abstract getLocalModels(): Promise<ModelInfo[]>;
 
   abstract startPlayground(modelId: string): Promise<void>;
+  abstract stopPlayground(modelId: string): Promise<void>;
   abstract askPlayground(modelId: string, prompt: string): Promise<number>;
 
   /**
@@ -24,8 +26,7 @@ export abstract class StudioAPI {
    */
   abstract getTasksByLabel(label: string): Promise<Task[]>;
 
-  /**
-   * Ask to send a message MSG_NEW_PLAYGROUND_QUERIES_STATE with the current Playground queries
-   */
-  abstract getPlaygroundStates(): Promise<QueryState[]>;
+  abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
+
+  abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
 }

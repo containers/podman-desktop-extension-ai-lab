@@ -38,6 +38,10 @@ export class StudioApiImpl implements StudioAPI {
   async loadCatalog() {
     const catalogPath = path.resolve(this.applicationManager.appUserDirectory, 'catalog.json');
     try {
+      if (!fs.existsSync(catalogPath)) {
+        this.setCatalog(defaultCatalog);
+        return;
+      }
       // TODO(feloy): watch catalog file and update catalog with new content
       const data = await fs.promises.readFile(catalogPath, 'utf-8');
       const cat = JSON.parse(data) as Catalog;

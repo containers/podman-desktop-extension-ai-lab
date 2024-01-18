@@ -3,7 +3,6 @@ import type { Category } from '@shared/src/models/ICategory';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import content from './ai.json';
 import type { ApplicationManager } from './managers/applicationManager';
-import { AI_STUDIO_FOLDER } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -104,13 +103,7 @@ export class StudioApiImpl implements StudioAPI {
       throw new Error('model not found');
     }
 
-    const modelPath = path.resolve(
-      this.applicationManager.homeDirectory,
-      AI_STUDIO_FOLDER,
-      'models',
-      modelId,
-      localModelInfo[0].file,
-    );
+    const modelPath = path.resolve(this.applicationManager.appUserDirectory, 'models', modelId, localModelInfo[0].file);
 
     await this.playgroundManager.startPlayground(modelId, modelPath);
   }

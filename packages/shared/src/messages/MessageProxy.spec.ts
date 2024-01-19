@@ -1,6 +1,5 @@
 import { test, expect, beforeAll } from 'vitest';
 import { RpcBrowser, RpcExtension } from './MessageProxy';
-import type { PodmanDesktopApi } from '../../../types/podman-desktop-api';
 import type { Webview } from '@podman-desktop/api';
 
 let webview: Webview;

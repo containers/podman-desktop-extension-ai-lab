@@ -18,7 +18,7 @@
 
 import type { ExtensionContext, WebviewOptions, WebviewPanel } from '@podman-desktop/api';
 import { Uri, window } from '@podman-desktop/api';
-import { RpcExtension } from '@shared/src/MessageProxy';
+import { RpcExtension } from '@shared/src/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
 import { GitManager } from './managers/gitManager';
@@ -26,7 +26,8 @@ import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 
 import * as fs from 'node:fs';
 import { TaskRegistry } from './registries/TaskRegistry';
-import { PlayGroundManager } from './playground';
+import { PlayGroundManager } from './managers/playground';
+import { CatalogManager } from './managers/catalogManager';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -36,6 +37,7 @@ export class Studio {
   rpcExtension: RpcExtension;
   studioApi: StudioApiImpl;
   playgroundManager: PlayGroundManager;
+  catalogManager: CatalogManager;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -93,14 +95,20 @@ export class Studio {
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry);
     const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
     this.playgroundManager = new PlayGroundManager(this.#panel.webview);
+    // Create catalog manager, responsible for loading the catalog files and watching for changes
+    this.catalogManager = new CatalogManager(applicationManager.appUserDirectory, this.#panel.webview);
+
+    // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
       applicationManager,
       recipeStatusRegistry,
       taskRegistry,
       this.playgroundManager,
-      this.#panel.webview,
+      this.catalogManager,
     );
-    await this.studioApi.loadCatalog();
+
+    await this.catalogManager.loadCatalog();
+
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
   }

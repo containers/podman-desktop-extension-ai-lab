@@ -60,7 +60,7 @@
     result = undefined;
     // do not display anything before we get a response from askPlayground
     // (we can receive a new queryState before the new QueryId)
-    queryId = -1; 
+    queryId = -1;
     queryId = await studioClient.askPlayground(model.id, prompt);
   }
 </script>
@@ -73,8 +73,8 @@
     rows="4"
     class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"
     placeholder="Type your prompt here"></textarea>
-  
-  <div class="mt-4 text-right"> 
+
+  <div class="mt-4 text-right">
     <Button inProgress={inProgress} on:click={() => askPlayground()}>Send Request</Button>
   </div>
 

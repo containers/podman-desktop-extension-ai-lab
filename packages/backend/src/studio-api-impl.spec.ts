@@ -24,11 +24,12 @@ import userContent from './ai-user-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { StudioApiImpl } from './studio-api-impl';
-import type { PlayGroundManager } from './playground';
+import type { PlayGroundManager } from './managers/playground';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { Webview } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
+import { CatalogManager } from './managers/catalogManager';
 
 vi.mock('./ai.json', () => {
   return {
@@ -36,19 +37,47 @@ vi.mock('./ai.json', () => {
   };
 });
 
+vi.mock('node:fs', () => {
+  return {
+    existsSync: vi.fn(),
+    promises: {
+      readFile: vi.fn(),
+    },
+  };
+});
+
+vi.mock('@podman-desktop/api', () => {
+  return {
+    fs: {
+      createFileSystemWatcher: () => ({
+        onDidCreate: vi.fn(),
+        onDidDelete: vi.fn(),
+        onDidChange: vi.fn(),
+      }),
+    },
+  };
+});
+
 let studioApiImpl: StudioApiImpl;
+let catalogManager;
 
 beforeEach(async () => {
+  const appUserDirectory = '.';
+
+  // Creating CatalogManager
+  catalogManager = new CatalogManager(appUserDirectory, {
+    postMessage: vi.fn(),
+  } as unknown as Webview);
+
+  // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
     {
-      appUserDirectory: '.',
+      appUserDirectory,
     } as unknown as ApplicationManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as TaskRegistry,
     {} as unknown as PlayGroundManager,
-    {
-      postMessage: vi.fn(),
-    } as unknown as Webview,
+    catalogManager,
   );
   vi.resetAllMocks();
   vi.mock('node:fs');
@@ -57,11 +86,11 @@ beforeEach(async () => {
 describe('invalid user catalog', () => {
   beforeEach(async () => {
     vi.spyOn(fs.promises, 'readFile').mockResolvedValue('invalid json');
-    await studioApiImpl.loadCatalog();
+    await catalogManager.loadCatalog();
   });
 
-  test('expect correct model is returned with valid id', () => {
-    const model = studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
+  test('expect correct model is returned with valid id', async () => {
+    const model = await studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
     expect(model).toBeDefined();
     expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
     expect(model.registry).toEqual('Hugging Face');
@@ -70,15 +99,15 @@ describe('invalid user catalog', () => {
     );
   });
 
-  test('expect error if id does not correspond to any model', () => {
-    expect(() => studioApiImpl.getModelById('unknown')).toThrowError('No model found having id unknown');
+  test('expect error if id does not correspond to any model', async () => {
+    await expect(() => studioApiImpl.getModelById('unknown')).rejects.toThrowError('No model found having id unknown');
   });
 });
 
 test('expect correct model is returned from default catalog with valid id when no user catalog exists', async () => {
   vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-  await studioApiImpl.loadCatalog();
-  const model = studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
+  await catalogManager.loadCatalog();
+  const model = await studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
   expect(model).toBeDefined();
   expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
   expect(model.registry).toEqual('Hugging Face');
@@ -90,8 +119,9 @@ test('expect correct model is returned from default catalog with valid id when n
 test('expect correct model is returned with valid id when the user catalog is valid', async () => {
   vi.spyOn(fs, 'existsSync').mockReturnValue(true);
   vi.spyOn(fs.promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
-  await studioApiImpl.loadCatalog();
-  const model = studioApiImpl.getModelById('model1');
+
+  await catalogManager.loadCatalog();
+  const model = await studioApiImpl.getModelById('model1');
   expect(model).toBeDefined();
   expect(model.name).toEqual('Model 1');
   expect(model.registry).toEqual('Hugging Face');

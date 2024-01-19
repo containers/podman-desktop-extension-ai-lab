@@ -5,7 +5,7 @@ import os from 'os';
 import fs from 'fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
-import { containerEngine, type ExtensionContext, provider } from '@podman-desktop/api';
+import { containerEngine, type ExtensionContext } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig } from '../models/AIConfig';
 import { parseYaml } from '../models/AIConfig';
@@ -118,10 +118,6 @@ export class ApplicationManager {
     loadingConfiguration.state = 'success';
     taskUtil.setTask(loadingConfiguration);
 
-    // Getting the provider to use for building
-    const connections = provider.getContainerConnections();
-    const connection = connections[0];
-
     // Filter the containers based on architecture
     const filteredContainers = aiConfig.application.containers.filter(
       container => container.arch === undefined || container.arch === arch(),
@@ -162,13 +158,15 @@ export class ApplicationManager {
         }
 
         let isErrored = false;
+
+        const buildOptions = {
+          containerFile: container.containerfile,
+          tag: `${container.name}:latest`,
+        };
+
         return containerEngine
           .buildImage(
             context,
-            container.containerfile,
-            `${container.name}:latest`,
-            '', // keep empty chain so it use default
-            connection.connection,
             (event, data) => {
               // todo: do something with the event
               if (event === 'error' || (event === 'finish' && data !== '')) {
@@ -180,6 +178,7 @@ export class ApplicationManager {
                 taskUtil.setTaskState(container.name, 'success');
               }
             },
+            buildOptions,
           )
           .catch((err: unknown) => {
             console.error('Something went wrong while building the image: ', err);

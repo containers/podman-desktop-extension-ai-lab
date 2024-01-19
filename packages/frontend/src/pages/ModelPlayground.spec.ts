@@ -1,14 +1,14 @@
 import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
-import { screen, fireEvent, render } from '@testing-library/svelte';
+import { screen, fireEvent, render, waitFor } from '@testing-library/svelte';
 import ModelPlayground from './ModelPlayground.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import userEvent from '@testing-library/user-event';
 
 const mocks = vi.hoisted(() => {
   return {
     startPlaygroundMock: vi.fn(),
     askPlaygroundMock: vi.fn(),
+    getPlaygroundsStateMock: vi.fn().mockImplementation(() => Promise.resolve([])),
     playgroundQueriesSubscribeMock: vi.fn(),
     playgroundQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => {
 vi.mock('../utils/client', async () => {
   return {
     studioClient: {
+      getPlaygroundsState: mocks.getPlaygroundsStateMock,
       startPlayground: mocks.startPlaygroundMock,
       askPlayground: mocks.askPlaygroundMock,
       askPlaygroundQueries: () => {},
@@ -46,7 +47,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-test('should start playground at init time and call askPlayground when button clicked', async () => {
+test('playground should start when clicking on the play button', async () => {
   mocks.playgroundQueriesSubscribeMock.mockReturnValue([]);
   render(ModelPlayground, {
     model: {
@@ -60,21 +61,15 @@ test('should start playground at init time and call askPlayground when button cl
       url: 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
     } as ModelInfo,
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
 
-  expect(mocks.startPlaygroundMock).toHaveBeenCalledOnce();
+  const play = screen.getByTitle('playground-action');
+  expect(play).toBeDefined();
 
-  const prompt = screen.getByPlaceholderText('Type your prompt here');
-  expect(prompt).toBeInTheDocument();
-  const user = userEvent.setup();
-  user.type(prompt, 'what is it?');
+  await fireEvent.click(play);
 
-  const send = screen.getByRole('button', { name: 'Send Request' });
-  expect(send).toBeInTheDocument();
-
-  expect(mocks.askPlaygroundMock).not.toHaveBeenCalled();
-  await fireEvent.click(send);
-  expect(mocks.askPlaygroundMock).toHaveBeenCalledOnce();
+  await waitFor(() => {
+    expect(mocks.startPlaygroundMock).toHaveBeenCalledOnce();
+  });
 });
 
 test('should display query without response', async () => {
@@ -97,11 +92,11 @@ test('should display query without response', async () => {
       url: 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
     } as ModelInfo,
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
-
-  const prompt = screen.getByPlaceholderText('Type your prompt here');
-  expect(prompt).toBeInTheDocument();
-  expect(prompt).toHaveValue('what is 1+1?');
+  await waitFor(() => {
+    const prompt = screen.getByPlaceholderText('Type your prompt here');
+    expect(prompt).toBeInTheDocument();
+    expect(prompt).toHaveValue('what is 1+1?');
+  });
 
   const response = screen.queryByRole('textbox', { name: 'response' });
   expect(response).not.toBeInTheDocument();
@@ -134,15 +129,14 @@ test('should display query without response', async () => {
       url: 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
     } as ModelInfo,
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
 
-  const prompt = screen.getByPlaceholderText('Type your prompt here');
-  expect(prompt).toBeInTheDocument();
-  expect(prompt).toHaveValue('what is 1+1?');
+  await waitFor(() => {
+    const prompt = screen.getByPlaceholderText('Type your prompt here');
+    expect(prompt).toBeInTheDocument();
+    expect(prompt).toHaveValue('what is 1+1?');
+  });
 
   const response = screen.queryByRole('textbox', { name: 'response' });
   expect(response).toBeInTheDocument();
   expect(response).toHaveValue('The response is 2');
 });
-
-test('', async () => {});

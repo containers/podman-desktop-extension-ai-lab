@@ -154,7 +154,7 @@
     <div slot="content" class="my-2 mx-4 w-full text-base font-normal flex flex-row items-center">
       {#key playgroundState?.status}
         <span class="flex-grow">Playground {playgroundState?.status}</span>
-        <Button inProgress={isLoading()} on:click={onAction} icon="{getActionIcon()}"/>
+        <Button title="playground-action" inProgress={isLoading()} on:click={onAction} icon="{getActionIcon()}"/>
       {/key}
     </div>
   </Card>

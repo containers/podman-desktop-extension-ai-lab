@@ -53,6 +53,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.recipeStatusRegistry.getStatus(recipeId);
   }
 
+  async getPullingStatuses(): Promise<Map<string, RecipeStatus>> {
+    return this.recipeStatusRegistry.getStatuses();
+  }
+
   async getModelById(modelId: string): Promise<ModelInfo> {
     // TODO: move logic to catalog manager
     const model = this.catalogManager.getModels().find(m => modelId === m.id);

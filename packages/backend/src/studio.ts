@@ -92,7 +92,7 @@ export class Studio {
     this.rpcExtension = new RpcExtension(this.#panel.webview);
     const gitManager = new GitManager();
     const taskRegistry = new TaskRegistry();
-    const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry);
+    const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, this.#panel.webview);
     const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
     this.playgroundManager = new PlayGroundManager(this.#panel.webview);
     // Create catalog manager, responsible for loading the catalog files and watching for changes

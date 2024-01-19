@@ -18,11 +18,13 @@
 
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import type { TaskRegistry } from './TaskRegistry';
+import type { Webview } from '@podman-desktop/api';
+import { MSG_NEW_RECIPE_STATE } from '@shared/Messages';
 
 export class RecipeStatusRegistry {
   private statuses: Map<string, RecipeStatus> = new Map<string, RecipeStatus>();
 
-  constructor(private taskRegistry: TaskRegistry) {}
+  constructor(private taskRegistry: TaskRegistry, private webview: Webview) {}
 
   setStatus(recipeId: string, status: RecipeStatus) {
     // Update the TaskRegistry
@@ -30,9 +32,21 @@ export class RecipeStatusRegistry {
       status.tasks.map(task => this.taskRegistry.set(task));
     }
     this.statuses.set(recipeId, status);
+    this.dispatchState(); // we don't want to wait
   }
 
   getStatus(recipeId: string): RecipeStatus | undefined {
     return this.statuses.get(recipeId);
+  }
+
+  getStatuses(): Map<string, RecipeStatus> {
+    return this.statuses;
+  }
+
+  private async dispatchState() {
+    await this.webview.postMessage({
+      id: MSG_NEW_RECIPE_STATE,
+      body: this.statuses,
+    });
   }
 }

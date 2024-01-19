@@ -9,6 +9,7 @@ export abstract class StudioAPI {
   abstract ping(): Promise<string>;
   abstract getCatalog(): Promise<Catalog>;
   abstract getPullingStatus(recipeId: string): Promise<RecipeStatus>;
+  abstract getPullingStatuses(): Promise<Map<string, RecipeStatus>>;
   abstract pullApplication(recipeId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
   /**

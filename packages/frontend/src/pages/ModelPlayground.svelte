@@ -8,11 +8,10 @@
   import type { QueryState } from '@shared/models/IPlaygroundQueryState';
   import { playgroundStates } from '/@/stores/playground-states';
   import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
-  import LinearProgress from '/@/lib/progress/LinearProgress.svelte';
   import Card from '/@/lib/Card.svelte';
   export let model: ModelInfo | undefined;
   import Fa from 'svelte-fa';
-  import { faPlay, faPause, faInfo, faWarning } from '@fortawesome/free-solid-svg-icons';
+  import { faPlay, faStop, faInfo, faWarning } from '@fortawesome/free-solid-svg-icons';
 
   let prompt = '';
   let queryId: number;
@@ -88,7 +87,7 @@
       case "stopped":
         return faPlay;
       case "running":
-        return faPause
+        return faStop
       case "starting":
       case "stopping":
         return faInfo;
@@ -116,42 +115,70 @@
         return faWarning;
     }
   }
+
+  const isPromptable = () => {
+    if(playgroundState === undefined)
+      return false;
+
+    switch (playgroundState.status) {
+      case "none":
+      case "stopped":
+      case "error":
+      case "starting":
+      case "stopping":
+        return false;
+      case "running":
+        return true;
+    }
+  }
+
+  const isLoading = () => {
+    if(playgroundState === undefined)
+      return true;
+
+    switch (playgroundState.status) {
+      case "none":
+      case "stopped":
+      case "running":
+      case "error":
+        return false;
+      case "starting":
+      case "stopping":
+        return true;
+    }
+  }
 </script>
 
-{#if playgroundState === undefined}
-  <LinearProgress/>
-{:else}
-  <div class="m-4 w-full flew flex-col">
-    <Card classes="bg-charcoal-800">
-      <div slot="content" class="my-2 mx-4 w-full text-base font-normal flex flex-row items-center">
-        {#key playgroundState.status}
-          <span class="flex-grow">Playground {playgroundState.status}</span>
-          <Card on:click={onAction} icon="{getActionIcon()}"/>
-        {/key}
-      </div>
-    </Card>
-    <div class="mb-2">Prompt</div>
-    <textarea
-      aria-label="prompt"
-      bind:value={prompt}
-      rows="4"
-      class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"
-      placeholder="Type your prompt here"></textarea>
-
-    <div class="mt-4 text-right">
-      <Button inProgress={inProgress} on:click={() => askPlayground()}>Send Request</Button>
+<div class="m-4 w-full flew flex-col">
+  <Card classes="bg-charcoal-800">
+    <div slot="content" class="my-2 mx-4 w-full text-base font-normal flex flex-row items-center">
+      {#key playgroundState?.status}
+        <span class="flex-grow">Playground {playgroundState?.status}</span>
+        <Button inProgress={isLoading()} on:click={onAction} icon="{getActionIcon()}"/>
+      {/key}
     </div>
+  </Card>
+  <div class="mb-2">Prompt</div>
+  <textarea
+    aria-label="prompt"
+    bind:value={prompt}
+    rows="4"
+    class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"
+    placeholder="Type your prompt here"></textarea>
 
-    {#if result}
-      <div class="mt-4 mb-2">Output</div>
-      <textarea
-        aria-label="response"
-        readonly
-        disabled
-        rows="20"
-        bind:value={result.text}
-        class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"></textarea>
-    {/if}
+  <div class="mt-4 text-right">
+    <Button disabled={!isPromptable()} inProgress={inProgress} on:click={() => askPlayground()}>Send Request</Button>
   </div>
-{/if}
+
+  {#if result}
+    <div class="mt-4 mb-2">Output</div>
+    <textarea
+      aria-label="response"
+      readonly
+      disabled
+      rows="20"
+      bind:value={result.text}
+      class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"></textarea>
+  {/if}
+</div>
 

@@ -4,6 +4,7 @@ export interface PlaygroundState {
   container?: {
     containerId: string;
     port: number;
+    engineId: string;
   },
   modelId: string,
   status: PlaygroundStatus

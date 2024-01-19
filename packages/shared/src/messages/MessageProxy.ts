@@ -42,9 +42,7 @@ export interface ISubscribedMessage {
 type UnaryRPC = (...args: unknown[]) => Promise<unknown>;
 
 export function isMessageRequest(content: unknown): content is IMessageRequest {
-  return (
-    content !== undefined && content !== null && typeof content === 'object' && 'id' in content && 'channel' in content
-  );
+  return !!content && typeof content === 'object' && 'id' in content && 'channel' in content;
 }
 
 export function isMessageResponse(content: unknown): content is IMessageResponse {
@@ -208,12 +206,6 @@ export class RpcBrowser {
   }
 
   isSubscribedMessage(content: any): content is ISubscribedMessage {
-    return (
-      content !== undefined &&
-      content !== null &&
-      'id' in content &&
-      'body' in content &&
-      this.subscribers.has(content.id)
-    );
+    return !!content && 'id' in content && 'body' in content && this.subscribers.has(content.id);
   }
 }

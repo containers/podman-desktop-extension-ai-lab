@@ -32,7 +32,7 @@ export interface AIConfig {
 }
 
 export function isString(value: unknown): value is string {
-  return (value !== undefined && value !== null && typeof value === 'string') || value instanceof String;
+  return (!!value && typeof value === 'string') || value instanceof String;
 }
 
 export function assertString(value: unknown): string {

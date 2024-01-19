@@ -40,7 +40,7 @@ function findFirstProvider(): ProviderContainerConnection | undefined {
   const engines = provider
     .getContainerConnections()
     .filter(connection => connection.connection.type === 'podman')
-    .filter(connection => connection.connection.status() == 'started');
+    .filter(connection => connection.connection.status() === 'started');
   return engines.length > 0 ? engines[0] : undefined;
 }
 

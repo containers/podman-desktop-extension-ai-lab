@@ -5,7 +5,7 @@ export interface PlaygroundState {
     containerId: string;
     port: number;
     engineId: string;
-  },
-  modelId: string,
-  status: PlaygroundStatus
+  };
+  modelId: string;
+  status: PlaygroundStatus;
 }

@@ -145,6 +145,4 @@ test('should display query without response', async () => {
   expect(response).toHaveValue('The response is 2');
 });
 
-test('', async () => {
-
-});
+test('', async () => {});

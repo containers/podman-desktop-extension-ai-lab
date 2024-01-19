@@ -65,7 +65,7 @@ export class PlayGroundManager {
     this.updatePlaygroundState(modelId, {
       modelId: modelId,
       ...(this.playgrounds.get(modelId) || {}),
-      status: status
+      status: status,
     });
   }
 
@@ -133,7 +133,7 @@ export class PlayGroundManager {
         engineId: image.engineId,
       },
       status: 'running',
-      modelId
+      modelId,
     });
 
     return result.id;
@@ -146,12 +146,14 @@ export class PlayGroundManager {
     }
     this.setPlaygroundStatus(modelId, 'stopping');
     // We do not await since it can take a lot of time
-    containerEngine.stopContainer(state.container.engineId, state.container.containerId)
+    containerEngine
+      .stopContainer(state.container.engineId, state.container.containerId)
       .then(() => {
         this.setPlaygroundStatus(modelId, 'stopped');
-      }).catch(e => {
-      this.setPlaygroundStatus(modelId, 'error');
-    })
+      })
+      .catch(e => {
+        this.setPlaygroundStatus(modelId, 'error');
+      });
   }
 
   async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<number> {

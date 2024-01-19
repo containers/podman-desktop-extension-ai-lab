@@ -38,19 +38,54 @@ export class StudioApiImpl implements StudioAPI {
 
   async loadCatalog() {
     const catalogPath = path.resolve(this.applicationManager.appUserDirectory, 'catalog.json');
+
+    try {
+      this.watchCatalogFile(catalogPath); // do not await, we want to do this async
+    } catch (err: unknown) {
+      console.error("unable to watch catalog file, changes to the catalog file won't be reflected to the UI", err);
+    }
+
     try {
       if (!fs.existsSync(catalogPath)) {
         await this.setCatalog(defaultCatalog);
         return;
       }
-      // TODO(feloy): watch catalog file and update catalog with new content
-      const data = await fs.promises.readFile(catalogPath, 'utf-8');
-      const cat = JSON.parse(data) as Catalog;
+      const cat = await this.readAndAnalyzeCatalog(catalogPath);
       await this.setCatalog(cat);
     } catch (err: unknown) {
       console.error('unable to read catalog file, reverting to default catalog', err);
       await this.setCatalog(defaultCatalog);
     }
+  }
+
+  watchCatalogFile(path: string) {
+    const watcher = podmanDesktopApi.fs.createFileSystemWatcher(path);
+    watcher.onDidCreate(async () => {
+      try {
+        const cat = await this.readAndAnalyzeCatalog(path);
+        await this.setCatalog(cat);
+      } catch (err: unknown) {
+        console.error('unable to read created catalog file, continue using default catalog', err);
+      }
+    });
+    watcher.onDidDelete(async () => {
+      console.log('user catalog file deleted, reverting to default catalog');
+      await this.setCatalog(defaultCatalog);
+    });
+    watcher.onDidChange(async () => {
+      try {
+        const cat = await this.readAndAnalyzeCatalog(path);
+        await this.setCatalog(cat);
+      } catch (err: unknown) {
+        console.error('unable to read modified catalog file, reverting to default catalog', err);
+      }
+    });
+  }
+
+  async readAndAnalyzeCatalog(path: string): Promise<Catalog> {
+    const data = await fs.promises.readFile(path, 'utf-8');
+    return JSON.parse(data) as Catalog;
+    // TODO(feloy): check version, ...
   }
 
   async setCatalog(newCatalog: Catalog) {

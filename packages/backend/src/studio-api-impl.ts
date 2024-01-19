@@ -10,11 +10,10 @@ import type { Task } from '@shared/src/models/ITask';
 import type { PlayGroundManager } from './managers/playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
-import type { Catalog } from '@shared/src/models/ICatalog';
-import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
 
 import * as path from 'node:path';
 import type { CatalogManager } from './managers/catalogManager';
+import type { Catalog } from '@shared/src/models/ICatalog';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 
@@ -25,67 +24,10 @@ export class StudioApiImpl implements StudioAPI {
     private taskRegistry: TaskRegistry,
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
-    private webview: podmanDesktopApi.Webview,
   ) {}
 
-  async loadCatalog() {
-    const catalogPath = path.resolve(this.applicationManager.appUserDirectory, 'catalog.json');
-
-    try {
-      this.watchCatalogFile(catalogPath); // do not await, we want to do this async
-    } catch (err: unknown) {
-      console.error("unable to watch catalog file, changes to the catalog file won't be reflected to the UI", err);
-    }
-
-    try {
-      if (!fs.existsSync(catalogPath)) {
-        await this.setCatalog(defaultCatalog);
-        return;
-      }
-      const cat = await this.readAndAnalyzeCatalog(catalogPath);
-      await this.setCatalog(cat);
-    } catch (err: unknown) {
-      console.error('unable to read catalog file, reverting to default catalog', err);
-      await this.setCatalog(defaultCatalog);
-    }
-  }
-
-  watchCatalogFile(path: string) {
-    const watcher = podmanDesktopApi.fs.createFileSystemWatcher(path);
-    watcher.onDidCreate(async () => {
-      try {
-        const cat = await this.readAndAnalyzeCatalog(path);
-        await this.setCatalog(cat);
-      } catch (err: unknown) {
-        console.error('unable to read created catalog file, continue using default catalog', err);
-      }
-    });
-    watcher.onDidDelete(async () => {
-      console.log('user catalog file deleted, reverting to default catalog');
-      await this.setCatalog(defaultCatalog);
-    });
-    watcher.onDidChange(async () => {
-      try {
-        const cat = await this.readAndAnalyzeCatalog(path);
-        await this.setCatalog(cat);
-      } catch (err: unknown) {
-        console.error('unable to read modified catalog file, reverting to default catalog', err);
-      }
-    });
-  }
-
-  async readAndAnalyzeCatalog(path: string): Promise<Catalog> {
-    const data = await fs.promises.readFile(path, 'utf-8');
-    return JSON.parse(data) as Catalog;
-    // TODO(feloy): check version, ...
-  }
-
-  async setCatalog(newCatalog: Catalog) {
-    this.catalog = newCatalog;
-    await this.webview.postMessage({
-      id: MSG_NEW_CATALOG_STATE,
-      body: this.catalog,
-    });
+  async ping(): Promise<string> {
+    return 'pong';
   }
 
   async openURL(url: string): Promise<boolean> {
@@ -94,10 +36,6 @@ export class StudioApiImpl implements StudioAPI {
 
   async getPullingStatus(recipeId: string): Promise<RecipeStatus> {
     return this.recipeStatusRegistry.getStatus(recipeId);
-  }
-
-  async ping(): Promise<string> {
-    return 'pong';
   }
 
   async getRecentRecipes(): Promise<Recipe[]> {
@@ -186,5 +124,9 @@ export class StudioApiImpl implements StudioAPI {
 
   async getPlaygroundStates(): Promise<QueryState[]> {
     return this.playgroundManager.getState();
+  }
+
+  async getCatalog(): Promise<Catalog> {
+    return this.catalogManager.getCatalog();
   }
 }

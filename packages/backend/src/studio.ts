@@ -95,7 +95,11 @@ export class Studio {
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry);
     const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
     this.playgroundManager = new PlayGroundManager(this.#panel.webview);
-    this.catalogManager = new CatalogManager(applicationManager.appUserDirectory);
+    // Create catalog manager, responsible for loading the catalog files and watching for changes
+    this.catalogManager = new CatalogManager(
+      applicationManager.appUserDirectory,
+      this.#panel.webview,
+    );
 
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
@@ -104,7 +108,6 @@ export class Studio {
       taskRegistry,
       this.playgroundManager,
       this.catalogManager,
-      this.#panel.webview,
     );
 
     await this.catalogManager.loadCatalog();

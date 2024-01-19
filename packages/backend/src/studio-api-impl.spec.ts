@@ -29,6 +29,7 @@ import type { TaskRegistry } from './registries/TaskRegistry';
 import type { Webview } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
+import { CatalogManager } from './managers/catalogManager';
 
 vi.mock('./ai.json', () => {
   return {
@@ -41,17 +42,34 @@ vi.mock('node:fs', () => {
     existsSync: vi.fn(),
     promises: {
       readFile: vi.fn(),
-    }
+    },
   };
 });
 
+vi.mock('@podman-desktop/api', () => {
+  return {
+    fs: {
+      createFileSystemWatcher: () => ({
+        onDidCreate: vi.fn(),
+        onDidDelete: vi.fn(),
+        onDidChange: vi.fn(),
+      }),
+    },
+  };
+});
 
 let studioApiImpl: StudioApiImpl;
 let catalogManager;
 
 beforeEach(async () => {
   const appUserDirectory = '.';
-  catalogManager = new CatalogManager(appUserDirectory);
+
+  // Creating CatalogManager
+  catalogManager = new CatalogManager(appUserDirectory, {
+    postMessage: vi.fn(),
+  } as unknown as Webview);
+
+  // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
     {
       appUserDirectory,
@@ -60,9 +78,6 @@ beforeEach(async () => {
     {} as unknown as TaskRegistry,
     {} as unknown as PlayGroundManager,
     catalogManager,
-    {
-      postMessage: vi.fn(),
-    } as unknown as Webview,
   );
   vi.resetAllMocks();
   vi.mock('node:fs');
@@ -84,8 +99,8 @@ describe('invalid user catalog', () => {
     );
   });
 
-  test('expect error if id does not correspond to any model', () => {
-    expect(() => studioApiImpl.getModelById('unknown')).toThrowError('No model found having id unknown');
+  test('expect error if id does not correspond to any model', async () => {
+    await expect(() => studioApiImpl.getModelById('unknown')).rejects.toThrowError('No model found having id unknown');
   });
 });
 

@@ -36,16 +36,30 @@ vi.mock('./ai.json', () => {
   };
 });
 
+vi.mock('node:fs', () => {
+  return {
+    existsSync: vi.fn(),
+    promises: {
+      readFile: vi.fn(),
+    }
+  };
+});
+
+
 let studioApiImpl: StudioApiImpl;
+let catalogManager;
 
 beforeEach(async () => {
+  const appUserDirectory = '.';
+  catalogManager = new CatalogManager(appUserDirectory);
   studioApiImpl = new StudioApiImpl(
     {
-      appUserDirectory: '.',
+      appUserDirectory,
     } as unknown as ApplicationManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as TaskRegistry,
     {} as unknown as PlayGroundManager,
+    catalogManager,
     {
       postMessage: vi.fn(),
     } as unknown as Webview,
@@ -57,11 +71,11 @@ beforeEach(async () => {
 describe('invalid user catalog', () => {
   beforeEach(async () => {
     vi.spyOn(fs.promises, 'readFile').mockResolvedValue('invalid json');
-    await studioApiImpl.loadCatalog();
+    await catalogManager.loadCatalog();
   });
 
-  test('expect correct model is returned with valid id', () => {
-    const model = studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
+  test('expect correct model is returned with valid id', async () => {
+    const model = await studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
     expect(model).toBeDefined();
     expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
     expect(model.registry).toEqual('Hugging Face');
@@ -77,8 +91,8 @@ describe('invalid user catalog', () => {
 
 test('expect correct model is returned from default catalog with valid id when no user catalog exists', async () => {
   vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-  await studioApiImpl.loadCatalog();
-  const model = studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
+  await catalogManager.loadCatalog();
+  const model = await studioApiImpl.getModelById('llama-2-7b-chat.Q5_K_S');
   expect(model).toBeDefined();
   expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
   expect(model.registry).toEqual('Hugging Face');
@@ -90,8 +104,9 @@ test('expect correct model is returned from default catalog with valid id when n
 test('expect correct model is returned with valid id when the user catalog is valid', async () => {
   vi.spyOn(fs, 'existsSync').mockReturnValue(true);
   vi.spyOn(fs.promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
-  await studioApiImpl.loadCatalog();
-  const model = studioApiImpl.getModelById('model1');
+
+  await catalogManager.loadCatalog();
+  const model = await studioApiImpl.getModelById('model1');
   expect(model).toBeDefined();
   expect(model.name).toEqual('Model 1');
   expect(model.registry).toEqual('Hugging Face');

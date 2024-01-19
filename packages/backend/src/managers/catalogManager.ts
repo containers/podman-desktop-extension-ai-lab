@@ -1,6 +1,6 @@
 import type { Catalog } from '@shared/src/models/ICatalog';
 import path from 'node:path';
-import fs from 'node:fs';
+import { existsSync, promises } from 'node:fs';
 import defaultCatalog from '../ai.json';
 import type { Category } from '@shared/src/models/ICategory';
 import type { Recipe } from '@shared/src/models/IRecipe';
@@ -32,12 +32,12 @@ export class CatalogManager {
   async loadCatalog() {
     const catalogPath = path.resolve(this.appUserDirectory, 'catalog.json');
     try {
-      if (!fs.existsSync(catalogPath)) {
+      if (!existsSync(catalogPath)) {
         this.setCatalog(defaultCatalog);
         return;
       }
       // TODO(feloy): watch catalog file and update catalog with new content
-      const data = await fs.promises.readFile(catalogPath, 'utf-8');
+      const data = await promises.readFile(catalogPath, 'utf-8');
       const cat = JSON.parse(data) as Catalog;
       this.setCatalog(cat);
     } catch (err: unknown) {

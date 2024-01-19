@@ -27,6 +27,7 @@ import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import * as fs from 'node:fs';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { PlayGroundManager } from './managers/playground';
+import { CatalogManager } from './managers/catalogManager';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -36,6 +37,7 @@ export class Studio {
   rpcExtension: RpcExtension;
   studioApi: StudioApiImpl;
   playgroundManager: PlayGroundManager;
+  catalogManager: CatalogManager;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -93,14 +95,20 @@ export class Studio {
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry);
     const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
     this.playgroundManager = new PlayGroundManager(this.#panel.webview);
+    this.catalogManager = new CatalogManager(applicationManager.appUserDirectory);
+
+    // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
       applicationManager,
       recipeStatusRegistry,
       taskRegistry,
       this.playgroundManager,
+      this.catalogManager,
       this.#panel.webview,
     );
-    await this.studioApi.loadCatalog();
+
+    await this.catalogManager.loadCatalog();
+
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
   }

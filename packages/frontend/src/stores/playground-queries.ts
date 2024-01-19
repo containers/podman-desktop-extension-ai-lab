@@ -9,7 +9,7 @@ export const playgroundQueries: Readable<QueryState[]> = readable<QueryState[]>(
     set(msg);
   });
   // Initialize the store manually
-  studioClient.getPlaygroundStates().then(state => {
+  studioClient.getPlaygroundQueriesState().then(state => {
     set(state);
   });
   return () => {

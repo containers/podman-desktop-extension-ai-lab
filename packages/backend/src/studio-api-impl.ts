@@ -17,8 +17,6 @@
  ***********************************************************************/
 
 import type { StudioAPI } from '@shared/src/StudioAPI';
-import type { Category } from '@shared/src/models/ICategory';
-import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
@@ -32,8 +30,7 @@ import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import * as path from 'node:path';
 import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
-
-export const RECENT_CATEGORY_ID = 'recent-category';
+import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -56,28 +53,6 @@ export class StudioApiImpl implements StudioAPI {
     return this.recipeStatusRegistry.getStatus(recipeId);
   }
 
-  async getRecentRecipes(): Promise<Recipe[]> {
-    return []; // no recent implementation for now
-  }
-
-  async getCategories(): Promise<Category[]> {
-    return this.catalogManager.getCategories();
-  }
-
-  async getRecipesByCategory(categoryId: string): Promise<Recipe[]> {
-    if (categoryId === RECENT_CATEGORY_ID) return this.getRecentRecipes();
-
-    // TODO: move logic to catalog manager
-    return this.catalogManager.getRecipes().filter(recipe => recipe.categories.includes(categoryId));
-  }
-
-  async getRecipeById(recipeId: string): Promise<Recipe> {
-    // TODO: move logic to catalog manager
-    const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
-    if (recipe) return recipe;
-    throw new Error('Not found');
-  }
-
   async getModelById(modelId: string): Promise<ModelInfo> {
     // TODO: move logic to catalog manager
     const model = this.catalogManager.getModels().find(m => modelId === m.id);
@@ -87,18 +62,9 @@ export class StudioApiImpl implements StudioAPI {
     return model;
   }
 
-  async getModelsByIds(ids: string[]): Promise<ModelInfo[]> {
-    // TODO: move logic to catalog manager
-    return this.catalogManager.getModels().filter(m => ids.includes(m.id)) ?? [];
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async searchRecipes(_query: string): Promise<Recipe[]> {
-    return []; // todo: not implemented
-  }
-
   async pullApplication(recipeId: string): Promise<void> {
-    const recipe: Recipe = await this.getRecipeById(recipeId);
+    const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
+    if (!recipe) throw new Error('Not found');
 
     // the user should have selected one model, we use the first one for the moment
     const modelId = recipe.models[0];
@@ -122,14 +88,20 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async startPlayground(modelId: string): Promise<void> {
+    // TODO: improve the following
     const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
     if (localModelInfo.length !== 1) {
       throw new Error('model not found');
     }
 
+    // TODO: we need to stop doing that.
     const modelPath = path.resolve(this.applicationManager.appUserDirectory, 'models', modelId, localModelInfo[0].file);
 
     await this.playgroundManager.startPlayground(modelId, modelPath);
+  }
+
+  async stopPlayground(modelId: string): Promise<void> {
+    await this.playgroundManager.stopPlayground(modelId);
   }
 
   askPlayground(modelId: string, prompt: string): Promise<number> {
@@ -140,8 +112,12 @@ export class StudioApiImpl implements StudioAPI {
     return this.playgroundManager.askPlayground(localModelInfo[0], prompt);
   }
 
-  async getPlaygroundStates(): Promise<QueryState[]> {
-    return this.playgroundManager.getState();
+  async getPlaygroundQueriesState(): Promise<QueryState[]> {
+    return this.playgroundManager.getQueriesState();
+  }
+
+  async getPlaygroundsState(): Promise<PlaygroundState[]> {
+    return this.playgroundManager.getPlaygroundsState();
   }
 
   async getCatalog(): Promise<Catalog> {

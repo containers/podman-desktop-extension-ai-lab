@@ -167,7 +167,9 @@
     placeholder="Type your prompt here"></textarea>
 
   <div class="mt-4 text-right">
-    <Button disabled={!isPromptable()} inProgress={inProgress} on:click={() => askPlayground()}>Send Request</Button>
+    {#key playgroundState?.status}
+      <Button disabled={!isPromptable()} inProgress={inProgress} on:click={() => askPlayground()}>Send Request</Button>
+    {/key}
   </div>
 
   {#if result}

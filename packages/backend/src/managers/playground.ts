@@ -80,7 +80,18 @@ export class PlayGroundManager {
   async startPlayground(modelId: string, modelPath: string): Promise<string> {
     // TODO(feloy) remove previous query from state?
     if (this.playgrounds.has(modelId)) {
-      throw new Error('model is already running');
+      // TODO: check manually if the contains has a matching state
+      switch (this.playgrounds.get(modelId).status) {
+        case "running":
+          throw new Error('playground is already running');
+        case "starting":
+        case "stopping":
+          throw new Error('playground is transitioning');
+        case "error":
+        case "none":
+        case "stopped":
+          break;
+      }
     }
 
     await this.setPlaygroundStatus(modelId, 'starting');

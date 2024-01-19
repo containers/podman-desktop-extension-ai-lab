@@ -2,9 +2,9 @@ import type { Catalog } from '@shared/src/models/ICatalog';
 import path from 'node:path';
 import fs from 'node:fs';
 import defaultCatalog from '../ai.json';
-import { Category } from '@shared/src/models/ICategory';
-import { Recipe } from '@shared/src/models/IRecipe';
-import { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { Category } from '@shared/src/models/ICategory';
+import type { Recipe } from '@shared/src/models/IRecipe';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export class CatalogManager {
   private catalog: Catalog;

@@ -1,7 +1,6 @@
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { Category } from '@shared/src/models/ICategory';
 import type { Recipe } from '@shared/src/models/IRecipe';
-import defaultCatalog from './ai.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
@@ -15,8 +14,7 @@ import type { Catalog } from '@shared/src/models/ICatalog';
 import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
 
 import * as path from 'node:path';
-import * as fs from 'node:fs';
-import { CatalogManager } from './managers/catalogManager';
+import type { CatalogManager } from './managers/catalogManager';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 

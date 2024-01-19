@@ -82,14 +82,14 @@ export class PlayGroundManager {
     if (this.playgrounds.has(modelId)) {
       // TODO: check manually if the contains has a matching state
       switch (this.playgrounds.get(modelId).status) {
-        case "running":
+        case 'running':
           throw new Error('playground is already running');
-        case "starting":
-        case "stopping":
+        case 'starting':
+        case 'stopping':
           throw new Error('playground is transitioning');
-        case "error":
-        case "none":
-        case "stopped":
+        case 'error':
+        case 'none':
+        case 'stopped':
           break;
       }
     }

@@ -291,7 +291,7 @@ export class ApplicationManager {
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {
       const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
-      if (modelEntries.length != 1) {
+      if (modelEntries.length !== 1) {
         // we support models with one file only for now
         continue;
       }

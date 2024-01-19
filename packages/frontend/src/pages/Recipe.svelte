@@ -2,10 +2,8 @@
 import NavPage from '/@/lib/NavPage.svelte';
 import { onDestroy, onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
-import type { Recipe as RecipeModel } from '@shared/models/IRecipe';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
-import type { Category } from '@shared/models/ICategory';
 import Card from '/@/lib/Card.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import Fa from 'svelte-fa';
@@ -14,14 +12,16 @@ import { faDownload, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Button from '/@/lib/button/Button.svelte';
 import { getDisplayName } from '/@/utils/versionControlUtils';
-import type { RecipeStatus } from '@shared/models/IRecipeStatus';
+import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import { getIcon } from '/@/utils/categoriesUtils';
 import RecipeModels from './RecipeModels.svelte';
+import { catalog } from '/@/stores/catalog';
 
 export let recipeId: string;
 
 // The recipe model provided
-let recipe: RecipeModel | undefined = undefined;
+$: recipe = $catalog.recipes.find(r => r.id === recipeId);
+$: categories = $catalog.categories;
 
 // By default, we are loading the recipe information
 let loading: boolean = true;
@@ -29,14 +29,9 @@ let loading: boolean = true;
 // The pulling tasks
 let recipeStatus: RecipeStatus | undefined = undefined;
 
-$: categories = [] as Category[]
-
 let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
 
 onMount(async () => {
-  recipe = await studioClient.getRecipeById(recipeId);
-  categories = await studioClient.getCategories();
-
   // Pulling update
   intervalId = setInterval(async () => {
     recipeStatus = await studioClient.getPullingStatus(recipeId);

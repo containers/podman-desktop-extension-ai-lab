@@ -1,17 +1,10 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
 import RecipesCard from '/@/lib/RecipesCard.svelte';
-import { onMount } from 'svelte';
-import { RECENT_CATEGORY_ID, studioClient } from '/@/utils/client';
-import type { Category } from '@shared/models/ICategory';
+import { RECENT_CATEGORY_ID } from '/@/utils/client';
+import { catalog } from '/@/stores/catalog';
 
-$: categories = [] as Category[]
-
-
-onMount(async () => {
-  categories = await studioClient.getCategories()
-})
-
+$: categories = $catalog.categories;
 </script>
 
 <NavPage title="Recipe Catalog" searchEnabled="{false}">

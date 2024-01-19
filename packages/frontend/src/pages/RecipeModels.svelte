@@ -1,24 +1,18 @@
 <script lang="ts">
   import type { ModelInfo } from '@shared/src/models/IModelInfo';
-  import Table from '../lib/table/Table.svelte';
-  import { Column, Row } from '../lib/table/table';
-  import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
-  import ModelColumnRegistry from '../lib/table/model/ModelColumnRegistry.svelte';
-  import ModelColumnPopularity from '../lib/table/model/ModelColumnPopularity.svelte';
-  import ModelColumnLicense from '../lib/table/model/ModelColumnLicense.svelte';
-  import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
-  import { onMount } from 'svelte';
-  import { studioClient } from '../utils/client';
+  import Table from '/@/lib/table/Table.svelte';
+  import { Column, Row } from '/@/lib/table/table';
+  import ModelColumnName from '/@/lib/table/model/ModelColumnName.svelte';
+  import ModelColumnRegistry from '/@/lib/table/model/ModelColumnRegistry.svelte';
+  import ModelColumnPopularity from '/@/lib/table/model/ModelColumnPopularity.svelte';
+  import ModelColumnLicense from '/@/lib/table/model/ModelColumnLicense.svelte';
+  import ModelColumnHw from '/@/lib/table/model/ModelColumnHW.svelte';
+  import { catalog } from '/@/stores/catalog';
 
   export let modelsIds: string[] | undefined;
-  let models: ModelInfo[] = [];
-
-  onMount(async () => {
-    if (modelsIds && modelsIds.length > 0) {
-      models = await studioClient.getModelsByIds(modelsIds);
-    }
-  })
-
+  
+  $: models = $catalog.models.filter(m => modelsIds?.includes(m.id));
+  
   const columns: Column<ModelInfo>[] = [
     new Column<ModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
     new Column<ModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),

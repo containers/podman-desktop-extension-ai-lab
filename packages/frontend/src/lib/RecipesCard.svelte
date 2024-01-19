@@ -1,26 +1,19 @@
 <script lang="ts">
 import Card from '/@/lib/Card.svelte';
-import type { Recipe } from '@shared/models/IRecipe';
 import { getIcon } from '/@/utils/categoriesUtils';
-import { onMount } from 'svelte';
-import { studioClient } from '/@/utils/client';
-import type { Category } from '@shared/models/ICategory';
+import type { Category } from '@shared/src/models/ICategory';
+import { catalog } from '/@/stores/catalog';
 
 export let category: Category
 
-$: recipes = [] as Recipe[];
-$: categories = [] as Category[];
+$: categories = $catalog.categories;
+$: recipes = $catalog.recipes.filter(r => r.categories.includes(category.id)).map(r => ({...r, icon: category.id}));
 
 export let primaryBackground: string = "bg-charcoal-800"
 export let secondaryBackground: string = "bg-charcoal-700"
 
 export let displayCategory: boolean = true
 export let displayDescription: boolean = true
-
-onMount(async () => {
-  recipes = (await studioClient.getRecipesByCategory(category.id)).map((recipe) => ({...recipe, icon: category.id}))
-  categories = await studioClient.getCategories();
-})
 </script>
 
 <Card title="{category.name}" classes="{primaryBackground} {$$props.class} text-xl font-medium mt-4">

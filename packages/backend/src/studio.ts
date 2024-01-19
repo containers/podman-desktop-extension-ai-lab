@@ -93,7 +93,13 @@ export class Studio {
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry);
     const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
     this.playgroundManager = new PlayGroundManager(this.#panel.webview);
-    this.studioApi = new StudioApiImpl(applicationManager, recipeStatusRegistry, taskRegistry, this.playgroundManager);
+    this.studioApi = new StudioApiImpl(
+      applicationManager,
+      recipeStatusRegistry,
+      taskRegistry,
+      this.playgroundManager,
+      this.#panel.webview,
+    );
     await this.studioApi.loadCatalog();
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

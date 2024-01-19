@@ -29,7 +29,6 @@ export class CatalogManager {
     return this.catalog.recipes;
   }
 
-
   async loadCatalog() {
     const catalogPath = path.resolve(this.appUserDirectory, 'catalog.json');
     try {

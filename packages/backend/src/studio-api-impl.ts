@@ -21,7 +21,6 @@ import { CatalogManager } from './managers/catalogManager';
 export const RECENT_CATEGORY_ID = 'recent-category';
 
 export class StudioApiImpl implements StudioAPI {
-
   constructor(
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,

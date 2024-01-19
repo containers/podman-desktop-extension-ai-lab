@@ -31,7 +31,7 @@ import * as http from 'node:http';
 import { getFreePort } from '../utils/ports';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '@shared/Messages';
-import { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
+import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
 
 // TODO: this should not be hardcoded
 const LOCALAI_IMAGE = 'quay.io/go-skynet/local-ai:v2.5.1';
@@ -47,7 +47,7 @@ function findFirstProvider(): ProviderContainerConnection | undefined {
 export class PlayGroundManager {
   private queryIdCounter = 0;
 
-  // Map<modelId, state>
+  // Dict modelId => state
   private playgrounds: Map<string, PlaygroundState>;
   private queries: Map<number, QueryState>;
 
@@ -62,7 +62,7 @@ export class PlayGroundManager {
   }
 
   setPlaygroundStatus(modelId: string, status: PlaygroundStatus) {
-    this.updatePlaygroundState(modelId, {
+    return this.updatePlaygroundState(modelId, {
       modelId: modelId,
       ...(this.playgrounds.get(modelId) || {}),
       status: status,
@@ -83,11 +83,11 @@ export class PlayGroundManager {
       throw new Error('model is already running');
     }
 
-    this.setPlaygroundStatus(modelId, 'starting');
+    await this.setPlaygroundStatus(modelId, 'starting');
 
     const connection = findFirstProvider();
     if (!connection) {
-      this.setPlaygroundStatus(modelId, 'error');
+      await this.setPlaygroundStatus(modelId, 'error');
       throw new Error('Unable to find an engine to start playground');
     }
 
@@ -96,7 +96,7 @@ export class PlayGroundManager {
       await containerEngine.pullImage(connection.connection, LOCALAI_IMAGE, () => {});
       image = await this.selectImage(connection, LOCALAI_IMAGE);
       if (!image) {
-        this.setPlaygroundStatus(modelId, 'error');
+        await this.setPlaygroundStatus(modelId, 'error');
         throw new Error(`Unable to find ${LOCALAI_IMAGE} image`);
       }
     }
@@ -126,7 +126,7 @@ export class PlayGroundManager {
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
     });
 
-    this.updatePlaygroundState(modelId, {
+    await this.updatePlaygroundState(modelId, {
       container: {
         containerId: result.id,
         port: freePort,
@@ -141,24 +141,25 @@ export class PlayGroundManager {
 
   async stopPlayground(modelId: string): Promise<void> {
     const state = this.playgrounds.get(modelId);
-    if (!state || !state.container) {
+    if (state?.container === undefined) {
       throw new Error('model is not running');
     }
-    this.setPlaygroundStatus(modelId, 'stopping');
+    await this.setPlaygroundStatus(modelId, 'stopping');
     // We do not await since it can take a lot of time
     containerEngine
       .stopContainer(state.container.engineId, state.container.containerId)
-      .then(() => {
-        this.setPlaygroundStatus(modelId, 'stopped');
+      .then(async () => {
+        await this.setPlaygroundStatus(modelId, 'stopped');
       })
-      .catch(e => {
-        this.setPlaygroundStatus(modelId, 'error');
+      .catch(async (error: unknown) => {
+        console.error(error);
+        await this.setPlaygroundStatus(modelId, 'error');
       });
   }
 
   async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<number> {
     const state = this.playgrounds.get(modelInfo.id);
-    if (!state || !state.container) {
+    if (state?.container === undefined) {
       throw new Error('model is not running');
     }
 

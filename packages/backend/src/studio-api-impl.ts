@@ -30,7 +30,7 @@ import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import * as path from 'node:path';
 import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
-import { PlaygroundState } from '@shared/src/models/IPlaygroundState';
+import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -64,8 +64,7 @@ export class StudioApiImpl implements StudioAPI {
 
   async pullApplication(recipeId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
-    if (!recipe)
-      throw new Error('Not found');
+    if (!recipe) throw new Error('Not found');
 
     // the user should have selected one model, we use the first one for the moment
     const modelId = recipe.models[0];

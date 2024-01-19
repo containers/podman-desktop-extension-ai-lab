@@ -4,7 +4,7 @@ import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import ModelPlayground from './ModelPlayground.svelte';
-import { catalog } from '../stores/catalog';
+import { catalog } from '/@/stores/catalog';
 
 export let modelId: string;
 

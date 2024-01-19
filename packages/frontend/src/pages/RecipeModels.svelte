@@ -1,13 +1,13 @@
 <script lang="ts">
   import type { ModelInfo } from '@shared/src/models/IModelInfo';
-  import Table from '../lib/table/Table.svelte';
-  import { Column, Row } from '../lib/table/table';
-  import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
-  import ModelColumnRegistry from '../lib/table/model/ModelColumnRegistry.svelte';
-  import ModelColumnPopularity from '../lib/table/model/ModelColumnPopularity.svelte';
-  import ModelColumnLicense from '../lib/table/model/ModelColumnLicense.svelte';
-  import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
-  import { catalog } from '../stores/catalog';
+  import Table from '/@/lib/table/Table.svelte';
+  import { Column, Row } from '/@/lib/table/table';
+  import ModelColumnName from '/@/lib/table/model/ModelColumnName.svelte';
+  import ModelColumnRegistry from '/@/lib/table/model/ModelColumnRegistry.svelte';
+  import ModelColumnPopularity from '/@/lib/table/model/ModelColumnPopularity.svelte';
+  import ModelColumnLicense from '/@/lib/table/model/ModelColumnLicense.svelte';
+  import ModelColumnHw from '/@/lib/table/model/ModelColumnHW.svelte';
+  import { catalog } from '/@/stores/catalog';
 
   export let modelsIds: string[] | undefined;
   

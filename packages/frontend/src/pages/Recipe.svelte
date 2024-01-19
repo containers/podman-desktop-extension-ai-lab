@@ -15,7 +15,7 @@ import { getDisplayName } from '/@/utils/versionControlUtils';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import { getIcon } from '/@/utils/categoriesUtils';
 import RecipeModels from './RecipeModels.svelte';
-import { catalog } from '../stores/catalog';
+import { catalog } from '/@/stores/catalog';
 
 export let recipeId: string;
 

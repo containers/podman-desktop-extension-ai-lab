@@ -2,7 +2,7 @@
 import Card from '/@/lib/Card.svelte';
 import { getIcon } from '/@/utils/categoriesUtils';
 import type { Category } from '@shared/src/models/ICategory';
-import { catalog } from '../stores/catalog';
+import { catalog } from '/@/stores/catalog';
 
 export let category: Category
 

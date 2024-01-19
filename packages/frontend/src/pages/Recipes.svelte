@@ -2,7 +2,7 @@
 import NavPage from '/@/lib/NavPage.svelte';
 import RecipesCard from '/@/lib/RecipesCard.svelte';
 import { RECENT_CATEGORY_ID } from '/@/utils/client';
-import { catalog } from '../stores/catalog';
+import { catalog } from '/@/stores/catalog';
 
 $: categories = $catalog.categories;
 </script>

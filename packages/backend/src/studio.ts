@@ -96,10 +96,7 @@ export class Studio {
     const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
     this.playgroundManager = new PlayGroundManager(this.#panel.webview);
     // Create catalog manager, responsible for loading the catalog files and watching for changes
-    this.catalogManager = new CatalogManager(
-      applicationManager.appUserDirectory,
-      this.#panel.webview,
-    );
+    this.catalogManager = new CatalogManager(applicationManager.appUserDirectory, this.#panel.webview);
 
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(

@@ -59,14 +59,15 @@ export class CatalogManager {
 
   async loadCatalog() {
     const catalogPath = path.resolve(this.appUserDirectory, 'catalog.json');
-    if (!existsSync(catalogPath)) {
-      return this.setCatalog(defaultCatalog);
-    }
 
     try {
       this.watchCatalogFile(catalogPath); // do not await, we want to do this async
     } catch (err: unknown) {
       console.error(`unable to watch catalog file, changes to the catalog file won't be reflected to the UI`, err);
+    }
+
+    if (!existsSync(catalogPath)) {
+      return this.setCatalog(defaultCatalog);
     }
 
     try {

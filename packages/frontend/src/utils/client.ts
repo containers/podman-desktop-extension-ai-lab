@@ -1,6 +1,6 @@
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import { RpcBrowser } from '@shared/src/messages/MessageProxy';
-import type { RouterState } from '@shared/src/models/IRouterState';
+import type { RouterState } from '/@/models/IRouterState';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 const podmanDesktopApi = acquirePodmanDesktopApi();

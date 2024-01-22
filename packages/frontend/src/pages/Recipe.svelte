@@ -1,6 +1,5 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
-import { onDestroy, onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
@@ -12,44 +11,23 @@ import { faDownload, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Button from '/@/lib/button/Button.svelte';
 import { getDisplayName } from '/@/utils/versionControlUtils';
-import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import { getIcon } from '/@/utils/categoriesUtils';
 import RecipeModels from './RecipeModels.svelte';
 import { catalog } from '/@/stores/catalog';
+  import { recipes } from '/@/stores/recipe';
 
 export let recipeId: string;
 
 // The recipe model provided
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: categories = $catalog.categories;
+$: recipeStatus = $recipes.get(recipeId);
 
-// By default, we are loading the recipe information
-let loading: boolean = true;
-
-// The pulling tasks
-let recipeStatus: RecipeStatus | undefined = undefined;
-
-let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
-
-onMount(async () => {
-  // Pulling update
-  intervalId = setInterval(async () => {
-    recipeStatus = await studioClient.getPullingStatus(recipeId);
-    loading = false;
-  }, 1000);
-})
-
+let loading: boolean = false;
 const onPullingRequest = async () => {
   loading = true;
   await studioClient.pullApplication(recipeId);
 }
-
-onDestroy(() => {
-  if(intervalId !== undefined) {
-    clearInterval(intervalId);
-    intervalId = undefined;
-  }
-});
 
 const onClickRepository = () => {
   if (recipe) {

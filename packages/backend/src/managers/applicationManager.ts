@@ -256,11 +256,15 @@ export class ApplicationManager {
         }
       }
 
+      let previousProgressValue = -1;
       resp.on('data', chunk => {
         progress += chunk.length;
         const progressValue = (progress * 100) / totalFileSize;
 
-        taskUtil.setTaskProgress(modelId, progressValue);
+        if (progressValue === 100 || progressValue - previousProgressValue > 1) {
+          previousProgressValue = progressValue;
+          taskUtil.setTaskProgress(modelId, progressValue);
+        }
 
         // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
         //this.sendProgress(progressValue);

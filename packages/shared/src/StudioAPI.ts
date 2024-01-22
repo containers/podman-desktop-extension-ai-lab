@@ -4,6 +4,7 @@ import type { Task } from './models/ITask';
 import type { QueryState } from './models/IPlaygroundQueryState';
 import type { Catalog } from './models/ICatalog';
 import type { PlaygroundState } from './models/IPlaygroundState';
+import type { RouterState } from './models/IRouterState';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -29,4 +30,7 @@ export abstract class StudioAPI {
   abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
 
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
+
+  abstract saveRouterState(state: RouterState): Promise<void>;
+  abstract getRouterState(): Promise<RouterState>;
 }

@@ -12,8 +12,16 @@ import Registries from '/@/pages/Registries.svelte';
 import Models from '/@/pages/Models.svelte';
 import Recipe from '/@/pages/Recipe.svelte';
   import Model from './pages/Model.svelte';
+import { onMount } from 'svelte';
+import { studioClient } from '/@/utils/client';
 
 router.mode.hash();
+
+onMount(async () => {
+  // Load router state on application startup
+  const state = await studioClient.getRouterState();
+  router.goto(state.url);
+});
 </script>
 
 

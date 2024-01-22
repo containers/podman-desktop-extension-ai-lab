@@ -31,6 +31,8 @@ import * as path from 'node:path';
 import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
+import type { RouterState } from '@shared/src/models/IRouterState';
+import type { RouterRegistry } from './registries/RouterRegistry';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -39,6 +41,7 @@ export class StudioApiImpl implements StudioAPI {
     private taskRegistry: TaskRegistry,
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
+    private routerRegistry: RouterRegistry,
   ) {}
 
   async ping(): Promise<string> {
@@ -122,5 +125,12 @@ export class StudioApiImpl implements StudioAPI {
 
   async getCatalog(): Promise<Catalog> {
     return this.catalogManager.getCatalog();
+  }
+
+  async saveRouterState(state: RouterState): Promise<void> {
+    this.routerRegistry.setRouterState(state);
+  }
+  async getRouterState(): Promise<RouterState> {
+    return this.routerRegistry.getRouterState();
   }
 }

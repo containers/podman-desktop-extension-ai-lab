@@ -141,17 +141,29 @@ export class ApplicationManager {
       container => container.arch === undefined || container.arch === arch(),
     );
 
-    // Download model
-    taskUtil.setTask({
-      id: model.id,
-      state: 'loading',
-      name: `Downloading model ${model.name}`,
-      labels: {
-        'model-pulling': model.id,
-      },
-    });
+    const localModels = this.getLocalModels();
+    if (!localModels.map(m => m.id).includes(model.id)) {
+      // Download model
+      taskUtil.setTask({
+        id: model.id,
+        state: 'loading',
+        name: `Downloading model ${model.name}`,
+        labels: {
+          'model-pulling': model.id,
+        },
+      });
 
-    await this.downloadModelMain(model.id, model.url, taskUtil);
+      await this.downloadModelMain(model.id, model.url, taskUtil);
+    } else {
+      taskUtil.setTask({
+        id: model.id,
+        state: 'success',
+        name: `Model ${model.name} already present on disk`,
+        labels: {
+          'model-pulling': model.id,
+        },
+      });
+    }
 
     filteredContainers.forEach(container => {
       taskUtil.setTask({

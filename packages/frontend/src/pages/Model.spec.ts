@@ -14,7 +14,7 @@ vi.mock('../utils/client', async () => {
     studioClient: {
       getCatalog: mocks.getCatalogMock,
       saveRouterState: vi.fn(),
-      getRouterState: vi.fn().mockResolvedValue({url: '/'}),
+      getRouterState: vi.fn().mockResolvedValue({ url: '/' }),
     },
     rpcBrowser: {
       subscribe: () => {

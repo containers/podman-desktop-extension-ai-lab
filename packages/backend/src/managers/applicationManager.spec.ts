@@ -22,7 +22,11 @@ vi.mock('../models/AIConfig', () => ({
 test('appUserDirectory should be under home directory', () => {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const manager = new ApplicationManager({} as GitManager, {} as RecipeStatusRegistry, {} as ExtensionContext);
-  expect(manager.appUserDirectory).toMatch(/^(\/|\\)home(\/|\\)user/);
+  if (process.platform === 'win32') {
+    expect(manager.appUserDirectory).toMatch(/^\\home\\user/);
+  } else {
+    expect(manager.appUserDirectory).toMatch(/^\/home\/user/);
+  }
 });
 
 test('getLocalModels should return models in local directory', () => {
@@ -133,6 +137,10 @@ test('pullApplication should clone repository and call downloadModelMain', async
     url: '',
   };
   await manager.pullApplication(recipe, model);
-  expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '/home/user/podman-desktop/ai-studio/recipe1');
+  if (process.platform === 'win32') {
+    expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '\\home\\user\\podman-desktop\\ai-studio\\recipe1');
+  } else {
+    expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '/home/user/podman-desktop/ai-studio/recipe1');
+  }
   expect(downloadModelMainSpy).toHaveBeenCalledOnce();
 });

@@ -1,13 +1,15 @@
 <script lang="ts">
 import { createRouteObject } from 'tinro/dist/tinro_lib';
 import type { TinroRouteMeta } from 'tinro';
-import { studioClient } from '/@/utils/client';
+import { saveRouterState, studioClient } from '/@/utils/client';
 
 export let path = '/*';
 export let fallback = false;
 export let redirect = false;
 export let firstmatch = false;
 export let breadcrumb: string | undefined = undefined;
+
+export let isAppMounted: boolean = false;
 
 let showContent = false;
 let params: Record<string, string> = {};
@@ -25,10 +27,9 @@ const route = createRouteObject({
     meta = newMeta;
     params = meta.params;
 
-    // Run fully async
-    setTimeout(async () => {
-      await studioClient.saveRouterState({url: newMeta.url});
-    }, 0)
+    if(isAppMounted) {
+      saveRouterState({url: newMeta.url});
+    }
   },
 });
 

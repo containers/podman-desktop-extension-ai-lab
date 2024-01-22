@@ -13,8 +13,6 @@ vi.mock('../utils/client', async () => {
   return {
     studioClient: {
       getCatalog: mocks.getCatalogMock,
-      saveRouterState: vi.fn(),
-      getRouterState: vi.fn().mockResolvedValue({ url: '/' }),
     },
     rpcBrowser: {
       subscribe: () => {

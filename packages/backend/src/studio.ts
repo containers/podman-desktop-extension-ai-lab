@@ -28,7 +28,6 @@ import * as fs from 'node:fs';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { PlayGroundManager } from './managers/playground';
 import { CatalogManager } from './managers/catalogManager';
-import { RouterRegistry } from './registries/RouterRegistry';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -98,7 +97,6 @@ export class Studio {
     this.playgroundManager = new PlayGroundManager(this.#panel.webview);
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(applicationManager.appUserDirectory, this.#panel.webview);
-    const routerRegister = new RouterRegistry();
 
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
@@ -107,7 +105,6 @@ export class Studio {
       taskRegistry,
       this.playgroundManager,
       this.catalogManager,
-      routerRegister,
     );
 
     await this.catalogManager.loadCatalog();

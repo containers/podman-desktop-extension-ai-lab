@@ -30,7 +30,6 @@ import type { Webview } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
 import { CatalogManager } from './managers/catalogManager';
-import type { RouterRegistry } from './registries/RouterRegistry';
 
 vi.mock('./ai.json', () => {
   return {
@@ -79,7 +78,6 @@ beforeEach(async () => {
     {} as unknown as TaskRegistry,
     {} as unknown as PlayGroundManager,
     catalogManager,
-    {} as unknown as RouterRegistry,
   );
   vi.resetAllMocks();
   vi.mock('node:fs');

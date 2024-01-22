@@ -261,7 +261,7 @@ export class ApplicationManager {
         progress += chunk.length;
         const progressValue = (progress * 100) / totalFileSize;
 
-        if ((progressValue - previousProgressValue) > 1) {
+        if (progressValue === 100 || progressValue - previousProgressValue > 1) {
           previousProgressValue = progressValue;
           taskUtil.setTaskProgress(modelId, progressValue);
         }

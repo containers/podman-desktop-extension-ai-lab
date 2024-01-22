@@ -6,6 +6,7 @@ import Recipe from './Recipe.svelte';
 const mocks = vi.hoisted(() => {
   return {
     getCatalogMock: vi.fn(),
+    getPullingStatusesMock: vi.fn(),
   };
 });
 
@@ -13,6 +14,7 @@ vi.mock('../utils/client', async () => {
   return {
     studioClient: {
       getCatalog: mocks.getCatalogMock,
+      getPullingStatuses: mocks.getPullingStatusesMock,
     },
     rpcBrowser: {
       subscribe: () => {
@@ -29,6 +31,7 @@ test('should display recipe information', async () => {
   expect(recipe).not.toBeUndefined();
 
   mocks.getCatalogMock.mockResolvedValue(catalog);
+  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
   });

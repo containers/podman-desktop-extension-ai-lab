@@ -25,7 +25,6 @@ import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './managers/playground';
-import type { TaskRegistry } from './registries/TaskRegistry';
 import type { Webview } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
@@ -75,7 +74,6 @@ beforeEach(async () => {
       appUserDirectory,
     } as unknown as ApplicationManager,
     {} as unknown as RecipeStatusRegistry,
-    {} as unknown as TaskRegistry,
     {} as unknown as PlayGroundManager,
     catalogManager,
   );

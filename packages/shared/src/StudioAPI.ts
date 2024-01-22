@@ -1,6 +1,5 @@
 import type { RecipeStatus } from './models/IRecipeStatus';
 import type { ModelInfo } from './models/IModelInfo';
-import type { Task } from './models/ITask';
 import type { QueryState } from './models/IPlaygroundQueryState';
 import type { Catalog } from './models/ICatalog';
 import type { PlaygroundState } from './models/IPlaygroundState';
@@ -20,14 +19,6 @@ export abstract class StudioAPI {
   abstract startPlayground(modelId: string): Promise<void>;
   abstract stopPlayground(modelId: string): Promise<void>;
   abstract askPlayground(modelId: string, prompt: string): Promise<number>;
-
-  /**
-   * Get task by label
-   * @param label
-   */
-  abstract getTasksByLabel(label: string): Promise<Task[]>;
-
   abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
-
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
 }

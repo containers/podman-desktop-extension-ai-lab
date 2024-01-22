@@ -102,7 +102,6 @@ export class Studio {
     this.studioApi = new StudioApiImpl(
       applicationManager,
       recipeStatusRegistry,
-      taskRegistry,
       this.playgroundManager,
       this.catalogManager,
     );

@@ -24,7 +24,10 @@ import { MSG_NEW_RECIPE_STATE } from '@shared/Messages';
 export class RecipeStatusRegistry {
   private statuses: Map<string, RecipeStatus> = new Map<string, RecipeStatus>();
 
-  constructor(private taskRegistry: TaskRegistry, private webview: Webview) {}
+  constructor(
+    private taskRegistry: TaskRegistry,
+    private webview: Webview,
+  ) {}
 
   setStatus(recipeId: string, status: RecipeStatus) {
     // Update the TaskRegistry
@@ -32,7 +35,9 @@ export class RecipeStatusRegistry {
       status.tasks.map(task => this.taskRegistry.set(task));
     }
     this.statuses.set(recipeId, status);
-    this.dispatchState(); // we don't want to wait
+    this.dispatchState().catch((err: unknown) => {
+      console.error('error dispatching recipe statuses', err);
+    }); // we don't want to wait
   }
 
   getStatus(recipeId: string): RecipeStatus | undefined {

@@ -21,8 +21,6 @@ import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { TaskRegistry } from './registries/TaskRegistry';
-import type { Task } from '@shared/src/models/ITask';
 import type { PlayGroundManager } from './managers/playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
@@ -36,7 +34,6 @@ export class StudioApiImpl implements StudioAPI {
   constructor(
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
-    private taskRegistry: TaskRegistry,
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
   ) {}
@@ -85,10 +82,6 @@ export class StudioApiImpl implements StudioAPI {
     const local = this.applicationManager.getLocalModels();
     const localIds = local.map(l => l.id);
     return this.catalogManager.getModels().filter(m => localIds.includes(m.id));
-  }
-
-  async getTasksByLabel(label: string): Promise<Task[]> {
-    return this.taskRegistry.getTasksByLabel(label);
   }
 
   async startPlayground(modelId: string): Promise<void> {

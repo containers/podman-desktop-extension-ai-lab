@@ -9,15 +9,11 @@ import ModelColumnRegistry from '../lib/table/model/ModelColumnRegistry.svelte';
 import ModelColumnPopularity from '../lib/table/model/ModelColumnPopularity.svelte';
 import ModelColumnLicense from '../lib/table/model/ModelColumnLicense.svelte';
 import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
-import { onDestroy, onMount } from 'svelte';
-import { studioClient } from '/@/utils/client';
-import type { Category } from '@shared/models/ICategory';
-import type { Task } from '@shared/models/ITask';
+import type { Task } from '@shared/src/models/ITask';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
-import { faRefresh } from '@fortawesome/free-solid-svg-icons';
 import Card from '/@/lib/Card.svelte';
-import Button from '/@/lib/button/Button.svelte';
-import LinearProgress from '/@/lib/progress/LinearProgress.svelte';
+  import { modelsPulling } from '../stores/recipe';
+  import { onMount } from 'svelte';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
@@ -29,7 +25,6 @@ const columns: Column<ModelInfo>[] = [
 const row = new Row<ModelInfo>({});
 
 let loading: boolean = true;
-let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
 
 let tasks: Task[] = [];
 let models: ModelInfo[] = [];
@@ -46,31 +41,28 @@ function filterModels(): void {
     }
     return previousValue;
   }, [] as string[]);
-  filteredModels = models.filter((model) => !(model.id in modelsId));
+  filteredModels = models.filter((model) => !modelsId.includes(model.id));
 }
 
 onMount(() => {
   // Pulling update
-  intervalId = setInterval(async () => {
-    tasks = await studioClient.getTasksByLabel("model-pulling");
+  const modelsPullingUnsubscribe = modelsPulling.subscribe(runningTasks => {
+    tasks = runningTasks;
     loading = false;
     filterModels();
-  }, 1000);
+  });
 
   // Subscribe to the models store
-  return localModels.subscribe((value) => {
+  const localModelsUnsubscribe = localModels.subscribe((value) => {
     models = value;
     filterModels();
   })
-});
 
-onDestroy(() => {
-  if(intervalId !== undefined) {
-    clearInterval(intervalId);
-    intervalId = undefined;
+  return () => {
+    modelsPullingUnsubscribe();
+    localModelsUnsubscribe();
   }
 });
-
 </script>
 
 <NavPage title="Models on disk" searchEnabled="{false}" loading="{loading}">

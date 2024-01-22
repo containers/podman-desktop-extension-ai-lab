@@ -30,7 +30,7 @@ import type { Webview } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
 import { CatalogManager } from './managers/catalogManager';
-import { RouterRegistry } from './registries/RouterRegistry';
+import type { RouterRegistry } from './registries/RouterRegistry';
 
 vi.mock('./ai.json', () => {
   return {

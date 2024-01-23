@@ -12,7 +12,11 @@ test('getLocalModels should return models in local directory', () => {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const existsSyncSpy = vi.spyOn(fs, 'existsSync');
   existsSyncSpy.mockImplementation((path: string) => {
-    expect(path).toBe('/home/user/aistudio/models');
+    if (process.platform === 'win32') {
+      expect(path).toBe('\\home\\user\\aistudio\\models');
+    } else {
+      expect(path).toBe('/home/user/aistudio/models');
+    }
     return true;
   });
   const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
@@ -64,5 +68,9 @@ test('getLocalModels should return an empty array if the models folder does not 
   const manager = new ModelsManager('/home/user/aistudio');
   const models = manager.getLocalModels();
   expect(models).toEqual([]);
-  expect(existsSyncSpy).toHaveBeenCalledWith('/home/user/aistudio/models');
+  if (process.platform === 'win32') {
+    expect(existsSyncSpy).toHaveBeenCalledWith('\\home\\user\\aistudio\\models');
+  } else {
+    expect(existsSyncSpy).toHaveBeenCalledWith('/home/user/aistudio/models');
+  }
 });

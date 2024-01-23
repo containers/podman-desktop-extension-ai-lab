@@ -134,6 +134,9 @@ export class PlayGroundManager {
           ],
         },
       },
+      Labels: {
+        'ia-studio-model': modelId,
+      },
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
     });
 

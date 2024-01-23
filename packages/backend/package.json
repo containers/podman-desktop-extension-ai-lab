@@ -11,8 +11,23 @@
   },
   "main": "./dist/extension.js",
   "contributes": {
-    "configuration": {},
-    "menus": {}
+    "icons": {
+      "brain-icon": {
+        "description": "Brain icon",
+        "default": {
+          "fontPath": "brain.woff2",
+          "fontCharacter": "\\E001"
+        }
+      }
+    },
+    "views": {
+      "icons/containersList": [
+        {
+          "when": "ia-studio-model in containerLabelKeys",
+          "icon": "${brain-icon}"
+        }
+      ]
+    }
   },
   "scripts": {
     "build": "vite build",

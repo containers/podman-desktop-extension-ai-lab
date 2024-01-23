@@ -145,6 +145,7 @@ export class ApplicationManager {
       // Mark as failure.
       loadingConfiguration.state = 'error';
       taskUtil.setTask(loadingConfiguration);
+      throw new Error('No containers available.');
     }
 
     const localModels = this.getLocalModels();

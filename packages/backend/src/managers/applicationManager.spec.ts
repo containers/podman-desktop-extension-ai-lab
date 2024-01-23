@@ -1,15 +1,13 @@
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
 import { ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
-import type { ExtensionContext } from '@podman-desktop/api';
 import type { GitManager } from './gitManager';
 import os from 'os';
-import fs, { Stats, type Dirent } from 'fs';
-import path from 'path';
+import fs from 'node:fs';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import type { RecipeStatusUtils } from '../utils/recipeStatusUtils';
+import type { ModelsManager } from './modelsManager';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -32,61 +30,6 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-test('appUserDirectory should be under home directory', () => {
-  vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
-  const manager = new ApplicationManager({} as GitManager, {} as RecipeStatusRegistry, {} as ExtensionContext);
-  if (process.platform === 'win32') {
-    expect(manager.appUserDirectory).toMatch(/^\\home\\user/);
-  } else {
-    expect(manager.appUserDirectory).toMatch(/^\/home\/user/);
-  }
-});
-
-test('getLocalModels should return models in local directory', () => {
-  vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
-    [path: string],
-    string[] | fs.Dirent[]
-  >;
-  readdirSyncMock.mockImplementation((dir: string) => {
-    if (dir.endsWith('model-id-1') || dir.endsWith('model-id-2')) {
-      const base = path.basename(dir);
-      return [base + '-model'];
-    } else {
-      return [
-        {
-          isDirectory: () => true,
-          path: '/home/user/appstudio-dir',
-          name: 'model-id-1',
-        },
-        {
-          isDirectory: () => true,
-          path: '/home/user/appstudio-dir',
-          name: 'model-id-2',
-        },
-        {
-          isDirectory: () => false,
-          path: '/home/user/appstudio-dir',
-          name: 'other-file-should-be-ignored.txt',
-        },
-      ] as Dirent[];
-    }
-  });
-  const manager = new ApplicationManager({} as GitManager, {} as RecipeStatusRegistry, {} as ExtensionContext);
-  const models = manager.getLocalModels();
-  expect(models).toEqual([
-    {
-      id: 'model-id-1',
-      file: 'model-id-1-model',
-    },
-    {
-      id: 'model-id-2',
-      file: 'model-id-2-model',
-    },
-  ]);
-});
-
 describe('pullApplication', () => {
   interface mockForPullApplicationOptions {
     recipeFolderExists: boolean;
@@ -94,8 +37,8 @@ describe('pullApplication', () => {
 
   const setStatusMock = vi.fn();
   const cloneRepositoryMock = vi.fn();
+  const getLocalModelsMock = vi.fn();
   let manager: ApplicationManager;
-  let getLocalModelsSpy: MockInstance<[], LocalModelInfo[]>;
   let downloadModelMainSpy: MockInstance<
     [modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string],
     Promise<string>
@@ -116,11 +59,11 @@ describe('pullApplication', () => {
     });
     vi.spyOn(fs, 'statSync').mockImplementation((path: string) => {
       if (path.endsWith('recipe1')) {
-        const stat = new Stats();
+        const stat = new fs.Stats();
         stat.isDirectory = () => true;
         return stat;
       } else if (path.endsWith('ai-studio.yaml')) {
-        const stat = new Stats();
+        const stat = new fs.Stats();
         stat.isDirectory = () => false;
         return stat;
       }
@@ -142,16 +85,18 @@ describe('pullApplication', () => {
     mocks.builImageMock.mockResolvedValue(undefined);
 
     manager = new ApplicationManager(
+      '/home/user/aistudio',
       {
         cloneRepository: cloneRepositoryMock,
       } as unknown as GitManager,
       {
         setStatus: setStatusMock,
       } as unknown as RecipeStatusRegistry,
-      {} as ExtensionContext,
+      {
+        getLocalModels: getLocalModelsMock,
+      } as unknown as ModelsManager,
     );
 
-    getLocalModelsSpy = vi.spyOn(manager, 'getLocalModels');
     downloadModelMainSpy = vi.spyOn(manager, 'downloadModelMain');
     downloadModelMainSpy.mockResolvedValue('');
   }
@@ -160,7 +105,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: false,
     });
-    getLocalModelsSpy.mockReturnValue([]);
+    getLocalModelsMock.mockReturnValue([]);
 
     const recipe: Recipe = {
       id: 'recipe1',
@@ -183,13 +128,9 @@ describe('pullApplication', () => {
 
     await manager.pullApplication(recipe, model);
     if (process.platform === 'win32') {
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(
-        1,
-        'repo',
-        '\\home\\user\\podman-desktop\\ai-studio\\recipe1',
-      );
+      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '\\home\\user\\aistudio\\recipe1');
     } else {
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '/home/user/podman-desktop/ai-studio/recipe1');
+      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '/home/user/aistudio/recipe1');
     }
     expect(downloadModelMainSpy).toHaveBeenCalledOnce();
     expect(mocks.builImageMock).toHaveBeenCalledOnce();
@@ -199,7 +140,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
-    getLocalModelsSpy.mockReturnValue([]);
+    getLocalModelsMock.mockReturnValue([]);
 
     const recipe: Recipe = {
       id: 'recipe1',
@@ -228,7 +169,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
-    getLocalModelsSpy.mockReturnValue([
+    getLocalModelsMock.mockReturnValue([
       {
         id: 'model1',
         file: 'model1.file',

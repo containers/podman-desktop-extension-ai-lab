@@ -199,4 +199,46 @@ describe('pullApplication', () => {
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
     expect(downloadModelMainSpy).not.toHaveBeenCalled();
   });
+
+  test('pullApplication should mark the loading config as error if not container are found', async () => {
+    mockForPullApplication({
+      recipeFolderExists: true,
+    });
+    getLocalModelsSpy.mockReturnValue([
+      {
+        id: 'model1',
+        file: 'model1.file',
+      },
+    ]);
+
+    const recipe: Recipe = {
+      id: 'recipe1',
+      name: 'Recipe 1',
+      categories: [],
+      description: '',
+      readme: '',
+      repository: 'repo',
+    };
+    const model: ModelInfo = {
+      id: 'model1',
+      description: '',
+      hw: '',
+      license: '',
+      name: 'Model 1',
+      popularity: 1,
+      registry: '',
+      url: '',
+    };
+
+    mocks.parseYamlMock.mockReturnValue({
+      application: {
+        containers: [],
+      },
+    });
+
+    await expect(manager.pullApplication(recipe, model)).rejects.toThrowError('No containers available.');
+
+    expect(cloneRepositoryMock).not.toHaveBeenCalled();
+    expect(downloadModelMainSpy).not.toHaveBeenCalled();
+  });
 });

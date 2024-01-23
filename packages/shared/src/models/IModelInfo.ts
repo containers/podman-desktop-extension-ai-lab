@@ -1,3 +1,5 @@
+import type { LocalModelInfo } from "./ILocalModelInfo";
+
 export interface ModelInfo {
   id: string;
   name: string;
@@ -7,4 +9,5 @@ export interface ModelInfo {
   popularity: number;
   license: string;
   url: string;
+  file?: LocalModelInfo;
 }

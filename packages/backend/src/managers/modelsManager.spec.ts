@@ -19,6 +19,12 @@ test('getLocalModels should return models in local directory', () => {
     }
     return true;
   });
+  const statSyncSpy = vi.spyOn(fs, 'statSync');
+  const info = new fs.Stats();
+  const now = new Date();
+  info.size = 32000;
+  info.mtime = now;
+  statSyncSpy.mockReturnValue(info);
   const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
     [path: string],
     string[] | fs.Dirent[]
@@ -53,10 +59,14 @@ test('getLocalModels should return models in local directory', () => {
     {
       id: 'model-id-1',
       file: 'model-id-1-model',
+      size: 32000,
+      creation: now,
     },
     {
       id: 'model-id-2',
       file: 'model-id-2-model',
+      size: 32000,
+      creation: now,
     },
   ]);
 });

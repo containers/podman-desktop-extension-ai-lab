@@ -19,9 +19,13 @@ export class ModelsManager {
         // we support models with one file only for now
         continue;
       }
+      const modelFile = modelEntries[0];
+      const info = fs.statSync(path.resolve(d.path, d.name, modelFile));
       result.push({
         id: d.name,
-        file: modelEntries[0],
+        file: modelFile,
+        size: info.size,
+        creation: info.mtime,
       });
     }
     return result;

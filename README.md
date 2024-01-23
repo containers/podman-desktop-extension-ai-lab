@@ -27,3 +27,7 @@ The catalog provides lists of categories, recipes, and models.
 Each recipe can belong to one or several categories. Each model can be used by one or several recipes.
 
 The format of the catalog is not stable nor versioned yet, you can see the current catalog's format [in the sources of the extension](https://github.com/projectatomic/studio-extension/blob/main/packages/backend/src/ai.json).
+
+## Feedback
+
+You can provide your feedback on the extension with [this form](https://forms.gle/tctQ4RtZSiMyQr3R8) or create [an issue on this repository](https://github.com/projectatomic/studio-extension/issues).

@@ -3,7 +3,7 @@ import { ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';
 import os from 'os';
-import fs from 'fs';
+import fs from 'node:fs';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { RecipeStatusUtils } from '../utils/recipeStatusUtils';

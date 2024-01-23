@@ -30,7 +30,7 @@ import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
-import { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
+import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -40,7 +40,7 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
-  ) { }
+  ) {}
 
   async ping(): Promise<string> {
     return 'pong';
@@ -87,7 +87,8 @@ export class StudioApiImpl implements StudioAPI {
       localMap.set(l.id, l);
     }
     const localIds = local.map(l => l.id);
-    return this.catalogManager.getModels()
+    return this.catalogManager
+      .getModels()
       .filter(m => localIds.includes(m.id))
       .map(m => ({ ...m, file: localMap.get(m.id) }));
   }

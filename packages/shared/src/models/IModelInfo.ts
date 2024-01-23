@@ -1,4 +1,4 @@
-import type { LocalModelInfo } from "./ILocalModelInfo";
+import type { LocalModelInfo } from './ILocalModelInfo';
 
 export interface ModelInfo {
   id: string;

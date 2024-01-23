@@ -30,6 +30,7 @@ import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
+import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -81,8 +82,15 @@ export class StudioApiImpl implements StudioAPI {
 
   async getLocalModels(): Promise<ModelInfo[]> {
     const local = this.modelsManager.getLocalModels();
+    const localMap = new Map<string, LocalModelInfo>();
+    for (const l of local) {
+      localMap.set(l.id, l);
+    }
     const localIds = local.map(l => l.id);
-    return this.catalogManager.getModels().filter(m => localIds.includes(m.id));
+    return this.catalogManager
+      .getModels()
+      .filter(m => localIds.includes(m.id))
+      .map(m => ({ ...m, file: localMap.get(m.id) }));
   }
 
   async startPlayground(modelId: string): Promise<void> {

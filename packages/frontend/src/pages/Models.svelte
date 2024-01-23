@@ -12,15 +12,19 @@ import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
 import type { Task } from '@shared/src/models/ITask';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Card from '/@/lib/Card.svelte';
-  import { modelsPulling } from '../stores/recipe';
-  import { onMount } from 'svelte';
+import { modelsPulling } from '../stores/recipe';
+import { onMount } from 'svelte';
+import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
+  import ModelColumnCreation from '../lib/table/model/ModelColumnCreation.svelte';
 
 const columns: Column<ModelInfo>[] = [
-  new Column<ModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
+  new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
+  new Column<ModelInfo>('Size', { width: '1fr', renderer: ModelColumnSize }),
+  new Column<ModelInfo>('Creation', { width: '1fr', renderer: ModelColumnCreation }),
   new Column<ModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),
-  new Column<ModelInfo>('Registry', { width: '1fr', renderer: ModelColumnRegistry }),
+  new Column<ModelInfo>('Registry', { width: '2fr', renderer: ModelColumnRegistry }),
   new Column<ModelInfo>('Popularity', { width: '1fr', renderer: ModelColumnPopularity }),
-  new Column<ModelInfo>('License', { width: '1fr', renderer: ModelColumnLicense }),
+  new Column<ModelInfo>('License', { width: '2fr', renderer: ModelColumnLicense }),
 ];
 const row = new Row<ModelInfo>({});
 

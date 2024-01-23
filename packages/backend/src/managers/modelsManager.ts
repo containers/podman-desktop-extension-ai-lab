@@ -8,6 +8,9 @@ export class ModelsManager {
   getLocalModels(): LocalModelInfo[] {
     const result: LocalModelInfo[] = [];
     const modelsDir = path.join(this.appUserDirectory, 'models');
+    if (!fs.existsSync(modelsDir)) {
+      return [];
+    }
     const entries = fs.readdirSync(modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {

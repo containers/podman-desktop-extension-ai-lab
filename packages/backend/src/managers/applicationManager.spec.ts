@@ -45,8 +45,11 @@ test('appUserDirectory should be under home directory', () => {
 test('getLocalModels should return models in local directory', () => {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  vi.spyOn(fs, 'readdirSync').mockImplementation((dir: string): any => {
-    // TODO(feloy): fix any
+  const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
+    [path: string],
+    string[] | fs.Dirent[]
+  >;
+  readdirSyncMock.mockImplementation((dir: string) => {
     if (dir.endsWith('model-id-1') || dir.endsWith('model-id-2')) {
       const base = path.basename(dir);
       return [base + '-model'];

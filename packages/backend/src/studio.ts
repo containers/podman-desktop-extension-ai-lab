@@ -23,11 +23,16 @@ import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
 import { GitManager } from './managers/gitManager';
 import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
-
-import * as fs from 'node:fs';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { PlayGroundManager } from './managers/playground';
 import { CatalogManager } from './managers/catalogManager';
+import { ModelsManager } from './managers/modelsManager';
+import path from 'node:path';
+import os from 'os';
+import fs from 'node:fs';
+
+// TODO: Need to be configured
+export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -38,6 +43,7 @@ export class Studio {
   studioApi: StudioApiImpl;
   playgroundManager: PlayGroundManager;
   catalogManager: CatalogManager;
+  modelsManager: ModelsManager;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -89,21 +95,31 @@ export class Studio {
     this.#panel.webview.html = indexHtml;
 
     // Let's create the api that the front will be able to call
+    const appUserDirectory = path.join(os.homedir(), AI_STUDIO_FOLDER);
+
     this.rpcExtension = new RpcExtension(this.#panel.webview);
     const gitManager = new GitManager();
     const taskRegistry = new TaskRegistry();
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, this.#panel.webview);
-    const applicationManager = new ApplicationManager(gitManager, recipeStatusRegistry, this.#extensionContext);
+    this.modelsManager = new ModelsManager(appUserDirectory);
+    const applicationManager = new ApplicationManager(
+      appUserDirectory,
+      gitManager,
+      recipeStatusRegistry,
+      this.modelsManager,
+    );
     this.playgroundManager = new PlayGroundManager(this.#panel.webview);
     // Create catalog manager, responsible for loading the catalog files and watching for changes
-    this.catalogManager = new CatalogManager(applicationManager.appUserDirectory, this.#panel.webview);
+    this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
 
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
+      appUserDirectory,
       applicationManager,
       recipeStatusRegistry,
       this.playgroundManager,
       this.catalogManager,
+      this.modelsManager,
     );
 
     await this.catalogManager.loadCatalog();

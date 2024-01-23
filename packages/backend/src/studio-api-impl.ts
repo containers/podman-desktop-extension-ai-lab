@@ -29,13 +29,16 @@ import * as path from 'node:path';
 import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
+import type { ModelsManager } from './managers/modelsManager';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
+    private appUserDirectory: string,
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
+    private modelsManager: ModelsManager,
   ) {}
 
   async ping(): Promise<string> {
@@ -55,7 +58,6 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getModelById(modelId: string): Promise<ModelInfo> {
-    // TODO: move logic to catalog manager
     const model = this.catalogManager.getModels().find(m => modelId === m.id);
     if (!model) {
       throw new Error(`No model found having id ${modelId}`);
@@ -78,21 +80,20 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {
-    // TODO: move logic to catalog manager
-    const local = this.applicationManager.getLocalModels();
+    const local = this.modelsManager.getLocalModels();
     const localIds = local.map(l => l.id);
     return this.catalogManager.getModels().filter(m => localIds.includes(m.id));
   }
 
   async startPlayground(modelId: string): Promise<void> {
     // TODO: improve the following
-    const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
+    const localModelInfo = this.modelsManager.getLocalModels().filter(m => m.id === modelId);
     if (localModelInfo.length !== 1) {
       throw new Error('model not found');
     }
 
     // TODO: we need to stop doing that.
-    const modelPath = path.resolve(this.applicationManager.appUserDirectory, 'models', modelId, localModelInfo[0].file);
+    const modelPath = path.resolve(this.appUserDirectory, 'models', modelId, localModelInfo[0].file);
 
     await this.playgroundManager.startPlayground(modelId, modelPath);
   }
@@ -102,7 +103,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   askPlayground(modelId: string, prompt: string): Promise<number> {
-    const localModelInfo = this.applicationManager.getLocalModels().filter(m => m.id === modelId);
+    const localModelInfo = this.modelsManager.getLocalModels().filter(m => m.id === modelId);
     if (localModelInfo.length !== 1) {
       throw new Error('model not found');
     }

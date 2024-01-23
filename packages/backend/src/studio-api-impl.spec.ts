@@ -26,9 +26,10 @@ import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './managers/playground';
 import type { Webview } from '@podman-desktop/api';
+import { CatalogManager } from './managers/catalogManager';
+import type { ModelsManager } from './managers/modelsManager';
 
 import * as fs from 'node:fs';
-import { CatalogManager } from './managers/catalogManager';
 
 vi.mock('./ai.json', () => {
   return {
@@ -70,12 +71,12 @@ beforeEach(async () => {
 
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
-    {
-      appUserDirectory,
-    } as unknown as ApplicationManager,
+    appUserDirectory,
+    {} as unknown as ApplicationManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as PlayGroundManager,
     catalogManager,
+    {} as unknown as ModelsManager,
   );
   vi.resetAllMocks();
   vi.mock('node:fs');

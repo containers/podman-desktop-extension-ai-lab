@@ -15,7 +15,10 @@ import Card from '/@/lib/Card.svelte';
 import { modelsPulling } from '../stores/recipe';
 import { onMount } from 'svelte';
 import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
-  import ModelColumnCreation from '../lib/table/model/ModelColumnCreation.svelte';
+import ModelColumnCreation from '../lib/table/model/ModelColumnCreation.svelte';
+import { studioClient } from '/@/utils/client';
+import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
+import Button from '/@/lib/button/Button.svelte';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
@@ -33,6 +36,7 @@ let loading: boolean = true;
 let tasks: Task[] = [];
 let models: ModelInfo[] = [];
 let filteredModels: ModelInfo[] = [];
+let modelsDir: string | undefined = undefined;
 
 function filterModels(): void {
   // Let's collect the models we do not want to show (loading, error).
@@ -49,7 +53,10 @@ function filterModels(): void {
 }
 
 onMount(() => {
-  // Pulling update
+  studioClient.getModelsDirectory().then((modelsDirectory) => {
+    modelsDir = modelsDirectory;
+  });
+
   const modelsPullingUnsubscribe = modelsPulling.subscribe(runningTasks => {
     tasks = runningTasks;
     loading = false;
@@ -67,12 +74,31 @@ onMount(() => {
     localModelsUnsubscribe();
   }
 });
+
+const openModelsDir = () => {
+  if(modelsDir === undefined)
+    return;
+  studioClient.openDirectory(modelsDir);
+}
 </script>
 
 <NavPage title="Models on disk" searchEnabled="{false}" loading="{loading}">
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="mt-4 px-5 space-y-5 h-full">
+        <div class="mx-4">
+          {#if modelsDir}
+            <Card classes="bg-charcoal-800 mt-4">
+              <div slot="content" class="text-base font-normal p-2 flex w-full">
+                <div class="text-base flex-grow">
+                  Models are stored in
+                  <code class="text-sm sm:text-base inline-flex text-left items-center space-x-4 px-2 bg-charcoal-500 rounded-lg">{modelsDir}</code>
+                </div>
+                <Button title="open-models-directory" on:click={openModelsDir} icon={faFolderOpen}/>
+              </div>
+            </Card>
+          {/if}
+        </div>
         {#if !loading}
           {#if tasks.length > 0}
             <div class="mx-4">

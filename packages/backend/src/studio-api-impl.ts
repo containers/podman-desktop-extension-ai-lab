@@ -34,7 +34,6 @@ import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
-    private appUserDirectory: string,
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private playgroundManager: PlayGroundManager,
@@ -101,7 +100,7 @@ export class StudioApiImpl implements StudioAPI {
     }
 
     // TODO: we need to stop doing that.
-    const modelPath = path.resolve(this.appUserDirectory, 'models', modelId, localModelInfo[0].file);
+    const modelPath = path.resolve(this.modelsManager.getModelsDirectory(), modelId, localModelInfo[0].file);
 
     await this.playgroundManager.startPlayground(modelId, modelPath);
   }
@@ -128,5 +127,12 @@ export class StudioApiImpl implements StudioAPI {
 
   async getCatalog(): Promise<Catalog> {
     return this.catalogManager.getCatalog();
+  }
+
+  async getModelsDirectory(): Promise<string> {
+    return this.modelsManager.getModelsDirectory();
+  }
+  async openDirectory(path: string): Promise<void> {
+    void podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(path));
   }
 }

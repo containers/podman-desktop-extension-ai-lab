@@ -71,7 +71,6 @@ beforeEach(async () => {
 
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
-    appUserDirectory,
     {} as unknown as ApplicationManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as PlayGroundManager,

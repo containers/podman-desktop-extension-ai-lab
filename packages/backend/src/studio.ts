@@ -114,7 +114,6 @@ export class Studio {
 
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
-      appUserDirectory,
       applicationManager,
       recipeStatusRegistry,
       this.playgroundManager,

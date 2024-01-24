@@ -22,7 +22,7 @@ import type { GitManager } from './gitManager';
 import fs from 'fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
-import { PodCreatePortOptions, containerEngine } from '@podman-desktop/api';
+import { type PodCreatePortOptions, containerEngine } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYaml } from '../models/AIConfig';
@@ -86,12 +86,22 @@ export class ApplicationManager {
 
     // create a pod containing all the containers to run the application
     await this.createApplicationPod(images, modelPath, taskUtil);
-    
   }
 
   async createApplicationPod(images: ImageInfo[], modelPath: string, taskUtil: RecipeStatusUtils) {
     // create empty pod
-    const pod = await this.createPod(images, taskUtil);
+    let pod: Pod;
+    try {
+      pod = await this.createPod(images);
+    } catch (e) {
+      console.error('error when creating pod');
+      taskUtil.setTask({
+        id: pod.Id,
+        state: 'error',
+        name: 'Creating application',
+      });
+      throw e;
+    }
 
     taskUtil.setTask({
       id: pod.Id,
@@ -99,7 +109,7 @@ export class ApplicationManager {
       name: `Creating application`,
     });
 
-    await this.createAndAddContainersToPod(pod, images, modelPath, taskUtil);
+    await this.createAndAddContainersToPod(pod, images, modelPath);
 
     taskUtil.setTask({
       id: pod.Id,
@@ -108,10 +118,9 @@ export class ApplicationManager {
     });
   }
 
-  async createAndAddContainersToPod(pod: Pod, images: ImageInfo[], modelPath: string, taskUtil: RecipeStatusUtils) {
+  async createAndAddContainersToPod(pod: Pod, images: ImageInfo[], modelPath: string) {
     await Promise.all(
       images.map(async image => {
-    
         let hostConfig: unknown;
         let envs: string[] = [];
         // if it's a model service we mount the model as a volume
@@ -131,45 +140,47 @@ export class ApplicationManager {
         } else {
           hostConfig = {
             AutoRemove: true,
-          }
+          };
           // TODO: remove static port
           const modelService = images.find(image => image.modelService);
           if (modelService && modelService.ports.length > 0) {
-            envs = [`MODEL_ENDPOINT=http://localhost:${modelService.ports[0]}`]
-          }          
+            envs = [`MODEL_ENDPOINT=http://localhost:${modelService.ports[0]}`];
+          }
         }
-        const createdContainer = await containerEngine.createContainer(pod.engineId, {
-          Image: image.id,
-          Detach: true,
-          HostConfig: hostConfig,
-          Env: envs,
-          start: false,
-        }).catch(e => console.error(e));
+        const createdContainer = await containerEngine
+          .createContainer(pod.engineId, {
+            Image: image.id,
+            Detach: true,
+            HostConfig: hostConfig,
+            Env: envs,
+            start: false,
+          })
+          .catch((e: unknown) => console.error(e));
 
         // now, for each container, put it in the pod
         if (createdContainer) {
           try {
             await containerEngine.replicatePodmanContainer(
-              { 
+              {
                 id: createdContainer.id,
-                engineId: pod.engineId, 
+                engineId: pod.engineId,
               },
               { engineId: pod.engineId },
               { pod: pod.Id, name: this.getRandomName(`${image.appName}-podified`) },
             );
           } catch (error) {
             console.error(error);
-          }          
+          }
         }
       }),
     );
   }
 
-  async createPod(images: ImageInfo[], taskUtil: RecipeStatusUtils): Promise<Pod> {
+  async createPod(images: ImageInfo[]): Promise<Pod> {
     // find the exposed port of the sample app so we can open its ports on the new pod
     const sampleAppImageInfo = images.find(image => !image.modelService);
     if (!sampleAppImageInfo) {
-      console.error('no image found')
+      console.error('no image found');
       throw new Error('no sample app found');
     }
 
@@ -182,22 +193,26 @@ export class ApplicationManager {
         host_port: parseInt(localPorts),
         host_ip: '',
         protocol: '',
-        range: 1
-      })
+        range: 1,
+      });
     }
 
     // create new pod
     return await containerEngine.createPod({
       name: this.getRandomName(`pod-${sampleAppImageInfo.appName}`),
       portmappings: portmappings,
-    })
+    });
   }
 
   getRandomName(base: string): string {
     return `${base ?? ''}-${new Date().getTime()}`;
   }
 
-  async buildImages(containers: ContainerConfig[], configPath: string, taskUtil: RecipeStatusUtils): Promise<ImageInfo[]> {
+  async buildImages(
+    containers: ContainerConfig[],
+    configPath: string,
+    taskUtil: RecipeStatusUtils,
+  ): Promise<ImageInfo[]> {
     containers.forEach(container => {
       taskUtil.setTask({
         id: container.name,
@@ -251,11 +266,11 @@ export class ApplicationManager {
     await Promise.all(
       containers.map(async container => {
         const image = images.find(im => {
-          return im.RepoTags?.some(tag => tag.endsWith(`${container.name}:latest`))
+          return im.RepoTags?.some(tag => tag.endsWith(`${container.name}:latest`));
         });
-        
+
         if (!image) {
-          console.error('no image found')
+          console.error('no image found');
           taskUtil.setTaskState(container.name, 'error');
           return;
         }
@@ -273,10 +288,10 @@ export class ApplicationManager {
           modelService: container.modelService,
           ports: exposedPorts,
           appName: container.name,
-        })
+        });
 
         taskUtil.setTaskState(container.name, 'success');
-      })
+      }),
     );
 
     return imageInfoList;
@@ -387,7 +402,7 @@ export class ApplicationManager {
     return {
       aiConfig,
       path: configFile,
-    }
+    };
   }
 
   async doCheckout(repository: string, localFolder: string, taskUtil: RecipeStatusUtils) {
@@ -422,7 +437,12 @@ export class ApplicationManager {
     taskUtil.setTask(checkoutTask);
   }
 
-  doDownloadModelWrapper(modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string): Promise<string> {
+  doDownloadModelWrapper(
+    modelId: string,
+    url: string,
+    taskUtil: RecipeStatusUtils,
+    destFileName?: string,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const downloadCallback = (result: DownloadModelResult) => {
         if (result.result) {

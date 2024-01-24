@@ -37,6 +37,7 @@ test('Expect simple column styling', async () => {
       file: 'file',
       creation: new Date(),
       size: 1000,
+      path: 'path',
     },
   };
   render(ModelColumnSize, { object });

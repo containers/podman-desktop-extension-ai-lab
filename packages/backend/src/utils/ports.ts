@@ -77,7 +77,7 @@ export async function getPortsInfo(portDescriptor: string): Promise<string | und
     return `${localPort}`;
   }
 }
-  
+
 /**
  * return a range of the same length as portDescriptor containing free ports
  * undefined if the portDescriptor range is not valid

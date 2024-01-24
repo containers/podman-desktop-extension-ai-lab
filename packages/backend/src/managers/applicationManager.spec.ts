@@ -13,6 +13,11 @@ const mocks = vi.hoisted(() => {
   return {
     parseYamlMock: vi.fn(),
     builImageMock: vi.fn(),
+    listImagesMock: vi.fn(),
+    getImageInspectMock: vi.fn(),
+    createPodMock: vi.fn(),
+    createContainerMock: vi.fn(),
+    replicatePodmanContainerMock: vi.fn(),
   };
 });
 
@@ -23,6 +28,11 @@ vi.mock('../models/AIConfig', () => ({
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
     buildImage: mocks.builImageMock,
+    listImages: mocks.listImagesMock,
+    getImageInspect: mocks.getImageInspectMock,
+    createPod: mocks.createPodMock,
+    createContainer: mocks.createContainerMock,
+    replicatePodmanContainer: mocks.replicatePodmanContainerMock,
   },
 }));
 
@@ -38,8 +48,9 @@ describe('pullApplication', () => {
   const setStatusMock = vi.fn();
   const cloneRepositoryMock = vi.fn();
   const isModelOnDiskMock = vi.fn();
+  const getLocalModelPathMock = vi.fn();
   let manager: ApplicationManager;
-  let downloadModelMainSpy: MockInstance<
+  let doDownloadModelWrapperSpy: MockInstance<
     [modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string],
     Promise<string>
   >;
@@ -83,6 +94,27 @@ describe('pullApplication', () => {
       },
     });
     mocks.builImageMock.mockResolvedValue(undefined);
+    mocks.listImagesMock.mockResolvedValue([
+      {
+        RepoTags: ['container1:latest'],
+        engineId: 'engine',
+        Id: 'id1',
+      },
+    ]);
+    mocks.getImageInspectMock.mockResolvedValue({
+      Config: {
+        ExposedPorts: {
+          '8080': '8080',
+        },
+      },
+    });
+    mocks.createPodMock.mockResolvedValue({
+      engineId: 'engine',
+      Id: 'id',
+    });
+    mocks.createContainerMock.mockResolvedValue({
+      id: 'id',
+    });
 
     manager = new ApplicationManager(
       '/home/user/aistudio',
@@ -94,11 +126,12 @@ describe('pullApplication', () => {
       } as unknown as RecipeStatusRegistry,
       {
         isModelOnDisk: isModelOnDiskMock,
+        getLocalModelPath: getLocalModelPathMock,
       } as unknown as ModelsManager,
     );
 
-    downloadModelMainSpy = vi.spyOn(manager, 'doDownloadModelWrapper');
-    downloadModelMainSpy.mockResolvedValue('');
+    doDownloadModelWrapperSpy = vi.spyOn(manager, 'doDownloadModelWrapper');
+    doDownloadModelWrapperSpy.mockResolvedValue('path');
   }
 
   test('pullApplication should clone repository and call downloadModelMain and buildImage', async () => {
@@ -132,7 +165,7 @@ describe('pullApplication', () => {
     } else {
       expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '/home/user/aistudio/recipe1');
     }
-    expect(downloadModelMainSpy).toHaveBeenCalledOnce();
+    expect(doDownloadModelWrapperSpy).toHaveBeenCalledOnce();
     expect(mocks.builImageMock).toHaveBeenCalledOnce();
   });
 
@@ -170,6 +203,7 @@ describe('pullApplication', () => {
       recipeFolderExists: true,
     });
     isModelOnDiskMock.mockReturnValue(true);
+    getLocalModelPathMock.mockReturnValue('path');
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',
@@ -191,7 +225,7 @@ describe('pullApplication', () => {
 
     await manager.pullApplication(recipe, model);
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
-    expect(downloadModelMainSpy).not.toHaveBeenCalled();
+    expect(doDownloadModelWrapperSpy).not.toHaveBeenCalled();
   });
 
   test('pullApplication should mark the loading config as error if not container are found', async () => {

@@ -11,6 +11,24 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
+const dirent = [
+  {
+    isDirectory: () => true,
+    path: '/home/user/appstudio-dir',
+    name: 'model-id-1',
+  },
+  {
+    isDirectory: () => true,
+    path: '/home/user/appstudio-dir',
+    name: 'model-id-2',
+  },
+  {
+    isDirectory: () => false,
+    path: '/home/user/appstudio-dir',
+    name: 'other-file-should-be-ignored.txt',
+  },
+] as fs.Dirent[];
+
 function mockFiles(now: Date) {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const existsSyncSpy = vi.spyOn(fs, 'existsSync');
@@ -36,23 +54,7 @@ function mockFiles(now: Date) {
       const base = path.basename(dir);
       return [base + '-model'];
     } else {
-      return [
-        {
-          isDirectory: () => true,
-          path: '/home/user/appstudio-dir',
-          name: 'model-id-1',
-        },
-        {
-          isDirectory: () => true,
-          path: '/home/user/appstudio-dir',
-          name: 'model-id-2',
-        },
-        {
-          isDirectory: () => false,
-          path: '/home/user/appstudio-dir',
-          name: 'other-file-should-be-ignored.txt',
-        },
-      ] as fs.Dirent[];
+      return dirent;
     }
   });
 }
@@ -68,12 +70,14 @@ test('getLocalModelsFromDisk should get models in local directory', () => {
       file: 'model-id-1-model',
       size: 32000,
       creation: now,
+      path: path.resolve(dirent[0].path, dirent[0].name, 'model-id-1-model'),
     },
     {
       id: 'model-id-2',
       file: 'model-id-2-model',
       size: 32000,
       creation: now,
+      path: path.resolve(dirent[1].path, dirent[1].name, 'model-id-2-model'),
     },
   ]);
 });
@@ -133,6 +137,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
           file: 'model-id-1-model',
           id: 'model-id-1',
           size: 32000,
+          path: path.resolve(dirent[0].path, dirent[0].name, 'model-id-1-model'),
         },
         id: 'model-id-1',
       },

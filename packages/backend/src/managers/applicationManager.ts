@@ -22,7 +22,7 @@ import type { GitManager } from './gitManager';
 import fs from 'fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
-import { containerEngine } from '@podman-desktop/api';
+import { PodCreatePortOptions, containerEngine } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYaml } from '../models/AIConfig';
@@ -31,6 +31,7 @@ import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import { getParentDirectory } from '../utils/pathUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
+import { getPortsInfo } from '../utils/ports';
 
 export const CONFIG_FILENAME = 'ai-studio.yaml';
 
@@ -42,6 +43,18 @@ interface DownloadModelResult {
 interface AIContainers {
   aiConfigFile: AIConfigFile;
   containers: ContainerConfig[];
+}
+
+interface Pod {
+  engineId: string;
+  Id: string;
+}
+
+interface ImageInfo {
+  id: string;
+  modelService: boolean;
+  ports: string[];
+  appName: string;
 }
 
 export class ApplicationManager {
@@ -61,17 +74,131 @@ export class ApplicationManager {
     // clone the recipe repository on the local folder
     await this.doCheckout(recipe.repository, localFolder, taskUtil);
 
+    // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator 
+    // and backend (that define which model supports)
     const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
 
     // get model by downloading it or retrieving locally
-    await this.downloadModel(model, taskUtil);
+    const modelPath = await this.downloadModel(model, taskUtil);
 
-    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
-    await this.buildImages(configAndFilteredContainers.containers, configAndFilteredContainers.aiConfigFile.path, taskUtil);    
+    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)        
+    const images = await this.buildImages(configAndFilteredContainers.containers, configAndFilteredContainers.aiConfigFile.path, taskUtil);
+
+    // create a pod containing all the containers to run the application
+    await this.createApplicationPod(images, modelPath, taskUtil);
+    
   }
 
-  async buildImages(filteredContainers: ContainerConfig[], configPath: string, taskUtil: RecipeStatusUtils) {
-    filteredContainers.forEach(container => {
+  async createApplicationPod(images: ImageInfo[], modelPath: string, taskUtil: RecipeStatusUtils) {
+    // create empty pod
+    const pod = await this.createPod(images, taskUtil);
+
+    taskUtil.setTask({
+      id: pod.Id,
+      state: 'loading',
+      name: `Creating application`,
+    });
+
+    await this.createAndAddContainersToPod(pod, images, modelPath, taskUtil);
+
+    taskUtil.setTask({
+      id: pod.Id,
+      state: 'success',
+      name: `Creating application`,
+    });
+  }
+
+  async createAndAddContainersToPod(pod: Pod, images: ImageInfo[], modelPath: string, taskUtil: RecipeStatusUtils) {
+    await Promise.all(
+      images.map(async image => {
+    
+        let hostConfig: unknown;
+        let envs: string[] = [];
+        // if it's a model service we mount the model as a volume
+        if (image.modelService) {
+          const modelName = path.basename(modelPath);
+          hostConfig = {
+            AutoRemove: true,
+            Mounts: [
+              {
+                Target: `/${modelName}`,
+                Source: modelPath,
+                Type: 'bind',
+              },
+            ],
+          };
+          envs = [`MODEL_PATH=/${modelName}`];
+        } else {
+          hostConfig = {
+            AutoRemove: true,
+          }
+          // TODO: remove static port
+          const modelService = images.find(image => image.modelService);
+          if (modelService && modelService.ports.length > 0) {
+            envs = [`MODEL_ENDPOINT=http://localhost:${modelService.ports[0]}`]
+          }          
+        }
+        const createdContainer = await containerEngine.createContainer(pod.engineId, {
+          Image: image.id,
+          Detach: true,
+          HostConfig: hostConfig,
+          Env: envs,
+          start: false,
+        }).catch(e => console.error(e));
+
+        // now, for each container, put it in the pod
+        if (createdContainer) {
+          try {
+            await containerEngine.replicatePodmanContainer(
+              { 
+                id: createdContainer.id,
+                engineId: pod.engineId, 
+              },
+              { engineId: pod.engineId },
+              { pod: pod.Id, name: this.getRandomName(`${image.appName}-podified`) },
+            );
+          } catch (error) {
+            console.error(error);
+          }          
+        }
+      }),
+    );
+  }
+
+  async createPod(images: ImageInfo[], taskUtil: RecipeStatusUtils): Promise<Pod> {
+    // find the exposed port of the sample app so we can open its ports on the new pod
+    const sampleAppImageInfo = images.find(image => !image.modelService);
+    if (!sampleAppImageInfo) {
+      console.error('no image found')
+      throw new Error('no sample app found');
+    }
+
+    const portmappings: PodCreatePortOptions[] = [];
+    // N.B: it may not work with ranges
+    for (const exposed of sampleAppImageInfo.ports) {
+      const localPorts = await getPortsInfo(exposed);
+      portmappings.push({
+        container_port: parseInt(exposed),
+        host_port: parseInt(localPorts),
+        host_ip: '',
+        protocol: '',
+        range: 1
+      })
+    }
+
+    // create new pod
+    return await containerEngine.createPod({
+      name: this.getRandomName(`pod-${sampleAppImageInfo.appName}`),
+      portmappings: portmappings,
+    })
+  }
+
+  getRandomName(base: string): string {
+    return `${base ?? ''}-${new Date().getTime()}`;
+  }
+
+  async buildImages(containers: ContainerConfig[], configPath: string, taskUtil: RecipeStatusUtils): Promise<ImageInfo[]> {
+    containers.forEach(container => {
       taskUtil.setTask({
         id: container.name,
         state: 'loading',
@@ -79,9 +206,11 @@ export class ApplicationManager {
       });
     });
 
+    const imageInfoList: ImageInfo[] = [];
+
     // Promise all the build images
     await Promise.all(
-      filteredContainers.map(container => {
+      containers.map(container => {
         // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
         const context = path.join(getParentDirectory(configPath), container.contextdir);
         console.log(`Application Manager using context ${context} for container ${container.name}`);
@@ -92,8 +221,6 @@ export class ApplicationManager {
           taskUtil.setTaskState(container.name, 'error');
           throw new Error('Context configured does not exist.');
         }
-
-        let isErrored = false;
 
         const buildOptions = {
           containerFile: container.containerfile,
@@ -108,10 +235,6 @@ export class ApplicationManager {
               if (event === 'error' || (event === 'finish' && data !== '')) {
                 console.error('Something went wrong while building the image: ', data);
                 taskUtil.setTaskState(container.name, 'error');
-                isErrored = true;
-              }
-              if (event === 'finish' && !isErrored) {
-                taskUtil.setTaskState(container.name, 'success');
               }
             },
             buildOptions,
@@ -122,6 +245,41 @@ export class ApplicationManager {
           });
       }),
     );
+
+    // after image are built we return their data
+    const images = await containerEngine.listImages();
+    await Promise.all(
+      containers.map(async container => {
+        const image = images.find(im => {
+          return im.RepoTags?.some(tag => tag.endsWith(`${container.name}:latest`))
+        });
+        
+        if (!image) {
+          console.error('no image found')
+          taskUtil.setTaskState(container.name, 'error');
+          return;
+        }
+
+        const imageInspectInfo = await containerEngine.getImageInspect(image.engineId, image.Id);
+        const exposedPorts = Array.from(Object.keys(imageInspectInfo?.Config?.ExposedPorts || {})).map(port => {
+          if (port.endsWith('/tcp') || port.endsWith('/udp')) {
+            return port.substring(0, port.length - 4);
+          }
+          return port;
+        });
+
+        imageInfoList.push({
+          id: image.Id,
+          modelService: container.modelService,
+          ports: exposedPorts,
+          appName: container.name,
+        })
+
+        taskUtil.setTaskState(container.name, 'success');
+      })
+    );
+
+    return imageInfoList;
   }
 
   getConfigAndFilterContainers(recipeConfig: string, localFolder: string, taskUtil: RecipeStatusUtils): AIContainers {
@@ -180,7 +338,7 @@ export class ApplicationManager {
         },
       });
 
-      await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
+      return await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
     } else {
       taskUtil.setTask({
         id: model.id,
@@ -190,6 +348,7 @@ export class ApplicationManager {
           'model-pulling': model.id,
         },
       });
+      return this.modelsManager.getLocalModelPath(model.id);
     }
   }
 
@@ -268,7 +427,7 @@ export class ApplicationManager {
       const downloadCallback = (result: DownloadModelResult) => {
         if (result.result) {
           taskUtil.setTaskState(modelId, 'success');
-          resolve('');
+          resolve(destFileName);
         } else {
           taskUtil.setTaskState(modelId, 'error');
           reject(result.error);

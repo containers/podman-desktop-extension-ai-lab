@@ -24,7 +24,7 @@ import * as https from 'node:https';
 import * as path from 'node:path';
 import { containerEngine } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
-import type { AIConfig } from '../models/AIConfig';
+import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYaml } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
 import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
@@ -37,6 +37,11 @@ export const CONFIG_FILENAME = 'ai-studio.yaml';
 interface DownloadModelResult {
   result: 'ok' | 'failed';
   error?: string;
+}
+
+interface AIContainers {
+  aiConfigFile: AIConfigFile;
+  containers: ContainerConfig[];
 }
 
 export class ApplicationManager {
@@ -53,118 +58,19 @@ export class ApplicationManager {
 
     const localFolder = path.join(this.appUserDirectory, recipe.id);
 
-    // Adding checkout task
-    const checkoutTask: Task = {
-      id: 'checkout',
-      name: 'Checkout repository',
-      state: 'loading',
-      labels: {
-        git: 'checkout',
-      },
-    };
-    taskUtil.setTask(checkoutTask);
+    // clone the recipe repository on the local folder
+    await this.doCheckout(recipe.repository, localFolder, taskUtil);
 
-    // We might already have the repository cloned
-    if (fs.existsSync(localFolder) && fs.statSync(localFolder).isDirectory()) {
-      // Update checkout state
-      checkoutTask.name = 'Checkout repository (cached).';
-      checkoutTask.state = 'success';
-    } else {
-      // Create folder
-      fs.mkdirSync(localFolder, { recursive: true });
+    const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
 
-      // Clone the repository
-      console.log(`Cloning repository ${recipe.repository} in ${localFolder}.`);
-      await this.git.cloneRepository(recipe.repository, localFolder);
+    // get model by downloading it or retrieving locally
+    await this.downloadModel(model, taskUtil);
 
-      // Update checkout state
-      checkoutTask.state = 'success';
-    }
-    // Update task
-    taskUtil.setTask(checkoutTask);
+    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
+    await this.buildImages(configAndFilteredContainers.containers, configAndFilteredContainers.aiConfigFile.path, taskUtil);    
+  }
 
-    // Adding loading configuration task
-    const loadingConfiguration: Task = {
-      id: 'loading-config',
-      name: 'Loading configuration',
-      state: 'loading',
-    };
-    taskUtil.setTask(loadingConfiguration);
-
-    let configFile: string;
-    if (recipe.config !== undefined) {
-      configFile = path.join(localFolder, recipe.config);
-    } else {
-      configFile = path.join(localFolder, CONFIG_FILENAME);
-    }
-
-    if (!fs.existsSync(configFile)) {
-      loadingConfiguration.state = 'error';
-      taskUtil.setTask(loadingConfiguration);
-      throw new Error(`The file located at ${configFile} does not exist.`);
-    }
-
-    // If the user configured the config as a directory we check for "ai-studio.yaml" inside.
-    if (fs.statSync(configFile).isDirectory()) {
-      const tmpPath = path.join(configFile, CONFIG_FILENAME);
-      // If it has the ai-studio.yaml we use it.
-      if (fs.existsSync(tmpPath)) {
-        configFile = tmpPath;
-      }
-    }
-
-    // Parsing the configuration
-    console.log(`Reading configuration from ${configFile}.`);
-    const rawConfiguration = fs.readFileSync(configFile, 'utf-8');
-    let aiConfig: AIConfig;
-    try {
-      aiConfig = parseYaml(rawConfiguration, arch());
-    } catch (err) {
-      // Mask task as failed
-      loadingConfiguration.state = 'error';
-      taskUtil.setTask(loadingConfiguration);
-      throw new Error('Cannot load configuration file.');
-    }
-
-    // Filter the containers based on architecture
-    const filteredContainers = aiConfig.application.containers.filter(
-      container => container.arch === undefined || container.arch === arch(),
-    );
-
-    if (filteredContainers.length > 0) {
-      // Mark as success.
-      loadingConfiguration.state = 'success';
-      taskUtil.setTask(loadingConfiguration);
-    } else {
-      // Mark as failure.
-      loadingConfiguration.state = 'error';
-      taskUtil.setTask(loadingConfiguration);
-      throw new Error('No containers available.');
-    }
-
-    if (!this.modelsManager.isModelOnDisk(model.id)) {
-      // Download model
-      taskUtil.setTask({
-        id: model.id,
-        state: 'loading',
-        name: `Downloading model ${model.name}`,
-        labels: {
-          'model-pulling': model.id,
-        },
-      });
-
-      await this.downloadModelMain(model.id, model.url, taskUtil);
-    } else {
-      taskUtil.setTask({
-        id: model.id,
-        state: 'success',
-        name: `Model ${model.name} already present on disk`,
-        labels: {
-          'model-pulling': model.id,
-        },
-      });
-    }
-
+  async buildImages(filteredContainers: ContainerConfig[], configPath: string, taskUtil: RecipeStatusUtils) {
     filteredContainers.forEach(container => {
       taskUtil.setTask({
         id: container.name,
@@ -174,10 +80,10 @@ export class ApplicationManager {
     });
 
     // Promise all the build images
-    return Promise.all(
+    await Promise.all(
       filteredContainers.map(container => {
         // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
-        const context = path.join(getParentDirectory(configFile), container.contextdir);
+        const context = path.join(getParentDirectory(configPath), container.contextdir);
         console.log(`Application Manager using context ${context} for container ${container.name}`);
 
         // Ensure the context provided exist otherwise throw an Error
@@ -218,7 +124,146 @@ export class ApplicationManager {
     );
   }
 
-  downloadModelMain(modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string): Promise<string> {
+  getConfigAndFilterContainers(recipeConfig: string, localFolder: string, taskUtil: RecipeStatusUtils): AIContainers {
+    // Adding loading configuration task
+    const loadingConfiguration: Task = {
+      id: 'loading-config',
+      name: 'Loading configuration',
+      state: 'loading',
+    };
+    taskUtil.setTask(loadingConfiguration);
+
+    let aiConfigFile: AIConfigFile;
+    try {
+      // load and parse the recipe configuration file
+      aiConfigFile = this.getConfiguration(recipeConfig, localFolder);  
+    } catch(e) {
+      loadingConfiguration.state = 'error';
+      taskUtil.setTask(loadingConfiguration);
+      throw e
+    }
+
+    // filter the containers based on architecture, gpu accelerator and backend (that define which model supports)
+    const filteredContainers: ContainerConfig[] = this.filterContainers(aiConfigFile.aiConfig);
+    if (filteredContainers.length > 0) {
+      // Mark as success.
+      loadingConfiguration.state = 'success';
+      taskUtil.setTask(loadingConfiguration);
+    } else {
+      // Mark as failure.
+      loadingConfiguration.state = 'error';
+      taskUtil.setTask(loadingConfiguration);
+      throw new Error('No containers available.');
+    }
+
+    return {
+      aiConfigFile: aiConfigFile,
+      containers: filteredContainers,
+    };
+  }
+
+  filterContainers(aiConfig: AIConfig): ContainerConfig[] {
+    return aiConfig.application.containers.filter(
+      container => container.arch === undefined || container.arch === arch(),
+    );
+  }
+
+  async downloadModel(model: ModelInfo, taskUtil: RecipeStatusUtils) {
+    if (!this.modelsManager.isModelOnDisk(model.id)) {
+      // Download model
+      taskUtil.setTask({
+        id: model.id,
+        state: 'loading',
+        name: `Downloading model ${model.name}`,
+        labels: {
+          'model-pulling': model.id,
+        },
+      });
+
+      await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
+    } else {
+      taskUtil.setTask({
+        id: model.id,
+        state: 'success',
+        name: `Model ${model.name} already present on disk`,
+        labels: {
+          'model-pulling': model.id,
+        },
+      });
+    }
+  }
+
+  getConfiguration(recipeConfig: string, localFolder: string): AIConfigFile {
+    let configFile: string;
+    if (recipeConfig !== undefined) {
+      configFile = path.join(localFolder, recipeConfig);
+    } else {
+      configFile = path.join(localFolder, CONFIG_FILENAME);
+    }
+
+    if (!fs.existsSync(configFile)) {      
+      throw new Error(`The file located at ${configFile} does not exist.`);
+    }
+
+    // If the user configured the config as a directory we check for "ai-studio.yaml" inside.
+    if (fs.statSync(configFile).isDirectory()) {
+      const tmpPath = path.join(configFile, CONFIG_FILENAME);
+      // If it has the ai-studio.yaml we use it.
+      if (fs.existsSync(tmpPath)) {
+        configFile = tmpPath;
+      }
+    }
+
+    // Parsing the configuration
+    console.log(`Reading configuration from ${configFile}.`);
+    const rawConfiguration = fs.readFileSync(configFile, 'utf-8');
+    let aiConfig: AIConfig;
+    try {
+      aiConfig = parseYaml(rawConfiguration, arch());
+    } catch (err) {
+      throw new Error('Cannot load configuration file.');
+    }
+
+    // Mark as success.
+    return {
+      aiConfig,
+      path: configFile,
+    }
+  }
+
+  async doCheckout(repository: string, localFolder: string, taskUtil: RecipeStatusUtils) {
+    // Adding checkout task
+    const checkoutTask: Task = {
+      id: 'checkout',
+      name: 'Checkout repository',
+      state: 'loading',
+      labels: {
+        git: 'checkout',
+      },
+    };
+    taskUtil.setTask(checkoutTask);
+
+    // We might already have the repository cloned
+    if (fs.existsSync(localFolder) && fs.statSync(localFolder).isDirectory()) {
+      // Update checkout state
+      checkoutTask.name = 'Checkout repository (cached).';
+      checkoutTask.state = 'success';
+    } else {
+      // Create folder
+      fs.mkdirSync(localFolder, { recursive: true });
+
+      // Clone the repository
+      console.log(`Cloning repository ${repository} in ${localFolder}.`);
+      await this.git.cloneRepository(repository, localFolder);
+
+      // Update checkout state
+      checkoutTask.state = 'success';
+    }
+    // Update task
+    taskUtil.setTask(checkoutTask);
+  }
+
+  doDownloadModelWrapper(modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const downloadCallback = (result: DownloadModelResult) => {
         if (result.result) {
@@ -236,11 +281,11 @@ export class ApplicationManager {
         return;
       }
 
-      this.downloadModel(modelId, url, taskUtil, downloadCallback, destFileName);
+      this.doDownloadModel(modelId, url, taskUtil, downloadCallback, destFileName);
     });
   }
 
-  private downloadModel(
+  private doDownloadModel(
     modelId: string,
     url: string,
     taskUtil: RecipeStatusUtils,
@@ -260,7 +305,7 @@ export class ApplicationManager {
     let progress = 0;
     https.get(url, resp => {
       if (resp.headers.location) {
-        this.downloadModel(modelId, resp.headers.location, taskUtil, callback, destFileName);
+        this.doDownloadModel(modelId, resp.headers.location, taskUtil, callback, destFileName);
         return;
       } else {
         if (totalFileSize === 0 && resp.headers['content-length']) {

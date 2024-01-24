@@ -97,7 +97,7 @@ describe('pullApplication', () => {
       } as unknown as ModelsManager,
     );
 
-    downloadModelMainSpy = vi.spyOn(manager, 'downloadModelMain');
+    downloadModelMainSpy = vi.spyOn(manager, 'doDownloadModelWrapper');
     downloadModelMainSpy.mockResolvedValue('');
   }
 

@@ -31,6 +31,11 @@ export interface AIConfig {
   };
 }
 
+export interface AIConfigFile {
+  aiConfig: AIConfig;
+  path: string;
+}
+
 export function isString(value: unknown): value is string {
   return (!!value && typeof value === 'string') || value instanceof String;
 }

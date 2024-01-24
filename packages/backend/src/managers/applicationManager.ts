@@ -135,8 +135,7 @@ export class ApplicationManager {
       container => container.arch === undefined || container.arch === arch(),
     );
 
-    const localModels = this.modelsManager.getLocalModels();
-    if (!localModels.map(m => m.id).includes(model.id)) {
+    if (!this.modelsManager.isModelOnDisk(model.id)) {
       // Download model
       taskUtil.setTask({
         id: model.id,

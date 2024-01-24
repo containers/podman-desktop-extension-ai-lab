@@ -101,16 +101,16 @@ export class Studio {
     const gitManager = new GitManager();
     const taskRegistry = new TaskRegistry();
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, this.#panel.webview);
-    this.modelsManager = new ModelsManager(appUserDirectory);
+    this.playgroundManager = new PlayGroundManager(this.#panel.webview);
+    // Create catalog manager, responsible for loading the catalog files and watching for changes
+    this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
+    this.modelsManager = new ModelsManager(appUserDirectory, this.#panel.webview, this.catalogManager);
     const applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,
       recipeStatusRegistry,
       this.modelsManager,
     );
-    this.playgroundManager = new PlayGroundManager(this.#panel.webview);
-    // Create catalog manager, responsible for loading the catalog files and watching for changes
-    this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
 
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
@@ -123,6 +123,7 @@ export class Studio {
     );
 
     await this.catalogManager.loadCatalog();
+    await this.modelsManager.loadLocalModels();
 
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

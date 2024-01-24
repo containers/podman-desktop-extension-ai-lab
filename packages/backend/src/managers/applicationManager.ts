@@ -45,12 +45,12 @@ interface AIContainers {
   containers: ContainerConfig[];
 }
 
-interface Pod {
+export interface PodInfo {
   engineId: string;
   Id: string;
 }
 
-interface ImageInfo {
+export interface ImageInfo {
   id: string;
   modelService: boolean;
   ports: string[];
@@ -90,13 +90,13 @@ export class ApplicationManager {
 
   async createApplicationPod(images: ImageInfo[], modelPath: string, taskUtil: RecipeStatusUtils) {
     // create empty pod
-    let pod: Pod;
+    let pod: PodInfo;
     try {
       pod = await this.createPod(images);
     } catch (e) {
       console.error('error when creating pod');
       taskUtil.setTask({
-        id: pod.Id,
+        id: 'fake-pod-id',
         state: 'error',
         name: 'Creating application',
       });
@@ -118,7 +118,7 @@ export class ApplicationManager {
     });
   }
 
-  async createAndAddContainersToPod(pod: Pod, images: ImageInfo[], modelPath: string) {
+  async createAndAddContainersToPod(pod: PodInfo, images: ImageInfo[], modelPath: string) {
     await Promise.all(
       images.map(async image => {
         let hostConfig: unknown;
@@ -176,7 +176,7 @@ export class ApplicationManager {
     );
   }
 
-  async createPod(images: ImageInfo[]): Promise<Pod> {
+  async createPod(images: ImageInfo[]): Promise<PodInfo> {
     // find the exposed port of the sample app so we can open its ports on the new pod
     const sampleAppImageInfo = images.find(image => !image.modelService);
     if (!sampleAppImageInfo) {
@@ -257,6 +257,7 @@ export class ApplicationManager {
           .catch((err: unknown) => {
             console.error('Something went wrong while building the image: ', err);
             taskUtil.setTaskState(container.name, 'error');
+            throw new Error(`Something went wrong while building the image: ${String(err)}`);
           });
       }),
     );
@@ -272,7 +273,7 @@ export class ApplicationManager {
         if (!image) {
           console.error('no image found');
           taskUtil.setTaskState(container.name, 'error');
-          return;
+          throw new Error(`no image found for ${container.name}:latest`);
         }
 
         const imageInspectInfo = await containerEngine.getImageInspect(image.engineId, image.Id);

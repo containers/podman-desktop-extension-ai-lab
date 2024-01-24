@@ -204,7 +204,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
-    getLocalModelsSpy.mockReturnValue([
+    getLocalModelsMock.mockReturnValue([
       {
         id: 'model1',
         file: 'model1.file',

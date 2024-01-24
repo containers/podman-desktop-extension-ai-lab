@@ -21,4 +21,6 @@ export abstract class StudioAPI {
   abstract askPlayground(modelId: string, prompt: string): Promise<number>;
   abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
+  abstract openVSCode(project: string): Promise<void>;
+  abstract getRecipeLocalDirectory(recipeId: string): Promise<string>;
 }

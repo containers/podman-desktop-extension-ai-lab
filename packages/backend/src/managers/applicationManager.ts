@@ -47,11 +47,15 @@ export class ApplicationManager {
     private modelsManager: ModelsManager,
   ) {}
 
+  getRecipeLocalDirectory(recipe: Recipe): string {
+    return path.join(this.appUserDirectory, recipe.id);
+  }
+
   async pullApplication(recipe: Recipe, model: ModelInfo) {
     // Create a TaskUtils object to help us
     const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
 
-    const localFolder = path.join(this.appUserDirectory, recipe.id);
+    const localFolder = this.getRecipeLocalDirectory(recipe);
 
     // Adding checkout task
     const checkoutTask: Task = {
@@ -209,7 +213,11 @@ export class ApplicationManager {
             taskUtil.setTaskState(container.name, 'error');
           });
       }),
-    );
+    ).then(() => {
+      taskUtil.setStatus('pulled');
+    }).catch(() => {
+      taskUtil.setStatus('error');
+    });
   }
 
   downloadModelMain(modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string): Promise<string> {

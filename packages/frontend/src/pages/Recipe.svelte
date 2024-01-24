@@ -14,7 +14,8 @@ import { getDisplayName } from '/@/utils/versionControlUtils';
 import { getIcon } from '/@/utils/categoriesUtils';
 import RecipeModels from './RecipeModels.svelte';
 import { catalog } from '/@/stores/catalog';
-  import { recipes } from '/@/stores/recipe';
+import { recipes } from '/@/stores/recipe';
+import vscode from '../assets/vscode.png';
 
 export let recipeId: string;
 
@@ -32,7 +33,12 @@ const onPullingRequest = async () => {
 const onClickRepository = () => {
   if (recipe) {
     studioClient.openURL(recipe.repository);
-  }  
+  }
+}
+
+const openInVSCode = async () => {
+  const directory = await studioClient.getRecipeLocalDirectory(recipeId);
+  void studioClient.openVSCode(directory);
 }
 </script>
 
@@ -60,6 +66,8 @@ const onClickRepository = () => {
               </div>
             </div>
           </Card>
+
+          <span>status: {recipeStatus?.state}</span>
           {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
             <Card classes="bg-charcoal-800 mt-4">
               <div slot="content" class="text-base font-normal p-2">
@@ -73,6 +81,12 @@ const onClickRepository = () => {
                     class="w-full mt-4 p-2"
                     icon="{faRefresh}"
                   >Retry</Button>
+                {:else if recipeStatus.state === 'running' ||recipeStatus.state === 'pulled'}
+                  <Button
+                    on:click={() => openInVSCode()}
+                    class="w-full mt-4 p-2"
+                    icon="{vscode}"
+                  >Open in vsCode</Button>
                 {/if}
               </div>
             </Card>

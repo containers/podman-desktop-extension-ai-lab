@@ -129,4 +129,15 @@ export class StudioApiImpl implements StudioAPI {
   async getCatalog(): Promise<Catalog> {
     return this.catalogManager.getCatalog();
   }
+
+  async openVSCode(project: string): Promise<void> {
+    void podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(project).with({scheme: 'vscode'}));
+  }
+
+  async getRecipeLocalDirectory(recipeId: string): Promise<string> {
+    const recipe = this.catalogManager.getRecipes().find((recipe) => recipe.id === recipeId);
+    if(recipe === undefined)
+      throw new Error(`Recipe with id ${recipeId} cannot be found.`);
+    return this.applicationManager.getRecipeLocalDirectory(recipe);
+  }
 }

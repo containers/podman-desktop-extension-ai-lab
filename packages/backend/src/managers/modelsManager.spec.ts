@@ -3,12 +3,15 @@ import os from 'os';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
+import type { Webview } from '@podman-desktop/api';
+import type { CatalogManager } from './catalogManager';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 beforeEach(() => {
   vi.resetAllMocks();
 });
 
-test('getLocalModels should return models in local directory', () => {
+function mockFiles(now: Date) {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const existsSyncSpy = vi.spyOn(fs, 'existsSync');
   existsSyncSpy.mockImplementation((path: string) => {
@@ -21,7 +24,6 @@ test('getLocalModels should return models in local directory', () => {
   });
   const statSyncSpy = vi.spyOn(fs, 'statSync');
   const info = new fs.Stats();
-  const now = new Date();
   info.size = 32000;
   info.mtime = now;
   statSyncSpy.mockReturnValue(info);
@@ -53,9 +55,14 @@ test('getLocalModels should return models in local directory', () => {
       ] as fs.Dirent[];
     }
   });
-  const manager = new ModelsManager('/home/user/aistudio');
-  const models = manager.getLocalModels();
-  expect(models).toEqual([
+}
+
+test('getLocalModelsFromDisk should get models in local directory', () => {
+  const now = new Date();
+  mockFiles(now);
+  const manager = new ModelsManager('/home/user/aistudio', {} as Webview, {} as CatalogManager);
+  manager.getLocalModelsFromDisk();
+  expect(manager.getLocalModels()).toEqual([
     {
       id: 'model-id-1',
       file: 'model-id-1-model',
@@ -71,16 +78,64 @@ test('getLocalModels should return models in local directory', () => {
   ]);
 });
 
-test('getLocalModels should return an empty array if the models folder does not exist', () => {
+test('getLocalModelsFromDisk should return an empty array if the models folder does not exist', () => {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const existsSyncSpy = vi.spyOn(fs, 'existsSync');
   existsSyncSpy.mockReturnValue(false);
-  const manager = new ModelsManager('/home/user/aistudio');
-  const models = manager.getLocalModels();
-  expect(models).toEqual([]);
+  const manager = new ModelsManager('/home/user/aistudio', {} as Webview, {} as CatalogManager);
+  manager.getLocalModelsFromDisk();
+  expect(manager.getLocalModels()).toEqual([]);
   if (process.platform === 'win32') {
     expect(existsSyncSpy).toHaveBeenCalledWith('\\home\\user\\aistudio\\models');
   } else {
     expect(existsSyncSpy).toHaveBeenCalledWith('/home/user/aistudio/models');
   }
+});
+
+test('loadLocalModels should post a message with the message on disk and on catalog', async () => {
+  const now = new Date();
+  mockFiles(now);
+
+  vi.mock('@podman-desktop/api', () => {
+    return {
+      fs: {
+        createFileSystemWatcher: () => ({
+          onDidCreate: vi.fn(),
+          onDidDelete: vi.fn(),
+          onDidChange: vi.fn(),
+        }),
+      },
+    };
+  });
+  const postMessageMock = vi.fn();
+  const manager = new ModelsManager(
+    '/home/user/aistudio',
+    {
+      postMessage: postMessageMock,
+    } as unknown as Webview,
+    {
+      getModels: () => {
+        return [
+          {
+            id: 'model-id-1',
+          },
+        ] as ModelInfo[];
+      },
+    } as CatalogManager,
+  );
+  await manager.loadLocalModels();
+  expect(postMessageMock).toHaveBeenNthCalledWith(1, {
+    id: 'new-local-models-state',
+    body: [
+      {
+        file: {
+          creation: now,
+          file: 'model-id-1-model',
+          id: 'model-id-1',
+          size: 32000,
+        },
+        id: 'model-id-1',
+      },
+    ],
+  });
 });

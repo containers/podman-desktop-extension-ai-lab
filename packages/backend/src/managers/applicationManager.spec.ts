@@ -37,7 +37,7 @@ describe('pullApplication', () => {
 
   const setStatusMock = vi.fn();
   const cloneRepositoryMock = vi.fn();
-  const getLocalModelsMock = vi.fn();
+  const isModelOnDiskMock = vi.fn();
   let manager: ApplicationManager;
   let downloadModelMainSpy: MockInstance<
     [modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string],
@@ -93,7 +93,7 @@ describe('pullApplication', () => {
         setStatus: setStatusMock,
       } as unknown as RecipeStatusRegistry,
       {
-        getLocalModels: getLocalModelsMock,
+        isModelOnDisk: isModelOnDiskMock,
       } as unknown as ModelsManager,
     );
 
@@ -105,7 +105,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: false,
     });
-    getLocalModelsMock.mockReturnValue([]);
+    isModelOnDiskMock.mockReturnValue(false);
 
     const recipe: Recipe = {
       id: 'recipe1',
@@ -140,7 +140,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
-    getLocalModelsMock.mockReturnValue([]);
+    isModelOnDiskMock.mockReturnValue(false);
 
     const recipe: Recipe = {
       id: 'recipe1',
@@ -169,13 +169,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
-    getLocalModelsMock.mockReturnValue([
-      {
-        id: 'model1',
-        file: 'model1.file',
-      },
-    ]);
-
+    isModelOnDiskMock.mockReturnValue(true);
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',

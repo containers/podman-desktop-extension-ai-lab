@@ -24,6 +24,8 @@ import type { ExtensionContext } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
 
+vi.mock('./managers/modelsManager');
+
 const mockedExtensionContext = {
   subscriptions: [],
 } as unknown as ExtensionContext;

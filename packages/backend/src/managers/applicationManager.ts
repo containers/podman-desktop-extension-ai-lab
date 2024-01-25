@@ -130,7 +130,7 @@ export class ApplicationManager {
     const filteredContainers = aiConfig.application.containers.filter(
       container => container.arch === undefined || container.arch === arch(),
     );
-
+    
     if (filteredContainers.length > 0) {
       // Mark as success.
       loadingConfiguration.state = 'success';
@@ -141,9 +141,19 @@ export class ApplicationManager {
       taskUtil.setTask(loadingConfiguration);
       throw new Error('No containers available.');
     }
-
-    const localModels = this.modelsManager.getLocalModels();
-    if (!localModels.map(m => m.id).includes(model.id)) {
+    
+    if (filteredContainers.length > 0) {
+      // Mark as success.
+      loadingConfiguration.state = 'success';
+      taskUtil.setTask(loadingConfiguration);
+    } else {
+      // Mark as failure.
+      loadingConfiguration.state = 'error';
+      taskUtil.setTask(loadingConfiguration);
+      throw new Error('No containers available.');
+    }
+    
+    if (!this.modelsManager.isModelOnDisk(model.id)) {
       // Download model
       taskUtil.setTask({
         id: model.id,

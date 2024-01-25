@@ -25,12 +25,10 @@ import type { PlayGroundManager } from './managers/playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 
-import * as path from 'node:path';
 import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
-import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -81,28 +79,11 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {
-    const local = this.modelsManager.getLocalModels();
-    const localMap = new Map<string, LocalModelInfo>();
-    for (const l of local) {
-      localMap.set(l.id, l);
-    }
-    const localIds = local.map(l => l.id);
-    return this.catalogManager
-      .getModels()
-      .filter(m => localIds.includes(m.id))
-      .map(m => ({ ...m, file: localMap.get(m.id) }));
+    return this.modelsManager.getModelsInfo();
   }
 
   async startPlayground(modelId: string): Promise<void> {
-    // TODO: improve the following
-    const localModelInfo = this.modelsManager.getLocalModels().filter(m => m.id === modelId);
-    if (localModelInfo.length !== 1) {
-      throw new Error('model not found');
-    }
-
-    // TODO: we need to stop doing that.
-    const modelPath = path.resolve(this.appUserDirectory, 'models', modelId, localModelInfo[0].file);
-
+    const modelPath = this.modelsManager.getLocalModelPath(modelId);
     await this.playgroundManager.startPlayground(modelId, modelPath);
   }
 
@@ -111,11 +92,8 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   askPlayground(modelId: string, prompt: string): Promise<number> {
-    const localModelInfo = this.modelsManager.getLocalModels().filter(m => m.id === modelId);
-    if (localModelInfo.length !== 1) {
-      throw new Error('model not found');
-    }
-    return this.playgroundManager.askPlayground(localModelInfo[0], prompt);
+    const localModelInfo = this.modelsManager.getLocalModelInfo(modelId);
+    return this.playgroundManager.askPlayground(localModelInfo, prompt);
   }
 
   async getPlaygroundQueriesState(): Promise<QueryState[]> {

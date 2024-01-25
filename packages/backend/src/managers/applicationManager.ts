@@ -126,14 +126,21 @@ export class ApplicationManager {
       throw new Error('Cannot load configuration file.');
     }
 
-    // Mark as success.
-    loadingConfiguration.state = 'success';
-    taskUtil.setTask(loadingConfiguration);
-
     // Filter the containers based on architecture
     const filteredContainers = aiConfig.application.containers.filter(
       container => container.arch === undefined || container.arch === arch(),
     );
+
+    if (filteredContainers.length > 0) {
+      // Mark as success.
+      loadingConfiguration.state = 'success';
+      taskUtil.setTask(loadingConfiguration);
+    } else {
+      // Mark as failure.
+      loadingConfiguration.state = 'error';
+      taskUtil.setTask(loadingConfiguration);
+      throw new Error('No containers available.');
+    }
 
     if (!this.modelsManager.isModelOnDisk(model.id)) {
       // Download model

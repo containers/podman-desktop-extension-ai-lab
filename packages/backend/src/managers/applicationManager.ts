@@ -74,15 +74,19 @@ export class ApplicationManager {
     // clone the recipe repository on the local folder
     await this.doCheckout(recipe.repository, localFolder, taskUtil);
 
-    // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator 
+    // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
     // and backend (that define which model supports)
     const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
 
     // get model by downloading it or retrieving locally
     const modelPath = await this.downloadModel(model, taskUtil);
 
-    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)        
-    const images = await this.buildImages(configAndFilteredContainers.containers, configAndFilteredContainers.aiConfigFile.path, taskUtil);
+    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
+    const images = await this.buildImages(
+      configAndFilteredContainers.containers,
+      configAndFilteredContainers.aiConfigFile.path,
+      taskUtil,
+    );
 
     // create a pod containing all the containers to run the application
     await this.createApplicationPod(images, modelPath, taskUtil);
@@ -310,11 +314,11 @@ export class ApplicationManager {
     let aiConfigFile: AIConfigFile;
     try {
       // load and parse the recipe configuration file
-      aiConfigFile = this.getConfiguration(recipeConfig, localFolder);  
-    } catch(e) {
+      aiConfigFile = this.getConfiguration(recipeConfig, localFolder);
+    } catch (e) {
       loadingConfiguration.state = 'error';
       taskUtil.setTask(loadingConfiguration);
-      throw e
+      throw e;
     }
 
     // filter the containers based on architecture, gpu accelerator and backend (that define which model supports)
@@ -376,7 +380,7 @@ export class ApplicationManager {
       configFile = path.join(localFolder, CONFIG_FILENAME);
     }
 
-    if (!fs.existsSync(configFile)) {      
+    if (!fs.existsSync(configFile)) {
       throw new Error(`The file located at ${configFile} does not exist.`);
     }
 

@@ -257,7 +257,7 @@ describe('pullApplication', () => {
     await expect(manager.pullApplication(recipe, model)).rejects.toThrowError('No containers available.');
 
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
-    expect(downloadModelMainSpy).not.toHaveBeenCalled();
+    expect(doDownloadModelWrapperSpy).not.toHaveBeenCalled();
   });
 });
 describe('doCheckout', () => {
@@ -323,14 +323,9 @@ describe('getConfiguration', () => {
       {} as unknown as ModelsManager,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-    expect(() => manager.getConfiguration('config', 'local', taskUtils)).toThrowError(
+    expect(() => manager.getConfiguration('config', 'local')).toThrowError(
       `The file located at ${path.join('local', 'config')} does not exist.`,
     );
-    expect(setTaskMock).toHaveBeenLastCalledWith({
-      id: 'loading-config',
-      name: 'Loading configuration',
-      state: 'error',
-    });
   });
 
   test('return AIConfigFile', async () => {
@@ -359,12 +354,7 @@ describe('getConfiguration', () => {
     };
     mocks.parseYamlMock.mockReturnValue(aiConfig);
 
-    const result = manager.getConfiguration('config', 'local', taskUtils);
-    expect(setTaskMock).toHaveBeenLastCalledWith({
-      id: 'loading-config',
-      name: 'Loading configuration',
-      state: 'success',
-    });
+    const result = manager.getConfiguration('config', 'local');
     expect(result.path).toEqual(path.join('local', 'config'));
     expect(result.aiConfig).toEqual(aiConfig);
   });

@@ -17,7 +17,6 @@
  ***********************************************************************/
 
 import type { Recipe } from '@shared/src/models/IRecipe';
-import { arch } from 'node:os';
 import type { GitManager } from './gitManager';
 import fs from 'fs';
 import * as https from 'node:https';
@@ -32,6 +31,7 @@ import { getParentDirectory } from '../utils/pathUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
+import { goarch } from '../utils/arch';
 
 export const CONFIG_FILENAME = 'ai-studio.yaml';
 
@@ -342,7 +342,7 @@ export class ApplicationManager {
 
   filterContainers(aiConfig: AIConfig): ContainerConfig[] {
     return aiConfig.application.containers.filter(
-      container => container.arch === undefined || container.arch === arch(),
+      container => container.gpu_env.length === 0 && container.arch.some(arc => arc === goarch()),
     );
   }
 
@@ -398,7 +398,7 @@ export class ApplicationManager {
     const rawConfiguration = fs.readFileSync(configFile, 'utf-8');
     let aiConfig: AIConfig;
     try {
-      aiConfig = parseYaml(rawConfiguration, arch());
+      aiConfig = parseYaml(rawConfiguration, goarch());
     } catch (err) {
       throw new Error('Cannot load configuration file.');
     }

@@ -22,8 +22,9 @@ export interface ContainerConfig {
   name: string;
   contextdir: string;
   containerfile?: string;
-  arch: string;
+  arch: string[];
   modelService: boolean;
+  gpu_env: string[];
 }
 export interface AIConfig {
   application: {
@@ -55,11 +56,12 @@ export function parseYaml(raw: string, defaultArch: string): AIConfig {
   return {
     application: {
       containers: containers.map(container => ({
-        arch: isString(container['arch']) ? container['arch'] : defaultArch,
+        arch: Array.isArray(container['arch']) ? container['arch'] : [defaultArch],
         modelService: container['model-service'] === true,
         containerfile: isString(container['containerfile']) ? container['containerfile'] : undefined,
         contextdir: assertString(container['contextdir']),
         name: assertString(container['name']),
+        gpu_env: Array.isArray(container['gpu-env']) ? container['gpu-env'] : [],
       })),
     },
   };

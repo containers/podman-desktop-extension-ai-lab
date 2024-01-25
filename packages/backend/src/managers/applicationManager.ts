@@ -137,6 +137,9 @@ export class ApplicationManager {
                 Target: `/${modelName}`,
                 Source: modelPath,
                 Type: 'bind',
+                BindOptions: {
+                  Propagation: 'z',
+                },
               },
             ],
           };

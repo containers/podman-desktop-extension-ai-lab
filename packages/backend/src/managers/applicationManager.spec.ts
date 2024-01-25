@@ -710,3 +710,63 @@ describe('createApplicationPod', () => {
     });
   });
 });
+describe('createAndAddContainersToPod', () => {
+  const imageInfo1: ImageInfo = {
+    id: 'id',
+    appName: 'appName',
+    modelService: false,
+    ports: ['8080'],
+  };
+  const imageInfo2: ImageInfo = {
+    id: 'id2',
+    appName: 'appName2',
+    modelService: true,
+    ports: ['8082'],
+  };
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
+  const podInfo: PodInfo = {
+    engineId: 'engine',
+    Id: 'id',
+  };
+  test('check container is created with volume mounted if model service', async () => {
+    mocks.createContainerMock.mockResolvedValue(undefined);
+    await manager.createAndAddContainersToPod(podInfo, [imageInfo2], 'path/model.gguf');
+    expect(mocks.createContainerMock).toBeCalledWith('engine', {
+      Image: imageInfo2.id,
+      Detach: true,
+      HostConfig: {
+        AutoRemove: true,
+        Mounts: [
+          {
+            Target: `/model.gguf`,
+            Source: 'path/model.gguf',
+            Type: 'bind',
+            BindOptions: {
+              Propagation: 'z',
+            },
+          },
+        ],
+      },
+      Env: [`MODEL_PATH=/model.gguf`],
+      start: false,
+    });
+  });
+  test('check MODEL_ENDPOINT env variable is set for non-model service container', async () => {
+    mocks.createContainerMock.mockResolvedValue(undefined);
+    await manager.createAndAddContainersToPod(podInfo, [imageInfo1, imageInfo2], 'path/model.gguf');
+    expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {
+      Image: imageInfo1.id,
+      Detach: true,
+      HostConfig: {
+        AutoRemove: true,
+      },
+      Env: [`MODEL_ENDPOINT=http://localhost:8082`],
+      start: false,
+    });
+  });
+});

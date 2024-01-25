@@ -12,10 +12,13 @@ export abstract class StudioAPI {
   abstract pullApplication(recipeId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
   /**
-   * Get the information of models saved locally into the extension's storage directory
+   * Get the information of models saved locally into the user's directory
    */
   abstract getLocalModels(): Promise<ModelInfo[]>;
-
+  /**
+   * Delete the folder containing the model from local storage
+   */
+  abstract deleteLocalModel(modelId: string): Promise<void>;
   abstract startPlayground(modelId: string): Promise<void>;
   abstract stopPlayground(modelId: string): Promise<void>;
   abstract askPlayground(modelId: string, prompt: string): Promise<number>;

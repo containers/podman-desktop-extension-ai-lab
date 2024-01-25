@@ -107,4 +107,8 @@ export class StudioApiImpl implements StudioAPI {
   async getCatalog(): Promise<Catalog> {
     return this.catalogManager.getCatalog();
   }
+
+  async deleteLocalModel(modelId: string): Promise<void> {
+    await this.modelsManager.deleteLocalModel(modelId);
+  }
 }

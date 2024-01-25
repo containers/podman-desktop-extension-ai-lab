@@ -100,12 +100,16 @@ export class ModelsManager {
     return path.resolve(this.#modelsDir, modelId, info.file);
   }
 
+  getLocalModelFolder(modelId: string): string {
+    return path.resolve(this.#modelsDir, modelId);
+  }
+
   getLocalModels(): LocalModelInfo[] {
     return Array.from(this.#localModels.values());
   }
 
   async deleteLocalModel(modelId: string): Promise<void> {
-    const modelDir = this.getLocalModelPath(modelId);
+    const modelDir = this.getLocalModelFolder(modelId);
     this.#deleted.add(modelId);
     await this.sendModelsInfo();
     try {

@@ -12,6 +12,7 @@ import type { ModelsManager } from './modelsManager';
 import path from 'node:path';
 import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
+import { goarch } from '../utils/arch';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -95,6 +96,8 @@ describe('pullApplication', () => {
             name: 'container1',
             contextdir: 'contextdir1',
             containerfile: 'Containerfile',
+            arch: [goarch()],
+            gpu_env: [],
           },
         ],
       },
@@ -433,8 +436,9 @@ describe('filterContainers', () => {
             name: 'container2',
             contextdir: 'contextdir2',
             containerfile: 'Containerfile',
-            arch: 'arm64',
+            arch: ['arm64'],
             modelService: false,
+            gpu_env: [],
           },
         ],
       },
@@ -459,15 +463,17 @@ describe('filterContainers', () => {
             name: 'container1',
             contextdir: 'contextdir1',
             containerfile: 'Containerfile',
-            arch: 'amd64',
+            arch: ['amd64'],
             modelService: false,
+            gpu_env: [],
           },
           {
             name: 'container2',
             contextdir: 'contextdir2',
             containerfile: 'Containerfile',
-            arch: 'arm64',
+            arch: ['arm64'],
             modelService: false,
+            gpu_env: [],
           },
         ],
       },
@@ -491,22 +497,25 @@ describe('filterContainers', () => {
         name: 'container1',
         contextdir: 'contextdir1',
         containerfile: 'Containerfile',
-        arch: 'amd64',
+        arch: ['amd64'],
         modelService: false,
+        gpu_env: [],
       },
       {
         name: 'container2',
         contextdir: 'contextdir2',
         containerfile: 'Containerfile',
-        arch: 'arm64',
+        arch: ['arm64'],
         modelService: false,
+        gpu_env: [],
       },
       {
         name: 'container3',
         contextdir: 'contextdir3',
         containerfile: 'Containerfile',
-        arch: 'amd64',
+        arch: ['amd64'],
         modelService: false,
+        gpu_env: [],
       },
     ];
     const aiConfig: AIConfig = {
@@ -560,8 +569,9 @@ describe('buildImages', () => {
       name: 'container1',
       contextdir: 'contextdir1',
       containerfile: 'Containerfile',
-      arch: 'amd64',
+      arch: ['amd64'],
       modelService: false,
+      gpu_env: [],
     },
   ];
   const manager = new ApplicationManager(

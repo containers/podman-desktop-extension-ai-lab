@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { ModelInfo } from '@shared/models/IModelInfo';
-  import type { ModelResponseChoice } from '@shared/models/IModelResponse';
+  import type { ModelInfo } from '@shared/src/models/IModelInfo';
+  import type { ModelResponseChoice } from '@shared/src/models/IModelResponse';
   import Button from '../lib/button/Button.svelte';
   import { onMount } from 'svelte';
   import { studioClient } from '../utils/client';
   import { playgroundQueries } from '../stores/playground-queries';
-  import type { QueryState } from '@shared/models/IPlaygroundQueryState';
+  import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
   import { playgroundStates } from '/@/stores/playground-states';
   import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
   import Card from '/@/lib/Card.svelte';

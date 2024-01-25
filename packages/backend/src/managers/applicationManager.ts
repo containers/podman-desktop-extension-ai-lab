@@ -19,22 +19,19 @@
 import type { Recipe } from '@shared/src/models/IRecipe';
 import { arch } from 'node:os';
 import type { GitManager } from './gitManager';
-import os from 'os';
 import fs from 'fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
-import { containerEngine, type ExtensionContext } from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig } from '../models/AIConfig';
 import { parseYaml } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
 import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import { getParentDirectory } from '../utils/pathUtils';
-import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelsManager } from './modelsManager';
 
-// TODO: Need to be configured
-export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
 export const CONFIG_FILENAME = 'ai-studio.yaml';
 
 interface DownloadModelResult {
@@ -43,15 +40,12 @@ interface DownloadModelResult {
 }
 
 export class ApplicationManager {
-  readonly appUserDirectory: string; // todo: make configurable
-
   constructor(
+    private appUserDirectory: string,
     private git: GitManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
-    private extensionContext: ExtensionContext,
-  ) {
-    this.appUserDirectory = path.join(os.homedir(), AI_STUDIO_FOLDER);
-  }
+    private modelsManager: ModelsManager,
+  ) {}
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
     // Create a TaskUtils object to help us
@@ -148,8 +142,7 @@ export class ApplicationManager {
       throw new Error('No containers available.');
     }
 
-    const localModels = this.getLocalModels();
-    if (!localModels.map(m => m.id).includes(model.id)) {
+    if (!this.modelsManager.isModelOnDisk(model.id)) {
       // Download model
       taskUtil.setTask({
         id: model.id,
@@ -304,25 +297,5 @@ export class ApplicationManager {
       });
       resp.pipe(file);
     });
-  }
-
-  // todo: move somewhere else (dedicated to models)
-  getLocalModels(): LocalModelInfo[] {
-    const result: LocalModelInfo[] = [];
-    const modelsDir = path.join(this.appUserDirectory, 'models');
-    const entries = fs.readdirSync(modelsDir, { withFileTypes: true });
-    const dirs = entries.filter(dir => dir.isDirectory());
-    for (const d of dirs) {
-      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
-      if (modelEntries.length !== 1) {
-        // we support models with one file only for now
-        continue;
-      }
-      result.push({
-        id: d.name,
-        file: modelEntries[0],
-      });
-    }
-    return result;
   }
 }

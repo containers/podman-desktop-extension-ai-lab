@@ -410,10 +410,10 @@
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@podman-desktop/api@0.0.202401191125-9c1aea6":
-  version "0.0.202401191125-9c1aea6"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-0.0.202401191125-9c1aea6.tgz#a6dd84efaa1769cc3eedde320c9d5524e2f920f1"
-  integrity sha512-4oMQmfCXpnQrnEihe1yn3mGZULle4a0MlXdyOZ4vlKx04e2rZK7jFI45EjU6L64pwN0bGHWLFRI12Ut2sAirHQ==
+"@podman-desktop/api@1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.7.0.tgz#d6bc298ab4c9e552e3ec6f6d459eb9a204951655"
+  integrity sha512-TCs8DUzi2OLYKD4iWo1I9+otfM/g0UOiBdwiy6VQj4ycp8jIFF/BKc902+z52a5mfxmGMLOEnbNS2Yg3aDv9Kw==
 
 "@rollup/rollup-android-arm-eabi@4.9.1":
   version "4.9.1"
@@ -569,6 +569,11 @@
   version "1.0.5"
   resolved "https://registry.npmjs.org/@types/estree/-/estree-1.0.5.tgz"
   integrity sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==
+
+"@types/humanize-duration@^3.27.4":
+  version "3.27.4"
+  resolved "https://registry.yarnpkg.com/@types/humanize-duration/-/humanize-duration-3.27.4.tgz#51d6d278213374735440bc3749de920935e9127e"
+  integrity sha512-yaf7kan2Sq0goxpbcwTQ+8E9RP6HutFBPv74T/IA/ojcHKhuKVlk2YFYyHhWZeLvZPzzLE3aatuQB4h0iqyyUA==
 
 "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.4"
@@ -1975,6 +1980,11 @@ file-entry-cache@^6.0.1:
   dependencies:
     flat-cache "^3.0.4"
 
+filesize@^10.1.0:
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/filesize/-/filesize-10.1.0.tgz#846f5cd8d16e073c5d6767651a8264f6149183cd"
+  integrity sha512-GTLKYyBSDz3nPhlLVPjPWZCnhkd9TrrRArNcy8Z+J2cqScB7h2McAzR6NBX6nYOoWafql0roY8hrocxnZBv9CQ==
+
 fill-range@^7.0.1:
   version "7.0.1"
   resolved "https://registry.npmjs.org/fill-range/-/fill-range-7.0.1.tgz"
@@ -2282,6 +2292,11 @@ human-signals@^5.0.0:
   version "5.0.0"
   resolved "https://registry.npmjs.org/human-signals/-/human-signals-5.0.0.tgz"
   integrity sha512-AXcZb6vzzrFAUE61HnN4mpLqd/cSIwNQjtNWR0euPm6y0iqx3G4gOXaIDdtdDwZmhwe82LA6+zinmW4UBWVePQ==
+
+humanize-duration@^3.31.0:
+  version "3.31.0"
+  resolved "https://registry.yarnpkg.com/humanize-duration/-/humanize-duration-3.31.0.tgz#a0384d22555024cd17e6e9f8561540d37756bf4c"
+  integrity sha512-fRrehgBG26NNZysRlTq1S+HPtDpp3u+Jzdc/d5A4cEzOD86YLAkDaJyJg8krSdCi7CJ+s7ht3fwRj8Dl+Btd0w==
 
 iconv-lite@0.6.3:
   version "0.6.3"
@@ -2864,6 +2879,11 @@ mlly@^1.2.0, mlly@^1.4.2:
     pathe "^1.1.1"
     pkg-types "^1.0.3"
     ufo "^1.3.0"
+
+moment@^2.30.1:
+  version "2.30.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.30.1.tgz#f8c91c07b7a786e30c59926df530b4eac96974ae"
+  integrity sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==
 
 ms@2.1.2, ms@^2.1.1:
   version "2.1.2"

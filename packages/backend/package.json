@@ -11,8 +11,23 @@
   },
   "main": "./dist/extension.js",
   "contributes": {
-    "configuration": {},
-    "menus": {}
+    "icons": {
+      "brain-icon": {
+        "description": "Brain icon",
+        "default": {
+          "fontPath": "brain.woff2",
+          "fontCharacter": "\\E001"
+        }
+      }
+    },
+    "views": {
+      "icons/containersList": [
+        {
+          "when": "ia-studio-model in containerLabelKeys",
+          "icon": "${brain-icon}"
+        }
+      ]
+    }
   },
   "scripts": {
     "build": "vite build",
@@ -26,7 +41,7 @@
     "simple-git": "^3.22.0"
   },
   "devDependencies": {
-    "@podman-desktop/api": "0.0.202401191125-9c1aea6",
+    "@podman-desktop/api": "1.7.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^18",
     "vitest": "^1.1.0"

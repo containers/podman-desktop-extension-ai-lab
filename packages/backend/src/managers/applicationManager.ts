@@ -17,7 +17,6 @@
  ***********************************************************************/
 
 import type { Recipe } from '@shared/src/models/IRecipe';
-import { arch } from 'node:os';
 import type { GitManager } from './gitManager';
 import fs from 'fs';
 import * as https from 'node:https';

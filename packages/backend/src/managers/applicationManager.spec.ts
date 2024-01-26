@@ -1,5 +1,5 @@
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
-import type { ContainerAttachedInfo, ImageInfo, PodInfo } from './applicationManager';
+import type { ContainerAttachedInfo, DownloadModelResult, ImageInfo, PodInfo } from './applicationManager';
 import { ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';
@@ -733,17 +733,63 @@ describe('createApplicationPod', () => {
   });
 });
 
-describe('restartContainerWhenEndpointIsUp', () => {
+describe('doDownloadModelWrapper', () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as ModelsManager,
   );
+  test('returning model path if model has been downloaded', async () => {
+    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
+      (
+        _modelId: string,
+        _url: string,
+        _taskUtil: RecipeStatusUtils,
+        callback: (message: DownloadModelResult) => void,
+        _destFileName?: string,
+      ) => {
+        callback({
+          successful: true,
+          path: 'path',
+        });
+      },
+    );
+    setTaskStateMock.mockReturnThis();
+    const result = await manager.doDownloadModelWrapper('id', 'url', taskUtils);
+    expect(result).toBe('path');
+  });
+  test('rejecting with error message if model has NOT been downloaded', async () => {
+    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
+      (
+        _modelId: string,
+        _url: string,
+        _taskUtil: RecipeStatusUtils,
+        callback: (message: DownloadModelResult) => void,
+        _destFileName?: string,
+      ) => {
+        callback({
+          successful: false,
+          error: 'error',
+        });
+      },
+    );
+    setTaskStateMock.mockReturnThis();
+    await expect(manager.doDownloadModelWrapper('id', 'url', taskUtils)).rejects.toThrowError('error');
+  });
+});
+
+describe('restartContainerWhenEndpointIsUp', () => {
   const containerAttachedInfo: ContainerAttachedInfo = {
     name: 'name',
     endPoint: 'endpoint',
   };
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
   test('restart container if endpoint is alive', async () => {
     vi.spyOn(utils, 'isEndpointAlive').mockResolvedValue(true);
     await manager.restartContainerWhenEndpointIsUp('engine', containerAttachedInfo);

@@ -36,9 +36,16 @@ import { isEndpointAlive, timeout } from '../utils/utils';
 
 export const CONFIG_FILENAME = 'ai-studio.yaml';
 
-interface DownloadModelResult {
-  result: 'ok' | 'failed';
-  error?: string;
+export type DownloadModelResult = DownloadModelSuccessfulResult | DownloadModelFailureResult;
+
+interface DownloadModelSuccessfulResult {
+  successful: true;
+  path: string;
+}
+
+interface DownloadModelFailureResult {
+  successful: false;
+  error: string;
 }
 
 interface AIContainers {
@@ -428,7 +435,20 @@ export class ApplicationManager {
         },
       });
 
-      return await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
+      try {
+        return await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
+      } catch (e) {
+        console.error(e);
+        taskUtil.setTask({
+          id: model.id,
+          state: 'error',
+          name: `Downloading model ${model.name}`,
+          labels: {
+            'model-pulling': model.id,
+          },
+        });
+        throw e;
+      }
     } else {
       taskUtil.setTask({
         id: model.id,
@@ -520,26 +540,20 @@ export class ApplicationManager {
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       const downloadCallback = (result: DownloadModelResult) => {
-        if (result.result) {
+        if (result.successful === true) {
           taskUtil.setTaskState(modelId, 'success');
-          resolve(destFileName);
-        } else {
+          resolve(result.path);
+        } else if (result.successful === false) {
           taskUtil.setTaskState(modelId, 'error');
           reject(result.error);
         }
       };
 
-      if (fs.existsSync(destFileName)) {
-        taskUtil.setTaskState(modelId, 'success');
-        taskUtil.setTaskProgress(modelId, 100);
-        return;
-      }
-
       this.doDownloadModel(modelId, url, taskUtil, downloadCallback, destFileName);
     });
   }
 
-  private doDownloadModel(
+  doDownloadModel(
     modelId: string,
     url: string,
     taskUtil: RecipeStatusUtils,
@@ -581,7 +595,8 @@ export class ApplicationManager {
         //this.sendProgress(progressValue);
         if (progressValue === 100) {
           callback({
-            result: 'ok',
+            successful: true,
+            path: destFile,
           });
         }
       });
@@ -590,7 +605,7 @@ export class ApplicationManager {
       });
       file.on('error', e => {
         callback({
-          result: 'failed',
+          successful: false,
           error: e.message,
         });
       });

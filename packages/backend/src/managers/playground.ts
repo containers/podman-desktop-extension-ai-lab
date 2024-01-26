@@ -188,6 +188,7 @@ export class PlayGroundManager {
       model: modelInfo.file,
       prompt: prompt,
       temperature: 0.7,
+      max_tokens: 1024,
     });
 
     const post_options: http.RequestOptions = {

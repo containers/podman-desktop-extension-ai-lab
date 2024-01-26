@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => {
     replicatePodmanContainerMock: vi.fn(),
     startContainerMock: vi.fn(),
     startPod: vi.fn(),
+    deleteContainerMock: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
@@ -41,6 +42,7 @@ vi.mock('@podman-desktop/api', () => ({
     replicatePodmanContainer: mocks.replicatePodmanContainerMock,
     startContainer: mocks.startContainerMock,
     startPod: mocks.startPod,
+    deleteContainer: mocks.deleteContainerMock,
   },
 }));
 let setTaskMock: MockInstance;
@@ -731,6 +733,20 @@ describe('createApplicationPod', () => {
       name: 'Creating application',
     });
   });
+  test('throw if createAndAddContainersToPod fails', async () => {
+    const pod: PodInfo = {
+      engineId: 'engine',
+      Id: 'id',
+    };
+    vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
+    vi.spyOn(manager, 'createAndAddContainersToPod').mockRejectedValue('error');
+    await expect(() => manager.createApplicationPod(images, 'path', taskUtils)).rejects.toThrowError('error');
+    expect(setTaskMock).toBeCalledWith({
+      id: 'id',
+      state: 'error',
+      name: 'Creating application',
+    });
+  });
 });
 
 describe('doDownloadModelWrapper', () => {
@@ -827,5 +843,54 @@ describe('runApplication', () => {
       name: 'first',
       endPoint: 'url',
     });
+  });
+});
+
+describe('createAndAddContainersToPod', () => {
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
+  const pod: PodInfo = {
+    engineId: 'engine',
+    Id: 'id',
+  };
+  const imageInfo1: ImageInfo = {
+    id: 'id',
+    appName: 'appName',
+    modelService: false,
+    ports: ['8080'],
+  };
+  test('check that after the creation and copy inside the pod, the container outside the pod is actually deleted', async () => {
+    mocks.createContainerMock.mockResolvedValue({
+      id: 'container-1',
+    });
+    vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
+    await manager.createAndAddContainersToPod(pod, [imageInfo1], 'path');
+    expect(mocks.createContainerMock).toBeCalledWith('engine', {
+      Image: 'id',
+      Detach: true,
+      HostConfig: {
+        AutoRemove: true,
+      },
+      Env: [],
+      start: false,
+    });
+    expect(mocks.replicatePodmanContainerMock).toBeCalledWith(
+      {
+        id: 'container-1',
+        engineId: 'engine',
+      },
+      {
+        engineId: 'engine',
+      },
+      {
+        pod: 'id',
+        name: 'name',
+      },
+    );
+    expect(mocks.deleteContainerMock).toBeCalledWith('engine', 'container-1');
   });
 });

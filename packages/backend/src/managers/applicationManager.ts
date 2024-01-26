@@ -171,7 +171,18 @@ export class ApplicationManager {
       name: `Creating application`,
     });
 
-    const attachedContainers = await this.createAndAddContainersToPod(pod, images, modelPath);
+    let attachedContainers: ContainerAttachedInfo[];
+    try {
+      attachedContainers = await this.createAndAddContainersToPod(pod, images, modelPath);
+    } catch (e) {
+      console.error(`error when creating pod ${pod.Id}`);
+      taskUtil.setTask({
+        id: pod.Id,
+        state: 'error',
+        name: 'Creating application',
+      });
+      throw e;
+    }
 
     taskUtil.setTask({
       id: pod.Id,
@@ -219,35 +230,33 @@ export class ApplicationManager {
             envs = [`MODEL_ENDPOINT=${endPoint}`];
           }
         }
-        const createdContainer = await containerEngine
-          .createContainer(pod.engineId, {
-            Image: image.id,
-            Detach: true,
-            HostConfig: hostConfig,
-            Env: envs,
-            start: false,
-          })
-          .catch((e: unknown) => console.error(e));
+        const createdContainer = await containerEngine.createContainer(pod.engineId, {
+          Image: image.id,
+          Detach: true,
+          HostConfig: hostConfig,
+          Env: envs,
+          start: false,
+        });
 
         // now, for each container, put it in the pod
         if (createdContainer) {
-          try {
-            const podifiedName = this.getRandomName(`${image.appName}-podified`);
-            await containerEngine.replicatePodmanContainer(
-              {
-                id: createdContainer.id,
-                engineId: pod.engineId,
-              },
-              { engineId: pod.engineId },
-              { pod: pod.Id, name: podifiedName },
-            );
-            containers.push({
-              name: podifiedName,
-              endPoint,
-            });
-          } catch (error) {
-            console.error(error);
-          }
+          const podifiedName = this.getRandomName(`${image.appName}-podified`);
+          await containerEngine.replicatePodmanContainer(
+            {
+              id: createdContainer.id,
+              engineId: pod.engineId,
+            },
+            { engineId: pod.engineId },
+            { pod: pod.Id, name: podifiedName },
+          );
+          containers.push({
+            name: podifiedName,
+            endPoint,
+          });
+          // remove the external container
+          await containerEngine.deleteContainer(pod.engineId, createdContainer.id);
+        } else {
+          throw new Error(`failed at creating container for image ${image.id}`);
         }
       }),
     );

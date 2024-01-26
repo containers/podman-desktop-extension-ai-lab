@@ -34,7 +34,7 @@ import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '
 import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
 
 // TODO: this should not be hardcoded
-const LOCALAI_IMAGE = 'quay.io/go-skynet/local-ai:v2.5.1';
+const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
 
 function findFirstProvider(): ProviderContainerConnection | undefined {
   const engines = provider
@@ -102,13 +102,13 @@ export class PlayGroundManager {
       throw new Error('Unable to find an engine to start playground');
     }
 
-    let image = await this.selectImage(connection, LOCALAI_IMAGE);
+    let image = await this.selectImage(connection, PLAYGROUND_IMAGE);
     if (!image) {
-      await containerEngine.pullImage(connection.connection, LOCALAI_IMAGE, () => {});
-      image = await this.selectImage(connection, LOCALAI_IMAGE);
+      await containerEngine.pullImage(connection.connection, PLAYGROUND_IMAGE, () => {});
+      image = await this.selectImage(connection, PLAYGROUND_IMAGE);
       if (!image) {
         await this.setPlaygroundStatus(modelId, 'error');
-        throw new Error(`Unable to find ${LOCALAI_IMAGE} image`);
+        throw new Error(`Unable to find ${PLAYGROUND_IMAGE} image`);
       }
     }
 
@@ -127,7 +127,7 @@ export class PlayGroundManager {
           },
         ],
         PortBindings: {
-          '8080/tcp': [
+          '8000/tcp': [
             {
               HostPort: '' + freePort,
             },
@@ -137,6 +137,7 @@ export class PlayGroundManager {
       Labels: {
         'ia-studio-model': modelId,
       },
+      Env: [`MODEL_PATH=/models/${path.basename(modelPath)}`],
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
     });
 
@@ -187,6 +188,7 @@ export class PlayGroundManager {
       model: modelInfo.file,
       prompt: prompt,
       temperature: 0.7,
+      max_tokens: 1024,
     });
 
     const post_options: http.RequestOptions = {

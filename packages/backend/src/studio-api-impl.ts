@@ -29,11 +29,9 @@ import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
-import { ProgressLocation, window } from '@podman-desktop/api';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
-    private appUserDirectory: string,
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private playgroundManager: PlayGroundManager,
@@ -74,8 +72,8 @@ export class StudioApiImpl implements StudioAPI {
     const model = await this.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
-    void window.withProgress<void>(
-      { location: ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` },
+    void podmanDesktopApi.window.withProgress<void>(
+      { location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` },
       async progress => {
         this.applicationManager
           .pullApplication(recipe, model)

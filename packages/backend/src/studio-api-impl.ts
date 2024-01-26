@@ -29,6 +29,7 @@ import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
+import { ProgressLocation, window } from '@podman-desktop/api';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -73,9 +74,21 @@ export class StudioApiImpl implements StudioAPI {
     const model = await this.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
-    this.applicationManager.pullApplication(recipe, model).catch((error: unknown) => console.warn(error));
-
-    return Promise.resolve(undefined);
+    void window.withProgress<void>(
+      { location: ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` },
+      async progress => {
+        this.applicationManager
+          .pullApplication(recipe, model)
+          .then(() => {
+            // mark the task as completed
+            progress.report({ increment: -1 });
+          })
+          .catch((error: unknown) => {
+            console.warn(error);
+            progress.report({ message: `Error: ${String(error)}` });
+          });
+      },
+    );
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {

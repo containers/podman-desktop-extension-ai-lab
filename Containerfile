@@ -29,6 +29,6 @@ FROM scratch
 LABEL org.opencontainers.image.title="Studio extension" \
         org.opencontainers.image.description="Studio extension" \
         org.opencontainers.image.vendor="Red Hat" \
-        io.podman-desktop.api.version=">= 1.6.0"
+        io.podman-desktop.api.version=">= 1.7.0"
 
 COPY --from=builder /extension /extension

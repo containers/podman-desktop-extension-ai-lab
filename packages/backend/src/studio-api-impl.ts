@@ -75,16 +75,14 @@ export class StudioApiImpl implements StudioAPI {
     void podmanDesktopApi.window.withProgress<void>(
       { location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` },
       async progress => {
-        this.applicationManager
-          .pullApplication(recipe, model)
-          .then(() => {
-            // mark the task as completed
-            progress.report({ increment: -1 });
-          })
-          .catch((error: unknown) => {
-            console.warn(error);
-            progress.report({ message: `Error: ${String(error)}` });
-          });
+        try {
+          await this.applicationManager.pullApplication(recipe, model);
+          // mark the task as completed
+          progress.report({ increment: -1 });
+        } catch (error) {
+          console.warn(error);
+          progress.report({ message: `Error: ${String(error)}` });
+        }
       },
     );
   }

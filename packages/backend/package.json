@@ -1,7 +1,7 @@
 {
-  "name": "studio-extension",
-  "displayName": "studio extension",
-  "description": "Podman Desktop Studio Extension",
+  "name": "ai-studio",
+  "displayName": "AI Studio",
+  "description": "Podman Desktop AI Studio",
   "version": "0.1.0-next",
   "icon": "icon.png",
   "publisher": "redhat",

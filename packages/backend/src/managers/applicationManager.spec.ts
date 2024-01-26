@@ -1,5 +1,5 @@
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
-import type { ImageInfo, PodInfo } from './applicationManager';
+import type { ContainerAttachedInfo, ImageInfo, PodInfo } from './applicationManager';
 import { ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';
@@ -13,6 +13,7 @@ import path from 'node:path';
 import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
+import * as utils from '../utils/utils';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -23,6 +24,8 @@ const mocks = vi.hoisted(() => {
     createPodMock: vi.fn(),
     createContainerMock: vi.fn(),
     replicatePodmanContainerMock: vi.fn(),
+    startContainerMock: vi.fn(),
+    startPod: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
@@ -36,6 +39,8 @@ vi.mock('@podman-desktop/api', () => ({
     createPod: mocks.createPodMock,
     createContainer: mocks.createContainerMock,
     replicatePodmanContainer: mocks.replicatePodmanContainerMock,
+    startContainer: mocks.startContainerMock,
+    startPod: mocks.startPod,
   },
 }));
 let setTaskMock: MockInstance;
@@ -668,6 +673,13 @@ describe('createPod', async () => {
           protocol: '',
           range: 1,
         },
+        {
+          container_port: 8082,
+          host_port: 9000,
+          host_ip: '',
+          protocol: '',
+          range: 1,
+        },
       ],
     });
   });
@@ -710,13 +722,64 @@ describe('createApplicationPod', () => {
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
     const createAndAddContainersToPodMock = vi
       .spyOn(manager, 'createAndAddContainersToPod')
-      .mockImplementation((_pod: PodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve());
+      .mockImplementation((_pod: PodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve([]));
     await manager.createApplicationPod(images, 'path', taskUtils);
     expect(createAndAddContainersToPodMock).toBeCalledWith(pod, images, 'path');
     expect(setTaskMock).toBeCalledWith({
       id: 'id',
       state: 'success',
       name: 'Creating application',
+    });
+  });
+});
+
+describe('restartContainerWhenEndpointIsUp', () => {
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
+  const containerAttachedInfo: ContainerAttachedInfo = {
+    name: 'name',
+    endPoint: 'endpoint',
+  };
+  test('restart container if endpoint is alive', async () => {
+    vi.spyOn(utils, 'isEndpointAlive').mockResolvedValue(true);
+    await manager.restartContainerWhenEndpointIsUp('engine', containerAttachedInfo);
+    expect(mocks.startContainerMock).toBeCalledWith('engine', 'name');
+  });
+});
+
+describe('runApplication', () => {
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
+  const pod: PodInfo = {
+    engineId: 'engine',
+    Id: 'id',
+    containers: [
+      {
+        name: 'first',
+        endPoint: 'url',
+      },
+      {
+        name: 'second',
+      },
+    ],
+  };
+  test('check startPod is called and also restartContainerWhenEndpointIsUp for sample app', async () => {
+    const restartContainerWhenEndpointIsUpMock = vi
+      .spyOn(manager, 'restartContainerWhenEndpointIsUp')
+      .mockImplementation((_engineId: string, _container: ContainerAttachedInfo) => Promise.resolve());
+    await manager.runApplication(pod, taskUtils);
+    expect(mocks.startPod).toBeCalledWith(pod.engineId, pod.Id);
+    expect(restartContainerWhenEndpointIsUpMock).toBeCalledWith(pod.engineId, {
+      name: 'first',
+      endPoint: 'url',
     });
   });
 });

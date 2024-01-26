@@ -7,6 +7,27 @@ import type { Webview } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
+const mocks = vi.hoisted(() => {
+  return {
+    showErrorMessageMock: vi.fn(),
+  };
+});
+
+vi.mock('@podman-desktop/api', () => {
+  return {
+    fs: {
+      createFileSystemWatcher: () => ({
+        onDidCreate: vi.fn(),
+        onDidDelete: vi.fn(),
+        onDidChange: vi.fn(),
+      }),
+    },
+    window: {
+      showErrorMessage: mocks.showErrorMessageMock,
+    },
+  };
+});
+
 beforeEach(() => {
   vi.resetAllMocks();
 });
@@ -112,17 +133,6 @@ test('loadLocalModels should post a message with the message on disk and on cata
   const now = new Date();
   mockFiles(now);
 
-  vi.mock('@podman-desktop/api', () => {
-    return {
-      fs: {
-        createFileSystemWatcher: () => ({
-          onDidCreate: vi.fn(),
-          onDidDelete: vi.fn(),
-          onDidChange: vi.fn(),
-        }),
-      },
-    };
-  });
   const postMessageMock = vi.fn();
   let appdir: string;
   if (process.platform === 'win32') {
@@ -292,4 +302,5 @@ test('deleteLocalModel fails to delete the model folder', async () => {
       },
     ],
   });
+  expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();
 });

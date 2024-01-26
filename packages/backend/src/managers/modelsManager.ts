@@ -5,6 +5,7 @@ import { type Webview, fs as apiFs } from '@podman-desktop/api';
 import { MSG_NEW_LOCAL_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import * as podmanDesktopApi from '@podman-desktop/api';
 
 export class ModelsManager {
   #modelsDir: string;
@@ -116,7 +117,7 @@ export class ModelsManager {
       await fs.promises.rm(modelDir, { recursive: true });
       this.#localModels.delete(modelId);
     } catch (err: unknown) {
-      console.error('unable to delete model', modelId, err);
+      await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
     } finally {
       this.#deleted.delete(modelId);
       await this.sendModelsInfo();

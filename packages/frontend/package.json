@@ -1,6 +1,6 @@
 {
   "name": "frontend-app",
-  "displayName": "UI for studio extension",
+  "displayName": "UI for AI Studio",
   "version": "0.1.0-next",
   "type": "module",
   "scripts": {

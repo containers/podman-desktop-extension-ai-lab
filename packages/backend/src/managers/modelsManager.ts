@@ -116,7 +116,7 @@ export class ModelsManager {
       await fs.promises.rm(modelDir, { recursive: true });
       this.#localModels.delete(modelId);
     } catch (err: unknown) {
-      console.error('unable to delete model', modelId);
+      console.error('unable to delete model', modelId, err);
     } finally {
       this.#deleted.delete(modelId);
       await this.sendModelsInfo();

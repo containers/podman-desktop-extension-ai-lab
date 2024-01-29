@@ -152,6 +152,8 @@ test('expect pull application to call the withProgress api method', async () => 
   vi.spyOn(fs, 'existsSync').mockReturnValue(true);
   vi.spyOn(fs.promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
 
+  mocks.withProgressMock.mockResolvedValue(undefined);
+
   await catalogManager.loadCatalog();
   await studioApiImpl.pullApplication('recipe 1');
   expect(mocks.withProgressMock).toHaveBeenCalledOnce();

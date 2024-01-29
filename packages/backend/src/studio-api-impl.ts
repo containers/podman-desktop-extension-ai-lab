@@ -72,12 +72,14 @@ export class StudioApiImpl implements StudioAPI {
     const model = await this.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
-    void podmanDesktopApi.window.withProgress<void>(
-      { location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` },
-      () => this.applicationManager.pullApplication(recipe, model),
-    ).catch(() => {
-      this.recipeStatusRegistry.setStatus(recipeId, {recipeId: recipeId, state: 'error', tasks: []});
-    });
+    void podmanDesktopApi.window
+      .withProgress<void>(
+        { location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` },
+        () => this.applicationManager.pullApplication(recipe, model),
+      )
+      .catch(() => {
+        this.recipeStatusRegistry.setStatus(recipeId, { recipeId: recipeId, state: 'error', tasks: [] });
+      });
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {

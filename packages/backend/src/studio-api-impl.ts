@@ -74,17 +74,10 @@ export class StudioApiImpl implements StudioAPI {
     // Do not wait for the pull application, run it separately
     void podmanDesktopApi.window.withProgress<void>(
       { location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` },
-      async progress => {
-        try {
-          await this.applicationManager.pullApplication(recipe, model);
-          // mark the task as completed
-          progress.report({ increment: -1 });
-        } catch (error) {
-          console.warn(error);
-          progress.report({ message: `Error: ${String(error)}` });
-        }
-      },
-    );
+      () => this.applicationManager.pullApplication(recipe, model),
+    ).catch(() => {
+      this.recipeStatusRegistry.setStatus(recipeId, {recipeId: recipeId, state: 'error', tasks: []});
+    });
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {

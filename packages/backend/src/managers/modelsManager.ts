@@ -4,10 +4,14 @@ import * as path from 'node:path';
 import { type Webview, fs as apiFs } from '@podman-desktop/api';
 import { MSG_NEW_LOCAL_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import * as podmanDesktopApi from '@podman-desktop/api';
 
 export class ModelsManager {
   #modelsDir: string;
   #localModels: Map<string, LocalModelInfo>;
+  // models being deleted
+  #deleted: Set<string>;
 
   constructor(
     private appUserDirectory: string,
@@ -16,16 +20,13 @@ export class ModelsManager {
   ) {
     this.#modelsDir = path.join(this.appUserDirectory, 'models');
     this.#localModels = new Map();
+    this.#deleted = new Set();
   }
 
   async loadLocalModels() {
     const reloadLocalModels = async () => {
       this.getLocalModelsFromDisk();
-      const models = this.getModelsInfo();
-      await this.webview.postMessage({
-        id: MSG_NEW_LOCAL_MODELS_STATE,
-        body: models,
-      });
+      await this.sendModelsInfo();
     };
     const watcher = apiFs.createFileSystemWatcher(this.#modelsDir);
     watcher.onDidCreate(reloadLocalModels);
@@ -39,7 +40,22 @@ export class ModelsManager {
     return this.catalogManager
       .getModels()
       .filter(m => this.#localModels.has(m.id))
-      .map(m => ({ ...m, file: this.#localModels.get(m.id) }));
+      .map(
+        m =>
+          ({
+            ...m,
+            file: this.#localModels.get(m.id),
+            state: this.#deleted.has(m.id) ? 'deleting' : undefined,
+          }) as ModelInfo,
+      );
+  }
+
+  async sendModelsInfo() {
+    const models = this.getModelsInfo();
+    await this.webview.postMessage({
+      id: MSG_NEW_LOCAL_MODELS_STATE,
+      body: models,
+    });
   }
 
   getLocalModelsFromDisk(): void {
@@ -85,7 +101,26 @@ export class ModelsManager {
     return path.resolve(this.#modelsDir, modelId, info.file);
   }
 
+  getLocalModelFolder(modelId: string): string {
+    return path.resolve(this.#modelsDir, modelId);
+  }
+
   getLocalModels(): LocalModelInfo[] {
     return Array.from(this.#localModels.values());
+  }
+
+  async deleteLocalModel(modelId: string): Promise<void> {
+    const modelDir = this.getLocalModelFolder(modelId);
+    this.#deleted.add(modelId);
+    await this.sendModelsInfo();
+    try {
+      await fs.promises.rm(modelDir, { recursive: true });
+      this.#localModels.delete(modelId);
+    } catch (err: unknown) {
+      await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
+    } finally {
+      this.#deleted.delete(modelId);
+      await this.sendModelsInfo();
+    }
   }
 }

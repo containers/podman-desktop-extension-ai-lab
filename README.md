@@ -1,12 +1,12 @@
-# studio extension
+# AI studio
 
 ## Installing a development version
 
 You can install this extension from Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
 
-The name of the image to use is `ghcr.io/projectatomic/studio-extension:latest`.
+The name of the image to use is `ghcr.io/projectatomic/ai-studio:latest`.
 
-You can get earlier tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/studio-extension.
+You can get earlier tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
 
 These images contain development versions of the extension. There is no stable release yet.
 

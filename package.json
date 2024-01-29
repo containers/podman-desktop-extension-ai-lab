@@ -1,7 +1,7 @@
 {
-  "name": "studio-extension-monorepo",
-  "displayName": "studio-extension-monorepo",
-  "description": "studio-extension-monorepo",
+  "name": "ai-studio-monorepo",
+  "displayName": "ai-studio-monorepo",
+  "description": "ai-studio-monorepo",
   "publisher": "redhat",
   "version": "0.0.0",
   "private": true,

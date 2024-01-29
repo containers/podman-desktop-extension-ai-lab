@@ -18,9 +18,9 @@
 
 import { beforeEach, afterEach, expect, test, vi } from 'vitest';
 import { LABEL_MODEL_ID, LABEL_MODEL_PORT, PlayGroundManager } from './playground';
-import type { ImageInfo, Webview } from '@podman-desktop/api';
-import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { PodmanConnection, machineStopHandle, startupHandle } from './podmanConnection';
+import type { ContainerRegistry } from '../registries/ContainerRegistry';
+import type { ImageInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => ({
   postMessage: vi.fn(),
@@ -33,6 +33,8 @@ const mocks = vi.hoisted(() => ({
   startupSubscribe: vi.fn(),
   onMachineStop: vi.fn(),
   listContainers: vi.fn(),
+  logUsage: vi.fn(),
+  logError: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -74,7 +76,11 @@ beforeEach(() => {
       startupSubscribe: mocks.startupSubscribe,
       onMachineStop: mocks.onMachineStop,
     } as unknown as PodmanConnection,
-  );
+    {
+      logUsage: mocks.logUsage,
+      logError: mocks.logError,
+    } as unknown as TelemetryLogger,
+    );
   originalFetch = globalThis.fetch;
   globalThis.fetch = vi.fn().mockResolvedValue({});
 });

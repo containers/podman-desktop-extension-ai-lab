@@ -26,6 +26,7 @@ import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { RecipeStatusUtils } from '../utils/recipeStatusUtils';
+import { getDurationSecondsSince } from '../utils/utils';
 
 export type DownloadModelResult = DownloadModelSuccessfulResult | DownloadModelFailureResult;
 
@@ -49,6 +50,7 @@ export class ModelsManager {
     private appUserDirectory: string,
     private webview: Webview,
     private catalogManager: CatalogManager,
+    private telemetry: podmanDesktopApi.TelemetryLogger,
   ) {
     this.#modelsDir = path.join(this.appUserDirectory, 'models');
     this.#localModels = new Map();
@@ -152,7 +154,13 @@ export class ModelsManager {
     try {
       await fs.promises.rm(modelDir, { recursive: true });
       this.#localModels.delete(modelId);
+      this.telemetry.logUsage('model.delete', { 'model.id': modelId });
     } catch (err: unknown) {
+      this.telemetry.logError('model.delete', {
+        'model.id': modelId,
+        message: 'error deleting model from disk',
+        error: err,
+      });
       await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
     } finally {
       this.#deleted.delete(modelId);
@@ -173,7 +181,11 @@ export class ModelsManager {
       });
 
       try {
-        return await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
+        const startTime = performance.now();
+        const result = await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
+        const durationSeconds = getDurationSecondsSince(startTime);
+        this.telemetry.logUsage('model.download', { 'model.id': model.id, durationSeconds });
+        return result;
       } catch (e) {
         console.error(e);
         taskUtil.setTask({
@@ -183,6 +195,11 @@ export class ModelsManager {
           labels: {
             'model-pulling': model.id,
           },
+        });
+        this.telemetry.logError('model.download', {
+          'model.id': model.id,
+          message: 'error downloading model',
+          error: e,
         });
         throw e;
       }

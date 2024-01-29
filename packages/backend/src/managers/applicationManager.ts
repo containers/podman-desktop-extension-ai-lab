@@ -20,7 +20,7 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import { type PodCreatePortOptions, containerEngine } from '@podman-desktop/api';
+import { type PodCreatePortOptions, containerEngine, type TelemetryLogger } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYaml } from '../models/AIConfig';
@@ -31,7 +31,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
-import { isEndpointAlive, timeout } from '../utils/utils';
+import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
 
 export const CONFIG_FILENAME = 'ai-studio.yaml';
 
@@ -66,9 +66,11 @@ export class ApplicationManager {
     private git: GitManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private modelsManager: ModelsManager,
+    private telemetry: TelemetryLogger,
   ) {}
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
+    const startTime = performance.now();
     // Create a TaskUtils object to help us
     const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
 
@@ -101,6 +103,8 @@ export class ApplicationManager {
 
     await this.runApplication(podInfo, taskUtil);
     taskUtil.setStatus('running');
+    const durationSeconds = getDurationSecondsSince(startTime);
+    this.telemetry.logUsage('recipe.pull', { 'recipe.id': recipe.id, 'recipe.name': recipe.name, durationSeconds });
   }
 
   async runApplication(podInfo: PodInfo, taskUtil: RecipeStatusUtils) {
@@ -158,6 +162,7 @@ export class ApplicationManager {
     await timeout(5000);
     await this.restartContainerWhenModelServiceIsUp(engineId, modelServiceEndpoint, container).catch(
       (error: unknown) => {
+        this.telemetry.logError('recipe.pull', { message: 'error monitoring endpoint', error: error });
         console.error('Error monitoring endpoint', error);
       },
     );
@@ -175,6 +180,7 @@ export class ApplicationManager {
         state: 'error',
         name: 'Creating application',
       });
+      this.telemetry.logError('recipe.pull', { message: 'error creating pod', error: e });
       throw e;
     }
 
@@ -194,6 +200,7 @@ export class ApplicationManager {
         state: 'error',
         name: 'Creating application',
       });
+      this.telemetry.logError('recipe.pull', { message: 'error adding containers to pod', error: e });
       throw e;
     }
 
@@ -342,6 +349,7 @@ export class ApplicationManager {
         if (!fs.existsSync(context)) {
           console.error('The context provided does not exist.');
           taskUtil.setTaskState(container.name, 'error');
+          this.telemetry.logError('recipe.pull', { message: 'configured context does not exist' });
           throw new Error('Context configured does not exist.');
         }
 
@@ -357,6 +365,7 @@ export class ApplicationManager {
               // todo: do something with the event
               if (event === 'error' || (event === 'finish' && data !== '')) {
                 console.error('Something went wrong while building the image: ', data);
+                this.telemetry.logError('recipe.pull', { message: 'error building image' });
                 taskUtil.setTaskState(container.name, 'error');
               }
             },
@@ -364,6 +373,7 @@ export class ApplicationManager {
           )
           .catch((err: unknown) => {
             console.error('Something went wrong while building the image: ', err);
+            this.telemetry.logError('recipe.pull', { message: 'error building image', error: err });
             taskUtil.setTaskState(container.name, 'error');
             throw new Error(`Something went wrong while building the image: ${String(err)}`);
           });
@@ -422,6 +432,7 @@ export class ApplicationManager {
     } catch (e) {
       loadingConfiguration.state = 'error';
       taskUtil.setTask(loadingConfiguration);
+      this.telemetry.logError('recipe.pull', { message: 'error loading configuration', error: e });
       throw e;
     }
 
@@ -435,6 +446,7 @@ export class ApplicationManager {
       // Mark as failure.
       loadingConfiguration.state = 'error';
       taskUtil.setTask(loadingConfiguration);
+      this.telemetry.logError('recipe.pull', { message: 'no container available' });
       throw new Error('No containers available.');
     }
 

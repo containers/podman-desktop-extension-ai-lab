@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { vi, test, expect } from 'vitest';
+import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import catalog from '../../../backend/src/ai-user-test.json';
 import Recipe from './Recipe.svelte';
@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
     getCatalogMock: vi.fn(),
     getPullingStatusesMock: vi.fn(),
     pullApplicationMock: vi.fn(),
+    telemetryLogUsageMock: vi.fn(),
   };
 });
 
@@ -19,6 +20,7 @@ vi.mock('../utils/client', async () => {
       getCatalog: mocks.getCatalogMock,
       getPullingStatuses: mocks.getPullingStatusesMock,
       pullApplication: mocks.pullApplicationMock,
+      telemetryLogUsage: mocks.telemetryLogUsageMock,
     },
     rpcBrowser: {
       subscribe: () => {
@@ -28,6 +30,10 @@ vi.mock('../utils/client', async () => {
       },
     },
   };
+});
+
+beforeEach(() => {
+  vi.resetAllMocks();
 });
 
 test('should display recipe information', async () => {
@@ -109,4 +115,21 @@ test('should call runApplication execution when run application button is clicke
   await userEvent.click(btnRunApplication);
 
   expect(mocks.pullApplicationMock).toBeCalledWith('recipe 1');
+});
+
+test('should send telemetry data', async () => {
+  const recipe = catalog.recipes.find(r => r.id === 'recipe 1');
+  expect(recipe).not.toBeUndefined();
+
+  mocks.getCatalogMock.mockResolvedValue(catalog);
+  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  render(Recipe, {
+    recipeId: 'recipe 1',
+  });
+  await new Promise(resolve => setTimeout(resolve, 200));
+
+  expect(mocks.telemetryLogUsageMock).toHaveBeenNthCalledWith(1, 'recipe.open', {
+    'recipe.id': 'recipe 1',
+    'recipe.name': 'Recipe 1',
+  });
 });

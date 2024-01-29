@@ -3,6 +3,7 @@ import type { ModelInfo } from './models/IModelInfo';
 import type { QueryState } from './models/IPlaygroundQueryState';
 import type { Catalog } from './models/ICatalog';
 import type { PlaygroundState } from './models/IPlaygroundState';
+import type { TelemetryTrustedValue } from '@podman-desktop/api';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -27,4 +28,7 @@ export abstract class StudioAPI {
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
   abstract getModelsDirectory(): Promise<string>;
   abstract navigateToContainer(containerId: string): Promise<void>;
+
+  abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
+  abstract telemetryLogError(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
 }

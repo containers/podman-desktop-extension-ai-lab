@@ -1,5 +1,5 @@
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
-import type { ImageInfo, PodInfo } from './applicationManager';
+import type { ContainerAttachedInfo, DownloadModelResult, ImageInfo, PodInfo } from './applicationManager';
 import { ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';
@@ -13,6 +13,7 @@ import path from 'node:path';
 import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
+import * as utils from '../utils/utils';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -23,6 +24,9 @@ const mocks = vi.hoisted(() => {
     createPodMock: vi.fn(),
     createContainerMock: vi.fn(),
     replicatePodmanContainerMock: vi.fn(),
+    startContainerMock: vi.fn(),
+    startPod: vi.fn(),
+    deleteContainerMock: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
@@ -36,6 +40,9 @@ vi.mock('@podman-desktop/api', () => ({
     createPod: mocks.createPodMock,
     createContainer: mocks.createContainerMock,
     replicatePodmanContainer: mocks.replicatePodmanContainerMock,
+    startContainer: mocks.startContainerMock,
+    startPod: mocks.startPod,
+    deleteContainer: mocks.deleteContainerMock,
   },
 }));
 let setTaskMock: MockInstance;
@@ -668,6 +675,13 @@ describe('createPod', async () => {
           protocol: '',
           range: 1,
         },
+        {
+          container_port: 8082,
+          host_port: 9000,
+          host_ip: '',
+          protocol: '',
+          range: 1,
+        },
       ],
     });
   });
@@ -710,7 +724,7 @@ describe('createApplicationPod', () => {
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
     const createAndAddContainersToPodMock = vi
       .spyOn(manager, 'createAndAddContainersToPod')
-      .mockImplementation((_pod: PodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve());
+      .mockImplementation((_pod: PodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve([]));
     await manager.createApplicationPod(images, 'path', taskUtils);
     expect(createAndAddContainersToPodMock).toBeCalledWith(pod, images, 'path');
     expect(setTaskMock).toBeCalledWith({
@@ -718,5 +732,165 @@ describe('createApplicationPod', () => {
       state: 'success',
       name: 'Creating application',
     });
+  });
+  test('throw if createAndAddContainersToPod fails', async () => {
+    const pod: PodInfo = {
+      engineId: 'engine',
+      Id: 'id',
+    };
+    vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
+    vi.spyOn(manager, 'createAndAddContainersToPod').mockRejectedValue('error');
+    await expect(() => manager.createApplicationPod(images, 'path', taskUtils)).rejects.toThrowError('error');
+    expect(setTaskMock).toBeCalledWith({
+      id: 'id',
+      state: 'error',
+      name: 'Creating application',
+    });
+  });
+});
+
+describe('doDownloadModelWrapper', () => {
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
+  test('returning model path if model has been downloaded', async () => {
+    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
+      (
+        _modelId: string,
+        _url: string,
+        _taskUtil: RecipeStatusUtils,
+        callback: (message: DownloadModelResult) => void,
+        _destFileName?: string,
+      ) => {
+        callback({
+          successful: true,
+          path: 'path',
+        });
+      },
+    );
+    setTaskStateMock.mockReturnThis();
+    const result = await manager.doDownloadModelWrapper('id', 'url', taskUtils);
+    expect(result).toBe('path');
+  });
+  test('rejecting with error message if model has NOT been downloaded', async () => {
+    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
+      (
+        _modelId: string,
+        _url: string,
+        _taskUtil: RecipeStatusUtils,
+        callback: (message: DownloadModelResult) => void,
+        _destFileName?: string,
+      ) => {
+        callback({
+          successful: false,
+          error: 'error',
+        });
+      },
+    );
+    setTaskStateMock.mockReturnThis();
+    await expect(manager.doDownloadModelWrapper('id', 'url', taskUtils)).rejects.toThrowError('error');
+  });
+});
+
+describe('restartContainerWhenEndpointIsUp', () => {
+  const containerAttachedInfo: ContainerAttachedInfo = {
+    name: 'name',
+    endPoint: 'endpoint',
+  };
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
+  test('restart container if endpoint is alive', async () => {
+    vi.spyOn(utils, 'isEndpointAlive').mockResolvedValue(true);
+    await manager.restartContainerWhenEndpointIsUp('engine', containerAttachedInfo);
+    expect(mocks.startContainerMock).toBeCalledWith('engine', 'name');
+  });
+});
+
+describe('runApplication', () => {
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
+  const pod: PodInfo = {
+    engineId: 'engine',
+    Id: 'id',
+    containers: [
+      {
+        name: 'first',
+        endPoint: 'url',
+      },
+      {
+        name: 'second',
+      },
+    ],
+  };
+  test('check startPod is called and also restartContainerWhenEndpointIsUp for sample app', async () => {
+    const restartContainerWhenEndpointIsUpMock = vi
+      .spyOn(manager, 'restartContainerWhenEndpointIsUp')
+      .mockImplementation((_engineId: string, _container: ContainerAttachedInfo) => Promise.resolve());
+    await manager.runApplication(pod, taskUtils);
+    expect(mocks.startPod).toBeCalledWith(pod.engineId, pod.Id);
+    expect(restartContainerWhenEndpointIsUpMock).toBeCalledWith(pod.engineId, {
+      name: 'first',
+      endPoint: 'url',
+    });
+  });
+});
+
+describe('createAndAddContainersToPod', () => {
+  const manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as unknown as GitManager,
+    {} as unknown as RecipeStatusRegistry,
+    {} as unknown as ModelsManager,
+  );
+  const pod: PodInfo = {
+    engineId: 'engine',
+    Id: 'id',
+  };
+  const imageInfo1: ImageInfo = {
+    id: 'id',
+    appName: 'appName',
+    modelService: false,
+    ports: ['8080'],
+  };
+  test('check that after the creation and copy inside the pod, the container outside the pod is actually deleted', async () => {
+    mocks.createContainerMock.mockResolvedValue({
+      id: 'container-1',
+    });
+    vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
+    await manager.createAndAddContainersToPod(pod, [imageInfo1], 'path');
+    expect(mocks.createContainerMock).toBeCalledWith('engine', {
+      Image: 'id',
+      Detach: true,
+      HostConfig: {
+        AutoRemove: true,
+      },
+      Env: [],
+      start: false,
+    });
+    expect(mocks.replicatePodmanContainerMock).toBeCalledWith(
+      {
+        id: 'container-1',
+        engineId: 'engine',
+      },
+      {
+        engineId: 'engine',
+      },
+      {
+        pod: 'id',
+        name: 'name',
+      },
+    );
+    expect(mocks.deleteContainerMock).toBeCalledWith('engine', 'container-1');
   });
 });

@@ -10,4 +10,5 @@ export interface ModelInfo {
   license: string;
   url: string;
   file?: LocalModelInfo;
+  state?: 'deleting';
 }

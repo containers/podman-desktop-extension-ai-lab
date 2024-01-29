@@ -32,7 +32,6 @@ import type { ModelsManager } from './managers/modelsManager';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
-    private appUserDirectory: string,
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private playgroundManager: PlayGroundManager,
@@ -73,9 +72,14 @@ export class StudioApiImpl implements StudioAPI {
     const model = await this.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
-    this.applicationManager.pullApplication(recipe, model).catch((error: unknown) => console.warn(error));
-
-    return Promise.resolve(undefined);
+    void podmanDesktopApi.window
+      .withProgress<void>(
+        { location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` },
+        () => this.applicationManager.pullApplication(recipe, model),
+      )
+      .catch(() => {
+        this.recipeStatusRegistry.setStatus(recipeId, { recipeId: recipeId, state: 'error', tasks: [] });
+      });
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {

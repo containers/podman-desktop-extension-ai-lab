@@ -5,6 +5,8 @@ export interface Recipe {
   description: string;
   icon?: string;
   repository: string;
+  branch: string;
+  sha: string;
   readme: string;
   config?: string;
   models?: string[];

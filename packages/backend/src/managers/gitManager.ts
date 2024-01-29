@@ -16,15 +16,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import simpleGit, { type SimpleGit } from 'simple-git';
+import simpleGit from 'simple-git';
+
+export interface GitCloneInfo {
+  repository: string;
+  branch: string;
+  sha: string;
+  targetDirectory: string;
+}
 
 export class GitManager {
-  private readonly simpleGit: SimpleGit;
-  constructor() {
-    this.simpleGit = simpleGit();
-  }
-
-  async cloneRepository(repository: string, targetDirectory: string) {
-    return this.simpleGit.clone(repository, targetDirectory);
+  async cloneRepository(gitCloneInfo: GitCloneInfo) {
+    // clone repo
+    await simpleGit().clone(gitCloneInfo.repository, gitCloneInfo.targetDirectory, ['-b', gitCloneInfo.branch]);
+    // checkout to specific branch
+    await simpleGit(gitCloneInfo.targetDirectory).checkout([gitCloneInfo.sha]);
   }
 }

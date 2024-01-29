@@ -165,6 +165,8 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
+      branch: 'branch',
+      sha: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -184,10 +186,17 @@ describe('pullApplication', () => {
       },
     });
     await manager.pullApplication(recipe, model);
+    const gitCloneOptions = {
+      branch: 'branch',
+      repository: 'repo',
+      sha: '000000',
+      targetDirectory: '\\home\\user\\aistudio\\recipe1',
+    };
     if (process.platform === 'win32') {
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '\\home\\user\\aistudio\\recipe1');
+      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     } else {
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '/home/user/aistudio/recipe1');
+      gitCloneOptions.targetDirectory = '/home/user/aistudio/recipe1';
+      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     }
     expect(doDownloadModelWrapperSpy).toHaveBeenCalledOnce();
     expect(mocks.builImageMock).toHaveBeenCalledOnce();
@@ -202,6 +211,8 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
+      branch: 'branch',
+      sha: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -228,6 +239,8 @@ describe('pullApplication', () => {
       id: 'recipe1',
       name: 'Recipe 1',
       categories: [],
+      branch: 'branch',
+      sha: '000000',
       description: '',
       readme: '',
       repository: 'repo',
@@ -257,6 +270,8 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
+      branch: 'branch',
+      sha: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -296,8 +311,15 @@ describe('doCheckout', () => {
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
     );
-    await manager.doCheckout('repo', 'folder', taskUtils);
-    expect(cloneRepositoryMock).toBeCalledWith('repo', 'folder');
+    const gitCloneOptions = {
+      branch: 'branch',
+      repository: 'repo',
+      sha: '000000',
+      targetDirectory: 'folder',
+    };
+    await manager.doCheckout(gitCloneOptions, taskUtils);
+
+    expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
     expect(setTaskMock).toHaveBeenLastCalledWith({
       id: 'checkout',
       name: 'Checkout repository',
@@ -323,7 +345,15 @@ describe('doCheckout', () => {
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
     );
-    await manager.doCheckout('repo', 'folder', taskUtils);
+    await manager.doCheckout(
+      {
+        repository: 'repo',
+        branch: 'branch',
+        sha: '000000',
+        targetDirectory: 'folder',
+      },
+      taskUtils,
+    );
     expect(mkdirSyncMock).not.toHaveBeenCalled();
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
     expect(setTaskMock).toHaveBeenLastCalledWith({

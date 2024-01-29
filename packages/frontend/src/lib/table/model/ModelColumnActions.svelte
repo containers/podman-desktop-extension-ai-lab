@@ -20,7 +20,6 @@ async function goDeleteModel() {
 }
 
 function openModelFolder() {
-  console.log(object.file);
   if (object && object.file) {
     studioClient.openURL('file://'+object.file.path);
   }

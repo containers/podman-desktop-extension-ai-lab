@@ -55,13 +55,15 @@ interface AIContainers {
 
 export interface ContainerAttachedInfo {
   name: string;
-  endPoint?: string;
+  modelService: boolean;
+  ports: string[];
 }
 
 export interface PodInfo {
   engineId: string;
   Id: string;
   containers?: ContainerAttachedInfo[];
+  portmappings: PodCreatePortOptions[];
 }
 
 export interface ImageInfo {
@@ -120,16 +122,30 @@ export class ApplicationManager {
 
     // most probably the sample app will fail at starting as it tries to connect to the model_service which is still loading the model
     // so we check if the endpoint is ready before to restart the sample app
-    await Promise.all(
-      podInfo.containers?.map(async container => {
-        if (!container.endPoint) {
-          return;
+    // wait 5 secs to give the time to the sample app to connect to the model service
+    await timeout(5000);
+    // check if sample app container actually started
+    const sampleApp = podInfo.containers?.find(container => !container.modelService);
+    if (sampleApp) {
+      const sampleAppContainerInspectInfo = await containerEngine.inspectContainer(podInfo.engineId, sampleApp.name);
+      if (!sampleAppContainerInspectInfo.State.Running) {
+        const modelServiceContainer = podInfo.containers?.find(container => container.modelService);
+        if (modelServiceContainer) {
+          const modelServicePortMapping = podInfo.portmappings.find(
+            port => port.container_port === Number(modelServiceContainer.ports[0]),
+          );
+          if (modelServicePortMapping) {
+            await this.restartContainerWhenModelServiceIsUp(
+              podInfo.engineId,
+              `http://localhost:${modelServicePortMapping.host_port}`,
+              sampleApp,
+            ).catch((e: unknown) => {
+              console.error(String(e));
+            });
+          }
         }
-        return this.restartContainerWhenEndpointIsUp(podInfo.engineId, container).catch((e: unknown) => {
-          console.error(String(e));
-        });
-      }),
-    );
+      }
+    }
 
     taskUtil.setTask({
       id: `running-${podInfo.Id}`,
@@ -138,23 +154,29 @@ export class ApplicationManager {
     });
   }
 
-  async restartContainerWhenEndpointIsUp(engineId: string, container: ContainerAttachedInfo): Promise<void> {
-    const alive = await isEndpointAlive(container.endPoint);
+  async restartContainerWhenModelServiceIsUp(
+    engineId: string,
+    modelServiceEndpoint: string,
+    container: ContainerAttachedInfo,
+  ): Promise<void> {
+    const alive = await isEndpointAlive(modelServiceEndpoint);
     if (alive) {
       await containerEngine.startContainer(engineId, container.name);
       return;
     }
     await timeout(5000);
-    await this.restartContainerWhenEndpointIsUp(engineId, container).catch((error: unknown) => {
-      console.error('Error monitoring endpoint', error);
-    });
+    await this.restartContainerWhenModelServiceIsUp(engineId, modelServiceEndpoint, container).catch(
+      (error: unknown) => {
+        console.error('Error monitoring endpoint', error);
+      },
+    );
   }
 
   async createApplicationPod(images: ImageInfo[], modelPath: string, taskUtil: RecipeStatusUtils): Promise<PodInfo> {
     // create empty pod
-    let pod: PodInfo;
+    let podInfo: PodInfo;
     try {
-      pod = await this.createPod(images);
+      podInfo = await this.createPod(images);
     } catch (e) {
       console.error('error when creating pod');
       taskUtil.setTask({
@@ -166,18 +188,18 @@ export class ApplicationManager {
     }
 
     taskUtil.setTask({
-      id: pod.Id,
+      id: podInfo.Id,
       state: 'loading',
       name: `Creating application`,
     });
 
     let attachedContainers: ContainerAttachedInfo[];
     try {
-      attachedContainers = await this.createAndAddContainersToPod(pod, images, modelPath);
+      attachedContainers = await this.createAndAddContainersToPod(podInfo, images, modelPath);
     } catch (e) {
-      console.error(`error when creating pod ${pod.Id}`);
+      console.error(`error when creating pod ${podInfo.Id}`);
       taskUtil.setTask({
-        id: pod.Id,
+        id: podInfo.Id,
         state: 'error',
         name: 'Creating application',
       });
@@ -185,17 +207,17 @@ export class ApplicationManager {
     }
 
     taskUtil.setTask({
-      id: pod.Id,
+      id: podInfo.Id,
       state: 'success',
       name: `Creating application`,
     });
 
-    pod.containers = attachedContainers;
-    return pod;
+    podInfo.containers = attachedContainers;
+    return podInfo;
   }
 
   async createAndAddContainersToPod(
-    pod: PodInfo,
+    podInfo: PodInfo,
     images: ImageInfo[],
     modelPath: string,
   ): Promise<ContainerAttachedInfo[]> {
@@ -204,7 +226,6 @@ export class ApplicationManager {
       images.map(async image => {
         let hostConfig: unknown;
         let envs: string[] = [];
-        let endPoint: string;
         // if it's a model service we mount the model as a volume
         if (image.modelService) {
           const modelName = path.basename(modelPath);
@@ -226,11 +247,11 @@ export class ApplicationManager {
           // TODO: remove static port
           const modelService = images.find(image => image.modelService);
           if (modelService && modelService.ports.length > 0) {
-            endPoint = `http://localhost:${modelService.ports[0]}`;
+            const endPoint = `http://localhost:${modelService.ports[0]}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
           }
         }
-        const createdContainer = await containerEngine.createContainer(pod.engineId, {
+        const createdContainer = await containerEngine.createContainer(podInfo.engineId, {
           Image: image.id,
           Detach: true,
           HostConfig: hostConfig,
@@ -244,17 +265,18 @@ export class ApplicationManager {
           await containerEngine.replicatePodmanContainer(
             {
               id: createdContainer.id,
-              engineId: pod.engineId,
+              engineId: podInfo.engineId,
             },
-            { engineId: pod.engineId },
-            { pod: pod.Id, name: podifiedName },
+            { engineId: podInfo.engineId },
+            { pod: podInfo.Id, name: podifiedName },
           );
           containers.push({
             name: podifiedName,
-            endPoint,
+            modelService: image.modelService,
+            ports: image.ports,
           });
           // remove the external container
-          await containerEngine.deleteContainer(pod.engineId, createdContainer.id);
+          await containerEngine.deleteContainer(podInfo.engineId, createdContainer.id);
         } else {
           throw new Error(`failed at creating container for image ${image.id}`);
         }
@@ -288,10 +310,15 @@ export class ApplicationManager {
     }
 
     // create new pod
-    return await containerEngine.createPod({
+    const pod = await containerEngine.createPod({
       name: this.getRandomName(`pod-${sampleAppImageInfo.appName}`),
       portmappings: portmappings,
     });
+    return {
+      Id: pod.Id,
+      engineId: pod.engineId,
+      portmappings: portmappings,
+    };
   }
 
   getRandomName(base: string): string {

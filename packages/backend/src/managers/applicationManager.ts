@@ -19,7 +19,6 @@
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
-import * as https from 'node:https';
 import * as path from 'node:path';
 import { type PodCreatePortOptions, containerEngine } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
@@ -35,18 +34,6 @@ import { goarch } from '../utils/arch';
 import { isEndpointAlive, timeout } from '../utils/utils';
 
 export const CONFIG_FILENAME = 'ai-studio.yaml';
-
-export type DownloadModelResult = DownloadModelSuccessfulResult | DownloadModelFailureResult;
-
-interface DownloadModelSuccessfulResult {
-  successful: true;
-  path: string;
-}
-
-interface DownloadModelFailureResult {
-  successful: false;
-  error: string;
-}
 
 interface AIContainers {
   aiConfigFile: AIConfigFile;
@@ -100,7 +87,7 @@ export class ApplicationManager {
     const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
 
     // get model by downloading it or retrieving locally
-    const modelPath = await this.downloadModel(model, taskUtil);
+    const modelPath = await this.modelsManager.downloadModel(model, taskUtil);
 
     // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
     const images = await this.buildImages(
@@ -464,45 +451,6 @@ export class ApplicationManager {
     );
   }
 
-  async downloadModel(model: ModelInfo, taskUtil: RecipeStatusUtils) {
-    if (!this.modelsManager.isModelOnDisk(model.id)) {
-      // Download model
-      taskUtil.setTask({
-        id: model.id,
-        state: 'loading',
-        name: `Downloading model ${model.name}`,
-        labels: {
-          'model-pulling': model.id,
-        },
-      });
-
-      try {
-        return await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
-      } catch (e) {
-        console.error(e);
-        taskUtil.setTask({
-          id: model.id,
-          state: 'error',
-          name: `Downloading model ${model.name}`,
-          labels: {
-            'model-pulling': model.id,
-          },
-        });
-        throw e;
-      }
-    } else {
-      taskUtil.setTask({
-        id: model.id,
-        state: 'success',
-        name: `Model ${model.name} already present on disk`,
-        labels: {
-          'model-pulling': model.id,
-        },
-      });
-      return this.modelsManager.getLocalModelPath(model.id);
-    }
-  }
-
   getConfiguration(recipeConfig: string, localFolder: string): AIConfigFile {
     let configFile: string;
     if (recipeConfig !== undefined) {
@@ -571,86 +519,5 @@ export class ApplicationManager {
     }
     // Update task
     taskUtil.setTask(checkoutTask);
-  }
-
-  doDownloadModelWrapper(
-    modelId: string,
-    url: string,
-    taskUtil: RecipeStatusUtils,
-    destFileName?: string,
-  ): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const downloadCallback = (result: DownloadModelResult) => {
-        if (result.successful === true) {
-          taskUtil.setTaskState(modelId, 'success');
-          resolve(result.path);
-        } else if (result.successful === false) {
-          taskUtil.setTaskState(modelId, 'error');
-          reject(result.error);
-        }
-      };
-
-      this.doDownloadModel(modelId, url, taskUtil, downloadCallback, destFileName);
-    });
-  }
-
-  doDownloadModel(
-    modelId: string,
-    url: string,
-    taskUtil: RecipeStatusUtils,
-    callback: (message: DownloadModelResult) => void,
-    destFileName?: string,
-  ) {
-    const destDir = path.join(this.appUserDirectory, 'models', modelId);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
-    if (!destFileName) {
-      destFileName = path.basename(url);
-    }
-    const destFile = path.resolve(destDir, destFileName);
-    const file = fs.createWriteStream(destFile);
-    let totalFileSize = 0;
-    let progress = 0;
-    https.get(url, resp => {
-      if (resp.headers.location) {
-        this.doDownloadModel(modelId, resp.headers.location, taskUtil, callback, destFileName);
-        return;
-      } else {
-        if (totalFileSize === 0 && resp.headers['content-length']) {
-          totalFileSize = parseFloat(resp.headers['content-length']);
-        }
-      }
-
-      let previousProgressValue = -1;
-      resp.on('data', chunk => {
-        progress += chunk.length;
-        const progressValue = (progress * 100) / totalFileSize;
-
-        if (progressValue === 100 || progressValue - previousProgressValue > 1) {
-          previousProgressValue = progressValue;
-          taskUtil.setTaskProgress(modelId, progressValue);
-        }
-
-        // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
-        //this.sendProgress(progressValue);
-        if (progressValue === 100) {
-          callback({
-            successful: true,
-            path: destFile,
-          });
-        }
-      });
-      file.on('finish', () => {
-        file.close();
-      });
-      file.on('error', e => {
-        callback({
-          successful: false,
-          error: e.message,
-        });
-      });
-      resp.pipe(file);
-    });
   }
 }

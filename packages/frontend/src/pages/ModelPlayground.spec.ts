@@ -147,7 +147,7 @@ test('should display error alert', async () => {
       id: 1,
       modelId: 'model1',
       prompt: 'what is 1+1?',
-      error: 'dummy error'
+      error: 'dummy error',
     },
   ]);
   render(ModelPlayground, {
@@ -167,6 +167,4 @@ test('should display error alert', async () => {
     const alert = screen.getByRole('alert');
     expect(alert).toBeDefined();
   });
-
 });
-

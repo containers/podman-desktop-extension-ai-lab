@@ -239,7 +239,7 @@ export class PlayGroundManager {
     return Array.from(this.playgrounds.values());
   }
 
-  sendQueriesState() {
+  sendQueriesState(): void {
     this.webview
       .postMessage({
         id: MSG_NEW_PLAYGROUND_QUERIES_STATE,

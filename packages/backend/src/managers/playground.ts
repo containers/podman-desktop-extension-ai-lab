@@ -245,7 +245,7 @@ export class PlayGroundManager {
         id: MSG_NEW_PLAYGROUND_QUERIES_STATE,
         body: this.getQueriesState(),
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error(`Something went wrong while emitting MSG_NEW_PLAYGROUND_QUERIES_STATE: ${String(err)}`);
       });
   }

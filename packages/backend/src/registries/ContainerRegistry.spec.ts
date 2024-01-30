@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { expect, test, vi } from 'vitest';
 import { ContainerRegistry } from './ContainerRegistry';
-import { ContainerJSONEvent } from '@podman-desktop/api';
+import type { ContainerJSONEvent } from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => ({
   onEventMock: vi.fn(),

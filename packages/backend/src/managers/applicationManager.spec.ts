@@ -1,3 +1,20 @@
+/**********************************************************************
+ * Copyright (C) 2024 Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ***********************************************************************/
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
 import type { ContainerAttachedInfo, DownloadModelResult, ImageInfo, PodInfo } from './applicationManager';
 import { ApplicationManager } from './applicationManager';
@@ -165,6 +182,7 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
+      ref: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -184,10 +202,16 @@ describe('pullApplication', () => {
       },
     });
     await manager.pullApplication(recipe, model);
+    const gitCloneOptions = {
+      repository: 'repo',
+      ref: '000000',
+      targetDirectory: '\\home\\user\\aistudio\\recipe1',
+    };
     if (process.platform === 'win32') {
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '\\home\\user\\aistudio\\recipe1');
+      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     } else {
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, 'repo', '/home/user/aistudio/recipe1');
+      gitCloneOptions.targetDirectory = '/home/user/aistudio/recipe1';
+      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     }
     expect(doDownloadModelWrapperSpy).toHaveBeenCalledOnce();
     expect(mocks.builImageMock).toHaveBeenCalledOnce();
@@ -202,6 +226,7 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
+      ref: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -228,6 +253,7 @@ describe('pullApplication', () => {
       id: 'recipe1',
       name: 'Recipe 1',
       categories: [],
+      ref: '000000',
       description: '',
       readme: '',
       repository: 'repo',
@@ -257,6 +283,7 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
+      ref: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -296,8 +323,14 @@ describe('doCheckout', () => {
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
     );
-    await manager.doCheckout('repo', 'folder', taskUtils);
-    expect(cloneRepositoryMock).toBeCalledWith('repo', 'folder');
+    const gitCloneOptions = {
+      repository: 'repo',
+      ref: '000000',
+      targetDirectory: 'folder',
+    };
+    await manager.doCheckout(gitCloneOptions, taskUtils);
+
+    expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
     expect(setTaskMock).toHaveBeenLastCalledWith({
       id: 'checkout',
       name: 'Checkout repository',
@@ -323,7 +356,14 @@ describe('doCheckout', () => {
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
     );
-    await manager.doCheckout('repo', 'folder', taskUtils);
+    await manager.doCheckout(
+      {
+        repository: 'repo',
+        ref: '000000',
+        targetDirectory: 'folder',
+      },
+      taskUtils,
+    );
     expect(mkdirSyncMock).not.toHaveBeenCalled();
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
     expect(setTaskMock).toHaveBeenLastCalledWith({

@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { Recipe } from '@shared/src/models/IRecipe';
-import type { GitManager } from './gitManager';
+import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
@@ -88,7 +88,12 @@ export class ApplicationManager {
     const localFolder = path.join(this.appUserDirectory, recipe.id);
 
     // clone the recipe repository on the local folder
-    await this.doCheckout(recipe.repository, localFolder, taskUtil);
+    const gitCloneInfo: GitCloneInfo = {
+      repository: recipe.repository,
+      ref: recipe.ref,
+      targetDirectory: localFolder,
+    };
+    await this.doCheckout(gitCloneInfo, taskUtil);
 
     // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
     // and backend (that define which model supports)
@@ -536,7 +541,7 @@ export class ApplicationManager {
     };
   }
 
-  async doCheckout(repository: string, localFolder: string, taskUtil: RecipeStatusUtils) {
+  async doCheckout(gitCloneInfo: GitCloneInfo, taskUtil: RecipeStatusUtils) {
     // Adding checkout task
     const checkoutTask: Task = {
       id: 'checkout',
@@ -549,17 +554,17 @@ export class ApplicationManager {
     taskUtil.setTask(checkoutTask);
 
     // We might already have the repository cloned
-    if (fs.existsSync(localFolder) && fs.statSync(localFolder).isDirectory()) {
+    if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
       // Update checkout state
       checkoutTask.name = 'Checkout repository (cached).';
       checkoutTask.state = 'success';
     } else {
       // Create folder
-      fs.mkdirSync(localFolder, { recursive: true });
+      fs.mkdirSync(gitCloneInfo.targetDirectory, { recursive: true });
 
       // Clone the repository
-      console.log(`Cloning repository ${repository} in ${localFolder}.`);
-      await this.git.cloneRepository(repository, localFolder);
+      console.log(`Cloning repository ${gitCloneInfo.repository} in ${gitCloneInfo.targetDirectory}.`);
+      await this.git.cloneRepository(gitCloneInfo);
 
       // Update checkout state
       checkoutTask.state = 'success';

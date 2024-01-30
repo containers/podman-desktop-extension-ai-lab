@@ -5,6 +5,7 @@
       "description" : "Chat bot application",
       "name" : "ChatBot",
       "repository": "https://github.com/redhat-et/locallm",
+      "ref": "bccd1c1",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -20,6 +21,7 @@
       "description" : "Summarizer application",
       "name" : "Summarizer",
       "repository": "https://github.com/redhat-et/locallm",
+      "ref": "bccd1c1",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"

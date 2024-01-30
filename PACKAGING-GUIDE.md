@@ -2,7 +2,7 @@
 
 ## Catalog
 
-AI Studio uses an internal catalog that is embedded into AI Studio. This catalog is loaded
+AI Studio uses an internal catalog embedded within the application. This catalog is loaded
 by AI Studio and displayed when you access the catalog page.
 
 The format of the catalog is JSON. It is possible for users to have a custom version of

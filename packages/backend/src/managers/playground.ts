@@ -182,11 +182,11 @@ export class PlayGroundManager {
       throw new Error('model is not running');
     }
 
-    const query = {
+    const query: QueryState = {
       id: this.getNextQueryId(),
       modelId: modelInfo.id,
       prompt: prompt,
-    } as QueryState;
+    };
 
     const post_data = JSON.stringify({
       model: modelInfo.file,
@@ -217,6 +217,7 @@ export class PlayGroundManager {
           if (!q) {
             throw new Error('query not found in state');
           }
+          q.error = undefined;
           q.response = result as ModelResponse;
           this.queries.set(query.id, q);
           this.sendQueriesState();
@@ -226,6 +227,12 @@ export class PlayGroundManager {
     // post the data
     post_req.write(post_data);
     post_req.end();
+    post_req.on('error', error => {
+      console.error('connection on error.', error);
+      const q = this.queries.get(query.id);
+      q.error = `Something went wrong while trying to request model.${String(error)}`;
+      this.sendQueriesState();
+    });
 
     this.queries.set(query.id, query);
     this.sendQueriesState();

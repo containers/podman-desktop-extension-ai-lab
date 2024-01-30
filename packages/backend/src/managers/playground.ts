@@ -224,7 +224,7 @@ export class PlayGroundManager {
     post_req.write(post_data);
     post_req.end();
     post_req.on('error', error => {
-      console.error('connection on error.');
+      console.error('connection on error.', error);
       const q = this.queries.get(query.id);
       q.error = `Something went wrong while trying to request model.${String(error)}`;
       void this.sendQueriesState();

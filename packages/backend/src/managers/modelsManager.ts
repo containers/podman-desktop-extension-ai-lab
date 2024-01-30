@@ -58,6 +58,10 @@ export class ModelsManager {
     });
   }
 
+  getModelsDirectory(): string {
+    return this.#modelsDir;
+  }
+
   getLocalModelsFromDisk(): void {
     if (!fs.existsSync(this.#modelsDir)) {
       return;

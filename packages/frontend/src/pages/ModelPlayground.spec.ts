@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => {
         return () => {};
       },
     },
-    playgroundStatesSubscribeMock: vi.fn(),
+    playgroundStatesSubscribeMock: vi.fn().mockReturnValue([]),
     playgroundStatesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.playgroundStatesSubscribeMock());

@@ -123,7 +123,8 @@ test('startPlayground should download image if not present then create container
     },
     Image: 'image1',
     Labels: {
-      'ia-studio-model': 'model1',
+      'ai-studio-model-id': 'model1',
+      'ai-studio-model-port': '8085',
     },
   });
 });

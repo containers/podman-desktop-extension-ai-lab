@@ -32,6 +32,10 @@ const mockedExtensionContext = {
 
 const studio = new Studio(mockedExtensionContext);
 
+const mocks = vi.hoisted(() => ({
+  listContainers: vi.fn(),
+}));
+
 vi.mock('@podman-desktop/api', async () => {
   return {
     Uri: class {
@@ -48,6 +52,7 @@ vi.mock('@podman-desktop/api', async () => {
     },
     containerEngine: {
       onEvent: vi.fn(),
+      listContainers: mocks.listContainers,
     },
   };
 });
@@ -66,6 +71,7 @@ afterEach(() => {
 });
 
 test('check activate ', async () => {
+  mocks.listContainers.mockReturnValue([]);
   vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
     return Promise.resolve('<html></html>');
   });

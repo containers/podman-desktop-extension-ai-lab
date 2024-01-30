@@ -12,11 +12,13 @@
   export let model: ModelInfo | undefined;
   import Fa from 'svelte-fa';
   import { faPlay, faStop, faInfo, faWarning } from '@fortawesome/free-solid-svg-icons';
+  import ErrorMessage from '/@/lib/ErrorMessage.svelte';
 
   let prompt = '';
   let queryId: number;
   let result: ModelResponseChoice | undefined = undefined;
   let inProgress = false;
+  let error: string | undefined = undefined;
   let playgroundState: PlaygroundState | undefined = undefined;
 
   onMount(() => {
@@ -53,6 +55,12 @@
   });
 
   function displayQuery(query: QueryState) {
+    if(query.error) {
+      error = query.error;
+      inProgress = false;
+      return;
+    }
+
     if (query.response) {
       inProgress = false;
       prompt = query.prompt;
@@ -72,6 +80,8 @@
     }
     inProgress = true;
     result = undefined;
+    error = undefined;
+
     // do not display anything before we get a response from askPlayground
     // (we can receive a new queryState before the new QueryId)
     queryId = -1;
@@ -150,6 +160,11 @@
 </script>
 
 <div class="m-4 w-full flew flex-col">
+  {#if error}
+    <div class="mb-2">
+      <ErrorMessage error="{error}"/>
+    </div>
+  {/if}
   <Card classes="bg-charcoal-800">
     <div slot="content" class="my-2 mx-4 w-full text-base font-normal flex flex-row items-center">
       {#key playgroundState?.status}
@@ -167,6 +182,7 @@
     placeholder="Type your prompt here"></textarea>
 
   <div class="mt-4 text-right">
+    <span>inProgress: {inProgress}</span>
     {#key playgroundState?.status}
       <Button disabled={!isPromptable()} inProgress={inProgress} on:click={() => askPlayground()}>Send Request</Button>
     {/key}

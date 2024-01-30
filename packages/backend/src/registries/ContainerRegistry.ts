@@ -32,7 +32,7 @@ export class ContainerRegistry {
         this.subscribers.get(event.id).forEach(subscriber => subscriber.callback(event.status));
 
         // If the event type is remove, we dispose all subscribers for the specific containers
-        if (event.type === 'remove') {
+        if (event.status === 'remove') {
           this.subscribers.delete(event.id);
         }
       }

@@ -240,11 +240,13 @@ export class PlayGroundManager {
   }
 
   sendQueriesState() {
-    this.webview.postMessage({
-      id: MSG_NEW_PLAYGROUND_QUERIES_STATE,
-      body: this.getQueriesState(),
-    }).catch((err) => {
-      console.error(`Something went wrong while emitting MSG_NEW_PLAYGROUND_QUERIES_STATE: ${String(err)}`);
-    })
+    this.webview
+      .postMessage({
+        id: MSG_NEW_PLAYGROUND_QUERIES_STATE,
+        body: this.getQueriesState(),
+      })
+      .catch(err => {
+        console.error(`Something went wrong while emitting MSG_NEW_PLAYGROUND_QUERIES_STATE: ${String(err)}`);
+      });
   }
 }

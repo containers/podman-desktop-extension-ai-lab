@@ -32,6 +32,7 @@ import { getFreePort } from '../utils/ports';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '@shared/Messages';
 import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
+import { ContainerRegistry } from '../registries/ContainerRegistry';
 
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
@@ -51,7 +52,10 @@ export class PlayGroundManager {
   private playgrounds: Map<string, PlaygroundState>;
   private queries: Map<number, QueryState>;
 
-  constructor(private webview: Webview) {
+  constructor(
+    private webview: Webview,
+    private containerRegistry: ContainerRegistry,
+  ) {
     this.playgrounds = new Map<string, PlaygroundState>();
     this.queries = new Map<number, QueryState>();
   }
@@ -143,6 +147,21 @@ export class PlayGroundManager {
       },
       Env: [`MODEL_PATH=/models/${path.basename(modelPath)}`],
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
+    });
+
+    const disposable = this.containerRegistry.subscribe(result.id, (status: string) => {
+      switch (status) {
+        case 'remove':
+        case 'die':
+        case 'cleanup':
+          // Update the playground state accordingly
+          this.updatePlaygroundState(modelId, {
+            status: 'none',
+            modelId,
+          });
+          disposable.dispose();
+          break;
+      }
     });
 
     this.updatePlaygroundState(modelId, {

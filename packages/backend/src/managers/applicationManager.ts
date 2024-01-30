@@ -90,8 +90,7 @@ export class ApplicationManager {
     // clone the recipe repository on the local folder
     const gitCloneInfo: GitCloneInfo = {
       repository: recipe.repository,
-      branch: recipe.branch,
-      sha: recipe.sha,
+      ref: recipe.ref,
       targetDirectory: localFolder,
     };
     await this.doCheckout(gitCloneInfo, taskUtil);

@@ -1,3 +1,20 @@
+/**********************************************************************
+ * Copyright (C) 2024 Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ***********************************************************************/
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
 import type { ContainerAttachedInfo, DownloadModelResult, ImageInfo, PodInfo } from './applicationManager';
 import { ApplicationManager } from './applicationManager';
@@ -165,8 +182,7 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
-      branch: 'branch',
-      sha: '000000',
+      ref: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -187,9 +203,8 @@ describe('pullApplication', () => {
     });
     await manager.pullApplication(recipe, model);
     const gitCloneOptions = {
-      branch: 'branch',
       repository: 'repo',
-      sha: '000000',
+      ref: '000000',
       targetDirectory: '\\home\\user\\aistudio\\recipe1',
     };
     if (process.platform === 'win32') {
@@ -211,8 +226,7 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
-      branch: 'branch',
-      sha: '000000',
+      ref: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -239,8 +253,7 @@ describe('pullApplication', () => {
       id: 'recipe1',
       name: 'Recipe 1',
       categories: [],
-      branch: 'branch',
-      sha: '000000',
+      ref: '000000',
       description: '',
       readme: '',
       repository: 'repo',
@@ -270,8 +283,7 @@ describe('pullApplication', () => {
       name: 'Recipe 1',
       categories: [],
       description: '',
-      branch: 'branch',
-      sha: '000000',
+      ref: '000000',
       readme: '',
       repository: 'repo',
     };
@@ -312,9 +324,8 @@ describe('doCheckout', () => {
       {} as unknown as ModelsManager,
     );
     const gitCloneOptions = {
-      branch: 'branch',
       repository: 'repo',
-      sha: '000000',
+      ref: '000000',
       targetDirectory: 'folder',
     };
     await manager.doCheckout(gitCloneOptions, taskUtils);
@@ -348,8 +359,7 @@ describe('doCheckout', () => {
     await manager.doCheckout(
       {
         repository: 'repo',
-        branch: 'branch',
-        sha: '000000',
+        ref: '000000',
         targetDirectory: 'folder',
       },
       taskUtils,

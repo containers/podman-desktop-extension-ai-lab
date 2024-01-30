@@ -174,7 +174,7 @@ export class PlayGroundManager {
       },
       Labels: {
         [LABEL_MODEL_ID]: modelId,
-        [LABEL_MODEL_PORT]: '' + freePort,
+        [LABEL_MODEL_PORT]: `${freePort}`,
       },
       Env: [`MODEL_PATH=/models/${path.basename(modelPath)}`],
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],

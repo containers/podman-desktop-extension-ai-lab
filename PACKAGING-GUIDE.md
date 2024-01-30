@@ -8,7 +8,7 @@ by AI Studio and displayed when you access the catalog page.
 The format of the catalog is JSON. It is possible for users to have a custom version of
 the catalog. In order to do so, copy the file located at https://github.com/projectatomic/ai-studio/blob/main/packages/backend/src/ai.json
 to $HOME/podman-desktop/ai-studio/catalog.json and AI Studio will use it instead of the embedded one.
-Any change done to this file will also be automatically be loaded by AI Studio.
+Any change done to this file will also be automatically loaded by AI Studio.
 
 ### Format of the catalog file
 

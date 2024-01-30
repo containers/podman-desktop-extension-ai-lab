@@ -23,7 +23,7 @@ const mocks = vi.hoisted(() => {
         f(mocks.playgroundStatesSubscribeMock());
         return () => {};
       },
-    }
+    },
   };
 });
 
@@ -186,12 +186,14 @@ test('should display error alert', async () => {
 
 test('playground container icon should redirect', async () => {
   mocks.playgroundQueriesSubscribeMock.mockReturnValue([]);
-  mocks.playgroundStatesSubscribeMock.mockReturnValue([{
-    modelId: 'model1',
-    container: {
-      containerId: 'dummy-container-id',
-    }
-  }]);
+  mocks.playgroundStatesSubscribeMock.mockReturnValue([
+    {
+      modelId: 'model1',
+      container: {
+        containerId: 'dummy-container-id',
+      },
+    },
+  ]);
   render(ModelPlayground, {
     model: {
       id: 'model1',
@@ -212,5 +214,5 @@ test('playground container icon should redirect', async () => {
     await fireEvent.click(navigateTo);
   });
 
-  expect(mocks.navigateToContainerMock).toHaveBeenNthCalledWith(1, 'dummy-container-id')
+  expect(mocks.navigateToContainerMock).toHaveBeenNthCalledWith(1, 'dummy-container-id');
 });

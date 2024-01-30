@@ -77,7 +77,7 @@ export class ModelsManager {
       result.set(d.name, {
         id: d.name,
         file: modelFile,
-        path: fullPath,
+        path: path.resolve(d.path, d.name),
         size: info.size,
         creation: info.mtime,
       });

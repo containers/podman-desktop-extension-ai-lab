@@ -26,7 +26,7 @@ const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Registry', { width: '2fr', renderer: ModelColumnRegistry }),
   new Column<ModelInfo>('Popularity', { width: '1fr', renderer: ModelColumnPopularity }),
   new Column<ModelInfo>('License', { width: '2fr', renderer: ModelColumnLicense }),
-  new Column<ModelInfo>('Actions', { align: 'right', width: '1fr', renderer: ModelColumnActions }),
+  new Column<ModelInfo>('Actions', { align: 'right', width: '80px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});
 

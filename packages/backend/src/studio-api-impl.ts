@@ -47,6 +47,10 @@ export class StudioApiImpl implements StudioAPI {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(url));
   }
 
+  async openFile(file: string): Promise<boolean> {
+    return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
+  }
+
   async getPullingStatus(recipeId: string): Promise<RecipeStatus> {
     return this.recipeStatusRegistry.getStatus(recipeId);
   }

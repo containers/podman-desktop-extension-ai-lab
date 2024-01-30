@@ -215,9 +215,7 @@ export class PlayGroundManager {
           }
           q.response = result as ModelResponse;
           this.queries.set(query.id, q);
-          this.sendQueriesState().catch((err: unknown) => {
-            console.error('playground: unable to send the response to the frontend', err);
-          });
+          this.sendQueriesState();
         }
       });
     });
@@ -226,7 +224,7 @@ export class PlayGroundManager {
     post_req.end();
 
     this.queries.set(query.id, query);
-    await this.sendQueriesState();
+    this.sendQueriesState();
     return query.id;
   }
 
@@ -241,10 +239,12 @@ export class PlayGroundManager {
     return Array.from(this.playgrounds.values());
   }
 
-  async sendQueriesState() {
-    await this.webview.postMessage({
+  sendQueriesState() {
+    this.webview.postMessage({
       id: MSG_NEW_PLAYGROUND_QUERIES_STATE,
       body: this.getQueriesState(),
-    });
+    }).catch((err) => {
+      console.error(`Something went wrong while emitting MSG_NEW_PLAYGROUND_QUERIES_STATE: ${String(err)}`);
+    })
   }
 }

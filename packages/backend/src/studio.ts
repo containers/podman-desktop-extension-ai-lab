@@ -128,6 +128,7 @@ export class Studio {
 
     await this.catalogManager.loadCatalog();
     await this.modelsManager.loadLocalModels();
+    await this.playgroundManager.adoptRunningPlaygrounds();
 
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

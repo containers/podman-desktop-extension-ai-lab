@@ -23,7 +23,7 @@
     "views": {
       "icons/containersList": [
         {
-          "when": "ia-studio-model in containerLabelKeys",
+          "when": "ai-studio-model-id in containerLabelKeys",
           "icon": "${brain-icon}"
         }
       ]

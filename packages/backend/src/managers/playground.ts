@@ -34,6 +34,9 @@ import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '
 import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 
+const LABEL_MODEL_ID = 'ai-studio-model-id';
+const LABEL_MODEL_PORT = 'ai-studio-model-port';
+
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
 
@@ -58,6 +61,33 @@ export class PlayGroundManager {
   ) {
     this.playgrounds = new Map<string, PlaygroundState>();
     this.queries = new Map<number, QueryState>();
+  }
+
+  async adoptRunningPlaygrounds() {
+    const containers = await containerEngine.listContainers();
+    const playgroundContainers = containers.filter(
+      c => LABEL_MODEL_ID in c.Labels && LABEL_MODEL_PORT in c.Labels && c.State === 'running',
+    );
+    for (const containerToAdopt of playgroundContainers) {
+      const modelId = containerToAdopt.Labels[LABEL_MODEL_ID];
+      if (this.playgrounds.has(modelId)) {
+        continue;
+      }
+      const modelPort = parseInt(containerToAdopt.Labels[LABEL_MODEL_PORT], 10);
+      if (isNaN(modelPort)) {
+        continue;
+      }
+      const state: PlaygroundState = {
+        modelId,
+        status: 'running',
+        container: {
+          containerId: containerToAdopt.Id,
+          engineId: containerToAdopt.engineId,
+          port: modelPort,
+        },
+      };
+      this.updatePlaygroundState(modelId, state);
+    }
   }
 
   async selectImage(connection: ProviderContainerConnection, image: string): Promise<ImageInfo | undefined> {
@@ -143,7 +173,8 @@ export class PlayGroundManager {
         },
       },
       Labels: {
-        'ia-studio-model': modelId,
+        [LABEL_MODEL_ID]: modelId,
+        [LABEL_MODEL_PORT]: '' + freePort,
       },
       Env: [`MODEL_PATH=/models/${path.basename(modelPath)}`],
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],

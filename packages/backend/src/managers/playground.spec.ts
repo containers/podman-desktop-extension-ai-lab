@@ -19,6 +19,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { PlayGroundManager } from './playground';
 import type { ImageInfo, Webview } from '@podman-desktop/api';
+import type { ContainerRegistry } from '../registries/ContainerRegistry';
 
 const mocks = vi.hoisted(() => ({
   postMessage: vi.fn(),
@@ -27,6 +28,7 @@ const mocks = vi.hoisted(() => ({
   createContainer: vi.fn(),
   stopContainer: vi.fn(),
   getFreePort: vi.fn(),
+  containerRegistrySubscribeMock: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -42,6 +44,10 @@ vi.mock('@podman-desktop/api', async () => {
   };
 });
 
+const containerRegistryMock = {
+  subscribe: mocks.containerRegistrySubscribeMock,
+} as unknown as ContainerRegistry;
+
 vi.mock('../utils/ports', async () => {
   return {
     getFreePort: mocks.getFreePort,
@@ -53,9 +59,12 @@ let manager: PlayGroundManager;
 beforeEach(() => {
   vi.resetAllMocks();
 
-  manager = new PlayGroundManager({
-    postMessage: mocks.postMessage,
-  } as unknown as Webview);
+  manager = new PlayGroundManager(
+    {
+      postMessage: mocks.postMessage,
+    } as unknown as Webview,
+    containerRegistryMock,
+  );
 });
 
 test('startPlayground should fail if no provider', async () => {

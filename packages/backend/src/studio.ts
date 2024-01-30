@@ -30,6 +30,7 @@ import { ModelsManager } from './managers/modelsManager';
 import path from 'node:path';
 import os from 'os';
 import fs from 'node:fs';
+import { ContainerRegistry } from './registries/ContainerRegistry';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
@@ -94,6 +95,10 @@ export class Studio {
 
     this.#panel.webview.html = indexHtml;
 
+    // Creating container registry
+    const containerRegistry = new ContainerRegistry();
+    this.#extensionContext.subscriptions.push(containerRegistry.init());
+
     // Let's create the api that the front will be able to call
     const appUserDirectory = path.join(os.homedir(), AI_STUDIO_FOLDER);
 
@@ -101,7 +106,7 @@ export class Studio {
     const gitManager = new GitManager();
     const taskRegistry = new TaskRegistry();
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, this.#panel.webview);
-    this.playgroundManager = new PlayGroundManager(this.#panel.webview);
+    this.playgroundManager = new PlayGroundManager(this.#panel.webview, containerRegistry);
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
     this.modelsManager = new ModelsManager(appUserDirectory, this.#panel.webview, this.catalogManager);

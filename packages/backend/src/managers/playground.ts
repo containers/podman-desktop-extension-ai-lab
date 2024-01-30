@@ -61,20 +61,24 @@ export class PlayGroundManager {
     return images.length > 0 ? images[0] : undefined;
   }
 
-  setPlaygroundStatus(modelId: string, status: PlaygroundStatus) {
-    return this.updatePlaygroundState(modelId, {
+  setPlaygroundStatus(modelId: string, status: PlaygroundStatus): void {
+    this.updatePlaygroundState(modelId, {
       modelId: modelId,
       ...(this.playgrounds.get(modelId) || {}),
       status: status,
     });
   }
 
-  updatePlaygroundState(modelId: string, state: PlaygroundState) {
+  updatePlaygroundState(modelId: string, state: PlaygroundState): void {
     this.playgrounds.set(modelId, state);
-    return this.webview.postMessage({
-      id: MSG_PLAYGROUNDS_STATE_UPDATE,
-      body: this.getPlaygroundsState(),
-    });
+    this.webview
+      .postMessage({
+        id: MSG_PLAYGROUNDS_STATE_UPDATE,
+        body: this.getPlaygroundsState(),
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong while emitting MSG_PLAYGROUNDS_STATE_UPDATE: ${String(err)}`);
+      });
   }
 
   async startPlayground(modelId: string, modelPath: string): Promise<string> {
@@ -94,11 +98,11 @@ export class PlayGroundManager {
       }
     }
 
-    await this.setPlaygroundStatus(modelId, 'starting');
+    this.setPlaygroundStatus(modelId, 'starting');
 
     const connection = findFirstProvider();
     if (!connection) {
-      await this.setPlaygroundStatus(modelId, 'error');
+      this.setPlaygroundStatus(modelId, 'error');
       throw new Error('Unable to find an engine to start playground');
     }
 
@@ -107,7 +111,7 @@ export class PlayGroundManager {
       await containerEngine.pullImage(connection.connection, PLAYGROUND_IMAGE, () => {});
       image = await this.selectImage(connection, PLAYGROUND_IMAGE);
       if (!image) {
-        await this.setPlaygroundStatus(modelId, 'error');
+        this.setPlaygroundStatus(modelId, 'error');
         throw new Error(`Unable to find ${PLAYGROUND_IMAGE} image`);
       }
     }
@@ -141,7 +145,7 @@ export class PlayGroundManager {
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
     });
 
-    await this.updatePlaygroundState(modelId, {
+    this.updatePlaygroundState(modelId, {
       container: {
         containerId: result.id,
         port: freePort,
@@ -159,16 +163,16 @@ export class PlayGroundManager {
     if (state?.container === undefined) {
       throw new Error('model is not running');
     }
-    await this.setPlaygroundStatus(modelId, 'stopping');
+    this.setPlaygroundStatus(modelId, 'stopping');
     // We do not await since it can take a lot of time
     containerEngine
       .stopContainer(state.container.engineId, state.container.containerId)
       .then(async () => {
-        await this.setPlaygroundStatus(modelId, 'stopped');
+        this.setPlaygroundStatus(modelId, 'stopped');
       })
       .catch(async (error: unknown) => {
         console.error(error);
-        await this.setPlaygroundStatus(modelId, 'error');
+        this.setPlaygroundStatus(modelId, 'error');
       });
   }
 

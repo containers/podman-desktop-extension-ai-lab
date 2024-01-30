@@ -41,8 +41,7 @@ A model has the following attributes:
 
 #### Recipes
 
-A recipe is a sample AI application that is packaged as one or several containers. It is build by
-AI Studio when the user chooses to download it on his workstation and run it. It is provided as
+A recipe is a sample AI application that is packaged as one or several containers. It is built by AI Studio when the user chooses to download and run it on their workstation. It is provided as
 source code and AI Studio will make sure the container images are built prior to laucnhing the containers.
 
 A recipe has the following attributes:

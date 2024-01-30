@@ -32,7 +32,7 @@ import { getFreePort } from '../utils/ports';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '@shared/Messages';
 import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
-import { ContainerRegistry } from '../registries/ContainerRegistry';
+import type { ContainerRegistry } from '../registries/ContainerRegistry';
 
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';

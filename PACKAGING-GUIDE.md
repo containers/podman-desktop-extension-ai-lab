@@ -26,7 +26,7 @@ and a name. The category id attribute will then be used to attach a recipe to on
 
 #### Models
 
-The catalog also list the models that may be associated to recipes. A model is also a first class
+The catalog also lists the models that may be associated to recipes. A model is also a first class
 citizen in AI Studio as they will be listed in the Models page and can be tested through the playground.
 
 A model has the following attributes:
@@ -59,18 +59,18 @@ A recipe has the following attributes:
 The configuration file is called ```ai-studio.yaml``` and follows the following syntax.
 
 The root element is called ```application```. This element contains an attribute called ```containers```
-whose syntax is an array of objects containing the following attribute:
+whose syntax is an array of objects containing the following attributes:
 - ```name```: the name of the container
 - ```contextdir```: the context directory used to build the container.
 - ```containerfile```: the containerfile used to build the image
 - ```model-service```: a boolean flag used to indicate if the container is running the model or not
-- ```arch```: an optional array of architecture for which this image is compatible with. The values follows the
+- ```arch```: an optional array of architecture for which this image is compatible with. The values follow the
 [GOARCH specification](https://go.dev/src/go/build/syslist.go)
 - ```gpu-env```: an optional array of GPU environment for which this image is compatible with. The only accepted value here is cuda.
 
 The container that is running the service (having the ```model-service``` flag equal to ```true```) can use at runtime
 the model managed by AI Studio through an environment variable ```MODEL_PATH``` whose value is the full path name of the
-model file
+model file.
 
 Below is given an example of such a configuration file:
 ```yaml

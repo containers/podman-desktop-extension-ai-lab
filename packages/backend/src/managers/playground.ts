@@ -64,6 +64,14 @@ export class PlayGroundManager {
   }
 
   async adoptRunningPlaygrounds() {
+    provider.onDidRegisterContainerConnection(async () => {
+      await this.doAdoptRunningPlaygrounds();
+    });
+    // Do it now in case providers are already registered
+    await this.doAdoptRunningPlaygrounds();
+  }
+
+  private async doAdoptRunningPlaygrounds() {
     const containers = await containerEngine.listContainers();
     const playgroundContainers = containers.filter(
       c => LABEL_MODEL_ID in c.Labels && LABEL_MODEL_PORT in c.Labels && c.State === 'running',

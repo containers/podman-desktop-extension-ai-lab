@@ -114,27 +114,22 @@ export class ApplicationManager {
 
     // most probably the sample app will fail at starting as it tries to connect to the model_service which is still loading the model
     // so we check if the endpoint is ready before to restart the sample app
-    // wait 5 secs to give the time to the sample app to connect to the model service
-    await timeout(5000);
     // check if sample app container actually started
     const sampleApp = podInfo.containers?.find(container => !container.modelService);
     if (sampleApp) {
-      const sampleAppContainerInspectInfo = await containerEngine.inspectContainer(podInfo.engineId, sampleApp.name);
-      if (!sampleAppContainerInspectInfo.State.Running) {
-        const modelServiceContainer = podInfo.containers?.find(container => container.modelService);
-        if (modelServiceContainer) {
-          const modelServicePortMapping = podInfo.portmappings.find(
-            port => port.container_port === Number(modelServiceContainer.ports[0]),
-          );
-          if (modelServicePortMapping) {
-            await this.restartContainerWhenModelServiceIsUp(
-              podInfo.engineId,
-              `http://localhost:${modelServicePortMapping.host_port}`,
-              sampleApp,
-            ).catch((e: unknown) => {
-              console.error(String(e));
-            });
-          }
+      const modelServiceContainer = podInfo.containers?.find(container => container.modelService);
+      if (modelServiceContainer) {
+        const modelServicePortMapping = podInfo.portmappings.find(
+          port => port.container_port === Number(modelServiceContainer.ports[0]),
+        );
+        if (modelServicePortMapping) {
+          await this.restartContainerWhenModelServiceIsUp(
+            podInfo.engineId,
+            `http://localhost:${modelServicePortMapping.host_port}`,
+            sampleApp,
+          ).catch((e: unknown) => {
+            console.error(String(e));
+          });
         }
       }
     }
@@ -153,7 +148,10 @@ export class ApplicationManager {
   ): Promise<void> {
     const alive = await isEndpointAlive(modelServiceEndpoint);
     if (alive) {
-      await containerEngine.startContainer(engineId, container.name);
+      const sampleAppContainerInspectInfo = await containerEngine.inspectContainer(engineId, container.name);
+      if (!sampleAppContainerInspectInfo.State.Running) {
+        await containerEngine.startContainer(engineId, container.name);
+      }
       return;
     }
     await timeout(5000);

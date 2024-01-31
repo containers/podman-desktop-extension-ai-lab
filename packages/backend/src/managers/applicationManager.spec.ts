@@ -757,6 +757,11 @@ describe('restartContainerWhenModelServiceIsUp', () => {
     {} as unknown as ModelsManager,
   );
   test('restart container if endpoint is alive', async () => {
+    mocks.inspectContainerMock.mockResolvedValue({
+      State: {
+        Running: false,
+      },
+    });
     vi.spyOn(utils, 'isEndpointAlive').mockResolvedValue(true);
     await manager.restartContainerWhenModelServiceIsUp('engine', 'endpoint', containerAttachedInfo);
     expect(mocks.startContainerMock).toBeCalledWith('engine', 'name');
@@ -802,11 +807,6 @@ describe('runApplication', () => {
         Promise.resolve(),
       );
     vi.spyOn(utils, 'timeout').mockResolvedValue();
-    mocks.inspectContainerMock.mockResolvedValue({
-      State: {
-        Running: false,
-      },
-    });
     await manager.runApplication(pod, taskUtils);
     expect(mocks.startPod).toBeCalledWith(pod.engineId, pod.Id);
     expect(restartContainerWhenEndpointIsUpMock).toBeCalledWith(pod.engineId, 'http://localhost:9001', {

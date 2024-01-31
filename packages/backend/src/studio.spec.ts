@@ -46,6 +46,9 @@ vi.mock('@podman-desktop/api', async () => {
         },
       }),
     },
+    containerEngine: {
+      onEvent: vi.fn(),
+    },
   };
 });
 

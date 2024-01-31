@@ -25,4 +25,6 @@ export abstract class StudioAPI {
   abstract askPlayground(modelId: string, prompt: string): Promise<number>;
   abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
+
+  abstract getModelsDirectory(): Promise<string>;
 }

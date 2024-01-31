@@ -140,3 +140,31 @@ test('should display query without response', async () => {
   expect(response).toBeInTheDocument();
   expect(response).toHaveValue('The response is 2');
 });
+
+test('should display error alert', async () => {
+  mocks.playgroundQueriesSubscribeMock.mockReturnValue([
+    {
+      id: 1,
+      modelId: 'model1',
+      prompt: 'what is 1+1?',
+      error: 'dummy error',
+    },
+  ]);
+  render(ModelPlayground, {
+    model: {
+      id: 'model1',
+      name: 'Model 1',
+      description: 'A description',
+      hw: 'CPU',
+      registry: 'Hugging Face',
+      popularity: 3,
+      license: '?',
+      url: 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+    } as ModelInfo,
+  });
+
+  await waitFor(() => {
+    const alert = screen.getByRole('alert');
+    expect(alert).toBeDefined();
+  });
+});

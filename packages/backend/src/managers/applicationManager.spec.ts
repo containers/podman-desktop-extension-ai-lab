@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
-import type { ContainerAttachedInfo, DownloadModelResult, ImageInfo, PodInfo } from './applicationManager';
+import type { ContainerAttachedInfo, ImageInfo, PodInfo } from './applicationManager';
 import { ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';
@@ -25,12 +25,14 @@ import fs from 'node:fs';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
-import type { ModelsManager } from './modelsManager';
+import { ModelsManager } from './modelsManager';
 import path from 'node:path';
 import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
+import type { Webview } from '@podman-desktop/api';
+import type { CatalogManager } from './catalogManager';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -81,9 +83,8 @@ describe('pullApplication', () => {
   }
   const setStatusMock = vi.fn();
   const cloneRepositoryMock = vi.fn();
-  const isModelOnDiskMock = vi.fn();
-  const getLocalModelPathMock = vi.fn();
   let manager: ApplicationManager;
+  let modelsManager: ModelsManager;
   let doDownloadModelWrapperSpy: MockInstance<
     [modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string],
     Promise<string>
@@ -156,6 +157,7 @@ describe('pullApplication', () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'id',
     });
+    modelsManager = new ModelsManager('appdir', {} as Webview, {} as CatalogManager);
     manager = new ApplicationManager(
       '/home/user/aistudio',
       {
@@ -164,19 +166,16 @@ describe('pullApplication', () => {
       {
         setStatus: setStatusMock,
       } as unknown as RecipeStatusRegistry,
-      {
-        isModelOnDisk: isModelOnDiskMock,
-        getLocalModelPath: getLocalModelPathMock,
-      } as unknown as ModelsManager,
+      modelsManager,
     );
-    doDownloadModelWrapperSpy = vi.spyOn(manager, 'doDownloadModelWrapper');
-    doDownloadModelWrapperSpy.mockResolvedValue('path');
+    doDownloadModelWrapperSpy = vi.spyOn(modelsManager, 'doDownloadModelWrapper');
   }
   test('pullApplication should clone repository and call downloadModelMain and buildImage', async () => {
     mockForPullApplication({
       recipeFolderExists: false,
     });
-    isModelOnDiskMock.mockReturnValue(false);
+    vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
+    doDownloadModelWrapperSpy.mockResolvedValue('path');
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',
@@ -220,7 +219,8 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
-    isModelOnDiskMock.mockReturnValue(false);
+    vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
+    vi.spyOn(modelsManager, 'doDownloadModelWrapper').mockResolvedValue('path');
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',
@@ -247,8 +247,8 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
-    isModelOnDiskMock.mockReturnValue(true);
-    getLocalModelPathMock.mockReturnValue('path');
+    vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(true);
+    vi.spyOn(modelsManager, 'getLocalModelPath').mockReturnValue('path');
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',
@@ -420,70 +420,6 @@ describe('getConfiguration', () => {
     const result = manager.getConfiguration('config', 'local');
     expect(result.path).toEqual(path.join('local', 'config'));
     expect(result.aiConfig).toEqual(aiConfig);
-  });
-});
-
-describe('downloadModel', () => {
-  test('download model if not already on disk', async () => {
-    const isModelOnDiskMock = vi.fn().mockReturnValue(false);
-    const manager = new ApplicationManager(
-      '/home/user/aistudio',
-      {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
-      { isModelOnDisk: isModelOnDiskMock } as unknown as ModelsManager,
-    );
-    const doDownloadModelWrapperMock = vi
-      .spyOn(manager, 'doDownloadModelWrapper')
-      .mockImplementation((_modelId: string, _url: string, _taskUtil: RecipeStatusUtils, _destFileName?: string) => {
-        return Promise.resolve('');
-      });
-    await manager.downloadModel(
-      {
-        id: 'id',
-        url: 'url',
-        name: 'name',
-      } as ModelInfo,
-      taskUtils,
-    );
-    expect(doDownloadModelWrapperMock).toBeCalledWith('id', 'url', taskUtils);
-    expect(setTaskMock).toHaveBeenLastCalledWith({
-      id: 'id',
-      name: 'Downloading model name',
-      labels: {
-        'model-pulling': 'id',
-      },
-      state: 'loading',
-    });
-  });
-  test('retrieve model path if already on disk', async () => {
-    const isModelOnDiskMock = vi.fn().mockReturnValue(true);
-    const getLocalModelPathMock = vi.fn();
-    const manager = new ApplicationManager(
-      '/home/user/aistudio',
-      {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
-      {
-        isModelOnDisk: isModelOnDiskMock,
-        getLocalModelPath: getLocalModelPathMock,
-      } as unknown as ModelsManager,
-    );
-    await manager.downloadModel(
-      {
-        id: 'id',
-        url: 'url',
-        name: 'name',
-      } as ModelInfo,
-      taskUtils,
-    );
-    expect(getLocalModelPathMock).toBeCalledWith('id');
-    expect(setTaskMock).toHaveBeenLastCalledWith({
-      id: 'id',
-      name: 'Model name already present on disk',
-      labels: {
-        'model-pulling': 'id',
-      },
-      state: 'success',
-    });
   });
 });
 
@@ -808,52 +744,6 @@ describe('createApplicationPod', () => {
   });
 });
 
-describe('doDownloadModelWrapper', () => {
-  const manager = new ApplicationManager(
-    '/home/user/aistudio',
-    {} as unknown as GitManager,
-    {} as unknown as RecipeStatusRegistry,
-    {} as unknown as ModelsManager,
-  );
-  test('returning model path if model has been downloaded', async () => {
-    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
-      (
-        _modelId: string,
-        _url: string,
-        _taskUtil: RecipeStatusUtils,
-        callback: (message: DownloadModelResult) => void,
-        _destFileName?: string,
-      ) => {
-        callback({
-          successful: true,
-          path: 'path',
-        });
-      },
-    );
-    setTaskStateMock.mockReturnThis();
-    const result = await manager.doDownloadModelWrapper('id', 'url', taskUtils);
-    expect(result).toBe('path');
-  });
-  test('rejecting with error message if model has NOT been downloaded', async () => {
-    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
-      (
-        _modelId: string,
-        _url: string,
-        _taskUtil: RecipeStatusUtils,
-        callback: (message: DownloadModelResult) => void,
-        _destFileName?: string,
-      ) => {
-        callback({
-          successful: false,
-          error: 'error',
-        });
-      },
-    );
-    setTaskStateMock.mockReturnThis();
-    await expect(manager.doDownloadModelWrapper('id', 'url', taskUtils)).rejects.toThrowError('error');
-  });
-});
-
 describe('restartContainerWhenModelServiceIsUp', () => {
   const containerAttachedInfo: ContainerAttachedInfo = {
     name: 'name',
@@ -867,6 +757,11 @@ describe('restartContainerWhenModelServiceIsUp', () => {
     {} as unknown as ModelsManager,
   );
   test('restart container if endpoint is alive', async () => {
+    mocks.inspectContainerMock.mockResolvedValue({
+      State: {
+        Running: false,
+      },
+    });
     vi.spyOn(utils, 'isEndpointAlive').mockResolvedValue(true);
     await manager.restartContainerWhenModelServiceIsUp('engine', 'endpoint', containerAttachedInfo);
     expect(mocks.startContainerMock).toBeCalledWith('engine', 'name');
@@ -912,11 +807,6 @@ describe('runApplication', () => {
         Promise.resolve(),
       );
     vi.spyOn(utils, 'timeout').mockResolvedValue();
-    mocks.inspectContainerMock.mockResolvedValue({
-      State: {
-        Running: false,
-      },
-    });
     await manager.runApplication(pod, taskUtils);
     expect(mocks.startPod).toBeCalledWith(pod.engineId, pod.Id);
     expect(restartContainerWhenEndpointIsUpMock).toBeCalledWith(pod.engineId, 'http://localhost:9001', {

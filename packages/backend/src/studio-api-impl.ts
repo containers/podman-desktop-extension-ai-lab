@@ -118,4 +118,8 @@ export class StudioApiImpl implements StudioAPI {
   async deleteLocalModel(modelId: string): Promise<void> {
     await this.modelsManager.deleteLocalModel(modelId);
   }
+
+  async getModelsDirectory(): Promise<string> {
+    return this.modelsManager.getModelsDirectory();
+  }
 }

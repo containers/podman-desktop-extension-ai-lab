@@ -3,7 +3,7 @@
   "displayName": "ai-studio-monorepo",
   "description": "ai-studio-monorepo",
   "publisher": "redhat",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "engines": {
     "node": ">=18.12.0",

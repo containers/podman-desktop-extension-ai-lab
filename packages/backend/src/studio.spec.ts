@@ -34,6 +34,7 @@ const studio = new Studio(mockedExtensionContext);
 
 const mocks = vi.hoisted(() => ({
   listContainers: vi.fn(),
+  getContainerConnections: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -56,6 +57,7 @@ vi.mock('@podman-desktop/api', async () => {
     },
     provider: {
       onDidRegisterContainerConnection: vi.fn(),
+      getContainerConnections: mocks.getContainerConnections,
     },
   };
 });
@@ -75,6 +77,7 @@ afterEach(() => {
 
 test('check activate ', async () => {
   mocks.listContainers.mockReturnValue([]);
+  mocks.getContainerConnections.mockReturnValue([]);
   vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
     return Promise.resolve('<html></html>');
   });

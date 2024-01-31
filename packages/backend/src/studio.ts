@@ -31,6 +31,7 @@ import path from 'node:path';
 import os from 'os';
 import fs from 'node:fs';
 import { ContainerRegistry } from './registries/ContainerRegistry';
+import { PodmanConnection } from './managers/podmanConnection';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
@@ -104,9 +105,11 @@ export class Studio {
 
     this.rpcExtension = new RpcExtension(this.#panel.webview);
     const gitManager = new GitManager();
+
+    const podmanConnection = new PodmanConnection();
     const taskRegistry = new TaskRegistry();
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, this.#panel.webview);
-    this.playgroundManager = new PlayGroundManager(this.#panel.webview, containerRegistry);
+    this.playgroundManager = new PlayGroundManager(this.#panel.webview, containerRegistry, podmanConnection);
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
     this.modelsManager = new ModelsManager(appUserDirectory, this.#panel.webview, this.catalogManager);
@@ -128,7 +131,8 @@ export class Studio {
 
     await this.catalogManager.loadCatalog();
     await this.modelsManager.loadLocalModels();
-    await this.playgroundManager.adoptRunningPlaygrounds();
+    podmanConnection.init();
+    this.playgroundManager.adoptRunningPlaygrounds();
 
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

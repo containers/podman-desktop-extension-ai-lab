@@ -16,14 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import {
-  provider,
-  containerEngine,
-  type Webview,
-  type ProviderContainerConnection,
-  type ImageInfo,
-  type RegisterContainerConnectionEvent,
-} from '@podman-desktop/api';
+import { containerEngine, type Webview, type ImageInfo } from '@podman-desktop/api';
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import type { ModelResponse } from '@shared/src/models/IModelResponse';
 
@@ -34,20 +27,13 @@ import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '@shared/Messages';
 import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
+import type { PodmanConnection } from './podmanConnection';
 
 const LABEL_MODEL_ID = 'ai-studio-model-id';
 const LABEL_MODEL_PORT = 'ai-studio-model-port';
 
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
-
-function findFirstProvider(): ProviderContainerConnection | undefined {
-  const engines = provider
-    .getContainerConnections()
-    .filter(connection => connection.connection.type === 'podman')
-    .filter(connection => connection.connection.status() === 'started');
-  return engines.length > 0 ? engines[0] : undefined;
-}
 
 export class PlayGroundManager {
   private queryIdCounter = 0;
@@ -59,49 +45,48 @@ export class PlayGroundManager {
   constructor(
     private webview: Webview,
     private containerRegistry: ContainerRegistry,
+    private podmanConnection: PodmanConnection,
   ) {
     this.playgrounds = new Map<string, PlaygroundState>();
     this.queries = new Map<number, QueryState>();
   }
 
-  async adoptRunningPlaygrounds() {
-    provider.onDidRegisterContainerConnection(async (e: RegisterContainerConnectionEvent) => {
-      if (e.connection.type === 'podman' && e.connection.status() === 'started') {
-        await this.doAdoptRunningPlaygrounds();
-      }
+  adoptRunningPlaygrounds() {
+    this.podmanConnection.startupSubscribe(() => {
+      containerEngine
+        .listContainers()
+        .then(containers => {
+          const playgroundContainers = containers.filter(
+            c => LABEL_MODEL_ID in c.Labels && LABEL_MODEL_PORT in c.Labels && c.State === 'running',
+          );
+          for (const containerToAdopt of playgroundContainers) {
+            const modelId = containerToAdopt.Labels[LABEL_MODEL_ID];
+            if (this.playgrounds.has(modelId)) {
+              continue;
+            }
+            const modelPort = parseInt(containerToAdopt.Labels[LABEL_MODEL_PORT], 10);
+            if (isNaN(modelPort)) {
+              continue;
+            }
+            const state: PlaygroundState = {
+              modelId,
+              status: 'running',
+              container: {
+                containerId: containerToAdopt.Id,
+                engineId: containerToAdopt.engineId,
+                port: modelPort,
+              },
+            };
+            this.updatePlaygroundState(modelId, state);
+          }
+        })
+        .catch((err: unknown) => {
+          console.error('error during adoption of existing playground containers', err);
+        });
     });
-    // Do it now in case providers are already registered
-    await this.doAdoptRunningPlaygrounds();
   }
 
-  private async doAdoptRunningPlaygrounds() {
-    const containers = await containerEngine.listContainers();
-    const playgroundContainers = containers.filter(
-      c => LABEL_MODEL_ID in c.Labels && LABEL_MODEL_PORT in c.Labels && c.State === 'running',
-    );
-    for (const containerToAdopt of playgroundContainers) {
-      const modelId = containerToAdopt.Labels[LABEL_MODEL_ID];
-      if (this.playgrounds.has(modelId)) {
-        continue;
-      }
-      const modelPort = parseInt(containerToAdopt.Labels[LABEL_MODEL_PORT], 10);
-      if (isNaN(modelPort)) {
-        continue;
-      }
-      const state: PlaygroundState = {
-        modelId,
-        status: 'running',
-        container: {
-          containerId: containerToAdopt.Id,
-          engineId: containerToAdopt.engineId,
-          port: modelPort,
-        },
-      };
-      this.updatePlaygroundState(modelId, state);
-    }
-  }
-
-  async selectImage(connection: ProviderContainerConnection, image: string): Promise<ImageInfo | undefined> {
+  async selectImage(image: string): Promise<ImageInfo | undefined> {
     const images = (await containerEngine.listImages()).filter(im => im.RepoTags?.some(tag => tag === image));
     return images.length > 0 ? images[0] : undefined;
   }
@@ -145,16 +130,16 @@ export class PlayGroundManager {
 
     this.setPlaygroundStatus(modelId, 'starting');
 
-    const connection = findFirstProvider();
+    const connection = this.podmanConnection.getConnection();
     if (!connection) {
       this.setPlaygroundStatus(modelId, 'error');
       throw new Error('Unable to find an engine to start playground');
     }
 
-    let image = await this.selectImage(connection, PLAYGROUND_IMAGE);
+    let image = await this.selectImage(PLAYGROUND_IMAGE);
     if (!image) {
-      await containerEngine.pullImage(connection.connection, PLAYGROUND_IMAGE, () => {});
-      image = await this.selectImage(connection, PLAYGROUND_IMAGE);
+      await containerEngine.pullImage(connection, PLAYGROUND_IMAGE, () => {});
+      image = await this.selectImage(PLAYGROUND_IMAGE);
       if (!image) {
         this.setPlaygroundStatus(modelId, 'error');
         throw new Error(`Unable to find ${PLAYGROUND_IMAGE} image`);

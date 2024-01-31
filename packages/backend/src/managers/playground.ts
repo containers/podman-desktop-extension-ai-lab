@@ -22,6 +22,7 @@ import {
   type Webview,
   type ProviderContainerConnection,
   type ImageInfo,
+  type RegisterContainerConnectionEvent,
 } from '@podman-desktop/api';
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import type { ModelResponse } from '@shared/src/models/IModelResponse';
@@ -64,8 +65,10 @@ export class PlayGroundManager {
   }
 
   async adoptRunningPlaygrounds() {
-    provider.onDidRegisterContainerConnection(async () => {
-      await this.doAdoptRunningPlaygrounds();
+    provider.onDidRegisterContainerConnection(async (e: RegisterContainerConnectionEvent) => {
+      if (e.connection.type === 'podman' && e.connection.status() === 'started') {
+        await this.doAdoptRunningPlaygrounds();
+      }
     });
     // Do it now in case providers are already registered
     await this.doAdoptRunningPlaygrounds();

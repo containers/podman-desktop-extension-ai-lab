@@ -118,15 +118,17 @@ export class StudioApiImpl implements StudioAPI {
   async requestRemoveLocalModel(modelId: string): Promise<void> {
     const modelInfo = this.modelsManager.getLocalModelInfo(modelId);
 
-    podmanDesktopApi.window.showWarningMessage(
-      `Are you sure you want to delete ${modelId} ? The following files will be removed from disk "${modelInfo.file}".`,
-      'Confirm',
-      'Cancel'
-    ).then((result: string) => {
-      if(result === 'Confirm') {
-        this.modelsManager.deleteLocalModel(modelId);
-      }
-    });
+    podmanDesktopApi.window
+      .showWarningMessage(
+        `Are you sure you want to delete ${modelId} ? The following files will be removed from disk "${modelInfo.file}".`,
+        'Confirm',
+        'Cancel',
+      )
+      .then((result: string) => {
+        if (result === 'Confirm') {
+          this.modelsManager.deleteLocalModel(modelId);
+        }
+      });
   }
 
   async getModelsDirectory(): Promise<string> {

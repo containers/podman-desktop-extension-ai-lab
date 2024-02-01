@@ -130,7 +130,7 @@ export class StudioApiImpl implements StudioAPI {
           this.modelsManager.deleteLocalModel(modelId).catch((err: unknown) => {
             console.error('Something went wrong while deleting the models', err);
             // Lets reloads the models (could fix the issue)
-            this.modelsManager.loadLocalModels().catch(err => {
+            this.modelsManager.loadLocalModels().catch((err: unknown) => {
               console.error('Cannot reload the models', err);
             });
           });

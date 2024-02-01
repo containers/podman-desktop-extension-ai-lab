@@ -16,7 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { containerEngine, type Webview, type ImageInfo } from '@podman-desktop/api';
+import {
+  containerEngine,
+  type Webview,
+  type ImageInfo,
+  type ProviderContainerConnection,
+  provider,
+} from '@podman-desktop/api';
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import type { ModelResponse } from '@shared/src/models/IModelResponse';
 
@@ -34,6 +40,14 @@ const LABEL_MODEL_PORT = 'ai-studio-model-port';
 
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
+
+function findFirstProvider(): ProviderContainerConnection | undefined {
+  const engines = provider
+    .getContainerConnections()
+    .filter(connection => connection.connection.type === 'podman')
+    .filter(connection => connection.connection.status() === 'started');
+  return engines.length > 0 ? engines[0] : undefined;
+}
 
 export class PlayGroundManager {
   private queryIdCounter = 0;
@@ -130,7 +144,7 @@ export class PlayGroundManager {
 
     this.setPlaygroundStatus(modelId, 'starting');
 
-    const connection = this.podmanConnection.getConnection();
+    const connection = findFirstProvider();
     if (!connection) {
       this.setPlaygroundStatus(modelId, 'error');
       throw new Error('Unable to find an engine to start playground');
@@ -138,7 +152,7 @@ export class PlayGroundManager {
 
     let image = await this.selectImage(PLAYGROUND_IMAGE);
     if (!image) {
-      await containerEngine.pullImage(connection, PLAYGROUND_IMAGE, () => {});
+      await containerEngine.pullImage(connection.connection, PLAYGROUND_IMAGE, () => {});
       image = await this.selectImage(PLAYGROUND_IMAGE);
       if (!image) {
         this.setPlaygroundStatus(modelId, 'error');

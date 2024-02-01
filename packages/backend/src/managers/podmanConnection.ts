@@ -16,14 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { type ContainerProviderConnection, type RegisterContainerConnectionEvent, provider } from '@podman-desktop/api';
+import { type RegisterContainerConnectionEvent, provider } from '@podman-desktop/api';
 
 type startupHandle = () => void;
 
 export class PodmanConnection {
   #firstFound = false;
-  #connection: ContainerProviderConnection | undefined = undefined;
-
   #toExecuteAtStartup: startupHandle[] = [];
 
   init(): void {
@@ -37,7 +35,6 @@ export class PodmanConnection {
         return;
       }
       this.#firstFound = true;
-      this.#connection = e.connection;
       for (const f of this.#toExecuteAtStartup) {
         f();
       }
@@ -53,7 +50,6 @@ export class PodmanConnection {
     if (engines.length > 0) {
       disposable.dispose();
       this.#firstFound = true;
-      this.#connection = engines[0].connection;
     }
   }
 
@@ -65,9 +61,5 @@ export class PodmanConnection {
     } else {
       this.#toExecuteAtStartup.push(f);
     }
-  }
-
-  getConnection(): ContainerProviderConnection | undefined {
-    return this.#connection;
   }
 }

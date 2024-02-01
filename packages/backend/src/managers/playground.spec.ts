@@ -24,16 +24,19 @@ import type { PodmanConnection } from './podmanConnection';
 
 const mocks = vi.hoisted(() => ({
   postMessage: vi.fn(),
+  getContainerConnections: vi.fn(),
   pullImage: vi.fn(),
   createContainer: vi.fn(),
   stopContainer: vi.fn(),
   getFreePort: vi.fn(),
   containerRegistrySubscribeMock: vi.fn(),
-  getConnection: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
   return {
+    provider: {
+      getContainerConnections: mocks.getContainerConnections,
+    },
     containerEngine: {
       pullImage: mocks.pullImage,
       createContainer: mocks.createContainer,
@@ -62,14 +65,13 @@ beforeEach(() => {
       postMessage: mocks.postMessage,
     } as unknown as Webview,
     containerRegistryMock,
-    {
-      getConnection: mocks.getConnection,
-    } as unknown as PodmanConnection,
+    {} as PodmanConnection,
   );
 });
 
 test('startPlayground should fail if no provider', async () => {
   mocks.postMessage.mockResolvedValue(undefined);
+  mocks.getContainerConnections.mockReturnValue([]);
   await expect(manager.startPlayground('model1', '/path/to/model')).rejects.toThrowError(
     'Unable to find an engine to start playground',
   );
@@ -77,12 +79,14 @@ test('startPlayground should fail if no provider', async () => {
 
 test('startPlayground should download image if not present then create container', async () => {
   mocks.postMessage.mockResolvedValue(undefined);
-  mocks.getConnection.mockReturnValue({
-    connection: {
-      type: 'podman',
-      status: () => 'started',
+  mocks.getContainerConnections.mockReturnValue([
+    {
+      connection: {
+        type: 'podman',
+        status: () => 'started',
+      },
     },
-  });
+  ]);
   vi.spyOn(manager, 'selectImage')
     .mockResolvedValueOnce(undefined)
     .mockResolvedValueOnce({
@@ -133,12 +137,14 @@ test('stopPlayground should fail if no playground is running', async () => {
 
 test('stopPlayground should stop a started playground', async () => {
   mocks.postMessage.mockResolvedValue(undefined);
-  mocks.getConnection.mockReturnValue({
-    connection: {
-      type: 'podman',
-      status: () => 'started',
+  mocks.getContainerConnections.mockReturnValue([
+    {
+      connection: {
+        type: 'podman',
+        status: () => 'started',
+      },
     },
-  });
+  ]);
   vi.spyOn(manager, 'selectImage').mockResolvedValue({
     Id: 'image1',
     engineId: 'engine1',

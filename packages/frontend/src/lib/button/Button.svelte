@@ -73,7 +73,7 @@ $: {
       {:else if iconType === 'fa'}
         <Fa icon="{icon}" />
       {:else if iconType === 'unknown'}
-        <svelte:component this="{icon}" />
+        <svelte:component size="1em" this="{icon}" />
       {/if}
       {#if $$slots.default}
         <span><slot /></span>

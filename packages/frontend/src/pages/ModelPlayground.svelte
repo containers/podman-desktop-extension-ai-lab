@@ -12,6 +12,7 @@
   export let model: ModelInfo | undefined;
   import Fa from 'svelte-fa';
   import { faPlay, faStop, faInfo, faWarning } from '@fortawesome/free-solid-svg-icons';
+  import ContainerIcon from '/@/lib/images/ContainerIcon.svelte';
   import ErrorMessage from '/@/lib/ErrorMessage.svelte';
 
   let prompt = '';
@@ -157,6 +158,17 @@
         return true;
     }
   }
+
+  const navigateToContainer = () => {
+    if(playgroundState?.container?.containerId === undefined)
+      return;
+
+    try {
+      studioClient.navigateToContainer(playgroundState?.container?.containerId);
+    } catch(err) {
+      console.error(err);
+    }
+  }
 </script>
 
 <div class="m-4 w-full flew flex-col">
@@ -170,6 +182,9 @@
       {#key playgroundState?.status}
         <span class="flex-grow">Playground {playgroundState?.status}</span>
         <Button title="playground-action" inProgress={isLoading()} on:click={onAction} icon="{getActionIcon()}"/>
+        {#if playgroundState?.container}
+          <Button class="ml-2" on:click={navigateToContainer} title="navigate-to-container" icon="{ContainerIcon}"/>
+        {/if}
       {/key}
     </div>
   </Card>

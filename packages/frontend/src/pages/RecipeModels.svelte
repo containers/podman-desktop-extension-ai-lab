@@ -24,14 +24,15 @@
 
 </script>
 {#if models}
-  <div class="flex flex-col min-w-full min-h-full">
-    <div class="min-w-full min-h-full flex-1">
+  <div class="flex flex-col grow min-h-full">
+    <div class="w-full min-h-full flex-1">
       <div class="mt-4 px-5 space-y-5 h-full">
         <Table
           kind="model"
           data="{models}"
           columns="{columns}"
-          row={row}>
+          row={row}
+          headerBackground='bg-transparent'>
       </Table>
       </div>
     </div>

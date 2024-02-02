@@ -18,6 +18,7 @@ export let data: any[];
 export let columns: Column<any>[];
 export let row: Row<any>;
 export let defaultSortColumn: string | undefined = undefined;
+export let headerBackground = 'bg-charcoal-700';
 
 // number of selected items in the list
 export let selectedItemsNumber: number = 0;
@@ -125,7 +126,7 @@ function setGridColumns() {
   <!-- Table header -->
   <div role="rowgroup">
     <div
-      class="grid grid-table gap-x-0.5 mx-5 h-7 sticky top-0 bg-charcoal-700 text-xs text-gray-600 font-bold uppercase z-[2]"
+      class="grid grid-table gap-x-0.5 mx-5 h-7 sticky top-0 {headerBackground} text-xs text-gray-600 font-bold uppercase z-[2]"
       role="row">
       <div class="whitespace-nowrap justify-self-start" role="columnheader"></div>
       {#if row.info.selectable}

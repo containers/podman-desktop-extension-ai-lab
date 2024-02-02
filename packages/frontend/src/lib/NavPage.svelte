@@ -8,6 +8,7 @@ export let searchTerm = '';
 export let searchEnabled = true;
 export let loading = false;
 export let icon: IconDefinition | undefined = undefined;
+export let contentBackground = '';
 </script>
 
 <div class="flex flex-col w-full h-full shadow-pageheader">
@@ -58,7 +59,7 @@ export let icon: IconDefinition | undefined = undefined;
     <div class="flex flex-row px-2 border-b border-charcoal-400">
       <slot name="tabs" />
     </div>
-    <div class="flex w-full h-full overflow-auto" role="region" aria-label="content">
+    <div class="flex w-full h-full {contentBackground} overflow-auto" role="region" aria-label="content">
       {#if loading}
         <LinearProgress/>
       {:else}

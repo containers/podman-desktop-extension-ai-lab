@@ -40,6 +40,8 @@ const LABEL_MODEL_PORT = 'ai-studio-model-port';
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
 
+const STARTING_TIME_MAX = 3600 * 1000;
+
 function findFirstProvider(): ProviderContainerConnection | undefined {
   const engines = provider
     .getContainerConnections()
@@ -203,6 +205,26 @@ export class PlayGroundManager {
           break;
       }
     });
+
+    let contacted = false;
+    const start = Date.now();
+    while (
+      Date.now() - start < STARTING_TIME_MAX &&
+      !contacted &&
+      this.playgrounds.get(modelId).status === 'starting'
+    ) {
+      try {
+        await fetch(`http://localhost:${freePort}`);
+        contacted = true;
+      } catch (err: unknown) {
+        /* empty */
+      }
+    }
+
+    if (!contacted) {
+      await containerEngine.stopContainer(image.engineId, result.id);
+      throw new Error(`Can't start playground for model ${modelId}`);
+    }
 
     this.updatePlaygroundState(modelId, {
       container: {

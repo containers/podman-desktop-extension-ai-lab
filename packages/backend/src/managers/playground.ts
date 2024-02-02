@@ -247,7 +247,7 @@ export class PlayGroundManager {
       prompt: prompt,
     };
 
-    const client = new OpenAI({ baseURL: `http://localhost:${state.container.port}/v1` });
+    const client = new OpenAI({ baseURL: `http://localhost:${state.container.port}/v1`, apiKey: 'dummy' });
 
     const response = await client.completions.create({
       model: modelInfo.file,

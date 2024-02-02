@@ -20,3 +20,12 @@ test('NavPage should not have linear progress', async () => {
   expect(content).toBeDefined();
   expect(content.firstChild).toBeNull(); // no slot content provided
 });
+
+test('NavPage should have custom background', async () => {
+  // render the component
+  render(NavPage, { title: 'dummy', contentBackground: 'bg-white' });
+
+  const content = await screen.findByLabelText('content');
+  expect(content).toBeDefined();
+  expect(content).toHaveClass('bg-white');
+});

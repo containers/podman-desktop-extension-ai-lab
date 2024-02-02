@@ -39,7 +39,7 @@ const onClickRepository = () => {
 
 $: applicationDetailsPanel = 'block';
 $: applicationDetailsPanelToggle = 'hidden';
-function toggle() {
+function toggleApplicationDetailsPanel() {
   if (applicationDetailsPanel === 'block') {
     applicationDetailsPanel = 'hidden';
     applicationDetailsPanelToggle = 'block';
@@ -66,11 +66,11 @@ function toggle() {
         <RecipeModels modelsIds={recipe?.models} />
       </Route>
       <!-- Right column -->
-      <div class="w-[375px] min-w-[375px] h-fit bg-charcoal-800 rounded-md mt-4 {applicationDetailsPanel}">
+      <div class="w-[375px] min-w-[375px] h-fit bg-charcoal-800 rounded-md mt-4 {applicationDetailsPanel}" aria-label="application details panel">
         <div class="flex flex-col my-5 w-[340px] space-y-4 mx-auto">
           <div class="w-full flex flex-row justify-between">
             <span class="text-base">Application Details</span>
-            <button on:click={toggle}><i class="fas fa-angle-right text-gray-900"></i></button>
+            <button on:click={toggleApplicationDetailsPanel} aria-label="hide application details"><i class="fas fa-angle-right text-gray-900"></i></button>
           </div>
           
           <div class="w-full bg-charcoal-600 rounded-md p-4">
@@ -81,21 +81,13 @@ function toggle() {
                 class="w-full p-2"
                 icon="{faRefresh}"
               >Retry</Button>
-              {:else if recipeStatus.state === 'loading'}
+              {:else if recipeStatus.state === 'loading' || recipeStatus.state === 'running'}
               <Button
                 inProgress={true}
                 class="w-[300px] p-2 mx-auto"
                 icon="{faPlay}"
               >
-                Loading
-              </Button>
-              {:else if recipeStatus.state === 'running'}
-              <Button
-                inProgress={true}
-                class="w-[300px] p-2 mx-auto"
-                icon="{faPlay}"
-              >
-                Running
+                {#if recipeStatus.state === 'loading'}Loading{:else}Running{/if}
               </Button>
               {/if}
             {:else}
@@ -103,7 +95,7 @@ function toggle() {
                 on:click={() => onPullingRequest()}
                 class="w-[300px] p-2 mx-auto"
                 icon="{faPlay}"
-              >
+              > 
                 Run application
               </Button>
             {/if}
@@ -125,24 +117,26 @@ function toggle() {
               <div class="flex flex-row space-x-2">
                 <div class="bg-charcoal-900 min-w-[200px] grow flex flex-col p-2 rounded-md space-y-3">
                   <div class="flex justify-between items-center">
-                    <span class="text-sm">{model?.name}</span>
+                    <span class="text-sm" aria-label="model-selected">{model?.name}</span>
                     {#if recipe?.models?.[0] === model.id}
                     <i class="fas fa-star fa-xs text-gray-900"></i>
                     {/if}            
                   </div>
                   {#if model?.license}
                   <div class="flex flex-row space-x-2">
-                    <div class="bg-charcoal-400 text-gray-600 text-xs font-thin px-2.5 py-0.5 rounded-md">
+                    <div class="bg-charcoal-400 text-gray-600 text-xs font-thin px-2.5 py-0.5 rounded-md" aria-label="license-model">
                       {model.license}
                     </div>
                   </div>
                   {/if}
                 </div>
               </div>
-              <div class="px-2 text-xs text-gray-700">
+              {#if recipe?.models?.[0] === model.id}
+              <div class="px-2 text-xs text-gray-700" aria-label="default-model-warning">
                 * This is the default, recommended model for this recipe.
                 You can swap for a different compatible model.
               </div>
+              {/if}
             </div>
             {/if}
             <div class="flex flex-col space-y-2">
@@ -158,8 +152,8 @@ function toggle() {
           
         </div>
       </div>
-      <div class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit {applicationDetailsPanelToggle}">
-        <button on:click={toggle}><i class="fas fa-angle-left text-gray-900"></i></button>
+      <div class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit {applicationDetailsPanelToggle}" aria-label="toggle application details">
+        <button on:click={toggleApplicationDetailsPanel} aria-label="show application details"><i class="fas fa-angle-left text-gray-900"></i></button>
       </div>
     </div>
   </svelte:fragment>

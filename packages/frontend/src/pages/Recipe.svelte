@@ -66,7 +66,7 @@ function toggleApplicationDetailsPanel() {
         <RecipeModels modelsIds={recipe?.models} />
       </Route>
       <!-- Right column -->
-      <div class="w-[375px] min-w-[375px] h-fit bg-charcoal-800 rounded-md mt-4 {applicationDetailsPanel}" aria-label="application details panel">
+      <div class="w-[375px] min-w-[375px] h-fit bg-charcoal-800 rounded-l-md mt-4 {applicationDetailsPanel}" aria-label="application details panel">
         <div class="flex flex-col my-5 w-[340px] space-y-4 mx-auto">
           <div class="w-full flex flex-row justify-between">
             <span class="text-base">Application Details</span>

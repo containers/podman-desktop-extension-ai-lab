@@ -20,6 +20,7 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { PlayGroundManager } from './playground';
 import type { ImageInfo, Webview } from '@podman-desktop/api';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
+import type { PodmanConnection } from './podmanConnection';
 
 const mocks = vi.hoisted(() => ({
   postMessage: vi.fn(),
@@ -64,6 +65,7 @@ beforeEach(() => {
       postMessage: mocks.postMessage,
     } as unknown as Webview,
     containerRegistryMock,
+    {} as PodmanConnection,
   );
 });
 
@@ -123,7 +125,8 @@ test('startPlayground should download image if not present then create container
     },
     Image: 'image1',
     Labels: {
-      'ia-studio-model': 'model1',
+      'ai-studio-model-id': 'model1',
+      'ai-studio-model-port': '8085',
     },
   });
 });

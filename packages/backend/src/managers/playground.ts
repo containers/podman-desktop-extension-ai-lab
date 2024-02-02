@@ -24,16 +24,15 @@ import {
   provider,
 } from '@podman-desktop/api';
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
-import type { ModelResponse } from '@shared/src/models/IModelResponse';
 
 import path from 'node:path';
-import * as http from 'node:http';
 import { getFreePort } from '../utils/ports';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '@shared/Messages';
 import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { PodmanConnection } from './podmanConnection';
+import OpenAI from 'openai';
 
 const LABEL_MODEL_ID = 'ai-studio-model-id';
 const LABEL_MODEL_PORT = 'ai-studio-model-port';
@@ -248,54 +247,31 @@ export class PlayGroundManager {
       prompt: prompt,
     };
 
-    const post_data = JSON.stringify({
+    const client = new OpenAI({ baseURL: `http://localhost:${state.container.port}/v1` });
+
+    const response = await client.completions.create({
       model: modelInfo.file,
-      prompt: prompt,
+      prompt,
       temperature: 0.7,
       max_tokens: 1024,
-    });
-
-    const post_options: http.RequestOptions = {
-      host: 'localhost',
-      port: '' + state.container.port,
-      path: '/v1/completions',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    const post_req = http.request(post_options, res => {
-      res.setEncoding('utf8');
-      const chunks = [];
-      res.on('data', data => chunks.push(data));
-      res.on('end', () => {
-        const resBody = chunks.join();
-        if (res.headers['content-type'] === 'application/json') {
-          const result = JSON.parse(resBody);
-          const q = this.queries.get(query.id);
-          if (!q) {
-            throw new Error('query not found in state');
-          }
-          q.error = undefined;
-          q.response = result as ModelResponse;
-          this.queries.set(query.id, q);
-          this.sendQueriesState();
-        }
-      });
-    });
-    // post the data
-    post_req.write(post_data);
-    post_req.end();
-    post_req.on('error', error => {
-      console.error('connection on error.', error);
-      const q = this.queries.get(query.id);
-      q.error = `Something went wrong while trying to request model.${String(error)}`;
-      this.sendQueriesState();
+      stream: true,
     });
 
     this.queries.set(query.id, query);
     this.sendQueriesState();
+
+    (async () => {
+      for await (const chunk of response) {
+        query.error = undefined;
+        if (query.response) {
+          query.response.choices = query.response.choices.concat(chunk.choices);
+        } else {
+          query.response = chunk;
+        }
+        this.sendQueriesState();
+      }
+    })().catch((err: unknown) => console.warn(`Error while reading streamed response for model ${modelInfo.id}`, err));
+
     return query.id;
   }
 

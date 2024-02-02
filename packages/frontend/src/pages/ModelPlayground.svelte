@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ModelInfo } from '@shared/src/models/IModelInfo';
-  import type { ModelResponseChoice } from '@shared/src/models/IModelResponse';
   import Button from '../lib/button/Button.svelte';
   import { onMount } from 'svelte';
   import { studioClient } from '../utils/client';
@@ -10,14 +9,13 @@
   import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
   import Card from '/@/lib/Card.svelte';
   export let model: ModelInfo | undefined;
-  import Fa from 'svelte-fa';
   import { faPlay, faStop, faInfo, faWarning } from '@fortawesome/free-solid-svg-icons';
   import ContainerIcon from '/@/lib/images/ContainerIcon.svelte';
   import ErrorMessage from '/@/lib/ErrorMessage.svelte';
 
   let prompt = '';
   let queryId: number;
-  let result: ModelResponseChoice | undefined = undefined;
+  $: result = '';
   let inProgress = false;
   let error: string | undefined = undefined;
   let playgroundState: PlaygroundState | undefined = undefined;
@@ -42,7 +40,6 @@
     });
 
     const unsubscribeStates = playgroundStates.subscribe((states: PlaygroundState[]) => {
-      console.log('playgroundStates update', states);
       playgroundState = states.find((state) => state.modelId === model.id);
       if(playgroundState === undefined) {
         playgroundState = { modelId: model.id,  status: 'none' };
@@ -63,10 +60,10 @@
     }
 
     if (query.response) {
-      inProgress = false;
+      inProgress = !query.response.choices.some(choice => choice.finish_reason);
       prompt = query.prompt;
       if (query.response?.choices.length) {
-        result = query.response?.choices[0];
+        result = query.response?.choices.map(choice => choice.text).join('');
       }
     } else {
       inProgress = true;
@@ -80,7 +77,7 @@
       return;
     }
     inProgress = true;
-    result = undefined;
+    result = '';
     error = undefined;
 
     // do not display anything before we get a response from askPlayground
@@ -209,7 +206,7 @@
       readonly
       disabled
       rows="20"
-      bind:value={result.text}
+      bind:value={result}
       class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"></textarea>
   {/if}
 </div>

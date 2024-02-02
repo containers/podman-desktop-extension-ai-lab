@@ -1,11 +1,32 @@
-import { type MockInstance, beforeEach, expect, test, vi } from 'vitest';
+/**********************************************************************
+ * Copyright (C) 2024 Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ***********************************************************************/
+
+import { type MockInstance, beforeEach, describe, expect, test, vi } from 'vitest';
 import os from 'os';
 import fs from 'node:fs';
 import path from 'node:path';
+import type { DownloadModelResult } from './modelsManager';
 import { ModelsManager } from './modelsManager';
 import type { Webview } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
+import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -28,8 +49,17 @@ vi.mock('@podman-desktop/api', () => {
   };
 });
 
+let setTaskMock: MockInstance;
+let taskUtils: RecipeStatusUtils;
+let setTaskStateMock: MockInstance;
+
 beforeEach(() => {
   vi.resetAllMocks();
+  taskUtils = new RecipeStatusUtils('recipe', {
+    setStatus: vi.fn(),
+  } as unknown as RecipeStatusRegistry);
+  setTaskMock = vi.spyOn(taskUtils, 'setTask');
+  setTaskStateMock = vi.spyOn(taskUtils, 'setTaskState');
 });
 
 const dirent = [
@@ -97,14 +127,14 @@ test('getLocalModelsFromDisk should get models in local directory', () => {
       file: 'model-id-1-model',
       size: 32000,
       creation: now,
-      path: path.resolve(dirent[0].path, dirent[0].name, 'model-id-1-model'),
+      path: path.resolve(dirent[0].path, dirent[0].name),
     },
     {
       id: 'model-id-2',
       file: 'model-id-2-model',
       size: 32000,
       creation: now,
-      path: path.resolve(dirent[1].path, dirent[1].name, 'model-id-2-model'),
+      path: path.resolve(dirent[1].path, dirent[1].name),
     },
   ]);
 });
@@ -165,7 +195,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
           file: 'model-id-1-model',
           id: 'model-id-1',
           size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name, 'model-id-1-model'),
+          path: path.resolve(dirent[0].path, dirent[0].name),
         },
         id: 'model-id-1',
       },
@@ -219,7 +249,7 @@ test('deleteLocalModel deletes the model folder', async () => {
           file: 'model-id-1-model',
           id: 'model-id-1',
           size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name, 'model-id-1-model'),
+          path: path.resolve(dirent[0].path, dirent[0].name),
         },
         id: 'model-id-1',
         state: 'deleting',
@@ -279,7 +309,7 @@ test('deleteLocalModel fails to delete the model folder', async () => {
           file: 'model-id-1-model',
           id: 'model-id-1',
           size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name, 'model-id-1-model'),
+          path: path.resolve(dirent[0].path, dirent[0].name),
         },
         id: 'model-id-1',
         state: 'deleting',
@@ -296,11 +326,102 @@ test('deleteLocalModel fails to delete the model folder', async () => {
           file: 'model-id-1-model',
           id: 'model-id-1',
           size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name, 'model-id-1-model'),
+          path: path.resolve(dirent[0].path, dirent[0].name),
         },
         id: 'model-id-1',
       },
     ],
   });
   expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();
+});
+
+describe('downloadModel', () => {
+  const manager = new ModelsManager('appdir', {} as Webview, {} as CatalogManager);
+  test('download model if not already on disk', async () => {
+    vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
+    const doDownloadModelWrapperMock = vi
+      .spyOn(manager, 'doDownloadModelWrapper')
+      .mockImplementation((_modelId: string, _url: string, _taskUtil: RecipeStatusUtils, _destFileName?: string) => {
+        return Promise.resolve('');
+      });
+    await manager.downloadModel(
+      {
+        id: 'id',
+        url: 'url',
+        name: 'name',
+      } as ModelInfo,
+      taskUtils,
+    );
+    expect(doDownloadModelWrapperMock).toBeCalledWith('id', 'url', taskUtils);
+    expect(setTaskMock).toHaveBeenLastCalledWith({
+      id: 'id',
+      name: 'Downloading model name',
+      labels: {
+        'model-pulling': 'id',
+      },
+      state: 'loading',
+    });
+  });
+  test('retrieve model path if already on disk', async () => {
+    vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
+    const getLocalModelPathMock = vi.spyOn(manager, 'getLocalModelPath').mockReturnValue('');
+    await manager.downloadModel(
+      {
+        id: 'id',
+        url: 'url',
+        name: 'name',
+      } as ModelInfo,
+      taskUtils,
+    );
+    expect(getLocalModelPathMock).toBeCalledWith('id');
+    expect(setTaskMock).toHaveBeenLastCalledWith({
+      id: 'id',
+      name: 'Model name already present on disk',
+      labels: {
+        'model-pulling': 'id',
+      },
+      state: 'success',
+    });
+  });
+});
+
+describe('doDownloadModelWrapper', () => {
+  const manager = new ModelsManager('appdir', {} as Webview, {} as CatalogManager);
+  test('returning model path if model has been downloaded', async () => {
+    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
+      (
+        _modelId: string,
+        _url: string,
+        _taskUtil: RecipeStatusUtils,
+        callback: (message: DownloadModelResult) => void,
+        _destFileName?: string,
+      ) => {
+        callback({
+          successful: true,
+          path: 'path',
+        });
+      },
+    );
+    setTaskStateMock.mockReturnThis();
+    const result = await manager.doDownloadModelWrapper('id', 'url', taskUtils);
+    expect(result).toBe('path');
+  });
+  test('rejecting with error message if model has NOT been downloaded', async () => {
+    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
+      (
+        _modelId: string,
+        _url: string,
+        _taskUtil: RecipeStatusUtils,
+        callback: (message: DownloadModelResult) => void,
+        _destFileName?: string,
+      ) => {
+        callback({
+          successful: false,
+          error: 'error',
+        });
+      },
+    );
+    setTaskStateMock.mockReturnThis();
+    await expect(manager.doDownloadModelWrapper('id', 'url', taskUtils)).rejects.toThrowError('error');
+  });
 });

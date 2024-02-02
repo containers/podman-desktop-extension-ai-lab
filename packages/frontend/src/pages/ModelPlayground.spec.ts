@@ -6,6 +6,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const mocks = vi.hoisted(() => {
   return {
+    navigateToContainerMock: vi.fn(),
     startPlaygroundMock: vi.fn(),
     askPlaygroundMock: vi.fn(),
     getPlaygroundsStateMock: vi.fn().mockImplementation(() => Promise.resolve([])),
@@ -16,12 +17,20 @@ const mocks = vi.hoisted(() => {
         return () => {};
       },
     },
+    playgroundStatesSubscribeMock: vi.fn().mockReturnValue([]),
+    playgroundStatesMock: {
+      subscribe: (f: (msg: any) => void) => {
+        f(mocks.playgroundStatesSubscribeMock());
+        return () => {};
+      },
+    },
   };
 });
 
 vi.mock('../utils/client', async () => {
   return {
     studioClient: {
+      navigateToContainer: mocks.navigateToContainerMock,
       getPlaygroundsState: mocks.getPlaygroundsStateMock,
       startPlayground: mocks.startPlaygroundMock,
       askPlayground: mocks.askPlaygroundMock,
@@ -40,6 +49,12 @@ vi.mock('../utils/client', async () => {
 vi.mock('../stores/playground-queries', async () => {
   return {
     playgroundQueries: mocks.playgroundQueriesMock,
+  };
+});
+
+vi.mock('../stores/playground-states', async () => {
+  return {
+    playgroundStates: mocks.playgroundStatesMock,
   };
 });
 
@@ -139,4 +154,65 @@ test('should display query without response', async () => {
   const response = screen.queryByRole('textbox', { name: 'response' });
   expect(response).toBeInTheDocument();
   expect(response).toHaveValue('The response is 2');
+});
+
+test('should display error alert', async () => {
+  mocks.playgroundQueriesSubscribeMock.mockReturnValue([
+    {
+      id: 1,
+      modelId: 'model1',
+      prompt: 'what is 1+1?',
+      error: 'dummy error',
+    },
+  ]);
+  render(ModelPlayground, {
+    model: {
+      id: 'model1',
+      name: 'Model 1',
+      description: 'A description',
+      hw: 'CPU',
+      registry: 'Hugging Face',
+      popularity: 3,
+      license: '?',
+      url: 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+    } as ModelInfo,
+  });
+
+  await waitFor(() => {
+    const alert = screen.getByRole('alert');
+    expect(alert).toBeDefined();
+  });
+});
+
+test('playground container icon should redirect', async () => {
+  mocks.playgroundQueriesSubscribeMock.mockReturnValue([]);
+  mocks.playgroundStatesSubscribeMock.mockReturnValue([
+    {
+      modelId: 'model1',
+      container: {
+        containerId: 'dummy-container-id',
+      },
+    },
+  ]);
+  render(ModelPlayground, {
+    model: {
+      id: 'model1',
+      name: 'Model 1',
+      description: 'A description',
+      hw: 'CPU',
+      registry: 'Hugging Face',
+      popularity: 3,
+      license: '?',
+      url: 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+    } as ModelInfo,
+  });
+
+  await waitFor(async () => {
+    const navigateTo = screen.getByTitle('navigate-to-container');
+    expect(navigateTo).toBeDefined();
+
+    await fireEvent.click(navigateTo);
+  });
+
+  expect(mocks.navigateToContainerMock).toHaveBeenNthCalledWith(1, 'dummy-container-id');
 });

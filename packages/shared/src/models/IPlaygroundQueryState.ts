@@ -5,4 +5,5 @@ export interface QueryState {
   modelId: string;
   prompt: string;
   response?: ModelResponse;
+  error?: string;
 }

@@ -26,7 +26,7 @@ const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Registry', { width: '2fr', renderer: ModelColumnRegistry }),
   new Column<ModelInfo>('Popularity', { width: '1fr', renderer: ModelColumnPopularity }),
   new Column<ModelInfo>('License', { width: '2fr', renderer: ModelColumnLicense }),
-  new Column<ModelInfo>('Actions', { align: 'right', width: '1fr', renderer: ModelColumnActions }),
+  new Column<ModelInfo>('Actions', { align: 'right', width: '80px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});
 
@@ -39,9 +39,6 @@ let filteredModels: ModelInfo[] = [];
 function filterModels(): void {
   // Let's collect the models we do not want to show (loading, error).
   const modelsId: string[] = tasks.reduce((previousValue, currentValue) => {
-    if(currentValue.state === 'success')
-      return previousValue;
-
     if(currentValue.labels !== undefined) {
       previousValue.push(currentValue.labels["model-pulling"]);
     }
@@ -53,7 +50,8 @@ function filterModels(): void {
 onMount(() => {
   // Pulling update
   const modelsPullingUnsubscribe = modelsPulling.subscribe(runningTasks => {
-    tasks = runningTasks;
+    // Only display error | loading tasks.
+    tasks = runningTasks.filter((task) => task.state !== 'success');
     loading = false;
     filterModels();
   });
@@ -94,7 +92,7 @@ onMount(() => {
               row={row}>
             </Table>
           {:else}
-            <div>There is no model yet</div>
+            <div role="status">There is no model yet</div>
           {/if}
         {/if}
       </div>

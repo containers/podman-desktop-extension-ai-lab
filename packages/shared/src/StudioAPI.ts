@@ -11,6 +11,7 @@ export abstract class StudioAPI {
   abstract getPullingStatuses(): Promise<Map<string, RecipeStatus>>;
   abstract pullApplication(recipeId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
+  abstract openFile(file: string): Promise<boolean>;
   /**
    * Get the information of models saved locally into the user's directory
    */
@@ -24,4 +25,6 @@ export abstract class StudioAPI {
   abstract askPlayground(modelId: string, prompt: string): Promise<number>;
   abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
+  abstract getModelsDirectory(): Promise<string>;
+  abstract navigateToContainer(containerId: string): Promise<void>;
 }

@@ -58,6 +58,28 @@ vi.mock('@podman-desktop/api', () => {
   };
 });
 
+const mocks = vi.hoisted(() => ({
+  withProgressMock: vi.fn(),
+}));
+
+vi.mock('@podman-desktop/api', async () => {
+  return {
+    window: {
+      withProgress: mocks.withProgressMock,
+    },
+    ProgressLocation: {
+      TASK_WIDGET: 'TASK_WIDGET',
+    },
+    fs: {
+      createFileSystemWatcher: () => ({
+        onDidCreate: vi.fn(),
+        onDidDelete: vi.fn(),
+        onDidChange: vi.fn(),
+      }),
+    },
+  };
+});
+
 let studioApiImpl: StudioApiImpl;
 let catalogManager;
 
@@ -71,7 +93,6 @@ beforeEach(async () => {
 
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
-    appUserDirectory,
     {} as unknown as ApplicationManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as PlayGroundManager,
@@ -125,4 +146,15 @@ test('expect correct model is returned with valid id when the user catalog is va
   expect(model.name).toEqual('Model 1');
   expect(model.registry).toEqual('Hugging Face');
   expect(model.url).toEqual('https://model1.example.com');
+});
+
+test('expect pull application to call the withProgress api method', async () => {
+  vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+  vi.spyOn(fs.promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+
+  mocks.withProgressMock.mockResolvedValue(undefined);
+
+  await catalogManager.loadCatalog();
+  await studioApiImpl.pullApplication('recipe 1');
+  expect(mocks.withProgressMock).toHaveBeenCalledOnce();
 });

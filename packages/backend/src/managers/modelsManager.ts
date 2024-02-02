@@ -1,11 +1,43 @@
+/**********************************************************************
+ * Copyright (C) 2024 Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ***********************************************************************/
+
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'fs';
+import * as https from 'node:https';
 import * as path from 'node:path';
 import { type Webview, fs as apiFs } from '@podman-desktop/api';
 import { MSG_NEW_LOCAL_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
+import type { RecipeStatusUtils } from '../utils/recipeStatusUtils';
+
+export type DownloadModelResult = DownloadModelSuccessfulResult | DownloadModelFailureResult;
+
+interface DownloadModelSuccessfulResult {
+  successful: true;
+  path: string;
+}
+
+interface DownloadModelFailureResult {
+  successful: false;
+  error: string;
+}
 
 export class ModelsManager {
   #modelsDir: string;
@@ -58,6 +90,10 @@ export class ModelsManager {
     });
   }
 
+  getModelsDirectory(): string {
+    return this.#modelsDir;
+  }
+
   getLocalModelsFromDisk(): void {
     if (!fs.existsSync(this.#modelsDir)) {
       return;
@@ -77,7 +113,7 @@ export class ModelsManager {
       result.set(d.name, {
         id: d.name,
         file: modelFile,
-        path: fullPath,
+        path: path.resolve(d.path, d.name),
         size: info.size,
         creation: info.mtime,
       });
@@ -122,5 +158,125 @@ export class ModelsManager {
       this.#deleted.delete(modelId);
       await this.sendModelsInfo();
     }
+  }
+
+  async downloadModel(model: ModelInfo, taskUtil: RecipeStatusUtils) {
+    if (!this.isModelOnDisk(model.id)) {
+      // Download model
+      taskUtil.setTask({
+        id: model.id,
+        state: 'loading',
+        name: `Downloading model ${model.name}`,
+        labels: {
+          'model-pulling': model.id,
+        },
+      });
+
+      try {
+        return await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
+      } catch (e) {
+        console.error(e);
+        taskUtil.setTask({
+          id: model.id,
+          state: 'error',
+          name: `Downloading model ${model.name}`,
+          labels: {
+            'model-pulling': model.id,
+          },
+        });
+        throw e;
+      }
+    } else {
+      taskUtil.setTask({
+        id: model.id,
+        state: 'success',
+        name: `Model ${model.name} already present on disk`,
+        labels: {
+          'model-pulling': model.id,
+        },
+      });
+      return this.getLocalModelPath(model.id);
+    }
+  }
+
+  doDownloadModelWrapper(
+    modelId: string,
+    url: string,
+    taskUtil: RecipeStatusUtils,
+    destFileName?: string,
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const downloadCallback = (result: DownloadModelResult) => {
+        if (result.successful === true) {
+          taskUtil.setTaskState(modelId, 'success');
+          resolve(result.path);
+        } else if (result.successful === false) {
+          taskUtil.setTaskState(modelId, 'error');
+          reject(result.error);
+        }
+      };
+
+      this.doDownloadModel(modelId, url, taskUtil, downloadCallback, destFileName);
+    });
+  }
+
+  doDownloadModel(
+    modelId: string,
+    url: string,
+    taskUtil: RecipeStatusUtils,
+    callback: (message: DownloadModelResult) => void,
+    destFileName?: string,
+  ) {
+    const destDir = path.join(this.appUserDirectory, 'models', modelId);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    if (!destFileName) {
+      destFileName = path.basename(url);
+    }
+    const destFile = path.resolve(destDir, destFileName);
+    const file = fs.createWriteStream(destFile);
+    let totalFileSize = 0;
+    let progress = 0;
+    https.get(url, resp => {
+      if (resp.headers.location) {
+        this.doDownloadModel(modelId, resp.headers.location, taskUtil, callback, destFileName);
+        return;
+      } else {
+        if (totalFileSize === 0 && resp.headers['content-length']) {
+          totalFileSize = parseFloat(resp.headers['content-length']);
+        }
+      }
+
+      let previousProgressValue = -1;
+      resp.on('data', chunk => {
+        progress += chunk.length;
+        const progressValue = (progress * 100) / totalFileSize;
+
+        if (progressValue === 100 || progressValue - previousProgressValue > 1) {
+          previousProgressValue = progressValue;
+          taskUtil.setTaskProgress(modelId, progressValue);
+        }
+
+        // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
+        //this.sendProgress(progressValue);
+        if (progressValue === 100) {
+          callback({
+            successful: true,
+            path: destFile,
+          });
+        }
+      });
+      file.on('finish', () => {
+        file.close();
+      });
+      file.on('error', e => {
+        callback({
+          successful: false,
+          error: e.message,
+        });
+      });
+      resp.pipe(file);
+    });
   }
 }

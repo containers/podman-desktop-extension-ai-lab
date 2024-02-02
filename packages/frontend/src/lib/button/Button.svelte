@@ -66,14 +66,14 @@ $: {
   aria-label="{$$props['aria-label']}"
   on:click
   disabled="{disabled || inProgress}">
-  {#if icon}
+  {#if icon || inProgress}
     <div class="flex flex-row p-0 m-0 bg-transparent justify-center items-center space-x-[4px]">
       {#if inProgress}
         <Spinner size="1em" />
       {:else if iconType === 'fa'}
         <Fa icon="{icon}" />
       {:else if iconType === 'unknown'}
-        <svelte:component this="{icon}" />
+        <svelte:component size="1em" this="{icon}" />
       {/if}
       {#if $$slots.default}
         <span><slot /></span>

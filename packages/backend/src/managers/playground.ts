@@ -32,6 +32,7 @@ import { getFreePort } from '../utils/ports';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '@shared/Messages';
 import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
+import type { ContainerRegistry } from '../registries/ContainerRegistry';
 
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
@@ -51,7 +52,10 @@ export class PlayGroundManager {
   private playgrounds: Map<string, PlaygroundState>;
   private queries: Map<number, QueryState>;
 
-  constructor(private webview: Webview) {
+  constructor(
+    private webview: Webview,
+    private containerRegistry: ContainerRegistry,
+  ) {
     this.playgrounds = new Map<string, PlaygroundState>();
     this.queries = new Map<number, QueryState>();
   }
@@ -61,20 +65,24 @@ export class PlayGroundManager {
     return images.length > 0 ? images[0] : undefined;
   }
 
-  setPlaygroundStatus(modelId: string, status: PlaygroundStatus) {
-    return this.updatePlaygroundState(modelId, {
+  setPlaygroundStatus(modelId: string, status: PlaygroundStatus): void {
+    this.updatePlaygroundState(modelId, {
       modelId: modelId,
       ...(this.playgrounds.get(modelId) || {}),
       status: status,
     });
   }
 
-  updatePlaygroundState(modelId: string, state: PlaygroundState) {
+  updatePlaygroundState(modelId: string, state: PlaygroundState): void {
     this.playgrounds.set(modelId, state);
-    return this.webview.postMessage({
-      id: MSG_PLAYGROUNDS_STATE_UPDATE,
-      body: this.getPlaygroundsState(),
-    });
+    this.webview
+      .postMessage({
+        id: MSG_PLAYGROUNDS_STATE_UPDATE,
+        body: this.getPlaygroundsState(),
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong while emitting MSG_PLAYGROUNDS_STATE_UPDATE: ${String(err)}`);
+      });
   }
 
   async startPlayground(modelId: string, modelPath: string): Promise<string> {
@@ -94,11 +102,11 @@ export class PlayGroundManager {
       }
     }
 
-    await this.setPlaygroundStatus(modelId, 'starting');
+    this.setPlaygroundStatus(modelId, 'starting');
 
     const connection = findFirstProvider();
     if (!connection) {
-      await this.setPlaygroundStatus(modelId, 'error');
+      this.setPlaygroundStatus(modelId, 'error');
       throw new Error('Unable to find an engine to start playground');
     }
 
@@ -107,7 +115,7 @@ export class PlayGroundManager {
       await containerEngine.pullImage(connection.connection, PLAYGROUND_IMAGE, () => {});
       image = await this.selectImage(connection, PLAYGROUND_IMAGE);
       if (!image) {
-        await this.setPlaygroundStatus(modelId, 'error');
+        this.setPlaygroundStatus(modelId, 'error');
         throw new Error(`Unable to find ${PLAYGROUND_IMAGE} image`);
       }
     }
@@ -141,7 +149,22 @@ export class PlayGroundManager {
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
     });
 
-    await this.updatePlaygroundState(modelId, {
+    const disposable = this.containerRegistry.subscribe(result.id, (status: string) => {
+      switch (status) {
+        case 'remove':
+        case 'die':
+        case 'cleanup':
+          // Update the playground state accordingly
+          this.updatePlaygroundState(modelId, {
+            status: 'none',
+            modelId,
+          });
+          disposable.dispose();
+          break;
+      }
+    });
+
+    this.updatePlaygroundState(modelId, {
       container: {
         containerId: result.id,
         port: freePort,
@@ -159,16 +182,16 @@ export class PlayGroundManager {
     if (state?.container === undefined) {
       throw new Error('model is not running');
     }
-    await this.setPlaygroundStatus(modelId, 'stopping');
+    this.setPlaygroundStatus(modelId, 'stopping');
     // We do not await since it can take a lot of time
     containerEngine
       .stopContainer(state.container.engineId, state.container.containerId)
       .then(async () => {
-        await this.setPlaygroundStatus(modelId, 'stopped');
+        this.setPlaygroundStatus(modelId, 'stopped');
       })
       .catch(async (error: unknown) => {
         console.error(error);
-        await this.setPlaygroundStatus(modelId, 'error');
+        this.setPlaygroundStatus(modelId, 'error');
       });
   }
 
@@ -178,11 +201,11 @@ export class PlayGroundManager {
       throw new Error('model is not running');
     }
 
-    const query = {
+    const query: QueryState = {
       id: this.getNextQueryId(),
       modelId: modelInfo.id,
       prompt: prompt,
-    } as QueryState;
+    };
 
     const post_data = JSON.stringify({
       model: modelInfo.file,
@@ -213,20 +236,25 @@ export class PlayGroundManager {
           if (!q) {
             throw new Error('query not found in state');
           }
+          q.error = undefined;
           q.response = result as ModelResponse;
           this.queries.set(query.id, q);
-          this.sendQueriesState().catch((err: unknown) => {
-            console.error('playground: unable to send the response to the frontend', err);
-          });
+          this.sendQueriesState();
         }
       });
     });
     // post the data
     post_req.write(post_data);
     post_req.end();
+    post_req.on('error', error => {
+      console.error('connection on error.', error);
+      const q = this.queries.get(query.id);
+      q.error = `Something went wrong while trying to request model.${String(error)}`;
+      this.sendQueriesState();
+    });
 
     this.queries.set(query.id, query);
-    await this.sendQueriesState();
+    this.sendQueriesState();
     return query.id;
   }
 
@@ -241,10 +269,14 @@ export class PlayGroundManager {
     return Array.from(this.playgrounds.values());
   }
 
-  async sendQueriesState() {
-    await this.webview.postMessage({
-      id: MSG_NEW_PLAYGROUND_QUERIES_STATE,
-      body: this.getQueriesState(),
-    });
+  sendQueriesState(): void {
+    this.webview
+      .postMessage({
+        id: MSG_NEW_PLAYGROUND_QUERIES_STATE,
+        body: this.getQueriesState(),
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong while emitting MSG_NEW_PLAYGROUND_QUERIES_STATE: ${String(err)}`);
+      });
   }
 }

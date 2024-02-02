@@ -32,7 +32,6 @@ import type { ModelsManager } from './managers/modelsManager';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
-    private appUserDirectory: string,
     private applicationManager: ApplicationManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private playgroundManager: PlayGroundManager,
@@ -46,6 +45,10 @@ export class StudioApiImpl implements StudioAPI {
 
   async openURL(url: string): Promise<boolean> {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(url));
+  }
+
+  async openFile(file: string): Promise<boolean> {
+    return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
   }
 
   async getPullingStatus(recipeId: string): Promise<RecipeStatus> {
@@ -73,9 +76,13 @@ export class StudioApiImpl implements StudioAPI {
     const model = await this.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
-    this.applicationManager.pullApplication(recipe, model).catch((error: unknown) => console.warn(error));
-
-    return Promise.resolve(undefined);
+    podmanDesktopApi.window
+      .withProgress({ location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` }, () =>
+        this.applicationManager.pullApplication(recipe, model),
+      )
+      .catch(() => {
+        this.recipeStatusRegistry.setStatus(recipeId, { recipeId: recipeId, state: 'error', tasks: [] });
+      });
   }
 
   async getLocalModels(): Promise<ModelInfo[]> {
@@ -110,5 +117,13 @@ export class StudioApiImpl implements StudioAPI {
 
   async deleteLocalModel(modelId: string): Promise<void> {
     await this.modelsManager.deleteLocalModel(modelId);
+  }
+
+  async getModelsDirectory(): Promise<string> {
+    return this.modelsManager.getModelsDirectory();
+  }
+
+  navigateToContainer(containerId: string): Promise<void> {
+    return podmanDesktopApi.navigation.navigateToContainer(containerId);
   }
 }

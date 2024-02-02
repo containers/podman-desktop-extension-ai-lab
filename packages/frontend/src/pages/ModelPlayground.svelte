@@ -12,11 +12,14 @@
   export let model: ModelInfo | undefined;
   import Fa from 'svelte-fa';
   import { faPlay, faStop, faInfo, faWarning } from '@fortawesome/free-solid-svg-icons';
+  import ContainerIcon from '/@/lib/images/ContainerIcon.svelte';
+  import ErrorMessage from '/@/lib/ErrorMessage.svelte';
 
   let prompt = '';
   let queryId: number;
   let result: ModelResponseChoice | undefined = undefined;
   let inProgress = false;
+  let error: string | undefined = undefined;
   let playgroundState: PlaygroundState | undefined = undefined;
 
   onMount(() => {
@@ -53,6 +56,12 @@
   });
 
   function displayQuery(query: QueryState) {
+    if(query.error) {
+      error = query.error;
+      inProgress = false;
+      return;
+    }
+
     if (query.response) {
       inProgress = false;
       prompt = query.prompt;
@@ -72,6 +81,8 @@
     }
     inProgress = true;
     result = undefined;
+    error = undefined;
+
     // do not display anything before we get a response from askPlayground
     // (we can receive a new queryState before the new QueryId)
     queryId = -1;
@@ -147,14 +158,33 @@
         return true;
     }
   }
+
+  const navigateToContainer = () => {
+    if(playgroundState?.container?.containerId === undefined)
+      return;
+
+    try {
+      studioClient.navigateToContainer(playgroundState?.container?.containerId);
+    } catch(err) {
+      console.error(err);
+    }
+  }
 </script>
 
 <div class="m-4 w-full flew flex-col">
+  {#if error}
+    <div class="mb-2">
+      <ErrorMessage error="{error}"/>
+    </div>
+  {/if}
   <Card classes="bg-charcoal-800">
     <div slot="content" class="my-2 mx-4 w-full text-base font-normal flex flex-row items-center">
       {#key playgroundState?.status}
         <span class="flex-grow">Playground {playgroundState?.status}</span>
         <Button title="playground-action" inProgress={isLoading()} on:click={onAction} icon="{getActionIcon()}"/>
+        {#if playgroundState?.container}
+          <Button class="ml-2" on:click={navigateToContainer} title="navigate-to-container" icon="{ContainerIcon}"/>
+        {/if}
       {/key}
     </div>
   </Card>

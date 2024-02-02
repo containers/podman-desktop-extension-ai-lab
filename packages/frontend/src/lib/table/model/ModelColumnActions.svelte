@@ -1,10 +1,11 @@
 <script lang="ts">
 import type { ModelInfo } from "@shared/src/models/IModelInfo";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import ListItemButtonIcon from "../../button/ListItemButtonIcon.svelte";
 import { studioClient } from "/@/utils/client";
 import Modal from "../../Modal.svelte";
-  import Button from "../../button/Button.svelte";
+import Button from "../../button/Button.svelte";
 export let object: ModelInfo;
 
 let deleteConfirmVisible: boolean = false;
@@ -17,8 +18,19 @@ async function goDeleteModel() {
   await studioClient.deleteLocalModel(object.id);
   deleteConfirmVisible= false;
 }
+
+function openModelFolder() {
+  if (object && object.file) {
+    studioClient.openFile(object.file.path);
+  }
+}
 </script>
 
+<ListItemButtonIcon
+  icon={faFolderOpen}
+  onClick={() => openModelFolder()}
+  title="Open Model Folder"
+/>
 <ListItemButtonIcon
   icon={faTrash}
   onClick={() => deleteModel()}

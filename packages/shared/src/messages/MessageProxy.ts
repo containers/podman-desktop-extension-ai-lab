@@ -85,7 +85,7 @@ export class RpcExtension {
           channel: message.channel,
           body: undefined,
           status: 'error',
-          error: `Something went wrong: ${String(err)}`,
+          error: String(err),
         } as IMessageResponse);
       }
     });
@@ -176,6 +176,10 @@ export class RpcBrowser {
     // Generate a unique id for the request
     const requestId = this.getUniqueId();
 
+    const promise = new Promise((resolve, reject) => {
+      this.promises.set(requestId, { resolve, reject });
+    });
+
     // Post the message
     this.api.postMessage({
       id: requestId,
@@ -192,9 +196,7 @@ export class RpcBrowser {
     }, 5000);
 
     // Create a Promise
-    return new Promise((resolve, reject) => {
-      this.promises.set(requestId, { resolve, reject });
-    });
+    return promise;
   }
 
   // TODO(feloy) need to subscribe several times?

@@ -78,12 +78,14 @@ export class RpcExtension {
           body: result,
           status: 'success',
         } as IMessageResponse);
-      } catch (e) {
+      } catch (err: unknown) {
+        console.error(`Something went wrong on channel ${message.channel}`, err);
         await this.webview.postMessage({
           id: message.id,
           channel: message.channel,
           body: undefined,
-          error: `Something went wrong on channel ${message.channel}: ${String(e)}`,
+          status: 'error',
+          error: `Something went wrong: ${String(err)}`,
         } as IMessageResponse);
       }
     });

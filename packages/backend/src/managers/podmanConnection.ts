@@ -22,9 +22,9 @@ import {
   type UpdateContainerConnectionEvent,
 } from '@podman-desktop/api';
 
-type startupHandle = () => void;
-type machineStartHandle = () => void;
-type machineStopHandle = () => void;
+export type startupHandle = () => void;
+export type machineStartHandle = () => void;
+export type machineStopHandle = () => void;
 
 export class PodmanConnection {
   #firstFound = false;

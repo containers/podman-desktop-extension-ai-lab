@@ -35,8 +35,8 @@ import type { PodmanConnection } from './podmanConnection';
 import OpenAI from 'openai';
 import { timeout } from '../utils/utils';
 
-const LABEL_MODEL_ID = 'ai-studio-model-id';
-const LABEL_MODEL_PORT = 'ai-studio-model-port';
+export const LABEL_MODEL_ID = 'ai-studio-model-id';
+export const LABEL_MODEL_PORT = 'ai-studio-model-port';
 
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';

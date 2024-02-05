@@ -17,10 +17,10 @@
  ***********************************************************************/
 
 import { beforeEach, afterEach, expect, test, vi } from 'vitest';
-import { PlayGroundManager } from './playground';
+import { LABEL_MODEL_ID, LABEL_MODEL_PORT, PlayGroundManager } from './playground';
 import type { ImageInfo, Webview } from '@podman-desktop/api';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
-import type { PodmanConnection } from './podmanConnection';
+import type { PodmanConnection, machineStopHandle, startupHandle } from './podmanConnection';
 
 const mocks = vi.hoisted(() => ({
   postMessage: vi.fn(),
@@ -30,6 +30,9 @@ const mocks = vi.hoisted(() => ({
   stopContainer: vi.fn(),
   getFreePort: vi.fn(),
   containerRegistrySubscribeMock: vi.fn(),
+  startupSubscribe: vi.fn(),
+  onMachineStop: vi.fn(),
+  listContainers: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -41,6 +44,7 @@ vi.mock('@podman-desktop/api', async () => {
       pullImage: mocks.pullImage,
       createContainer: mocks.createContainer,
       stopContainer: mocks.stopContainer,
+      listContainers: mocks.listContainers,
     },
   };
 });
@@ -66,7 +70,10 @@ beforeEach(() => {
       postMessage: mocks.postMessage,
     } as unknown as Webview,
     containerRegistryMock,
-    {} as PodmanConnection,
+    {
+      startupSubscribe: mocks.startupSubscribe,
+      onMachineStop: mocks.onMachineStop,
+    } as unknown as PodmanConnection,
   );
   originalFetch = globalThis.fetch;
   globalThis.fetch = vi.fn().mockResolvedValue({});
@@ -164,4 +171,43 @@ test('stopPlayground should stop a started playground', async () => {
   await manager.startPlayground('model1', '/path/to/model');
   await manager.stopPlayground('model1');
   expect(mocks.stopContainer).toHaveBeenNthCalledWith(1, 'engine1', 'container1');
+});
+
+test('adoptRunningPlaygrounds updates the playground state with the found container', async () => {
+  mocks.listContainers.mockResolvedValue([
+    {
+      Id: 'container-id-1',
+      engineId: 'engine-id-1',
+      Labels: {
+        [LABEL_MODEL_ID]: 'model-id-1',
+        [LABEL_MODEL_PORT]: '8080',
+      },
+      State: 'running',
+    },
+  ]);
+  mocks.startupSubscribe.mockImplementation((f: startupHandle) => {
+    f();
+  });
+  const updatePlaygroundStateSpy = vi.spyOn(manager, 'updatePlaygroundState');
+  manager.adoptRunningPlaygrounds();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(updatePlaygroundStateSpy).toHaveBeenNthCalledWith(1, 'model-id-1', {
+    container: {
+      containerId: 'container-id-1',
+      engineId: 'engine-id-1',
+      port: 8080,
+    },
+    modelId: 'model-id-1',
+    status: 'running',
+  });
+});
+
+test('onMachineStop updates the playground state with no playground running', async () => {
+  mocks.listContainers.mockResolvedValue([]);
+  mocks.onMachineStop.mockImplementation((f: machineStopHandle) => {
+    f();
+  });
+  const sendPlaygroundStateSpy = vi.spyOn(manager, 'sendPlaygroundState').mockResolvedValue();
+  manager.adoptRunningPlaygrounds();
+  expect(sendPlaygroundStateSpy).toHaveBeenCalledOnce();
 });

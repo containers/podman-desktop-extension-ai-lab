@@ -80,9 +80,14 @@ export class RpcExtension {
         } as IMessageResponse);
       } catch (err: unknown) {
         let errorMessage: string;
-        if (err instanceof Error) errorMessage = err.message;
-        else if (typeof err === 'string') errorMessage = err;
-        else errorMessage = String(err);
+        // Depending on the object throw we try to extract the error message
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        } else {
+          errorMessage = String(err);
+        }
 
         await this.webview.postMessage({
           id: message.id,

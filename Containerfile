@@ -26,8 +26,8 @@ COPY README.md /extension/
 
 FROM scratch
 
-LABEL org.opencontainers.image.title="Studio extension" \
-        org.opencontainers.image.description="Studio extension" \
+LABEL org.opencontainers.image.title="AI Studio" \
+        org.opencontainers.image.description="AI Studio" \
         org.opencontainers.image.vendor="Red Hat" \
         io.podman-desktop.api.version=">= 1.7.0"
 

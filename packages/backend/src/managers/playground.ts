@@ -100,6 +100,11 @@ export class PlayGroundManager {
           console.error('error during adoption of existing playground containers', err);
         });
     });
+    this.podmanConnection.onMachineStop(() => {
+      // Podman Machine has been stopped, we consider all playground containers are stopped
+      this.playgrounds.clear();
+      this.sendPlaygroundState();
+    });
   }
 
   async selectImage(image: string): Promise<ImageInfo | undefined> {
@@ -117,6 +122,10 @@ export class PlayGroundManager {
 
   updatePlaygroundState(modelId: string, state: PlaygroundState): void {
     this.playgrounds.set(modelId, state);
+    this.sendPlaygroundState();
+  }
+
+  sendPlaygroundState() {
     this.webview
       .postMessage({
         id: MSG_PLAYGROUNDS_STATE_UPDATE,

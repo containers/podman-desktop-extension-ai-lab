@@ -69,7 +69,9 @@ beforeEach(() => {
     {} as PodmanConnection,
   );
   originalFetch = globalThis.fetch;
-  globalThis.fetch = vi.fn().mockResolvedValue({});
+  globalThis.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+  });
 });
 
 afterEach(() => {

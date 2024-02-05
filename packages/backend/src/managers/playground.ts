@@ -33,6 +33,7 @@ import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlay
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { PodmanConnection } from './podmanConnection';
 import OpenAI from 'openai';
+import { timeout } from '../utils/utils';
 
 const LABEL_MODEL_ID = 'ai-studio-model-id';
 const LABEL_MODEL_PORT = 'ai-studio-model-port';
@@ -216,6 +217,7 @@ export class PlayGroundManager {
       try {
         const response = await fetch(`http://localhost:${freePort}`);
         contacted = response.ok;
+        await timeout(1000);
       } catch (err: unknown) {
         /* empty */
       }

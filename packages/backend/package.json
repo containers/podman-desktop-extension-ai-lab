@@ -38,6 +38,7 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
+    "openai": "^4.26.0",
     "simple-git": "^3.22.0"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@ export interface ModelResponse {
   id: string;
   model: string;
   choices: ModelResponseChoice[];
-  usage: ModelResponseUsage;
+  usage?: ModelResponseUsage;
 }
 
 export interface ModelResponseChoice {

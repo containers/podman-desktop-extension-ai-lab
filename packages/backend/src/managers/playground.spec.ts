@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, afterEach, expect, test, vi } from 'vitest';
 import { PlayGroundManager } from './playground';
 import type { ImageInfo, Webview } from '@podman-desktop/api';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
@@ -56,6 +56,7 @@ vi.mock('../utils/ports', async () => {
 });
 
 let manager: PlayGroundManager;
+let originalFetch: typeof globalThis.fetch;
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -67,6 +68,12 @@ beforeEach(() => {
     containerRegistryMock,
     {} as PodmanConnection,
   );
+  originalFetch = globalThis.fetch;
+  globalThis.fetch = vi.fn().mockResolvedValue({});
+});
+
+afterEach(() => {
+  globalThis.fetch = originalFetch;
 });
 
 test('startPlayground should fail if no provider', async () => {

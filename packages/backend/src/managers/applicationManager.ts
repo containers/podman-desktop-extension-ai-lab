@@ -100,6 +100,33 @@ export class ApplicationManager {
     const podInfo = await this.createApplicationPod(images, modelPath, taskUtil);
 
     await this.runApplication(podInfo, taskUtil);
+    
+    await this.isPodRunning(podInfo.engineId, podInfo.portmappings);
+    
+    taskUtil.setStatus('none');
+  }
+
+  async isPodRunning(
+    engineId: string,
+    portmappings: PodCreatePortOptions[],
+  ): Promise<void> {
+    const aliveResults = [];
+    // loop over all ports open in a pod to check their status
+    for (const portmapping of portmappings) {
+      const isAlive = await isEndpointAlive(`http://localhost:${portmapping.host_port}`);
+      aliveResults.push(isAlive);
+    }
+    // if there is atleast one port running fine, the pod is considered running
+    const alive = aliveResults.some(r => r === true);
+    if (!alive) {
+      return Promise.resolve();
+    }
+    await timeout(5000);
+    return await this.isPodRunning(engineId, portmappings).catch(
+      (error: unknown) => {
+        console.error('Error monitoring endpoint', error);
+      },
+    );
   }
 
   async runApplication(podInfo: PodInfo, taskUtil: RecipeStatusUtils) {

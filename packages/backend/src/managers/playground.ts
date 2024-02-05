@@ -214,8 +214,8 @@ export class PlayGroundManager {
       this.playgrounds.get(modelId).status === 'starting'
     ) {
       try {
-        await fetch(`http://localhost:${freePort}`);
-        contacted = true;
+        const response  = await fetch(`http://localhost:${freePort}`);
+        contacted = response.ok;
       } catch (err: unknown) {
         /* empty */
       }

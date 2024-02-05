@@ -80,7 +80,7 @@ beforeEach(() => {
       logUsage: mocks.logUsage,
       logError: mocks.logError,
     } as unknown as TelemetryLogger,
-    );
+  );
   originalFetch = globalThis.fetch;
   globalThis.fetch = vi.fn().mockResolvedValue({});
 });

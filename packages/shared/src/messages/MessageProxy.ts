@@ -78,12 +78,23 @@ export class RpcExtension {
           body: result,
           status: 'success',
         } as IMessageResponse);
-      } catch (e) {
+      } catch (err: unknown) {
+        let errorMessage: string;
+        // Depending on the object throw we try to extract the error message
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        } else {
+          errorMessage = String(err);
+        }
+
         await this.webview.postMessage({
           id: message.id,
           channel: message.channel,
           body: undefined,
-          error: `Something went wrong on channel ${message.channel}: ${String(e)}`,
+          status: 'error',
+          error: errorMessage,
         } as IMessageResponse);
       }
     });
@@ -174,6 +185,10 @@ export class RpcBrowser {
     // Generate a unique id for the request
     const requestId = this.getUniqueId();
 
+    const promise = new Promise((resolve, reject) => {
+      this.promises.set(requestId, { resolve, reject });
+    });
+
     // Post the message
     this.api.postMessage({
       id: requestId,
@@ -190,9 +205,7 @@ export class RpcBrowser {
     }, 5000);
 
     // Create a Promise
-    return new Promise((resolve, reject) => {
-      this.promises.set(requestId, { resolve, reject });
-    });
+    return promise;
   }
 
   // TODO(feloy) need to subscribe several times?

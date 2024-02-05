@@ -81,3 +81,14 @@ test('Test register instance with async', async () => {
   const proxy = rpcBrowser.getProxy<Dummy>();
   expect(await proxy.ping()).toBe('pong');
 });
+
+test('Test raising exception', async () => {
+  const rpcExtension = new RpcExtension(webview);
+  const rpcBrowser = new RpcBrowser(window, api);
+
+  rpcExtension.register('raiseError', () => {
+    throw new Error('big error');
+  });
+
+  await expect(rpcBrowser.invoke('raiseError')).rejects.toThrow('big error');
+});

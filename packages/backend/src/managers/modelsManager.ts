@@ -180,8 +180,8 @@ export class ModelsManager {
         },
       });
 
+      const startTime = performance.now();
       try {
-        const startTime = performance.now();
         const result = await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
         const durationSeconds = getDurationSecondsSince(startTime);
         this.telemetry.logUsage('model.download', { 'model.id': model.id, durationSeconds });
@@ -196,10 +196,12 @@ export class ModelsManager {
             'model-pulling': model.id,
           },
         });
+        const durationSeconds = getDurationSecondsSince(startTime);
         this.telemetry.logError('model.download', {
           'model.id': model.id,
           message: 'error downloading model',
           error: e,
+          durationSeconds,
         });
         throw e;
       }

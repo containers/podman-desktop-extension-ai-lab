@@ -34,7 +34,7 @@ import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlay
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { PodmanConnection } from './podmanConnection';
 import OpenAI from 'openai';
-import { timeout } from '../utils/utils';
+import { getDurationSecondsSince, timeout } from '../utils/utils';
 
 export const LABEL_MODEL_ID = 'ai-studio-model-id';
 export const LABEL_MODEL_PORT = 'ai-studio-model-port';
@@ -139,6 +139,7 @@ export class PlayGroundManager {
   }
 
   async startPlayground(modelId: string, modelPath: string): Promise<string> {
+    const startTime = performance.now();
     // TODO(feloy) remove previous query from state?
     if (this.playgrounds.has(modelId)) {
       // TODO: check manually if the contains has a matching state
@@ -256,7 +257,8 @@ export class PlayGroundManager {
       modelId,
     });
 
-    this.telemetry.logUsage('playground.start', { 'model.id': modelId });
+    const durationSeconds = getDurationSecondsSince(startTime);
+    this.telemetry.logUsage('playground.start', { 'model.id': modelId, durationSeconds });
     return result.id;
   }
 

@@ -9,7 +9,7 @@ export let object: ModelInfo;
 function deleteModel() {
   studioClient.requestRemoveLocalModel(object.id).catch((err) => {
     console.error(`Something went wrong while trying to delete model ${String(err)}.`);
-  })
+  });
 }
 
 function openModelFolder() {

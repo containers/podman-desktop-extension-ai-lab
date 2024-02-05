@@ -604,15 +604,14 @@ describe('buildImages', () => {
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
-  test('setTaskState should be called with error and telemetry seent if context does not exist', async () => {
+  test('setTaskState should be called with error if context does not exist', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     mocks.listImagesMock.mockRejectedValue([]);
     await expect(manager.buildImages(containers, 'config', taskUtils)).rejects.toThrow(
       'Context configured does not exist.',
     );
-    expect(mocks.logErrorMock).toHaveBeenCalled();
   });
-  test('setTaskState should be called with error and telemetry sent if buildImage executon fails', async () => {
+  test('setTaskState should be called with error if buildImage executon fails', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     mocks.builImageMock.mockRejectedValue('error');
     mocks.listImagesMock.mockRejectedValue([]);
@@ -620,7 +619,6 @@ describe('buildImages', () => {
       'Something went wrong while building the image: error',
     );
     expect(setTaskStateMock).toBeCalledWith('container1', 'error');
-    expect(mocks.logErrorMock).toHaveBeenCalled();
   });
   test('setTaskState should be called with error if unable to find the image after built', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);

@@ -71,40 +71,52 @@ export class ApplicationManager {
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
     const startTime = performance.now();
-    // Create a TaskUtils object to help us
-    const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
+    try {
+      // Create a TaskUtils object to help us
+      const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
 
-    const localFolder = path.join(this.appUserDirectory, recipe.id);
+      const localFolder = path.join(this.appUserDirectory, recipe.id);
 
-    // clone the recipe repository on the local folder
-    const gitCloneInfo: GitCloneInfo = {
-      repository: recipe.repository,
-      ref: recipe.ref,
-      targetDirectory: localFolder,
-    };
-    await this.doCheckout(gitCloneInfo, taskUtil);
+      // clone the recipe repository on the local folder
+      const gitCloneInfo: GitCloneInfo = {
+        repository: recipe.repository,
+        ref: recipe.ref,
+        targetDirectory: localFolder,
+      };
+      await this.doCheckout(gitCloneInfo, taskUtil);
 
-    // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
-    // and backend (that define which model supports)
-    const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
+      // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
+      // and backend (that define which model supports)
+      const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
 
-    // get model by downloading it or retrieving locally
-    const modelPath = await this.modelsManager.downloadModel(model, taskUtil);
+      // get model by downloading it or retrieving locally
+      const modelPath = await this.modelsManager.downloadModel(model, taskUtil);
 
-    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
-    const images = await this.buildImages(
-      configAndFilteredContainers.containers,
-      configAndFilteredContainers.aiConfigFile.path,
-      taskUtil,
-    );
+      // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
+      const images = await this.buildImages(
+        configAndFilteredContainers.containers,
+        configAndFilteredContainers.aiConfigFile.path,
+        taskUtil,
+      );
 
-    // create a pod containing all the containers to run the application
-    const podInfo = await this.createApplicationPod(images, modelPath, taskUtil);
+      // create a pod containing all the containers to run the application
+      const podInfo = await this.createApplicationPod(images, modelPath, taskUtil);
 
-    await this.runApplication(podInfo, taskUtil);
-    taskUtil.setStatus('running');
-    const durationSeconds = getDurationSecondsSince(startTime);
-    this.telemetry.logUsage('recipe.pull', { 'recipe.id': recipe.id, 'recipe.name': recipe.name, durationSeconds });
+      await this.runApplication(podInfo, taskUtil);
+      taskUtil.setStatus('running');
+      const durationSeconds = getDurationSecondsSince(startTime);
+      this.telemetry.logUsage('recipe.pull', { 'recipe.id': recipe.id, 'recipe.name': recipe.name, durationSeconds });
+    } catch (err: unknown) {
+      const durationSeconds = getDurationSecondsSince(startTime);
+      this.telemetry.logError('recipe.pull', {
+        'recipe.id': recipe.id,
+        'recipe.name': recipe.name,
+        durationSeconds,
+        message: 'error pulling application',
+        error: err,
+      });
+      throw err;
+    }
   }
 
   async runApplication(podInfo: PodInfo, taskUtil: RecipeStatusUtils) {
@@ -162,7 +174,6 @@ export class ApplicationManager {
     await timeout(5000);
     await this.restartContainerWhenModelServiceIsUp(engineId, modelServiceEndpoint, container).catch(
       (error: unknown) => {
-        this.telemetry.logError('recipe.pull', { message: 'error monitoring endpoint', error: error });
         console.error('Error monitoring endpoint', error);
       },
     );
@@ -180,7 +191,6 @@ export class ApplicationManager {
         state: 'error',
         name: 'Creating application',
       });
-      this.telemetry.logError('recipe.pull', { message: 'error creating pod', error: e });
       throw e;
     }
 
@@ -200,7 +210,6 @@ export class ApplicationManager {
         state: 'error',
         name: 'Creating application',
       });
-      this.telemetry.logError('recipe.pull', { message: 'error adding containers to pod', error: e });
       throw e;
     }
 
@@ -349,7 +358,6 @@ export class ApplicationManager {
         if (!fs.existsSync(context)) {
           console.error('The context provided does not exist.');
           taskUtil.setTaskState(container.name, 'error');
-          this.telemetry.logError('recipe.pull', { message: 'configured context does not exist' });
           throw new Error('Context configured does not exist.');
         }
 
@@ -365,7 +373,6 @@ export class ApplicationManager {
               // todo: do something with the event
               if (event === 'error' || (event === 'finish' && data !== '')) {
                 console.error('Something went wrong while building the image: ', data);
-                this.telemetry.logError('recipe.pull', { message: 'error building image' });
                 taskUtil.setTaskState(container.name, 'error');
               }
             },
@@ -373,7 +380,6 @@ export class ApplicationManager {
           )
           .catch((err: unknown) => {
             console.error('Something went wrong while building the image: ', err);
-            this.telemetry.logError('recipe.pull', { message: 'error building image', error: err });
             taskUtil.setTaskState(container.name, 'error');
             throw new Error(`Something went wrong while building the image: ${String(err)}`);
           });
@@ -432,7 +438,6 @@ export class ApplicationManager {
     } catch (e) {
       loadingConfiguration.state = 'error';
       taskUtil.setTask(loadingConfiguration);
-      this.telemetry.logError('recipe.pull', { message: 'error loading configuration', error: e });
       throw e;
     }
 
@@ -446,7 +451,6 @@ export class ApplicationManager {
       // Mark as failure.
       loadingConfiguration.state = 'error';
       taskUtil.setTask(loadingConfiguration);
-      this.telemetry.logError('recipe.pull', { message: 'no container available' });
       throw new Error('No containers available.');
     }
 

@@ -16,15 +16,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { type RegisterContainerConnectionEvent, provider } from '@podman-desktop/api';
+import {
+  type RegisterContainerConnectionEvent,
+  provider,
+  type UpdateContainerConnectionEvent,
+} from '@podman-desktop/api';
 
-type startupHandle = () => void;
+export type startupHandle = () => void;
+export type machineStartHandle = () => void;
+export type machineStopHandle = () => void;
 
 export class PodmanConnection {
   #firstFound = false;
   #toExecuteAtStartup: startupHandle[] = [];
+  #toExecuteAtMachineStop: machineStopHandle[] = [];
+  #toExecuteAtMachineStart: machineStartHandle[] = [];
 
   init(): void {
+    this.listenRegistration();
+    this.listenMachine();
+  }
+
+  listenRegistration() {
     // In case the extension has not yet registered, we listen for new registrations
     // and retain the first started podman provider
     const disposable = provider.onDidRegisterContainerConnection((e: RegisterContainerConnectionEvent) => {
@@ -61,5 +74,30 @@ export class PodmanConnection {
     } else {
       this.#toExecuteAtStartup.push(f);
     }
+  }
+
+  listenMachine() {
+    provider.onDidUpdateContainerConnection((e: UpdateContainerConnectionEvent) => {
+      if (e.connection.type !== 'podman') {
+        return;
+      }
+      if (e.status === 'stopped') {
+        for (const f of this.#toExecuteAtMachineStop) {
+          f();
+        }
+      } else if (e.status === 'started') {
+        for (const f of this.#toExecuteAtMachineStart) {
+          f();
+        }
+      }
+    });
+  }
+
+  onMachineStart(f: machineStartHandle) {
+    this.#toExecuteAtMachineStart.push(f);
+  }
+
+  onMachineStop(f: machineStopHandle) {
+    this.#toExecuteAtMachineStop.push(f);
   }
 }

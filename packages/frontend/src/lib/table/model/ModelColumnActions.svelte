@@ -6,7 +6,7 @@ import ListItemButtonIcon from "../../button/ListItemButtonIcon.svelte";
 import { studioClient } from "/@/utils/client";
 export let object: ModelInfo;
 
-const deleteModel = () => {
+function deleteModel() {
   studioClient.requestRemoveLocalModel(object.id).catch((err) => {
     console.error(`Something went wrong while trying to delete model ${String(err)}.`);
   })

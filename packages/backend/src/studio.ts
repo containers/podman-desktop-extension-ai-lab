@@ -16,8 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ExtensionContext, WebviewOptions, WebviewPanel } from '@podman-desktop/api';
-import { Uri, window } from '@podman-desktop/api';
+import type {
+  ExtensionContext,
+  TelemetryLogger,
+  WebviewOptions,
+  WebviewPanel,
+  WebviewPanelOnDidChangeViewStateEvent,
+} from '@podman-desktop/api';
+import { Uri, window, env } from '@podman-desktop/api';
 import { RpcExtension } from '@shared/src/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
@@ -46,6 +52,7 @@ export class Studio {
   playgroundManager: PlayGroundManager;
   catalogManager: CatalogManager;
   modelsManager: ModelsManager;
+  telemetry: TelemetryLogger;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -53,6 +60,9 @@ export class Studio {
 
   public async activate(): Promise<void> {
     console.log('starting studio extension');
+
+    this.telemetry = env.createTelemetryLogger();
+    this.telemetry.logUsage('start');
 
     const extensionUri = this.#extensionContext.extensionUri;
 
@@ -109,16 +119,26 @@ export class Studio {
     const podmanConnection = new PodmanConnection();
     const taskRegistry = new TaskRegistry();
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, this.#panel.webview);
-    this.playgroundManager = new PlayGroundManager(this.#panel.webview, containerRegistry, podmanConnection);
+    this.playgroundManager = new PlayGroundManager(
+      this.#panel.webview,
+      containerRegistry,
+      podmanConnection,
+      this.telemetry,
+    );
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
-    this.modelsManager = new ModelsManager(appUserDirectory, this.#panel.webview, this.catalogManager);
+    this.modelsManager = new ModelsManager(appUserDirectory, this.#panel.webview, this.catalogManager, this.telemetry);
     const applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,
       recipeStatusRegistry,
       this.modelsManager,
+      this.telemetry,
     );
+
+    this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
+      this.telemetry.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
+    });
 
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
@@ -127,6 +147,7 @@ export class Studio {
       this.playgroundManager,
       this.catalogManager,
       this.modelsManager,
+      this.telemetry,
     );
 
     await this.catalogManager.loadCatalog();
@@ -140,6 +161,7 @@ export class Studio {
 
   public async deactivate(): Promise<void> {
     console.log('stopping studio extension');
+    this.telemetry.logUsage('stop');
   }
 
   getWebviewOptions(extensionUri: Uri): WebviewOptions {

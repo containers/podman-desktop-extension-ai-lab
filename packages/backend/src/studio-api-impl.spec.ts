@@ -25,7 +25,7 @@ import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './managers/playground';
-import type { Webview } from '@podman-desktop/api';
+import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
 
@@ -98,6 +98,7 @@ beforeEach(async () => {
     {} as unknown as PlayGroundManager,
     catalogManager,
     {} as unknown as ModelsManager,
+    {} as TelemetryLogger,
   );
   vi.resetAllMocks();
   vi.mock('node:fs');

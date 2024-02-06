@@ -27,6 +27,13 @@ $: recipeStatus = $recipes.get(recipeId);
 $: selectedModelId = recipe?.models?.[0];
 $: model = $catalog.models.find(m => m.id === selectedModelId);
 
+// Send recipe info to telemetry
+let recipeTelemetry: string | undefined = undefined;
+$: if (recipe && recipe.id !== recipeTelemetry) { 
+  recipeTelemetry = recipe.id;
+  studioClient.telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name }); 
+}
+
 const onPullingRequest = async () => {
   await studioClient.pullApplication(recipeId);
 }

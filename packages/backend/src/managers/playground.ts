@@ -22,6 +22,7 @@ import {
   type ImageInfo,
   type ProviderContainerConnection,
   provider,
+  type TelemetryLogger,
 } from '@podman-desktop/api';
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 
@@ -33,7 +34,7 @@ import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlay
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { PodmanConnection } from './podmanConnection';
 import OpenAI from 'openai';
-import { timeout } from '../utils/utils';
+import { getDurationSecondsSince, timeout } from '../utils/utils';
 
 export const LABEL_MODEL_ID = 'ai-studio-model-id';
 export const LABEL_MODEL_PORT = 'ai-studio-model-port';
@@ -62,6 +63,7 @@ export class PlayGroundManager {
     private webview: Webview,
     private containerRegistry: ContainerRegistry,
     private podmanConnection: PodmanConnection,
+    private telemetry: TelemetryLogger,
   ) {
     this.playgrounds = new Map<string, PlaygroundState>();
     this.queries = new Map<number, QueryState>();
@@ -137,6 +139,7 @@ export class PlayGroundManager {
   }
 
   async startPlayground(modelId: string, modelPath: string): Promise<string> {
+    const startTime = performance.now();
     // TODO(feloy) remove previous query from state?
     if (this.playgrounds.has(modelId)) {
       // TODO: check manually if the contains has a matching state
@@ -158,6 +161,10 @@ export class PlayGroundManager {
     const connection = findFirstProvider();
     if (!connection) {
       this.setPlaygroundStatus(modelId, 'error');
+      this.telemetry.logError('playground.start', {
+        'model.id': modelId,
+        message: 'unable to find an engine to start playground',
+      });
       throw new Error('Unable to find an engine to start playground');
     }
 
@@ -167,6 +174,10 @@ export class PlayGroundManager {
       image = await this.selectImage(PLAYGROUND_IMAGE);
       if (!image) {
         this.setPlaygroundStatus(modelId, 'error');
+        this.telemetry.logError('playground.start', {
+          'model.id': modelId,
+          message: 'unable to find playground image',
+        });
         throw new Error(`Unable to find ${PLAYGROUND_IMAGE} image`);
       }
     }
@@ -246,10 +257,13 @@ export class PlayGroundManager {
       modelId,
     });
 
+    const durationSeconds = getDurationSecondsSince(startTime);
+    this.telemetry.logUsage('playground.start', { 'model.id': modelId, durationSeconds });
     return result.id;
   }
 
   async stopPlayground(modelId: string): Promise<void> {
+    const startTime = performance.now();
     const state = this.playgrounds.get(modelId);
     if (state?.container === undefined) {
       throw new Error('model is not running');
@@ -264,12 +278,21 @@ export class PlayGroundManager {
       .catch(async (error: unknown) => {
         console.error(error);
         this.setPlaygroundStatus(modelId, 'error');
+        this.telemetry.logError('playground.stop', {
+          'model.id': modelId,
+          message: 'error stopping playground',
+          error: error,
+        });
       });
+    const durationSeconds = getDurationSecondsSince(startTime);
+    this.telemetry.logUsage('playground.stop', { 'model.id': modelId, durationSeconds });
   }
 
   async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<number> {
+    const startTime = performance.now();
     const state = this.playgrounds.get(modelInfo.id);
     if (state?.container === undefined) {
+      this.telemetry.logError('playground.ask', { 'model.id': modelInfo.id, message: 'model is not running' });
       throw new Error('model is not running');
     }
 
@@ -303,7 +326,8 @@ export class PlayGroundManager {
         this.sendQueriesState();
       }
     })().catch((err: unknown) => console.warn(`Error while reading streamed response for model ${modelInfo.id}`, err));
-
+    const durationSeconds = getDurationSecondsSince(startTime);
+    this.telemetry.logUsage('playground.ask', { 'model.id': modelInfo.id, durationSeconds });
     return query.id;
   }
 

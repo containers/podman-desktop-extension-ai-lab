@@ -49,6 +49,12 @@ vi.mock('@podman-desktop/api', async () => {
           onDidReceiveMessage: vi.fn(),
           postMessage: vi.fn(),
         },
+        onDidChangeViewState: vi.fn(),
+      }),
+    },
+    env: {
+      createTelemetryLogger: () => ({
+        logUsage: vi.fn(),
       }),
     },
     containerEngine: {

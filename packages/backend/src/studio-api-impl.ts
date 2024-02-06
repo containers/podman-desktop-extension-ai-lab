@@ -37,6 +37,7 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
+    private telemetry: podmanDesktopApi.TelemetryLogger,
   ) {}
 
   async ping(): Promise<string> {
@@ -98,7 +99,7 @@ export class StudioApiImpl implements StudioAPI {
     await this.playgroundManager.stopPlayground(modelId);
   }
 
-  askPlayground(modelId: string, prompt: string): Promise<number> {
+  async askPlayground(modelId: string, prompt: string): Promise<number> {
     const localModelInfo = this.modelsManager.getLocalModelInfo(modelId);
     return this.playgroundManager.askPlayground(localModelInfo, prompt);
   }
@@ -147,5 +148,19 @@ export class StudioApiImpl implements StudioAPI {
 
   navigateToContainer(containerId: string): Promise<void> {
     return podmanDesktopApi.navigation.navigateToContainer(containerId);
+  }
+
+  async telemetryLogUsage(
+    eventName: string,
+    data?: Record<string, unknown | podmanDesktopApi.TelemetryTrustedValue>,
+  ): Promise<void> {
+    this.telemetry.logUsage(eventName, data);
+  }
+
+  async telemetryLogError(
+    eventName: string,
+    data?: Record<string, unknown | podmanDesktopApi.TelemetryTrustedValue>,
+  ): Promise<void> {
+    this.telemetry.logError(eventName, data);
   }
 }

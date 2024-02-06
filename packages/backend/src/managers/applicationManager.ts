@@ -20,7 +20,7 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import { type PodCreatePortOptions, containerEngine } from '@podman-desktop/api';
+import { type PodCreatePortOptions, containerEngine, type TelemetryLogger } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYaml } from '../models/AIConfig';
@@ -31,7 +31,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
-import { isEndpointAlive, timeout } from '../utils/utils';
+import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
 
 export const CONFIG_FILENAME = 'ai-studio.yaml';
 
@@ -66,41 +66,57 @@ export class ApplicationManager {
     private git: GitManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
     private modelsManager: ModelsManager,
+    private telemetry: TelemetryLogger,
   ) {}
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
-    // Create a TaskUtils object to help us
-    const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
+    const startTime = performance.now();
+    try {
+      // Create a TaskUtils object to help us
+      const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
 
-    const localFolder = path.join(this.appUserDirectory, recipe.id);
+      const localFolder = path.join(this.appUserDirectory, recipe.id);
 
-    // clone the recipe repository on the local folder
-    const gitCloneInfo: GitCloneInfo = {
-      repository: recipe.repository,
-      ref: recipe.ref,
-      targetDirectory: localFolder,
-    };
-    await this.doCheckout(gitCloneInfo, taskUtil);
+      // clone the recipe repository on the local folder
+      const gitCloneInfo: GitCloneInfo = {
+        repository: recipe.repository,
+        ref: recipe.ref,
+        targetDirectory: localFolder,
+      };
+      await this.doCheckout(gitCloneInfo, taskUtil);
 
-    // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
-    // and backend (that define which model supports)
-    const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
+      // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
+      // and backend (that define which model supports)
+      const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
 
-    // get model by downloading it or retrieving locally
-    const modelPath = await this.modelsManager.downloadModel(model, taskUtil);
+      // get model by downloading it or retrieving locally
+      const modelPath = await this.modelsManager.downloadModel(model, taskUtil);
 
-    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
-    const images = await this.buildImages(
-      configAndFilteredContainers.containers,
-      configAndFilteredContainers.aiConfigFile.path,
-      taskUtil,
-    );
+      // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
+      const images = await this.buildImages(
+        configAndFilteredContainers.containers,
+        configAndFilteredContainers.aiConfigFile.path,
+        taskUtil,
+      );
 
-    // create a pod containing all the containers to run the application
-    const podInfo = await this.createApplicationPod(images, modelPath, taskUtil);
+      // create a pod containing all the containers to run the application
+      const podInfo = await this.createApplicationPod(images, modelPath, taskUtil);
 
-    await this.runApplication(podInfo, taskUtil);
-    taskUtil.setStatus('running');
+      await this.runApplication(podInfo, taskUtil);
+      taskUtil.setStatus('running');
+      const durationSeconds = getDurationSecondsSince(startTime);
+      this.telemetry.logUsage('recipe.pull', { 'recipe.id': recipe.id, 'recipe.name': recipe.name, durationSeconds });
+    } catch (err: unknown) {
+      const durationSeconds = getDurationSecondsSince(startTime);
+      this.telemetry.logError('recipe.pull', {
+        'recipe.id': recipe.id,
+        'recipe.name': recipe.name,
+        durationSeconds,
+        message: 'error pulling application',
+        error: err,
+      });
+      throw err;
+    }
   }
 
   async runApplication(podInfo: PodInfo, taskUtil: RecipeStatusUtils) {

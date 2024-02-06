@@ -31,7 +31,7 @@ import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
-import type { Webview } from '@podman-desktop/api';
+import type { Webview, TelemetryLogger } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 
 const mocks = vi.hoisted(() => {
@@ -47,6 +47,8 @@ const mocks = vi.hoisted(() => {
     startPod: vi.fn(),
     deleteContainerMock: vi.fn(),
     inspectContainerMock: vi.fn(),
+    logUsageMock: vi.fn(),
+    logErrorMock: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
@@ -69,6 +71,11 @@ vi.mock('@podman-desktop/api', () => ({
 let setTaskMock: MockInstance;
 let taskUtils: RecipeStatusUtils;
 let setTaskStateMock: MockInstance;
+const telemetryLogger = {
+  logUsage: mocks.logUsageMock,
+  logError: mocks.logErrorMock,
+} as unknown as TelemetryLogger;
+
 beforeEach(() => {
   vi.resetAllMocks();
   taskUtils = new RecipeStatusUtils('recipe', {
@@ -157,7 +164,7 @@ describe('pullApplication', () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'id',
     });
-    modelsManager = new ModelsManager('appdir', {} as Webview, {} as CatalogManager);
+    modelsManager = new ModelsManager('appdir', {} as Webview, {} as CatalogManager, telemetryLogger);
     manager = new ApplicationManager(
       '/home/user/aistudio',
       {
@@ -167,6 +174,7 @@ describe('pullApplication', () => {
         setStatus: setStatusMock,
       } as unknown as RecipeStatusRegistry,
       modelsManager,
+      telemetryLogger,
     );
     doDownloadModelWrapperSpy = vi.spyOn(modelsManager, 'doDownloadModelWrapper');
   }
@@ -200,6 +208,7 @@ describe('pullApplication', () => {
         Running: true,
       },
     });
+    vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
     await manager.pullApplication(recipe, model);
     const gitCloneOptions = {
       repository: 'repo',
@@ -214,6 +223,15 @@ describe('pullApplication', () => {
     }
     expect(doDownloadModelWrapperSpy).toHaveBeenCalledOnce();
     expect(mocks.builImageMock).toHaveBeenCalledOnce();
+    expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.download', {
+      'model.id': 'model1',
+      durationSeconds: 99,
+    });
+    expect(mocks.logUsageMock).toHaveBeenNthCalledWith(2, 'recipe.pull', {
+      'recipe.id': 'recipe1',
+      'recipe.name': 'Recipe 1',
+      durationSeconds: 99,
+    });
   });
   test('pullApplication should not clone repository if folder already exists locally', async () => {
     mockForPullApplication({
@@ -322,6 +340,7 @@ describe('doCheckout', () => {
       } as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     const gitCloneOptions = {
       repository: 'repo',
@@ -355,6 +374,7 @@ describe('doCheckout', () => {
       } as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     await manager.doCheckout(
       {
@@ -384,6 +404,7 @@ describe('getConfiguration', () => {
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     expect(() => manager.getConfiguration('config', 'local')).toThrowError(
@@ -397,6 +418,7 @@ describe('getConfiguration', () => {
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     const stats = {
@@ -447,6 +469,7 @@ describe('filterContainers', () => {
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(0);
@@ -482,6 +505,7 @@ describe('filterContainers', () => {
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(1);
@@ -527,6 +551,7 @@ describe('filterContainers', () => {
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(2);
@@ -542,6 +567,7 @@ describe('getRandomName', () => {
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     const randomName = manager.getRandomName('base');
     expect(randomName).not.equal('base');
@@ -553,6 +579,7 @@ describe('getRandomName', () => {
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,
+      telemetryLogger,
     );
     const randomName = manager.getRandomName('');
     expect(randomName.length).toBeGreaterThan(0);
@@ -575,6 +602,7 @@ describe('buildImages', () => {
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as ModelsManager,
+    telemetryLogger,
   );
   test('setTaskState should be called with error if context does not exist', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
@@ -644,6 +672,7 @@ describe('createPod', async () => {
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as ModelsManager,
+    telemetryLogger,
   );
   test('throw an error if there is no sample image', async () => {
     const images = [imageInfo2];
@@ -698,6 +727,7 @@ describe('createApplicationPod', () => {
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as ModelsManager,
+    telemetryLogger,
   );
   const images = [imageInfo1, imageInfo2];
   test('throw if createPod fails', async () => {
@@ -755,6 +785,7 @@ describe('restartContainerWhenModelServiceIsUp', () => {
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as ModelsManager,
+    telemetryLogger,
   );
   test('restart container if endpoint is alive', async () => {
     mocks.inspectContainerMock.mockResolvedValue({
@@ -774,6 +805,7 @@ describe('runApplication', () => {
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as ModelsManager,
+    telemetryLogger,
   );
   const pod: PodInfo = {
     engineId: 'engine',
@@ -823,6 +855,7 @@ describe('createAndAddContainersToPod', () => {
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as ModelsManager,
+    telemetryLogger,
   );
   const pod: PodInfo = {
     engineId: 'engine',

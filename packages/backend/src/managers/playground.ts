@@ -263,6 +263,7 @@ export class PlayGroundManager {
   }
 
   async stopPlayground(modelId: string): Promise<void> {
+    const startTime = performance.now();
     const state = this.playgrounds.get(modelId);
     if (state?.container === undefined) {
       throw new Error('model is not running');
@@ -283,10 +284,12 @@ export class PlayGroundManager {
           error: error,
         });
       });
-    this.telemetry.logUsage('playground.stop', { 'model.id': modelId });
+    const durationSeconds = getDurationSecondsSince(startTime);
+    this.telemetry.logUsage('playground.stop', { 'model.id': modelId, durationSeconds });
   }
 
   async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<number> {
+    const startTime = performance.now();
     const state = this.playgrounds.get(modelInfo.id);
     if (state?.container === undefined) {
       this.telemetry.logError('playground.ask', { 'model.id': modelInfo.id, message: 'model is not running' });
@@ -323,7 +326,8 @@ export class PlayGroundManager {
         this.sendQueriesState();
       }
     })().catch((err: unknown) => console.warn(`Error while reading streamed response for model ${modelInfo.id}`, err));
-    this.telemetry.logUsage('playground.ask', { 'model.id': modelInfo.id });
+    const durationSeconds = getDurationSecondsSince(startTime);
+    this.telemetry.logUsage('playground.ask', { 'model.id': modelInfo.id, durationSeconds });
     return query.id;
   }
 

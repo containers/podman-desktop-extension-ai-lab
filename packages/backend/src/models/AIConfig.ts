@@ -17,6 +17,8 @@
  ***********************************************************************/
 
 import * as jsYaml from 'js-yaml';
+import fs from 'fs';
+import path from 'node:path';
 
 export interface ContainerConfig {
   name: string;
@@ -46,7 +48,9 @@ export function assertString(value: unknown): string {
   throw new Error('value not a string');
 }
 
-export function parseYaml(raw: string, defaultArch: string): AIConfig {
+export function parseYaml(filepath: string, defaultArch: string): AIConfig {
+  const raw: string = fs.readFileSync(filepath, 'utf-8');
+
   const aiStudioConfig = jsYaml.load(raw);
   const application = aiStudioConfig?.['application'];
   if (!application) throw new Error('AIConfig has bad formatting.');
@@ -55,14 +59,26 @@ export function parseYaml(raw: string, defaultArch: string): AIConfig {
 
   return {
     application: {
-      containers: containers.map(container => ({
-        arch: Array.isArray(container['arch']) ? container['arch'] : [defaultArch],
-        modelService: container['model-service'] === true,
-        containerfile: isString(container['containerfile']) ? container['containerfile'] : undefined,
-        contextdir: assertString(container['contextdir']),
-        name: assertString(container['name']),
-        gpu_env: Array.isArray(container['gpu-env']) ? container['gpu-env'] : [],
-      })),
+      containers: containers.map(container => {
+        if(typeof container !== 'object')
+          throw new Error('containers array malformed');
+
+        let contextdir: string;
+        if('contextdir' in container) {
+          contextdir = assertString(container['contextdir']);
+        } else {
+          contextdir = path.basename(path.dirname(filepath));
+        }
+
+        return ({
+          arch: Array.isArray(container['arch']) ? container['arch'] : [defaultArch],
+          modelService: container['model-service'] === true,
+          containerfile: isString(container['containerfile']) ? container['containerfile'] : undefined,
+          contextdir: contextdir,
+          name: assertString(container['name']),
+          gpu_env: Array.isArray(container['gpu-env']) ? container['gpu-env'] : [],
+        });
+      }),
     },
   };
 }

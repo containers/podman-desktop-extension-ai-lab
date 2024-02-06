@@ -489,10 +489,9 @@ export class ApplicationManager {
 
     // Parsing the configuration
     console.log(`Reading configuration from ${configFile}.`);
-    const rawConfiguration = fs.readFileSync(configFile, 'utf-8');
     let aiConfig: AIConfig;
     try {
-      aiConfig = parseYaml(rawConfiguration, goarch());
+      aiConfig = parseYaml(configFile, goarch());
     } catch (err) {
       throw new Error('Cannot load configuration file.');
     }

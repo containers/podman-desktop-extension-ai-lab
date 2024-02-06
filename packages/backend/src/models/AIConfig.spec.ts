@@ -1,6 +1,6 @@
 import { expect, test, describe, vi } from 'vitest';
 import fs from 'fs';
-import { AIConfig, parseYaml } from './AIConfig';
+import { type AIConfig, parseYaml } from './AIConfig';
 import path from 'node:path';
 
 // Define mock file paths and contents

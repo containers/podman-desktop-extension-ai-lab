@@ -19,7 +19,7 @@ export abstract class StudioAPI {
   /**
    * Delete the folder containing the model from local storage
    */
-  abstract deleteLocalModel(modelId: string): Promise<void>;
+  abstract requestRemoveLocalModel(modelId: string): Promise<void>;
   abstract startPlayground(modelId: string): Promise<void>;
   abstract stopPlayground(modelId: string): Promise<void>;
   abstract askPlayground(modelId: string, prompt: string): Promise<number>;

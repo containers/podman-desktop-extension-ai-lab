@@ -115,8 +115,30 @@ export class StudioApiImpl implements StudioAPI {
     return this.catalogManager.getCatalog();
   }
 
-  async deleteLocalModel(modelId: string): Promise<void> {
-    await this.modelsManager.deleteLocalModel(modelId);
+  async requestRemoveLocalModel(modelId: string): Promise<void> {
+    const modelInfo = this.modelsManager.getLocalModelInfo(modelId);
+
+    // Do not wait on the promise as the api would probably timeout before the user answer.
+    podmanDesktopApi.window
+      .showWarningMessage(
+        `Are you sure you want to delete ${modelId} ? The following files will be removed from disk "${modelInfo.file}".`,
+        'Confirm',
+        'Cancel',
+      )
+      .then((result: string) => {
+        if (result === 'Confirm') {
+          this.modelsManager.deleteLocalModel(modelId).catch((err: unknown) => {
+            console.error('Something went wrong while deleting the models', err);
+            // Lets reloads the models (could fix the issue)
+            this.modelsManager.loadLocalModels().catch((err: unknown) => {
+              console.error('Cannot reload the models', err);
+            });
+          });
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong with confirmation modals`, err);
+      });
   }
 
   async getModelsDirectory(): Promise<string> {

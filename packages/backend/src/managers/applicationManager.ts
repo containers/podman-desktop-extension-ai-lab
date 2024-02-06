@@ -33,6 +33,8 @@ import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
 
+export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
+
 export const CONFIG_FILENAME = 'ai-studio.yaml';
 
 interface AIContainers {
@@ -100,7 +102,7 @@ export class ApplicationManager {
       );
 
       // create a pod containing all the containers to run the application
-      const podInfo = await this.createApplicationPod(images, modelPath, taskUtil);
+      const podInfo = await this.createApplicationPod(recipe, images, modelPath, taskUtil);
 
       await this.runApplication(podInfo, taskUtil);
       taskUtil.setStatus('running');
@@ -179,11 +181,16 @@ export class ApplicationManager {
     );
   }
 
-  async createApplicationPod(images: ImageInfo[], modelPath: string, taskUtil: RecipeStatusUtils): Promise<PodInfo> {
+  async createApplicationPod(
+    recipe: Recipe,
+    images: ImageInfo[],
+    modelPath: string,
+    taskUtil: RecipeStatusUtils,
+  ): Promise<PodInfo> {
     // create empty pod
     let podInfo: PodInfo;
     try {
-      podInfo = await this.createPod(images);
+      podInfo = await this.createPod(recipe, images);
     } catch (e) {
       console.error('error when creating pod', e);
       taskUtil.setTask({
@@ -294,7 +301,7 @@ export class ApplicationManager {
     return containers;
   }
 
-  async createPod(images: ImageInfo[]): Promise<PodInfo> {
+  async createPod(recipe: Recipe, images: ImageInfo[]): Promise<PodInfo> {
     // find the exposed port of the sample app so we can open its ports on the new pod
     const sampleAppImageInfo = images.find(image => !image.modelService);
     if (!sampleAppImageInfo) {
@@ -322,6 +329,9 @@ export class ApplicationManager {
     const pod = await containerEngine.createPod({
       name: this.getRandomName(`pod-${sampleAppImageInfo.appName}`),
       portmappings: portmappings,
+      labels: {
+        [LABEL_RECIPE_ID]: recipe.id,
+      },
     });
     return {
       Id: pod.Id,

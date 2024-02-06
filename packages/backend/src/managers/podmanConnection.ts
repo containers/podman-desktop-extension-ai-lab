@@ -20,21 +20,30 @@ import {
   type RegisterContainerConnectionEvent,
   provider,
   type UpdateContainerConnectionEvent,
+  containerEngine,
+  type PodInfo,
 } from '@podman-desktop/api';
 
 export type startupHandle = () => void;
 export type machineStartHandle = () => void;
 export type machineStopHandle = () => void;
+export type podStartHandle = (pod: PodInfo) => void;
+export type podStopHandle = (pod: PodInfo) => void;
+export type podRemoveHandle = (podId: string) => void;
 
 export class PodmanConnection {
   #firstFound = false;
   #toExecuteAtStartup: startupHandle[] = [];
   #toExecuteAtMachineStop: machineStopHandle[] = [];
   #toExecuteAtMachineStart: machineStartHandle[] = [];
+  #toExecuteAtPodStart: podStartHandle[] = [];
+  #toExecuteAtPodStop: podStopHandle[] = [];
+  #toExecuteAtPodRemove: podRemoveHandle[] = [];
 
   init(): void {
     this.listenRegistration();
     this.listenMachine();
+    this.watchPods();
   }
 
   listenRegistration() {
@@ -99,5 +108,68 @@ export class PodmanConnection {
 
   onMachineStop(f: machineStopHandle) {
     this.#toExecuteAtMachineStop.push(f);
+  }
+
+  watchPods() {
+    containerEngine.onEvent(event => {
+      if (event.Type !== 'pod') {
+        return;
+      }
+      switch (event.status) {
+        case 'remove':
+          console.log('remove pod id', event.id);
+          for (const f of this.#toExecuteAtPodRemove) {
+            f(event.id);
+          }
+          break;
+        case 'start':
+          console.log('start pod id', event.id);
+          containerEngine
+            .listPods()
+            .then((pods: PodInfo[]) => {
+              const pod = pods.find((p: PodInfo) => p.Id === event.id);
+              if (!pod) {
+                return;
+              }
+              for (const f of this.#toExecuteAtPodStart) {
+                f(pod);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(err);
+            });
+          break;
+        case 'stop':
+          console.log('stop pod id', event.id);
+          containerEngine
+            .listPods()
+            .then((pods: PodInfo[]) => {
+              const pod = pods.find((p: PodInfo) => p.Id === event.id);
+              if (!pod) {
+                return;
+              }
+              for (const f of this.#toExecuteAtPodStop) {
+                f(pod);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(err);
+            });
+          break;
+      }
+      console.log('==> event', event);
+    });
+  }
+
+  onPodStart(f: podStartHandle) {
+    this.#toExecuteAtPodStart.push(f);
+  }
+
+  onPodStop(f: podStopHandle) {
+    this.#toExecuteAtPodStop.push(f);
+  }
+
+  onPodRemove(f: podRemoveHandle) {
+    this.#toExecuteAtPodRemove.push(f);
   }
 }

@@ -5,6 +5,7 @@ import SimpleColumn from './SimpleColumn.svelte';
 
 let table: Table;
 let selectedItemsNumber: number;
+export let headerBackground = 'bg-charcoal-700';
 
 type Person = {
   id: number;
@@ -62,5 +63,6 @@ const row = new Row<Person>({
   data="{people}"
   columns="{columns}"
   row="{row}"
-  defaultSortColumn="Id">
+  defaultSortColumn="Id"
+  headerBackground={headerBackground}>
 </Table>

@@ -232,3 +232,23 @@ test('Expect overflow-hidden', async () => {
     expect(cells[5]).toHaveClass('overflow-hidden');
   }
 });
+
+test('Expect custom background', async () => {
+  render(TestTable, {
+    headerBackground: 'bg-white',
+  });
+
+  // get the 4 rows (first is header)
+  const rows = await screen.findAllByRole('row');
+  expect(rows).toBeDefined();
+  expect(rows[0]).toHaveClass('bg-white');
+});
+
+test('Expect default background', async () => {
+  render(TestTable, {});
+
+  // get the 4 rows (first is header)
+  const rows = await screen.findAllByRole('row');
+  expect(rows).toBeDefined();
+  expect(rows[0]).toHaveClass('bg-charcoal-700');
+});

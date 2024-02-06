@@ -100,6 +100,7 @@ export class ApplicationManager {
     const podInfo = await this.createApplicationPod(images, modelPath, taskUtil);
 
     await this.runApplication(podInfo, taskUtil);
+    taskUtil.setStatus('running');
   }
 
   async runApplication(podInfo: PodInfo, taskUtil: RecipeStatusUtils) {

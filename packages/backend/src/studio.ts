@@ -67,7 +67,7 @@ export class Studio {
     const extensionUri = this.#extensionContext.extensionUri;
 
     // register webview
-    this.#panel = window.createWebviewPanel('studio', 'Studio extension', this.getWebviewOptions(extensionUri));
+    this.#panel = window.createWebviewPanel('studio', 'AI Studio', this.getWebviewOptions(extensionUri));
     this.#extensionContext.subscriptions.push(this.#panel);
 
     // update html

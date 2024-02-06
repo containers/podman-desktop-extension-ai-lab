@@ -37,7 +37,6 @@ export class EnvironmentManager {
       containerEngine
         .listPods()
         .then(pods => {
-          console.log('pods', pods);
           const envsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
           for (const podToAdopt of envsPods) {
             this.adoptPod(podToAdopt);
@@ -66,12 +65,13 @@ export class EnvironmentManager {
   }
 
   adoptPod(pod: PodInfo) {
-    console.log('adopt pod');
+    if (!pod.Labels) {
+      return;
+    }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
     if (this.#environments.has(recipeId)) {
       return;
     }
-    console.log('adopt pod', recipeId);
     const state: EnvironmentState = {
       recipeId,
       pod,
@@ -80,31 +80,31 @@ export class EnvironmentManager {
   }
 
   forgetPod(pod: PodInfo) {
-    console.log('forget pod');
+    if (!pod.Labels) {
+      return;
+    }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
     if (!this.#environments.has(recipeId)) {
       return;
     }
-    console.log('forget pod', recipeId);
     this.#environments.delete(recipeId);
     this.sendEnvironmentState();
   }
 
   forgetPodById(podId: string) {
-    console.log('forget pod by id');
     const env = Array.from(this.#environments.values()).find(p => p.pod.Id === podId);
     if (!env) {
-      console.log('==> pod with id not found');
+      return;
+    }
+    if (!env.pod.Labels) {
       return;
     }
     const recipeId = env.pod.Labels[LABEL_RECIPE_ID];
     if (!this.#environments.has(recipeId)) {
-      console.log('==> labels not found on pod');
       return;
     }
     this.#environments.delete(recipeId);
     this.sendEnvironmentState();
-    console.log('==> forgot pod');
   }
 
   updateEnvironmentState(recipeId: string, state: EnvironmentState): void {

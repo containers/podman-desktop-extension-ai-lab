@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { RecipeStatus, RecipeStatusState } from '@shared/src/models/IRecipeStatus';
-import type { Task, TaskState } from '@shared/src/models/ITask';
+import type { Task } from '@shared/src/models/ITask';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 
 export class RecipeStatusUtils {

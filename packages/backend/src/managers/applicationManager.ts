@@ -23,7 +23,7 @@ import * as path from 'node:path';
 import { type PodCreatePortOptions, containerEngine, type TelemetryLogger } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
-import { parseYaml } from '../models/AIConfig';
+import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
 import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import { getParentDirectory } from '../utils/pathUtils';
@@ -491,7 +491,7 @@ export class ApplicationManager {
     console.log(`Reading configuration from ${configFile}.`);
     let aiConfig: AIConfig;
     try {
-      aiConfig = parseYaml(configFile, goarch());
+      aiConfig = parseYamlFile(configFile, goarch());
     } catch (err) {
       throw new Error('Cannot load configuration file.');
     }

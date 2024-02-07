@@ -48,7 +48,7 @@ export function assertString(value: unknown): string {
   throw new Error('value not a string');
 }
 
-export function parseYaml(filepath: string, defaultArch: string): AIConfig {
+export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
   const raw: string = fs.readFileSync(filepath, 'utf-8');
 
   const aiStudioConfig = jsYaml.load(raw);
@@ -66,7 +66,7 @@ export function parseYaml(filepath: string, defaultArch: string): AIConfig {
         if ('contextdir' in container) {
           contextdir = assertString(container['contextdir']);
         } else {
-          contextdir = path.basename(path.dirname(filepath));
+          contextdir = path.dirname(filepath);
         }
 
         return {

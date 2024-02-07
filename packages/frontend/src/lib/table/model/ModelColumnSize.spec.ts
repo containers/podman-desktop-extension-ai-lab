@@ -33,7 +33,6 @@ test('Expect simple column styling', async () => {
     registry: '',
     url: '',
     file: {
-      id: 'my-model',
       file: 'file',
       creation: new Date(),
       size: 1000,

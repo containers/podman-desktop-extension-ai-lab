@@ -23,10 +23,11 @@ function openModelFolder() {
   icon={faFolderOpen}
   onClick={() => openModelFolder()}
   title="Open Model Folder"
+  enabled="{object.file !== undefined && !object.state}"
 />
 <ListItemButtonIcon
   icon={faTrash}
   onClick={() => deleteModel()}
   title="Delete Model"
-  enabled={!object.state}
+  enabled={object.file !== undefined && !object.state}
 />

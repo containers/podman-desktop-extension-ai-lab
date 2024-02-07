@@ -120,7 +120,7 @@ function mockFiles(now: Date) {
   });
 }
 
-test('getLocalModelsFromDisk should get models in local directory', () => {
+test('getModelsInfo should get models in local directory', () => {
   const now = new Date();
   mockFiles(now);
   let appdir: string;
@@ -129,27 +129,45 @@ test('getLocalModelsFromDisk should get models in local directory', () => {
   } else {
     appdir = '/home/user/aistudio';
   }
-  const manager = new ModelsManager(appdir, {} as Webview, {} as CatalogManager, telemetryLogger);
+  const manager = new ModelsManager(
+    appdir,
+    {} as Webview,
+    {
+      getModels(): ModelInfo[] {
+        return [
+          { id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo,
+          { id: 'model-id-2', name: 'model-id-2-model' } as ModelInfo,
+        ];
+      },
+    } as CatalogManager,
+    telemetryLogger,
+  );
   manager.getLocalModelsFromDisk();
-  expect(manager.getLocalModels()).toEqual([
+  expect(manager.getModelsInfo()).toEqual([
     {
       id: 'model-id-1',
-      file: 'model-id-1-model',
-      size: 32000,
-      creation: now,
-      path: path.resolve(dirent[0].path, dirent[0].name),
+      name: 'model-id-1-model',
+      file: {
+        size: 32000,
+        creation: now,
+        path: path.resolve(dirent[0].path, dirent[0].name),
+        file: 'model-id-1-model',
+      },
     },
     {
       id: 'model-id-2',
-      file: 'model-id-2-model',
-      size: 32000,
-      creation: now,
-      path: path.resolve(dirent[1].path, dirent[1].name),
+      name: 'model-id-2-model',
+      file: {
+        size: 32000,
+        creation: now,
+        path: path.resolve(dirent[1].path, dirent[1].name),
+        file: 'model-id-2-model',
+      },
     },
   ]);
 });
 
-test('getLocalModelsFromDisk should return an empty array if the models folder does not exist', () => {
+test('getModelsInfo should return an empty array if the models folder does not exist', () => {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const existsSyncSpy = vi.spyOn(fs, 'existsSync');
   existsSyncSpy.mockReturnValue(false);
@@ -159,9 +177,18 @@ test('getLocalModelsFromDisk should return an empty array if the models folder d
   } else {
     appdir = '/home/user/aistudio';
   }
-  const manager = new ModelsManager(appdir, {} as Webview, {} as CatalogManager, telemetryLogger);
+  const manager = new ModelsManager(
+    appdir,
+    {} as Webview,
+    {
+      getModels(): ModelInfo[] {
+        return [];
+      },
+    } as CatalogManager,
+    telemetryLogger,
+  );
   manager.getLocalModelsFromDisk();
-  expect(manager.getLocalModels()).toEqual([]);
+  expect(manager.getModelsInfo()).toEqual([]);
   if (process.platform === 'win32') {
     expect(existsSyncSpy).toHaveBeenCalledWith('C:\\home\\user\\aistudio\\models');
   } else {
@@ -198,13 +225,12 @@ test('loadLocalModels should post a message with the message on disk and on cata
   );
   await manager.loadLocalModels();
   expect(postMessageMock).toHaveBeenNthCalledWith(1, {
-    id: 'new-local-models-state',
+    id: 'new-models-state',
     body: [
       {
         file: {
           creation: now,
           file: 'model-id-1-model',
-          id: 'model-id-1',
           size: 32000,
           path: path.resolve(dirent[0].path, dirent[0].name),
         },
@@ -251,27 +277,14 @@ test('deleteLocalModel deletes the model folder', async () => {
     expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', { recursive: true });
   }
   expect(postMessageMock).toHaveBeenCalledTimes(2);
-  // check that a state is sent with the model being deleted
-  expect(postMessageMock).toHaveBeenCalledWith({
-    id: 'new-local-models-state',
+  // check that a new state is sent with the model removed
+  expect(postMessageMock).toHaveBeenNthCalledWith(2, {
+    id: 'new-models-state',
     body: [
       {
-        file: {
-          creation: now,
-          file: 'model-id-1-model',
-          id: 'model-id-1',
-          size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name),
-        },
         id: 'model-id-1',
-        state: 'deleting',
       },
     ],
-  });
-  // check that a new state is sent with the model removed
-  expect(postMessageMock).toHaveBeenCalledWith({
-    id: 'new-local-models-state',
-    body: [],
   });
   expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.delete', { 'model.id': 'model-id-1' });
 });
@@ -313,35 +326,11 @@ test('deleteLocalModel fails to delete the model folder', async () => {
     expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', { recursive: true });
   }
   expect(postMessageMock).toHaveBeenCalledTimes(2);
-  // check that a state is sent with the model being deleted
-  expect(postMessageMock).toHaveBeenCalledWith({
-    id: 'new-local-models-state',
-    body: [
-      {
-        file: {
-          creation: now,
-          file: 'model-id-1-model',
-          id: 'model-id-1',
-          size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name),
-        },
-        id: 'model-id-1',
-        state: 'deleting',
-      },
-    ],
-  });
   // check that a new state is sent with the model non removed
-  expect(postMessageMock).toHaveBeenCalledWith({
-    id: 'new-local-models-state',
+  expect(postMessageMock).toHaveBeenNthCalledWith(2, {
+    id: 'new-models-state',
     body: [
       {
-        file: {
-          creation: now,
-          file: 'model-id-1-model',
-          id: 'model-id-1',
-          size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name),
-        },
         id: 'model-id-1',
       },
     ],
@@ -351,7 +340,16 @@ test('deleteLocalModel fails to delete the model folder', async () => {
 });
 
 describe('downloadModel', () => {
-  const manager = new ModelsManager('appdir', {} as Webview, {} as CatalogManager, telemetryLogger);
+  const manager = new ModelsManager(
+    'appdir',
+    {} as Webview,
+    {
+      getModels(): ModelInfo[] {
+        return [];
+      },
+    } as CatalogManager,
+    telemetryLogger,
+  );
   test('download model if not already on disk', async () => {
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     const doDownloadModelWrapperMock = vi
@@ -403,7 +401,16 @@ describe('downloadModel', () => {
 });
 
 describe('doDownloadModelWrapper', () => {
-  const manager = new ModelsManager('appdir', {} as Webview, {} as CatalogManager, telemetryLogger);
+  const manager = new ModelsManager(
+    'appdir',
+    {} as Webview,
+    {
+      getModels(): ModelInfo[] {
+        return [];
+      },
+    } as CatalogManager,
+    telemetryLogger,
+  );
   test('returning model path if model has been downloaded', async () => {
     vi.spyOn(manager, 'doDownloadModel').mockImplementation(
       (

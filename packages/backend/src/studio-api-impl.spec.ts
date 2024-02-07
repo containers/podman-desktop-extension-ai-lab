@@ -28,6 +28,7 @@ import type { PlayGroundManager } from './managers/playground';
 import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
+import type { EnvironmentManager } from './managers/environmentManager';
 
 import * as fs from 'node:fs';
 
@@ -98,6 +99,7 @@ beforeEach(async () => {
     {} as unknown as PlayGroundManager,
     catalogManager,
     {} as unknown as ModelsManager,
+    {} as EnvironmentManager,
     {} as TelemetryLogger,
   );
   vi.resetAllMocks();

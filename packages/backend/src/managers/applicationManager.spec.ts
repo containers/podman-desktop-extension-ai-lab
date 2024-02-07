@@ -71,6 +71,8 @@ vi.mock('@podman-desktop/api', () => ({
 let setTaskMock: MockInstance;
 let taskUtils: RecipeStatusUtils;
 let setTaskStateMock: MockInstance;
+let setTaskErrorMock: MockInstance;
+
 const telemetryLogger = {
   logUsage: mocks.logUsageMock,
   logError: mocks.logErrorMock,
@@ -83,6 +85,7 @@ beforeEach(() => {
   } as unknown as RecipeStatusRegistry);
   setTaskMock = vi.spyOn(taskUtils, 'setTask');
   setTaskStateMock = vi.spyOn(taskUtils, 'setTaskState');
+  setTaskErrorMock = vi.spyOn(taskUtils, 'setTaskError');
 });
 describe('pullApplication', () => {
   interface mockForPullApplicationOptions {
@@ -618,7 +621,7 @@ describe('buildImages', () => {
     await expect(manager.buildImages(containers, 'config', taskUtils)).rejects.toThrow(
       'Something went wrong while building the image: error',
     );
-    expect(setTaskStateMock).toBeCalledWith('container1', 'error');
+    expect(setTaskErrorMock).toBeCalledWith('container1', 'Something went wrong while building the image: error');
   });
   test('setTaskState should be called with error if unable to find the image after built', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
@@ -627,7 +630,7 @@ describe('buildImages', () => {
     await expect(manager.buildImages(containers, 'config', taskUtils)).rejects.toThrow(
       'no image found for container1:latest',
     );
-    expect(setTaskStateMock).toBeCalledWith('container1', 'error');
+    expect(setTaskErrorMock).toBeCalledWith('container1', 'no image found');
   });
   test('succeed if building image do not fail', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
@@ -734,6 +737,7 @@ describe('createApplicationPod', () => {
     vi.spyOn(manager, 'createPod').mockRejectedValue('error createPod');
     await expect(manager.createApplicationPod(images, 'path', taskUtils)).rejects.toThrowError('error createPod');
     expect(setTaskMock).toBeCalledWith({
+      error: 'Something went wrong while creating pod: error createPod',
       id: 'fake-pod-id',
       state: 'error',
       name: 'Creating application',
@@ -766,9 +770,10 @@ describe('createApplicationPod', () => {
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
     vi.spyOn(manager, 'createAndAddContainersToPod').mockRejectedValue('error');
     await expect(() => manager.createApplicationPod(images, 'path', taskUtils)).rejects.toThrowError('error');
-    expect(setTaskMock).toBeCalledWith({
+    expect(setTaskMock).toHaveBeenLastCalledWith({
       id: 'id',
       state: 'error',
+      error: 'Something went wrong while creating pod: error',
       name: 'Creating application',
     });
   });

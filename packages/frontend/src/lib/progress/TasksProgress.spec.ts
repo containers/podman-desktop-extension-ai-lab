@@ -14,11 +14,15 @@ test('TasksProgress should not renderer any tasks', async () => {
 
 test('TasksProgress should renderer one tasks', async () => {
   // render the component
-  render(TasksProgress, { tasks: [{
-      id: 'random',
-      state: 'success',
-      name: 'random'
-    }] });
+  render(TasksProgress, {
+    tasks: [
+      {
+        id: 'random',
+        state: 'success',
+        name: 'random',
+      },
+    ],
+  });
 
   const items = screen.queryAllByRole('listitem');
   expect(items).toBeDefined();
@@ -27,15 +31,20 @@ test('TasksProgress should renderer one tasks', async () => {
 
 test('TasksProgress should renderer multiple tasks', async () => {
   // render the component
-  render(TasksProgress, { tasks: [{
-      id: 'random',
-      state: 'success',
-      name: 'random'
-    },{
-      id: 'random-2',
-      state: 'error',
-      name: 'random'
-    }] });
+  render(TasksProgress, {
+    tasks: [
+      {
+        id: 'random',
+        state: 'success',
+        name: 'random',
+      },
+      {
+        id: 'random-2',
+        state: 'error',
+        name: 'random',
+      },
+    ],
+  });
 
   const items = screen.queryAllByRole('listitem');
   expect(items).toBeDefined();
@@ -45,11 +54,15 @@ test('TasksProgress should renderer multiple tasks', async () => {
 describe('tasks types', () => {
   test('TasksProgress should renderer success task', async () => {
     // render the component
-    render(TasksProgress, { tasks: [{
-        id: 'random',
-        state: 'success',
-        name: 'random'
-      }] });
+    render(TasksProgress, {
+      tasks: [
+        {
+          id: 'random',
+          state: 'success',
+          name: 'random',
+        },
+      ],
+    });
 
     const item = screen.getByRole('img');
     expect(item).toHaveClass('text-green-500');
@@ -58,11 +71,15 @@ describe('tasks types', () => {
 
   test('TasksProgress should renderer loading task', async () => {
     // render the component
-    render(TasksProgress, { tasks: [{
-        id: 'random',
-        state: 'loading',
-        name: 'random'
-      }] });
+    render(TasksProgress, {
+      tasks: [
+        {
+          id: 'random',
+          state: 'loading',
+          name: 'random',
+        },
+      ],
+    });
 
     const item = screen.getByRole('img');
     expect(item).toHaveClass('fill-purple-500');
@@ -71,11 +88,15 @@ describe('tasks types', () => {
 
   test('TasksProgress should renderer error task', async () => {
     // render the component
-    render(TasksProgress, { tasks: [{
-        id: 'random',
-        state: 'error',
-        name: 'random'
-      }] });
+    render(TasksProgress, {
+      tasks: [
+        {
+          id: 'random',
+          state: 'error',
+          name: 'random',
+        },
+      ],
+    });
 
     const item = screen.getByRole('img');
     expect(item).toHaveClass('text-red-600');
@@ -86,11 +107,15 @@ describe('tasks types', () => {
 describe('error expandable', () => {
   test('TasksProgress should renderer one error task without expandable error message', async () => {
     // render the component
-    render(TasksProgress, { tasks: [{
-        id: 'random',
-        state: 'error',
-        name: 'random'
-      }] });
+    render(TasksProgress, {
+      tasks: [
+        {
+          id: 'random',
+          state: 'error',
+          name: 'random',
+        },
+      ],
+    });
 
     const message = screen.queryByText('View Error');
     expect(message).toBeNull();
@@ -98,12 +123,16 @@ describe('error expandable', () => {
 
   test('TasksProgress should renderer one error task without showing error message', async () => {
     // render the component
-    render(TasksProgress, { tasks: [{
-        id: 'random',
-        state: 'error',
-        name: 'random',
-        error: 'message about error.'
-      }] });
+    render(TasksProgress, {
+      tasks: [
+        {
+          id: 'random',
+          state: 'error',
+          name: 'random',
+          error: 'message about error.',
+        },
+      ],
+    });
 
     const message = screen.queryByText('View Error');
     expect(message).toBeDefined();
@@ -113,12 +142,16 @@ describe('error expandable', () => {
 
   test('TasksProgress should renderer one error task and show error message on click', async () => {
     // render the component
-    render(TasksProgress, { tasks: [{
-        id: 'random',
-        state: 'error',
-        name: 'random',
-        error: 'message about error.'
-      }] });
+    render(TasksProgress, {
+      tasks: [
+        {
+          id: 'random',
+          state: 'error',
+          name: 'random',
+          error: 'message about error.',
+        },
+      ],
+    });
 
     const message = screen.getByText('View Error');
     await fireEvent.click(message);
@@ -126,6 +159,6 @@ describe('error expandable', () => {
     const note = screen.getByRole('note');
     await waitFor(() => {
       expect(note).not.toHaveClass('hidden');
-    })
+    });
   });
 });

@@ -38,6 +38,7 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
+    "@podman-desktop/api": "^0.0.202402061753-5c5d589",
     "openai": "^4.26.0",
     "simple-git": "^3.22.0"
   },

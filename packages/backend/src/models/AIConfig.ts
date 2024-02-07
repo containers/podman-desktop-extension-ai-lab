@@ -66,7 +66,7 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
         if ('contextdir' in container) {
           contextdir = assertString(container['contextdir']);
         } else {
-          contextdir = path.dirname(filepath);
+          contextdir = '.';
         }
 
         return {

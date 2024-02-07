@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import simpleGit from 'simple-git';
+import simpleGit, { RemoteWithRefs, type StatusResult } from 'simple-git';
 
 export interface GitCloneInfo {
   repository: string;
@@ -31,6 +31,42 @@ export class GitManager {
     // checkout to specific branch/commit if specified
     if (gitCloneInfo.ref) {
       await simpleGit(gitCloneInfo.targetDirectory).checkout([gitCloneInfo.ref]);
+    }
+  }
+
+  async getRepositoryRemotes(directory: string): Promise<RemoteWithRefs[]> {
+    return simpleGit(directory).getRemotes(true);
+  }
+
+  async getRepositoryStatus(directory: string): Promise<StatusResult> {
+    return simpleGit(directory).status();
+  }
+
+  async isRepositoryUpToDate(directory: string, origin: string, ref?: string): Promise<{ ok?: boolean, error?: string, updatable?: boolean }> {
+    const remotes: RemoteWithRefs[] = await this.getRepositoryRemotes(directory);
+
+    if(!remotes.some((remote) => remote.refs.fetch === origin)) {
+      return { error: `The local repository does not have remote ${origin} configured. Remotes: ${remotes.map((remote) => `${remote.name} ${remote.refs.fetch} (fetch)`).join(',')}`};
+    }
+
+    const status: StatusResult = await this.getRepositoryStatus(directory);
+
+    if(status.detached) {
+      return { error: 'The local repository is detached.' };
+    }
+
+    if(status.modified.length > 0) {
+      return { error: 'The local repois'}
+    }
+
+    // If we are not in HEAD
+    if(status.behind !== 0 || status.ahead !== 0) {
+      return { error: `The local repository is not up to date ${status.behind} behind, ${status.ahead} ahead.`, updatable: true};
+    }
+
+    // Ensure the branch tracked is the one we want
+    if(ref !== undefined && status.tracking !== ref) {
+      return { error: 'The local repository is not tracking the right branch.', updatable: true };
     }
   }
 }

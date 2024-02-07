@@ -20,7 +20,7 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import { type PodCreatePortOptions, containerEngine, type TelemetryLogger } from '@podman-desktop/api';
+import { type PodCreatePortOptions, containerEngine, type TelemetryLogger, window } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
@@ -32,6 +32,7 @@ import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
+import { StatusResult } from 'simple-git';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 
@@ -530,9 +531,18 @@ export class ApplicationManager {
 
     // We might already have the repository cloned
     if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
-      // Update checkout state
-      checkoutTask.name = 'Checkout repository (cached).';
-      checkoutTask.state = 'success';
+      const result = await this.git.isRepositoryUpToDate(gitCloneInfo.targetDirectory, gitCloneInfo.repository, gitCloneInfo.ref);
+
+      if(result.ok) {
+        checkoutTask.name = 'Checkout repository (cached).';
+        checkoutTask.state = 'success';
+        taskUtil.setTask(checkoutTask);
+        return;
+      } else {
+        taskUtil.setTaskState('checkout', 'error');
+        await window.showErrorMessage(`The repository "${gitCloneInfo.repository}" seems to already be cloned, however it cannot be used: ${result.error}.`);
+        throw new Error('Cannot checkout repository to target.');
+      }
     } else {
       // Create folder
       fs.mkdirSync(gitCloneInfo.targetDirectory, { recursive: true });
@@ -542,9 +552,8 @@ export class ApplicationManager {
       await this.git.cloneRepository(gitCloneInfo);
 
       // Update checkout state
-      checkoutTask.state = 'success';
+      taskUtil.setTaskState('checkout', 'success');
     }
-    // Update task
-    taskUtil.setTask(checkoutTask);
+
   }
 }

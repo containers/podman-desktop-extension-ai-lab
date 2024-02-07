@@ -46,7 +46,22 @@ export class RecipeStatusUtils {
     this.update();
   }
 
-  setTaskState(taskId: string, state: TaskState) {
+  setTaskError(taskId: string, error: string) {
+    if (!this.tasks.has(taskId)) throw new Error('task not found.');
+    const task = this.tasks.get(taskId);
+    this.setTask({
+      // we place the error before, as we do not want to overwrite any existing error (we try to keep the first one)
+      error: error,
+      ...task,
+      state: 'error',
+    });
+  }
+
+  /**
+   * @param taskId the identifier of the task
+   * @param state the state of the task, cannot be error use setTaskError if an error occurs
+   */
+  setTaskState(taskId: string, state: 'loading' | 'success') {
     if (!this.tasks.has(taskId)) throw new Error('task not found.');
     const task = this.tasks.get(taskId);
     this.setTask({

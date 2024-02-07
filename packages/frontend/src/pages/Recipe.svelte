@@ -29,9 +29,9 @@ $: model = $catalog.models.find(m => m.id === selectedModelId);
 
 // Send recipe info to telemetry
 let recipeTelemetry: string | undefined = undefined;
-$: if (recipe && recipe.id !== recipeTelemetry) { 
+$: if (recipe && recipe.id !== recipeTelemetry) {
   recipeTelemetry = recipe.id;
-  studioClient.telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name }); 
+  studioClient.telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name });
 }
 
 const onPullingRequest = async () => {
@@ -64,10 +64,10 @@ function toggleApplicationDetailsPanel() {
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-row w-full">
-      <Route path="/" breadcrumb="Summary" >        
+      <Route path="/" breadcrumb="Summary" >
         <div class="flex-grow p-5">
           <MarkdownRenderer source="{recipe?.readme}"/>
-        </div>          
+        </div>
       </Route>
       <Route path="/models" breadcrumb="History">
         <RecipeModels modelsIds={recipe?.models} />
@@ -79,7 +79,7 @@ function toggleApplicationDetailsPanel() {
             <span class="text-base">Application Details</span>
             <button on:click={toggleApplicationDetailsPanel} aria-label="hide application details"><i class="fas fa-angle-right text-gray-900"></i></button>
           </div>
-          
+
           <div class="w-full bg-charcoal-600 rounded-md p-4">
             {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
               {#if recipeStatus.state === 'error'}
@@ -102,21 +102,21 @@ function toggleApplicationDetailsPanel() {
                 on:click={() => onPullingRequest()}
                 class="w-[300px] p-2 mx-auto"
                 icon="{faPlay}"
-              > 
+              >
                 Run application
               </Button>
             {/if}
-            
+
             <div class="text-xs text-gray-700 mt-3">
               This will git clone the application, download the model, build images, and run the application as a pod locally.
             </div>
             {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
-              <div class="mt-4 text-sm font-normal px-4 py-2">
+              <div class="mt-4 text-sm font-normal py-2">
                 <TasksProgress tasks="{recipeStatus.tasks}"/>
               </div>
             {/if}
           </div>
-          
+
           <div class="flex flex-col w-full space-y-4 bg-charcoal-600 p-4">
             {#if model}
             <div class="flex flex-col space-y-2">
@@ -127,7 +127,7 @@ function toggleApplicationDetailsPanel() {
                     <span class="text-sm" aria-label="model-selected">{model?.name}</span>
                     {#if recipe?.models?.[0] === model.id}
                     <i class="fas fa-star fa-xs text-gray-900"></i>
-                    {/if}            
+                    {/if}
                   </div>
                   {#if model?.license}
                   <div class="flex flex-row space-x-2">
@@ -154,9 +154,9 @@ function toggleApplicationDetailsPanel() {
                   <a on:click={onClickRepository}>{getDisplayName(recipe?.repository)}</a>
                 </div>
               </div>
-            </div>                            
+            </div>
           </div>
-          
+
         </div>
       </div>
       <div class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit {applicationDetailsPanelToggle}" aria-label="toggle application details">

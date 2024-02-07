@@ -185,10 +185,11 @@ export class ApplicationManager {
     try {
       podInfo = await this.createPod(images);
     } catch (e) {
-      console.error('error when creating pod');
+      console.error('error when creating pod', e);
       taskUtil.setTask({
         id: 'fake-pod-id',
         state: 'error',
+        error: `Something went wrong while creating pod: ${String(e)}`,
         name: 'Creating application',
       });
       throw e;
@@ -204,10 +205,11 @@ export class ApplicationManager {
     try {
       attachedContainers = await this.createAndAddContainersToPod(podInfo, images, modelPath);
     } catch (e) {
-      console.error(`error when creating pod ${podInfo.Id}`);
+      console.error(`error when creating pod ${podInfo.Id}`, e);
       taskUtil.setTask({
         id: podInfo.Id,
         state: 'error',
+        error: `Something went wrong while creating pod: ${String(e)}`,
         name: 'Creating application',
       });
       throw e;
@@ -356,8 +358,7 @@ export class ApplicationManager {
 
         // Ensure the context provided exist otherwise throw an Error
         if (!fs.existsSync(context)) {
-          console.error('The context provided does not exist.');
-          taskUtil.setTaskState(container.name, 'error');
+          taskUtil.setTaskError(container.name, 'The context provided does not exist.');
           throw new Error('Context configured does not exist.');
         }
 
@@ -373,14 +374,13 @@ export class ApplicationManager {
               // todo: do something with the event
               if (event === 'error' || (event === 'finish' && data !== '')) {
                 console.error('Something went wrong while building the image: ', data);
-                taskUtil.setTaskState(container.name, 'error');
+                taskUtil.setTaskError(container.name, `Something went wrong while building the image: ${data}`);
               }
             },
             buildOptions,
           )
           .catch((err: unknown) => {
-            console.error('Something went wrong while building the image: ', err);
-            taskUtil.setTaskState(container.name, 'error');
+            taskUtil.setTaskError(container.name, `Something went wrong while building the image: ${String(err)}`);
             throw new Error(`Something went wrong while building the image: ${String(err)}`);
           });
       }),
@@ -395,8 +395,7 @@ export class ApplicationManager {
         });
 
         if (!image) {
-          console.error('no image found');
-          taskUtil.setTaskState(container.name, 'error');
+          taskUtil.setTaskError(container.name, 'no image found');
           throw new Error(`no image found for ${container.name}:latest`);
         }
 

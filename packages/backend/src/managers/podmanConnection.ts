@@ -117,13 +117,16 @@ export class PodmanConnection {
       }
       switch (event.status) {
         case 'remove':
-          console.log('remove pod id', event.id);
           for (const f of this.#toExecuteAtPodRemove) {
             f(event.id);
           }
           break;
         case 'start':
-          console.log('start pod id', event.id);
+          if (!containerEngine.listPods) {
+            // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
+            // and the extension minimal version is set to 1.8
+            break;
+          }
           containerEngine
             .listPods()
             .then((pods: PodInfo[]) => {
@@ -140,7 +143,11 @@ export class PodmanConnection {
             });
           break;
         case 'stop':
-          console.log('stop pod id', event.id);
+          if (!containerEngine.listPods) {
+            // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
+            // and the extension minimal version is set to 1.8
+            break;
+          }
           containerEngine
             .listPods()
             .then((pods: PodInfo[]) => {
@@ -157,7 +164,6 @@ export class PodmanConnection {
             });
           break;
       }
-      console.log('==> event', event);
     });
   }
 

@@ -34,6 +34,11 @@ export class EnvironmentManager {
 
   adoptRunningEnvironments() {
     this.podmanConnection.startupSubscribe(() => {
+      if (!containerEngine.listPods) {
+        // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
+        // and the extension minimal version is set to 1.8
+        return;
+      }
       containerEngine
         .listPods()
         .then(pods => {

@@ -36,7 +36,7 @@ import type { CatalogManager } from './catalogManager';
 
 const mocks = vi.hoisted(() => {
   return {
-    parseYamlMock: vi.fn(),
+    parseYamlFileMock: vi.fn(),
     builImageMock: vi.fn(),
     listImagesMock: vi.fn(),
     getImageInspectMock: vi.fn(),
@@ -52,7 +52,7 @@ const mocks = vi.hoisted(() => {
   };
 });
 vi.mock('../models/AIConfig', () => ({
-  parseYaml: mocks.parseYamlMock,
+  parseYamlFile: mocks.parseYamlFileMock,
 }));
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -124,7 +124,7 @@ describe('pullApplication', () => {
     vi.spyOn(fs, 'readFileSync').mockImplementation((_path: string) => {
       return '';
     });
-    mocks.parseYamlMock.mockReturnValue({
+    mocks.parseYamlFileMock.mockReturnValue({
       application: {
         containers: [
           {
@@ -316,7 +316,7 @@ describe('pullApplication', () => {
       url: '',
     };
 
-    mocks.parseYamlMock.mockReturnValue({
+    mocks.parseYamlFileMock.mockReturnValue({
       application: {
         containers: [],
       },
@@ -437,7 +437,7 @@ describe('getConfiguration', () => {
         ],
       },
     };
-    mocks.parseYamlMock.mockReturnValue(aiConfig);
+    mocks.parseYamlFileMock.mockReturnValue(aiConfig);
 
     const result = manager.getConfiguration('config', 'local');
     expect(result.path).toEqual(path.join('local', 'config'));

@@ -493,7 +493,8 @@ export class ApplicationManager {
     try {
       aiConfig = parseYamlFile(configFile, goarch());
     } catch (err) {
-      throw new Error('Cannot load configuration file.');
+      console.error('Cannot load configure file.', err);
+      throw new Error(`Cannot load configuration file.`);
     }
 
     // Mark as success.

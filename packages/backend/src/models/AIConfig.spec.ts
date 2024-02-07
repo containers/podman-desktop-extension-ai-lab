@@ -1,7 +1,6 @@
 import { expect, test, describe, vi } from 'vitest';
 import fs from 'fs';
 import { type AIConfig, parseYamlFile } from './AIConfig';
-import path from 'node:path';
 
 // Define mock file paths and contents
 const mockYamlPath = '/path/to/mock.yml';

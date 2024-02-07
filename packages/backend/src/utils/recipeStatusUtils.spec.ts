@@ -36,7 +36,7 @@ test('Ensure only the first error is kept', () => {
     state: 'error',
   });
 
-  tasksUtils.setTaskError('dummy','second');
+  tasksUtils.setTaskError('dummy', 'second');
   const tasks = tasksUtils.toRecipeStatus().tasks;
   expect(tasks.length).toBe(1);
   expect(tasks[0].error).toBe('first');

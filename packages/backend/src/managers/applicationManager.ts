@@ -436,7 +436,7 @@ export class ApplicationManager {
       aiConfigFile = this.getConfiguration(recipeConfig, localFolder);
     } catch (e) {
       loadingConfiguration.state = 'error';
-      taskUtil.setTask(loadingConfiguration);
+      taskUtil.setTaskError('loading-config', `Something went wrong while loading configuration: ${String(e)}.`);
       throw e;
     }
 

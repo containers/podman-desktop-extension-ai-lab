@@ -133,7 +133,7 @@ test('getModelsInfo should get models in local directory', async () => {
     appdir,
     {
       postMessage: vi.fn(),
-    } as Webview,
+    } as unknown as Webview,
     {
       getModels(): ModelInfo[] {
         return [

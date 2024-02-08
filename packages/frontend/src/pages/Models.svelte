@@ -69,7 +69,7 @@ onMount(() => {
 });
 </script>
 
-<NavPage title="Models on disk" searchEnabled="{false}" loading="{loading}">
+<NavPage title="Models" searchEnabled="{false}" loading="{loading}">
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="mt-4 px-5 space-y-5 h-full">

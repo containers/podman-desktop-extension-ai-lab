@@ -103,7 +103,7 @@ test('should open/close application details panel when clicking on toggle button
 test('should call runApplication execution when run application button is clicked', async () => {
   const recipe = catalog.recipes.find(r => r.id === 'recipe 1');
   expect(recipe).not.toBeUndefined();
-
+  mocks.pullApplicationMock.mockResolvedValue(undefined);
   mocks.getCatalogMock.mockResolvedValue(catalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
@@ -123,6 +123,8 @@ test('should send telemetry data', async () => {
 
   mocks.getCatalogMock.mockResolvedValue(catalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  mocks.pullApplicationMock.mockResolvedValue(undefined);
+
   render(Recipe, {
     recipeId: 'recipe 1',
   });

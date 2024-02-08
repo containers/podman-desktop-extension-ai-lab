@@ -55,6 +55,7 @@ vi.mock('@podman-desktop/api', () => {
 let setTaskMock: MockInstance;
 let taskUtils: RecipeStatusUtils;
 let setTaskStateMock: MockInstance;
+let setTaskErrorMock: MockInstance;
 
 const telemetryLogger = {
   logUsage: mocks.logUsageMock,
@@ -68,6 +69,7 @@ beforeEach(() => {
   } as unknown as RecipeStatusRegistry);
   setTaskMock = vi.spyOn(taskUtils, 'setTask');
   setTaskStateMock = vi.spyOn(taskUtils, 'setTaskState');
+  setTaskErrorMock = vi.spyOn(taskUtils, 'setTaskError');
 });
 
 const dirent = [
@@ -437,6 +439,7 @@ describe('doDownloadModelWrapper', () => {
       },
     );
     setTaskStateMock.mockReturnThis();
+    setTaskErrorMock.mockReturnThis();
     await expect(manager.doDownloadModelWrapper('id', 'url', taskUtils)).rejects.toThrowError('error');
   });
 });

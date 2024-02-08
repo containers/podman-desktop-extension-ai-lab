@@ -230,7 +230,7 @@ export class ModelsManager {
           taskUtil.setTaskState(modelId, 'success');
           resolve(result.path);
         } else if (result.successful === false) {
-          taskUtil.setTaskState(modelId, 'error');
+          taskUtil.setTaskError(modelId, result.error);
           reject(result.error);
         }
       };

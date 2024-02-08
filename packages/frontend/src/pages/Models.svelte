@@ -3,7 +3,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import NavPage from '../lib/NavPage.svelte';
 import Table from '../lib/table/Table.svelte';
 import { Column, Row } from '../lib/table/table';
-import { localModels } from '../stores/local-models';
+import { modelsInfo } from '../stores/modelsInfo';
 import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
 import ModelColumnRegistry from '../lib/table/model/ModelColumnRegistry.svelte';
 import ModelColumnPopularity from '../lib/table/model/ModelColumnPopularity.svelte';
@@ -57,7 +57,7 @@ onMount(() => {
   });
 
   // Subscribe to the models store
-  const localModelsUnsubscribe = localModels.subscribe((value) => {
+  const localModelsUnsubscribe = modelsInfo.subscribe((value) => {
     models = value;
     filterModels();
   })

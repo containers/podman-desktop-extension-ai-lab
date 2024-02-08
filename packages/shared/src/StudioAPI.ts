@@ -17,7 +17,7 @@ export abstract class StudioAPI {
   /**
    * Get the information of models saved locally into the user's directory
    */
-  abstract getLocalModels(): Promise<ModelInfo[]>;
+  abstract getModelsInfo(): Promise<ModelInfo[]>;
   /**
    * Delete the folder containing the model from local storage
    */

@@ -120,7 +120,7 @@ function mockFiles(now: Date) {
   });
 }
 
-test('getModelsInfo should get models in local directory', () => {
+test('getModelsInfo should get models in local directory', async () => {
   const now = new Date();
   mockFiles(now);
   let appdir: string;
@@ -131,7 +131,9 @@ test('getModelsInfo should get models in local directory', () => {
   }
   const manager = new ModelsManager(
     appdir,
-    {} as Webview,
+    {
+      postMessage: vi.fn(),
+    } as Webview,
     {
       getModels(): ModelInfo[] {
         return [
@@ -142,7 +144,7 @@ test('getModelsInfo should get models in local directory', () => {
     } as CatalogManager,
     telemetryLogger,
   );
-  manager.getLocalModelsFromDisk();
+  await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
     {
       id: 'model-id-1',
@@ -268,7 +270,7 @@ test('deleteLocalModel deletes the model folder', async () => {
     } as CatalogManager,
     telemetryLogger,
   );
-  manager.getLocalModelsFromDisk();
+  await manager.loadLocalModels();
   await manager.deleteLocalModel('model-id-1');
   // check that the model's folder is removed from disk
   if (process.platform === 'win32') {
@@ -276,9 +278,9 @@ test('deleteLocalModel deletes the model folder', async () => {
   } else {
     expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', { recursive: true });
   }
-  expect(postMessageMock).toHaveBeenCalledTimes(2);
+  expect(postMessageMock).toHaveBeenCalledTimes(3);
   // check that a new state is sent with the model removed
-  expect(postMessageMock).toHaveBeenNthCalledWith(2, {
+  expect(postMessageMock).toHaveBeenNthCalledWith(3, {
     id: 'new-models-state',
     body: [
       {
@@ -317,7 +319,7 @@ test('deleteLocalModel fails to delete the model folder', async () => {
     } as CatalogManager,
     telemetryLogger,
   );
-  manager.getLocalModelsFromDisk();
+  await manager.loadLocalModels();
   await manager.deleteLocalModel('model-id-1');
   // check that the model's folder is removed from disk
   if (process.platform === 'win32') {
@@ -325,9 +327,9 @@ test('deleteLocalModel fails to delete the model folder', async () => {
   } else {
     expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', { recursive: true });
   }
-  expect(postMessageMock).toHaveBeenCalledTimes(2);
+  expect(postMessageMock).toHaveBeenCalledTimes(3);
   // check that a new state is sent with the model non removed
-  expect(postMessageMock).toHaveBeenNthCalledWith(2, {
+  expect(postMessageMock).toHaveBeenNthCalledWith(3, {
     id: 'new-models-state',
     body: [
       {

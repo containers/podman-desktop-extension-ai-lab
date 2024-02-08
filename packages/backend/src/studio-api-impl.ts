@@ -81,7 +81,7 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async getLocalModels(): Promise<ModelInfo[]> {
+  async getModelsInfo(): Promise<ModelInfo[]> {
     return this.modelsManager.getModelsInfo();
   }
 

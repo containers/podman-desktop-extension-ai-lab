@@ -32,3 +32,5 @@ export abstract class StudioAPI {
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
 }
+
+export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';

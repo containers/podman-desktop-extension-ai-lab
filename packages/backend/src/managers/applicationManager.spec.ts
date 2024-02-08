@@ -33,11 +33,12 @@ import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
 import type { Webview, TelemetryLogger } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
+import { LABEL_RECIPE_ID } from '@shared/src/StudioAPI';
 
 const mocks = vi.hoisted(() => {
   return {
     parseYamlFileMock: vi.fn(),
-    builImageMock: vi.fn(),
+    buildImageMock: vi.fn(),
     listImagesMock: vi.fn(),
     getImageInspectMock: vi.fn(),
     createPodMock: vi.fn(),
@@ -56,7 +57,7 @@ vi.mock('../models/AIConfig', () => ({
 }));
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
-    buildImage: mocks.builImageMock,
+    buildImage: mocks.buildImageMock,
     listImages: mocks.listImagesMock,
     getImageInspect: mocks.getImageInspectMock,
     createPod: mocks.createPodMock,
@@ -142,7 +143,7 @@ describe('pullApplication', () => {
         Running: true,
       },
     });
-    mocks.builImageMock.mockResolvedValue(undefined);
+    mocks.buildImageMock.mockResolvedValue(undefined);
     mocks.listImagesMock.mockResolvedValue([
       {
         RepoTags: ['container1:latest'],
@@ -222,7 +223,18 @@ describe('pullApplication', () => {
       expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     }
     expect(doDownloadModelWrapperSpy).toHaveBeenCalledOnce();
-    expect(mocks.builImageMock).toHaveBeenCalledOnce();
+    expect(mocks.buildImageMock).toHaveBeenCalledOnce();
+    expect(mocks.buildImageMock).toHaveBeenCalledWith(
+      `${gitCloneOptions.targetDirectory}${path.sep}contextdir1`,
+      expect.anything(),
+      {
+        containerFile: 'Containerfile',
+        tag: 'container1:latest',
+        labels: {
+          [LABEL_RECIPE_ID]: 'recipe1',
+        },
+      },
+    );
     expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.download', {
       'model.id': 'model1',
       durationSeconds: 99,
@@ -613,7 +625,7 @@ describe('buildImages', () => {
   });
   test('setTaskState should be called with error if buildImage executon fails', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    mocks.builImageMock.mockRejectedValue('error');
+    mocks.buildImageMock.mockRejectedValue('error');
     mocks.listImagesMock.mockRejectedValue([]);
     await expect(manager.buildImages(containers, 'config', taskUtils)).rejects.toThrow(
       'Something went wrong while building the image: error',
@@ -622,7 +634,7 @@ describe('buildImages', () => {
   });
   test('setTaskState should be called with error if unable to find the image after built', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    mocks.builImageMock.mockResolvedValue({});
+    mocks.buildImageMock.mockResolvedValue({});
     mocks.listImagesMock.mockResolvedValue([]);
     await expect(manager.buildImages(containers, 'config', taskUtils)).rejects.toThrow(
       'no image found for container1:latest',
@@ -631,7 +643,7 @@ describe('buildImages', () => {
   });
   test('succeed if building image do not fail', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    mocks.builImageMock.mockResolvedValue({});
+    mocks.buildImageMock.mockResolvedValue({});
     mocks.listImagesMock.mockResolvedValue([
       {
         RepoTags: ['container1:latest'],

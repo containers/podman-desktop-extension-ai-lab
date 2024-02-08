@@ -82,7 +82,7 @@ export class StudioApiImpl implements StudioAPI {
         this.applicationManager.pullApplication(recipe, model),
       )
       .catch(() => {
-        this.recipeStatusRegistry.setStatus(recipeId, { recipeId: recipeId, state: 'error', tasks: [] });
+        this.recipeStatusRegistry.setRecipeState(recipeId, 'error');
       });
   }
 

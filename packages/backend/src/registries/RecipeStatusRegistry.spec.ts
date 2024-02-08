@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { expect, test, vi } from 'vitest';
+import { expect, test, vi, beforeEach } from 'vitest';
 import type { TaskRegistry } from './TaskRegistry';
 import type { Webview } from '@podman-desktop/api';
 import { RecipeStatusRegistry } from './RecipeStatusRegistry';
@@ -33,6 +33,10 @@ const taskRegistry = {
 const webview = {
   postMessage: mocks.postMessageMock,
 } as unknown as Webview;
+
+beforeEach(() => {
+  vi.resetAllMocks();
+});
 
 test('recipe status registry should start without any statuses', () => {
   const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, webview);

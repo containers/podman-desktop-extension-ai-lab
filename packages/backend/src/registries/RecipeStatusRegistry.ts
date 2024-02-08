@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
+import type { RecipeStatus, RecipeStatusState } from '@shared/src/models/IRecipeStatus';
 import type { TaskRegistry } from './TaskRegistry';
 import type { Webview } from '@podman-desktop/api';
 import { MSG_NEW_RECIPE_STATE } from '@shared/Messages';
@@ -38,6 +38,15 @@ export class RecipeStatusRegistry {
     this.dispatchState().catch((err: unknown) => {
       console.error('error dispatching recipe statuses', err);
     }); // we don't want to wait
+  }
+
+  setRecipeState(recipeId: string, state: RecipeStatusState): void {
+    if (!this.statuses.has(recipeId)) throw new Error(`The recipe status with id ${recipeId} does not exist.`);
+    const recipeStatus = this.statuses.get(recipeId);
+    this.statuses.set(recipeId, {
+      ...recipeStatus,
+      state: state,
+    });
   }
 
   getStatus(recipeId: string): RecipeStatus | undefined {

@@ -41,8 +41,7 @@ export class RecipeStatusRegistry {
   }
 
   setRecipeState(recipeId: string, state: RecipeStatusState): void {
-    if(!this.statuses.has(recipeId))
-      throw new Error(`The recipe status with id ${recipeId} does not exist.`);
+    if (!this.statuses.has(recipeId)) throw new Error(`The recipe status with id ${recipeId} does not exist.`);
     const recipeStatus = this.statuses.get(recipeId);
     this.statuses.set(recipeId, {
       ...recipeStatus,

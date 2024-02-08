@@ -44,11 +44,13 @@ test('taskRegistry should have been updated', () => {
   recipeStatusRegistry.setStatus('random', {
     recipeId: 'random',
     state: 'none',
-    tasks: [{
-      id: 'task-1',
-      name: 'task-1',
-      state: 'loading',
-    }],
+    tasks: [
+      {
+        id: 'task-1',
+        name: 'task-1',
+        state: 'loading',
+      },
+    ],
   });
   expect(recipeStatusRegistry.getStatuses().size).toBe(1);
   expect(mocks.setMock).toHaveBeenNthCalledWith(1, {
@@ -65,18 +67,19 @@ test('webview should have been notified', () => {
     state: 'none',
     tasks: [],
   });
-  expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1,
-    {
-      id: MSG_NEW_RECIPE_STATE,
-      body:  new Map([
-        ['random', {
+  expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1, {
+    id: MSG_NEW_RECIPE_STATE,
+    body: new Map([
+      [
+        'random',
+        {
           recipeId: 'random',
           state: 'none',
           tasks: [],
-        }],
-      ]),
-    },
-  );
+        },
+      ],
+    ]),
+  });
 });
 
 test('recipe status should have been updated', () => {
@@ -84,11 +87,13 @@ test('recipe status should have been updated', () => {
   recipeStatusRegistry.setStatus('random', {
     recipeId: 'random',
     state: 'none',
-    tasks: [{
-      id: 'task-1',
-      name: 'task-1',
-      state: 'loading',
-    }],
+    tasks: [
+      {
+        id: 'task-1',
+        name: 'task-1',
+        state: 'loading',
+      },
+    ],
   });
   let statuses = recipeStatusRegistry.getStatuses();
   expect(statuses.size).toBe(1);

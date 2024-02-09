@@ -42,30 +42,41 @@ export class GitManager {
     return simpleGit(directory).status();
   }
 
-  async isRepositoryUpToDate(directory: string, origin: string, ref?: string): Promise<{ ok?: boolean, error?: string, updatable?: boolean }> {
+  async isRepositoryUpToDate(
+    directory: string,
+    origin: string,
+    ref?: string,
+  ): Promise<{ ok?: boolean; error?: string; updatable?: boolean }> {
     const remotes: RemoteWithRefs[] = await this.getRepositoryRemotes(directory);
 
-    if(!remotes.some((remote) => remote.refs.fetch === origin)) {
-      return { error: `The local repository does not have remote ${origin} configured. Remotes: ${remotes.map((remote) => `${remote.name} ${remote.refs.fetch} (fetch)`).join(',')}`};
+    if (!remotes.some(remote => remote.refs.fetch === origin)) {
+      return {
+        error: `The local repository does not have remote ${origin} configured. Remotes: ${remotes
+          .map(remote => `${remote.name} ${remote.refs.fetch} (fetch)`)
+          .join(',')}`,
+      };
     }
 
     const status: StatusResult = await this.getRepositoryStatus(directory);
 
-    if(status.detached) {
+    if (status.detached) {
       return { error: 'The local repository is detached.' };
     }
 
-    if(status.modified.length > 0) {
-      return { error: 'The local repois'}
+    if (status.modified.length > 0) {
+      return { error: 'The local repois' };
     }
 
     // If we are not in HEAD
-    if(status.behind !== 0 || status.ahead !== 0) {
-      return { error: `The local repository is not up to date ${status.behind} behind, ${status.ahead} ahead.`, updatable: true};
+    if (status.behind !== 0 || status.ahead !== 0) {
+      return {
+        error: `The local repository is not up to date ${status.behind} behind, ${status.ahead} ahead.`,
+        updatable: true,
+      };
     }
 
     // Ensure the branch tracked is the one we want
-    if(ref !== undefined && status.tracking !== ref) {
+    if (ref !== undefined && status.tracking !== ref) {
       return { error: 'The local repository is not tracking the right branch.', updatable: true };
     }
   }

@@ -532,9 +532,13 @@ export class ApplicationManager {
 
     // We might already have the repository cloned
     if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
-      const result = await this.git.isRepositoryUpToDate(gitCloneInfo.targetDirectory, gitCloneInfo.repository, gitCloneInfo.ref);
+      const result = await this.git.isRepositoryUpToDate(
+        gitCloneInfo.targetDirectory,
+        gitCloneInfo.repository,
+        gitCloneInfo.ref,
+      );
 
-      if(result.ok) {
+      if (result.ok) {
         checkoutTask.name = 'Checkout repository (cached).';
         checkoutTask.state = 'success';
         taskUtil.setTask(checkoutTask);
@@ -544,7 +548,7 @@ export class ApplicationManager {
         taskUtil.setTaskError('checkout', error);
         // Ask the user if he wants to open the local checkout
         const selected = await window.showErrorMessage(error, 'Cancel', 'Open Folder');
-        if(selected === 'Open Folder') {
+        if (selected === 'Open Folder') {
           await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(gitCloneInfo.targetDirectory));
         }
         // Throw error in any cases
@@ -561,6 +565,5 @@ export class ApplicationManager {
       // Update checkout state
       taskUtil.setTaskState('checkout', 'success');
     }
-
   }
 }

@@ -426,6 +426,45 @@ describe('doCheckout', () => {
       },
     });
   });
+  test('tasks should throw error if isRepositoryUpToDateMock is not ok', async () => {
+    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+    const stats = {
+      isDirectory: vi.fn().mockReturnValue(true),
+    } as unknown as fs.Stats;
+    vi.spyOn(fs, 'statSync').mockReturnValue(stats);
+    const cloneRepositoryMock = vi.fn();
+    const isRepositoryUpToDateMock = vi.fn().mockResolvedValue({ok: false, error: 'bad repo'});
+
+    const manager = new ApplicationManager(
+      '/home/user/aistudio',
+      {
+        cloneRepository: cloneRepositoryMock,
+        isRepositoryUpToDate: isRepositoryUpToDateMock,
+      } as unknown as GitManager,
+      {} as unknown as RecipeStatusRegistry,
+      {} as unknown as ModelsManager,
+      telemetryLogger,
+    );
+
+    await expect(manager.doCheckout(
+      {
+        repository: 'repo',
+        ref: '000000',
+        targetDirectory: 'folder',
+      },
+      taskUtils,
+    )).rejects.toThrow();
+
+    expect(setTaskMock).toHaveBeenLastCalledWith({
+      id: 'checkout',
+      error: 'The repository "repo" seems to already be cloned, however it cannot be used: bad repo',
+      name: 'Checkout repository',
+      state: 'error',
+      labels: {
+        git: 'checkout',
+      },
+    });
+  });
 });
 
 describe('getConfiguration', () => {

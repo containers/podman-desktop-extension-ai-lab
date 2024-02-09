@@ -33,6 +33,7 @@ import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
 import { StatusResult } from 'simple-git';
+import podmanDesktopApi from '@podman-desktop/api';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 
@@ -539,8 +540,14 @@ export class ApplicationManager {
         taskUtil.setTask(checkoutTask);
         return;
       } else {
-        taskUtil.setTaskState('checkout', 'error');
-        await window.showErrorMessage(`The repository "${gitCloneInfo.repository}" seems to already be cloned, however it cannot be used: ${result.error}.`);
+        const error = `The repository "${gitCloneInfo.repository}" seems to already be cloned, however it cannot be used: ${result.error}`;
+        taskUtil.setTaskError('checkout', error);
+        // Ask the user if he wants to open the local checkout
+        const selected = await window.showErrorMessage(error, 'Cancel', 'Open Folder');
+        if(selected === 'Open Folder') {
+          await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(gitCloneInfo.targetDirectory));
+        }
+        // Throw error in any cases
         throw new Error('Cannot checkout repository to target.');
       }
     } else {

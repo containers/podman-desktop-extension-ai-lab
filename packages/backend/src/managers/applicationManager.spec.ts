@@ -42,6 +42,7 @@ const mocks = vi.hoisted(() => {
     getImageInspectMock: vi.fn(),
     createPodMock: vi.fn(),
     createContainerMock: vi.fn(),
+    isRepositoryUpToDateMock: vi.fn(),
     replicatePodmanContainerMock: vi.fn(),
     startContainerMock: vi.fn(),
     startPod: vi.fn(),
@@ -167,6 +168,9 @@ describe('pullApplication', () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'id',
     });
+
+    mocks.isRepositoryUpToDateMock.mockResolvedValue({ok: true});
+
     modelsManager = new ModelsManager(
       'appdir',
       {} as Webview,
@@ -181,6 +185,7 @@ describe('pullApplication', () => {
       '/home/user/aistudio',
       {
         cloneRepository: cloneRepositoryMock,
+        isRepositoryUpToDate: mocks.isRepositoryUpToDateMock,
       } as unknown as GitManager,
       {
         setStatus: setStatusMock,
@@ -390,10 +395,13 @@ describe('doCheckout', () => {
     vi.spyOn(fs, 'statSync').mockReturnValue(stats);
     const mkdirSyncMock = vi.spyOn(fs, 'mkdirSync');
     const cloneRepositoryMock = vi.fn();
+    const isRepositoryUpToDateMock = vi.fn().mockResolvedValue({ok: true});
+
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {
         cloneRepository: cloneRepositoryMock,
+        isRepositoryUpToDate: isRepositoryUpToDateMock,
       } as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
       {} as unknown as ModelsManager,

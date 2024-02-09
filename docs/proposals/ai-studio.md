@@ -19,7 +19,7 @@ Define a dependency between containers: so in the definition of container, we wo
 that would define the ordering between the containers. This would be an optional field.
 
 Define a condition for the container to be properly started: this would be based on the HEALTHCHECK that can already
-be defined in a Dockerfile. In the first iteration, we would support only the ```test``` field. If ```heathcheck``` is defined,
+be defined in a Dockerfile. In the first iteration, we would support only the ```test``` field. If ```healthcheck``` is defined,
 then we would check for the healthcheck status field to be ```healthy```
 
 So the current chatbot file would be updated from:
@@ -65,14 +65,14 @@ application:
     - name: chatbot-inference-app
       contextdir: ai_applications
       containerfile: builds/Containerfile
-      depends:
-        - chatbot-model-service*
+      depends:                     # added
+        - chatbot-model-service*   # added
     - name: chatbot-model-service
       contextdir: model_services
       containerfile: base/Containerfile
       model-service: true
-      healthcheck:
-        test: curl -f localhost:7860 || exit 1
+      healthcheck:                               # added
+        test: curl -f localhost:7860 || exit 1   # added
       backend: 
         - llama
       arch:
@@ -82,8 +82,8 @@ application:
       contextdir: model_services
       containerfile: cuda/Containerfile
       model-service: true
-      healthcheck:
-        test: curl -f localhost:7860 || exit 1
+      healthcheck:                              # added
+        test: curl -f localhost:7860 || exit 1  # added
       backend: 
         - llama
       gpu-env:

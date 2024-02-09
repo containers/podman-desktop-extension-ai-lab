@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import simpleGit, { RemoteWithRefs, type StatusResult } from 'simple-git';
+import simpleGit, { type RemoteWithRefs, type StatusResult } from 'simple-git';
 
 export interface GitCloneInfo {
   repository: string;

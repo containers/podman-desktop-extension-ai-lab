@@ -5,7 +5,7 @@ export let tasks: Task[] = [];
 
 </script>
 
-<ul class="max-w-md space-y-2 text-gray-500 list-inside dark:text-gray-400">
+<ul class="space-y-2 text-gray-500 list-inside dark:text-gray-400">
 
   {#each tasks as task}
     <li class="flex flex-col rounded-md bg-charcoal-800 p-2">

@@ -58,7 +58,7 @@ function toggleApplicationDetailsPanel() {
     <Tab title="Models" url="{recipeId}/models" />
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <div class="grid w-full" style="grid-template-columns: 1fr auto;">
+    <div class="grid w-full grid-cols-[1fr_auto]">
       <div class="p-5 inline-grid">
         <Route path="/" breadcrumb="Summary" >
           <MarkdownRenderer source="{recipe?.readme}"/>

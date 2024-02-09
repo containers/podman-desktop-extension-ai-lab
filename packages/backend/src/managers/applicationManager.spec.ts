@@ -679,7 +679,7 @@ describe('createPod', async () => {
   );
   test('throw an error if there is no sample image', async () => {
     const images = [imageInfo2];
-    await expect(manager.createPod(images)).rejects.toThrowError('no sample app found');
+    await expect(manager.createPod({ id: 'recipe-id' } as Recipe, images)).rejects.toThrowError('no sample app found');
   });
   test('call createPod with sample app exposed port', async () => {
     const images = [imageInfo1, imageInfo2];
@@ -689,7 +689,7 @@ describe('createPod', async () => {
       Id: 'podId',
       engineId: 'engineId',
     });
-    await manager.createPod(images);
+    await manager.createPod({ id: 'recipe-id' } as Recipe, images);
     expect(mocks.createPodMock).toBeCalledWith({
       name: 'name',
       portmappings: [
@@ -708,6 +708,9 @@ describe('createPod', async () => {
           range: 1,
         },
       ],
+      labels: {
+        'ai-studio-recipe-id': 'recipe-id',
+      },
     });
   });
 });
@@ -735,7 +738,9 @@ describe('createApplicationPod', () => {
   const images = [imageInfo1, imageInfo2];
   test('throw if createPod fails', async () => {
     vi.spyOn(manager, 'createPod').mockRejectedValue('error createPod');
-    await expect(manager.createApplicationPod(images, 'path', taskUtils)).rejects.toThrowError('error createPod');
+    await expect(
+      manager.createApplicationPod({ id: 'recipe-id' } as Recipe, images, 'path', taskUtils),
+    ).rejects.toThrowError('error createPod');
     expect(setTaskMock).toBeCalledWith({
       error: 'Something went wrong while creating pod: error createPod',
       id: 'fake-pod-id',
@@ -753,7 +758,7 @@ describe('createApplicationPod', () => {
     const createAndAddContainersToPodMock = vi
       .spyOn(manager, 'createAndAddContainersToPod')
       .mockImplementation((_pod: PodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve([]));
-    await manager.createApplicationPod(images, 'path', taskUtils);
+    await manager.createApplicationPod({ id: 'recipe-id' } as Recipe, images, 'path', taskUtils);
     expect(createAndAddContainersToPodMock).toBeCalledWith(pod, images, 'path');
     expect(setTaskMock).toBeCalledWith({
       id: 'id',
@@ -769,7 +774,9 @@ describe('createApplicationPod', () => {
     };
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
     vi.spyOn(manager, 'createAndAddContainersToPod').mockRejectedValue('error');
-    await expect(() => manager.createApplicationPod(images, 'path', taskUtils)).rejects.toThrowError('error');
+    await expect(() =>
+      manager.createApplicationPod({ id: 'recipe-id' } as Recipe, images, 'path', taskUtils),
+    ).rejects.toThrowError('error');
     expect(setTaskMock).toHaveBeenLastCalledWith({
       id: 'id',
       state: 'error',

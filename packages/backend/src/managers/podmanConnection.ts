@@ -20,21 +20,30 @@ import {
   type RegisterContainerConnectionEvent,
   provider,
   type UpdateContainerConnectionEvent,
+  containerEngine,
+  type PodInfo,
 } from '@podman-desktop/api';
 
 export type startupHandle = () => void;
 export type machineStartHandle = () => void;
 export type machineStopHandle = () => void;
+export type podStartHandle = (pod: PodInfo) => void;
+export type podStopHandle = (pod: PodInfo) => void;
+export type podRemoveHandle = (podId: string) => void;
 
 export class PodmanConnection {
   #firstFound = false;
   #toExecuteAtStartup: startupHandle[] = [];
   #toExecuteAtMachineStop: machineStopHandle[] = [];
   #toExecuteAtMachineStart: machineStartHandle[] = [];
+  #toExecuteAtPodStart: podStartHandle[] = [];
+  #toExecuteAtPodStop: podStopHandle[] = [];
+  #toExecuteAtPodRemove: podRemoveHandle[] = [];
 
   init(): void {
     this.listenRegistration();
     this.listenMachine();
+    this.watchPods();
   }
 
   listenRegistration() {
@@ -99,5 +108,74 @@ export class PodmanConnection {
 
   onMachineStop(f: machineStopHandle) {
     this.#toExecuteAtMachineStop.push(f);
+  }
+
+  watchPods() {
+    containerEngine.onEvent(event => {
+      if (event.Type !== 'pod') {
+        return;
+      }
+      switch (event.status) {
+        case 'remove':
+          for (const f of this.#toExecuteAtPodRemove) {
+            f(event.id);
+          }
+          break;
+        case 'start':
+          if (!containerEngine.listPods) {
+            // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
+            // and the extension minimal version is set to 1.8
+            break;
+          }
+          containerEngine
+            .listPods()
+            .then((pods: PodInfo[]) => {
+              const pod = pods.find((p: PodInfo) => p.Id === event.id);
+              if (!pod) {
+                return;
+              }
+              for (const f of this.#toExecuteAtPodStart) {
+                f(pod);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(err);
+            });
+          break;
+        case 'stop':
+          if (!containerEngine.listPods) {
+            // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
+            // and the extension minimal version is set to 1.8
+            break;
+          }
+          containerEngine
+            .listPods()
+            .then((pods: PodInfo[]) => {
+              const pod = pods.find((p: PodInfo) => p.Id === event.id);
+              if (!pod) {
+                return;
+              }
+              for (const f of this.#toExecuteAtPodStop) {
+                f(pod);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(err);
+            });
+          break;
+      }
+    });
+  }
+
+  onPodStart(f: podStartHandle) {
+    this.#toExecuteAtPodStart.push(f);
+  }
+
+  onPodStop(f: podStopHandle) {
+    this.#toExecuteAtPodStop.push(f);
+  }
+
+  onPodRemove(f: podRemoveHandle) {
+    this.#toExecuteAtPodRemove.push(f);
   }
 }

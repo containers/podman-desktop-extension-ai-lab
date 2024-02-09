@@ -42,7 +42,7 @@
     "simple-git": "^3.22.0"
   },
   "devDependencies": {
-    "@podman-desktop/api": "1.7.0",
+    "@podman-desktop/api": "^0.0.202402061753-5c5d589",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^18",
     "vitest": "^1.1.0"

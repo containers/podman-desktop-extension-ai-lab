@@ -29,6 +29,8 @@ import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
+import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { EnvironmentManager } from './managers/environmentManager';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -37,6 +39,7 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
+    private environmentManager: EnvironmentManager,
     private telemetry: podmanDesktopApi.TelemetryLogger,
   ) {}
 
@@ -148,6 +151,10 @@ export class StudioApiImpl implements StudioAPI {
 
   navigateToContainer(containerId: string): Promise<void> {
     return podmanDesktopApi.navigation.navigateToContainer(containerId);
+  }
+
+  async getEnvironmentsState(): Promise<EnvironmentState[]> {
+    return this.environmentManager.getEnvironmentsState();
   }
 
   async telemetryLogUsage(

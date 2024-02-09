@@ -64,6 +64,7 @@ beforeEach(() => {
 
 test('playground should start when clicking on the play button', async () => {
   mocks.playgroundQueriesSubscribeMock.mockReturnValue([]);
+  mocks.startPlaygroundMock.mockResolvedValue(undefined);
   render(ModelPlayground, {
     model: {
       id: 'model1',
@@ -84,6 +85,35 @@ test('playground should start when clicking on the play button', async () => {
 
   await waitFor(() => {
     expect(mocks.startPlaygroundMock).toHaveBeenCalledOnce();
+  });
+});
+
+test('playground should display error when clicking on the play button and an error occurs', async () => {
+  mocks.playgroundQueriesSubscribeMock.mockReturnValue([]);
+  mocks.startPlaygroundMock.mockRejectedValue('bad error');
+  render(ModelPlayground, {
+    model: {
+      id: 'model1',
+      name: 'Model 1',
+      description: 'A description',
+      hw: 'CPU',
+      registry: 'Hugging Face',
+      popularity: 3,
+      license: '?',
+      url: 'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+    } as ModelInfo,
+  });
+
+  const play = screen.getByTitle('playground-action');
+  expect(play).toBeDefined();
+
+  await fireEvent.click(play);
+
+  await waitFor(() => {
+    expect(mocks.startPlaygroundMock).toHaveBeenCalledOnce();
+    const alert = screen.getByRole('alert');
+    expect(alert).toBeDefined();
+    expect(alert.textContent).toBe('Something went wrong while trying to start playground: bad error');
   });
 });
 

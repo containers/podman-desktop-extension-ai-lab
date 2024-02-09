@@ -66,7 +66,7 @@ application:
       contextdir: ai_applications
       containerfile: builds/Containerfile
       depends:                     # added
-        - chatbot-model-service*   # added
+        - chatbot-model-service    # added
     - name: chatbot-model-service
       contextdir: model_services
       containerfile: base/Containerfile

@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
 import type { ContainerAttachedInfo, ImageInfo, PodInfo } from './applicationManager';
-import { ApplicationManager } from './applicationManager';
+import { LABEL_RECIPE_ID, ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';
 import os from 'os';
@@ -33,7 +33,6 @@ import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
 import type { Webview, TelemetryLogger } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
-import { LABEL_RECIPE_ID } from '@shared/src/StudioAPI';
 
 const mocks = vi.hoisted(() => {
   return {

@@ -32,7 +32,6 @@ import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
-import { LABEL_RECIPE_ID } from '@shared/src/StudioAPI';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 

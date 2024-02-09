@@ -2,7 +2,6 @@
 import { faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { getDisplayName } from '/@/utils/versionControlUtils';
-import type { Recipe } from '@shared/src/models/IRecipe';
 import { recipes } from '/@/stores/recipe';
 import Button from '/@/lib/button/Button.svelte';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
@@ -11,8 +10,8 @@ import { studioClient } from '/@/utils/client';
 import { catalog } from '/@/stores/catalog';
 
 export let recipeId: string;
-export let recipe: Recipe;
 
+$: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: recipeStatus = $recipes.get(recipeId);
 // this will be selected by the user, init with the default model (the first in the catalog recipe?)
 $: selectedModelId = recipe?.models?.[0];

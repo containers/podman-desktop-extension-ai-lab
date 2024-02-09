@@ -68,9 +68,7 @@ function toggleApplicationDetailsPanel() {
         <RecipeModels modelsIds={recipe?.models} />
       </Route>
       <!-- Recipe details -->
-      {#if recipe}
-        <RecipeDetails recipeId={recipeId} recipe={recipe}/>
-      {/if}
+      <RecipeDetails recipeId={recipeId} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">

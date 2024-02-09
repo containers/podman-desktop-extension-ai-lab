@@ -169,7 +169,7 @@ describe('pullApplication', () => {
       id: 'id',
     });
 
-    mocks.isRepositoryUpToDateMock.mockResolvedValue({ok: true});
+    mocks.isRepositoryUpToDateMock.mockResolvedValue({ ok: true });
 
     modelsManager = new ModelsManager(
       'appdir',
@@ -395,7 +395,7 @@ describe('doCheckout', () => {
     vi.spyOn(fs, 'statSync').mockReturnValue(stats);
     const mkdirSyncMock = vi.spyOn(fs, 'mkdirSync');
     const cloneRepositoryMock = vi.fn();
-    const isRepositoryUpToDateMock = vi.fn().mockResolvedValue({ok: true});
+    const isRepositoryUpToDateMock = vi.fn().mockResolvedValue({ ok: true });
 
     const manager = new ApplicationManager(
       '/home/user/aistudio',
@@ -433,7 +433,7 @@ describe('doCheckout', () => {
     } as unknown as fs.Stats;
     vi.spyOn(fs, 'statSync').mockReturnValue(stats);
     const cloneRepositoryMock = vi.fn();
-    const isRepositoryUpToDateMock = vi.fn().mockResolvedValue({ok: false, error: 'bad repo'});
+    const isRepositoryUpToDateMock = vi.fn().mockResolvedValue({ ok: false, error: 'bad repo' });
 
     const manager = new ApplicationManager(
       '/home/user/aistudio',
@@ -446,14 +446,16 @@ describe('doCheckout', () => {
       telemetryLogger,
     );
 
-    await expect(manager.doCheckout(
-      {
-        repository: 'repo',
-        ref: '000000',
-        targetDirectory: 'folder',
-      },
-      taskUtils,
-    )).rejects.toThrow();
+    await expect(
+      manager.doCheckout(
+        {
+          repository: 'repo',
+          ref: '000000',
+          targetDirectory: 'folder',
+        },
+        taskUtils,
+      ),
+    ).rejects.toThrow();
 
     expect(setTaskMock).toHaveBeenLastCalledWith({
       id: 'checkout',

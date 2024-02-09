@@ -58,17 +58,17 @@ function toggleApplicationDetailsPanel() {
     <Tab title="Models" url="{recipeId}/models" />
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <div class="flex flex-row w-full">
-      <Route path="/" breadcrumb="Summary" >
-        <div class="flex-grow p-5">
+    <div class="grid w-full grid-cols-[1fr_auto]">
+      <div class="p-5 inline-grid">
+        <Route path="/" breadcrumb="Summary" >
           <MarkdownRenderer source="{recipe?.readme}"/>
-        </div>
-      </Route>
-      <Route path="/models" breadcrumb="History">
-        <RecipeModels modelsIds={recipe?.models} />
-      </Route>
+        </Route>
+        <Route path="/models" breadcrumb="History">
+          <RecipeModels modelsIds={recipe?.models} />
+        </Route>
+      </div>
       <!-- Recipe details -->
-      <RecipeDetails recipeId={recipeId} />
+      <RecipeDetails class="my-5 inline-grid" recipeId={recipeId} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">

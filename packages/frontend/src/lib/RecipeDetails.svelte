@@ -43,7 +43,7 @@ const toggle = () => {
 
 </script>
 
-<div class="my-5" class:w-[375px]={open} class:min-w-[375px]={open}>
+<div class={$$props.class} class:w-[375px]={open} class:min-w-[375px]={open}>
   <div class:hidden={!open} class:block={open} class="h-fit bg-charcoal-800 rounded-l-md mt-4 py-4" aria-label="application details panel">
     <div class="flex flex-col w-[340px] space-y-4 mx-auto">
       <div class="w-full flex flex-row justify-between">
@@ -117,7 +117,7 @@ const toggle = () => {
             {/if}
           </div>
         {/if}
-        <div class="flex flex-col space-y-2">
+        <div class="flex flex-col space-y-2 w-[45px]">
           <div class="text-base">Repository</div>
           <div class="cursor-pointer flex text-nowrap items-center">
             <Fa size="20" icon="{faGithub}"/>
@@ -130,7 +130,7 @@ const toggle = () => {
 
     </div>
   </div>
-  <div  class:hidden={open} class:block={!open} class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit" aria-label="toggle application details">
+  <div class:hidden={open} class:block={!open} class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit" aria-label="toggle application details">
     <button on:click={toggle} aria-label="show application details"><i class="fas fa-angle-left text-gray-900"></i></button>
   </div>
 </div>

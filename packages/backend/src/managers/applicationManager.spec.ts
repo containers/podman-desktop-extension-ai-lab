@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
-import type { ContainerAttachedInfo, ImageInfo, PodInfo} from './applicationManager';
+import type { ContainerAttachedInfo, ImageInfo, PodInfo } from './applicationManager';
 import { LABEL_RECIPE_ID, ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';

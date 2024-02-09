@@ -64,6 +64,7 @@ beforeEach(() => {
 
 test('playground should start when clicking on the play button', async () => {
   mocks.playgroundQueriesSubscribeMock.mockReturnValue([]);
+  mocks.startPlaygroundMock.mockResolvedValue(undefined);
   render(ModelPlayground, {
     model: {
       id: 'model1',

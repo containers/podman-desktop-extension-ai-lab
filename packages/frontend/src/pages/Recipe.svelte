@@ -23,29 +23,6 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
   studioClient.telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name });
 }
 </script>
-<style>
-  .recipe-container {
-    display: grid;
-    grid-template-columns: 1fr auto;
-  }
-  .recipe-content {
-    grid-column: 1;
-  }
-  .recipe-details {
-    grid-column: 2;
-  }
-
-  @media (max-width: 900px) {
-    .recipe-container {
-      grid-template-columns: 1fr;
-    }
-    .recipe-details {
-      grid-row: 1;
-      grid-column: 1;
-      order: -1;
-    }
-  }
-</style>
 
 <NavPage title="{recipe?.name || ''}" icon="{getIcon(recipe?.icon)}" searchEnabled="{false}" contentBackground='bg-charcoal-500'>
   <svelte:fragment slot="tabs">
@@ -54,9 +31,9 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
   </svelte:fragment>
   <svelte:fragment slot="content">
     <!-- recipe container -->
-    <div class="grid w-full recipe-container">
+    <div class="grid w-full lg:grid-cols-[1fr_auto] max-lg:grid-cols-[auto]">
       <!-- recipe content -->
-      <div class="p-5 inline-grid recipe-content">
+      <div class="p-5 inline-grid">
         <Route path="/" breadcrumb="Summary" >
           <MarkdownRenderer source="{recipe?.readme}"/>
         </Route>
@@ -65,7 +42,7 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
         </Route>
       </div>
       <!-- recipe details -->
-      <div class="inline-grid recipe-details">
+      <div class="inline-grid max-lg:order-first">
         <RecipeDetails recipeId={recipeId} />
       </div>
     </div>

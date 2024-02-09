@@ -42,28 +42,11 @@ const toggle = () => {
 }
 
 </script>
-<style>
-  @media (max-width: 900px) {
-    .recipe-details-container {
-      margin-top: unset;
-      min-width: 100%;
-      width: 100%;
-    }
-    .recipe-details-card {
-      border-top-left-radius: unset;
-      border-bottom-left-radius: unset;
-      display: block;
-    }
-    .recipe-details-toggle {
-      display: none;
-    }
-  }
-</style>
 
-<div class="my-5 recipe-details-container" class:w-[375px]={open} class:min-w-[375px]={open}>
-  <div class:hidden={!open} class:block={open} class="h-fit bg-charcoal-800 rounded-l-md py-4 recipe-details-card" aria-label="application details panel">
+<div class="lg:my-5 max-lg:w-full max-lg:min-w-full" class:w-[375px]={open} class:min-w-[375px]={open}>
+  <div class:hidden={!open} class:block={open} class="h-fit bg-charcoal-800 lg:rounded-l-md py-4 max-lg:block" aria-label="application details panel">
     <div class="flex flex-col px-4 space-y-4 mx-auto">
-      <div class="w-full flex flex-row justify-between recipe-details-toggle">
+      <div class="w-full flex flex-row justify-between max-lg:hidden">
         <span class="text-base">Application Details</span>
         <button on:click={toggle} aria-label="hide application details"><i class="fas fa-angle-right text-gray-900"></i></button>
       </div>
@@ -147,7 +130,7 @@ const toggle = () => {
 
     </div>
   </div>
-  <div class:hidden={open} class:block={!open} class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit recipe-details-toggle" aria-label="toggle application details">
+  <div class:hidden={open} class:block={!open} class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit max-lg:hidden" aria-label="toggle application details">
     <button on:click={toggle} aria-label="show application details"><i class="fas fa-angle-left text-gray-900"></i></button>
   </div>
 </div>

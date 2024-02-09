@@ -20,8 +20,12 @@ import { type PodInfo, type Webview, containerEngine } from '@podman-desktop/api
 import type { PodmanConnection } from './podmanConnection';
 import { LABEL_RECIPE_ID } from './applicationManager';
 import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { EnvironmentState, EnvironmentStatus } from '@shared/src/models/IEnvironmentState';
 
+/**
+ *  An Environment is represented as a Pod, independently on how it has been created (by applicationManager or any other manager)
+ *  A requisite is that the Pod defines a label LABEL_RECIPE_ID
+ */
 export class EnvironmentManager {
   #environments: Map<string, EnvironmentState>;
 
@@ -44,7 +48,7 @@ export class EnvironmentManager {
         .then(pods => {
           const envsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
           for (const podToAdopt of envsPods) {
-            this.adoptPod(podToAdopt);
+            this.adoptPod(podToAdopt, 'running');
           }
         })
         .catch((err: unknown) => {
@@ -59,7 +63,7 @@ export class EnvironmentManager {
     });
 
     this.podmanConnection.onPodStart((pod: PodInfo) => {
-      this.adoptPod(pod);
+      this.adoptPod(pod, 'running');
     });
     this.podmanConnection.onPodStop((pod: PodInfo) => {
       this.forgetPod(pod);
@@ -69,7 +73,7 @@ export class EnvironmentManager {
     });
   }
 
-  adoptPod(pod: PodInfo) {
+  adoptPod(pod: PodInfo, status: EnvironmentStatus) {
     if (!pod.Labels) {
       return;
     }
@@ -80,6 +84,7 @@ export class EnvironmentManager {
     const state: EnvironmentState = {
       recipeId,
       pod,
+      status,
     };
     this.updateEnvironmentState(recipeId, state);
   }
@@ -130,5 +135,43 @@ export class EnvironmentManager {
       .catch((err: unknown) => {
         console.error(`Something went wrong while emitting MSG_ENVIRONMENTS_STATE_UPDATE: ${String(err)}`);
       });
+  }
+
+  async deleteEnvironment(recipeId: string) {
+    try {
+      this.setEnvironmentStatus(recipeId, 'stopping');
+      const envPod = await this.getEnvironmentPod(recipeId);
+      await containerEngine.stopPod(envPod.engineId, envPod.Id);
+      this.setEnvironmentStatus(recipeId, 'removing');
+      await containerEngine.removePod(envPod.engineId, envPod.Id);
+    } catch (err: unknown) {
+      this.setEnvironmentStatus(recipeId, 'unknown');
+      throw err;
+    }
+  }
+
+  async getEnvironmentPod(recipeId: string): Promise<PodInfo> {
+    if (!containerEngine.listPods || !containerEngine.stopPod || !containerEngine.removePod) {
+      // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
+      // and the extension minimal version is set to 1.8
+      return;
+    }
+    const pods = await containerEngine.listPods();
+    const envPod = pods.find(pod => LABEL_RECIPE_ID in pod.Labels && pod.Labels[LABEL_RECIPE_ID] === recipeId);
+    if (!envPod) {
+      throw new Error(`no pod found with recipe Id ${recipeId}`);
+    }
+    return envPod;
+  }
+
+  setEnvironmentStatus(recipeId: string, status: EnvironmentStatus): void {
+    if (!this.#environments.has(recipeId)) {
+      throw new Error(`status for environemnt ${recipeId} not found`);
+    }
+    const previous = this.#environments.get(recipeId);
+    this.updateEnvironmentState(recipeId, {
+      ...previous,
+      status: status,
+    });
   }
 }

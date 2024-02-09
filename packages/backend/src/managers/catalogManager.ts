@@ -66,6 +66,14 @@ export class CatalogManager {
     return this.catalog.recipes;
   }
 
+  public getRecipeById(recipeId: string): Recipe {
+    const recipe = this.getRecipes().find(r => recipeId === r.id);
+    if (!recipe) {
+      throw new Error(`No recipe found having id ${recipeId}`);
+    }
+    return recipe;
+  }
+
   async loadCatalog() {
     const catalogPath = path.resolve(this.appUserDirectory, 'catalog.json');
 

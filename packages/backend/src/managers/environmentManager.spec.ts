@@ -102,6 +102,7 @@ test('adoptRunningEnvironments updates the environment state with the found pod'
       },
     },
     recipeId: 'recipe-id-1',
+    status: 'running',
   });
 });
 

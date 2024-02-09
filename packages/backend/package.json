@@ -26,6 +26,12 @@
           "when": "ai-studio-model-id in containerLabelKeys",
           "icon": "${brain-icon}"
         }
+      ],
+      "icons/image": [
+        {
+          "when": "ai-studio-recipe-id in imageLabelKeys",
+          "icon": "${brain-icon}"
+        }
       ]
     }
   },

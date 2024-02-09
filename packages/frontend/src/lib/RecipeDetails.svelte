@@ -42,11 +42,28 @@ const toggle = () => {
 }
 
 </script>
+<style>
+  @media (max-width: 900px) {
+    .recipe-details-container {
+      margin-top: unset;
+      min-width: 100%;
+      width: 100%;
+    }
+    .recipe-details-card {
+      border-top-left-radius: unset;
+      border-bottom-left-radius: unset;
+      display: block;
+    }
+    .recipe-details-toggle {
+      display: none;
+    }
+  }
+</style>
 
-<div class={$$props.class} class:w-[375px]={open} class:min-w-[375px]={open}>
-  <div class:hidden={!open} class:block={open} class="h-fit bg-charcoal-800 rounded-l-md mt-4 py-4" aria-label="application details panel">
-    <div class="flex flex-col w-[340px] space-y-4 mx-auto">
-      <div class="w-full flex flex-row justify-between">
+<div class="my-5 recipe-details-container" class:w-[375px]={open} class:min-w-[375px]={open}>
+  <div class:hidden={!open} class:block={open} class="h-fit bg-charcoal-800 rounded-l-md py-4 recipe-details-card" aria-label="application details panel">
+    <div class="flex flex-col px-4 space-y-4 mx-auto">
+      <div class="w-full flex flex-row justify-between recipe-details-toggle">
         <span class="text-base">Application Details</span>
         <button on:click={toggle} aria-label="hide application details"><i class="fas fa-angle-right text-gray-900"></i></button>
       </div>
@@ -62,7 +79,7 @@ const toggle = () => {
           {:else if recipeStatus.state === 'loading' || recipeStatus.state === 'running'}
             <Button
               inProgress={true}
-              class="w-[300px] p-2 mx-auto"
+              class="w-full p-2"
               icon="{faPlay}"
             >
               {#if recipeStatus.state === 'loading'}Loading{:else}Running{/if}
@@ -71,7 +88,7 @@ const toggle = () => {
         {:else}
           <Button
             on:click={() => onPullingRequest()}
-            class="w-[300px] p-2 mx-auto"
+            class="w-full p-2"
             icon="{faPlay}"
           >
             Run application
@@ -88,7 +105,7 @@ const toggle = () => {
         {/if}
       </div>
 
-      <div class="flex flex-col w-full space-y-4 bg-charcoal-600 p-4">
+      <div class="flex flex-col w-full space-y-4 rounded-md bg-charcoal-600 p-4">
         {#if model}
           <div class="flex flex-col space-y-2">
             <div class="text-base">Model</div>
@@ -130,7 +147,7 @@ const toggle = () => {
 
     </div>
   </div>
-  <div class:hidden={open} class:block={!open} class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit" aria-label="toggle application details">
+  <div class:hidden={open} class:block={!open} class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit recipe-details-toggle" aria-label="toggle application details">
     <button on:click={toggle} aria-label="show application details"><i class="fas fa-angle-left text-gray-900"></i></button>
   </div>
 </div>

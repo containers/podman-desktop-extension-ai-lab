@@ -59,7 +59,7 @@ function toggleApplicationDetailsPanel() {
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="grid w-full" style="grid-template-columns: 1fr auto;">
-      <div class="flex-grow p-5 inline-grid">
+      <div class="p-5 inline-grid">
         <Route path="/" breadcrumb="Summary" >
           <MarkdownRenderer source="{recipe?.readme}"/>
         </Route>

@@ -105,16 +105,20 @@
   }
 
   const onAction = () => {
-    if(playgroundState === undefined)
+    if(playgroundState === undefined || model?.id === undefined)
       return;
 
     switch (playgroundState.status) {
       case "none":
       case "stopped":
-        studioClient.startPlayground(model.id);
+        studioClient.startPlayground(model.id).catch((err: unknown) => {
+          error = `Something went wrong while trying to start playground: ${String(err)}`;
+        });
         break;
       case "running":
-        studioClient.stopPlayground(model.id);
+        studioClient.stopPlayground(model.id).catch((err: unknown) => {
+          error = `Something went wrong while trying to stop playground: ${String(err)}`;
+        });
         break;
       case "starting":
       case "stopping":

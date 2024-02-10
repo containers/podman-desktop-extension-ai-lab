@@ -16,27 +16,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Readable } from 'svelte/store';
-import { readable } from 'svelte/store';
-import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
-import { rpcBrowser, studioClient } from '/@/utils/client';
+/**
+  To use this mock from a test:
+  
+  ```
+  const { mockCatalogStore } = await vi.hoisted(() => import('/@/stores/mocks/catalog'));
+  
+  vi.mock('/@/stores/catalog', async () => {
+    return {
+      catalog: mockCatalogStore,
+    };
+  });
+
+  test('should ...', async () => {
+    mockCatalogStore.mockSetSubscribeValue(initialCatalog);
+    ...
+  }
+*/
 import type { Catalog } from '@shared/src/models/ICatalog';
+import { writable } from 'svelte/store';
 
-const emptyCatalog = {
-  categories: [],
-  models: [],
-  recipes: [],
+const mockCatalogWritable = writable<Catalog>();
+
+export const mockCatalogStore = {
+  subscribe: mockCatalogWritable.subscribe,
+  mockSetSubscribeValue: (value: Catalog): void => mockCatalogWritable.set(value),
 };
-
-export const catalog: Readable<Catalog> = readable<Catalog>(emptyCatalog, set => {
-  const sub = rpcBrowser.subscribe(MSG_NEW_CATALOG_STATE, msg => {
-    set(msg);
-  });
-  // Initialize the store manually
-  studioClient.getCatalog().then(state => {
-    set(state);
-  });
-  return () => {
-    sub.unsubscribe();
-  };
-});

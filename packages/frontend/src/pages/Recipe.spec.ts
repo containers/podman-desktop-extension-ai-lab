@@ -4,7 +4,8 @@ import { screen, render } from '@testing-library/svelte';
 import Recipe from './Recipe.svelte';
 import userEvent from '@testing-library/user-event';
 import type { Catalog } from '@shared/src/models/ICatalog';
-const { mockCatalogStore } = await vi.hoisted(() => import('/@/stores/mocks/catalog'));
+import * as catalogStore from '/@/stores/catalog';
+import { readable, writable } from 'svelte/store';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -35,7 +36,7 @@ vi.mock('../utils/client', async () => {
 
 vi.mock('/@/stores/catalog', async () => {
   return {
-    catalog: mockCatalogStore,
+    catalog: vi.fn(),
   };
 });
 
@@ -134,7 +135,7 @@ beforeEach(() => {
 });
 
 test('should display recipe information', async () => {
-  mockCatalogStore.mockSetSubscribeValue(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
@@ -145,7 +146,8 @@ test('should display recipe information', async () => {
 });
 
 test('should display updated recipe information', async () => {
-  mockCatalogStore.mockSetSubscribeValue(initialCatalog);
+  const customCatalog = writable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = customCatalog;
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
@@ -154,13 +156,13 @@ test('should display updated recipe information', async () => {
   screen.getByText('Recipe 1');
   screen.getByText('readme 1');
 
-  mockCatalogStore.mockSetSubscribeValue(updatedCatalog);
+  customCatalog.set(updatedCatalog);
   await new Promise(resolve => setTimeout(resolve, 10));
   screen.getByText('New Recipe Name');
 });
 
 test('should display default model information', async () => {
-  mockCatalogStore.mockSetSubscribeValue(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
@@ -175,7 +177,7 @@ test('should display default model information', async () => {
 });
 
 test('should open/close application details panel when clicking on toggle button', async () => {
-  mockCatalogStore.mockSetSubscribeValue(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
@@ -201,7 +203,7 @@ test('should open/close application details panel when clicking on toggle button
 });
 
 test('should call runApplication execution when run application button is clicked', async () => {
-  mockCatalogStore.mockSetSubscribeValue(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.pullApplicationMock.mockResolvedValue(undefined);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
@@ -215,7 +217,7 @@ test('should call runApplication execution when run application button is clicke
 });
 
 test('should send telemetry data', async () => {
-  mockCatalogStore.mockSetSubscribeValue(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   mocks.pullApplicationMock.mockResolvedValue(undefined);
 

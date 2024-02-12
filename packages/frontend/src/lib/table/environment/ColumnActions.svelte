@@ -17,5 +17,5 @@ function deleteEnvironment() {
   icon={faTrash}
   onClick={() => deleteEnvironment()}
   title="Delete Environment"
-  enabled={object.status !== 'stopping' && object.status !== 'removing'}
+  inProgress={object.status === 'stopping' || object.status === 'removing'}
 />

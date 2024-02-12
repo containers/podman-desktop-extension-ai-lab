@@ -1,9 +1,3 @@
-<style>
-.grid-table {
-  display: grid;
-}
-</style>
-
 <script lang="ts">
 /* eslint-disable import/no-duplicates */
 // https://github.com/import-js/eslint-plugin-import/issues/1479
@@ -87,20 +81,31 @@ function sortImpl() {
   data = data.sort(comparator);
 }
 
-onMount(async () => {
+$: gridTemplate = '';
+
+onMount(() => {
   const column: Column<any> | undefined = columns.find(column => column.title === defaultSortColumn);
   if (column?.info.comparator) {
     sortCol = column;
     sortAscending = column.info.initialOrder ? column.info.initialOrder !== 'descending' : true;
   }
+
+  const media = window.matchMedia('(max-width: 1024px)');
+  const listener = () => {
+    gridTemplate = computeGridColumns(media.matches);
+  };
+  media.addEventListener('change', listener);
+
+  // calling one for initialization
+  listener();
+
+  return () => {
+    //remove event listener
+    media.removeEventListener('change', listener);
+  }
 });
 
-afterUpdate(async () => {
-  await tick();
-  setGridColumns();
-});
-
-function setGridColumns() {
+function computeGridColumns(reduced: boolean) {
   // section and checkbox columns
   let columnWidths: string[] = ['20px'];
 
@@ -109,16 +114,12 @@ function setGridColumns() {
   }
 
   // custom columns
-  columns.map(c => c.info.width ?? '1fr').forEach(w => columnWidths.push(w));
+  columns.filter(c => !c.info.optional || !reduced).map(c => c.info.width ?? '1fr').forEach(w => columnWidths.push(w));
 
   // final spacer
   columnWidths.push('5px');
 
-  let wid = columnWidths.join(' ');
-  let grids: HTMLCollection = document.getElementsByClassName('grid-table');
-  for (const element of grids) {
-    (element as HTMLElement).style.setProperty('grid-template-columns', wid);
-  }
+  return `grid-template-columns: ${columnWidths.join(' ')};`;
 }
 </script>
 
@@ -126,7 +127,8 @@ function setGridColumns() {
   <!-- Table header -->
   <div role="rowgroup">
     <div
-      class="grid grid-table gap-x-0.5 mx-5 h-7 sticky top-0 {headerBackground} text-xs text-gray-600 font-bold uppercase z-[2]"
+      style="{gridTemplate}"
+      class="grid gap-x-0.5 mx-5 h-7 sticky top-0 {headerBackground} text-xs text-gray-600 font-bold uppercase z-[2]"
       role="row">
       <div class="whitespace-nowrap justify-self-start" role="columnheader"></div>
       {#if row.info.selectable}
@@ -142,6 +144,7 @@ function setGridColumns() {
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-interactive-supports-focus -->
         <div
+          class:max-lg:hidden={column.info.optional}
           class="whitespace-nowrap {column.info.align === 'right'
             ? 'justify-self-end'
             : column.info.align === 'center'
@@ -166,7 +169,8 @@ function setGridColumns() {
   <div role="rowgroup">
     {#each data as object (object)}
       <div
-        class="grid grid-table gap-x-0.5 mx-5 h-12 bg-charcoal-800 hover:bg-zinc-700 rounded-lg mb-2"
+        style="{gridTemplate}"
+        class="grid gap-x-0.5 mx-5 h-12 bg-charcoal-800 hover:bg-zinc-700 rounded-lg mb-2"
         animate:flip="{{ duration: 300 }}"
         role="row">
         <div class="whitespace-nowrap justify-self-start" role="cell"></div>
@@ -181,6 +185,7 @@ function setGridColumns() {
         {/if}
         {#each columns as column}
           <div
+            class:max-lg:hidden={column.info.optional}
             class="whitespace-nowrap {column.info.align === 'right'
               ? 'justify-self-end'
               : column.info.align === 'center'

@@ -35,6 +35,12 @@ export interface ColumnInformation<Type, RenderType = Type> {
   readonly width?: string;
 
   /**
+   * Column optional property, meaning depending on the available width, it
+   * may be omitted to keep proper visibility
+   */
+  readonly optional?: boolean;
+
+  /**
    * Map the source object to another type for rendering. Allows
    * easier reuse and sharing of renderers by converting to simple
    * types (e.g. rendering 'string' instead of 'type.name') or

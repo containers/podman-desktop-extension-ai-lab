@@ -21,11 +21,11 @@ import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
   new Column<ModelInfo>('Size', { width: '1fr', renderer: ModelColumnSize }),
-  new Column<ModelInfo>('Creation', { width: '1fr', renderer: ModelColumnCreation }),
-  new Column<ModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),
+  new Column<ModelInfo>('Creation', { width: '1fr', renderer: ModelColumnCreation, optional: true }),
+  new Column<ModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw, optional: true }),
   new Column<ModelInfo>('Registry', { width: '2fr', renderer: ModelColumnRegistry }),
-  new Column<ModelInfo>('Popularity', { width: '1fr', renderer: ModelColumnPopularity }),
-  new Column<ModelInfo>('License', { width: '2fr', renderer: ModelColumnLicense }),
+  new Column<ModelInfo>('Popularity', { width: '1fr', renderer: ModelColumnPopularity, optional: true }),
+  new Column<ModelInfo>('License', { width: '2fr', renderer: ModelColumnLicense, optional: true }),
   new Column<ModelInfo>('Actions', { align: 'right', width: '80px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});

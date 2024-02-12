@@ -44,7 +44,7 @@
       if(playgroundState === undefined) {
         playgroundState = { modelId: model.id,  status: 'none' };
       }
-      error = playgroundState.error;
+      error = playgroundState.error ?? error;
     })
 
     return () => {

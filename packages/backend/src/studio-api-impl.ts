@@ -87,11 +87,15 @@ export class StudioApiImpl implements StudioAPI {
 
   async startPlayground(modelId: string): Promise<void> {
     const modelPath = this.modelsManager.getLocalModelPath(modelId);
-    await this.playgroundManager.startPlayground(modelId, modelPath);
+    this.playgroundManager.startPlayground(modelId, modelPath).catch((err: unknown) => {
+      this.playgroundManager.setPlaygroundError(modelId, `Something went wrong while starting the playground: ${err}`);
+    });
   }
 
   async stopPlayground(modelId: string): Promise<void> {
-    await this.playgroundManager.stopPlayground(modelId);
+    this.playgroundManager.stopPlayground(modelId).catch((err: unknown) => {
+      this.playgroundManager.setPlaygroundError(modelId, `Something went wrong while stopping the playground: ${err}`);
+    });
   }
 
   async askPlayground(modelId: string, prompt: string): Promise<number> {

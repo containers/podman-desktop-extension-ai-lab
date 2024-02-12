@@ -122,8 +122,21 @@ export class PlayGroundManager {
     });
   }
 
+  setPlaygroundError(modelId: string, error: string): void {
+    const state: Partial<PlaygroundState> = this.playgrounds.get(modelId) || {};
+    this.updatePlaygroundState(modelId, {
+      modelId: modelId,
+      ...state,
+      status: 'error',
+      error: state.error ?? error, // we never overwrite previous error - we want to keep the first one raised
+    });
+  }
+
   updatePlaygroundState(modelId: string, state: PlaygroundState): void {
-    this.playgrounds.set(modelId, state);
+    this.playgrounds.set(modelId, {
+      ...state,
+      error: state.status === 'error' ? state.error : undefined, // clearing error when status not error
+    });
     this.sendPlaygroundState();
   }
 
@@ -160,12 +173,13 @@ export class PlayGroundManager {
 
     const connection = findFirstProvider();
     if (!connection) {
-      this.setPlaygroundStatus(modelId, 'error');
+      const error = 'Unable to find an engine to start playground';
+      this.setPlaygroundError(modelId, error);
       this.telemetry.logError('playground.start', {
         'model.id': modelId,
-        message: 'unable to find an engine to start playground',
+        message: error,
       });
-      throw new Error('Unable to find an engine to start playground');
+      throw new Error(error);
     }
 
     let image = await this.selectImage(PLAYGROUND_IMAGE);
@@ -173,12 +187,13 @@ export class PlayGroundManager {
       await containerEngine.pullImage(connection.connection, PLAYGROUND_IMAGE, () => {});
       image = await this.selectImage(PLAYGROUND_IMAGE);
       if (!image) {
-        this.setPlaygroundStatus(modelId, 'error');
+        const error = `Unable to find ${PLAYGROUND_IMAGE} image`;
+        this.setPlaygroundError(modelId, error);
         this.telemetry.logError('playground.start', {
           'model.id': modelId,
           message: 'unable to find playground image',
         });
-        throw new Error(`Unable to find ${PLAYGROUND_IMAGE} image`);
+        throw new Error(error);
       }
     }
 
@@ -277,7 +292,7 @@ export class PlayGroundManager {
       })
       .catch(async (error: unknown) => {
         console.error(error);
-        this.setPlaygroundStatus(modelId, 'error');
+        this.setPlaygroundError(modelId, `Something went wrong while stopping playground: ${String(error)}`);
         this.telemetry.logError('playground.stop', {
           'model.id': modelId,
           message: 'error stopping playground',

@@ -15,12 +15,9 @@ could be and inspired from the Compose specification.
 
 ## Proposed changes
 
-Define a dependency between containers: so in the definition of container, we would add a new ```depends``` field
-that would define the ordering between the containers. This would be an optional field.
-
-Define a condition for the container to be properly started: this would be based on the HEALTHCHECK that can already
-be defined in a Dockerfile. In the first iteration, we would support only the ```test``` field. If ```healthcheck``` is defined,
-then we would check for the healthcheck status field to be ```healthy```
+Define a condition for the container to be properly started: this would be based on the readinessProbe that can already
+be defined in a Kubernetes container. In the first iteration, we would support only the ```exec``` field. If
+```readinessProbe``` is defined, then we would check for the healthcheck status field to be ```healthy```
 
 So the current chatbot file would be updated from:
 
@@ -65,14 +62,18 @@ application:
     - name: chatbot-inference-app
       contextdir: ai_applications
       containerfile: builds/Containerfile
-      depends:                     # added
-        - chatbot-model-service    # added
+      readinessProbe:                           # added
+        exec:                                   # added
+          command:                              # added
+            - curl -f localhost:8080 || exit 1  # added
     - name: chatbot-model-service
       contextdir: model_services
       containerfile: base/Containerfile
       model-service: true
-      healthcheck:                               # added
-        test: curl -f localhost:7860 || exit 1   # added
+      readinessProbe:                           # added
+        exec:                                   # added
+          command:                              # added
+            - curl -f localhost:7860 || exit 1  # added
       backend: 
         - llama
       arch:

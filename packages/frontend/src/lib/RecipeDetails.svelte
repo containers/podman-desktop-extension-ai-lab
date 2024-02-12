@@ -61,7 +61,8 @@ const toggle = () => {
             >Retry</Button>
           {:else if recipeStatus.state === 'loading' || recipeStatus.state === 'running'}
             <Button
-              inProgress={true}
+              inProgress={recipeStatus.state === 'loading'}
+              disabled={recipeStatus.state === 'running'}              
               class="w-full p-2"
               icon="{faPlay}"
             >

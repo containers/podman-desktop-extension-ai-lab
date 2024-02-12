@@ -10,4 +10,4 @@ const onClick = () => {
 }
 </script>
 <!-- href set to void operator to avoid any redirect -->
-<a href="{'javascript:void(0);'}" role="button" title="{title}" on:click={onClick}>{text}</a>
+<a href="{'javascript:void(0);'}" class="break-all" role="button" title="{title}" on:click={onClick}>{text}</a>

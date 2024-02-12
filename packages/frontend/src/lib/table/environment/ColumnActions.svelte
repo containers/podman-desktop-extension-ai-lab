@@ -3,6 +3,7 @@ import { faRotateForward, faTrash } from "@fortawesome/free-solid-svg-icons";
 import ListItemButtonIcon from "../../button/ListItemButtonIcon.svelte";
 import { studioClient } from "/@/utils/client";
 import type { EnvironmentState } from "@shared/src/models/IEnvironmentState";
+import Spinner from "../../button/Spinner.svelte";
 export let object: EnvironmentState;
 
 function deleteEnvironment() {
@@ -18,16 +19,20 @@ function restartEnvironment() {
 }
 </script>
 
-<ListItemButtonIcon
-  icon={faTrash}
-  onClick={() => deleteEnvironment()}
-  title="Delete Environment"
-  inProgress={object.status === 'stopping' || object.status === 'removing'}
-/>
 
-<ListItemButtonIcon
-  icon={faRotateForward}
-  onClick={() => restartEnvironment()}
-  title="Restart Environment"
-  enabled={object.status !== 'stopping' && object.status !== 'removing'}
-/>
+{#if object.status === 'stopping' || object.status === 'removing'}
+  <div class="pr-4"><Spinner size="1.4em" /></div>
+{:else}
+  <ListItemButtonIcon
+    icon={faTrash}
+    onClick={() => deleteEnvironment()}
+    title="Delete Environment"
+  />
+
+  <ListItemButtonIcon
+    icon={faRotateForward}
+    onClick={() => restartEnvironment()}
+    title="Restart Environment"
+  />
+{/if}
+

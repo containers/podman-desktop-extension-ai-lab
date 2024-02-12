@@ -93,7 +93,9 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async stopPlayground(modelId: string): Promise<void> {
-    await this.playgroundManager.stopPlayground(modelId);
+    this.playgroundManager.stopPlayground(modelId).catch((err: unknown) => {
+      this.playgroundManager.setPlaygroundError(modelId, `Something went wrong while stopping the playground: ${err}`);
+    });
   }
 
   async askPlayground(modelId: string, prompt: string): Promise<number> {

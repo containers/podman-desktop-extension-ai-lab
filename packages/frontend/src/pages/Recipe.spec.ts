@@ -1,9 +1,11 @@
 import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
-import catalog from '../../../backend/src/ai-user-test.json';
 import Recipe from './Recipe.svelte';
 import userEvent from '@testing-library/user-event';
+import type { Catalog } from '@shared/src/models/ICatalog';
+import * as catalogStore from '/@/stores/catalog';
+import { readable, writable } from 'svelte/store';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -32,35 +34,139 @@ vi.mock('../utils/client', async () => {
   };
 });
 
+vi.mock('/@/stores/catalog', async () => {
+  return {
+    catalog: vi.fn(),
+  };
+});
+
+const initialCatalog: Catalog = {
+  categories: [],
+  models: [
+    {
+      id: 'model1',
+      name: 'Model 1',
+      description: 'Readme for model 1',
+      hw: 'CPU',
+      registry: 'Hugging Face',
+      popularity: 3,
+      license: '?',
+      url: 'https://model1.example.com',
+    },
+    {
+      id: 'model2',
+      name: 'Model 2',
+      description: 'Readme for model 2',
+      hw: 'CPU',
+      registry: 'Civital',
+      popularity: 3,
+      license: '?',
+      url: '',
+    },
+  ],
+  recipes: [
+    {
+      id: 'recipe 1',
+      name: 'Recipe 1',
+      readme: 'readme 1',
+      categories: [],
+      models: ['model1', 'model2'],
+      description: 'description 1',
+      repository: 'repo 1',
+    },
+    {
+      id: 'recipe 2',
+      name: 'Recipe 2',
+      readme: 'readme 2',
+      categories: [],
+      description: 'description 2',
+      repository: 'repo 2',
+    },
+  ],
+};
+
+const updatedCatalog: Catalog = {
+  categories: [],
+  models: [
+    {
+      id: 'model1',
+      name: 'Model 1',
+      description: 'Readme for model 1',
+      hw: 'CPU',
+      registry: 'Hugging Face',
+      popularity: 3,
+      license: '?',
+      url: 'https://model1.example.com',
+    },
+    {
+      id: 'model2',
+      name: 'Model 2',
+      description: 'Readme for model 2',
+      hw: 'CPU',
+      registry: 'Civital',
+      popularity: 3,
+      license: '?',
+      url: '',
+    },
+  ],
+  recipes: [
+    {
+      id: 'recipe 1',
+      name: 'New Recipe Name',
+      readme: 'readme 1',
+      categories: [],
+      models: ['model1', 'model2'],
+      description: 'description 1',
+      repository: 'repo 1',
+    },
+    {
+      id: 'recipe 2',
+      name: 'Recipe 2',
+      readme: 'readme 2',
+      categories: [],
+      description: 'description 2',
+      repository: 'repo 2',
+    },
+  ],
+};
+
 beforeEach(() => {
   vi.resetAllMocks();
 });
 
 test('should display recipe information', async () => {
-  const recipe = catalog.recipes.find(r => r.id === 'recipe 1');
-  expect(recipe).not.toBeUndefined();
-
-  mocks.getCatalogMock.mockResolvedValue(catalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
 
-  screen.getByText(recipe!.name);
-  screen.getByText(recipe!.readme);
+  screen.getByText('Recipe 1');
+  screen.getByText('readme 1');
+});
+
+test('should display updated recipe information', async () => {
+  const customCatalog = writable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = customCatalog;
+  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  render(Recipe, {
+    recipeId: 'recipe 1',
+  });
+
+  screen.getByText('Recipe 1');
+  screen.getByText('readme 1');
+
+  customCatalog.set(updatedCatalog);
+  await new Promise(resolve => setTimeout(resolve, 10));
+  screen.getByText('New Recipe Name');
 });
 
 test('should display default model information', async () => {
-  const recipe = catalog.recipes.find(r => r.id === 'recipe 1');
-  expect(recipe).not.toBeUndefined();
-
-  mocks.getCatalogMock.mockResolvedValue(catalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
 
   const modelInfo = screen.getByLabelText('model-selected');
   expect(modelInfo.textContent).equal('Model 1');
@@ -71,15 +177,11 @@ test('should display default model information', async () => {
 });
 
 test('should open/close application details panel when clicking on toggle button', async () => {
-  const recipe = catalog.recipes.find(r => r.id === 'recipe 1');
-  expect(recipe).not.toBeUndefined();
-
-  mocks.getCatalogMock.mockResolvedValue(catalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
 
   const panelOpenDetails = screen.getByLabelText('toggle application details');
   expect(panelOpenDetails).toHaveClass('hidden');
@@ -101,15 +203,12 @@ test('should open/close application details panel when clicking on toggle button
 });
 
 test('should call runApplication execution when run application button is clicked', async () => {
-  const recipe = catalog.recipes.find(r => r.id === 'recipe 1');
-  expect(recipe).not.toBeUndefined();
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.pullApplicationMock.mockResolvedValue(undefined);
-  mocks.getCatalogMock.mockResolvedValue(catalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
 
   const btnRunApplication = screen.getByRole('button', { name: 'Run application' });
   await userEvent.click(btnRunApplication);
@@ -118,10 +217,7 @@ test('should call runApplication execution when run application button is clicke
 });
 
 test('should send telemetry data', async () => {
-  const recipe = catalog.recipes.find(r => r.id === 'recipe 1');
-  expect(recipe).not.toBeUndefined();
-
-  mocks.getCatalogMock.mockResolvedValue(catalog);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   mocks.pullApplicationMock.mockResolvedValue(undefined);
 

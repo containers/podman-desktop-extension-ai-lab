@@ -21,7 +21,7 @@ import fs from 'fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
 import { type Webview, fs as apiFs } from '@podman-desktop/api';
-import { MSG_NEW_LOCAL_MODELS_STATE } from '@shared/Messages';
+import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
@@ -42,9 +42,7 @@ interface DownloadModelFailureResult {
 
 export class ModelsManager {
   #modelsDir: string;
-  #localModels: Map<string, LocalModelInfo>;
-  // models being deleted
-  #deleted: Set<string>;
+  #models: Map<string, ModelInfo>;
 
   constructor(
     private appUserDirectory: string,
@@ -53,11 +51,11 @@ export class ModelsManager {
     private telemetry: podmanDesktopApi.TelemetryLogger,
   ) {
     this.#modelsDir = path.join(this.appUserDirectory, 'models');
-    this.#localModels = new Map();
-    this.#deleted = new Set();
+    this.#models = new Map();
   }
 
   async loadLocalModels() {
+    this.catalogManager.getModels().forEach(m => this.#models.set(m.id, m));
     const reloadLocalModels = async () => {
       this.getLocalModelsFromDisk();
       await this.sendModelsInfo();
@@ -71,23 +69,13 @@ export class ModelsManager {
   }
 
   getModelsInfo() {
-    return this.catalogManager
-      .getModels()
-      .filter(m => this.#localModels.has(m.id))
-      .map(
-        m =>
-          ({
-            ...m,
-            file: this.#localModels.get(m.id),
-            state: this.#deleted.has(m.id) ? 'deleting' : undefined,
-          }) as ModelInfo,
-      );
+    return [...this.#models.values()];
   }
 
   async sendModelsInfo() {
     const models = this.getModelsInfo();
     await this.webview.postMessage({
-      id: MSG_NEW_LOCAL_MODELS_STATE,
+      id: MSG_NEW_MODELS_STATE,
       body: models,
     });
   }
@@ -100,7 +88,6 @@ export class ModelsManager {
     if (!fs.existsSync(this.#modelsDir)) {
       return;
     }
-    const result = new Map<string, LocalModelInfo>();
     const entries = fs.readdirSync(this.#modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {
@@ -112,26 +99,35 @@ export class ModelsManager {
       const modelFile = modelEntries[0];
       const fullPath = path.resolve(d.path, d.name, modelFile);
       const info = fs.statSync(fullPath);
-      result.set(d.name, {
-        id: d.name,
-        file: modelFile,
-        path: path.resolve(d.path, d.name),
-        size: info.size,
-        creation: info.mtime,
-      });
+      const model = this.#models.get(d.name);
+      if (model) {
+        model.file = {
+          file: modelFile,
+          path: path.resolve(d.path, d.name),
+          size: info.size,
+          creation: info.mtime,
+        };
+      }
     }
-    this.#localModels = result;
   }
 
   isModelOnDisk(modelId: string) {
-    return this.#localModels.has(modelId);
+    return this.#models.get(modelId)?.file !== undefined;
   }
 
   getLocalModelInfo(modelId: string): LocalModelInfo {
     if (!this.isModelOnDisk(modelId)) {
       throw new Error('model is not on disk');
     }
-    return this.#localModels.get(modelId);
+    return this.#models.get(modelId).file;
+  }
+
+  getModelInfo(modelId: string): ModelInfo {
+    const model = this.#models.get(modelId);
+    if (!model) {
+      throw new Error('model is not loaded');
+    }
+    return model;
   }
 
   getLocalModelPath(modelId: string): string {
@@ -143,28 +139,26 @@ export class ModelsManager {
     return path.resolve(this.#modelsDir, modelId);
   }
 
-  getLocalModels(): LocalModelInfo[] {
-    return Array.from(this.#localModels.values());
-  }
-
   async deleteLocalModel(modelId: string): Promise<void> {
-    const modelDir = this.getLocalModelFolder(modelId);
-    this.#deleted.add(modelId);
-    await this.sendModelsInfo();
-    try {
-      await fs.promises.rm(modelDir, { recursive: true });
-      this.#localModels.delete(modelId);
-      this.telemetry.logUsage('model.delete', { 'model.id': modelId });
-    } catch (err: unknown) {
-      this.telemetry.logError('model.delete', {
-        'model.id': modelId,
-        message: 'error deleting model from disk',
-        error: err,
-      });
-      await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
-    } finally {
-      this.#deleted.delete(modelId);
+    const model = this.#models.get(modelId);
+    if (model) {
+      const modelDir = this.getLocalModelFolder(modelId);
+      model.state = 'deleting';
       await this.sendModelsInfo();
+      try {
+        await fs.promises.rm(modelDir, { recursive: true });
+        this.telemetry.logUsage('model.delete', { 'model.id': modelId });
+      } catch (err: unknown) {
+        this.telemetry.logError('model.delete', {
+          'model.id': modelId,
+          message: 'error deleting model from disk',
+          error: err,
+        });
+        await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
+      } finally {
+        model.file = model.state = undefined;
+        await this.sendModelsInfo();
+      }
     }
   }
 

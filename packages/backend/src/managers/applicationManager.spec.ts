@@ -167,7 +167,16 @@ describe('pullApplication', () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'id',
     });
-    modelsManager = new ModelsManager('appdir', {} as Webview, {} as CatalogManager, telemetryLogger);
+    modelsManager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels(): ModelInfo[] {
+          return [];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+    );
     manager = new ApplicationManager(
       '/home/user/aistudio',
       {

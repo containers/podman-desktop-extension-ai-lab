@@ -24,7 +24,6 @@ import {
   provider,
   type TelemetryLogger,
 } from '@podman-desktop/api';
-import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 
 import path from 'node:path';
 import { getFreePort } from '../utils/ports';
@@ -35,6 +34,7 @@ import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { PodmanConnection } from './podmanConnection';
 import OpenAI from 'openai';
 import { getDurationSecondsSince, timeout } from '../utils/utils';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export const LABEL_MODEL_ID = 'ai-studio-model-id';
 export const LABEL_MODEL_PORT = 'ai-studio-model-port';
@@ -303,7 +303,7 @@ export class PlayGroundManager {
     this.telemetry.logUsage('playground.stop', { 'model.id': modelId, durationSeconds });
   }
 
-  async askPlayground(modelInfo: LocalModelInfo, prompt: string): Promise<number> {
+  async askPlayground(modelInfo: ModelInfo, prompt: string): Promise<number> {
     const startTime = performance.now();
     const state = this.playgrounds.get(modelInfo.id);
     if (state?.container === undefined) {
@@ -320,7 +320,7 @@ export class PlayGroundManager {
     const client = new OpenAI({ baseURL: `http://localhost:${state.container.port}/v1`, apiKey: 'dummy' });
 
     const response = await client.completions.create({
-      model: modelInfo.file,
+      model: modelInfo.file.file,
       prompt,
       temperature: 0.7,
       max_tokens: 1024,

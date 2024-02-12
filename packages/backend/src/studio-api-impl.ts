@@ -81,7 +81,7 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async getLocalModels(): Promise<ModelInfo[]> {
+  async getModelsInfo(): Promise<ModelInfo[]> {
     return this.modelsManager.getModelsInfo();
   }
 
@@ -99,8 +99,8 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async askPlayground(modelId: string, prompt: string): Promise<number> {
-    const localModelInfo = this.modelsManager.getLocalModelInfo(modelId);
-    return this.playgroundManager.askPlayground(localModelInfo, prompt);
+    const modelInfo = this.modelsManager.getModelInfo(modelId);
+    return this.playgroundManager.askPlayground(modelInfo, prompt);
   }
 
   async getPlaygroundQueriesState(): Promise<QueryState[]> {

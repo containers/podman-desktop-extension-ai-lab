@@ -25,7 +25,7 @@ import TestTable from './TestTable.svelte';
 const mocks = vi.hoisted(() => ({
   addEventListenerMock: vi.fn(),
   removeEventListenerMock: vi.fn(),
-}))
+}));
 
 vi.spyOn(window, 'matchMedia').mockReturnValue({
   addEventListener: mocks.addEventListenerMock,

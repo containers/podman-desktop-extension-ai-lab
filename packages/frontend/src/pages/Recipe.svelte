@@ -31,7 +31,7 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
   </svelte:fragment>
   <svelte:fragment slot="content">
     <!-- recipe container -->
-    <div class="grid w-full lg:grid-cols-[1fr_auto] max-lg:grid-cols-[auto]">
+    <div class="grid w-full overflow-y-auto lg:grid-cols-[1fr_auto] max-lg:grid-cols-[auto]">
       <!-- recipe content -->
       <div class="p-5 inline-grid">
         <Route path="/" breadcrumb="Summary" >

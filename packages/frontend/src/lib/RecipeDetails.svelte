@@ -44,7 +44,7 @@ const toggle = () => {
 </script>
 
 <div class="lg:my-5 max-lg:w-full max-lg:min-w-full" class:w-[375px]={open} class:min-w-[375px]={open}>
-  <div class:hidden={!open} class:block={open} class="h-fit lg:bg-charcoal-800 lg:rounded-l-md py-4 max-lg:block" aria-label="application details panel">
+  <div class:hidden={!open} class:block={open} class="h-fit lg:bg-charcoal-800 lg:rounded-l-md mt-4 py-4 max-lg:block" aria-label="application details panel">
     <div class="flex flex-col px-4 space-y-4 mx-auto">
       <div class="w-full flex flex-row justify-between max-lg:hidden">
         <span class="text-base">Application Details</span>

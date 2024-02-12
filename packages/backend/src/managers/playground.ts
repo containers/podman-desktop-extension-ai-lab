@@ -123,7 +123,7 @@ export class PlayGroundManager {
   }
 
   setPlaygroundError(modelId: string, error: string): void {
-    const state: Partial<PlaygroundState> = (this.playgrounds.get(modelId) || {});
+    const state: Partial<PlaygroundState> = this.playgrounds.get(modelId) || {};
     this.updatePlaygroundState(modelId, {
       modelId: modelId,
       ...state,
@@ -187,7 +187,7 @@ export class PlayGroundManager {
       await containerEngine.pullImage(connection.connection, PLAYGROUND_IMAGE, () => {});
       image = await this.selectImage(PLAYGROUND_IMAGE);
       if (!image) {
-        const error = `Unable to find ${PLAYGROUND_IMAGE} image`
+        const error = `Unable to find ${PLAYGROUND_IMAGE} image`;
         this.setPlaygroundError(modelId, error);
         this.telemetry.logError('playground.start', {
           'model.id': modelId,

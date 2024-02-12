@@ -126,7 +126,7 @@ function setGridColumns() {
   <!-- Table header -->
   <div role="rowgroup">
     <div
-      class="grid grid-table gap-x-0.5 mx-5 h-7 sticky top-0 {headerBackground} text-xs text-gray-600 font-bold uppercase z-[2]"
+      class="grid grid-table gap-x-0.5 h-7 sticky top-0 {headerBackground} text-xs text-gray-600 font-bold uppercase z-[2]"
       role="row">
       <div class="whitespace-nowrap justify-self-start" role="columnheader"></div>
       {#if row.info.selectable}
@@ -166,7 +166,7 @@ function setGridColumns() {
   <div role="rowgroup">
     {#each data as object (object)}
       <div
-        class="grid grid-table gap-x-0.5 mx-5 h-12 bg-charcoal-800 hover:bg-zinc-700 rounded-lg mb-2"
+        class="grid grid-table gap-x-0.5 h-12 bg-charcoal-800 hover:bg-zinc-700 rounded-lg mb-2"
         animate:flip="{{ duration: 300 }}"
         role="row">
         <div class="whitespace-nowrap justify-self-start" role="cell"></div>

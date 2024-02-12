@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import simpleGit, { type RemoteWithRefs, type StatusResult } from 'simple-git';
+import simpleGit, { type PullResult, type RemoteWithRefs, type StatusResult } from 'simple-git';
 
 export interface GitCloneInfo {
   repository: string;
@@ -67,16 +67,27 @@ export class GitManager {
       return { error: 'The local repository has modified files.' };
     }
 
-    // If we are not in HEAD
-    if (status.behind !== 0 || status.ahead !== 0) {
+    if(status.ahead !== 0) {
       return {
-        error: `The local repository is not up to date ${status.behind} behind, ${status.ahead} ahead.`,
+        error: `The local repository has ${status.ahead} commit(s) ahead.`,
       };
     }
 
     // Ensure the branch tracked is the one we want
     if (ref !== undefined && status.tracking !== ref) {
-      return { error: 'The local repository is not tracking the right branch.' };
+      return { error: `The local repository is not tracking the right branch. (tracking ${status.tracking} when expected ${ref})` };
+    }
+
+    // Ensure working with a clean branch
+    if(!status.isClean()) {
+      return { error: 'The local repository is not clean.' };
+    }
+
+    // If we are not in HEAD
+    if (status.behind !== 0) {
+      const pullResult: PullResult = await simpleGit(directory).pull();
+      console.debug(`local git repository updated. ${pullResult.summary.changes} changes applied`);
+      return { ok: true };
     }
   }
 }

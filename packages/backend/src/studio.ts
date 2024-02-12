@@ -136,7 +136,12 @@ export class Studio {
       this.modelsManager,
       this.telemetry,
     );
-    const envManager = new EnvironmentManager(this.#panel.webview, podmanConnection, applicationManager, this.catalogManager);
+    const envManager = new EnvironmentManager(
+      this.#panel.webview,
+      podmanConnection,
+      applicationManager,
+      this.catalogManager,
+    );
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
       this.telemetry.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');

@@ -195,9 +195,7 @@ export class StudioApiImpl implements StudioAPI {
           this.environmentManager.restartEnvironment(recipeId).catch((err: unknown) => {
             console.error(`error restarting environment: ${String(err)}`);
             podmanDesktopApi.window
-              .showErrorMessage(
-                `Error restarting the environment "${recipe.name}"`,
-              )
+              .showErrorMessage(`Error restarting the environment "${recipe.name}"`)
               .catch((err: unknown) => {
                 console.error(`Something went wrong with confirmation modals`, err);
               });

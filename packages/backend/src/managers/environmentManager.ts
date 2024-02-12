@@ -18,10 +18,11 @@
 
 import { type PodInfo, type Webview, containerEngine } from '@podman-desktop/api';
 import type { PodmanConnection } from './podmanConnection';
-import { ApplicationManager, LABEL_RECIPE_ID } from './applicationManager';
+import type { ApplicationManager } from './applicationManager';
+import { LABEL_RECIPE_ID } from './applicationManager';
 import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
 import type { EnvironmentState, EnvironmentStatus } from '@shared/src/models/IEnvironmentState';
-import { CatalogManager } from './catalogManager';
+import type { CatalogManager } from './catalogManager';
 import { LABEL_MODEL_ID } from './playground';
 
 /**

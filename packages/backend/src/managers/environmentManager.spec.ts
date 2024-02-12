@@ -27,8 +27,8 @@ import type {
   podStopHandle,
   startupHandle,
 } from './podmanConnection';
-import { ApplicationManager } from './applicationManager';
-import { CatalogManager } from './catalogManager';
+import type { ApplicationManager } from './applicationManager';
+import type { CatalogManager } from './catalogManager';
 
 let manager: EnvironmentManager;
 

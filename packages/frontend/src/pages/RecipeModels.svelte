@@ -10,9 +10,9 @@
   import { catalog } from '/@/stores/catalog';
 
   export let modelsIds: string[] | undefined;
-  
+
   $: models = $catalog.models.filter(m => modelsIds?.includes(m.id));
-  
+
   const columns: Column<ModelInfo>[] = [
     new Column<ModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
     new Column<ModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),
@@ -26,7 +26,7 @@
 {#if models}
   <div class="flex flex-col grow min-h-full">
     <div class="w-full min-h-full flex-1">
-      <div class="mt-4 px-5 space-y-5 h-full">
+      <div class="h-full">
         <Table
           kind="model"
           data="{models}"

@@ -30,7 +30,9 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
     <Tab title="Models" url="{recipeId}/models" />
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <div class="grid w-full grid-cols-[1fr_auto]">
+    <!-- recipe container -->
+    <div class="grid w-full overflow-y-auto lg:grid-cols-[1fr_auto] max-lg:grid-cols-[auto]">
+      <!-- recipe content -->
       <div class="p-5 inline-grid">
         <Route path="/" breadcrumb="Summary" >
           <MarkdownRenderer source="{recipe?.readme}"/>
@@ -39,8 +41,10 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
           <RecipeModels modelsIds={recipe?.models} />
         </Route>
       </div>
-      <!-- Recipe details -->
-      <RecipeDetails class="my-5 inline-grid" recipeId={recipeId} />
+      <!-- recipe details -->
+      <div class="inline-grid max-lg:order-first">
+        <RecipeDetails recipeId={recipeId} />
+      </div>
     </div>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">

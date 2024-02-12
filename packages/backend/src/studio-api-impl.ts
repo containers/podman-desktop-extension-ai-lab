@@ -181,6 +181,34 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
+  async requestRestartEnvironment(recipeId: string): Promise<void> {
+    const recipe = this.catalogManager.getRecipeById(recipeId);
+    // Do not wait on the promise as the api would probably timeout before the user answer.
+    podmanDesktopApi.window
+      .showWarningMessage(
+        `Restart the environment "${recipe.name}"? This will delete the containers running the application and model, rebuild the images with the current sources, and restart the containers.`,
+        'Confirm',
+        'Cancel',
+      )
+      .then((result: string) => {
+        if (result === 'Confirm') {
+          this.environmentManager.restartEnvironment(recipeId).catch((err: unknown) => {
+            console.error(`error restarting environment: ${String(err)}`);
+            podmanDesktopApi.window
+              .showErrorMessage(
+                `Error restarting the environment "${recipe.name}"`,
+              )
+              .catch((err: unknown) => {
+                console.error(`Something went wrong with confirmation modals`, err);
+              });
+          });
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong with confirmation modals`, err);
+      });
+  }
+
   async telemetryLogUsage(
     eventName: string,
     data?: Record<string, unknown | podmanDesktopApi.TelemetryTrustedValue>,

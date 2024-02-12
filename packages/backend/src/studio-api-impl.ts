@@ -63,21 +63,13 @@ export class StudioApiImpl implements StudioAPI {
     return this.recipeStatusRegistry.getStatuses();
   }
 
-  async getModelById(modelId: string): Promise<ModelInfo> {
-    const model = this.catalogManager.getModels().find(m => modelId === m.id);
-    if (!model) {
-      throw new Error(`No model found having id ${modelId}`);
-    }
-    return model;
-  }
-
   async pullApplication(recipeId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
     if (!recipe) throw new Error('Not found');
 
     // the user should have selected one model, we use the first one for the moment
     const modelId = recipe.models[0];
-    const model = await this.getModelById(modelId);
+    const model = this.catalogManager.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately
     podmanDesktopApi.window

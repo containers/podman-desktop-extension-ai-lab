@@ -18,17 +18,11 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { beforeEach, expect, test, vi } from 'vitest';
-import content from './ai-test.json';
-import userContent from './ai-user-test.json';
-import type { ApplicationManager } from './managers/applicationManager';
-import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
-import { StudioApiImpl } from './studio-api-impl';
-import type { PlayGroundManager } from './managers/playground';
-import type { TelemetryLogger, Webview } from '@podman-desktop/api';
-import { CatalogManager } from './managers/catalogManager';
-import type { ModelsManager } from './managers/modelsManager';
-import type { EnvironmentManager } from './managers/environmentManager';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import content from '../ai-test.json';
+import userContent from '../ai-user-test.json';
+import type { Webview } from '@podman-desktop/api';
+import { CatalogManager } from '../managers/catalogManager';
 
 import * as fs from 'node:fs';
 
@@ -81,8 +75,7 @@ vi.mock('@podman-desktop/api', async () => {
   };
 });
 
-let studioApiImpl: StudioApiImpl;
-let catalogManager;
+let catalogManager: CatalogManager;
 
 beforeEach(async () => {
   const appUserDirectory = '.';
@@ -91,28 +84,51 @@ beforeEach(async () => {
   catalogManager = new CatalogManager(appUserDirectory, {
     postMessage: vi.fn(),
   } as unknown as Webview);
-
-  // Creating StudioApiImpl
-  studioApiImpl = new StudioApiImpl(
-    {} as unknown as ApplicationManager,
-    {} as unknown as RecipeStatusRegistry,
-    {} as unknown as PlayGroundManager,
-    catalogManager,
-    {} as unknown as ModelsManager,
-    {} as EnvironmentManager,
-    {} as TelemetryLogger,
-  );
   vi.resetAllMocks();
   vi.mock('node:fs');
 });
 
-test('expect pull application to call the withProgress api method', async () => {
+describe('invalid user catalog', () => {
+  beforeEach(async () => {
+    vi.spyOn(fs.promises, 'readFile').mockResolvedValue('invalid json');
+    await catalogManager.loadCatalog();
+  });
+
+  test('expect correct model is returned with valid id', () => {
+    const model = catalogManager.getModelById('llama-2-7b-chat.Q5_K_S');
+    expect(model).toBeDefined();
+    expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
+    expect(model.registry).toEqual('Hugging Face');
+    expect(model.url).toEqual(
+      'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+    );
+  });
+
+  test('expect error if id does not correspond to any model', () => {
+    expect(() => catalogManager.getModelById('unknown')).toThrowError('No model found having id unknown');
+  });
+});
+
+test('expect correct model is returned from default catalog with valid id when no user catalog exists', async () => {
+  vi.spyOn(fs, 'existsSync').mockReturnValue(false);
+  await catalogManager.loadCatalog();
+  const model = catalogManager.getModelById('llama-2-7b-chat.Q5_K_S');
+  expect(model).toBeDefined();
+  expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
+  expect(model.registry).toEqual('Hugging Face');
+  expect(model.url).toEqual(
+    'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+  );
+});
+
+test('expect correct model is returned with valid id when the user catalog is valid', async () => {
   vi.spyOn(fs, 'existsSync').mockReturnValue(true);
   vi.spyOn(fs.promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
 
-  mocks.withProgressMock.mockResolvedValue(undefined);
-
   await catalogManager.loadCatalog();
-  await studioApiImpl.pullApplication('recipe 1');
-  expect(mocks.withProgressMock).toHaveBeenCalledOnce();
+  const model = catalogManager.getModelById('model1');
+  expect(model).toBeDefined();
+  expect(model.name).toEqual('Model 1');
+  expect(model.registry).toEqual('Hugging Face');
+  expect(model.url).toEqual('https://model1.example.com');
 });

@@ -8,6 +8,7 @@ import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
 import { catalog } from '/@/stores/catalog';
+import { environmentStates } from '/@/stores/environment-states';
 
 export let recipeId: string;
 
@@ -16,6 +17,10 @@ $: recipeStatus = $recipes.get(recipeId);
 // this will be selected by the user, init with the default model (the first in the catalog recipe?)
 $: selectedModelId = recipe?.models?.[0];
 $: model = $catalog.models.find(m => m.id === selectedModelId);
+$: envState = $environmentStates.find(env => env.recipeId === recipeId);
+
+// TODO(feloy) get rid of recipeStatus when envState is able to detect 'loading' state with #265
+$: isRunning = recipeStatus?.state !== 'loading' && envState?.status === 'running';
 
 let open: boolean = true;
 
@@ -40,7 +45,6 @@ const toggle = () => {
   console.log('on toggle', open);
   open = !open;
 }
-
 </script>
 
 <div class="lg:my-5 max-lg:w-full max-lg:min-w-full" class:w-[375px]={open} class:min-w-[375px]={open}>
@@ -52,21 +56,21 @@ const toggle = () => {
       </div>
 
       <div class="w-full bg-charcoal-600 rounded-md p-4">
-        {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
-          {#if recipeStatus.state === 'error'}
+        {#if isRunning || (recipeStatus !== undefined && recipeStatus.tasks.length > 0)}
+          {#if recipeStatus?.state === 'error'}
             <Button
               on:click={() => onPullingRequest()}
               class="w-full p-2"
               icon="{faRefresh}"
             >Retry</Button>
-          {:else if recipeStatus.state === 'loading' || recipeStatus.state === 'running'}
+          {:else if recipeStatus?.state === 'loading' || isRunning}
             <Button
-              inProgress={recipeStatus.state === 'loading'}
-              disabled={recipeStatus.state === 'running'}              
+              inProgress={recipeStatus?.state === 'loading'}
+              disabled={isRunning}              
               class="w-full p-2"
               icon="{faPlay}"
             >
-              {#if recipeStatus.state === 'loading'}Loading{:else}Running{/if}
+              {#if isRunning}Running{:else}Loading{/if}
             </Button>
           {/if}
         {:else}
@@ -79,9 +83,13 @@ const toggle = () => {
           </Button>
         {/if}
 
-        <div class="text-xs text-gray-700 mt-3">
-          This will git clone the application, download the model, build images, and run the application as a pod locally.
-        </div>
+        {#if isRunning}
+          <div></div>
+        {:else}
+          <div class="text-xs text-gray-700 mt-3">
+            This will git clone the application, download the model, build images, and run the application as a pod locally.
+          </div>
+        {/if}
         {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
           <div class="mt-4 text-sm font-normal py-2">
             <TasksProgress tasks="{recipeStatus.tasks}"/>

@@ -17,10 +17,21 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { test, expect } from 'vitest';
+import { test, expect, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 
 import TestTable from './TestTable.svelte';
+
+const mocks = vi.hoisted(() => ({
+  addEventListenerMock: vi.fn(),
+  removeEventListenerMock: vi.fn(),
+}))
+
+vi.spyOn(window, 'matchMedia').mockReturnValue({
+  addEventListener: mocks.addEventListenerMock,
+  removeEventListener: mocks.removeEventListenerMock,
+  matches: true,
+} as unknown as MediaQueryList);
 
 test('Expect basic table layout', async () => {
   // render the component

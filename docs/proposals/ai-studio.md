@@ -83,8 +83,10 @@ application:
       contextdir: model_services
       containerfile: cuda/Containerfile
       model-service: true
-      healthcheck:                              # added
-        test: curl -f localhost:7860 || exit 1  # added
+      readinessProbe:                           # added
+        exec:                                   # added
+          command:                              # added
+            - curl -f localhost:7860 || exit 1  # added
       backend: 
         - llama
       gpu-env:

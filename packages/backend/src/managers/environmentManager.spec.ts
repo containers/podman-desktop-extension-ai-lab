@@ -264,3 +264,30 @@ test('deleteEnvironment calls stopPod and removePod', async () => {
   expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'stopping');
   expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(2, 'recipe-id-1', 'removing');
 });
+
+test('deleteEnvironment calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
+  mocks.listPods.mockResolvedValue([
+    {
+      engineId: 'engine-1',
+      Id: 'pod-1',
+      Labels: {
+        'ai-studio-recipe-id': 'recipe-id-1',
+      },
+    },
+    {
+      engineId: 'engine-2',
+      Id: 'pod-2',
+      Labels: {
+        'ai-studio-recipe-id': 'recipe-id-2',
+      },
+    },
+  ]);
+  const setEnvironmentStatusSpy = vi.spyOn(manager, 'setEnvironmentStatus');
+  setEnvironmentStatusSpy.mockReturnValue();
+  mocks.stopPod.mockRejectedValue('something went wrong, pod already stopped...');
+  await manager.deleteEnvironment('recipe-id-1');
+  expect(mocks.stopPod).toHaveBeenCalledWith('engine-1', 'pod-1');
+  expect(mocks.removePod).toHaveBeenCalledWith('engine-1', 'pod-1');
+  expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'stopping');
+  expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(2, 'recipe-id-1', 'removing');
+});

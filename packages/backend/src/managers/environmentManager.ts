@@ -141,7 +141,14 @@ export class EnvironmentManager {
     try {
       this.setEnvironmentStatus(recipeId, 'stopping');
       const envPod = await this.getEnvironmentPod(recipeId);
-      await containerEngine.stopPod(envPod.engineId, envPod.Id);
+      try {
+        await containerEngine.stopPod(envPod.engineId, envPod.Id);
+      } catch (err: unknown) {
+        // continue when the pod is already stopped
+        if (!String(err).includes('pod already stopped')) {
+          throw err;
+        }
+      }
       this.setEnvironmentStatus(recipeId, 'removing');
       await containerEngine.removePod(envPod.engineId, envPod.Id);
     } catch (err: unknown) {

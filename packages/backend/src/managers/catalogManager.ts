@@ -53,6 +53,15 @@ export class CatalogManager {
   public getModels(): ModelInfo[] {
     return this.catalog.models;
   }
+
+  public getModelById(modelId: string): ModelInfo {
+    const model = this.getModels().find(m => modelId === m.id);
+    if (!model) {
+      throw new Error(`No model found having id ${modelId}`);
+    }
+    return model;
+  }
+
   public getRecipes(): Recipe[] {
     return this.catalog.recipes;
   }

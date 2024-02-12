@@ -46,7 +46,7 @@ export class GitManager {
     directory: string,
     origin: string,
     ref?: string,
-  ): Promise<{ ok?: boolean; error?: string; updatable?: boolean }> {
+  ): Promise<{ ok?: boolean; error?: string }> {
     const remotes: RemoteWithRefs[] = await this.getRepositoryRemotes(directory);
 
     if (!remotes.some(remote => remote.refs.fetch === origin)) {
@@ -64,20 +64,19 @@ export class GitManager {
     }
 
     if (status.modified.length > 0) {
-      return { error: 'The local repois' };
+      return { error: 'The local repository has modified files.' };
     }
 
     // If we are not in HEAD
     if (status.behind !== 0 || status.ahead !== 0) {
       return {
         error: `The local repository is not up to date ${status.behind} behind, ${status.ahead} ahead.`,
-        updatable: true,
       };
     }
 
     // Ensure the branch tracked is the one we want
     if (ref !== undefined && status.tracking !== ref) {
-      return { error: 'The local repository is not tracking the right branch.', updatable: true };
+      return { error: 'The local repository is not tracking the right branch.' };
     }
   }
 }

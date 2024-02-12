@@ -217,3 +217,30 @@ test('onMachineStop updates the playground state with no playground running', as
   manager.adoptRunningPlaygrounds();
   expect(sendPlaygroundStateSpy).toHaveBeenCalledOnce();
 });
+
+test('playground error not overwritten', async () => {
+  mocks.postMessage.mockResolvedValue(undefined);
+
+  const states = manager.getPlaygroundsState();
+  expect(states.length).toBe(0);
+
+  manager.setPlaygroundError('random', 'first');
+  expect(manager.getPlaygroundsState().length).toBe(1);
+
+  expect(manager.getPlaygroundsState()[0].error).toBe('first');
+
+  manager.setPlaygroundError('random', 'second');
+  expect(manager.getPlaygroundsState()[0].error).toBe('first');
+});
+
+test('error cleared when status changed', async () => {
+  mocks.postMessage.mockResolvedValue(undefined);
+
+  const states = manager.getPlaygroundsState();
+  expect(states.length).toBe(0);
+
+  manager.setPlaygroundError('random', 'error-msg');
+  manager.setPlaygroundStatus('random', 'running');
+
+  expect(manager.getPlaygroundsState()[0].error).toBeUndefined();
+});

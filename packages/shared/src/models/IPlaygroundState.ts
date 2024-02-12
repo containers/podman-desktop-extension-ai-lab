@@ -8,4 +8,5 @@ export interface PlaygroundState {
   };
   modelId: string;
   status: PlaygroundStatus;
+  error?: string;
 }

@@ -31,6 +31,7 @@ import type { ModelsManager } from './managers/modelsManager';
 import type { EnvironmentManager } from './managers/environmentManager';
 
 import * as fs from 'node:fs';
+import { timeout } from './utils/utils';
 
 vi.mock('./ai.json', () => {
   return {
@@ -61,12 +62,15 @@ vi.mock('@podman-desktop/api', () => {
 
 const mocks = vi.hoisted(() => ({
   withProgressMock: vi.fn(),
+  showWarningMessageMock: vi.fn(),
+  deleteEnvironmentMock: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
   return {
     window: {
       withProgress: mocks.withProgressMock,
+      showWarningMessage: mocks.showWarningMessageMock,
     },
     ProgressLocation: {
       TASK_WIDGET: 'TASK_WIDGET',
@@ -99,7 +103,9 @@ beforeEach(async () => {
     {} as unknown as PlayGroundManager,
     catalogManager,
     {} as unknown as ModelsManager,
-    {} as EnvironmentManager,
+    {
+      deleteEnvironment: mocks.deleteEnvironmentMock,
+    } as unknown as EnvironmentManager,
     {} as TelemetryLogger,
   );
   vi.resetAllMocks();
@@ -115,4 +121,14 @@ test('expect pull application to call the withProgress api method', async () => 
   await catalogManager.loadCatalog();
   await studioApiImpl.pullApplication('recipe 1');
   expect(mocks.withProgressMock).toHaveBeenCalledOnce();
+});
+
+test('requestRemoveEnvironment should ask confirmation', async () => {
+  vi.spyOn(catalogManager, 'getRecipeById').mockReturnValue({
+    name: 'Recipe 1',
+  });
+  mocks.showWarningMessageMock.mockResolvedValue('Confirm');
+  await studioApiImpl.requestRemoveEnvironment('recipe-id-1');
+  await timeout(0);
+  expect(mocks.deleteEnvironmentMock).toHaveBeenCalled();
 });

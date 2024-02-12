@@ -153,6 +153,34 @@ export class StudioApiImpl implements StudioAPI {
     return this.environmentManager.getEnvironmentsState();
   }
 
+  async requestRemoveEnvironment(recipeId: string): Promise<void> {
+    const recipe = this.catalogManager.getRecipeById(recipeId);
+    // Do not wait on the promise as the api would probably timeout before the user answer.
+    podmanDesktopApi.window
+      .showWarningMessage(
+        `Delete the environment "${recipe.name}"? This will delete the containers running the application and model.`,
+        'Confirm',
+        'Cancel',
+      )
+      .then((result: string) => {
+        if (result === 'Confirm') {
+          this.environmentManager.deleteEnvironment(recipeId).catch((err: unknown) => {
+            console.error(`error deleting environment pod: ${String(err)}`);
+            podmanDesktopApi.window
+              .showErrorMessage(
+                `Error deleting the environment "${recipe.name}". You can try to stop and delete the environment's pod manually.`,
+              )
+              .catch((err: unknown) => {
+                console.error(`Something went wrong with confirmation modals`, err);
+              });
+          });
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong with confirmation modals`, err);
+      });
+  }
+
   async telemetryLogUsage(
     eventName: string,
     data?: Record<string, unknown | podmanDesktopApi.TelemetryTrustedValue>,

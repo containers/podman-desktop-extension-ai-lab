@@ -67,7 +67,7 @@ export class GitManager {
       return { error: 'The local repository has modified files.' };
     }
 
-    if(status.ahead !== 0) {
+    if (status.ahead !== 0) {
       return {
         error: `The local repository has ${status.ahead} commit(s) ahead.`,
       };
@@ -75,11 +75,13 @@ export class GitManager {
 
     // Ensure the branch tracked is the one we want
     if (ref !== undefined && status.tracking !== ref) {
-      return { error: `The local repository is not tracking the right branch. (tracking ${status.tracking} when expected ${ref})` };
+      return {
+        error: `The local repository is not tracking the right branch. (tracking ${status.tracking} when expected ${ref})`,
+      };
     }
 
     // Ensure working with a clean branch
-    if(!status.isClean()) {
+    if (!status.isClean()) {
       return { error: 'The local repository is not clean.' };
     }
 

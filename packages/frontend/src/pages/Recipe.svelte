@@ -8,7 +8,6 @@ import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import { getIcon } from '/@/utils/categoriesUtils';
 import RecipeModels from './RecipeModels.svelte';
 import { catalog } from '/@/stores/catalog';
-import { recipes } from '/@/stores/recipe';
 import RecipeDetails from '/@/lib/RecipeDetails.svelte';
 
 export let recipeId: string;
@@ -16,39 +15,12 @@ export let recipeId: string;
 // The recipe model provided
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: categories = $catalog.categories;
-$: recipeStatus = $recipes.get(recipeId);
-
-// this will be selected by the user, init with the default model (the first in the catalog recipe?)
-$: selectedModelId = recipe?.models?.[0];
-$: model = $catalog.models.find(m => m.id === selectedModelId);
 
 // Send recipe info to telemetry
 let recipeTelemetry: string | undefined = undefined;
 $: if (recipe && recipe.id !== recipeTelemetry) {
   recipeTelemetry = recipe.id;
   studioClient.telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name });
-}
-
-const onPullingRequest = async () => {
-  await studioClient.pullApplication(recipeId);
-}
-
-const onClickRepository = () => {
-  if (recipe) {
-    studioClient.openURL(recipe.repository);
-  }
-}
-
-$: applicationDetailsPanel = 'block';
-$: applicationDetailsPanelToggle = 'hidden';
-function toggleApplicationDetailsPanel() {
-  if (applicationDetailsPanel === 'block') {
-    applicationDetailsPanel = 'hidden';
-    applicationDetailsPanelToggle = 'block';
-  } else {
-    applicationDetailsPanel = 'block';
-    applicationDetailsPanelToggle = 'hidden';
-  }
 }
 </script>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRotateRight, faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { getDisplayName } from '/@/utils/versionControlUtils';
 import { recipes } from '/@/stores/recipe';
@@ -8,19 +8,19 @@ import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
 import { catalog } from '/@/stores/catalog';
+import { router } from 'tinro';
 
 export let recipeId: string;
+export let modelId: string;
 
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: recipeStatus = $recipes.get(recipeId);
-// this will be selected by the user, init with the default model (the first in the catalog recipe?)
-$: selectedModelId = recipe?.models?.[0];
-$: model = $catalog.models.find(m => m.id === selectedModelId);
+$: model = $catalog.models.find(m => m.id === modelId);
 
 let open: boolean = true;
 
 const onPullingRequest = () => {
-  studioClient.pullApplication(recipeId).catch((err: unknown) => {
+  studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {
     console.error('Something went wrong while pulling application', err);
   });
 };
@@ -85,7 +85,7 @@ const toggle = () => {
                 <div class="flex justify-between items-center">
                   <span class="text-sm" aria-label="model-selected">{model?.name}</span>
                   {#if recipe?.models?.[0] === model.id}
-                    <i class="fas fa-star fa-xs text-gray-900"></i>
+                    <i class="fas fa-star fa-xs text-gray-900" title="Recommended model"></i>
                   {/if}
                 </div>
                 {#if model?.license}
@@ -97,6 +97,13 @@ const toggle = () => {
                     </div>
                   </div>
                 {/if}
+              </div>
+              <div class="py-0.5" class:hidden="{$router.path === `/recipes/${recipeId}/models`}">
+                <Button
+                  icon="{faArrowRotateRight}"
+                  on:click="{() => router.goto(`/recipes/${recipeId}/models`)}"
+                  title="Go to the Models page and select the model to use"
+                  class="h-full">Swap</Button>
               </div>
             </div>
             {#if recipe?.models?.[0] === model.id}

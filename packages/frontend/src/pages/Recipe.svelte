@@ -15,12 +15,18 @@ export let recipeId: string;
 // The recipe model provided
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: categories = $catalog.categories;
+let selectedModelId: string;
+$: selectedModelId = recipe?.models?.[0] ?? '';
 
 // Send recipe info to telemetry
 let recipeTelemetry: string | undefined = undefined;
 $: if (recipe && recipe.id !== recipeTelemetry) {
   recipeTelemetry = recipe.id;
   studioClient.telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name });
+}
+
+function setSelectedModel(modelId: string) {
+  selectedModelId = modelId;
 }
 </script>
 
@@ -42,12 +48,15 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
           <MarkdownRenderer source="{recipe?.readme}" />
         </Route>
         <Route path="/models" breadcrumb="History">
-          <RecipeModels modelsIds="{recipe?.models}" />
+          <RecipeModels
+            modelsIds="{recipe?.models}"
+            selectedModelId="{selectedModelId}"
+            setSelectedModel="{setSelectedModel}" />
         </Route>
       </div>
       <!-- recipe details -->
       <div class="inline-grid max-lg:order-first">
-        <RecipeDetails recipeId="{recipeId}" />
+        <RecipeDetails recipeId="{recipeId}" modelId="{selectedModelId}" />
       </div>
     </div>
   </svelte:fragment>

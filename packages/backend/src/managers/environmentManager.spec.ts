@@ -45,6 +45,8 @@ const mocks = vi.hoisted(() => ({
   onMachineStop: vi.fn(),
   listContainers: vi.fn(),
   listPods: vi.fn(),
+  stopPod: vi.fn(),
+  removePod: vi.fn(),
   logUsage: vi.fn(),
   logError: vi.fn(),
 }));
@@ -60,6 +62,8 @@ vi.mock('@podman-desktop/api', async () => {
       stopContainer: mocks.stopContainer,
       listContainers: mocks.listContainers,
       listPods: mocks.listPods,
+      stopPod: mocks.stopPod,
+      removePod: mocks.removePod,
     },
   };
 });
@@ -212,4 +216,51 @@ test('onPodRemove updates the environments state by removing the removed pod', a
   manager.adoptRunningEnvironments();
   await new Promise(resolve => setTimeout(resolve, 10));
   expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+});
+
+test('getEnvironmentPod', async () => {
+  mocks.listPods.mockResolvedValue([
+    {
+      Labels: {
+        'ai-studio-recipe-id': 'recipe-id-1',
+      },
+    },
+    {
+      Labels: {
+        'ai-studio-recipe-id': 'recipe-id-2',
+      },
+    },
+  ]);
+  const result = await manager.getEnvironmentPod('recipe-id-1');
+  expect(result).toEqual({
+    Labels: {
+      'ai-studio-recipe-id': 'recipe-id-1',
+    },
+  });
+});
+
+test('deleteEnvironment calls stopPod and removePod', async () => {
+  mocks.listPods.mockResolvedValue([
+    {
+      engineId: 'engine-1',
+      Id: 'pod-1',
+      Labels: {
+        'ai-studio-recipe-id': 'recipe-id-1',
+      },
+    },
+    {
+      engineId: 'engine-2',
+      Id: 'pod-2',
+      Labels: {
+        'ai-studio-recipe-id': 'recipe-id-2',
+      },
+    },
+  ]);
+  const setEnvironmentStatusSpy = vi.spyOn(manager, 'setEnvironmentStatus');
+  setEnvironmentStatusSpy.mockReturnValue();
+  await manager.deleteEnvironment('recipe-id-1');
+  expect(mocks.stopPod).toHaveBeenCalledWith('engine-1', 'pod-1');
+  expect(mocks.removePod).toHaveBeenCalledWith('engine-1', 'pod-1');
+  expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'stopping');
+  expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(2, 'recipe-id-1', 'removing');
 });

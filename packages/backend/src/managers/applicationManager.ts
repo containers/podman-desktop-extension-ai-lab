@@ -89,11 +89,13 @@ export class ApplicationManager {
     this.#environments = new Map();
   }
 
-  async pullApplication(recipe: Recipe, model: ModelInfo) {
+  async pullApplication(recipe: Recipe, model: ModelInfo, taskUtil?: RecipeStatusUtils) {
     const startTime = performance.now();
     try {
       // Create a TaskUtils object to help us
-      const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
+      if (!taskUtil) {
+        taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);        
+      }
 
       const localFolder = path.join(this.appUserDirectory, recipe.id);
 
@@ -675,33 +677,72 @@ export class ApplicationManager {
       });
   }
 
-  async deleteEnvironment(recipeId: string) {
+  async deleteEnvironment(recipeId: string, taskUtil?: RecipeStatusUtils) {
+    if (!taskUtil) {
+      taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+    }
     try {
-      this.setEnvironmentStatus(recipeId, 'stopping');
+      taskUtil.setTask({
+        id: `stopping-${recipeId}`,
+        state: 'loading',
+        name: `Stopping application`,
+      });
       const envPod = await this.getEnvironmentPod(recipeId);
       try {
         await containerEngine.stopPod(envPod.engineId, envPod.Id);
+        taskUtil.setTask({
+          id: `stopping-${recipeId}`,
+          state: 'success',
+          name: `Application stopped`,
+        });
       } catch (err: unknown) {
         // continue when the pod is already stopped
         if (!String(err).includes('pod already stopped')) {
+          taskUtil.setTask({
+            id: `stopping-${recipeId}`,
+            state: 'error',
+            error: 'error stopping the pod. Please try to remove the pod manually',
+            name: `Error stopping application`,
+          });
           throw err;
         }
+        taskUtil.setTask({
+          id: `stopping-${recipeId}`,
+          state: 'success',
+          name: `Application stopped`,
+        });
       }
-      this.setEnvironmentStatus(recipeId, 'removing');
+      taskUtil.setTask({
+        id: `removing-${recipeId}`,
+        state: 'loading',
+        name: `Removing application`,
+      });
       await containerEngine.removePod(envPod.engineId, envPod.Id);
+      taskUtil.setTask({
+        id: `removing-${recipeId}`,
+        state: 'success',
+        name: `Application removed`,
+      });
     } catch (err: unknown) {
-      this.setEnvironmentStatus(recipeId, 'unknown');
+      //this.setEnvironmentStatus(recipeId, 'unknown');
+      taskUtil.setTask({
+        id: `removing-${recipeId}`,
+        state: 'error',
+        error: 'error removing the pod. Please try to remove the pod manually',
+        name: `Error removing application`,
+      });
       throw err;
     }
   }
 
   async restartEnvironment(recipeId: string) {
+    const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
     const envPod = await this.getEnvironmentPod(recipeId);
-    await this.deleteEnvironment(recipeId);
+    await this.deleteEnvironment(recipeId, taskUtil);
     try {
       const recipe = this.catalogManager.getRecipeById(recipeId);
       const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
-      await this.pullApplication(recipe, model);
+      await this.pullApplication(recipe, model, taskUtil);
     } catch (err: unknown) {
       this.setEnvironmentStatus(recipeId, 'unknown');
       throw err;

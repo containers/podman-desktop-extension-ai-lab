@@ -30,7 +30,6 @@ import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
-import type { EnvironmentManager } from './managers/environmentManager';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -39,7 +38,6 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
-    private environmentManager: EnvironmentManager,
     private telemetry: podmanDesktopApi.TelemetryLogger,
   ) {}
 
@@ -148,7 +146,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async getEnvironmentsState(): Promise<EnvironmentState[]> {
-    return this.environmentManager.getEnvironmentsState();
+    return this.applicationManager.getEnvironmentsState();
   }
 
   async requestRemoveEnvironment(recipeId: string): Promise<void> {
@@ -162,7 +160,7 @@ export class StudioApiImpl implements StudioAPI {
       )
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.environmentManager.deleteEnvironment(recipeId).catch((err: unknown) => {
+          this.applicationManager.deleteEnvironment(recipeId).catch((err: unknown) => {
             console.error(`error deleting environment pod: ${String(err)}`);
             podmanDesktopApi.window
               .showErrorMessage(
@@ -190,7 +188,7 @@ export class StudioApiImpl implements StudioAPI {
       )
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.environmentManager.restartEnvironment(recipeId).catch((err: unknown) => {
+          this.applicationManager.restartEnvironment(recipeId).catch((err: unknown) => {
             console.error(`error restarting environment: ${String(err)}`);
             podmanDesktopApi.window
               .showErrorMessage(`Error restarting the environment "${recipe.name}"`)

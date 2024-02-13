@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
-import type { ContainerAttachedInfo, ImageInfo, PodInfo } from './applicationManager';
+import type { ContainerAttachedInfo, ImageInfo, ApplicationPodInfo } from './applicationManager';
 import { LABEL_RECIPE_ID, ApplicationManager } from './applicationManager';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';
@@ -778,7 +778,7 @@ describe('createApplicationPod', () => {
     });
   });
   test('call createAndAddContainersToPod after pod is created', async () => {
-    const pod: PodInfo = {
+    const pod: ApplicationPodInfo = {
       engineId: 'engine',
       Id: 'id',
       portmappings: [],
@@ -786,7 +786,7 @@ describe('createApplicationPod', () => {
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
     const createAndAddContainersToPodMock = vi
       .spyOn(manager, 'createAndAddContainersToPod')
-      .mockImplementation((_pod: PodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve([]));
+      .mockImplementation((_pod: ApplicationPodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve([]));
     await manager.createApplicationPod(
       { id: 'recipe-id' } as Recipe,
       { id: 'model-id' } as ModelInfo,
@@ -802,7 +802,7 @@ describe('createApplicationPod', () => {
     });
   });
   test('throw if createAndAddContainersToPod fails', async () => {
-    const pod: PodInfo = {
+    const pod: ApplicationPodInfo = {
       engineId: 'engine',
       Id: 'id',
       portmappings: [],
@@ -860,7 +860,7 @@ describe('runApplication', () => {
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
-  const pod: PodInfo = {
+  const pod: ApplicationPodInfo = {
     engineId: 'engine',
     Id: 'id',
     containers: [
@@ -910,7 +910,7 @@ describe('createAndAddContainersToPod', () => {
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
-  const pod: PodInfo = {
+  const pod: ApplicationPodInfo = {
     engineId: 'engine',
     Id: 'id',
     portmappings: [],

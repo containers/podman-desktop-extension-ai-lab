@@ -18,9 +18,12 @@
 
 import { type PodInfo, type Webview, containerEngine } from '@podman-desktop/api';
 import type { PodmanConnection } from './podmanConnection';
+import type { ApplicationManager } from './applicationManager';
 import { LABEL_RECIPE_ID } from './applicationManager';
 import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
 import type { EnvironmentState, EnvironmentStatus } from '@shared/src/models/IEnvironmentState';
+import type { CatalogManager } from './catalogManager';
+import { LABEL_MODEL_ID } from './playground';
 
 /**
  *  An Environment is represented as a Pod, independently on how it has been created (by applicationManager or any other manager)
@@ -32,6 +35,8 @@ export class EnvironmentManager {
   constructor(
     private webview: Webview,
     private podmanConnection: PodmanConnection,
+    private applicationManager: ApplicationManager,
+    private catalogManager: CatalogManager,
   ) {
     this.#environments = new Map();
   }
@@ -151,6 +156,19 @@ export class EnvironmentManager {
       }
       this.setEnvironmentStatus(recipeId, 'removing');
       await containerEngine.removePod(envPod.engineId, envPod.Id);
+    } catch (err: unknown) {
+      this.setEnvironmentStatus(recipeId, 'unknown');
+      throw err;
+    }
+  }
+
+  async restartEnvironment(recipeId: string) {
+    const envPod = await this.getEnvironmentPod(recipeId);
+    await this.deleteEnvironment(recipeId);
+    try {
+      const recipe = this.catalogManager.getRecipeById(recipeId);
+      const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
+      await this.applicationManager.pullApplication(recipe, model);
     } catch (err: unknown) {
       this.setEnvironmentStatus(recipeId, 'unknown');
       throw err;

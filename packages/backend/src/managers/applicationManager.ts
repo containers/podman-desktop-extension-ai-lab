@@ -32,6 +32,7 @@ import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
+import { LABEL_MODEL_ID } from './playground';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 
@@ -102,7 +103,7 @@ export class ApplicationManager {
       );
 
       // create a pod containing all the containers to run the application
-      const podInfo = await this.createApplicationPod(recipe, images, modelPath, taskUtil);
+      const podInfo = await this.createApplicationPod(recipe, model, images, modelPath, taskUtil);
 
       await this.runApplication(podInfo, taskUtil);
       taskUtil.setStatus('running');
@@ -183,6 +184,7 @@ export class ApplicationManager {
 
   async createApplicationPod(
     recipe: Recipe,
+    model: ModelInfo,
     images: ImageInfo[],
     modelPath: string,
     taskUtil: RecipeStatusUtils,
@@ -190,7 +192,7 @@ export class ApplicationManager {
     // create empty pod
     let podInfo: PodInfo;
     try {
-      podInfo = await this.createPod(recipe, images);
+      podInfo = await this.createPod(recipe, model, images);
     } catch (e) {
       console.error('error when creating pod', e);
       taskUtil.setTask({
@@ -301,7 +303,7 @@ export class ApplicationManager {
     return containers;
   }
 
-  async createPod(recipe: Recipe, images: ImageInfo[]): Promise<PodInfo> {
+  async createPod(recipe: Recipe, model: ModelInfo, images: ImageInfo[]): Promise<PodInfo> {
     // find the exposed port of the sample app so we can open its ports on the new pod
     const sampleAppImageInfo = images.find(image => !image.modelService);
     if (!sampleAppImageInfo) {
@@ -331,6 +333,7 @@ export class ApplicationManager {
       portmappings: portmappings,
       labels: {
         [LABEL_RECIPE_ID]: recipe.id,
+        [LABEL_MODEL_ID]: model.id,
       },
     });
     return {

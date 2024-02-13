@@ -27,6 +27,8 @@ import type {
   podStopHandle,
   startupHandle,
 } from './podmanConnection';
+import type { ApplicationManager } from './applicationManager';
+import type { CatalogManager } from './catalogManager';
 
 let manager: EnvironmentManager;
 
@@ -82,6 +84,8 @@ beforeEach(() => {
       startupSubscribe: mocks.startupSubscribe,
       onMachineStop: mocks.onMachineStop,
     } as unknown as PodmanConnection,
+    {} as ApplicationManager,
+    {} as CatalogManager,
   );
 });
 

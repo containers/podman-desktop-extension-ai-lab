@@ -1,8 +1,9 @@
 <script lang="ts">
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faRotateForward, faTrash } from "@fortawesome/free-solid-svg-icons";
 import ListItemButtonIcon from "../../button/ListItemButtonIcon.svelte";
 import { studioClient } from "/@/utils/client";
 import type { EnvironmentState } from "@shared/src/models/IEnvironmentState";
+import Spinner from "../../button/Spinner.svelte";
 export let object: EnvironmentState;
 
 function deleteEnvironment() {
@@ -11,11 +12,27 @@ function deleteEnvironment() {
   });
 }
 
+function restartEnvironment() {
+  studioClient.requestRestartEnvironment(object.recipeId).catch((err) => {
+    console.error(`Something went wrong while trying to restart environment: ${String(err)}.`);
+  });
+}
 </script>
 
-<ListItemButtonIcon
-  icon={faTrash}
-  onClick={() => deleteEnvironment()}
-  title="Delete Environment"
-  inProgress={object.status === 'stopping' || object.status === 'removing'}
-/>
+
+{#if object.status === 'stopping' || object.status === 'removing'}
+  <div class="pr-4"><Spinner size="1.4em" /></div>
+{:else}
+  <ListItemButtonIcon
+    icon={faTrash}
+    onClick={() => deleteEnvironment()}
+    title="Delete Environment"
+  />
+
+  <ListItemButtonIcon
+    icon={faRotateForward}
+    onClick={() => restartEnvironment()}
+    title="Restart Environment"
+  />
+{/if}
+

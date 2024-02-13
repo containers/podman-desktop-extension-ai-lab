@@ -31,6 +31,7 @@ export abstract class StudioAPI {
   abstract navigateToContainer(containerId: string): Promise<void>;
   abstract getEnvironmentsState(): Promise<EnvironmentState[]>;
   abstract requestRemoveEnvironment(recipeId: string): Promise<void>;
+  abstract requestRestartEnvironment(recipeId: string): Promise<void>;
 
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;

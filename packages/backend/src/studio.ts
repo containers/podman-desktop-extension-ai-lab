@@ -133,14 +133,11 @@ export class Studio {
       appUserDirectory,
       gitManager,
       recipeStatusRegistry,
-      this.modelsManager,
-      this.telemetry,
-    );
-    const envManager = new EnvironmentManager(
       this.#panel.webview,
       podmanConnection,
-      applicationManager,
       this.catalogManager,
+      this.modelsManager,
+      this.telemetry,
     );
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
@@ -154,7 +151,6 @@ export class Studio {
       this.playgroundManager,
       this.catalogManager,
       this.modelsManager,
-      envManager,
       this.telemetry,
     );
 
@@ -162,7 +158,7 @@ export class Studio {
     await this.modelsManager.loadLocalModels();
     podmanConnection.init();
     this.playgroundManager.adoptRunningPlaygrounds();
-    envManager.adoptRunningEnvironments();
+    applicationManager.adoptRunningEnvironments();
 
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

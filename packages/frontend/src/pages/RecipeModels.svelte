@@ -33,7 +33,7 @@ const columns: Column<RecipeModelInfo>[] = [
 ];
 const row = new Row<RecipeModelInfo>({});
 
-function resetUsageModels(selected: RecipeModelInfo) {
+function setModelToUse(selected: RecipeModelInfo) {
   setSelectedModel(selected.id);
 }
 </script>
@@ -48,7 +48,7 @@ function resetUsageModels(selected: RecipeModelInfo) {
           columns="{columns}"
           row="{row}"
           headerBackground="bg-transparent"
-          on:update="{e => resetUsageModels(e.detail)}">
+          on:update="{e => setModelToUse(e.detail)}">
         </Table>
       </div>
     </div>

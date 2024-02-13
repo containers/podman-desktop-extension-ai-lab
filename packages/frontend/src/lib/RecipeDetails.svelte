@@ -98,7 +98,10 @@ const toggle = () => {
                   </div>
                 {/if}
               </div>
-              <div class="py-0.5" class:hidden="{$router.path === `/recipes/${recipeId}/models`}">
+              <div
+                class="py-0.5"
+                class:hidden="{$router.path === `/recipes/${recipeId}/models`}"
+                aria-label="swap model panel">
                 <Button
                   icon="{faArrowRotateRight}"
                   on:click="{() => router.goto(`/recipes/${recipeId}/models`)}"

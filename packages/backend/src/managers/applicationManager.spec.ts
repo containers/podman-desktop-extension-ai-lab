@@ -33,6 +33,7 @@ import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
 import type { Webview, TelemetryLogger } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
+import type { PodmanConnection } from './podmanConnection';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -185,6 +186,9 @@ describe('pullApplication', () => {
       {
         setStatus: setStatusMock,
       } as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       modelsManager,
       telemetryLogger,
     );
@@ -362,6 +366,9 @@ describe('doCheckout', () => {
         cloneRepository: cloneRepositoryMock,
       } as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -396,6 +403,9 @@ describe('doCheckout', () => {
         cloneRepository: cloneRepositoryMock,
       } as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -426,6 +436,9 @@ describe('getConfiguration', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -440,6 +453,9 @@ describe('getConfiguration', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -491,6 +507,9 @@ describe('filterContainers', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -527,6 +546,9 @@ describe('filterContainers', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -573,6 +595,9 @@ describe('filterContainers', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -589,6 +614,9 @@ describe('getRandomName', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -601,6 +629,9 @@ describe('getRandomName', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -624,6 +655,9 @@ describe('buildImages', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -694,6 +728,9 @@ describe('createPod', async () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -755,6 +792,9 @@ describe('createApplicationPod', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -837,6 +877,9 @@ describe('restartContainerWhenModelServiceIsUp', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -857,6 +900,9 @@ describe('runApplication', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -907,6 +953,9 @@ describe('createAndAddContainersToPod', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );

@@ -20,10 +20,10 @@ import '@testing-library/jest-dom/vitest';
 import { test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import ColumnName from './ColumnName.svelte';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import * as catalogStore from '/@/stores/catalog';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import { readable } from 'svelte/store';
+import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 
 vi.mock('/@/stores/catalog', async () => {
   return {
@@ -58,7 +58,7 @@ const initialCatalog: Catalog = {
 test('display name', async () => {
   const obj = {
     recipeId: 'recipe 1',
-  } as unknown as EnvironmentState;
+  } as unknown as RecipeStatus;
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   render(ColumnName, { object: obj });
 

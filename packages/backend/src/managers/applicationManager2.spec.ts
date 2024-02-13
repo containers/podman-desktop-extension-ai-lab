@@ -17,8 +17,7 @@
  ***********************************************************************/
 
 import { beforeEach, expect, test, vi } from 'vitest';
-import { EnvironmentManager } from './environmentManager';
-import type { PodInfo, Webview } from '@podman-desktop/api';
+import type { PodInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
 import type {
   PodmanConnection,
   machineStopHandle,
@@ -27,10 +26,13 @@ import type {
   podStopHandle,
   startupHandle,
 } from './podmanConnection';
-import type { ApplicationManager } from './applicationManager';
+import { ApplicationManager } from './applicationManager';
 import type { CatalogManager } from './catalogManager';
+import type { ModelsManager } from './modelsManager';
+import type { GitManager } from './gitManager';
+import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 
-let manager: EnvironmentManager;
+let manager: ApplicationManager;
 
 const mocks = vi.hoisted(() => ({
   postMessage: vi.fn(),
@@ -51,6 +53,12 @@ const mocks = vi.hoisted(() => ({
   removePod: vi.fn(),
   logUsage: vi.fn(),
   logError: vi.fn(),
+  getStatus: vi.fn(),
+  getStatuses: vi.fn(),
+  setStatus: vi.fn(),
+  setStateAllRecipes: vi.fn(),
+  deleteStatus: vi.fn(),
+  setRecipeState: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -73,7 +81,17 @@ vi.mock('@podman-desktop/api', async () => {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  manager = new EnvironmentManager(
+  manager = new ApplicationManager(
+    '/home/user/aistudio',
+    {} as GitManager,
+    {
+      getStatus: mocks.getStatus,
+      getStatuses: mocks.getStatuses,
+      setStatus: mocks.setStatus,
+      setStateAllRecipes: mocks.setStateAllRecipes,
+      deleteStatus: mocks.deleteStatus,
+      setRecipeState: mocks.setRecipeState,
+    } as unknown as RecipeStatusRegistry,
     {
       postMessage: mocks.postMessage,
     } as unknown as Webview,
@@ -84,8 +102,9 @@ beforeEach(() => {
       startupSubscribe: mocks.startupSubscribe,
       onMachineStop: mocks.onMachineStop,
     } as unknown as PodmanConnection,
-    {} as ApplicationManager,
     {} as CatalogManager,
+    {} as ModelsManager,
+    {} as TelemetryLogger,
   );
 });
 
@@ -100,17 +119,19 @@ test('adoptRunningEnvironments updates the environment state with the found pod'
   mocks.startupSubscribe.mockImplementation((f: startupHandle) => {
     f();
   });
-  const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
+  // no status for the environment yet
+  mocks.getStatus.mockReturnValue(false);
   manager.adoptRunningEnvironments();
   await new Promise(resolve => setTimeout(resolve, 0));
-  expect(updateEnvironmentStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', {
+  expect(mocks.setStatus).toHaveBeenNthCalledWith(1, 'recipe-id-1', {
     pod: {
       Labels: {
         'ai-studio-recipe-id': 'recipe-id-1',
       },
     },
     recipeId: 'recipe-id-1',
-    status: 'running',
+    state: 'running',
+    tasks: [],
   });
 });
 
@@ -119,10 +140,11 @@ test('adoptRunningEnvironments does not update the environment state with the fo
   mocks.startupSubscribe.mockImplementation((f: startupHandle) => {
     f();
   });
-  const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
+  // no status for the environment yet
+  mocks.getStatus.mockReturnValue(false);
   manager.adoptRunningEnvironments();
   await new Promise(resolve => setTimeout(resolve, 0));
-  expect(updateEnvironmentStateSpy).not.toHaveBeenCalled();
+  expect(mocks.setStatus).not.toHaveBeenCalled();
 });
 
 test('onMachineStop updates the environments state with no environment running', async () => {
@@ -130,9 +152,8 @@ test('onMachineStop updates the environments state with no environment running',
   mocks.onMachineStop.mockImplementation((f: machineStopHandle) => {
     f();
   });
-  const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
   manager.adoptRunningEnvironments();
-  expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
+  expect(mocks.setStateAllRecipes).toHaveBeenCalledOnce();
 });
 
 test('onPodStart updates the environments state with the started pod', async () => {
@@ -148,9 +169,8 @@ test('onPodStart updates the environments state with the started pod', async () 
       },
     } as unknown as PodInfo);
   });
-  const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
   manager.adoptRunningEnvironments();
-  expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
+  expect(mocks.setStatus).toHaveBeenCalledOnce();
 });
 
 test('onPodStart does no update the environments state with the started pod without labels', async () => {
@@ -163,9 +183,8 @@ test('onPodStart does no update the environments state with the started pod with
       kind: 'podman',
     } as unknown as PodInfo);
   });
-  const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
   manager.adoptRunningEnvironments();
-  expect(sendEnvironmentStateSpy).not.toHaveBeenCalledOnce();
+  expect(mocks.setStatus).not.toHaveBeenCalledOnce();
 });
 
 test('onPodStop updates the environments state by removing the stopped pod', async () => {
@@ -192,10 +211,11 @@ test('onPodStop updates the environments state by removing the stopped pod', asy
       } as unknown as PodInfo);
     }, 1);
   });
-  const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+  mocks.getStatus.mockReturnValueOnce(false).mockReturnValueOnce(true);
   manager.adoptRunningEnvironments();
   await new Promise(resolve => setTimeout(resolve, 10));
-  expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+  expect(mocks.setStatus).toHaveBeenCalledTimes(1);
+  expect(mocks.deleteStatus).toHaveBeenCalledTimes(1);
 });
 
 test('onPodRemove updates the environments state by removing the removed pod', async () => {
@@ -216,10 +236,21 @@ test('onPodRemove updates the environments state by removing the removed pod', a
       f('pod-id-1');
     }, 1);
   });
-  const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+  mocks.getStatuses.mockReturnValue([
+    {
+      pod: {
+        Id: 'pod-id-1',
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      },
+    },
+  ]);
+  mocks.getStatus.mockReturnValueOnce(false).mockReturnValueOnce(true);
   manager.adoptRunningEnvironments();
   await new Promise(resolve => setTimeout(resolve, 10));
-  expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+  expect(mocks.setStatus).toHaveBeenCalledTimes(1);
+  expect(mocks.deleteStatus).toHaveBeenCalledTimes(1);
 });
 
 test('getEnvironmentPod', async () => {
@@ -260,13 +291,11 @@ test('deleteEnvironment calls stopPod and removePod', async () => {
       },
     },
   ]);
-  const setEnvironmentStatusSpy = vi.spyOn(manager, 'setEnvironmentStatus');
-  setEnvironmentStatusSpy.mockReturnValue();
   await manager.deleteEnvironment('recipe-id-1');
   expect(mocks.stopPod).toHaveBeenCalledWith('engine-1', 'pod-1');
   expect(mocks.removePod).toHaveBeenCalledWith('engine-1', 'pod-1');
-  expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'stopping');
-  expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(2, 'recipe-id-1', 'removing');
+  expect(mocks.setRecipeState).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'stopping');
+  expect(mocks.setRecipeState).toHaveBeenNthCalledWith(2, 'recipe-id-1', 'removing');
 });
 
 test('deleteEnvironment calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
@@ -286,12 +315,10 @@ test('deleteEnvironment calls stopPod and removePod even if stopPod fails becaus
       },
     },
   ]);
-  const setEnvironmentStatusSpy = vi.spyOn(manager, 'setEnvironmentStatus');
-  setEnvironmentStatusSpy.mockReturnValue();
   mocks.stopPod.mockRejectedValue('something went wrong, pod already stopped...');
   await manager.deleteEnvironment('recipe-id-1');
   expect(mocks.stopPod).toHaveBeenCalledWith('engine-1', 'pod-1');
   expect(mocks.removePod).toHaveBeenCalledWith('engine-1', 'pod-1');
-  expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'stopping');
-  expect(setEnvironmentStatusSpy).toHaveBeenNthCalledWith(2, 'recipe-id-1', 'removing');
+  expect(mocks.setRecipeState).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'stopping');
+  expect(mocks.setRecipeState).toHaveBeenNthCalledWith(2, 'recipe-id-1', 'removing');
 });

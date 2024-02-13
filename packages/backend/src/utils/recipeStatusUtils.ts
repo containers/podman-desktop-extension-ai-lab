@@ -19,6 +19,7 @@
 import type { RecipeStatus, RecipeStatusState } from '@shared/src/models/IRecipeStatus';
 import type { Task } from '@shared/src/models/ITask';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
+import type { PodInfo } from '@podman-desktop/api';
 
 export class RecipeStatusUtils {
   private tasks: Map<string, Task> = new Map<string, Task>();
@@ -83,6 +84,7 @@ export class RecipeStatusUtils {
     return {
       recipeId: this.recipeId,
       state: this.state,
+      pod: {} as PodInfo,
       tasks: Array.from(this.tasks.values()),
     };
   }

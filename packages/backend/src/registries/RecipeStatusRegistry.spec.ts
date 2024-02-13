@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { expect, test, vi, beforeEach } from 'vitest';
 import type { TaskRegistry } from './TaskRegistry';
-import type { Webview } from '@podman-desktop/api';
+import type { PodInfo, Webview } from '@podman-desktop/api';
 import { RecipeStatusRegistry } from './RecipeStatusRegistry';
 import { MSG_NEW_RECIPE_STATE } from '@shared/Messages';
 
@@ -48,6 +48,7 @@ test('taskRegistry should have been updated', () => {
   recipeStatusRegistry.setStatus('random', {
     recipeId: 'random',
     state: 'none',
+    pod: {} as PodInfo,
     tasks: [
       {
         id: 'task-1',
@@ -69,6 +70,7 @@ test('webview should have been notified', () => {
   recipeStatusRegistry.setStatus('random', {
     recipeId: 'random',
     state: 'none',
+    pod: {} as PodInfo,
     tasks: [],
   });
   expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1, {
@@ -78,6 +80,7 @@ test('webview should have been notified', () => {
         'random',
         {
           recipeId: 'random',
+          pod: {},
           state: 'none',
           tasks: [],
         },
@@ -91,6 +94,7 @@ test('recipe status should have been updated', () => {
   recipeStatusRegistry.setStatus('random', {
     recipeId: 'random',
     state: 'none',
+    pod: {} as PodInfo,
     tasks: [
       {
         id: 'task-1',

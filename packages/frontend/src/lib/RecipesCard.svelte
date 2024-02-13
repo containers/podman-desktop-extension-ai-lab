@@ -4,16 +4,16 @@ import { getIcon } from '/@/utils/categoriesUtils';
 import type { Category } from '@shared/src/models/ICategory';
 import { catalog } from '/@/stores/catalog';
 
-export let category: Category
+export let category: Category;
 
 $: categories = $catalog.categories;
-$: recipes = $catalog.recipes.filter(r => r.categories.includes(category.id)).map(r => ({...r, icon: category.id}));
+$: recipes = $catalog.recipes.filter(r => r.categories.includes(category.id)).map(r => ({ ...r, icon: category.id }));
 
-export let primaryBackground: string = "bg-charcoal-800"
-export let secondaryBackground: string = "bg-charcoal-700"
+export let primaryBackground: string = 'bg-charcoal-800';
+export let secondaryBackground: string = 'bg-charcoal-700';
 
-export let displayCategory: boolean = true
-export let displayDescription: boolean = true
+export let displayCategory: boolean = true;
+export let displayDescription: boolean = true;
 </script>
 
 <Card title="{category.name}" classes="{primaryBackground} {$$props.class} text-xl font-medium mt-4">
@@ -27,16 +27,14 @@ export let displayDescription: boolean = true
           href="/recipes/{recipe.id}"
           title="{recipe.name}"
           icon="{getIcon(recipe.icon)}"
-          classes="{secondaryBackground} flex-grow p-4"
-        >
+          classes="{secondaryBackground} flex-grow p-4">
           <div slot="content" class="text-base font-normal mt-2">
             {#if displayCategory}
               {#each recipe.categories as categoryId}
                 <Card
                   title="{categories.find(category => category.id === categoryId)?.name || '?'}"
                   classes="{primaryBackground} p-1"
-                  primaryBackground="{primaryBackground}"
-                />
+                  primaryBackground="{primaryBackground}" />
               {/each}
             {/if}
             {#if displayDescription}

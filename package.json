@@ -12,8 +12,8 @@
   "scripts": {
     "build": "concurrently \"yarn --cwd packages/frontend build\" \"yarn --cwd packages/backend build\"",
     "watch": "concurrently \"yarn --cwd packages/frontend watch\" \"yarn --cwd packages/backend watch\"",
-    "format:check": "prettier --check \"**/src/**/*.ts\"",
-    "format:fix": "prettier --write \"**/src/**/*.ts\"",
+    "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
+    "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
     "lint:check": "eslint . --ext js,ts,tsx",
     "lint:fix": "eslint . --fix --ext js,ts,tsx",
     "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage",
@@ -39,7 +39,8 @@
     "eslint-plugin-no-null": "^1.0.2",
     "eslint-plugin-redundant-undefined": "^1.0.0",
     "eslint-plugin-sonarjs": "^0.23.0",
-    "prettier": "^3.1.1",
+    "prettier": "^3.2.5",
+    "prettier-plugin-svelte": "^3.1.2",
     "typescript": "5.3.3",
     "vite": "^5.0.10",
     "vitest": "^1.1.0"

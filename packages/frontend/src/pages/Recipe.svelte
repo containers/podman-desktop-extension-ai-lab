@@ -24,7 +24,11 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
 }
 </script>
 
-<NavPage title="{recipe?.name || ''}" icon="{getIcon(recipe?.icon)}" searchEnabled="{false}" contentBackground='bg-charcoal-500'>
+<NavPage
+  title="{recipe?.name || ''}"
+  icon="{getIcon(recipe?.icon)}"
+  searchEnabled="{false}"
+  contentBackground="bg-charcoal-500">
   <svelte:fragment slot="tabs">
     <Tab title="Summary" url="{recipeId}" />
     <Tab title="Models" url="{recipeId}/models" />
@@ -34,16 +38,16 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
     <div class="grid w-full overflow-y-auto lg:grid-cols-[1fr_auto] max-lg:grid-cols-[auto]">
       <!-- recipe content -->
       <div class="p-5 inline-grid">
-        <Route path="/" breadcrumb="Summary" >
-          <MarkdownRenderer source="{recipe?.readme}"/>
+        <Route path="/" breadcrumb="Summary">
+          <MarkdownRenderer source="{recipe?.readme}" />
         </Route>
         <Route path="/models" breadcrumb="History">
-          <RecipeModels modelsIds={recipe?.models} />
+          <RecipeModels modelsIds="{recipe?.models}" />
         </Route>
       </div>
       <!-- recipe details -->
       <div class="inline-grid max-lg:order-first">
-        <RecipeDetails recipeId={recipeId} />
+        <RecipeDetails recipeId="{recipeId}" />
       </div>
     </div>
   </svelte:fragment>
@@ -52,8 +56,7 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
       {#each recipe?.categories || [] as categoryId}
         <Card
           title="{categories.find(category => category.id === categoryId)?.name || '?'}"
-          classes="bg-charcoal-800 p-1 text-xs w-fit"
-        />
+          classes="bg-charcoal-800 p-1 text-xs w-fit" />
       {/each}
     </div>
   </svelte:fragment>

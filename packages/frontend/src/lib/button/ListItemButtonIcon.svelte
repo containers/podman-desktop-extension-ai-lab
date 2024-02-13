@@ -6,7 +6,9 @@ export let title: string;
 export let icon: IconDefinition;
 export let hidden = false;
 export let enabled: boolean = true;
-export let onClick: () => void = () => {console.log('==> 0')};
+export let onClick: () => void = () => {
+  console.log('==> 0');
+};
 export let detailed = false;
 export let inProgress = false;
 export let iconOffset = '';
@@ -25,7 +27,12 @@ const buttonClass =
 const buttonDisabledClass =
   'm-0.5 text-gray-900 font-medium rounded-full inline-flex items-center px-2 py-2 text-center';
 
-$: handleClick = enabled && !inProgress ? onClick : () => { console.log('==> 1')};
+$: handleClick =
+  enabled && !inProgress
+    ? onClick
+    : () => {
+        console.log('==> 1');
+      };
 $: styleClass = detailed
   ? enabled && !inProgress
     ? buttonDetailedClass

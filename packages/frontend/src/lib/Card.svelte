@@ -1,17 +1,17 @@
 <script lang="ts">
 import Fa from 'svelte-fa';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
-import { createEventDispatcher } from 'svelte'
-const dispatch = createEventDispatcher()
+import { createEventDispatcher } from 'svelte';
+const dispatch = createEventDispatcher();
 
 export let title: string | undefined = undefined;
-export let classes: string = "";
+export let classes: string = '';
 
 export let href: string | undefined = undefined;
 
-export let icon: IconDefinition | undefined = undefined
+export let icon: IconDefinition | undefined = undefined;
 
-export let primaryBackground: string = "bg-charcoal-800"
+export let primaryBackground: string = 'bg-charcoal-800';
 </script>
 
 <a class="no-underline" href="{href}">
@@ -19,7 +19,9 @@ export let primaryBackground: string = "bg-charcoal-800"
     <div class="flex flex-row">
       <div class="flex flex-row items-center">
         {#if icon}
-          <button on:click={() => dispatch('click')} class="{primaryBackground} rounded-full w-8 h-8 flex items-center justify-center mr-3">
+          <button
+            on:click="{() => dispatch('click')}"
+            class="{primaryBackground} rounded-full w-8 h-8 flex items-center justify-center mr-3">
             <Fa size="20" class="text-purple-500 cursor-pointer" icon="{icon}" />
           </button>
         {/if}
@@ -37,4 +39,3 @@ export let primaryBackground: string = "bg-charcoal-800"
     </div>
   </div>
 </a>
-

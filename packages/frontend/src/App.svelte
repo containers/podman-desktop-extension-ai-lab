@@ -27,48 +27,47 @@ onMount(() => {
 });
 </script>
 
-
 <Route path="/*" breadcrumb="Home" isAppMounted="{isMounted}" let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-charcoal-700">
     <div class="flex flex-row w-full h-full overflow-hidden">
-      <Navigation meta="{meta}"/>
+      <Navigation meta="{meta}" />
 
       <!-- Dashboard -->
       <Route path="/" breadcrumb="IA Studio Dashboard Page">
-        <Dashboard/>
+        <Dashboard />
       </Route>
 
       <!-- Recipes Catalog -->
       <Route path="/recipes" breadcrumb="Recipes Catalog">
-        <Recipes/>
+        <Recipes />
       </Route>
 
       <!-- Environments -->
       <Route path="/environments" breadcrumb="Environments">
-        <Environments/>
+        <Environments />
       </Route>
 
       <!-- Models -->
       <Route path="/models" breadcrumb="Models">
-        <Models/>
+        <Models />
       </Route>
 
       <!-- Registries -->
       <Route path="/registries" breadcrumb="Registries">
-        <Registries/>
+        <Registries />
       </Route>
 
       <!-- Preferences -->
       <Route path="/preferences" breadcrumb="Preferences">
-        <Preferences/>
+        <Preferences />
       </Route>
 
       <Route path="/recipes/:id/*" breadcrumb="Recipe Details" let:meta>
-        <Recipe recipeId="{meta.params.id}"/>
+        <Recipe recipeId="{meta.params.id}" />
       </Route>
 
       <Route path="/models/:id/*" breadcrumb="Model Details" let:meta>
-        <Model modelId="{meta.params.id}"/>
+        <Model modelId="{meta.params.id}" />
       </Route>
     </div>
   </main>

@@ -1,6 +1,6 @@
 <script lang="ts">
 // Full duplicates
-  import type { TinroRouteMeta } from 'tinro';
+import type { TinroRouteMeta } from 'tinro';
 
 export let title: string;
 export let href: string;

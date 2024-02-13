@@ -39,33 +39,33 @@ let filteredModels: ModelInfo[] = [];
 function filterModels(): void {
   // Let's collect the models we do not want to show (loading, error).
   const modelsId: string[] = tasks.reduce((previousValue, currentValue) => {
-    if(currentValue.labels !== undefined) {
-      previousValue.push(currentValue.labels["model-pulling"]);
+    if (currentValue.labels !== undefined) {
+      previousValue.push(currentValue.labels['model-pulling']);
     }
     return previousValue;
   }, [] as string[]);
-  filteredModels = models.filter((model) => !modelsId.includes(model.id));
+  filteredModels = models.filter(model => !modelsId.includes(model.id));
 }
 
 onMount(() => {
   // Pulling update
   const modelsPullingUnsubscribe = modelsPulling.subscribe(runningTasks => {
     // Only display error | loading tasks.
-    tasks = runningTasks.filter((task) => task.state !== 'success');
+    tasks = runningTasks.filter(task => task.state !== 'success');
     loading = false;
     filterModels();
   });
 
   // Subscribe to the models store
-  const localModelsUnsubscribe = modelsInfo.subscribe((value) => {
+  const localModelsUnsubscribe = modelsInfo.subscribe(value => {
     models = value;
     filterModels();
-  })
+  });
 
   return () => {
     modelsPullingUnsubscribe();
     localModelsUnsubscribe();
-  }
+  };
 });
 </script>
 
@@ -79,18 +79,13 @@ onMount(() => {
               <Card classes="bg-charcoal-800 mt-4">
                 <div slot="content" class="text-base font-normal p-2">
                   <div class="text-base mb-2">Downloading models</div>
-                  <TasksProgress tasks="{tasks}"/>
+                  <TasksProgress tasks="{tasks}" />
                 </div>
               </Card>
             </div>
           {/if}
           {#if filteredModels.length > 0}
-            <Table
-              kind="model"
-              data="{filteredModels}"
-              columns="{columns}"
-              row={row}>
-            </Table>
+            <Table kind="model" data="{filteredModels}" columns="{columns}" row="{row}"></Table>
           {:else}
             <div role="status">There is no model yet</div>
           {/if}

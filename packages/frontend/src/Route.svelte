@@ -27,8 +27,8 @@ const route = createRouteObject({
     meta = newMeta;
     params = meta.params;
 
-    if(isAppMounted) {
-      saveRouterState({url: newMeta.url});
+    if (isAppMounted) {
+      saveRouterState({ url: newMeta.url });
     }
   },
 });

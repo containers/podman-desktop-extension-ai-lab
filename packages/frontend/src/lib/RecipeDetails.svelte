@@ -9,9 +9,9 @@ import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
 import { catalog } from '/@/stores/catalog';
 import { router } from 'tinro';
-  import { environmentStates } from '../stores/environment-states';
-  import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
-  import EnvironmentControls from './EnvironmentControls.svelte';
+import { environmentStates } from '../stores/environment-states';
+import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import EnvironmentControls from './EnvironmentControls.svelte';
 
 export let recipeId: string;
 export let modelId: string;
@@ -20,6 +20,7 @@ $: envState = $environmentStates.find((env: EnvironmentState) => env.recipeId ==
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: recipeStatus = $recipes.get(recipeId);
 $: model = $catalog.models.find(m => m.id === modelId);
+$: isRunning = recipeStatus?.state !== 'loading' && envState?.status === 'running';
 
 let open: boolean = true;
 
@@ -59,21 +60,21 @@ const toggle = () => {
       <div class="w-full bg-charcoal-600 rounded-md p-4">
 
         <div class="flex flex-row">
-          {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
-            {#if recipeStatus.state === 'error'}
+          {#if isRunning || (recipeStatus !== undefined && recipeStatus.tasks.length > 0)}
+            {#if recipeStatus?.state === 'error'}
               <Button
                 on:click={() => onPullingRequest()}
                 class="w-full p-2"
                 icon="{faRefresh}"
               >Retry</Button>
-            {:else if recipeStatus.state === 'loading' || recipeStatus.state === 'running'}
+            {:else if recipeStatus?.state === 'loading' || isRunning}
               <Button
-                inProgress={recipeStatus.state === 'loading'}
-                disabled={recipeStatus.state === 'running'}              
+                inProgress={recipeStatus?.state === 'loading'}
+                disabled={isRunning}
                 class="w-full p-2"
                 icon="{faPlay}"
               >
-                {#if recipeStatus.state === 'loading'}Loading{:else}Running{/if}
+                {#if isRunning}Running{:else}Loading{/if}
               </Button>
             {/if}
           {:else}

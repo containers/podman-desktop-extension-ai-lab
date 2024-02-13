@@ -40,6 +40,16 @@ export class RecipeStatusRegistry {
     }); // we don't want to wait
   }
 
+  /**
+   * set the same status on all recipes
+   * @param status
+   */
+  setStateAllRecipes(state: RecipeStatusState) {
+    for (const key of this.statuses.keys()) {
+      this.setRecipeState(key, state);
+    }
+  }
+
   setRecipeState(recipeId: string, state: RecipeStatusState): void {
     if (!this.statuses.has(recipeId)) throw new Error(`The recipe status with id ${recipeId} does not exist.`);
     const recipeStatus = this.statuses.get(recipeId);
@@ -47,10 +57,20 @@ export class RecipeStatusRegistry {
       ...recipeStatus,
       state: state,
     });
+    this.dispatchState().catch((err: unknown) => {
+      console.error('error dispatching recipe statuses', err);
+    }); // we don't want to wait
   }
 
   getStatus(recipeId: string): RecipeStatus | undefined {
     return this.statuses.get(recipeId);
+  }
+
+  deleteStatus(recipeId: string): void {
+    this.statuses.delete(recipeId);
+    this.dispatchState().catch((err: unknown) => {
+      console.error('error dispatching recipe statuses', err);
+    }); // we don't want to wait
   }
 
   getStatuses(): Map<string, RecipeStatus> {

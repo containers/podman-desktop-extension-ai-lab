@@ -4,7 +4,6 @@ import type { QueryState } from './models/IPlaygroundQueryState';
 import type { Catalog } from './models/ICatalog';
 import type { PlaygroundState } from './models/IPlaygroundState';
 import type { TelemetryTrustedValue } from '@podman-desktop/api';
-import type { EnvironmentState } from './models/IEnvironmentState';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -29,7 +28,6 @@ export abstract class StudioAPI {
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
   abstract getModelsDirectory(): Promise<string>;
   abstract navigateToContainer(containerId: string): Promise<void>;
-  abstract getEnvironmentsState(): Promise<EnvironmentState[]>;
   abstract requestRemoveEnvironment(recipeId: string): Promise<void>;
   abstract requestRestartEnvironment(recipeId: string): Promise<void>;
 

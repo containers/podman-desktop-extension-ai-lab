@@ -20,7 +20,8 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import { type PodCreatePortOptions, containerEngine, type TelemetryLogger, Webview, PodInfo } from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
+import type { Webview, PodInfo, PodCreatePortOptions, TelemetryLogger } from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
@@ -33,10 +34,9 @@ import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
 import { LABEL_MODEL_ID } from './playground';
-import { EnvironmentState, EnvironmentStatus } from '@shared/src/models/IEnvironmentState';
-import { PodmanConnection } from './podmanConnection';
-import { CatalogManager } from './catalogManager';
-import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
+import type { PodmanConnection } from './podmanConnection';
+import type { CatalogManager } from './catalogManager';
+import type { RecipeStatus, RecipeStatusState } from '@shared/src/models/IRecipeStatus';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 
@@ -68,8 +68,6 @@ export interface ImageInfo {
 }
 
 export class ApplicationManager {
-  #environments: Map<string, EnvironmentState>;
-
   constructor(
     private appUserDirectory: string,
     private git: GitManager,
@@ -79,9 +77,7 @@ export class ApplicationManager {
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
     private telemetry: TelemetryLogger,
-  ) {
-    this.#environments = new Map();
-  }
+  ) {}
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
     const startTime = performance.now();
@@ -562,10 +558,6 @@ export class ApplicationManager {
     taskUtil.setTask(checkoutTask);
   }
 
-  /***
-   * from environmentManager
-   */
-
   adoptRunningEnvironments() {
     this.podmanConnection.startupSubscribe(() => {
       if (!containerEngine.listPods) {
@@ -588,8 +580,7 @@ export class ApplicationManager {
 
     this.podmanConnection.onMachineStop(() => {
       // Podman Machine has been stopped, we consider all recipe pods are stopped
-      this.#environments.clear();
-      this.sendEnvironmentState();
+      this.recipeStatusRegistry.setStateAllRecipes('none');
     });
 
     this.podmanConnection.onPodStart((pod: PodInfo) => {
@@ -603,20 +594,21 @@ export class ApplicationManager {
     });
   }
 
-  adoptPod(pod: PodInfo, status: EnvironmentStatus) {
+  adoptPod(pod: PodInfo, state: RecipeStatusState) {
     if (!pod.Labels) {
       return;
     }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
-    if (this.#environments.has(recipeId)) {
+    if (this.recipeStatusRegistry.getStatus(recipeId)) {
       return;
     }
-    const state: EnvironmentState = {
+    const recipeStatus: RecipeStatus = {
       recipeId,
       pod,
-      status,
+      state,
+      tasks: [],
     };
-    this.updateEnvironmentState(recipeId, state);
+    this.recipeStatusRegistry.setStatus(recipeId, recipeStatus);
   }
 
   forgetPod(pod: PodInfo) {
@@ -624,15 +616,14 @@ export class ApplicationManager {
       return;
     }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
-    if (!this.#environments.has(recipeId)) {
+    if (!this.recipeStatusRegistry.getStatus(recipeId)) {
       return;
     }
-    this.#environments.delete(recipeId);
-    this.sendEnvironmentState();
+    this.recipeStatusRegistry.deleteStatus(recipeId);
   }
 
   forgetPodById(podId: string) {
-    const env = Array.from(this.#environments.values()).find(p => p.pod.Id === podId);
+    const env = Array.from(this.recipeStatusRegistry.getStatuses().values()).find(p => p.pod.Id === podId);
     if (!env) {
       return;
     }
@@ -640,36 +631,15 @@ export class ApplicationManager {
       return;
     }
     const recipeId = env.pod.Labels[LABEL_RECIPE_ID];
-    if (!this.#environments.has(recipeId)) {
+    if (!this.recipeStatusRegistry.getStatus(recipeId)) {
       return;
     }
-    this.#environments.delete(recipeId);
-    this.sendEnvironmentState();
-  }
-
-  updateEnvironmentState(recipeId: string, state: EnvironmentState): void {
-    this.#environments.set(recipeId, state);
-    this.sendEnvironmentState();
-  }
-
-  getEnvironmentsState(): EnvironmentState[] {
-    return Array.from(this.#environments.values());
-  }
-
-  sendEnvironmentState() {
-    this.webview
-      .postMessage({
-        id: MSG_ENVIRONMENTS_STATE_UPDATE,
-        body: this.getEnvironmentsState(),
-      })
-      .catch((err: unknown) => {
-        console.error(`Something went wrong while emitting MSG_ENVIRONMENTS_STATE_UPDATE: ${String(err)}`);
-      });
+    this.recipeStatusRegistry.deleteStatus(recipeId);
   }
 
   async deleteEnvironment(recipeId: string) {
     try {
-      this.setEnvironmentStatus(recipeId, 'stopping');
+      this.recipeStatusRegistry.setRecipeState(recipeId, 'stopping');
       const envPod = await this.getEnvironmentPod(recipeId);
       try {
         await containerEngine.stopPod(envPod.engineId, envPod.Id);
@@ -679,10 +649,10 @@ export class ApplicationManager {
           throw err;
         }
       }
-      this.setEnvironmentStatus(recipeId, 'removing');
+      this.recipeStatusRegistry.setRecipeState(recipeId, 'removing');
       await containerEngine.removePod(envPod.engineId, envPod.Id);
     } catch (err: unknown) {
-      this.setEnvironmentStatus(recipeId, 'unknown');
+      this.recipeStatusRegistry.setRecipeState(recipeId, 'unknown');
       throw err;
     }
   }
@@ -695,7 +665,7 @@ export class ApplicationManager {
       const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
       await this.pullApplication(recipe, model);
     } catch (err: unknown) {
-      this.setEnvironmentStatus(recipeId, 'unknown');
+      this.recipeStatusRegistry.setRecipeState(recipeId, 'unknown');
       throw err;
     }
   }
@@ -712,16 +682,5 @@ export class ApplicationManager {
       throw new Error(`no pod found with recipe Id ${recipeId}`);
     }
     return envPod;
-  }
-
-  setEnvironmentStatus(recipeId: string, status: EnvironmentStatus): void {
-    if (!this.#environments.has(recipeId)) {
-      throw new Error(`status for environemnt ${recipeId} not found`);
-    }
-    const previous = this.#environments.get(recipeId);
-    this.updateEnvironmentState(recipeId, {
-      ...previous,
-      status: status,
-    });
   }
 }

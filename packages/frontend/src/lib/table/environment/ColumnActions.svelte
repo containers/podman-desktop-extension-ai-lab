@@ -2,9 +2,9 @@
 import { faRotateForward, faTrash } from "@fortawesome/free-solid-svg-icons";
 import ListItemButtonIcon from "../../button/ListItemButtonIcon.svelte";
 import { studioClient } from "/@/utils/client";
-import type { EnvironmentState } from "@shared/src/models/IEnvironmentState";
 import Spinner from "../../button/Spinner.svelte";
-export let object: EnvironmentState;
+import type { RecipeStatus } from "@shared/src/models/IRecipeStatus";
+export let object: RecipeStatus;
 
 function deleteEnvironment() {
   studioClient.requestRemoveEnvironment(object.recipeId).catch((err) => {
@@ -20,7 +20,7 @@ function restartEnvironment() {
 </script>
 
 
-{#if object.status === 'stopping' || object.status === 'removing'}
+{#if object.state === 'stopping' || object.state === 'removing'}
   <div class="pr-4"><Spinner size="1.4em" /></div>
 {:else}
   <ListItemButtonIcon

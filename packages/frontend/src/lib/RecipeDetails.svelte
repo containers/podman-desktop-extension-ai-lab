@@ -3,7 +3,6 @@ import { faList, faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { getDisplayName } from '/@/utils/versionControlUtils';
 import { recipes } from '/@/stores/recipe';
-import Button from '/@/lib/button/Button.svelte';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
@@ -58,8 +57,8 @@ const toggle = () => {
       </div>
 
       <div class="w-full bg-charcoal-600 rounded-md p-4">
-
-        <div class="flex flex-row">
+        <EnvironmentControls recipeId={recipeId} object={envState} tasks={recipeStatus?.tasks} />
+        <!--div class="flex flex-row">
           {#if isRunning || (recipeStatus !== undefined && recipeStatus.tasks.length > 0)}
             {#if recipeStatus?.state === 'error'}
               <Button
@@ -89,12 +88,10 @@ const toggle = () => {
           {#if envState}
             <EnvironmentControls object={envState} />
           {/if}
-        </div>
-
-        <div class="text-xs text-gray-700 mt-3">
-          This will git clone the application, download the model, build images, and run the application as a pod
-          locally.
-        </div>
+        </div-->
+        <!--div class="text-xs text-gray-700 mt-3">
+          This will git clone the application, download the model, build images, and run the application as a pod locally.
+        </div-->
         {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
           <div class="mt-4 text-sm font-normal py-2">
             <TasksProgress tasks="{recipeStatus.tasks}" />

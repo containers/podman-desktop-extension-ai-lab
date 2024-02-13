@@ -4,4 +4,4 @@ import EnvironmentControls from "../../EnvironmentControls.svelte";
 export let object: EnvironmentState;
 </script>
 
-<EnvironmentControls {object} />
+<EnvironmentControls recipeId={object.recipeId} {object} />

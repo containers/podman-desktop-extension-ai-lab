@@ -11,7 +11,7 @@ import ColumnStatus from '../lib/table/environment/ColumnStatus.svelte';
 const columns: Column<EnvironmentState>[] = [
   new Column<EnvironmentState>('Name', { width: '3fr', renderer: ColumnName }),
   new Column<EnvironmentState>('Status', { width: '80px', renderer: ColumnStatus }),
-  new Column<EnvironmentState>('Actions', { align: 'right', width: '80px', renderer: ColumnActions }),
+  new Column<EnvironmentState>('Actions', { align: 'right', width: '120px', renderer: ColumnActions }),
 ];
 const row = new Row<EnvironmentState>({});
 </script>

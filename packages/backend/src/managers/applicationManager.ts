@@ -543,15 +543,22 @@ export class ApplicationManager {
         taskUtil.setTask(checkoutTask);
         return;
       } else {
-        const error = `The repository "${gitCloneInfo.repository}" seems to already be cloned, however it cannot be used: ${result.error}`;
-        taskUtil.setTaskError('checkout', error);
-        // Ask the user if he wants to open the local checkout
-        const selected = await window.showErrorMessage(error, 'Cancel', 'Open Folder');
-        if (selected === 'Open Folder') {
-          await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(gitCloneInfo.targetDirectory));
+        const error = `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
+        // Ask the user if he wants to open the local checkout, cancel or continue
+        const selected = await window.showErrorMessage(error, 'Cancel', 'Open Folder', 'Continue');
+
+        switch (selected) {
+          case 'Open Folder':
+            await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(gitCloneInfo.targetDirectory));
+          // eslint-disable-next-line no-fallthrough
+          case undefined:
+          case 'Cancel':
+            taskUtil.setTaskError('checkout', error);
+            throw new Error('Cannot checkout repository to target.');
+          case 'Continue':
+            taskUtil.setTaskState('checkout', 'success');
+            break;
         }
-        // Throw error in any cases
-        throw new Error('Cannot checkout repository to target.');
       }
     } else {
       // Create folder

@@ -545,7 +545,7 @@ export class ApplicationManager {
       } else {
         const error = `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
         // Ask the user if he wants to open the local checkout, cancel or continue
-        const selected = await window.showErrorMessage(error, 'Cancel', 'Open Folder', 'Continue');
+        const selected = await window.showWarningMessage(error, 'Cancel', 'Open Folder', 'Continue');
 
         switch (selected) {
           case 'Open Folder':

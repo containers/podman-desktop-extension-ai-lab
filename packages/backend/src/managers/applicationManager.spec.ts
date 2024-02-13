@@ -465,7 +465,8 @@ describe('doCheckout', () => {
 
     expect(setTaskMock).toHaveBeenLastCalledWith({
       id: 'checkout',
-      error: 'The repository "repo" seems to already be cloned and is not matching the expected configuration: bad repo',
+      error:
+        'The repository "repo" seems to already be cloned and is not matching the expected configuration: bad repo',
       name: 'Checkout repository',
       state: 'error',
       labels: {

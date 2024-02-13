@@ -1,7 +1,7 @@
 <script lang="ts">
-  export let message: string | undefined = undefined;
-  export let title: string = 'Expand';
-  let showMessage: boolean = false;
+export let message: string | undefined = undefined;
+export let title: string = 'Expand';
+let showMessage: boolean = false;
 </script>
 
 {#if message}

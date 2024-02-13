@@ -11,13 +11,11 @@ $: categories = $catalog.categories;
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="px-5 space-y-5 h-full">
-
         <!-- Recent recipes -->
         <RecipesCard
-          category="{{id: RECENT_CATEGORY_ID, name: 'Recently-viewed recipes'}}"
+          category="{{ id: RECENT_CATEGORY_ID, name: 'Recently-viewed recipes' }}"
           class="p-6"
-          displayDescription="{false}"
-        />
+          displayDescription="{false}" />
 
         {#each categories as category}
           <!-- Natural Language processing -->
@@ -25,8 +23,7 @@ $: categories = $catalog.categories;
             category="{category}"
             primaryBackground=""
             secondaryBackground="bg-charcoal-800"
-            displayCategory="{false}"
-          />
+            displayCategory="{false}" />
         {/each}
       </div>
     </div>

@@ -20,70 +20,58 @@ $: model = $catalog.models.find(m => m.id === selectedModelId);
 let open: boolean = true;
 
 const onPullingRequest = () => {
-  studioClient.pullApplication(recipeId)
-    .catch((err: unknown) => {
-      console.error('Something went wrong while pulling application', err);
-    })
-}
+  studioClient.pullApplication(recipeId).catch((err: unknown) => {
+    console.error('Something went wrong while pulling application', err);
+  });
+};
 
 const onClickRepository = () => {
-  if (!recipe)
-    return;
+  if (!recipe) return;
 
-  studioClient.openURL(recipe.repository)
-    .catch((err: unknown) => {
-      console.error('Something went wrong while opening url', err);
-    })
-}
+  studioClient.openURL(recipe.repository).catch((err: unknown) => {
+    console.error('Something went wrong while opening url', err);
+  });
+};
 
 const toggle = () => {
   console.log('on toggle', open);
   open = !open;
-}
-
+};
 </script>
 
-<div class="lg:my-5 max-lg:w-full max-lg:min-w-full" class:w-[375px]={open} class:min-w-[375px]={open}>
-  <div class:hidden={!open} class:block={open} class="h-fit lg:bg-charcoal-800 lg:rounded-l-md lg:mt-4 lg:py-4 max-lg:block" aria-label="application details panel">
+<div class="lg:my-5 max-lg:w-full max-lg:min-w-full" class:w-[375px]="{open}" class:min-w-[375px]="{open}">
+  <div
+    class:hidden="{!open}"
+    class:block="{open}"
+    class="h-fit lg:bg-charcoal-800 lg:rounded-l-md lg:mt-4 lg:py-4 max-lg:block"
+    aria-label="application details panel">
     <div class="flex flex-col px-4 space-y-4 mx-auto">
       <div class="w-full flex flex-row justify-between max-lg:hidden">
         <span class="text-base">Application Details</span>
-        <button on:click={toggle} aria-label="hide application details"><i class="fas fa-angle-right text-gray-900"></i></button>
+        <button on:click="{toggle}" aria-label="hide application details"
+          ><i class="fas fa-angle-right text-gray-900"></i></button>
       </div>
 
       <div class="w-full bg-charcoal-600 rounded-md p-4">
         {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
           {#if recipeStatus.state === 'error'}
-            <Button
-              on:click={() => onPullingRequest()}
-              class="w-full p-2"
-              icon="{faRefresh}"
-            >Retry</Button>
+            <Button on:click="{() => onPullingRequest()}" class="w-full p-2" icon="{faRefresh}">Retry</Button>
           {:else if recipeStatus.state === 'loading' || recipeStatus.state === 'running'}
-            <Button
-              inProgress={true}
-              class="w-full p-2"
-              icon="{faPlay}"
-            >
+            <Button inProgress="{true}" class="w-full p-2" icon="{faPlay}">
               {#if recipeStatus.state === 'loading'}Loading{:else}Running{/if}
             </Button>
           {/if}
         {:else}
-          <Button
-            on:click={() => onPullingRequest()}
-            class="w-full p-2"
-            icon="{faPlay}"
-          >
-            Run application
-          </Button>
+          <Button on:click="{() => onPullingRequest()}" class="w-full p-2" icon="{faPlay}">Run application</Button>
         {/if}
 
         <div class="text-xs text-gray-700 mt-3">
-          This will git clone the application, download the model, build images, and run the application as a pod locally.
+          This will git clone the application, download the model, build images, and run the application as a pod
+          locally.
         </div>
         {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
           <div class="mt-4 text-sm font-normal py-2">
-            <TasksProgress tasks="{recipeStatus.tasks}"/>
+            <TasksProgress tasks="{recipeStatus.tasks}" />
           </div>
         {/if}
       </div>
@@ -102,7 +90,9 @@ const toggle = () => {
                 </div>
                 {#if model?.license}
                   <div class="flex flex-row space-x-2">
-                    <div class="bg-charcoal-400 text-gray-600 text-xs font-thin px-2.5 py-0.5 rounded-md" aria-label="license-model">
+                    <div
+                      class="bg-charcoal-400 text-gray-600 text-xs font-thin px-2.5 py-0.5 rounded-md"
+                      aria-label="license-model">
                       {model.license}
                     </div>
                   </div>
@@ -111,8 +101,7 @@ const toggle = () => {
             </div>
             {#if recipe?.models?.[0] === model.id}
               <div class="px-2 text-xs text-gray-700" aria-label="default-model-warning">
-                * This is the default, recommended model for this recipe.
-                You can swap for a different compatible model.
+                * This is the default, recommended model for this recipe. You can swap for a different compatible model.
               </div>
             {/if}
           </div>
@@ -120,17 +109,21 @@ const toggle = () => {
         <div class="flex flex-col space-y-2 w-[45px]">
           <div class="text-base">Repository</div>
           <div class="cursor-pointer flex text-nowrap items-center">
-            <Fa size="20" icon="{faGithub}"/>
+            <Fa size="20" icon="{faGithub}" />
             <div class="text-sm ml-2">
-              <a on:click={onClickRepository}>{getDisplayName(recipe?.repository)}</a>
+              <a on:click="{onClickRepository}">{getDisplayName(recipe?.repository)}</a>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   </div>
-  <div class:hidden={open} class:block={!open} class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit max-lg:hidden" aria-label="toggle application details">
-    <button on:click={toggle} aria-label="show application details"><i class="fas fa-angle-left text-gray-900"></i></button>
+  <div
+    class:hidden="{open}"
+    class:block="{!open}"
+    class="bg-charcoal-800 mt-4 p-4 rounded-md h-fit max-lg:hidden"
+    aria-label="toggle application details">
+    <button on:click="{toggle}" aria-label="show application details"
+      ><i class="fas fa-angle-left text-gray-900"></i></button>
   </div>
 </div>

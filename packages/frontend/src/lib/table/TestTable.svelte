@@ -64,5 +64,5 @@ const row = new Row<Person>({
   columns="{columns}"
   row="{row}"
   defaultSortColumn="Id"
-  headerBackground={headerBackground}>
+  headerBackground="{headerBackground}">
 </Table>

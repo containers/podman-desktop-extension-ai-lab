@@ -16,12 +16,12 @@ const columns: Column<EnvironmentState>[] = [
 const row = new Row<EnvironmentState>({});
 </script>
 
-<NavPage title="Environments" searchEnabled={false}>
+<NavPage title="Environments" searchEnabled="{false}">
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="mt-4 px-5 space-y-5 h-full">
         {#if $environmentStates.length > 0}
-          <Table kind="environment" data={$environmentStates} {columns} {row}></Table>
+          <Table kind="environment" data="{$environmentStates}" columns="{columns}" row="{row}"></Table>
         {:else}
           <div role="status">There is no environment yet</div>
         {/if}

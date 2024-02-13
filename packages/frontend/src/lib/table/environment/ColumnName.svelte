@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { EnvironmentState } from "@shared/src/models/IEnvironmentState";
+import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import { catalog } from '/@/stores/catalog';
 
 export let object: EnvironmentState;

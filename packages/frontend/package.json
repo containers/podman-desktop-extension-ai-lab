@@ -8,8 +8,6 @@
     "build": "vite build",
     "test": "vitest run --coverage",
     "test:watch": "vitest watch --coverage",
-    "format:check": "prettier --check \"src/**/*.ts\"",
-    "format:fix": "prettier --write \"src/**/*.ts\"",
     "watch": "vite --mode development build -w"
   },
   "dependencies": {

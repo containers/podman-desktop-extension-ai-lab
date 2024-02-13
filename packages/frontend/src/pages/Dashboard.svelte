@@ -4,7 +4,6 @@ import NavPage from '/@/lib/NavPage.svelte';
 
 <NavPage searchEnabled="{false}" title="Dashboard">
   <div slot="content" class="flex flex-col min-w-full h-fit">
-    <div class="min-w-full flex-1">
-    </div>
+    <div class="min-w-full flex-1"></div>
   </div>
 </NavPage>

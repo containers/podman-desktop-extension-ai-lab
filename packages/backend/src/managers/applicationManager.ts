@@ -125,7 +125,6 @@ export class ApplicationManager {
       const podInfo = await this.createApplicationPod(recipe, model, images, modelPath, taskUtil);
 
       await this.runApplication(podInfo, taskUtil);
-      taskUtil.setStatus('running');
       const durationSeconds = getDurationSecondsSince(startTime);
       this.telemetry.logUsage('recipe.pull', { 'recipe.id': recipe.id, 'recipe.name': recipe.name, durationSeconds });
     } catch (err: unknown) {

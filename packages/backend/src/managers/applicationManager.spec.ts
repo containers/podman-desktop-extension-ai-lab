@@ -50,12 +50,16 @@ const mocks = vi.hoisted(() => {
     inspectContainerMock: vi.fn(),
     logUsageMock: vi.fn(),
     logErrorMock: vi.fn(),
+    showWarningMessageMock: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
   parseYamlFile: mocks.parseYamlFileMock,
 }));
 vi.mock('@podman-desktop/api', () => ({
+  window: {
+    showWarningMessage: mocks.showWarningMessageMock,
+  },
   containerEngine: {
     buildImage: mocks.buildImageMock,
     listImages: mocks.listImagesMock,
@@ -435,6 +439,8 @@ describe('doCheckout', () => {
     const cloneRepositoryMock = vi.fn();
     const isRepositoryUpToDateMock = vi.fn().mockResolvedValue({ ok: false, error: 'bad repo' });
 
+    mocks.showWarningMessageMock.mockResolvedValue(undefined);
+
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {
@@ -459,7 +465,7 @@ describe('doCheckout', () => {
 
     expect(setTaskMock).toHaveBeenLastCalledWith({
       id: 'checkout',
-      error: 'The repository "repo" seems to already be cloned, however it cannot be used: bad repo',
+      error: 'The repository "repo" seems to already be cloned and is not matching the expected configuration: bad repo',
       name: 'Checkout repository',
       state: 'error',
       labels: {

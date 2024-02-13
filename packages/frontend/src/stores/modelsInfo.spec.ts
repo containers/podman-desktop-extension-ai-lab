@@ -17,14 +17,14 @@
  ***********************************************************************/
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { localModels } from './local-models';
-import { MSG_NEW_LOCAL_MODELS_STATE } from '@shared/Messages';
+import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import { rpcBrowser } from '../utils/client';
 import type { Unsubscriber } from 'svelte/store';
+import { modelsInfo } from './modelsInfo';
 
 const mocks = vi.hoisted(() => {
   return {
-    getLocalModelsMock: vi.fn().mockResolvedValue([]),
+    getModelsInfoMock: vi.fn().mockResolvedValue([]),
   };
 });
 
@@ -47,7 +47,7 @@ vi.mock('../utils/client', async () => {
   return {
     rpcBrowser,
     studioClient: {
-      getLocalModels: mocks.getLocalModelsMock,
+      getModelsInfo: mocks.getModelsInfoMock,
     },
   };
 });
@@ -55,7 +55,7 @@ vi.mock('../utils/client', async () => {
 let unsubscriber: Unsubscriber | undefined;
 beforeEach(() => {
   vi.clearAllMocks();
-  unsubscriber = localModels.subscribe(_ => {});
+  unsubscriber = modelsInfo.subscribe(_ => {});
 });
 
 afterEach(() => {
@@ -66,12 +66,12 @@ afterEach(() => {
 });
 
 test('check getLocalModels is called at subscription', async () => {
-  expect(mocks.getLocalModelsMock).toHaveBeenCalledOnce();
+  expect(mocks.getModelsInfoMock).toHaveBeenCalledOnce();
 });
 
 test('check getLocalModels is called twice if event is fired (one at init, one for the event)', async () => {
-  rpcBrowser.invoke(MSG_NEW_LOCAL_MODELS_STATE);
+  rpcBrowser.invoke(MSG_NEW_MODELS_STATE);
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
-  expect(mocks.getLocalModelsMock).toHaveBeenCalledTimes(2);
+  expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);
 });

@@ -24,7 +24,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const mocks = vi.hoisted(() => {
   return {
-    getLocalModelsMock: vi.fn().mockResolvedValue([]),
+    getModelsInfoMock: vi.fn().mockResolvedValue([]),
   };
 });
 
@@ -47,7 +47,7 @@ vi.mock('../utils/client', async () => {
   return {
     rpcBrowser: rpcBrowser,
     studioClient: {
-      getLocalModels: mocks.getLocalModelsMock,
+      getModelsInfo: mocks.getModelsInfoMock,
     },
   };
 });
@@ -58,28 +58,28 @@ beforeEach(() => {
 
 test('check updater is called once at subscription', async () => {
   const rpcWritable = RPCReadable<string[]>([], [], () => {
-    studioClient.getLocalModels();
+    studioClient.getModelsInfo();
     return Promise.resolve(['']);
   });
   rpcWritable.subscribe(_ => {});
-  expect(mocks.getLocalModelsMock).toHaveBeenCalledOnce();
+  expect(mocks.getModelsInfoMock).toHaveBeenCalledOnce();
 });
 
 test('check updater is called twice if there is one event fired', async () => {
   const rpcWritable = RPCReadable<string[]>([], ['event'], () => {
-    studioClient.getLocalModels();
+    studioClient.getModelsInfo();
     return Promise.resolve(['']);
   });
   rpcWritable.subscribe(_ => {});
   rpcBrowser.invoke('event');
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
-  expect(mocks.getLocalModelsMock).toHaveBeenCalledTimes(2);
+  expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);
 });
 
 test('check updater is called only twice because of the debouncer if there is more than one event in a row', async () => {
   const rpcWritable = RPCReadable<ModelInfo[]>([], ['event2'], () => {
-    return studioClient.getLocalModels();
+    return studioClient.getModelsInfo();
   });
   rpcWritable.subscribe(_ => {});
   rpcBrowser.invoke('event2');
@@ -88,5 +88,5 @@ test('check updater is called only twice because of the debouncer if there is mo
   rpcBrowser.invoke('event2');
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
-  expect(mocks.getLocalModelsMock).toHaveBeenCalledTimes(2);
+  expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);
 });

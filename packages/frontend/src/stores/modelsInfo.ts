@@ -21,4 +21,4 @@ import { studioClient } from '/@/utils/client';
 import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import { RPCReadable } from './rpcReadable';
 
-export const localModels = RPCReadable<ModelInfo[]>([], [MSG_NEW_MODELS_STATE], studioClient.getModelsInfo);
+export const modelsInfo = RPCReadable<ModelInfo[]>([], [MSG_NEW_MODELS_STATE], studioClient.getModelsInfo);

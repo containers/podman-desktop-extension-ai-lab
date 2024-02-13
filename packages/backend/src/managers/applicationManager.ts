@@ -546,7 +546,7 @@ export class ApplicationManager {
         const error = `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
         // Ask the user if he wants to open the local checkout, cancel or continue
         const selected = await window.showWarningMessage(
-          `${error}. By continuing, the AI application may not run as expected. To reset its state, please delete the local folder`,
+          `${error} By continuing, the AI application may not run as expected. To reset its state, please delete the local folder`,
           'Cancel',
           'Open Folder',
           'Continue',

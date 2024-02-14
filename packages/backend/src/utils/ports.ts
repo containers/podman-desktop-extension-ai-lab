@@ -61,7 +61,7 @@ export function isFreePort(port: number): Promise<boolean> {
     server
       .on('error', (error: NodeJS.ErrnoException) => (error.code === 'EADDRINUSE' ? resolve(false) : reject(error)))
       .on('listening', () => server.close(() => resolve(true)))
-      .listen(port, '127.0.0.1'),
+      .listen(port, '0.0.0.0'),
   );
 }
 

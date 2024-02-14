@@ -3802,10 +3802,10 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-svelte-fa@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.npmjs.org/svelte-fa/-/svelte-fa-3.0.4.tgz"
-  integrity sha512-y04vEuAoV1wwVDItSCzPW7lzT6v1bj/y1p+W1V+NtIMpQ+8hj8MBkx7JFD7JHSnalPU1QiI8BVfguqheEA3nPg==
+svelte-fa@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/svelte-fa/-/svelte-fa-4.0.2.tgz#f73aab661bf1758d726f06db321f0ffb8e2f40d6"
+  integrity sha512-lza8Jfii6jcpMQB73mBStONxaLfZsUS+rKJ/hH6WxsHUd+g68+oHIL9yQTk4a0uY9HQk78T/CPvQnED0msqJfg==
 
 svelte-hmr@^0.15.3:
   version "0.15.3"

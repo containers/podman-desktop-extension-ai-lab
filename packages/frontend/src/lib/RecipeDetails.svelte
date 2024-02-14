@@ -10,7 +10,7 @@ import { catalog } from '/@/stores/catalog';
 import { router } from 'tinro';
 import { environmentStates } from '../stores/environment-states';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
-import EnvironmentControls from './EnvironmentControls.svelte';
+import EnvironmentActions from './EnvironmentActions.svelte';
 
 export let recipeId: string;
 export let modelId: string;
@@ -62,7 +62,7 @@ const toggle = () => {
             </div>
           {/if}
           <div class="shrink-0">
-            <EnvironmentControls recipeId="{recipeId}" object="{envState}" tasks="{recipeStatus?.tasks}" />
+            <EnvironmentActions recipeId="{recipeId}" object="{envState}" tasks="{recipeStatus?.tasks}" />
           </div>
         </div>
         {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}

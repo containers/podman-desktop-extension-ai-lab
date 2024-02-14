@@ -570,12 +570,6 @@ export class ApplicationManager {
     taskUtil.setTask(checkoutTask);
   }
 
-  /*
-   *
-   * Pod status
-   *
-   */
-
   adoptRunningEnvironments() {
     this.podmanConnection.startupSubscribe(() => {
       if (!containerEngine.listPods) {

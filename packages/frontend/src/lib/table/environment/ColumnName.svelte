@@ -1,8 +1,8 @@
 <script lang="ts">
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { EnvironmentCell } from '/@/pages/environments';
 import { catalog } from '/@/stores/catalog';
 
-export let object: EnvironmentState;
+export let object: EnvironmentCell;
 
 $: name = $catalog.recipes.find(r => r.id === object.recipeId)?.name;
 </script>

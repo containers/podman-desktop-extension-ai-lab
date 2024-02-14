@@ -23,12 +23,6 @@ $: isRunning = recipeStatus?.state !== 'loading' && envState?.status === 'runnin
 
 let open: boolean = true;
 
-const onPullingRequest = () => {
-  studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {
-    console.error('Something went wrong while pulling application', err);
-  });
-};
-
 const onClickRepository = () => {
   if (!recipe) return;
 
@@ -57,7 +51,21 @@ const toggle = () => {
       </div>
 
       <div class="w-full bg-charcoal-600 rounded-md p-4">
-        <EnvironmentControls recipeId={recipeId} object={envState} tasks={recipeStatus?.tasks} />
+        <div class="flex flex-row items-center">
+          {#if envState}
+            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-300">{envState.pod.Name}</div>
+          {:else}
+            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-500 italic">(no pod running)</div>
+          {/if}
+          <div class="shrink-0">
+            <EnvironmentControls recipeId={recipeId} object={envState} tasks={recipeStatus?.tasks} />
+          </div>  
+        </div>
+        {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
+          <div class="mt-4 text-sm font-normal py-2">
+            <TasksProgress tasks="{recipeStatus.tasks}" />
+          </div>
+        {/if}
         <!--div class="flex flex-row">
           {#if isRunning || (recipeStatus !== undefined && recipeStatus.tasks.length > 0)}
             {#if recipeStatus?.state === 'error'}
@@ -92,11 +100,6 @@ const toggle = () => {
         <!--div class="text-xs text-gray-700 mt-3">
           This will git clone the application, download the model, build images, and run the application as a pod locally.
         </div-->
-        {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
-          <div class="mt-4 text-sm font-normal py-2">
-            <TasksProgress tasks="{recipeStatus.tasks}" />
-          </div>
-        {/if}
       </div>
 
       <div class="flex flex-col w-full space-y-4 rounded-md bg-charcoal-600 p-4">

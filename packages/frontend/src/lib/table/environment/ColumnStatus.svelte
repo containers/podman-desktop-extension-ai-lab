@@ -1,8 +1,9 @@
 <script lang="ts">
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
-export let object: EnvironmentState;
+import TasksProgress from '../../progress/TasksProgress.svelte';
+import type { EnvironmentCell } from '/@/pages/environments';
+export let object: EnvironmentCell;
 </script>
 
 <div class="text-sm text-gray-700">
-  {object.status}
+  <TasksProgress mini={true} tasks="{object.tasks}" />
 </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { EnvironmentState } from "@shared/src/models/IEnvironmentState";
 import EnvironmentControls from "../../EnvironmentControls.svelte";
-export let object: EnvironmentState;
+import type { EnvironmentCell } from "/@/pages/environments";
+export let object: EnvironmentCell;
 </script>
 
-<EnvironmentControls recipeId={object.recipeId} {object} />
+<EnvironmentControls recipeId={object.recipeId} object={object.envState} tasks={object.tasks}/>

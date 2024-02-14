@@ -48,11 +48,13 @@ export class LocalRepositoryRegistry {
   }
 
   private notify() {
-    this.webview.postMessage({
-      id: MSG_LOCAL_REPOSITORY_UPDATE,
-      body: this.getLocalRepositories(),
-    }).catch((err: unknown) => {
-      console.error('Something went wrong while notifying local repositories update', err);
-    });
+    this.webview
+      .postMessage({
+        id: MSG_LOCAL_REPOSITORY_UPDATE,
+        body: this.getLocalRepositories(),
+      })
+      .catch((err: unknown) => {
+        console.error('Something went wrong while notifying local repositories update', err);
+      });
   }
 }

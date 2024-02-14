@@ -49,10 +49,10 @@ test('should notify webview when register', () => {
   const localRepositories = new LocalRepositoryRegistry({
     postMessage: mocks.postMessageMock,
   } as unknown as Webview);
-  localRepositories.register({path: 'random', recipeId: 'random'});
+  localRepositories.register({ path: 'random', recipeId: 'random' });
   expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1, {
     id: MSG_LOCAL_REPOSITORY_UPDATE,
-    body: [{path: 'random', recipeId: 'random'}],
+    body: [{ path: 'random', recipeId: 'random' }],
   });
 });
 
@@ -60,7 +60,7 @@ test('should notify webview when unregister', () => {
   const localRepositories = new LocalRepositoryRegistry({
     postMessage: mocks.postMessageMock,
   } as unknown as Webview);
-  localRepositories.register({path: 'random', recipeId: 'random'});
+  localRepositories.register({ path: 'random', recipeId: 'random' });
   localRepositories.unregister('random');
 
   expect(mocks.postMessageMock).toHaveBeenLastCalledWith({

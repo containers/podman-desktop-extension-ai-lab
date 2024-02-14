@@ -31,6 +31,7 @@ import type { ModelsManager } from './managers/modelsManager';
 
 import * as fs from 'node:fs';
 import { timeout } from './utils/utils';
+import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 
 vi.mock('./ai.json', () => {
   return {
@@ -105,6 +106,7 @@ beforeEach(async () => {
     catalogManager,
     {} as unknown as ModelsManager,
     {} as TelemetryLogger,
+    {} as LocalRepositoryRegistry,
   );
   vi.resetAllMocks();
   vi.mock('node:fs');

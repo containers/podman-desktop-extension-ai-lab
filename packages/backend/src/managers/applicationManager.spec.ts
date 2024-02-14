@@ -1084,7 +1084,6 @@ describe('pod detection', async () => {
         },
       },
       recipeId: 'recipe-id-1',
-      status: 'running',
     });
   });
 
@@ -1234,8 +1233,6 @@ describe('pod detection', async () => {
         },
       },
     ]);
-    const setEnvironmentStatusSpy = vi.spyOn(manager, 'setEnvironmentStatus');
-    setEnvironmentStatusSpy.mockReturnValue();
     await manager.deleteEnvironment('recipe-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
@@ -1258,8 +1255,6 @@ describe('pod detection', async () => {
         },
       },
     ]);
-    const setEnvironmentStatusSpy = vi.spyOn(manager, 'setEnvironmentStatus');
-    setEnvironmentStatusSpy.mockReturnValue();
     mocks.stopPodMock.mockRejectedValue('something went wrong, pod already stopped...');
     await manager.deleteEnvironment('recipe-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');

@@ -39,7 +39,7 @@ import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
 import { LABEL_MODEL_ID } from './playground';
-import type { EnvironmentState, EnvironmentStatus } from '@shared/src/models/IEnvironmentState';
+import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import type { PodmanConnection } from './podmanConnection';
 import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
@@ -588,7 +588,7 @@ export class ApplicationManager {
         .then(pods => {
           const envsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
           for (const podToAdopt of envsPods) {
-            this.adoptPod(podToAdopt, 'running');
+            this.adoptPod(podToAdopt);
           }
         })
         .catch((err: unknown) => {
@@ -603,7 +603,7 @@ export class ApplicationManager {
     });
 
     this.podmanConnection.onPodStart((pod: PodInfo) => {
-      this.adoptPod(pod, 'running');
+      this.adoptPod(pod);
     });
     this.podmanConnection.onPodStop((pod: PodInfo) => {
       this.forgetPod(pod);
@@ -613,7 +613,7 @@ export class ApplicationManager {
     });
   }
 
-  adoptPod(pod: PodInfo, status: EnvironmentStatus) {
+  adoptPod(pod: PodInfo) {
     if (!pod.Labels) {
       return;
     }
@@ -624,7 +624,6 @@ export class ApplicationManager {
     const state: EnvironmentState = {
       recipeId,
       pod,
-      status,
     };
     this.updateEnvironmentState(recipeId, state);
   }
@@ -738,14 +737,9 @@ export class ApplicationManager {
     const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
     const envPod = await this.getEnvironmentPod(recipeId);
     await this.deleteEnvironment(recipeId, taskUtil);
-    try {
-      const recipe = this.catalogManager.getRecipeById(recipeId);
-      const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
-      await this.pullApplication(recipe, model, taskUtil);
-    } catch (err: unknown) {
-      this.setEnvironmentStatus(recipeId, 'unknown');
-      throw err;
-    }
+    const recipe = this.catalogManager.getRecipeById(recipeId);
+    const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
+    await this.pullApplication(recipe, model, taskUtil);
   }
 
   async getEnvironmentPod(recipeId: string): Promise<PodInfo> {
@@ -760,16 +754,5 @@ export class ApplicationManager {
       throw new Error(`no pod found with recipe Id ${recipeId}`);
     }
     return envPod;
-  }
-
-  setEnvironmentStatus(recipeId: string, status: EnvironmentStatus): void {
-    if (!this.#environments.has(recipeId)) {
-      throw new Error(`status for environemnt ${recipeId} not found`);
-    }
-    const previous = this.#environments.get(recipeId);
-    this.updateEnvironmentState(recipeId, {
-      ...previous,
-      status: status,
-    });
   }
 }

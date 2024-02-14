@@ -33,16 +33,16 @@ function restartEnvironment() {
   icon="{faPlay}"
   onClick="{() => startEnvironment()}"
   title="Start Environment"
-  enabled="{object?.status !== 'running' && !runningTask}" />
+  enabled="{!object?.pod && !runningTask}" />
 
 <ListItemButtonIcon
   icon="{faTrash}"
   onClick="{() => deleteEnvironment()}"
   title="Delete Environment"
-  enabled="{object?.status === 'running'}" />
+  enabled="{!!object?.pod}" />
 
 <ListItemButtonIcon
   icon="{faRotateForward}"
   onClick="{() => restartEnvironment()}"
   title="Restart Environment"
-  enabled="{object?.status === 'running'}" />
+  enabled="{!!object?.pod}" />

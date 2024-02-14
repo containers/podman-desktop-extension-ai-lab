@@ -12,8 +12,10 @@ $: {
 }
 </script>
 
-{#if task}
-  <div class="text-sm text-gray-700">
+<div class="text-sm text-gray-700">
+  {#if task}
     <TaskItem task="{task}" />
-  </div>
-{/if}
+  {:else if !!object.envState.pod}
+    Pod running
+  {/if}
+</div>

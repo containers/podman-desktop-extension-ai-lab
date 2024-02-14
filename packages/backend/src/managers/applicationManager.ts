@@ -649,6 +649,14 @@ export class ApplicationManager {
       return;
     }
     this.#environments.delete(recipeId);
+
+    const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+    taskUtil.setTask({
+      id: `deleted-${recipeId}`,
+      state: 'success',
+      name: `Pod deleted manually`,
+    });
+
     this.sendEnvironmentState();
   }
 

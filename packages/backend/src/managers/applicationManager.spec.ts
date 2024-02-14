@@ -125,8 +125,8 @@ const telemetryLogger = {
 } as unknown as TelemetryLogger;
 
 const localRepositoryRegistry = {
-    register: mocks.registerLocalRepositoryMock,
-  } as unknown as LocalRepositoryRegistry;
+  register: mocks.registerLocalRepositoryMock,
+} as unknown as LocalRepositoryRegistry;
 
 beforeEach(() => {
   vi.resetAllMocks();

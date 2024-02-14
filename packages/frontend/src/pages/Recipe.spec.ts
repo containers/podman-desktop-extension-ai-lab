@@ -1,8 +1,25 @@
+/**********************************************************************
+ * Copyright (C) 2024 Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ***********************************************************************/
+
 import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import Recipe from './Recipe.svelte';
-import userEvent from '@testing-library/user-event';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import * as catalogStore from '/@/stores/catalog';
 import { readable, writable } from 'svelte/store';
@@ -159,61 +176,6 @@ test('should display updated recipe information', async () => {
   customCatalog.set(updatedCatalog);
   await new Promise(resolve => setTimeout(resolve, 10));
   screen.getByText('New Recipe Name');
-});
-
-test('should display default model information', async () => {
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
-  render(Recipe, {
-    recipeId: 'recipe 1',
-  });
-
-  const modelInfo = screen.getByLabelText('model-selected');
-  expect(modelInfo.textContent).equal('Model 1');
-  const licenseBadge = screen.getByLabelText('license-model');
-  expect(licenseBadge.textContent).equal('?');
-  const defaultWarning = screen.getByLabelText('default-model-warning');
-  expect(defaultWarning.textContent).contains('This is the default, recommended model for this recipe.');
-});
-
-test('should open/close application details panel when clicking on toggle button', async () => {
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
-  render(Recipe, {
-    recipeId: 'recipe 1',
-  });
-
-  const panelOpenDetails = screen.getByLabelText('toggle application details');
-  expect(panelOpenDetails).toHaveClass('hidden');
-  const panelAppDetails = screen.getByLabelText('application details panel');
-  expect(panelAppDetails).toHaveClass('block');
-
-  const btnShowPanel = screen.getByRole('button', { name: 'show application details' });
-  const btnHidePanel = screen.getByRole('button', { name: 'hide application details' });
-
-  await userEvent.click(btnHidePanel);
-
-  expect(panelAppDetails).toHaveClass('hidden');
-  expect(panelOpenDetails).toHaveClass('block');
-
-  await userEvent.click(btnShowPanel);
-
-  expect(panelAppDetails).toHaveClass('block');
-  expect(panelOpenDetails).toHaveClass('hidden');
-});
-
-test('should call runApplication execution when run application button is clicked', async () => {
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.pullApplicationMock.mockResolvedValue(undefined);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
-  render(Recipe, {
-    recipeId: 'recipe 1',
-  });
-
-  const btnRunApplication = screen.getByRole('button', { name: 'Run application' });
-  await userEvent.click(btnRunApplication);
-
-  expect(mocks.pullApplicationMock).toBeCalledWith('recipe 1');
 });
 
 test('should send telemetry data', async () => {

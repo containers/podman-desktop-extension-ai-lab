@@ -63,12 +63,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.recipeStatusRegistry.getStatuses();
   }
 
-  async pullApplication(recipeId: string): Promise<void> {
+  async pullApplication(recipeId: string, modelId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
     if (!recipe) throw new Error('Not found');
 
-    // the user should have selected one model, we use the first one for the moment
-    const modelId = recipe.models[0];
     const model = this.catalogManager.getModelById(modelId);
 
     // Do not wait for the pull application, run it separately

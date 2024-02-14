@@ -1,5 +1,5 @@
 <script lang="ts">
-import { faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
+import { faList, faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { getDisplayName } from '/@/utils/versionControlUtils';
 import { recipes } from '/@/stores/recipe';
@@ -8,19 +8,19 @@ import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
 import { catalog } from '/@/stores/catalog';
+import { router } from 'tinro';
 
 export let recipeId: string;
+export let modelId: string;
 
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: recipeStatus = $recipes.get(recipeId);
-// this will be selected by the user, init with the default model (the first in the catalog recipe?)
-$: selectedModelId = recipe?.models?.[0];
-$: model = $catalog.models.find(m => m.id === selectedModelId);
+$: model = $catalog.models.find(m => m.id === modelId);
 
 let open: boolean = true;
 
 const onPullingRequest = () => {
-  studioClient.pullApplication(recipeId).catch((err: unknown) => {
+  studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {
     console.error('Something went wrong while pulling application', err);
   });
 };
@@ -79,31 +79,51 @@ const toggle = () => {
       <div class="flex flex-col w-full space-y-4 rounded-md bg-charcoal-600 p-4">
         {#if model}
           <div class="flex flex-col space-y-2">
-            <div class="text-base">Model</div>
-            <div class="flex flex-row space-x-2">
-              <div class="bg-charcoal-900 min-w-[200px] grow flex flex-col p-2 rounded-md space-y-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-sm" aria-label="model-selected">{model?.name}</span>
-                  {#if recipe?.models?.[0] === model.id}
-                    <i class="fas fa-star fa-xs text-gray-900"></i>
-                  {/if}
-                </div>
-                {#if model?.license}
-                  <div class="flex flex-row space-x-2">
-                    <div
-                      class="bg-charcoal-400 text-gray-600 text-xs font-thin px-2.5 py-0.5 rounded-md"
-                      aria-label="license-model">
-                      {model.license}
-                    </div>
-                  </div>
-                {/if}
+            <div class="flex flex-row justify-between">
+              <div class="text-base">Model</div>
+              <div
+                class="py-0.5"
+                class:hidden="{$router.path === `/recipes/${recipeId}/models`}"
+                aria-label="swap model panel">
+                <Button
+                  icon="{faList}"
+                  on:click="{() => router.goto(`/recipes/${recipeId}/models`)}"
+                  title="Go to the Models page to swap model"
+                  aria-label="Go to Model"
+                  class="h-full" />
               </div>
             </div>
-            {#if recipe?.models?.[0] === model.id}
-              <div class="px-2 text-xs text-gray-700" aria-label="default-model-warning">
-                * This is the default, recommended model for this recipe. You can swap for a different compatible model.
+
+            <div class="bg-charcoal-900 min-w-[200px] grow flex flex-col p-2 rounded-md space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-sm" aria-label="model-selected">{model?.name}</span>
+                {#if recipe?.models?.[0] === model.id}
+                  <i class="fas fa-star fa-xs text-gray-900" title="Recommended model"></i>
+                {/if}
               </div>
-            {/if}
+              {#if model?.license}
+                <div class="flex flex-row space-x-2">
+                  <div
+                    class="bg-charcoal-400 text-gray-600 text-xs font-thin px-2.5 py-0.5 rounded-md"
+                    aria-label="license-model">
+                    {model.license}
+                  </div>
+                </div>
+              {/if}
+            </div>
+            <div class="px-2 text-xs text-gray-700" aria-label="model-warning">
+              {#if recipe?.models?.[0] === model.id}
+                * This is the default, recommended model for this recipe. You can <a
+                  class="underline"
+                  href="{`/recipes/${recipeId}/models`}">swap for a different compatible model</a
+                >.
+              {:else}
+                * The default model for this recipe is {recipe?.models?.[0]}. You can
+                <a class="underline" href="{`/recipes/${recipeId}/models`}"
+                  >swap for {recipe?.models?.[0]} or a different compatible model</a
+                >.
+              {/if}
+            </div>
           </div>
         {/if}
         <div class="flex flex-col space-y-2 w-[45px]">

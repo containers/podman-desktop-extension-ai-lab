@@ -119,7 +119,7 @@ test('expect pull application to call the withProgress api method', async () => 
   mocks.withProgressMock.mockResolvedValue(undefined);
 
   await catalogManager.loadCatalog();
-  await studioApiImpl.pullApplication('recipe 1');
+  await studioApiImpl.pullApplication('recipe 1', 'model1');
   expect(mocks.withProgressMock).toHaveBeenCalledOnce();
 });
 

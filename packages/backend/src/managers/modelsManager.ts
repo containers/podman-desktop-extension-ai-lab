@@ -43,6 +43,7 @@ interface DownloadModelFailureResult {
 export class ModelsManager {
   #modelsDir: string;
   #models: Map<string, ModelInfo>;
+  #watcher?: podmanDesktopApi.FileSystemWatcher;
 
   constructor(
     private appUserDirectory: string,
@@ -60,10 +61,13 @@ export class ModelsManager {
       this.getLocalModelsFromDisk();
       await this.sendModelsInfo();
     };
-    const watcher = apiFs.createFileSystemWatcher(this.#modelsDir);
-    watcher.onDidCreate(reloadLocalModels);
-    watcher.onDidDelete(reloadLocalModels);
-    watcher.onDidChange(reloadLocalModels);
+    if (this.#watcher === undefined) {
+      this.#watcher = apiFs.createFileSystemWatcher(this.#modelsDir);
+      this.#watcher.onDidCreate(reloadLocalModels);
+      this.#watcher.onDidDelete(reloadLocalModels);
+      this.#watcher.onDidChange(reloadLocalModels);
+    }
+
     // Initialize the local models manually
     await reloadLocalModels();
   }
@@ -98,7 +102,14 @@ export class ModelsManager {
       }
       const modelFile = modelEntries[0];
       const fullPath = path.resolve(d.path, d.name, modelFile);
-      const info = fs.statSync(fullPath);
+
+      let info: { size?: number; mtime?: Date } = { size: undefined, mtime: undefined };
+      try {
+        info = fs.statSync(fullPath);
+      } catch (err: unknown) {
+        console.error('Something went wrong while getting file stats (probably in use).', err);
+      }
+
       const model = this.#models.get(d.name);
       if (model) {
         model.file = {
@@ -148,6 +159,7 @@ export class ModelsManager {
       try {
         await fs.promises.rm(modelDir, { recursive: true });
         this.telemetry.logUsage('model.delete', { 'model.id': modelId });
+        model.file = model.state = undefined;
       } catch (err: unknown) {
         this.telemetry.logError('model.delete', {
           'model.id': modelId,
@@ -155,8 +167,11 @@ export class ModelsManager {
           error: err,
         });
         await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
+
+        // Let's reload the models manually to avoid any issue
+        model.state = undefined;
+        this.getLocalModelsFromDisk();
       } finally {
-        model.file = model.state = undefined;
         await this.sendModelsInfo();
       }
     }

@@ -18,7 +18,7 @@
 
 import { type MockInstance, beforeEach, describe, expect, test, vi } from 'vitest';
 import os from 'os';
-import fs from 'node:fs';
+import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import type { DownloadModelResult } from './modelsManager';
 import { ModelsManager } from './modelsManager';
@@ -198,6 +198,48 @@ test('getModelsInfo should return an empty array if the models folder does not e
   }
 });
 
+test('getLocalModelsFromDisk should return undefined Date and size when stat fail', async () => {
+  const now = new Date();
+  mockFiles(now);
+  const statSyncSpy = vi.spyOn(fs, 'statSync');
+  statSyncSpy.mockImplementation((path: PathLike) => {
+    if (`${path}`.endsWith('model-id-1')) throw new Error('random-error');
+    return { isDirectory: () => true } as Stats;
+  });
+
+  let appdir: string;
+  if (process.platform === 'win32') {
+    appdir = 'C:\\home\\user\\aistudio';
+  } else {
+    appdir = '/home/user/aistudio';
+  }
+  const manager = new ModelsManager(
+    appdir,
+    {
+      postMessage: vi.fn(),
+    } as unknown as Webview,
+    {
+      getModels(): ModelInfo[] {
+        return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
+      },
+    } as CatalogManager,
+    telemetryLogger,
+  );
+  await manager.loadLocalModels();
+  expect(manager.getModelsInfo()).toEqual([
+    {
+      id: 'model-id-1',
+      name: 'model-id-1-model',
+      file: {
+        size: undefined,
+        creation: undefined,
+        path: path.resolve(dirent[0].path, dirent[0].name),
+        file: 'model-id-1-model',
+      },
+    },
+  ]);
+});
+
 test('loadLocalModels should post a message with the message on disk and on catalog', async () => {
   const now = new Date();
   mockFiles(now);
@@ -334,6 +376,12 @@ test('deleteLocalModel fails to delete the model folder', async () => {
     body: [
       {
         id: 'model-id-1',
+        file: {
+          creation: now,
+          file: 'model-id-1-model',
+          size: 32000,
+          path: path.resolve(dirent[0].path, dirent[0].name),
+        },
       },
     ],
   });

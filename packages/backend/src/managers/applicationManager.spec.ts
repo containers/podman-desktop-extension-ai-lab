@@ -33,6 +33,7 @@ import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
 import type { Webview, TelemetryLogger, PodInfo } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
+import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
 import type {
   PodmanConnection,
   machineStopHandle,

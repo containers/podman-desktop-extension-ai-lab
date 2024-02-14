@@ -4,7 +4,7 @@ import { router } from 'tinro';
 export let object: ModelInfo;
 
 function openDetails() {
-  router.goto(`/models/${object.id}`);
+  router.goto(`/model/${object.id}`);
 }
 </script>
 

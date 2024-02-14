@@ -24,7 +24,7 @@ export let displayDescription: boolean = true;
       {/if}
       {#each recipes as recipe}
         <Card
-          href="/recipes/{recipe.id}"
+          href="/recipe/{recipe.id}"
           title="{recipe.name}"
           icon="{getIcon(recipe.icon)}"
           classes="{secondaryBackground} flex-grow p-4">

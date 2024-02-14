@@ -28,7 +28,6 @@ import type { PlayGroundManager } from './managers/playground';
 import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
-import type { EnvironmentManager } from './managers/environmentManager';
 
 import * as fs from 'node:fs';
 import { timeout } from './utils/utils';
@@ -98,14 +97,13 @@ beforeEach(async () => {
 
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
-    {} as unknown as ApplicationManager,
+    {
+      deleteEnvironment: mocks.deleteEnvironmentMock,
+    } as unknown as ApplicationManager,
     {} as unknown as RecipeStatusRegistry,
     {} as unknown as PlayGroundManager,
     catalogManager,
     {} as unknown as ModelsManager,
-    {
-      deleteEnvironment: mocks.deleteEnvironmentMock,
-    } as unknown as EnvironmentManager,
     {} as TelemetryLogger,
   );
   vi.resetAllMocks();

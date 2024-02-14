@@ -31,8 +31,16 @@ import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
-import type { Webview, TelemetryLogger } from '@podman-desktop/api';
+import type { Webview, TelemetryLogger, PodInfo } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
+import type {
+  PodmanConnection,
+  machineStopHandle,
+  podRemoveHandle,
+  podStartHandle,
+  podStopHandle,
+  startupHandle,
+} from './podmanConnection';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -49,12 +57,31 @@ const mocks = vi.hoisted(() => {
     inspectContainerMock: vi.fn(),
     logUsageMock: vi.fn(),
     logErrorMock: vi.fn(),
+
+    postMessageMock: vi.fn(),
+    getContainerConnectionsMock: vi.fn(),
+    pullImageMock: vi.fn(),
+    stopContainerMock: vi.fn(),
+    getFreePortMock: vi.fn(),
+    containerRegistrySubscribeMock: vi.fn(),
+    onPodStartMock: vi.fn(),
+    onPodStopMock: vi.fn(),
+    onPodRemoveMock: vi.fn(),
+    startupSubscribeMock: vi.fn(),
+    onMachineStopMock: vi.fn(),
+    listContainersMock: vi.fn(),
+    listPodsMock: vi.fn(),
+    stopPodMock: vi.fn(),
+    removePodMock: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
   parseYamlFile: mocks.parseYamlFileMock,
 }));
 vi.mock('@podman-desktop/api', () => ({
+  provider: {
+    getContainerConnections: mocks.getContainerConnectionsMock,
+  },
   containerEngine: {
     buildImage: mocks.buildImageMock,
     listImages: mocks.listImagesMock,
@@ -66,8 +93,15 @@ vi.mock('@podman-desktop/api', () => ({
     startPod: mocks.startPod,
     deleteContainer: mocks.deleteContainerMock,
     inspectContainer: mocks.inspectContainerMock,
+    pullImage: mocks.pullImageMock,
+    stopContainer: mocks.stopContainerMock,
+    listContainers: mocks.listContainersMock,
+    listPods: mocks.listPodsMock,
+    stopPod: mocks.stopPodMock,
+    removePod: mocks.removePodMock,
   },
 }));
+
 let setTaskMock: MockInstance;
 let taskUtils: RecipeStatusUtils;
 let setTaskStateMock: MockInstance;
@@ -185,6 +219,9 @@ describe('pullApplication', () => {
       {
         setStatus: setStatusMock,
       } as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       modelsManager,
       telemetryLogger,
     );
@@ -362,6 +399,9 @@ describe('doCheckout', () => {
         cloneRepository: cloneRepositoryMock,
       } as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -396,6 +436,9 @@ describe('doCheckout', () => {
         cloneRepository: cloneRepositoryMock,
       } as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -426,6 +469,9 @@ describe('getConfiguration', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -440,6 +486,9 @@ describe('getConfiguration', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -491,6 +540,9 @@ describe('filterContainers', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -527,6 +579,9 @@ describe('filterContainers', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -573,6 +628,9 @@ describe('filterContainers', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -589,6 +647,9 @@ describe('getRandomName', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -601,6 +662,9 @@ describe('getRandomName', () => {
       '/home/user/aistudio',
       {} as unknown as GitManager,
       {} as unknown as RecipeStatusRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
     );
@@ -624,6 +688,9 @@ describe('buildImages', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -694,6 +761,9 @@ describe('createPod', async () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -755,6 +825,9 @@ describe('createApplicationPod', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -837,6 +910,9 @@ describe('restartContainerWhenModelServiceIsUp', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -857,6 +933,9 @@ describe('runApplication', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -907,6 +986,9 @@ describe('createAndAddContainersToPod', () => {
     '/home/user/aistudio',
     {} as unknown as GitManager,
     {} as unknown as RecipeStatusRegistry,
+    {} as Webview,
+    {} as PodmanConnection,
+    {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
   );
@@ -950,5 +1032,237 @@ describe('createAndAddContainersToPod', () => {
       },
     );
     expect(mocks.deleteContainerMock).toBeCalledWith('engine', 'container-1');
+  });
+});
+
+describe('pod detection', async () => {
+  let manager: ApplicationManager;
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+
+    manager = new ApplicationManager(
+      '/path/to/user/dir',
+      {} as GitManager,
+      {
+        setStatus: vi.fn(),
+      } as unknown as RecipeStatusRegistry,
+      {
+        postMessage: mocks.postMessageMock,
+      } as unknown as Webview,
+      {
+        onPodStart: mocks.onPodStartMock,
+        onPodStop: mocks.onPodStopMock,
+        onPodRemove: mocks.onPodRemoveMock,
+        startupSubscribe: mocks.startupSubscribeMock,
+        onMachineStop: mocks.onMachineStopMock,
+      } as unknown as PodmanConnection,
+      {} as CatalogManager,
+      {} as ModelsManager,
+      {} as TelemetryLogger,
+    );
+  });
+
+  test('adoptRunningEnvironments updates the environment state with the found pod', async () => {
+    mocks.listPodsMock.mockResolvedValue([
+      {
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      },
+    ]);
+    mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
+      f();
+    });
+    const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
+    manager.adoptRunningEnvironments();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(updateEnvironmentStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', {
+      pod: {
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      },
+      recipeId: 'recipe-id-1',
+      status: 'running',
+    });
+  });
+
+  test('adoptRunningEnvironments does not update the environment state with the found pod without label', async () => {
+    mocks.listPodsMock.mockResolvedValue([{}]);
+    mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
+      f();
+    });
+    const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
+    manager.adoptRunningEnvironments();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(updateEnvironmentStateSpy).not.toHaveBeenCalled();
+  });
+
+  test('onMachineStop updates the environments state with no environment running', async () => {
+    mocks.listPodsMock.mockResolvedValue([]);
+    mocks.onMachineStopMock.mockImplementation((f: machineStopHandle) => {
+      f();
+    });
+    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    manager.adoptRunningEnvironments();
+    expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
+  });
+
+  test('onPodStart updates the environments state with the started pod', async () => {
+    mocks.listPodsMock.mockResolvedValue([]);
+    mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
+    mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
+      f({
+        engineId: 'engine-1',
+        engineName: 'Engine 1',
+        kind: 'podman',
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      } as unknown as PodInfo);
+    });
+    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    manager.adoptRunningEnvironments();
+    expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
+  });
+
+  test('onPodStart does no update the environments state with the started pod without labels', async () => {
+    mocks.listPodsMock.mockResolvedValue([]);
+    mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
+    mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
+      f({
+        engineId: 'engine-1',
+        engineName: 'Engine 1',
+        kind: 'podman',
+      } as unknown as PodInfo);
+    });
+    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    manager.adoptRunningEnvironments();
+    expect(sendEnvironmentStateSpy).not.toHaveBeenCalledOnce();
+  });
+
+  test('onPodStop updates the environments state by removing the stopped pod', async () => {
+    mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
+      f();
+    });
+    mocks.listPodsMock.mockResolvedValue([
+      {
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      },
+    ]);
+    mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
+    mocks.onPodStopMock.mockImplementation((f: podStopHandle) => {
+      setTimeout(() => {
+        f({
+          engineId: 'engine-1',
+          engineName: 'Engine 1',
+          kind: 'podman',
+          Labels: {
+            'ai-studio-recipe-id': 'recipe-id-1',
+          },
+        } as unknown as PodInfo);
+      }, 1);
+    });
+    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    manager.adoptRunningEnvironments();
+    await new Promise(resolve => setTimeout(resolve, 10));
+    expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+  });
+
+  test('onPodRemove updates the environments state by removing the removed pod', async () => {
+    mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
+      f();
+    });
+    mocks.listPodsMock.mockResolvedValue([
+      {
+        Id: 'pod-id-1',
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      },
+    ]);
+    mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
+    mocks.onPodRemoveMock.mockImplementation((f: podRemoveHandle) => {
+      setTimeout(() => {
+        f('pod-id-1');
+      }, 1);
+    });
+    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    manager.adoptRunningEnvironments();
+    await new Promise(resolve => setTimeout(resolve, 10));
+    expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+  });
+
+  test('getEnvironmentPod', async () => {
+    mocks.listPodsMock.mockResolvedValue([
+      {
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      },
+      {
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-2',
+        },
+      },
+    ]);
+    const result = await manager.getEnvironmentPod('recipe-id-1');
+    expect(result).toEqual({
+      Labels: {
+        'ai-studio-recipe-id': 'recipe-id-1',
+      },
+    });
+  });
+
+  test('deleteEnvironment calls stopPod and removePod', async () => {
+    mocks.listPodsMock.mockResolvedValue([
+      {
+        engineId: 'engine-1',
+        Id: 'pod-1',
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      },
+      {
+        engineId: 'engine-2',
+        Id: 'pod-2',
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-2',
+        },
+      },
+    ]);
+    const setEnvironmentStatusSpy = vi.spyOn(manager, 'setEnvironmentStatus');
+    setEnvironmentStatusSpy.mockReturnValue();
+    await manager.deleteEnvironment('recipe-id-1');
+    expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
+    expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
+  });
+
+  test('deleteEnvironment calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
+    mocks.listPodsMock.mockResolvedValue([
+      {
+        engineId: 'engine-1',
+        Id: 'pod-1',
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+        },
+      },
+      {
+        engineId: 'engine-2',
+        Id: 'pod-2',
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-2',
+        },
+      },
+    ]);
+    const setEnvironmentStatusSpy = vi.spyOn(manager, 'setEnvironmentStatus');
+    setEnvironmentStatusSpy.mockReturnValue();
+    mocks.stopPodMock.mockRejectedValue('something went wrong, pod already stopped...');
+    await manager.deleteEnvironment('recipe-id-1');
+    expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
+    expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });
 });

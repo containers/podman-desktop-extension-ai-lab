@@ -234,7 +234,7 @@ test('should call runApplication execution when run application button is clicke
     recipeId: 'recipe 1',
   });
 
-  const btnRunApplication = screen.getByRole('button', { name: 'Run application' });
+  const btnRunApplication = screen.getByLabelText('Start Environment');
   await userEvent.click(btnRunApplication);
 
   expect(mocks.pullApplicationMock).toBeCalledWith('recipe 1');

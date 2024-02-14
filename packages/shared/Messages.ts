@@ -5,4 +5,5 @@ export const MSG_NEW_RECIPE_STATE = 'new-recipe-state';
 export const MSG_TASKS_UPDATE = 'tasks-update';
 export const MSG_NEW_MODELS_STATE = 'new-models-state';
 export const MSG_ENVIRONMENTS_STATE_UPDATE = 'environments-state-update';
+export const MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update';
 

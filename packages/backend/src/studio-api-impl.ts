@@ -30,6 +30,8 @@ import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { LocalRepository } from '@shared/src/models/ILocalRepository';
+import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -39,6 +41,7 @@ export class StudioApiImpl implements StudioAPI {
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
     private telemetry: podmanDesktopApi.TelemetryLogger,
+    private localRepositories: LocalRepositoryRegistry,
   ) {}
 
   async ping(): Promise<string> {
@@ -219,5 +222,9 @@ export class StudioApiImpl implements StudioAPI {
     data?: Record<string, unknown | podmanDesktopApi.TelemetryTrustedValue>,
   ): Promise<void> {
     this.telemetry.logError(eventName, data);
+  }
+
+  async getLocalRepositories(): Promise<LocalRepository[]> {
+    return this.localRepositories.getLocalRepositories();
   }
 }

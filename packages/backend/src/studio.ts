@@ -38,6 +38,7 @@ import os from 'os';
 import fs from 'node:fs';
 import { ContainerRegistry } from './registries/ContainerRegistry';
 import { PodmanConnection } from './managers/podmanConnection';
+import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
@@ -134,6 +135,7 @@ export class Studio {
       this.telemetry,
       taskRegistry,
     );
+    const localRepositoryRegistry = new LocalRepositoryRegistry(this.#panel.webview);
     const applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,
@@ -143,6 +145,7 @@ export class Studio {
       this.catalogManager,
       this.modelsManager,
       this.telemetry,
+      localRepositoryRegistry,
     );
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
@@ -157,6 +160,7 @@ export class Studio {
       this.catalogManager,
       this.modelsManager,
       this.telemetry,
+      localRepositoryRegistry,
     );
 
     await this.catalogManager.loadCatalog();

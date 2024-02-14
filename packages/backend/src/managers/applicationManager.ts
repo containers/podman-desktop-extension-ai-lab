@@ -38,6 +38,7 @@ import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
+import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
 import { LABEL_MODEL_ID } from './playground';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import type { PodmanConnection } from './podmanConnection';
@@ -86,6 +87,7 @@ export class ApplicationManager {
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
     private telemetry: TelemetryLogger,
+    private localRepositories: LocalRepositoryRegistry,
   ) {
     this.#environments = new Map();
   }
@@ -107,6 +109,10 @@ export class ApplicationManager {
         targetDirectory: localFolder,
       };
       await this.doCheckout(gitCloneInfo, taskUtil);
+      this.localRepositories.register({
+        path: gitCloneInfo.targetDirectory,
+        recipeId: recipe.id,
+      });
 
       // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
       // and backend (that define which model supports)

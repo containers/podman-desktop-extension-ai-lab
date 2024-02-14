@@ -376,6 +376,12 @@ test('deleteLocalModel fails to delete the model folder', async () => {
     body: [
       {
         id: 'model-id-1',
+        file: {
+          creation: now,
+          file: 'model-id-1-model',
+          size: 32000,
+          path: path.resolve(dirent[0].path, dirent[0].name),
+        },
       },
     ],
   });

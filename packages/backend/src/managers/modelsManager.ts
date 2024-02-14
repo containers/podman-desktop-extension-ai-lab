@@ -61,7 +61,7 @@ export class ModelsManager {
       this.getLocalModelsFromDisk();
       await this.sendModelsInfo();
     };
-    if(this.#watcher === undefined) {
+    if (this.#watcher === undefined) {
       this.#watcher = apiFs.createFileSystemWatcher(this.#modelsDir);
       this.#watcher.onDidCreate(reloadLocalModels);
       this.#watcher.onDidDelete(reloadLocalModels);
@@ -103,7 +103,7 @@ export class ModelsManager {
       const modelFile = modelEntries[0];
       const fullPath = path.resolve(d.path, d.name, modelFile);
 
-      let info: {size?: number, mtime?: Date} = {size: undefined, mtime: undefined};
+      let info: { size?: number; mtime?: Date } = { size: undefined, mtime: undefined };
       try {
         info = fs.statSync(fullPath);
       } catch (err: unknown) {

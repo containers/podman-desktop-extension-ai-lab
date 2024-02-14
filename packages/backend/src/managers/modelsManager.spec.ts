@@ -18,7 +18,7 @@
 
 import { type MockInstance, beforeEach, describe, expect, test, vi } from 'vitest';
 import os from 'os';
-import fs, { Stats } from 'node:fs';
+import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import type { DownloadModelResult } from './modelsManager';
 import { ModelsManager } from './modelsManager';
@@ -28,7 +28,6 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import * as utils from '../utils/utils';
-import { PathLike } from 'fs';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -204,9 +203,8 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
   mockFiles(now);
   const statSyncSpy = vi.spyOn(fs, 'statSync');
   statSyncSpy.mockImplementation((path: PathLike) => {
-    if(`${path}`.endsWith('model-id-1'))
-      throw new Error('random-error');
-    return {isDirectory: () => true} as Stats;
+    if (`${path}`.endsWith('model-id-1')) throw new Error('random-error');
+    return { isDirectory: () => true } as Stats;
   });
 
   let appdir: string;
@@ -222,9 +220,7 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
     } as unknown as Webview,
     {
       getModels(): ModelInfo[] {
-        return [
-          { id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo,
-        ];
+        return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
       },
     } as CatalogManager,
     telemetryLogger,

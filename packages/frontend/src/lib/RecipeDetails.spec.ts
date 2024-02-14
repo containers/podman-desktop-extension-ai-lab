@@ -155,7 +155,7 @@ test('swap model button should move user to models tab', async () => {
     modelId: 'model1',
   });
 
-  const btnSwap = screen.getByRole('button', { name: 'Swap' });
+  const btnSwap = screen.getByRole('button', { name: 'Go to Model' });
   await userEvent.click(btnSwap);
 
   expect(gotoMock).toBeCalledWith('/recipes/recipe 1/models');
@@ -174,11 +174,41 @@ test('swap model panel should be hidden on models tab', async () => {
   expect(!swapModelPanel.classList.contains('hidden'));
 
   // click the swap panel to switch to the model tab
-  const btnSwap = screen.getByRole('button', { name: 'Swap' });
+  const btnSwap = screen.getByRole('button', { name: 'Go to Model' });
   await userEvent.click(btnSwap);
 
   await new Promise(resolve => setTimeout(resolve, 200));
   // the swap model panel should be hidden
   const swapModelPanel2 = screen.getByLabelText('swap model panel');
   expect(swapModelPanel2.classList.contains('hidden'));
+});
+
+test('should display default model information when model is the recommended', async () => {
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  render(RecipeDetails, {
+    recipeId: 'recipe 1',
+    modelId: 'model1',
+  });
+
+  const modelInfo = screen.getByLabelText('model-selected');
+  expect(modelInfo.textContent).equal('Model 1');
+  const licenseBadge = screen.getByLabelText('license-model');
+  expect(licenseBadge.textContent).equal('?');
+  const defaultWarning = screen.getByLabelText('model-warning');
+  expect(defaultWarning.textContent).contains('This is the default, recommended model for this recipe.');
+});
+
+test('should display non-default model information when model is not the recommended one', async () => {
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  render(RecipeDetails, {
+    recipeId: 'recipe 1',
+    modelId: 'model2',
+  });
+
+  const modelInfo = screen.getByLabelText('model-selected');
+  expect(modelInfo.textContent).equal('Model 2');
+  const defaultWarning = screen.getByLabelText('model-warning');
+  expect(defaultWarning.textContent).contains('The default model for this recipe is');
 });

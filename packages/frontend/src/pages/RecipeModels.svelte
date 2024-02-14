@@ -3,11 +3,11 @@ import Table from '/@/lib/table/Table.svelte';
 import { Column, Row } from '/@/lib/table/table';
 import ModelColumnName from '/@/lib/table/model/ModelColumnName.svelte';
 import ModelColumnRegistry from '/@/lib/table/model/ModelColumnRegistry.svelte';
-import ModelColumnPopularity from '/@/lib/table/model/ModelColumnPopularity.svelte';
 import ModelColumnLicense from '/@/lib/table/model/ModelColumnLicense.svelte';
 import ModelColumnHw from '/@/lib/table/model/ModelColumnHW.svelte';
 import { catalog } from '/@/stores/catalog';
-import ModelColumnRecipeActions from '../lib/table/model/ModelColumnRecipeActions.svelte';
+import ModelColumnRecipeSelection from '../lib/table/model/ModelColumnRecipeSelection.svelte';
+import ModelColumnRecipeRecommended from '../lib/table/model/ModelColumnRecipeRecommended.svelte';
 import type { RecipeModelInfo } from '../models/RecipeModelInfo';
 
 export let modelsIds: string[] | undefined;
@@ -16,20 +16,21 @@ export let setSelectedModel: (modelId: string) => void;
 
 $: models = $catalog.models
   .filter(m => modelsIds?.includes(m.id))
-  .map(m => {
+  .map((m, i) => {
     return {
       ...m,
+      recommended: i === 0,
       inUse: m.id === selectedModelId,
     } as RecipeModelInfo;
   });
 
 const columns: Column<RecipeModelInfo>[] = [
+  new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
   new Column<RecipeModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
   new Column<RecipeModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),
   new Column<RecipeModelInfo>('Registry', { width: '1fr', renderer: ModelColumnRegistry }),
-  new Column<RecipeModelInfo>('Popularity', { width: '1fr', renderer: ModelColumnPopularity }),
+  new Column<RecipeModelInfo>('Recommended', { width: '1fr', renderer: ModelColumnRecipeRecommended }),
   new Column<RecipeModelInfo>('License', { width: '1fr', renderer: ModelColumnLicense }),
-  new Column<RecipeModelInfo>('Actions', { width: '1fr', renderer: ModelColumnRecipeActions }),
 ];
 const row = new Row<RecipeModelInfo>({});
 

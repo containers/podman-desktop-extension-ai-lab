@@ -19,13 +19,13 @@
 import '@testing-library/jest-dom/vitest';
 import { vi, test, expect } from 'vitest';
 import { screen, render, fireEvent } from '@testing-library/svelte';
-import ModelColumnRecipeActions from './ModelColumnRecipeActions.svelte';
 import type { RecipeModelInfo } from '/@/models/RecipeModelInfo';
+import ModelColumnRecipeSelection from './ModelColumnRecipeSelection.svelte';
 
 const updateMock = vi.fn();
 
 test('expect the setSelectedModel is called when swap button is clicked', async () => {
-  const { component } = render(ModelColumnRecipeActions, {
+  const { component } = render(ModelColumnRecipeSelection, {
     object: {
       id: 'id',
       inUse: false,
@@ -33,10 +33,10 @@ test('expect the setSelectedModel is called when swap button is clicked', async 
   });
   component.$on('update', updateMock);
 
-  const btnSwapModel = screen.getByRole('button', { name: 'Use this model when running application' });
+  const radioSwapModel = screen.getByRole('radio', { name: 'Use this model when running the application' });
 
-  expect(btnSwapModel).toBeDefined();
-  await fireEvent.click(btnSwapModel);
+  expect(radioSwapModel).toBeDefined();
+  await fireEvent.click(radioSwapModel);
 
   expect(updateMock).toHaveBeenCalled();
 });

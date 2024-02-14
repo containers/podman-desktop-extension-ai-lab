@@ -178,21 +178,6 @@ test('should display updated recipe information', async () => {
   screen.getByText('New Recipe Name');
 });
 
-test('should display default model information', async () => {
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
-  render(Recipe, {
-    recipeId: 'recipe 1',
-  });
-
-  const modelInfo = screen.getByLabelText('model-selected');
-  expect(modelInfo.textContent).equal('Model 1');
-  const licenseBadge = screen.getByLabelText('license-model');
-  expect(licenseBadge.textContent).equal('?');
-  const defaultWarning = screen.getByLabelText('default-model-warning');
-  expect(defaultWarning.textContent).contains('This is the default, recommended model for this recipe.');
-});
-
 test('should send telemetry data', async () => {
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());

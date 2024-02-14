@@ -26,10 +26,10 @@ $: models = $catalog.models
 
 const columns: Column<RecipeModelInfo>[] = [
   new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
+  new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeRecommended }),
   new Column<RecipeModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
   new Column<RecipeModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),
   new Column<RecipeModelInfo>('Registry', { width: '1fr', renderer: ModelColumnRegistry }),
-  new Column<RecipeModelInfo>('Recommended', { width: '1fr', renderer: ModelColumnRecipeRecommended }),
   new Column<RecipeModelInfo>('License', { width: '1fr', renderer: ModelColumnLicense }),
 ];
 const row = new Row<RecipeModelInfo>({});

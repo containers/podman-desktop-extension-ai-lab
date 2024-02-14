@@ -74,6 +74,7 @@ export interface ImageInfo {
 }
 
 export class ApplicationManager {
+  // Map recipeId => EnvironmentState
   #environments: Map<string, EnvironmentState>;
 
   constructor(
@@ -94,7 +95,7 @@ export class ApplicationManager {
     try {
       // Create a TaskUtils object to help us
       if (!taskUtil) {
-        taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);        
+        taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
       }
 
       const localFolder = path.join(this.appUserDirectory, recipe.id);
@@ -723,7 +724,6 @@ export class ApplicationManager {
         name: `Application removed`,
       });
     } catch (err: unknown) {
-      //this.setEnvironmentStatus(recipeId, 'unknown');
       taskUtil.setTask({
         id: `removing-${recipeId}`,
         state: 'error',

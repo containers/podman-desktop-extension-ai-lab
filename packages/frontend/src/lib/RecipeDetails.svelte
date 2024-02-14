@@ -53,53 +53,23 @@ const toggle = () => {
       <div class="w-full bg-charcoal-600 rounded-md p-4">
         <div class="flex flex-row items-center">
           {#if envState}
-            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-300">{envState.pod.Name}</div>
+            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-300">
+              {envState.pod.Name}
+            </div>
           {:else}
-            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-500 italic">(no pod running)</div>
+            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-500 italic">
+              (no pod running)
+            </div>
           {/if}
           <div class="shrink-0">
-            <EnvironmentControls recipeId={recipeId} object={envState} tasks={recipeStatus?.tasks} />
-          </div>  
+            <EnvironmentControls recipeId="{recipeId}" object="{envState}" tasks="{recipeStatus?.tasks}" />
+          </div>
         </div>
         {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
           <div class="mt-4 text-sm font-normal py-2">
             <TasksProgress tasks="{recipeStatus.tasks}" />
           </div>
         {/if}
-        <!--div class="flex flex-row">
-          {#if isRunning || (recipeStatus !== undefined && recipeStatus.tasks.length > 0)}
-            {#if recipeStatus?.state === 'error'}
-              <Button
-                on:click={() => onPullingRequest()}
-                class="w-full p-2"
-                icon="{faRefresh}"
-              >Retry</Button>
-            {:else if recipeStatus?.state === 'loading' || isRunning}
-              <Button
-                inProgress={recipeStatus?.state === 'loading'}
-                disabled={isRunning}
-                class="w-full p-2"
-                icon="{faPlay}"
-              >
-                {#if isRunning}Running{:else}Loading{/if}
-              </Button>
-            {/if}
-          {:else}
-            <Button
-              on:click={() => onPullingRequest()}
-              class="w-full p-2"
-              icon="{faPlay}"
-            >
-              Run application
-            </Button>
-          {/if}
-          {#if envState}
-            <EnvironmentControls object={envState} />
-          {/if}
-        </div-->
-        <!--div class="text-xs text-gray-700 mt-3">
-          This will git clone the application, download the model, build images, and run the application as a pod locally.
-        </div-->
       </div>
 
       <div class="flex flex-col w-full space-y-4 rounded-md bg-charcoal-600 p-4">

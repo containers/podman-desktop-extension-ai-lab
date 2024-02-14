@@ -1,9 +1,9 @@
 <script lang="ts">
-import { faPlay, faRotateForward, faTrash } from "@fortawesome/free-solid-svg-icons";
-import ListItemButtonIcon from "/@/lib/button/ListItemButtonIcon.svelte";
-import { studioClient } from "/@/utils/client";
-import type { EnvironmentState } from "@shared/src/models/IEnvironmentState";
-import type { Task } from "@shared/src/models/ITask";
+import { faPlay, faRotateForward, faTrash } from '@fortawesome/free-solid-svg-icons';
+import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
+import { studioClient } from '/@/utils/client';
+import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { Task } from '@shared/src/models/ITask';
 export let object: EnvironmentState | undefined;
 export let recipeId: string;
 export let tasks: Task[] | undefined;
@@ -11,44 +11,38 @@ export let tasks: Task[] | undefined;
 $: runningTask = tasks && !!tasks.find(t => t.state === 'loading');
 
 function startEnvironment() {
-  studioClient.pullApplication(recipeId)
-  .catch((err: unknown) => {
-  console.error('Something went wrong while pulling application', err);
-})
+  studioClient.pullApplication(recipeId).catch((err: unknown) => {
+    console.error('Something went wrong while pulling application', err);
+  });
 }
 
 function deleteEnvironment() {
-  studioClient.requestRemoveEnvironment(recipeId).catch((err) => {
+  studioClient.requestRemoveEnvironment(recipeId).catch(err => {
     console.error(`Something went wrong while trying to stop environment: ${String(err)}.`);
   });
 }
 
 function restartEnvironment() {
-  studioClient.requestRestartEnvironment(recipeId).catch((err) => {
+  studioClient.requestRestartEnvironment(recipeId).catch(err => {
     console.error(`Something went wrong while trying to restart environment: ${String(err)}.`);
   });
 }
 </script>
 
 <ListItemButtonIcon
-  icon={faPlay}
-  onClick={() => startEnvironment()}
+  icon="{faPlay}"
+  onClick="{() => startEnvironment()}"
   title="Start Environment"
-  enabled={object?.status !== 'running' && !runningTask}
-/>
+  enabled="{object?.status !== 'running' && !runningTask}" />
 
 <ListItemButtonIcon
-  icon={faTrash}
-  onClick={() => deleteEnvironment()}
+  icon="{faTrash}"
+  onClick="{() => deleteEnvironment()}"
   title="Delete Environment"
-  enabled={object?.status === 'running'}
-/>
+  enabled="{object?.status === 'running'}" />
 
 <ListItemButtonIcon
-  icon={faRotateForward}
-  onClick={() => restartEnvironment()}
+  icon="{faRotateForward}"
+  onClick="{() => restartEnvironment()}"
   title="Restart Environment"
-  enabled={object?.status === 'running'}
-/>
-
-    
+  enabled="{object?.status === 'running'}" />

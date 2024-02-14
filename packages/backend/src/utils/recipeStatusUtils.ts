@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { RecipeStatus, RecipeStatusState } from '@shared/src/models/IRecipeStatus';
+import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import type { Task } from '@shared/src/models/ITask';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 

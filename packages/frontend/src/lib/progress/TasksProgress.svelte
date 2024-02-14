@@ -4,21 +4,8 @@ import ExpandableMessage from '/@/lib/ExpandableMessage.svelte';
 import TaskItem from './TaskItem.svelte';
 
 export let tasks: Task[] = [];
-export let mini = false;
-let task: Task | undefined;
-
-$: {
-  if (mini && tasks.length > 0) {
-    task = tasks[tasks.length-1];
-  }
-}
 </script>
 
-{#if mini}
-  {#if task}
-    <TaskItem task={task} />
-  {/if}
-{:else}
 <ul class="space-y-2 text-gray-500 list-inside dark:text-gray-400">
   {#each tasks as task}
     <li class="flex flex-col rounded-md bg-charcoal-800 p-2">
@@ -27,4 +14,3 @@ $: {
     </li>
   {/each}
 </ul>
-{/if}

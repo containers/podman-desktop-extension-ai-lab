@@ -73,7 +73,11 @@ export class StudioApiImpl implements StudioAPI {
         this.applicationManager.pullApplication(recipe, model),
       )
       .catch(() => {
-        this.recipeStatusRegistry.setRecipeState(recipeId, 'error');
+        podmanDesktopApi.window
+          .showErrorMessage(`Error starting the application "${recipe.name}"`)
+          .catch((err: unknown) => {
+            console.error(`Something went wrong with confirmation modals`, err);
+          });
       });
   }
 

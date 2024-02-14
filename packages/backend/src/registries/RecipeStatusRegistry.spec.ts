@@ -47,7 +47,6 @@ test('taskRegistry should have been updated', () => {
   const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, webview);
   recipeStatusRegistry.setStatus('random', {
     recipeId: 'random',
-    state: 'none',
     tasks: [
       {
         id: 'task-1',
@@ -68,7 +67,6 @@ test('webview should have been notified', () => {
   const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, webview);
   recipeStatusRegistry.setStatus('random', {
     recipeId: 'random',
-    state: 'none',
     tasks: [],
   });
   expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1, {
@@ -78,7 +76,6 @@ test('webview should have been notified', () => {
         'random',
         {
           recipeId: 'random',
-          state: 'none',
           tasks: [],
         },
       ],
@@ -90,7 +87,6 @@ test('recipe status should have been updated', () => {
   const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, webview);
   recipeStatusRegistry.setStatus('random', {
     recipeId: 'random',
-    state: 'none',
     tasks: [
       {
         id: 'task-1',
@@ -99,15 +95,7 @@ test('recipe status should have been updated', () => {
       },
     ],
   });
-  let statuses = recipeStatusRegistry.getStatuses();
+  const statuses = recipeStatusRegistry.getStatuses();
   expect(statuses.size).toBe(1);
   expect(statuses.get('random').tasks.length).toBe(1);
-  expect(statuses.get('random').state).toBe('none');
-
-  // update the recipe state
-  recipeStatusRegistry.setRecipeState('random', 'error');
-  statuses = recipeStatusRegistry.getStatuses();
-  expect(statuses.size).toBe(1);
-  expect(statuses.get('random').tasks.length).toBe(1);
-  expect(statuses.get('random').state).toBe('error');
 });

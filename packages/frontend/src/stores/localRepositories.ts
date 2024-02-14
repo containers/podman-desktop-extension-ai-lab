@@ -1,6 +1,6 @@
 import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
-import { MSG_LOCAL_REPOSITORY_UPDATE, MSG_NEW_RECIPE_STATE } from '@shared/Messages';
+import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 

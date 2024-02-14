@@ -22,7 +22,7 @@
     "@tailwindcss/typography": "^0.5.10",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/svelte": "^4.0.5",
+    "@testing-library/svelte": "^4.1.0",
     "@testing-library/user-event": "^14.5.2",
     "@tsconfig/svelte": "^5.0.2",
     "@types/humanize-duration": "^3.27.4",

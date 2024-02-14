@@ -18,7 +18,7 @@
     "@fortawesome/free-brands-svg-icons": "^6.5.1",
     "@fortawesome/free-regular-svg-icons": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
-    "@sveltejs/vite-plugin-svelte": "3.0.1",
+    "@sveltejs/vite-plugin-svelte": "3.0.2",
     "@tailwindcss/typography": "^0.5.10",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.4.2",

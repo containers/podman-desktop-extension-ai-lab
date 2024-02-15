@@ -33,6 +33,7 @@ import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
 import type { Webview, TelemetryLogger, PodInfo } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
+import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
 import type {
   PodmanConnection,
   machineStopHandle,
@@ -58,7 +59,7 @@ const mocks = vi.hoisted(() => {
     inspectContainerMock: vi.fn(),
     logUsageMock: vi.fn(),
     logErrorMock: vi.fn(),
-
+    registerLocalRepositoryMock: vi.fn(),
     postMessageMock: vi.fn(),
     getContainerConnectionsMock: vi.fn(),
     pullImageMock: vi.fn(),
@@ -122,6 +123,10 @@ const telemetryLogger = {
   logUsage: mocks.logUsageMock,
   logError: mocks.logErrorMock,
 } as unknown as TelemetryLogger;
+
+const localRepositoryRegistry = {
+  register: mocks.registerLocalRepositoryMock,
+} as unknown as LocalRepositoryRegistry;
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -232,6 +237,7 @@ describe('pullApplication', () => {
       {} as CatalogManager,
       modelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
   }
   test('pullApplication should clone repository and call downloadModelMain and buildImage', async () => {
@@ -407,6 +413,7 @@ describe('doCheckout', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     const gitCloneOptions = {
       repository: 'repo',
@@ -444,6 +451,7 @@ describe('doCheckout', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     await manager.doCheckout(
       {
@@ -477,6 +485,7 @@ describe('getConfiguration', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     expect(() => manager.getConfiguration('config', 'local')).toThrowError(
@@ -494,6 +503,7 @@ describe('getConfiguration', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     const stats = {
@@ -548,6 +558,7 @@ describe('filterContainers', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(0);
@@ -587,6 +598,7 @@ describe('filterContainers', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(1);
@@ -636,6 +648,7 @@ describe('filterContainers', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(2);
@@ -655,6 +668,7 @@ describe('getRandomName', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     const randomName = manager.getRandomName('base');
     expect(randomName).not.equal('base');
@@ -670,6 +684,7 @@ describe('getRandomName', () => {
       {} as CatalogManager,
       {} as unknown as ModelsManager,
       telemetryLogger,
+      localRepositoryRegistry,
     );
     const randomName = manager.getRandomName('');
     expect(randomName.length).toBeGreaterThan(0);
@@ -696,6 +711,7 @@ describe('buildImages', () => {
     {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
+    localRepositoryRegistry,
   );
   test('setTaskState should be called with error if context does not exist', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
@@ -769,6 +785,7 @@ describe('createPod', async () => {
     {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
+    localRepositoryRegistry,
   );
   test('throw an error if there is no sample image', async () => {
     const images = [imageInfo2];
@@ -833,6 +850,7 @@ describe('createApplicationPod', () => {
     {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
+    localRepositoryRegistry,
   );
   const images = [imageInfo1, imageInfo2];
   test('throw if createPod fails', async () => {
@@ -918,6 +936,7 @@ describe('restartContainerWhenModelServiceIsUp', () => {
     {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
+    localRepositoryRegistry,
   );
   test('restart container if endpoint is alive', async () => {
     mocks.inspectContainerMock.mockResolvedValue({
@@ -941,6 +960,7 @@ describe('runApplication', () => {
     {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
+    localRepositoryRegistry,
   );
   const pod: ApplicationPodInfo = {
     engineId: 'engine',
@@ -994,6 +1014,7 @@ describe('createAndAddContainersToPod', () => {
     {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
+    localRepositoryRegistry,
   );
   const pod: ApplicationPodInfo = {
     engineId: 'engine',
@@ -1063,6 +1084,7 @@ describe('pod detection', async () => {
       {} as CatalogManager,
       {} as ModelsManager,
       {} as TelemetryLogger,
+      localRepositoryRegistry,
     );
   });
 

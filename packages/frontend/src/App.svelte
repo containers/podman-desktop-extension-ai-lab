@@ -47,11 +47,6 @@ onMount(() => {
         <Environments />
       </Route>
 
-      <!-- Models -->
-      <Route path="/models" breadcrumb="Models">
-        <Models />
-      </Route>
-
       <!-- Registries -->
       <Route path="/registries" breadcrumb="Registries">
         <Registries />
@@ -62,11 +57,14 @@ onMount(() => {
         <Preferences />
       </Route>
 
-      <Route path="/recipes/:id/*" breadcrumb="Recipe Details" let:meta>
+      <Route path="/recipe/:id/*" breadcrumb="Recipe Details" let:meta>
         <Recipe recipeId="{meta.params.id}" />
       </Route>
 
-      <Route path="/models/:id/*" breadcrumb="Model Details" let:meta>
+      <Route path="/models/*" breadcrumb="Models">
+        <Models />
+      </Route>
+      <Route path="/model/:id/*" breadcrumb="Model Details" let:meta>
         <Model modelId="{meta.params.id}" />
       </Route>
     </div>

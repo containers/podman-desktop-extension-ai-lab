@@ -19,6 +19,7 @@ $: result = '';
 let inProgress = false;
 let error: string | undefined = undefined;
 let playgroundState: PlaygroundState | undefined = undefined;
+let elapsed = 0;
 
 onMount(() => {
   if (!model) {
@@ -73,6 +74,15 @@ function displayQuery(query: QueryState) {
   }
 }
 
+function requestTimeUpdate(start: number) {
+  requestAnimationFrame(() => {
+    if (inProgress) {
+      elapsed = (performance.now() - start) / 1000;
+      requestAnimationFrame(() => requestTimeUpdate(start));
+    }
+  });
+}
+
 async function askPlayground() {
   if (!model) {
     return;
@@ -85,6 +95,7 @@ async function askPlayground() {
   // (we can receive a new queryState before the new QueryId)
   queryId = -1;
   queryId = await studioClient.askPlayground(model.id, prompt);
+  requestTimeUpdate(performance.now());
 }
 
 const getActionIcon = () => {
@@ -201,7 +212,10 @@ const navigateToContainer = () => {
   </div>
 
   {#if result}
-    <div class="mt-4 mb-2">Output</div>
+    <div class="p-2 w-full text-base font-normal flex flex-row items-center">
+      <span class="flex-grow">Output</span>
+      <span class="text-right" aria-label="elapsed">{elapsed.toFixed(1)} s</span>
+    </div>
     <textarea
       aria-label="response"
       readonly

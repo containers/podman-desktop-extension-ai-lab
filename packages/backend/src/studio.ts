@@ -16,7 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type {
+import {
+  Disposable,
   ExtensionContext,
   TelemetryLogger,
   WebviewOptions,
@@ -161,6 +162,9 @@ export class Studio {
 
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
+    this.#extensionContext.subscriptions.push(this.catalogManager);
+    this.#extensionContext.subscriptions.push(this.modelsManager);
+    this.#extensionContext.subscriptions.push(podmanConnection);
   }
 
   public async deactivate(): Promise<void> {

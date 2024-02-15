@@ -15,7 +15,7 @@ export const recipes: Readable<Map<string, RecipeStatus>> = readable<Map<string,
       studioClient.getPullingStatuses().then(state => {
         set(state);
       });
-    }
+    };
 
     // Initialize the store manually
     pull();
@@ -23,7 +23,7 @@ export const recipes: Readable<Map<string, RecipeStatus>> = readable<Map<string,
     // when the tasks are updated we pull the recipe updates
     const tasks = rpcBrowser.subscribe(MSG_TASKS_UPDATE, _ => {
       pull();
-    })
+    });
 
     return () => {
       sub.unsubscribe();

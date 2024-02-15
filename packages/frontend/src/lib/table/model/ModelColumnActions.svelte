@@ -19,13 +19,15 @@ function openModelFolder() {
 }
 </script>
 
-<ListItemButtonIcon
-  icon="{faFolderOpen}"
-  onClick="{() => openModelFolder()}"
-  title="Open Model Folder"
-  enabled="{object.file !== undefined && !object.state}" />
-<ListItemButtonIcon
-  icon="{faTrash}"
-  onClick="{() => deleteModel()}"
-  title="Delete Model"
-  enabled="{object.file !== undefined && !object.state}" />
+{#if object.file !== undefined}
+  <ListItemButtonIcon
+    icon="{faFolderOpen}"
+    onClick="{() => openModelFolder()}"
+    title="Open Model Folder"
+    enabled="{!object.state}" />
+  <ListItemButtonIcon
+    icon="{faTrash}"
+    onClick="{() => deleteModel()}"
+    title="Delete Model"
+    enabled="{!object.state}" />
+{/if}

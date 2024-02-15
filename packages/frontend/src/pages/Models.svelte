@@ -16,6 +16,8 @@ import { onMount } from 'svelte';
 import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
 import ModelColumnCreation from '../lib/table/model/ModelColumnCreation.svelte';
 import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
+import Tab from '/@/lib/Tab.svelte';
+import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
 
 const columns: Column<ModelInfo>[] = [
@@ -34,7 +36,12 @@ let loading: boolean = true;
 
 let pullingTasks: Task[] = [];
 let models: ModelInfo[] = [];
+
+// filtered mean, we remove the models that are being downloaded
 let filteredModels: ModelInfo[] = [];
+
+$: localModels = filteredModels.filter(model => model.file);
+$: remoteModels = filteredModels.filter(model => !model.file);
 
 function filterModels(): void {
   // Let's collect the models we do not want to show (loading, error).
@@ -68,26 +75,60 @@ onMount(() => {
 });
 </script>
 
+
 <NavPage title="Models" searchEnabled="{false}" loading="{loading}">
-  <div slot="content" class="flex flex-col min-w-full min-h-full">
-    <div class="min-w-full min-h-full flex-1">
-      <div class="mt-4 px-5 space-y-5 h-full">
-        {#if !loading}
-          {#if pullingTasks.length > 0}
-            <Card classes="bg-charcoal-800 mt-4">
-              <div slot="content" class="text-base font-normal p-2">
-                <div class="text-base mb-2">Downloading models</div>
-                <TasksProgress tasks="{pullingTasks}" />
+  <svelte:fragment slot="tabs">
+    <Tab title="All" url="models" />
+    <Tab title="Downloaded" url="models/downloaded" />
+    <Tab title="Available" url="models/available" />
+  </svelte:fragment>
+
+  <svelte:fragment slot="content">
+
+    <div slot="content" class="flex flex-col min-w-full min-h-full">
+      <div class="min-w-full min-h-full flex-1">
+        <div class="mt-4 px-5 space-y-5 h-full">
+          {#if !loading}
+            {#if pullingTasks.length > 0}
+              <div class="mx-4">
+                <Card classes="bg-charcoal-800 mt-4">
+                  <div slot="content" class="text-base font-normal p-2">
+                    <div class="text-base mb-2">Downloading models</div>
+                    <TasksProgress tasks="{pullingTasks}" />
+                  </div>
+                </Card>
               </div>
-            </Card>
+            {/if}
+
+            <!-- All models -->
+            <Route path="/" breadcrumb="All">
+              {#if filteredModels.length > 0}
+                <Table kind="model" data={filteredModels} columns="{columns}" row="{row}"></Table>
+              {:else}
+                <div role="status">There is no model yet</div>
+              {/if}
+            </Route>
+
+            <!-- Downloaded models -->
+            <Route path="/downloaded" breadcrumb="Downloaded">
+              {#if localModels.length > 0}
+                <Table kind="model" data={localModels} columns="{columns}" row="{row}"></Table>
+              {:else}
+                <div role="status">There is no model yet</div>
+              {/if}
+            </Route>
+
+            <!-- Available models (from catalogs)-->
+            <Route path="/available" breadcrumb="Available">
+              {#if remoteModels.length > 0}
+                <Table kind="model" data={remoteModels} columns="{columns}" row="{row}"></Table>
+              {:else}
+                <div role="status">There is no model yet</div>
+              {/if}
+            </Route>
           {/if}
-          {#if filteredModels.length > 0}
-            <Table kind="model" data="{filteredModels}" columns="{columns}" row="{row}"></Table>
-          {:else}
-            <div role="status">There is no model yet</div>
-          {/if}
-        {/if}
+        </div>
       </div>
     </div>
-  </div>
+  </svelte:fragment>
 </NavPage>

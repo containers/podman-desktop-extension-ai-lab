@@ -16,9 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
-import * as podmanDesktopApi from '@podman-desktop/api';
 import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
-import type { Webview } from '@podman-desktop/api';
+import { type Webview, Disposable } from '@podman-desktop/api';
 
 /**
  * The LocalRepositoryRegistry is responsible for keeping track of the directories where recipe are cloned
@@ -29,11 +28,11 @@ export class LocalRepositoryRegistry {
 
   constructor(private webview: Webview) {}
 
-  register(localRepository: LocalRepository): podmanDesktopApi.Disposable {
+  register(localRepository: LocalRepository): Disposable {
     this.repositories.set(localRepository.path, localRepository);
     this.notify();
 
-    return podmanDesktopApi.Disposable.create(() => {
+    return Disposable.create(() => {
       this.unregister(localRepository.path);
     });
   }

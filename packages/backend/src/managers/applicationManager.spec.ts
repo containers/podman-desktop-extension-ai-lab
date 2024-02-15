@@ -42,7 +42,6 @@ import type {
   podStopHandle,
   startupHandle,
 } from './podmanConnection';
-import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
 import { TaskRegistry } from '../registries/TaskRegistry';
 
 const mocks = vi.hoisted(() => {

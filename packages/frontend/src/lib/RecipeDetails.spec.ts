@@ -31,6 +31,8 @@ const mocks = vi.hoisted(() => {
     getPullingStatusesMock: vi.fn(),
     pullApplicationMock: vi.fn(),
     getEnvironmentsStateMock: vi.fn(),
+    findMock: vi.fn(),
+    getLocalRepositoriesMock: vi.fn(),
   };
 });
 
@@ -56,6 +58,15 @@ vi.mock('/@/stores/catalog', async () => {
     catalog: vi.fn(),
   };
 });
+
+vi.mock('../stores/localRepositories', () => ({
+  localRepositories: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getLocalRepositoriesMock());
+      return () => {};
+    },
+  },
+}));
 
 const initialCatalog: Catalog = {
   categories: [],
@@ -104,6 +115,7 @@ const initialCatalog: Catalog = {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.getLocalRepositoriesMock.mockReturnValue([]);
 });
 
 test('should open/close application details panel when clicking on toggle button', async () => {
@@ -219,4 +231,23 @@ test('should display non-default model information when model is not the recomme
   expect(modelInfo.textContent).equal('Model 2');
   const defaultWarning = screen.getByLabelText('model-warning');
   expect(defaultWarning.textContent).contains('The default model for this recipe is');
+});
+
+test('button vs code should be visible if local repository is not empty', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getLocalRepositoriesMock.mockReturnValue([{
+    path: 'random-path',
+    labels: {
+      'recipe-id': 'recipe 1',
+    }
+  }]);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  render(RecipeDetails, {
+    recipeId: 'recipe 1',
+    modelId: 'model2',
+  });
+
+  const button = screen.getByTitle('Open in VS Code Desktop');
+  expect(button).toBeDefined();
 });

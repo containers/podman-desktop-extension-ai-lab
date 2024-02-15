@@ -13,7 +13,7 @@ import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import EnvironmentActions from './EnvironmentActions.svelte';
 import Button from './button/Button.svelte';
 import VSCodeIcon from '/@/lib/images/VSCodeIcon.svelte';
-import { localRepositories } from '/@/stores/localRepositories';
+import { localRepositories } from '../stores/localRepositories';
 
 export let recipeId: string;
 export let modelId: string;

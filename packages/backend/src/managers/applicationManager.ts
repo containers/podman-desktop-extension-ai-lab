@@ -112,8 +112,17 @@ export class ApplicationManager {
       // and backend (that define which model supports)
       const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
 
+      // Create the task on the recipe (which will be propagated to the TaskRegistry
+      taskUtil.setTask({
+        id: model.id,
+        state: 'loading',
+        name: `Downloading model ${model.name}`,
+        labels: {
+          'model-pulling': model.id,
+        },
+      });
       // get model by downloading it or retrieving locally
-      const modelPath = await this.modelsManager.downloadModel(model, taskUtil);
+      const modelPath = await this.modelsManager.downloadModel(model);
 
       // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
       const images = await this.buildImages(

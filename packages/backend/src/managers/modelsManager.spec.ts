@@ -20,20 +20,22 @@ import { type MockInstance, beforeEach, describe, expect, test, vi } from 'vites
 import os from 'os';
 import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
-import type { DownloadModelResult } from './modelsManager';
 import { ModelsManager } from './modelsManager';
 import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
-import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
+import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import * as utils from '../utils/utils';
+import { TaskRegistry } from '../registries/TaskRegistry';
 
 const mocks = vi.hoisted(() => {
   return {
     showErrorMessageMock: vi.fn(),
     logUsageMock: vi.fn(),
     logErrorMock: vi.fn(),
+    performDownloadMock: vi.fn(),
+    onEventDownloadMock: vi.fn(),
   };
 });
 
@@ -52,10 +54,14 @@ vi.mock('@podman-desktop/api', () => {
   };
 });
 
-let setTaskMock: MockInstance;
-let taskUtils: RecipeStatusUtils;
-let setTaskStateMock: MockInstance;
-let setTaskErrorMock: MockInstance;
+vi.mock('../utils/downloader', () => ({
+  Downloader: class {
+    onEvent = mocks.onEventDownloadMock;
+    perform = mocks.performDownloadMock;
+  },
+}));
+
+let taskRegistry: TaskRegistry;
 
 const telemetryLogger = {
   logUsage: mocks.logUsageMock,
@@ -64,12 +70,7 @@ const telemetryLogger = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  taskUtils = new RecipeStatusUtils('recipe', {
-    setStatus: vi.fn(),
-  } as unknown as RecipeStatusRegistry);
-  setTaskMock = vi.spyOn(taskUtils, 'setTask');
-  setTaskStateMock = vi.spyOn(taskUtils, 'setTaskState');
-  setTaskErrorMock = vi.spyOn(taskUtils, 'setTaskError');
+  taskRegistry = new TaskRegistry({postMessage: vi.fn().mockResolvedValue(undefined)} as unknown as Webview);
 });
 
 const dirent = [
@@ -143,6 +144,7 @@ test('getModelsInfo should get models in local directory', async () => {
       },
     } as CatalogManager,
     telemetryLogger,
+    taskRegistry,
   );
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -188,6 +190,7 @@ test('getModelsInfo should return an empty array if the models folder does not e
       },
     } as CatalogManager,
     telemetryLogger,
+    taskRegistry,
   );
   manager.getLocalModelsFromDisk();
   expect(manager.getModelsInfo()).toEqual([]);
@@ -224,6 +227,7 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
       },
     } as CatalogManager,
     telemetryLogger,
+    taskRegistry,
   );
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -266,6 +270,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
       },
     } as CatalogManager,
     telemetryLogger,
+    taskRegistry,
   );
   await manager.loadLocalModels();
   expect(postMessageMock).toHaveBeenNthCalledWith(1, {
@@ -311,6 +316,7 @@ test('deleteLocalModel deletes the model folder', async () => {
       },
     } as CatalogManager,
     telemetryLogger,
+    taskRegistry,
   );
   await manager.loadLocalModels();
   await manager.deleteLocalModel('model-id-1');
@@ -360,6 +366,7 @@ test('deleteLocalModel fails to delete the model folder', async () => {
       },
     } as CatalogManager,
     telemetryLogger,
+    taskRegistry,
   );
   await manager.loadLocalModels();
   await manager.deleteLocalModel('model-id-1');
@@ -390,34 +397,30 @@ test('deleteLocalModel fails to delete the model folder', async () => {
 });
 
 describe('downloadModel', () => {
-  const manager = new ModelsManager(
-    'appdir',
-    {} as Webview,
-    {
-      getModels(): ModelInfo[] {
-        return [];
-      },
-    } as CatalogManager,
-    telemetryLogger,
-  );
   test('download model if not already on disk', async () => {
+    const manager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels(): ModelInfo[] {
+          return [];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+    );
+
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
-    const doDownloadModelWrapperMock = vi
-      .spyOn(manager, 'doDownloadModelWrapper')
-      .mockImplementation((_modelId: string, _url: string, _taskUtil: RecipeStatusUtils, _destFileName?: string) => {
-        return Promise.resolve('');
-      });
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
+    const setMock = vi.spyOn(taskRegistry, 'set');
     await manager.downloadModel(
       {
         id: 'id',
         url: 'url',
         name: 'name',
       } as ModelInfo,
-      taskUtils,
     );
-    expect(doDownloadModelWrapperMock).toBeCalledWith('id', 'url', taskUtils);
-    expect(setTaskMock).toHaveBeenLastCalledWith({
+    expect(setMock).toHaveBeenLastCalledWith({
       id: 'id',
       name: 'Downloading model name',
       labels: {
@@ -425,9 +428,20 @@ describe('downloadModel', () => {
       },
       state: 'loading',
     });
-    expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.download', { 'model.id': 'id', durationSeconds: 99 });
   });
   test('retrieve model path if already on disk', async () => {
+    const manager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels(): ModelInfo[] {
+          return [];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+    );
+    const setMock = vi.spyOn(taskRegistry, 'set');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
     const getLocalModelPathMock = vi.spyOn(manager, 'getLocalModelPath').mockReturnValue('');
     await manager.downloadModel(
@@ -436,10 +450,9 @@ describe('downloadModel', () => {
         url: 'url',
         name: 'name',
       } as ModelInfo,
-      taskUtils,
     );
     expect(getLocalModelPathMock).toBeCalledWith('id');
-    expect(setTaskMock).toHaveBeenLastCalledWith({
+    expect(setMock).toHaveBeenLastCalledWith({
       id: 'id',
       name: 'Model name already present on disk',
       labels: {
@@ -450,53 +463,3 @@ describe('downloadModel', () => {
   });
 });
 
-describe('doDownloadModelWrapper', () => {
-  const manager = new ModelsManager(
-    'appdir',
-    {} as Webview,
-    {
-      getModels(): ModelInfo[] {
-        return [];
-      },
-    } as CatalogManager,
-    telemetryLogger,
-  );
-  test('returning model path if model has been downloaded', async () => {
-    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
-      (
-        _modelId: string,
-        _url: string,
-        _taskUtil: RecipeStatusUtils,
-        callback: (message: DownloadModelResult) => void,
-        _destFileName?: string,
-      ) => {
-        callback({
-          successful: true,
-          path: 'path',
-        });
-      },
-    );
-    setTaskStateMock.mockReturnThis();
-    const result = await manager.doDownloadModelWrapper('id', 'url', taskUtils);
-    expect(result).toBe('path');
-  });
-  test('rejecting with error message if model has NOT been downloaded', async () => {
-    vi.spyOn(manager, 'doDownloadModel').mockImplementation(
-      (
-        _modelId: string,
-        _url: string,
-        _taskUtil: RecipeStatusUtils,
-        callback: (message: DownloadModelResult) => void,
-        _destFileName?: string,
-      ) => {
-        callback({
-          successful: false,
-          error: 'error',
-        });
-      },
-    );
-    setTaskStateMock.mockReturnThis();
-    setTaskErrorMock.mockReturnThis();
-    await expect(manager.doDownloadModelWrapper('id', 'url', taskUtils)).rejects.toThrowError('error');
-  });
-});

@@ -17,15 +17,40 @@
  ***********************************************************************/
 
 import type { Task } from '@shared/src/models/ITask';
+import { MSG_TASKS_UPDATE } from '@shared/Messages';
+import type { Webview } from '@podman-desktop/api';
 
 export class TaskRegistry {
   private tasks: Map<string, Task> = new Map<string, Task>();
 
+  constructor(private webview: Webview) {}
+
+  get(id: string): Task | undefined {
+    if(this.tasks.has(id))
+      return this.tasks.get(id);
+    return undefined;
+  }
+
   set(task: Task) {
     this.tasks.set(task.id, task);
+    this.notify();
   }
 
   delete(taskId: string) {
     this.tasks.delete(taskId);
+    this.notify();
+  }
+
+  getTasks(): Task[] {
+    return Array.from(this.tasks.values());
+  }
+
+  private notify() {
+    this.webview.postMessage({
+      id: MSG_TASKS_UPDATE,
+      body: this.getTasks(),
+    }).catch((err: unknown) => {
+      console.error('error notifying tasks', err);
+    });
   }
 }

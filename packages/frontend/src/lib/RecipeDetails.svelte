@@ -1,5 +1,5 @@
 <script lang="ts">
-import { faList, faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
+import { faList } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { getDisplayName } from '/@/utils/versionControlUtils';
 import { recipes } from '/@/stores/recipe';
@@ -11,6 +11,7 @@ import { router } from 'tinro';
 import { environmentStates } from '../stores/environment-states';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import EnvironmentActions from './EnvironmentActions.svelte';
+import Button from './button/Button.svelte';
 
 export let recipeId: string;
 export let modelId: string;
@@ -19,7 +20,6 @@ $: envState = $environmentStates.find((env: EnvironmentState) => env.recipeId ==
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: recipeStatus = $recipes.get(recipeId);
 $: model = $catalog.models.find(m => m.id === modelId);
-$: isRunning = recipeStatus?.state !== 'loading' && envState?.status === 'running';
 
 let open: boolean = true;
 
@@ -62,7 +62,11 @@ const toggle = () => {
             </div>
           {/if}
           <div class="shrink-0">
-            <EnvironmentActions recipeId="{recipeId}" object="{envState}" tasks="{recipeStatus?.tasks}" />
+            <EnvironmentActions
+              recipeId="{recipeId}"
+              modelId="{modelId}"
+              object="{envState}"
+              tasks="{recipeStatus?.tasks}" />
           </div>
         </div>
         {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}

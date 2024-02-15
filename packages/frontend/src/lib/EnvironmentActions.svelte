@@ -6,12 +6,13 @@ import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import type { Task } from '@shared/src/models/ITask';
 export let object: EnvironmentState | undefined;
 export let recipeId: string;
+export let modelId: string;
 export let tasks: Task[] | undefined;
 
 $: runningTask = tasks && !!tasks.find(t => t.state === 'loading');
 
 function startEnvironment() {
-  studioClient.pullApplication(recipeId).catch((err: unknown) => {
+  studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {
     console.error('Something went wrong while pulling application', err);
   });
 }

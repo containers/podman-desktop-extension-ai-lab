@@ -5,4 +5,5 @@ export interface EnvironmentCell {
   tasks?: Task[];
   envState: EnvironmentState;
   recipeId: string;
+  modelId: string;
 }

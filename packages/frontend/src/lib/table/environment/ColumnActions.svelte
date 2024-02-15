@@ -4,4 +4,8 @@ import type { EnvironmentCell } from '/@/pages/environments';
 export let object: EnvironmentCell;
 </script>
 
-<EnvironmentActions recipeId="{object.recipeId}" object="{object.envState}" tasks="{object.tasks}" />
+<EnvironmentActions
+  recipeId="{object.recipeId}"
+  modelId="{object.modelId}"
+  object="{object.envState}"
+  tasks="{object.tasks}" />

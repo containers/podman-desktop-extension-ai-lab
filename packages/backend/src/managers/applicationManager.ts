@@ -612,11 +612,13 @@ export class ApplicationManager {
       return;
     }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
+    const modelId = pod.Labels[LABEL_MODEL_ID];
     if (this.#environments.has(recipeId)) {
       return;
     }
     const state: EnvironmentState = {
       recipeId,
+      modelId,
       pod,
     };
     this.updateEnvironmentState(recipeId, state);

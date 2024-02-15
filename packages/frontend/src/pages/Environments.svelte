@@ -16,6 +16,7 @@ $: recipesArray = Array.from($recipes.values());
 
 $: data = $environmentStates.map((env: EnvironmentState) => ({
   recipeId: env.recipeId,
+  modelId: env.modelId,
   envState: env,
   tasks: recipesArray.find(r => r.recipeId === env.recipeId)?.tasks,
 }));

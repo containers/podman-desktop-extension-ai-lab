@@ -115,11 +115,11 @@ const toggle = () => {
               {#if recipe?.models?.[0] === model.id}
                 * This is the default, recommended model for this recipe. You can <a
                   class="underline"
-                  href="{`/recipes/${recipeId}/models`}">swap for a different compatible model</a
+                  href="{`/recipe/${recipeId}/models`}">swap for a different compatible model</a
                 >.
               {:else}
                 * The default model for this recipe is {recipe?.models?.[0]}. You can
-                <a class="underline" href="{`/recipes/${recipeId}/models`}"
+                <a class="underline" href="{`/recipe/${recipeId}/models`}"
                   >swap for {recipe?.models?.[0]} or a different compatible model</a
                 >.
               {/if}

@@ -27,13 +27,21 @@ const mocks = vi.hoisted(() => {
     getPullingStatusesMock: vi.fn().mockResolvedValue(new Map()),
     getLocalModelsMock: vi.fn().mockResolvedValue([]),
     modelsInfoSubscribeMock: vi.fn(),
+    tasksSubscribeMock: vi.fn(),
     localModelsQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.modelsInfoSubscribeMock());
         return () => {};
       },
     },
+    tasksQueriesMock: {
+      subscribe: (f: (msg: any) => void) => {
+        f(mocks.tasksSubscribeMock());
+        return () => {};
+      },
+    },
     getModelsInfoMock: vi.fn().mockResolvedValue([]),
+    getTasks: vi.fn().mockResolvedValue([]),
   };
 });
 
@@ -59,8 +67,15 @@ vi.mock('../stores/local-models', async () => {
   };
 });
 
+vi.mock('../stores/tasks', async () => {
+  return {
+    tasks: mocks.tasksQueriesMock,
+  };
+});
+
 test('should display There is no model yet', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([]);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
 
   render(Models);
 
@@ -70,19 +85,20 @@ test('should display There is no model yet', async () => {
 
 test('should display There is no model yet and have a task running', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([]);
+  mocks.tasksSubscribeMock.mockReturnValue([
+    {
+      id: 'random',
+      name: 'random',
+      state: 'loading',
+      labels: {
+        'model-pulling': 'random-models-id',
+      },
+    },
+  ]);
   const map = new Map<string, RecipeStatus>();
   map.set('random', {
     recipeId: 'random-recipe-id',
-    tasks: [
-      {
-        id: 'random',
-        name: 'random',
-        state: 'loading',
-        labels: {
-          'model-pulling': 'random-models-id',
-        },
-      },
-    ],
+    tasks: [],
   });
   mocks.getPullingStatusesMock.mockResolvedValue(map);
 

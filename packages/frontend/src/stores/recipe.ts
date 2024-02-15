@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { Readable } from 'svelte/store';
-import { derived, readable } from 'svelte/store';
+import { readable } from 'svelte/store';
 import { MSG_NEW_RECIPE_STATE, MSG_TASKS_UPDATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';

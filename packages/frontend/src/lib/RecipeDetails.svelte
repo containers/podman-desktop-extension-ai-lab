@@ -83,11 +83,11 @@ const toggle = () => {
               <div class="text-base">Model</div>
               <div
                 class="py-0.5"
-                class:hidden="{$router.path === `/recipes/${recipeId}/models`}"
+                class:hidden="{$router.path === `/recipe/${recipeId}/models`}"
                 aria-label="swap model panel">
                 <Button
                   icon="{faList}"
-                  on:click="{() => router.goto(`/recipes/${recipeId}/models`)}"
+                  on:click="{() => router.goto(`/recipe/${recipeId}/models`)}"
                   title="Go to the Models page to swap model"
                   aria-label="Go to Model"
                   class="h-full" />
@@ -115,11 +115,11 @@ const toggle = () => {
               {#if recipe?.models?.[0] === model.id}
                 * This is the default, recommended model for this recipe. You can <a
                   class="underline"
-                  href="{`/recipes/${recipeId}/models`}">swap for a different compatible model</a
+                  href="{`/recipe/${recipeId}/models`}">swap for a different compatible model</a
                 >.
               {:else}
                 * The default model for this recipe is {recipe?.models?.[0]}. You can
-                <a class="underline" href="{`/recipes/${recipeId}/models`}"
+                <a class="underline" href="{`/recipe/${recipeId}/models`}"
                   >swap for {recipe?.models?.[0]} or a different compatible model</a
                 >.
               {/if}

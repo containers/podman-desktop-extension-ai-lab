@@ -163,7 +163,7 @@ test('swap model button should move user to models tab', async () => {
   const btnSwap = screen.getByRole('button', { name: 'Go to Model' });
   await userEvent.click(btnSwap);
 
-  expect(gotoMock).toBeCalledWith('/recipes/recipe 1/models');
+  expect(gotoMock).toBeCalledWith('/recipe/recipe 1/models');
 });
 
 test('swap model panel should be hidden on models tab', async () => {

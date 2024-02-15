@@ -26,8 +26,7 @@ export class TaskRegistry {
   constructor(private webview: Webview) {}
 
   get(id: string): Task | undefined {
-    if(this.tasks.has(id))
-      return this.tasks.get(id);
+    if (this.tasks.has(id)) return this.tasks.get(id);
     return undefined;
   }
 
@@ -46,11 +45,13 @@ export class TaskRegistry {
   }
 
   private notify() {
-    this.webview.postMessage({
-      id: MSG_TASKS_UPDATE,
-      body: this.getTasks(),
-    }).catch((err: unknown) => {
-      console.error('error notifying tasks', err);
-    });
+    this.webview
+      .postMessage({
+        id: MSG_TASKS_UPDATE,
+        body: this.getTasks(),
+      })
+      .catch((err: unknown) => {
+        console.error('error notifying tasks', err);
+      });
   }
 }

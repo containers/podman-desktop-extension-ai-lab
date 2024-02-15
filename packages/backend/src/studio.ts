@@ -127,7 +127,13 @@ export class Studio {
     );
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
-    this.modelsManager = new ModelsManager(appUserDirectory, this.#panel.webview, this.catalogManager, this.telemetry, taskRegistry);
+    this.modelsManager = new ModelsManager(
+      appUserDirectory,
+      this.#panel.webview,
+      this.catalogManager,
+      this.telemetry,
+      taskRegistry,
+    );
     const applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,

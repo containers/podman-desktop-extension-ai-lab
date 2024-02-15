@@ -216,9 +216,9 @@ export class ModelsManager {
       if (isProgressEvent(event)) {
         task.state = 'loading';
         task.progress = event.value;
-      } else if(isCompletionEvent(event)) {
+      } else if (isCompletionEvent(event)) {
         // status error or canceled
-        if(event.status === 'error' || event.status === 'canceled') {
+        if (event.status === 'error' || event.status === 'canceled') {
           task.state = 'error';
           task.progress = undefined;
           task.error = event.message;

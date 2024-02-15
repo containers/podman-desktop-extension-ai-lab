@@ -4,33 +4,46 @@ import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
 
 export interface DownloadEvent {
-  status: 'error' | 'completed' | 'progress' | 'canceled',
-  message?: string
+  status: 'error' | 'completed' | 'progress' | 'canceled';
+  message?: string;
 }
 
 export interface CompletionEvent extends DownloadEvent {
-  status: 'completed' | 'error' | 'canceled',
-  duration: number,
+  status: 'completed' | 'error' | 'canceled';
+  duration: number;
 }
 
 export interface ProgressEvent extends DownloadEvent {
-  status: 'progress',
-  value: number,
+  status: 'progress';
+  value: number;
 }
 
 export const isCompletionEvent = (value: unknown): value is CompletionEvent => {
-  return !!value && typeof value === 'object' && 'status' in value && typeof value['status'] === 'string' && ['canceled', 'completed', 'error'].includes(value['status']) && 'duration' in value;
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'status' in value &&
+    typeof value['status'] === 'string' &&
+    ['canceled', 'completed', 'error'].includes(value['status']) &&
+    'duration' in value
+  );
 };
 
 export const isProgressEvent = (value: unknown): value is ProgressEvent => {
-  return !!value && typeof value === 'object' && 'status' in value && value['status'] === 'progress' && 'value' in value;
+  return (
+    !!value && typeof value === 'object' && 'status' in value && value['status'] === 'progress' && 'value' in value
+  );
 };
 
 export class Downloader {
   private readonly _onEvent = new EventEmitter<DownloadEvent>();
   readonly onEvent: Event<DownloadEvent> = this._onEvent.event;
 
-  constructor(private url: string, private target: string, private abortSignal?: AbortSignal) {}
+  constructor(
+    private url: string,
+    private target: string,
+    private abortSignal?: AbortSignal,
+  ) {}
 
   async perform() {
     const startTime = performance.now();
@@ -44,7 +57,7 @@ export class Downloader {
         duration: durationSeconds,
       } as CompletionEvent);
     } catch (err: unknown) {
-      if(!this.abortSignal?.aborted) {
+      if (!this.abortSignal?.aborted) {
         this._onEvent.fire({
           status: 'error',
           message: `Something went wrong: ${String(err)}.`,
@@ -58,11 +71,9 @@ export class Downloader {
     }
   }
 
-  private download(
-    url: string,
-  ): Promise<void> {
+  private download(url: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const callback = (result: {ok: boolean, error?: string}) => {
+      const callback = (result: { ok: boolean; error?: string }) => {
         if (result.ok) {
           resolve();
         } else {
@@ -73,10 +84,7 @@ export class Downloader {
     });
   }
 
-  private followRedirects(
-    url: string,
-    callback: (message: {ok?: boolean, error?: string}) => void,
-  ) {
+  private followRedirects(url: string, callback: (message: { ok?: boolean; error?: string }) => void) {
     const file = fs.createWriteStream(this.target);
     let totalFileSize = 0;
     let progress = 0;

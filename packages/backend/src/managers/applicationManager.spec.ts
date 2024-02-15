@@ -217,7 +217,7 @@ describe('pullApplication', () => {
         },
       } as CatalogManager,
       telemetryLogger,
-      new TaskRegistry({postMessage: vi.fn().mockResolvedValue(undefined)} as unknown as Webview),
+      new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview),
     );
     manager = new ApplicationManager(
       '/home/user/aistudio',

@@ -24,8 +24,6 @@ import { ModelsManager } from './modelsManager';
 import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
-import { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import * as utils from '../utils/utils';
 import { TaskRegistry } from '../registries/TaskRegistry';
 
@@ -70,7 +68,7 @@ const telemetryLogger = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  taskRegistry = new TaskRegistry({postMessage: vi.fn().mockResolvedValue(undefined)} as unknown as Webview);
+  taskRegistry = new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview);
 });
 
 const dirent = [
@@ -413,13 +411,11 @@ describe('downloadModel', () => {
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
     const setMock = vi.spyOn(taskRegistry, 'set');
-    await manager.downloadModel(
-      {
-        id: 'id',
-        url: 'url',
-        name: 'name',
-      } as ModelInfo,
-    );
+    await manager.downloadModel({
+      id: 'id',
+      url: 'url',
+      name: 'name',
+    } as ModelInfo);
     expect(setMock).toHaveBeenLastCalledWith({
       id: 'id',
       name: 'Downloading model name',
@@ -444,13 +440,11 @@ describe('downloadModel', () => {
     const setMock = vi.spyOn(taskRegistry, 'set');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
     const getLocalModelPathMock = vi.spyOn(manager, 'getLocalModelPath').mockReturnValue('');
-    await manager.downloadModel(
-      {
-        id: 'id',
-        url: 'url',
-        name: 'name',
-      } as ModelInfo,
-    );
+    await manager.downloadModel({
+      id: 'id',
+      url: 'url',
+      name: 'name',
+    } as ModelInfo);
     expect(getLocalModelPathMock).toBeCalledWith('id');
     expect(setMock).toHaveBeenLastCalledWith({
       id: 'id',
@@ -462,4 +456,3 @@ describe('downloadModel', () => {
     });
   });
 });
-

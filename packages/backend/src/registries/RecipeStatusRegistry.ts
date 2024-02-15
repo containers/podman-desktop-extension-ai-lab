@@ -47,11 +47,13 @@ export class RecipeStatusRegistry {
   }
 
   private notify() {
-    this.webview.postMessage({
-      id: MSG_NEW_RECIPE_STATE,
-      body: this.statuses,
-    }).catch((err: unknown) => {
-      console.error('error notifying recipe statuses', err);
-    });
+    this.webview
+      .postMessage({
+        id: MSG_NEW_RECIPE_STATE,
+        body: this.statuses,
+      })
+      .catch((err: unknown) => {
+        console.error('error notifying recipe statuses', err);
+      });
   }
 }

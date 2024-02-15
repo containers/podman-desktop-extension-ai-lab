@@ -161,6 +161,7 @@ export class Studio {
       this.modelsManager,
       this.telemetry,
       localRepositoryRegistry,
+      taskRegistry,
     );
 
     await this.catalogManager.loadCatalog();

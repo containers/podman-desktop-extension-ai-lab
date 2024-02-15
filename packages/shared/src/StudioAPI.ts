@@ -23,6 +23,7 @@ import type { Catalog } from './models/ICatalog';
 import type { PlaygroundState } from './models/IPlaygroundState';
 import type { TelemetryTrustedValue } from '@podman-desktop/api';
 import type { EnvironmentState } from './models/IEnvironmentState';
+import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
 
 export abstract class StudioAPI {
@@ -56,4 +57,6 @@ export abstract class StudioAPI {
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
 
   abstract getLocalRepositories(): Promise<LocalRepository[]>;
+
+  abstract getTasks(): Promise<Task[]>;
 }

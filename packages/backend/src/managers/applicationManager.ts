@@ -599,6 +599,16 @@ export class ApplicationManager {
 
     this.podmanConnection.onMachineStop(() => {
       // Podman Machine has been stopped, we consider all recipe pods are stopped
+
+      for (const recipeId of this.#environments.keys()) {
+        const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+        taskUtil.setTask({
+          id: `stopped-${recipeId}`,
+          state: 'success',
+          name: `Application stopped manually`,
+        });
+      }
+
       this.#environments.clear();
       this.sendEnvironmentState();
     });

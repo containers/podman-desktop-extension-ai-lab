@@ -36,6 +36,7 @@ const webview = {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.postMessageMock.mockResolvedValue(undefined);
 });
 
 test('recipe status registry should start without any statuses', () => {

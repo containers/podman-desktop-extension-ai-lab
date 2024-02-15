@@ -117,7 +117,7 @@ export class Studio {
     const gitManager = new GitManager();
 
     const podmanConnection = new PodmanConnection();
-    const taskRegistry = new TaskRegistry();
+    const taskRegistry = new TaskRegistry(this.#panel.webview);
     const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, this.#panel.webview);
     this.playgroundManager = new PlayGroundManager(
       this.#panel.webview,
@@ -127,7 +127,13 @@ export class Studio {
     );
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
-    this.modelsManager = new ModelsManager(appUserDirectory, this.#panel.webview, this.catalogManager, this.telemetry);
+    this.modelsManager = new ModelsManager(
+      appUserDirectory,
+      this.#panel.webview,
+      this.catalogManager,
+      this.telemetry,
+      taskRegistry,
+    );
     const applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,

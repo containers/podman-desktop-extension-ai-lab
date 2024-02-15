@@ -31,13 +31,11 @@ export class RecipeStatusRegistry {
 
   setStatus(recipeId: string, status: RecipeStatus) {
     // Update the TaskRegistry
-    if (status.tasks && status.tasks.length > 0) {
+    if (status.tasks) {
       status.tasks.map(task => this.taskRegistry.set(task));
     }
     this.statuses.set(recipeId, status);
-    this.dispatchState().catch((err: unknown) => {
-      console.error('error dispatching recipe statuses', err);
-    }); // we don't want to wait
+    this.notify();
   }
 
   getStatus(recipeId: string): RecipeStatus | undefined {
@@ -48,10 +46,14 @@ export class RecipeStatusRegistry {
     return this.statuses;
   }
 
-  private async dispatchState() {
-    await this.webview.postMessage({
-      id: MSG_NEW_RECIPE_STATE,
-      body: this.statuses,
-    });
+  private notify() {
+    this.webview
+      .postMessage({
+        id: MSG_NEW_RECIPE_STATE,
+        body: this.statuses,
+      })
+      .catch((err: unknown) => {
+        console.error('error notifying recipe statuses', err);
+      });
   }
 }

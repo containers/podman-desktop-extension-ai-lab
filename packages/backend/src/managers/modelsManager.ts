@@ -18,15 +18,15 @@
 
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'fs';
-import * as https from 'node:https';
 import * as path from 'node:path';
 import { type Webview, fs as apiFs } from '@podman-desktop/api';
 import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import type { RecipeStatusUtils } from '../utils/recipeStatusUtils';
-import { getDurationSecondsSince } from '../utils/utils';
+import { Downloader, type DownloadEvent, isCompletionEvent, isProgressEvent } from '../utils/downloader';
+import type { TaskRegistry } from '../registries/TaskRegistry';
+import type { Task } from '@shared/src/models/ITask';
 
 export type DownloadModelResult = DownloadModelSuccessfulResult | DownloadModelFailureResult;
 
@@ -50,6 +50,7 @@ export class ModelsManager {
     private webview: Webview,
     private catalogManager: CatalogManager,
     private telemetry: podmanDesktopApi.TelemetryLogger,
+    private taskRegistry: TaskRegistry,
   ) {
     this.#modelsDir = path.join(this.appUserDirectory, 'models');
     this.#models = new Map();
@@ -177,134 +178,72 @@ export class ModelsManager {
     }
   }
 
-  async downloadModel(model: ModelInfo, taskUtil: RecipeStatusUtils) {
-    if (!this.isModelOnDisk(model.id)) {
-      // Download model
-      taskUtil.setTask({
-        id: model.id,
-        state: 'loading',
-        name: `Downloading model ${model.name}`,
-        labels: {
-          'model-pulling': model.id,
-        },
-      });
+  async downloadModel(model: ModelInfo): Promise<string> {
+    const task: Task = this.taskRegistry.get(model.id) || {
+      id: model.id,
+      state: 'loading',
+      name: `Downloading model ${model.name}`,
+      labels: {
+        'model-pulling': model.id,
+      },
+    };
 
-      const startTime = performance.now();
-      try {
-        const result = await this.doDownloadModelWrapper(model.id, model.url, taskUtil);
-        const durationSeconds = getDurationSecondsSince(startTime);
-        this.telemetry.logUsage('model.download', { 'model.id': model.id, durationSeconds });
-        return result;
-      } catch (e) {
-        console.error(e);
-        taskUtil.setTask({
-          id: model.id,
-          state: 'error',
-          name: `Downloading model ${model.name}`,
-          labels: {
-            'model-pulling': model.id,
-          },
-        });
-        const durationSeconds = getDurationSecondsSince(startTime);
-        this.telemetry.logError('model.download', {
-          'model.id': model.id,
-          message: 'error downloading model',
-          error: e,
-          durationSeconds,
-        });
-        throw e;
-      }
-    } else {
-      taskUtil.setTask({
-        id: model.id,
-        state: 'success',
-        name: `Model ${model.name} already present on disk`,
-        labels: {
-          'model-pulling': model.id,
-        },
-      });
+    // Check if the model is already on disk.
+    if (this.isModelOnDisk(model.id)) {
+      task.state = 'success';
+      task.name = `Model ${model.name} already present on disk`;
+      this.taskRegistry.set(task); // update task
+
+      // return model path
       return this.getLocalModelPath(model.id);
     }
-  }
 
-  doDownloadModelWrapper(
-    modelId: string,
-    url: string,
-    taskUtil: RecipeStatusUtils,
-    destFileName?: string,
-  ): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const downloadCallback = (result: DownloadModelResult) => {
-        if (result.successful === true) {
-          taskUtil.setTaskState(modelId, 'success');
-          resolve(result.path);
-        } else if (result.successful === false) {
-          taskUtil.setTaskError(modelId, result.error);
-          reject(result.error);
-        }
-      };
+    // update task to loading state
+    this.taskRegistry.set(task);
 
-      this.doDownloadModel(modelId, url, taskUtil, downloadCallback, destFileName);
-    });
-  }
-
-  doDownloadModel(
-    modelId: string,
-    url: string,
-    taskUtil: RecipeStatusUtils,
-    callback: (message: DownloadModelResult) => void,
-    destFileName?: string,
-  ) {
-    const destDir = path.join(this.appUserDirectory, 'models', modelId);
+    // Ensure path to model directory exist
+    const destDir = path.join(this.appUserDirectory, 'models', model.id);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
-    if (!destFileName) {
-      destFileName = path.basename(url);
-    }
-    const destFile = path.resolve(destDir, destFileName);
-    const file = fs.createWriteStream(destFile);
-    let totalFileSize = 0;
-    let progress = 0;
-    https.get(url, resp => {
-      if (resp.headers.location) {
-        this.doDownloadModel(modelId, resp.headers.location, taskUtil, callback, destFileName);
-        return;
-      } else {
-        if (totalFileSize === 0 && resp.headers['content-length']) {
-          totalFileSize = parseFloat(resp.headers['content-length']);
+
+    const target = path.resolve(destDir, path.basename(model.url));
+    // Create a downloader
+    const downloader = new Downloader(model.url, target);
+
+    // Capture downloader events
+    downloader.onEvent((event: DownloadEvent) => {
+      if (isProgressEvent(event)) {
+        task.state = 'loading';
+        task.progress = event.value;
+      } else if (isCompletionEvent(event)) {
+        // status error or canceled
+        if (event.status === 'error' || event.status === 'canceled') {
+          task.state = 'error';
+          task.progress = undefined;
+          task.error = event.message;
+
+          // telemetry usage
+          this.telemetry.logError('model.download', {
+            'model.id': model.id,
+            message: 'error downloading model',
+            error: event.message,
+            durationSeconds: event.duration,
+          });
+        } else {
+          task.state = 'success';
+          task.progress = 100;
+
+          // telemetry usage
+          this.telemetry.logUsage('model.download', { 'model.id': model.id, durationSeconds: event.duration });
         }
       }
 
-      let previousProgressValue = -1;
-      resp.on('data', chunk => {
-        progress += chunk.length;
-        const progressValue = (progress * 100) / totalFileSize;
-
-        if (progressValue === 100 || progressValue - previousProgressValue > 1) {
-          previousProgressValue = progressValue;
-          taskUtil.setTaskProgress(modelId, progressValue);
-        }
-
-        // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
-        //this.sendProgress(progressValue);
-        if (progressValue === 100) {
-          callback({
-            successful: true,
-            path: destFile,
-          });
-        }
-      });
-      file.on('finish', () => {
-        file.close();
-      });
-      file.on('error', e => {
-        callback({
-          successful: false,
-          error: e.message,
-        });
-      });
-      resp.pipe(file);
+      this.taskRegistry.set(task); // update task
     });
+
+    // perform download
+    await downloader.perform();
+    return target;
   }
 }

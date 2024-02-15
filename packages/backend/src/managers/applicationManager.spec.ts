@@ -41,6 +41,7 @@ import type {
   podStopHandle,
   startupHandle,
 } from './podmanConnection';
+import { TaskRegistry } from '../registries/TaskRegistry';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -73,11 +74,21 @@ const mocks = vi.hoisted(() => {
     listPodsMock: vi.fn(),
     stopPodMock: vi.fn(),
     removePodMock: vi.fn(),
+    performDownloadMock: vi.fn(),
+    onEventDownloadMock: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
   parseYamlFile: mocks.parseYamlFileMock,
 }));
+
+vi.mock('../utils/downloader', () => ({
+  Downloader: class {
+    onEvent = mocks.onEventDownloadMock;
+    perform = mocks.performDownloadMock;
+  },
+}));
+
 vi.mock('@podman-desktop/api', () => ({
   provider: {
     getContainerConnections: mocks.getContainerConnectionsMock,
@@ -129,10 +140,6 @@ describe('pullApplication', () => {
   const cloneRepositoryMock = vi.fn();
   let manager: ApplicationManager;
   let modelsManager: ModelsManager;
-  let doDownloadModelWrapperSpy: MockInstance<
-    [modelId: string, url: string, taskUtil: RecipeStatusUtils, destFileName?: string],
-    Promise<string>
-  >;
   vi.spyOn(utils, 'timeout').mockResolvedValue();
   function mockForPullApplication(options: mockForPullApplicationOptions) {
     vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
@@ -210,6 +217,7 @@ describe('pullApplication', () => {
         },
       } as CatalogManager,
       telemetryLogger,
+      new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview),
     );
     manager = new ApplicationManager(
       '/home/user/aistudio',
@@ -225,14 +233,13 @@ describe('pullApplication', () => {
       modelsManager,
       telemetryLogger,
     );
-    doDownloadModelWrapperSpy = vi.spyOn(modelsManager, 'doDownloadModelWrapper');
   }
   test('pullApplication should clone repository and call downloadModelMain and buildImage', async () => {
     mockForPullApplication({
       recipeFolderExists: false,
     });
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
-    doDownloadModelWrapperSpy.mockResolvedValue('path');
+    mocks.performDownloadMock.mockResolvedValue('path');
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',
@@ -270,7 +277,7 @@ describe('pullApplication', () => {
       gitCloneOptions.targetDirectory = '/home/user/aistudio/recipe1';
       expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     }
-    expect(doDownloadModelWrapperSpy).toHaveBeenCalledOnce();
+    expect(mocks.performDownloadMock).toHaveBeenCalledOnce();
     expect(mocks.buildImageMock).toHaveBeenCalledOnce();
     expect(mocks.buildImageMock).toHaveBeenCalledWith(
       `${gitCloneOptions.targetDirectory}${path.sep}contextdir1`,
@@ -283,11 +290,7 @@ describe('pullApplication', () => {
         },
       },
     );
-    expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.download', {
-      'model.id': 'model1',
-      durationSeconds: 99,
-    });
-    expect(mocks.logUsageMock).toHaveBeenNthCalledWith(2, 'recipe.pull', {
+    expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'recipe.pull', {
       'recipe.id': 'recipe1',
       'recipe.name': 'Recipe 1',
       durationSeconds: 99,
@@ -298,7 +301,7 @@ describe('pullApplication', () => {
       recipeFolderExists: true,
     });
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
-    vi.spyOn(modelsManager, 'doDownloadModelWrapper').mockResolvedValue('path');
+    mocks.performDownloadMock.mockResolvedValue('path');
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',
@@ -348,7 +351,7 @@ describe('pullApplication', () => {
     };
     await manager.pullApplication(recipe, model);
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
-    expect(doDownloadModelWrapperSpy).not.toHaveBeenCalled();
+    expect(mocks.performDownloadMock).not.toHaveBeenCalled();
   });
 
   test('pullApplication should mark the loading config as error if not container are found', async () => {
@@ -385,7 +388,7 @@ describe('pullApplication', () => {
     await expect(manager.pullApplication(recipe, model)).rejects.toThrowError('No containers available.');
 
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
-    expect(doDownloadModelWrapperSpy).not.toHaveBeenCalled();
+    expect(mocks.performDownloadMock).not.toHaveBeenCalled();
   });
 });
 describe('doCheckout', () => {

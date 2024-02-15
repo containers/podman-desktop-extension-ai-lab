@@ -34,6 +34,7 @@ import type { Task } from '@shared/src/models/ITask';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
+import path from 'node:path';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -233,5 +234,19 @@ export class StudioApiImpl implements StudioAPI {
 
   async getTasks(): Promise<Task[]> {
     return this.taskRegistry.getTasks();
+  }
+
+  async openVSCode(directory: string): Promise<void> {
+    if (!path.isAbsolute(directory)) {
+      throw new Error('Do not support relative directory.');
+    }
+
+    const unixPath: string = path.normalize(directory).replace(/[\\/]+/g, '/');
+
+    podmanDesktopApi.env
+      .openExternal(podmanDesktopApi.Uri.parse(unixPath).with({ scheme: 'vscode', authority: 'file' }))
+      .catch((err: unknown) => {
+        console.error('Something went wrong while trying to open VSCode', err);
+      });
   }
 }

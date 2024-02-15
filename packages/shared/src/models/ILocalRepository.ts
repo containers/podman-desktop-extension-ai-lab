@@ -1,4 +1,4 @@
 export interface LocalRepository {
   path: string;
-  recipeId: string;
+  labels: { [id: string]: string };
 }

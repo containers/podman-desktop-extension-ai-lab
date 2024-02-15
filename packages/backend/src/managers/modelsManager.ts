@@ -20,7 +20,7 @@ import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
-import { type Webview, fs as apiFs, Disposable } from '@podman-desktop/api';
+import { type Webview, fs as apiFs, type Disposable } from '@podman-desktop/api';
 import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';

@@ -16,15 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import {
-  Disposable,
+import { Uri, window, env } from '@podman-desktop/api';
+import type {
   ExtensionContext,
   TelemetryLogger,
   WebviewOptions,
   WebviewPanel,
   WebviewPanelOnDidChangeViewStateEvent,
 } from '@podman-desktop/api';
-import { Uri, window, env } from '@podman-desktop/api';
 import { RpcExtension } from '@shared/src/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';

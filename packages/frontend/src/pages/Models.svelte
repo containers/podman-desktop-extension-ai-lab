@@ -12,11 +12,11 @@ import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
 import type { Task } from '@shared/src/models/ITask';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Card from '/@/lib/Card.svelte';
-import { modelsPulling } from '../stores/recipe';
 import { onMount } from 'svelte';
 import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
 import ModelColumnCreation from '../lib/table/model/ModelColumnCreation.svelte';
 import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
+import { tasks } from '/@/stores/tasks';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
@@ -32,13 +32,13 @@ const row = new Row<ModelInfo>({});
 
 let loading: boolean = true;
 
-let tasks: Task[] = [];
+let pullingTasks: Task[] = [];
 let models: ModelInfo[] = [];
 let filteredModels: ModelInfo[] = [];
 
 function filterModels(): void {
   // Let's collect the models we do not want to show (loading, error).
-  const modelsId: string[] = tasks.reduce((previousValue, currentValue) => {
+  const modelsId: string[] = pullingTasks.reduce((previousValue, currentValue) => {
     if (currentValue.labels !== undefined) {
       previousValue.push(currentValue.labels['model-pulling']);
     }
@@ -48,10 +48,10 @@ function filterModels(): void {
 }
 
 onMount(() => {
-  // Pulling update
-  const modelsPullingUnsubscribe = modelsPulling.subscribe(runningTasks => {
-    // Only display error | loading tasks.
-    tasks = runningTasks.filter(task => task.state !== 'success');
+  // Subscribe to the tasks store
+  const tasksUnsubscribe = tasks.subscribe(value => {
+    console.log('tasks store', value);
+    pullingTasks = value.filter(task => task.state === 'loading');
     loading = false;
     filterModels();
   });
@@ -63,7 +63,7 @@ onMount(() => {
   });
 
   return () => {
-    modelsPullingUnsubscribe();
+    tasksUnsubscribe();
     localModelsUnsubscribe();
   };
 });
@@ -74,15 +74,13 @@ onMount(() => {
     <div class="min-w-full min-h-full flex-1">
       <div class="mt-4 px-5 space-y-5 h-full">
         {#if !loading}
-          {#if tasks.length > 0}
-            <div class="mx-4">
-              <Card classes="bg-charcoal-800 mt-4">
-                <div slot="content" class="text-base font-normal p-2">
-                  <div class="text-base mb-2">Downloading models</div>
-                  <TasksProgress tasks="{tasks}" />
-                </div>
-              </Card>
-            </div>
+          {#if pullingTasks.length > 0}
+            <Card classes="bg-charcoal-800 mt-4">
+              <div slot="content" class="text-base font-normal p-2">
+                <div class="text-base mb-2">Downloading models</div>
+                <TasksProgress tasks="{pullingTasks}" />
+              </div>
+            </Card>
           {/if}
           {#if filteredModels.length > 0}
             <Table kind="model" data="{filteredModels}" columns="{columns}" row="{row}"></Table>

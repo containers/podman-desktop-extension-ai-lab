@@ -49,9 +49,3 @@ export const recipes: Readable<Map<string, RecipeStatus>> = readable<Map<string,
     };
   },
 );
-
-export const modelsPulling = derived(recipes, $recipes => {
-  return Array.from($recipes.values())
-    .flatMap(recipe => recipe.tasks)
-    .filter(task => 'model-pulling' in (task.labels || {}));
-});

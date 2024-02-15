@@ -182,64 +182,6 @@ test('should display updated recipe information', async () => {
   screen.getByText('New Recipe Name');
 });
 
-test('should display default model information', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
-  render(Recipe, {
-    recipeId: 'recipe 1',
-  });
-
-  const modelInfo = screen.getByLabelText('model-selected');
-  expect(modelInfo.textContent).equal('Model 1');
-  const licenseBadge = screen.getByLabelText('license-model');
-  expect(licenseBadge.textContent).equal('?');
-  const defaultWarning = screen.getByLabelText('default-model-warning');
-  expect(defaultWarning.textContent).contains('This is the default, recommended model for this recipe.');
-});
-
-test('should open/close application details panel when clicking on toggle button', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
-  render(Recipe, {
-    recipeId: 'recipe 1',
-  });
-
-  const panelOpenDetails = screen.getByLabelText('toggle application details');
-  expect(panelOpenDetails).toHaveClass('hidden');
-  const panelAppDetails = screen.getByLabelText('application details panel');
-  expect(panelAppDetails).toHaveClass('block');
-
-  const btnShowPanel = screen.getByRole('button', { name: 'show application details' });
-  const btnHidePanel = screen.getByRole('button', { name: 'hide application details' });
-
-  await userEvent.click(btnHidePanel);
-
-  expect(panelAppDetails).toHaveClass('hidden');
-  expect(panelOpenDetails).toHaveClass('block');
-
-  await userEvent.click(btnShowPanel);
-
-  expect(panelAppDetails).toHaveClass('block');
-  expect(panelOpenDetails).toHaveClass('hidden');
-});
-
-test('should call runApplication execution when run application button is clicked', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.pullApplicationMock.mockResolvedValue(undefined);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
-  render(Recipe, {
-    recipeId: 'recipe 1',
-  });
-
-  const btnRunApplication = screen.getByLabelText('Start Environment');
-  await userEvent.click(btnRunApplication);
-
-  expect(mocks.pullApplicationMock).toBeCalledWith('recipe 1');
-});
-
 test('should send telemetry data', async () => {
   mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);

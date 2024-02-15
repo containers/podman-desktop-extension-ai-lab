@@ -30,6 +30,7 @@ const mocks = vi.hoisted(() => {
   return {
     getPullingStatusesMock: vi.fn(),
     pullApplicationMock: vi.fn(),
+    getEnvironmentsStateMock: vi.fn(),
   };
 });
 
@@ -38,6 +39,7 @@ vi.mock('../utils/client', async () => {
     studioClient: {
       getPullingStatuses: mocks.getPullingStatusesMock,
       pullApplication: mocks.pullApplicationMock,
+      getEnvironmentsState: mocks.getEnvironmentsStateMock,
     },
     rpcBrowser: {
       subscribe: () => {
@@ -105,6 +107,7 @@ beforeEach(() => {
 });
 
 test('should open/close application details panel when clicking on toggle button', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(RecipeDetails, {
@@ -132,6 +135,7 @@ test('should open/close application details panel when clicking on toggle button
 });
 
 test('should call runApplication execution when run application button is clicked', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.pullApplicationMock.mockResolvedValue(undefined);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
@@ -140,13 +144,14 @@ test('should call runApplication execution when run application button is clicke
     modelId: 'model1',
   });
 
-  const btnRunApplication = screen.getByRole('button', { name: 'Run application' });
+  const btnRunApplication = screen.getByLabelText('Start Environment');
   await userEvent.click(btnRunApplication);
 
   expect(mocks.pullApplicationMock).toBeCalledWith('recipe 1', 'model1');
 });
 
 test('swap model button should move user to models tab', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   const gotoMock = vi.spyOn(router, 'goto');
@@ -162,6 +167,7 @@ test('swap model button should move user to models tab', async () => {
 });
 
 test('swap model panel should be hidden on models tab', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(RecipeDetails, {
@@ -184,6 +190,7 @@ test('swap model panel should be hidden on models tab', async () => {
 });
 
 test('should display default model information when model is the recommended', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(RecipeDetails, {
@@ -200,6 +207,7 @@ test('should display default model information when model is the recommended', a
 });
 
 test('should display non-default model information when model is not the recommended one', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(RecipeDetails, {

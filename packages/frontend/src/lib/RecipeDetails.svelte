@@ -83,11 +83,11 @@ const toggle = () => {
               <div class="text-base">Model</div>
               <div
                 class="py-0.5"
-                class:hidden="{$router.path === `/recipes/${recipeId}/models`}"
+                class:hidden="{$router.path === `/recipe/${recipeId}/models`}"
                 aria-label="swap model panel">
                 <Button
                   icon="{faList}"
-                  on:click="{() => router.goto(`/recipes/${recipeId}/models`)}"
+                  on:click="{() => router.goto(`/recipe/${recipeId}/models`)}"
                   title="Go to the Models page to swap model"
                   aria-label="Go to Model"
                   class="h-full" />

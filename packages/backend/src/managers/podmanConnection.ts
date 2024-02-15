@@ -22,6 +22,7 @@ import {
   type UpdateContainerConnectionEvent,
   containerEngine,
   type PodInfo,
+  type Disposable,
 } from '@podman-desktop/api';
 
 export type startupHandle = () => void;
@@ -31,7 +32,7 @@ export type podStartHandle = (pod: PodInfo) => void;
 export type podStopHandle = (pod: PodInfo) => void;
 export type podRemoveHandle = (podId: string) => void;
 
-export class PodmanConnection {
+export class PodmanConnection implements Disposable {
   #firstFound = false;
   #toExecuteAtStartup: startupHandle[] = [];
   #toExecuteAtMachineStop: machineStopHandle[] = [];
@@ -40,10 +41,16 @@ export class PodmanConnection {
   #toExecuteAtPodStop: podStopHandle[] = [];
   #toExecuteAtPodRemove: podRemoveHandle[] = [];
 
+  #onEventDisposable: Disposable | undefined;
+
   init(): void {
     this.listenRegistration();
     this.listenMachine();
     this.watchPods();
+  }
+
+  dispose(): void {
+    this.#onEventDisposable?.dispose();
   }
 
   listenRegistration() {
@@ -111,7 +118,9 @@ export class PodmanConnection {
   }
 
   watchPods() {
-    containerEngine.onEvent(event => {
+    if (this.#onEventDisposable !== undefined) throw new Error('already watching pods.');
+
+    this.#onEventDisposable = containerEngine.onEvent(event => {
       if (event.Type !== 'pod') {
         return;
       }

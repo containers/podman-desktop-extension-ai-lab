@@ -19,7 +19,7 @@
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'fs';
 import * as path from 'node:path';
-import { type Webview, fs as apiFs } from '@podman-desktop/api';
+import { type Webview, fs as apiFs, type Disposable } from '@podman-desktop/api';
 import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -40,7 +40,7 @@ interface DownloadModelFailureResult {
   error: string;
 }
 
-export class ModelsManager {
+export class ModelsManager implements Disposable {
   #modelsDir: string;
   #models: Map<string, ModelInfo>;
   #watcher?: podmanDesktopApi.FileSystemWatcher;
@@ -54,6 +54,11 @@ export class ModelsManager {
   ) {
     this.#modelsDir = path.join(this.appUserDirectory, 'models');
     this.#models = new Map();
+  }
+
+  dispose(): void {
+    this.#models.clear();
+    this.#watcher.dispose();
   }
 
   async loadLocalModels() {

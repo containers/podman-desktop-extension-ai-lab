@@ -24,10 +24,10 @@ import type { Category } from '@shared/src/models/ICategory';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
-import { fs } from '@podman-desktop/api';
-import type { Webview } from '@podman-desktop/api';
+import { type Disposable, type Webview, fs } from '@podman-desktop/api';
 
-export class CatalogManager {
+export class CatalogManager implements Disposable {
+  private watchers: Map<string, Disposable> = new Map<string, Disposable>();
   private catalog: Catalog;
 
   constructor(
@@ -40,6 +40,10 @@ export class CatalogManager {
       models: [],
       recipes: [],
     };
+  }
+
+  dispose(): void {
+    Array.from(this.watchers.values()).forEach(watcher => watcher.dispose());
   }
 
   public getCatalog(): Catalog {
@@ -98,7 +102,11 @@ export class CatalogManager {
   }
 
   watchCatalogFile(path: string) {
+    if (this.watchers.has(path)) throw new Error(`A watcher already exist for file ${path}.`);
+
     const watcher = fs.createFileSystemWatcher(path);
+    this.watchers.set(path, watcher);
+
     watcher.onDidCreate(async () => {
       try {
         const cat = await this.readAndAnalyzeCatalog(path);

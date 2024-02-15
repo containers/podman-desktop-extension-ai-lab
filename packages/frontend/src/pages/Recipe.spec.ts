@@ -30,6 +30,7 @@ const mocks = vi.hoisted(() => {
     getPullingStatusesMock: vi.fn(),
     pullApplicationMock: vi.fn(),
     telemetryLogUsageMock: vi.fn(),
+    getEnvironmentsStateMock: vi.fn(),
   };
 });
 
@@ -40,6 +41,7 @@ vi.mock('../utils/client', async () => {
       getPullingStatuses: mocks.getPullingStatusesMock,
       pullApplication: mocks.pullApplicationMock,
       telemetryLogUsage: mocks.telemetryLogUsageMock,
+      getEnvironmentsState: mocks.getEnvironmentsStateMock,
     },
     rpcBrowser: {
       subscribe: () => {
@@ -153,6 +155,7 @@ beforeEach(() => {
 
 test('should display recipe information', async () => {
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(Recipe, {
     recipeId: 'recipe 1',
@@ -163,6 +166,7 @@ test('should display recipe information', async () => {
 });
 
 test('should display updated recipe information', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   const customCatalog = writable<Catalog>(initialCatalog);
   vi.mocked(catalogStore).catalog = customCatalog;
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
@@ -179,6 +183,7 @@ test('should display updated recipe information', async () => {
 });
 
 test('should send telemetry data', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   mocks.pullApplicationMock.mockResolvedValue(undefined);

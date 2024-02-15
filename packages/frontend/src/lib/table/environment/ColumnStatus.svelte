@@ -1,8 +1,19 @@
 <script lang="ts">
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
-export let object: EnvironmentState;
+import type { Task } from '@shared/src/models/ITask';
+import type { EnvironmentCell } from '/@/pages/environments';
+import TaskItem from '../../progress/TaskItem.svelte';
+export let object: EnvironmentCell;
+let task: Task | undefined = undefined;
+
+$: {
+  if (object.tasks && object.tasks.length > 0) {
+    task = object.tasks[object.tasks.length - 1];
+  }
+}
 </script>
 
-<div class="text-sm text-gray-700">
-  {object.status}
-</div>
+{#if task}
+  <div class="text-sm text-gray-700">
+    <TaskItem task="{task}" />
+  </div>
+{/if}

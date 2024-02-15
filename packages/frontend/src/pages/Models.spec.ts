@@ -55,7 +55,6 @@ test('should display There is no model yet and have a task running', async () =>
   const map = new Map<string, RecipeStatus>();
   map.set('random', {
     recipeId: 'random-recipe-id',
-    state: 'loading',
     tasks: [
       {
         id: 'random',

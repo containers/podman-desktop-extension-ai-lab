@@ -20,7 +20,13 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import { type PodCreatePortOptions, containerEngine, type TelemetryLogger } from '@podman-desktop/api';
+import {
+  type PodCreatePortOptions,
+  containerEngine,
+  type TelemetryLogger,
+  type PodInfo,
+  type Webview,
+} from '@podman-desktop/api';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
@@ -33,6 +39,10 @@ import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
 import { LABEL_MODEL_ID } from './playground';
+import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { PodmanConnection } from './podmanConnection';
+import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
+import type { CatalogManager } from './catalogManager';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 
@@ -49,7 +59,7 @@ export interface ContainerAttachedInfo {
   ports: string[];
 }
 
-export interface PodInfo {
+export interface ApplicationPodInfo {
   engineId: string;
   Id: string;
   containers?: ContainerAttachedInfo[];
@@ -64,19 +74,29 @@ export interface ImageInfo {
 }
 
 export class ApplicationManager {
+  // Map recipeId => EnvironmentState
+  #environments: Map<string, EnvironmentState>;
+
   constructor(
     private appUserDirectory: string,
     private git: GitManager,
     private recipeStatusRegistry: RecipeStatusRegistry,
+    private webview: Webview,
+    private podmanConnection: PodmanConnection,
+    private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
     private telemetry: TelemetryLogger,
-  ) {}
+  ) {
+    this.#environments = new Map();
+  }
 
-  async pullApplication(recipe: Recipe, model: ModelInfo) {
+  async pullApplication(recipe: Recipe, model: ModelInfo, taskUtil?: RecipeStatusUtils) {
     const startTime = performance.now();
     try {
       // Create a TaskUtils object to help us
-      const taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
+      if (!taskUtil) {
+        taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
+      }
 
       const localFolder = path.join(this.appUserDirectory, recipe.id);
 
@@ -106,7 +126,6 @@ export class ApplicationManager {
       const podInfo = await this.createApplicationPod(recipe, model, images, modelPath, taskUtil);
 
       await this.runApplication(podInfo, taskUtil);
-      taskUtil.setStatus('running');
       const durationSeconds = getDurationSecondsSince(startTime);
       this.telemetry.logUsage('recipe.pull', { 'recipe.id': recipe.id, 'recipe.name': recipe.name, durationSeconds });
     } catch (err: unknown) {
@@ -122,7 +141,7 @@ export class ApplicationManager {
     }
   }
 
-  async runApplication(podInfo: PodInfo, taskUtil: RecipeStatusUtils) {
+  async runApplication(podInfo: ApplicationPodInfo, taskUtil: RecipeStatusUtils) {
     taskUtil.setTask({
       id: `running-${podInfo.Id}`,
       state: 'loading',
@@ -188,9 +207,9 @@ export class ApplicationManager {
     images: ImageInfo[],
     modelPath: string,
     taskUtil: RecipeStatusUtils,
-  ): Promise<PodInfo> {
+  ): Promise<ApplicationPodInfo> {
     // create empty pod
-    let podInfo: PodInfo;
+    let podInfo: ApplicationPodInfo;
     try {
       podInfo = await this.createPod(recipe, model, images);
     } catch (e) {
@@ -235,7 +254,7 @@ export class ApplicationManager {
   }
 
   async createAndAddContainersToPod(
-    podInfo: PodInfo,
+    podInfo: ApplicationPodInfo,
     images: ImageInfo[],
     modelPath: string,
   ): Promise<ContainerAttachedInfo[]> {
@@ -303,7 +322,7 @@ export class ApplicationManager {
     return containers;
   }
 
-  async createPod(recipe: Recipe, model: ModelInfo, images: ImageInfo[]): Promise<PodInfo> {
+  async createPod(recipe: Recipe, model: ModelInfo, images: ImageInfo[]): Promise<ApplicationPodInfo> {
     // find the exposed port of the sample app so we can open its ports on the new pod
     const sampleAppImageInfo = images.find(image => !image.modelService);
     if (!sampleAppImageInfo) {
@@ -549,5 +568,187 @@ export class ApplicationManager {
     }
     // Update task
     taskUtil.setTask(checkoutTask);
+  }
+
+  adoptRunningEnvironments() {
+    this.podmanConnection.startupSubscribe(() => {
+      if (!containerEngine.listPods) {
+        // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
+        // and the extension minimal version is set to 1.8
+        return;
+      }
+      containerEngine
+        .listPods()
+        .then(pods => {
+          const envsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
+          for (const podToAdopt of envsPods) {
+            this.adoptPod(podToAdopt);
+          }
+        })
+        .catch((err: unknown) => {
+          console.error('error during adoption of existing playground containers', err);
+        });
+    });
+
+    this.podmanConnection.onMachineStop(() => {
+      // Podman Machine has been stopped, we consider all recipe pods are stopped
+      this.#environments.clear();
+      this.sendEnvironmentState();
+    });
+
+    this.podmanConnection.onPodStart((pod: PodInfo) => {
+      this.adoptPod(pod);
+    });
+    this.podmanConnection.onPodStop((pod: PodInfo) => {
+      this.forgetPod(pod);
+    });
+    this.podmanConnection.onPodRemove((podId: string) => {
+      this.forgetPodById(podId);
+    });
+  }
+
+  adoptPod(pod: PodInfo) {
+    if (!pod.Labels) {
+      return;
+    }
+    const recipeId = pod.Labels[LABEL_RECIPE_ID];
+    const modelId = pod.Labels[LABEL_MODEL_ID];
+    if (this.#environments.has(recipeId)) {
+      return;
+    }
+    const state: EnvironmentState = {
+      recipeId,
+      modelId,
+      pod,
+    };
+    this.updateEnvironmentState(recipeId, state);
+  }
+
+  forgetPod(pod: PodInfo) {
+    if (!pod.Labels) {
+      return;
+    }
+    const recipeId = pod.Labels[LABEL_RECIPE_ID];
+    if (!this.#environments.has(recipeId)) {
+      return;
+    }
+    this.#environments.delete(recipeId);
+    this.sendEnvironmentState();
+  }
+
+  forgetPodById(podId: string) {
+    const env = Array.from(this.#environments.values()).find(p => p.pod.Id === podId);
+    if (!env) {
+      return;
+    }
+    if (!env.pod.Labels) {
+      return;
+    }
+    const recipeId = env.pod.Labels[LABEL_RECIPE_ID];
+    if (!this.#environments.has(recipeId)) {
+      return;
+    }
+    this.#environments.delete(recipeId);
+    this.sendEnvironmentState();
+  }
+
+  updateEnvironmentState(recipeId: string, state: EnvironmentState): void {
+    this.#environments.set(recipeId, state);
+    this.sendEnvironmentState();
+  }
+
+  getEnvironmentsState(): EnvironmentState[] {
+    return Array.from(this.#environments.values());
+  }
+
+  sendEnvironmentState() {
+    this.webview
+      .postMessage({
+        id: MSG_ENVIRONMENTS_STATE_UPDATE,
+        body: this.getEnvironmentsState(),
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong while emitting MSG_ENVIRONMENTS_STATE_UPDATE: ${String(err)}`);
+      });
+  }
+
+  async deleteEnvironment(recipeId: string, taskUtil?: RecipeStatusUtils) {
+    if (!taskUtil) {
+      taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+    }
+    try {
+      taskUtil.setTask({
+        id: `stopping-${recipeId}`,
+        state: 'loading',
+        name: `Stopping application`,
+      });
+      const envPod = await this.getEnvironmentPod(recipeId);
+      try {
+        await containerEngine.stopPod(envPod.engineId, envPod.Id);
+        taskUtil.setTask({
+          id: `stopping-${recipeId}`,
+          state: 'success',
+          name: `Application stopped`,
+        });
+      } catch (err: unknown) {
+        // continue when the pod is already stopped
+        if (!String(err).includes('pod already stopped')) {
+          taskUtil.setTask({
+            id: `stopping-${recipeId}`,
+            state: 'error',
+            error: 'error stopping the pod. Please try to remove the pod manually',
+            name: `Error stopping application`,
+          });
+          throw err;
+        }
+        taskUtil.setTask({
+          id: `stopping-${recipeId}`,
+          state: 'success',
+          name: `Application stopped`,
+        });
+      }
+      taskUtil.setTask({
+        id: `removing-${recipeId}`,
+        state: 'loading',
+        name: `Removing application`,
+      });
+      await containerEngine.removePod(envPod.engineId, envPod.Id);
+      taskUtil.setTask({
+        id: `removing-${recipeId}`,
+        state: 'success',
+        name: `Application removed`,
+      });
+    } catch (err: unknown) {
+      taskUtil.setTask({
+        id: `removing-${recipeId}`,
+        state: 'error',
+        error: 'error removing the pod. Please try to remove the pod manually',
+        name: `Error removing application`,
+      });
+      throw err;
+    }
+  }
+
+  async restartEnvironment(recipeId: string) {
+    const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+    const envPod = await this.getEnvironmentPod(recipeId);
+    await this.deleteEnvironment(recipeId, taskUtil);
+    const recipe = this.catalogManager.getRecipeById(recipeId);
+    const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
+    await this.pullApplication(recipe, model, taskUtil);
+  }
+
+  async getEnvironmentPod(recipeId: string): Promise<PodInfo> {
+    if (!containerEngine.listPods || !containerEngine.stopPod || !containerEngine.removePod) {
+      // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
+      // and the extension minimal version is set to 1.8
+      return;
+    }
+    const pods = await containerEngine.listPods();
+    const envPod = pods.find(pod => LABEL_RECIPE_ID in pod.Labels && pod.Labels[LABEL_RECIPE_ID] === recipeId);
+    if (!envPod) {
+      throw new Error(`no pod found with recipe Id ${recipeId}`);
+    }
+    return envPod;
   }
 }

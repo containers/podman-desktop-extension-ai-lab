@@ -38,7 +38,6 @@ import os from 'os';
 import fs from 'node:fs';
 import { ContainerRegistry } from './registries/ContainerRegistry';
 import { PodmanConnection } from './managers/podmanConnection';
-import { EnvironmentManager } from './managers/environmentManager';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
@@ -133,14 +132,11 @@ export class Studio {
       appUserDirectory,
       gitManager,
       recipeStatusRegistry,
-      this.modelsManager,
-      this.telemetry,
-    );
-    const envManager = new EnvironmentManager(
       this.#panel.webview,
       podmanConnection,
-      applicationManager,
       this.catalogManager,
+      this.modelsManager,
+      this.telemetry,
     );
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
@@ -154,7 +150,6 @@ export class Studio {
       this.playgroundManager,
       this.catalogManager,
       this.modelsManager,
-      envManager,
       this.telemetry,
     );
 
@@ -162,7 +157,7 @@ export class Studio {
     await this.modelsManager.loadLocalModels();
     podmanConnection.init();
     this.playgroundManager.adoptRunningPlaygrounds();
-    envManager.adoptRunningEnvironments();
+    applicationManager.adoptRunningEnvironments();
 
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

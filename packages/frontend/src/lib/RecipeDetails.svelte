@@ -1,29 +1,27 @@
 <script lang="ts">
-import { faList, faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
+import { faList } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { getDisplayName } from '/@/utils/versionControlUtils';
 import { recipes } from '/@/stores/recipe';
-import Button from '/@/lib/button/Button.svelte';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
 import { catalog } from '/@/stores/catalog';
 import { router } from 'tinro';
+import { environmentStates } from '../stores/environment-states';
+import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import EnvironmentActions from './EnvironmentActions.svelte';
+import Button from './button/Button.svelte';
 
 export let recipeId: string;
 export let modelId: string;
 
+$: envState = $environmentStates.find((env: EnvironmentState) => env.recipeId === recipeId);
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: recipeStatus = $recipes.get(recipeId);
 $: model = $catalog.models.find(m => m.id === modelId);
 
 let open: boolean = true;
-
-const onPullingRequest = () => {
-  studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {
-    console.error('Something went wrong while pulling application', err);
-  });
-};
 
 const onClickRepository = () => {
   if (!recipe) return;
@@ -53,21 +51,23 @@ const toggle = () => {
       </div>
 
       <div class="w-full bg-charcoal-600 rounded-md p-4">
-        {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
-          {#if recipeStatus.state === 'error'}
-            <Button on:click="{() => onPullingRequest()}" class="w-full p-2" icon="{faRefresh}">Retry</Button>
-          {:else if recipeStatus.state === 'loading' || recipeStatus.state === 'running'}
-            <Button inProgress="{true}" class="w-full p-2" icon="{faPlay}">
-              {#if recipeStatus.state === 'loading'}Loading{:else}Running{/if}
-            </Button>
+        <div class="flex flex-row items-center">
+          {#if envState}
+            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-300">
+              {envState.pod.Name}
+            </div>
+          {:else}
+            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-500 italic">
+              (no pod running)
+            </div>
           {/if}
-        {:else}
-          <Button on:click="{() => onPullingRequest()}" class="w-full p-2" icon="{faPlay}">Run application</Button>
-        {/if}
-
-        <div class="text-xs text-gray-700 mt-3">
-          This will git clone the application, download the model, build images, and run the application as a pod
-          locally.
+          <div class="shrink-0">
+            <EnvironmentActions
+              recipeId="{recipeId}"
+              modelId="{modelId}"
+              object="{envState}"
+              tasks="{recipeStatus?.tasks}" />
+          </div>
         </div>
         {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
           <div class="mt-4 text-sm font-normal py-2">

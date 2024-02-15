@@ -16,13 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { RecipeStatus, RecipeStatusState } from '@shared/src/models/IRecipeStatus';
+import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
 import type { Task } from '@shared/src/models/ITask';
 import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 
 export class RecipeStatusUtils {
   private tasks: Map<string, Task> = new Map<string, Task>();
-  private state: RecipeStatusState = 'loading';
 
   constructor(
     private recipeId: string,
@@ -33,16 +32,8 @@ export class RecipeStatusUtils {
     this.recipeStatusRegistry.setStatus(this.recipeId, this.toRecipeStatus());
   }
 
-  setStatus(state: RecipeStatusState): void {
-    this.state = state;
-    this.update();
-  }
-
   setTask(task: Task) {
     this.tasks.set(task.id, task);
-
-    if (task.state === 'error') this.setStatus('error');
-
     this.update();
   }
 
@@ -82,7 +73,6 @@ export class RecipeStatusUtils {
   toRecipeStatus(): RecipeStatus {
     return {
       recipeId: this.recipeId,
-      state: this.state,
       tasks: Array.from(this.tasks.values()),
     };
   }

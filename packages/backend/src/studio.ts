@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { Uri, window, env } from '@podman-desktop/api';
 import type {
   ExtensionContext,
   TelemetryLogger,
@@ -23,7 +24,6 @@ import type {
   WebviewPanel,
   WebviewPanelOnDidChangeViewStateEvent,
 } from '@podman-desktop/api';
-import { Uri, window, env } from '@podman-desktop/api';
 import { RpcExtension } from '@shared/src/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
@@ -167,6 +167,9 @@ export class Studio {
 
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
+    this.#extensionContext.subscriptions.push(this.catalogManager);
+    this.#extensionContext.subscriptions.push(this.modelsManager);
+    this.#extensionContext.subscriptions.push(podmanConnection);
   }
 
   public async deactivate(): Promise<void> {

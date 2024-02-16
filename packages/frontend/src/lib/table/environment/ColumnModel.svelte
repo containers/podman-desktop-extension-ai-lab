@@ -4,9 +4,9 @@ import { catalog } from '/@/stores/catalog';
 
 export let object: EnvironmentCell;
 
-$: name = $catalog.recipes.find(r => r.id === object.recipeId)?.name;
+$: name = $catalog.models.find(r => r.id === object.modelId)?.name;
 </script>
 
-<div class="text-sm text-gray-700">
+<div class="text-sm text-gray-700 overflow-hidden text-ellipsis">
   {name}
 </div>

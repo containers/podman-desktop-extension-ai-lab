@@ -75,7 +75,6 @@ onMount(() => {
 });
 </script>
 
-
 <NavPage title="Models" searchEnabled="{false}" loading="{loading}">
   <svelte:fragment slot="tabs">
     <Tab title="All" url="models" />
@@ -84,7 +83,6 @@ onMount(() => {
   </svelte:fragment>
 
   <svelte:fragment slot="content">
-
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="min-w-full min-h-full flex-1">
         <div class="mt-4 px-5 space-y-5 h-full">
@@ -101,7 +99,7 @@ onMount(() => {
             <!-- All models -->
             <Route path="/" breadcrumb="All">
               {#if filteredModels.length > 0}
-                <Table kind="model" data={filteredModels} columns="{columns}" row="{row}"></Table>
+                <Table kind="model" data="{filteredModels}" columns="{columns}" row="{row}"></Table>
               {:else}
                 <div role="status">There is no model yet</div>
               {/if}
@@ -110,7 +108,7 @@ onMount(() => {
             <!-- Downloaded models -->
             <Route path="/downloaded" breadcrumb="Downloaded">
               {#if localModels.length > 0}
-                <Table kind="model" data={localModels} columns="{columns}" row="{row}"></Table>
+                <Table kind="model" data="{localModels}" columns="{columns}" row="{row}"></Table>
               {:else}
                 <div role="status">There is no model yet</div>
               {/if}
@@ -119,7 +117,7 @@ onMount(() => {
             <!-- Available models (from catalogs)-->
             <Route path="/available" breadcrumb="Available">
               {#if remoteModels.length > 0}
-                <Table kind="model" data={remoteModels} columns="{columns}" row="{row}"></Table>
+                <Table kind="model" data="{remoteModels}" columns="{columns}" row="{row}"></Table>
               {:else}
                 <div role="status">There is no model yet</div>
               {/if}

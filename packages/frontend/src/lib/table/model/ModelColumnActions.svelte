@@ -25,9 +25,5 @@ function openModelFolder() {
     onClick="{() => openModelFolder()}"
     title="Open Model Folder"
     enabled="{!object.state}" />
-  <ListItemButtonIcon
-    icon="{faTrash}"
-    onClick="{() => deleteModel()}"
-    title="Delete Model"
-    enabled="{!object.state}" />
+  <ListItemButtonIcon icon="{faTrash}" onClick="{() => deleteModel()}" title="Delete Model" enabled="{!object.state}" />
 {/if}

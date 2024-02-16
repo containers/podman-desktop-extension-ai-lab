@@ -59,4 +59,10 @@ export abstract class StudioAPI {
   abstract getLocalRepositories(): Promise<LocalRepository[]>;
 
   abstract getTasks(): Promise<Task[]>;
+
+  /**
+   * Open the VSCode editor
+   * @param directory the directory to open the editor from
+   */
+  abstract openVSCode(directory: string): Promise<void>;
 }

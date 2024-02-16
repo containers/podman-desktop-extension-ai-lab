@@ -113,7 +113,9 @@ export class ApplicationManager {
       await this.doCheckout(gitCloneInfo, taskUtil);
       this.localRepositories.register({
         path: gitCloneInfo.targetDirectory,
-        recipeId: recipe.id,
+        labels: {
+          'recipe-id': recipe.id,
+        },
       });
 
       // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator

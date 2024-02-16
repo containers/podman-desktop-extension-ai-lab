@@ -12,6 +12,9 @@ import { environmentStates } from '../stores/environment-states';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import EnvironmentActions from './EnvironmentActions.svelte';
 import Button from './button/Button.svelte';
+import VSCodeIcon from '/@/lib/images/VSCodeIcon.svelte';
+import { localRepositories } from '../stores/localRepositories';
+import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 
 export let recipeId: string;
 export let modelId: string;
@@ -20,6 +23,7 @@ $: envState = $environmentStates.find((env: EnvironmentState) => env.recipeId ==
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: recipeStatus = $recipes.get(recipeId);
 $: model = $catalog.models.find(m => m.id === modelId);
+$: localPath = findLocalRepositoryByRecipeId($localRepositories, recipeId);
 
 let open: boolean = true;
 
@@ -34,6 +38,12 @@ const onClickRepository = () => {
 const toggle = () => {
   console.log('on toggle', open);
   open = !open;
+};
+
+const openVSCode = () => {
+  if (localPath) {
+    studioClient.openVSCode(localPath.path);
+  }
 };
 </script>
 
@@ -135,6 +145,10 @@ const toggle = () => {
             </div>
           </div>
         </div>
+        {#if localPath}
+          <Button type="secondary" on:click="{openVSCode}" title="Open in VS Code Desktop" icon="{VSCodeIcon}"
+            >Open in VSCode</Button>
+        {/if}
       </div>
     </div>
   </div>

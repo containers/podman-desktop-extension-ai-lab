@@ -19,11 +19,11 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import ColumnName from './ColumnName.svelte';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import * as catalogStore from '/@/stores/catalog';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import { readable } from 'svelte/store';
+import type { EnvironmentCell } from '/@/pages/environments';
+import ColumnModel from './ColumnModel.svelte';
 
 vi.mock('/@/stores/catalog', async () => {
   return {
@@ -33,35 +33,38 @@ vi.mock('/@/stores/catalog', async () => {
 
 const initialCatalog: Catalog = {
   categories: [],
-  models: [],
-  recipes: [
+  models: [
     {
-      id: 'recipe 1',
-      name: 'Recipe 1',
-      readme: 'readme 1',
-      categories: [],
-      models: ['model1', 'model2'],
-      description: 'description 1',
-      repository: 'repo 1',
+      id: 'model1',
+      name: 'Model 1',
+      description: '',
+      hw: '',
+      registry: '',
+      popularity: 3,
+      license: '',
+      url: '',
     },
     {
-      id: 'recipe 2',
-      name: 'Recipe 2',
-      readme: 'readme 2',
-      categories: [],
-      description: 'description 2',
-      repository: 'repo 2',
+      id: 'model2',
+      name: 'Model 2',
+      description: '',
+      hw: '',
+      registry: '',
+      popularity: 3,
+      license: '',
+      url: '',
     },
   ],
+  recipes: [],
 };
 
-test('display name', async () => {
+test('display model name', async () => {
   const obj = {
-    recipeId: 'recipe 1',
-  } as unknown as EnvironmentState;
+    modelId: 'model1',
+  } as unknown as EnvironmentCell;
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  render(ColumnName, { object: obj });
+  render(ColumnModel, { object: obj });
 
-  const text = screen.getByText('Recipe 1');
+  const text = screen.getByText('Model 1');
   expect(text).toBeInTheDocument();
 });

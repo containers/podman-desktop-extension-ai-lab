@@ -113,6 +113,23 @@ test('should display There is no model yet and have a task running', async () =>
   });
 });
 
+test('should not display any tasks running', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([]);
+  mocks.tasksSubscribeMock.mockReturnValue([
+    {
+      id: 'random',
+      name: 'random',
+      state: 'loading',
+    },
+  ]);
+  mocks.getPullingStatusesMock.mockResolvedValue([]);
+
+  render(Models);
+
+  const notification = screen.queryByText('Downloading models');
+  expect(notification).toBeNull();
+});
+
 test('should display one model', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([
     {

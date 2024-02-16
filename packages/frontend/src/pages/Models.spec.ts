@@ -20,6 +20,7 @@ import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
+import { router } from 'tinro';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -131,4 +132,89 @@ test('should display one model', async () => {
 
   const name = cells.find(cell => cell.firstElementChild?.textContent === 'dummy-name');
   expect(name).toBeDefined();
+});
+
+
+test('should display no model in downloaded tab', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([
+    {
+      id: 'dummy-id',
+      name: 'dummy-name',
+    },
+  ]);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
+
+  render(Models);
+
+  router.goto('downloaded');
+
+  await waitFor(() => {
+    const status = screen.getByRole('status');
+    expect(status).toBeDefined();
+  })
+});
+
+test('should display a model in downloaded tab', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([
+    {
+      id: 'dummy-id',
+      name: 'dummy-name',
+      file: {
+        file: 'dummy',
+        path: 'dummy',
+      }
+    },
+  ]);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
+
+  render(Models);
+
+  router.goto('downloaded');
+
+  await waitFor(() => {
+    const table = screen.getByRole('table');
+    expect(table).toBeDefined();
+  })
+});
+
+test('should display a model in available tab', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([
+    {
+      id: 'dummy-id',
+      name: 'dummy-name',
+    },
+  ]);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
+
+  render(Models);
+
+  router.goto('available');
+
+  await waitFor(() => {
+    const table = screen.getByRole('table');
+    expect(table).toBeDefined();
+  })
+});
+
+test('should display no model in available tab', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([
+    {
+      id: 'dummy-id',
+      name: 'dummy-name',
+      file: {
+        file: 'dummy',
+        path: 'dummy',
+      }
+    },
+  ]);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
+
+  render(Models);
+
+  router.goto('available');
+
+  await waitFor(() => {
+    const status = screen.getByRole('status');
+    expect(status).toBeDefined();
+  })
 });

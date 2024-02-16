@@ -165,7 +165,7 @@ test('should display query without response', async () => {
   expect(response).not.toBeInTheDocument();
 });
 
-test('should display query without response', async () => {
+test('should display query with response', async () => {
   mocks.playgroundQueriesSubscribeMock.mockReturnValue([
     {
       id: 1,
@@ -202,6 +202,9 @@ test('should display query without response', async () => {
   const response = screen.queryByRole('textbox', { name: 'response' });
   expect(response).toBeInTheDocument();
   expect(response).toHaveValue('The response is 2');
+
+  const elapsed = screen.queryByLabelText('elapsed');
+  expect(elapsed).toBeInTheDocument();
 });
 
 test('should display error alert', async () => {

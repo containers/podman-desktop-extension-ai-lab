@@ -50,7 +50,6 @@ function filterModels(): void {
 onMount(() => {
   // Subscribe to the tasks store
   const tasksUnsubscribe = tasks.subscribe(value => {
-    console.log('tasks store', value);
     pullingTasks = value.filter(task => task.state === 'loading');
     loading = false;
     filterModels();

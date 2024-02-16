@@ -158,7 +158,7 @@ export class StudioApiImpl implements StudioAPI {
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
       .showWarningMessage(
-        `Delete the environment "${recipe.name}"? This will delete the containers running the application and model.`,
+        `Stop the environment "${recipe.name}"? This will delete the containers running the application and model.`,
         'Confirm',
         'Cancel',
       )

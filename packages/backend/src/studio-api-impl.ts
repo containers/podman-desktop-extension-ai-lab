@@ -249,4 +249,13 @@ export class StudioApiImpl implements StudioAPI {
         console.error('Something went wrong while trying to open VSCode', err);
       });
   }
+
+  async downloadModel(modelId: string): Promise<void> {
+    const modelInfo: ModelInfo = this.modelsManager.getModelInfo(modelId);
+
+    // Do not wait for the download task as it is too long.
+    this.modelsManager.downloadModel(modelInfo).catch((err: unknown) => {
+      console.error(`Something went wrong while trying to download the model ${modelId}`, err);
+    })
+  }
 }

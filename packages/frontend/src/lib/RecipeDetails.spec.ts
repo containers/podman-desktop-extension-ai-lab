@@ -235,12 +235,14 @@ test('should display non-default model information when model is not the recomme
 
 test('button vs code should be visible if local repository is not empty', async () => {
   mocks.getEnvironmentsStateMock.mockResolvedValue([]);
-  mocks.getLocalRepositoriesMock.mockReturnValue([{
-    path: 'random-path',
-    labels: {
-      'recipe-id': 'recipe 1',
-    }
-  }]);
+  mocks.getLocalRepositoriesMock.mockReturnValue([
+    {
+      path: 'random-path',
+      labels: {
+        'recipe-id': 'recipe 1',
+      },
+    },
+  ]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue(new Map());
   render(RecipeDetails, {

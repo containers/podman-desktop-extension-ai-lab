@@ -114,10 +114,12 @@ test('should display There is no model yet and have a task running', async () =>
 });
 
 test('should display one model', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{
-    id: 'dummy-id',
-    name: 'dummy-name',
-  }]);
+  mocks.modelsInfoSubscribeMock.mockReturnValue([
+    {
+      id: 'dummy-id',
+      name: 'dummy-name',
+    },
+  ]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
 
   render(Models);

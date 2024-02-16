@@ -244,6 +244,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: false,
     });
+    mocks.listPodsMock.mockResolvedValue([]);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     mocks.performDownloadMock.mockResolvedValue('path');
     const recipe: Recipe = {
@@ -306,6 +307,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
+    mocks.listPodsMock.mockResolvedValue([]);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     mocks.performDownloadMock.mockResolvedValue('path');
     const recipe: Recipe = {
@@ -334,6 +336,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
+    mocks.listPodsMock.mockResolvedValue([]);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(true);
     vi.spyOn(modelsManager, 'getLocalModelPath').mockReturnValue('path');
     const recipe: Recipe = {

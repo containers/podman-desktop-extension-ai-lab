@@ -78,6 +78,8 @@ export class ApplicationManager {
   // Map recipeId => EnvironmentState
   #environments: Map<string, EnvironmentState>;
 
+  protectTasks: Set<string> = new Set();
+
   constructor(
     private appUserDirectory: string,
     private git: GitManager,
@@ -136,6 +138,11 @@ export class ApplicationManager {
         configAndFilteredContainers.aiConfigFile.path,
         taskUtil,
       );
+
+      // first delete any existing pod with matching labels
+      if (await this.hasEnvironmentPod(recipe.id)) {
+        await this.deleteEnvironment(recipe.id);
+      }
 
       // create a pod containing all the containers to run the application
       const podInfo = await this.createApplicationPod(recipe, model, images, modelPath, taskUtil);
@@ -607,6 +614,16 @@ export class ApplicationManager {
 
     this.podmanConnection.onMachineStop(() => {
       // Podman Machine has been stopped, we consider all recipe pods are stopped
+
+      for (const recipeId of this.#environments.keys()) {
+        const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+        taskUtil.setTask({
+          id: `stopped-${recipeId}`,
+          state: 'success',
+          name: `Application stopped manually`,
+        });
+      }
+
       this.#environments.clear();
       this.sendEnvironmentState();
     });
@@ -649,6 +666,13 @@ export class ApplicationManager {
     }
     this.#environments.delete(recipeId);
     this.sendEnvironmentState();
+
+    const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+    taskUtil.setTask({
+      id: `stopped-${recipeId}`,
+      state: 'success',
+      name: `Application stopped manually`,
+    });
   }
 
   forgetPodById(podId: string) {
@@ -665,6 +689,18 @@ export class ApplicationManager {
     }
     this.#environments.delete(recipeId);
     this.sendEnvironmentState();
+
+    const protect = this.protectTasks.has(podId);
+    if (!protect) {
+      const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+      taskUtil.setTask({
+        id: `stopped-${recipeId}`,
+        state: 'success',
+        name: `Application stopped manually`,
+      });
+    } else {
+      this.protectTasks.delete(podId);
+    }
   }
 
   updateEnvironmentState(recipeId: string, state: EnvironmentState): void {
@@ -700,45 +736,31 @@ export class ApplicationManager {
       const envPod = await this.getEnvironmentPod(recipeId);
       try {
         await containerEngine.stopPod(envPod.engineId, envPod.Id);
-        taskUtil.setTask({
-          id: `stopping-${recipeId}`,
-          state: 'success',
-          name: `Application stopped`,
-        });
       } catch (err: unknown) {
         // continue when the pod is already stopped
         if (!String(err).includes('pod already stopped')) {
           taskUtil.setTask({
             id: `stopping-${recipeId}`,
             state: 'error',
-            error: 'error stopping the pod. Please try to remove the pod manually',
+            error: 'error stopping the pod. Please try to stop and remove the pod manually',
             name: `Error stopping application`,
           });
           throw err;
         }
-        taskUtil.setTask({
-          id: `stopping-${recipeId}`,
-          state: 'success',
-          name: `Application stopped`,
-        });
       }
-      taskUtil.setTask({
-        id: `removing-${recipeId}`,
-        state: 'loading',
-        name: `Removing application`,
-      });
+      this.protectTasks.add(envPod.Id);
       await containerEngine.removePod(envPod.engineId, envPod.Id);
       taskUtil.setTask({
-        id: `removing-${recipeId}`,
+        id: `stopping-${recipeId}`,
         state: 'success',
-        name: `Application removed`,
+        name: `Application stopped`,
       });
     } catch (err: unknown) {
       taskUtil.setTask({
         id: `removing-${recipeId}`,
         state: 'error',
         error: 'error removing the pod. Please try to remove the pod manually',
-        name: `Error removing application`,
+        name: `Error stopping application`,
       });
       throw err;
     }
@@ -754,16 +776,25 @@ export class ApplicationManager {
   }
 
   async getEnvironmentPod(recipeId: string): Promise<PodInfo> {
+    const envPod = await this.queryPod(recipeId);
+    if (!envPod) {
+      throw new Error(`no pod found with recipe Id ${recipeId}`);
+    }
+    return envPod;
+  }
+
+  async hasEnvironmentPod(recipeId: string): Promise<boolean> {
+    const envPod = await this.queryPod(recipeId);
+    return !!envPod;
+  }
+
+  async queryPod(recipeId: string): Promise<PodInfo | undefined> {
     if (!containerEngine.listPods || !containerEngine.stopPod || !containerEngine.removePod) {
       // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
       // and the extension minimal version is set to 1.8
       return;
     }
     const pods = await containerEngine.listPods();
-    const envPod = pods.find(pod => LABEL_RECIPE_ID in pod.Labels && pod.Labels[LABEL_RECIPE_ID] === recipeId);
-    if (!envPod) {
-      throw new Error(`no pod found with recipe Id ${recipeId}`);
-    }
-    return envPod;
+    return pods.find(pod => LABEL_RECIPE_ID in pod.Labels && pod.Labels[LABEL_RECIPE_ID] === recipeId);
   }
 }

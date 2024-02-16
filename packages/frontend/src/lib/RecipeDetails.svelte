@@ -52,7 +52,7 @@ const toggle = () => {
 
       <div class="w-full bg-charcoal-600 rounded-md p-4">
         <div class="flex flex-row items-center">
-          {#if envState}
+          {#if envState && envState.pod.Status === 'Running'}
             <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-300">
               {envState.pod.Name}
             </div>

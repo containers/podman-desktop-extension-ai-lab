@@ -1,5 +1,5 @@
 <script lang="ts">
-import { faPlay, faRotateForward, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faRotateForward, faStop } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
@@ -17,7 +17,7 @@ function startEnvironment() {
   });
 }
 
-function deleteEnvironment() {
+function stopEnvironment() {
   studioClient.requestRemoveEnvironment(recipeId).catch(err => {
     console.error(`Something went wrong while trying to stop environment: ${String(err)}.`);
   });
@@ -34,16 +34,16 @@ function restartEnvironment() {
   icon="{faPlay}"
   onClick="{() => startEnvironment()}"
   title="Start Environment"
-  enabled="{!object?.pod && !runningTask}" />
+  enabled="{(!object?.pod || object?.pod.Status !== 'Running') && !runningTask}" />
 
 <ListItemButtonIcon
-  icon="{faTrash}"
-  onClick="{() => deleteEnvironment()}"
-  title="Delete Environment"
-  enabled="{!!object?.pod}" />
+  icon="{faStop}"
+  onClick="{() => stopEnvironment()}"
+  title="Stop Environment"
+  enabled="{object?.pod.Status === 'Running'}" />
 
 <ListItemButtonIcon
   icon="{faRotateForward}"
   onClick="{() => restartEnvironment()}"
   title="Restart Environment"
-  enabled="{!!object?.pod}" />
+  enabled="{object?.pod.Status === 'Running'}" />

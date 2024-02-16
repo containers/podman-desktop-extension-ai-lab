@@ -134,7 +134,6 @@ test('should display one model', async () => {
   expect(name).toBeDefined();
 });
 
-
 test('should display no model in downloaded tab', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([
     {
@@ -151,7 +150,7 @@ test('should display no model in downloaded tab', async () => {
   await waitFor(() => {
     const status = screen.getByRole('status');
     expect(status).toBeDefined();
-  })
+  });
 });
 
 test('should display a model in downloaded tab', async () => {
@@ -162,7 +161,7 @@ test('should display a model in downloaded tab', async () => {
       file: {
         file: 'dummy',
         path: 'dummy',
-      }
+      },
     },
   ]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
@@ -174,7 +173,7 @@ test('should display a model in downloaded tab', async () => {
   await waitFor(() => {
     const table = screen.getByRole('table');
     expect(table).toBeDefined();
-  })
+  });
 });
 
 test('should display a model in available tab', async () => {
@@ -193,7 +192,7 @@ test('should display a model in available tab', async () => {
   await waitFor(() => {
     const table = screen.getByRole('table');
     expect(table).toBeDefined();
-  })
+  });
 });
 
 test('should display no model in available tab', async () => {
@@ -204,7 +203,7 @@ test('should display no model in available tab', async () => {
       file: {
         file: 'dummy',
         path: 'dummy',
-      }
+      },
     },
   ]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
@@ -216,5 +215,5 @@ test('should display no model in available tab', async () => {
   await waitFor(() => {
     const status = screen.getByRole('status');
     expect(status).toBeDefined();
-  })
+  });
 });

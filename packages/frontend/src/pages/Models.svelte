@@ -57,7 +57,7 @@ function filterModels(): void {
 onMount(() => {
   // Subscribe to the tasks store
   const tasksUnsubscribe = tasks.subscribe(value => {
-    pullingTasks = value.filter(task => task.state === 'loading');
+    pullingTasks = value.filter(task => task.state === 'loading' && task.labels && 'model-pulling' in task.labels);
     loading = false;
     filterModels();
   });

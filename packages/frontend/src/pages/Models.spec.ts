@@ -20,7 +20,6 @@ import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
-import { modelsInfo } from '/@/stores/modelsInfo';
 
 const mocks = vi.hoisted(() => {
   return {

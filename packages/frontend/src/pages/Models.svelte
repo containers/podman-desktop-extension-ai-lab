@@ -90,14 +90,12 @@ onMount(() => {
         <div class="mt-4 px-5 space-y-5 h-full">
           {#if !loading}
             {#if pullingTasks.length > 0}
-              <div class="mx-4">
-                <Card classes="bg-charcoal-800 mt-4">
-                  <div slot="content" class="text-base font-normal p-2">
-                    <div class="text-base mb-2">Downloading models</div>
-                    <TasksProgress tasks="{pullingTasks}" />
-                  </div>
-                </Card>
-              </div>
+              <Card classes="bg-charcoal-800 mt-4">
+                <div slot="content" class="text-base font-normal p-2">
+                  <div class="text-base mb-2">Downloading models</div>
+                  <TasksProgress tasks="{pullingTasks}" />
+                </div>
+              </Card>
             {/if}
 
             <!-- All models -->

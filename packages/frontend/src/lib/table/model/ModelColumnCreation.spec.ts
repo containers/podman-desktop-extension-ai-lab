@@ -32,7 +32,6 @@ test('Expect simple column styling', async () => {
     hw: '',
     license: '',
     name: '',
-    popularity: 3,
     registry: '',
     url: '',
     file: {

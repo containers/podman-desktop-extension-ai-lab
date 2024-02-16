@@ -20,15 +20,15 @@ import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
+import { modelsInfo } from '/@/stores/modelsInfo';
 
 const mocks = vi.hoisted(() => {
   return {
     getCatalogMock: vi.fn(),
     getPullingStatusesMock: vi.fn().mockResolvedValue(new Map()),
-    getLocalModelsMock: vi.fn().mockResolvedValue([]),
     modelsInfoSubscribeMock: vi.fn(),
     tasksSubscribeMock: vi.fn(),
-    localModelsQueriesMock: {
+    modelsInfoQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.modelsInfoSubscribeMock());
         return () => {};
@@ -61,9 +61,9 @@ vi.mock('/@/utils/client', async () => {
   };
 });
 
-vi.mock('../stores/local-models', async () => {
+vi.mock('../stores/modelsInfo', async () => {
   return {
-    localModels: mocks.localModelsQueriesMock,
+    modelsInfo: mocks.modelsInfoQueriesMock,
   };
 });
 
@@ -111,4 +111,23 @@ test('should display There is no model yet and have a task running', async () =>
     const title = screen.getByText('Downloading models');
     expect(title).toBeDefined();
   });
+});
+
+test('should display one model', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([{
+    id: 'dummy-id',
+    name: 'dummy-name',
+  }]);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
+
+  render(Models);
+
+  const table = screen.getByRole('table');
+  expect(table).toBeDefined();
+
+  const cells = screen.queryAllByRole('cell');
+  expect(cells.length > 0).toBeTruthy();
+
+  const name = cells.find(cell => cell.firstElementChild?.textContent === 'dummy-name');
+  expect(name).toBeDefined();
 });

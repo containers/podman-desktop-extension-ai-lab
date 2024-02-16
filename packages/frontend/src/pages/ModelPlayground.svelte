@@ -78,7 +78,7 @@ function requestTimeUpdate(start: number) {
   requestAnimationFrame(() => {
     if (inProgress) {
       elapsed = (performance.now() - start) / 1000;
-      requestAnimationFrame(() => requestTimeUpdate(start));
+      requestTimeUpdate(start);
     }
   });
 }

@@ -93,7 +93,7 @@ function startApplication() {
               </div>
             </div>
             <div class="shrink-0">
-              <EnvironmentActions recipeId="{recipeId}" object="{envState}" />
+              <EnvironmentActions recipeId="{recipeId}" object="{envState}" modelId="{modelId}" />
             </div>
           {:else}
             <Button inProgress="{runningTask !== undefined}" on:click="{startApplication}" class="grow text-gray-500">

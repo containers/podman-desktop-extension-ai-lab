@@ -5,6 +5,7 @@ import { studioClient } from '/@/utils/client';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 export let object: EnvironmentState | undefined;
 export let recipeId: string;
+export let modelId: string;
 
 function stopEnvironment() {
   studioClient.requestRemoveEnvironment(recipeId, modelId).catch(err => {

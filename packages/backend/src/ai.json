@@ -33,6 +33,23 @@
         "llama-2-7b-chat.Q5_K_S",
         "mistral-7b-instruct-v0.1.Q4_K_M"
       ]
+    },
+    {
+      "id": "codegeneration",
+      "description" : "Code Generation application",
+      "name" : "Code Generation",
+      "repository": "https://github.com/redhat-et/locallm",
+      "ref": "a1ee3db",
+      "icon": "natural-language-processing",
+      "categories": [
+        "natural-language-processing"
+      ],
+      "config": "code-generation/ai-studio.yaml",
+      "readme": "# Code Generation\n\nThis example will deploy a local code-gen application using a llama.cpp model server and a python app built with langchain.  \n\n### Download Model\n\n- **codellama**\n\n  - Download URL: `wget https://huggingface.co/TheBloke/CodeLlama-7B-Instruct-GGUF/resolve/main/codellama-7b-instruct.Q4_K_M.gguf` \n\n```\n\ncd ../models\n\nwget <Download URL>\n\ncd ../\n\n```\n\n### Deploy Model Service\n\nTo start the model service, refer to [the playground model-service document](../playground/README.md). Deploy the LLM server and volumn mount the model of choice.\n\n```\n\npodman run --rm -it -d \\ \n\n        -p 8001:8001 \\ \n\n        -v Local/path/to/locallm/models:/locallm/models:ro,Z \\ \n\n        -e MODEL_PATH=models/<model-filename> \\ \n\n        -e HOST=0.0.0.0 \\ \n\n        -e PORT=8001 \\ \n\n        playground:image\n\n```\n\n### Build Container Image\n\nOnce the model service is deployed, then follow the instruction below to build your container image and run it locally. \n\n- `podman build -t codegen-app code-generation -f code-generation/builds/Containerfile`\n\n- `podman run -it -p 8501:8501 codegen-app -- -m http://10.88.0.1:8001/v1` ",
+      "models": [
+        "llama-2-7b-chat.Q5_K_S",
+        "mistral-7b-instruct-v0.1.Q4_K_M"
+      ]
     }
   ],
   "models": [

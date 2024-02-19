@@ -130,7 +130,7 @@ const localRepositoryRegistry = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  taskUtils = new RecipeStatusUtils('recipe', {
+  taskUtils = new RecipeStatusUtils({ recipeId: 'recipe', modelId: 'model' }, {
     setStatus: vi.fn(),
   } as unknown as RecipeStatusRegistry);
   setTaskMock = vi.spyOn(taskUtils, 'setTask');
@@ -1096,6 +1096,7 @@ describe('pod detection', async () => {
       {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
         },
       },
     ]);
@@ -1105,13 +1106,15 @@ describe('pod detection', async () => {
     const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
     manager.adoptRunningEnvironments();
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(updateEnvironmentStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', {
+    expect(updateEnvironmentStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'model-id-1', {
       pod: {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
         },
       },
       recipeId: 'recipe-id-1',
+      modelId: 'model-id-1',
     });
   });
 
@@ -1146,6 +1149,7 @@ describe('pod detection', async () => {
         kind: 'podman',
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
         },
       } as unknown as PodInfo);
     });
@@ -1177,6 +1181,7 @@ describe('pod detection', async () => {
       {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
         },
       },
     ]);
@@ -1189,6 +1194,7 @@ describe('pod detection', async () => {
           kind: 'podman',
           Labels: {
             'ai-studio-recipe-id': 'recipe-id-1',
+            'ai-studio-model-id': 'model-id-1',
           },
         } as unknown as PodInfo);
       }, 1);
@@ -1208,6 +1214,7 @@ describe('pod detection', async () => {
         Id: 'pod-id-1',
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
         },
       },
     ]);
@@ -1228,18 +1235,21 @@ describe('pod detection', async () => {
       {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
         },
       },
       {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-2',
+          'ai-studio-model-id': 'model-id-2',
         },
       },
     ]);
-    const result = await manager.getEnvironmentPod('recipe-id-1');
+    const result = await manager.getEnvironmentPod('recipe-id-1', 'model-id-1');
     expect(result).toEqual({
       Labels: {
         'ai-studio-recipe-id': 'recipe-id-1',
+        'ai-studio-model-id': 'model-id-1',
       },
     });
   });
@@ -1251,6 +1261,7 @@ describe('pod detection', async () => {
         Id: 'pod-1',
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
         },
       },
       {
@@ -1258,10 +1269,11 @@ describe('pod detection', async () => {
         Id: 'pod-2',
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-2',
+          'ai-studio-model-id': 'model-id-2',
         },
       },
     ]);
-    await manager.deleteEnvironment('recipe-id-1');
+    await manager.deleteEnvironment('recipe-id-1', 'model-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });
@@ -1273,6 +1285,7 @@ describe('pod detection', async () => {
         Id: 'pod-1',
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
         },
       },
       {
@@ -1280,11 +1293,12 @@ describe('pod detection', async () => {
         Id: 'pod-2',
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-2',
+          'ai-studio-model-id': 'model-id-2',
         },
       },
     ]);
     mocks.stopPodMock.mockRejectedValue('something went wrong, pod already stopped...');
-    await manager.deleteEnvironment('recipe-id-1');
+    await manager.deleteEnvironment('recipe-id-1', 'model-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });

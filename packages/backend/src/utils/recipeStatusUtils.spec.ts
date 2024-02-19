@@ -28,7 +28,10 @@ const recipeStatusRegistryMock = {
 } as unknown as RecipeStatusRegistry;
 
 test('Ensure only the first error is kept', () => {
-  const tasksUtils = new RecipeStatusUtils('random-1', recipeStatusRegistryMock);
+  const tasksUtils = new RecipeStatusUtils(
+    { recipeId: 'random-1', modelId: 'random-model-1' },
+    recipeStatusRegistryMock,
+  );
   tasksUtils.setTask({
     id: 'dummy',
     error: 'first',

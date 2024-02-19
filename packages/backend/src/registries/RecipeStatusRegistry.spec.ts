@@ -41,13 +41,14 @@ beforeEach(() => {
 
 test('recipe status registry should start without any statuses', () => {
   const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, webview);
-  expect(recipeStatusRegistry.getStatuses().size).toBe(0);
+  expect(recipeStatusRegistry.getStatuses().length).toBe(0);
 });
 
 test('taskRegistry should have been updated', () => {
   const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, webview);
-  recipeStatusRegistry.setStatus('random', {
+  recipeStatusRegistry.setStatus('random', 'random-model', {
     recipeId: 'random',
+    modelId: 'random-model',
     tasks: [
       {
         id: 'task-1',
@@ -56,7 +57,7 @@ test('taskRegistry should have been updated', () => {
       },
     ],
   });
-  expect(recipeStatusRegistry.getStatuses().size).toBe(1);
+  expect(recipeStatusRegistry.getStatuses().length).toBe(1);
   expect(mocks.setMock).toHaveBeenNthCalledWith(1, {
     id: 'task-1',
     name: 'task-1',
@@ -66,37 +67,37 @@ test('taskRegistry should have been updated', () => {
 
 test('webview should have been notified', () => {
   const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, webview);
-  recipeStatusRegistry.setStatus('random', {
+  recipeStatusRegistry.setStatus('random', 'random-model', {
     recipeId: 'random',
+    modelId: 'random-model',
     tasks: [],
   });
   expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1, {
     id: MSG_NEW_RECIPE_STATE,
-    body: new Map([
-      [
-        'random',
-        {
-          recipeId: 'random',
-          tasks: [],
-        },
-      ],
-    ]),
+    body: [
+      {
+        recipeId: 'random',
+        modelId: 'random-model',
+        tasks: [],
+      },
+    ],
   });
 });
 
 test('recipe status should have been updated', () => {
   const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, webview);
-  recipeStatusRegistry.setStatus('random', {
+  recipeStatusRegistry.setStatus('random', 'random-model', {
     recipeId: 'random',
+    modelId: 'random-model',
     tasks: [
       {
-        id: 'task-1',
+        id: 'task-',
         name: 'task-1',
         state: 'loading',
       },
     ],
   });
   const statuses = recipeStatusRegistry.getStatuses();
-  expect(statuses.size).toBe(1);
-  expect(statuses.get('random').tasks.length).toBe(1);
+  expect(statuses.length).toBe(1);
+  expect(statuses.find(s => s.recipeId === 'random' && s.modelId === 'random-model').tasks.length).toBe(1);
 });

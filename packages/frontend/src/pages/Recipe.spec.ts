@@ -167,7 +167,7 @@ beforeEach(() => {
 test('should display recipe information', async () => {
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.getEnvironmentsStateMock.mockResolvedValue([]);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  mocks.getPullingStatusesMock.mockResolvedValue([]);
   render(Recipe, {
     recipeId: 'recipe 1',
   });
@@ -180,7 +180,7 @@ test('should display updated recipe information', async () => {
   mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   const customCatalog = writable<Catalog>(initialCatalog);
   vi.mocked(catalogStore).catalog = customCatalog;
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  mocks.getPullingStatusesMock.mockResolvedValue([]);
   render(Recipe, {
     recipeId: 'recipe 1',
   });
@@ -196,7 +196,7 @@ test('should display updated recipe information', async () => {
 test('should send telemetry data', async () => {
   mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.getPullingStatusesMock.mockResolvedValue(new Map());
+  mocks.getPullingStatusesMock.mockResolvedValue([]);
   mocks.pullApplicationMock.mockResolvedValue(undefined);
 
   render(Recipe, {

@@ -24,7 +24,6 @@
       "description": "Readme for model 1",
       "hw": "CPU",
       "registry": "Hugging Face",
-      "popularity": 3,
       "license": "?",
       "url": "https://model1.example.com"
     },
@@ -34,7 +33,6 @@
       "description": "Readme for model 2",
       "hw": "CPU",
       "registry": "Civital",
-      "popularity": 3,
       "license": "?",
       "url": ""
     }

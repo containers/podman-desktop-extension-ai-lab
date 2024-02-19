@@ -32,10 +32,10 @@ vi.mock('./studio', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.studioConstructor.mockReturnValue(({
+  mocks.studioConstructor.mockReturnValue({
     activate: mocks.studioActivateMock,
     deactivate: mocks.studioDeactivateMock,
-  }));
+  });
 });
 
 test('check we call activate method on studio instance', async () => {

@@ -924,35 +924,6 @@ describe('createApplicationPod', () => {
   });
 });
 
-describe('restartContainerWhenModelServiceIsUp', () => {
-  const containerAttachedInfo: ContainerAttachedInfo = {
-    name: 'name',
-    modelService: false,
-    ports: ['9000'],
-  };
-  const manager = new ApplicationManager(
-    '/home/user/aistudio',
-    {} as unknown as GitManager,
-    {} as unknown as RecipeStatusRegistry,
-    {} as Webview,
-    {} as PodmanConnection,
-    {} as CatalogManager,
-    {} as unknown as ModelsManager,
-    telemetryLogger,
-    localRepositoryRegistry,
-  );
-  test('restart container if endpoint is alive', async () => {
-    mocks.inspectContainerMock.mockResolvedValue({
-      State: {
-        Running: false,
-      },
-    });
-    vi.spyOn(utils, 'isEndpointAlive').mockResolvedValue(true);
-    await manager.restartContainerWhenModelServiceIsUp('engine', 'endpoint', containerAttachedInfo);
-    expect(mocks.startContainerMock).toBeCalledWith('engine', 'name');
-  });
-});
-
 describe('runApplication', () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
@@ -990,16 +961,14 @@ describe('runApplication', () => {
       },
     ],
   };
-  test('check startPod is called and also restartContainerWhenEndpointIsUp for sample app', async () => {
-    const restartContainerWhenEndpointIsUpMock = vi
-      .spyOn(manager, 'restartContainerWhenModelServiceIsUp')
-      .mockImplementation((_engineId: string, _modelEndpoint: string, _container: ContainerAttachedInfo) =>
-        Promise.resolve(),
-      );
+  test('check startPod is called and also waitContainerIsRunning for sample app', async () => {
+    const waitContainerIsRunningMock = vi
+      .spyOn(manager, 'waitContainerIsRunning')
+      .mockImplementation((_engineId: string, _container: ContainerAttachedInfo) => Promise.resolve());
     vi.spyOn(utils, 'timeout').mockResolvedValue();
     await manager.runApplication(pod, taskUtils);
     expect(mocks.startPod).toBeCalledWith(pod.engineId, pod.Id);
-    expect(restartContainerWhenEndpointIsUpMock).toBeCalledWith(pod.engineId, 'http://localhost:9001', {
+    expect(waitContainerIsRunningMock).toBeCalledWith(pod.engineId, {
       name: 'first',
       modelService: false,
       ports: ['8080'],

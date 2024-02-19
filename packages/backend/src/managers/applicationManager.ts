@@ -186,14 +186,16 @@ export class ApplicationManager {
   }
 
   async waitContainerIsRunning(engineId: string, container: ContainerAttachedInfo): Promise<void> {
-    const sampleAppContainerInspectInfo = await containerEngine.inspectContainer(engineId, container.name);
-    if (sampleAppContainerInspectInfo.State.Running) {
-      return;
+    const TIME_FRAME_MS = 5000;
+    const MAX_ATTEMPTS = 60 * (60000 / TIME_FRAME_MS); // try for 1 hour
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+      const sampleAppContainerInspectInfo = await containerEngine.inspectContainer(engineId, container.name);
+      if (sampleAppContainerInspectInfo.State.Running) {
+        return;
+      }
+      await timeout(TIME_FRAME_MS);
     }
-    await timeout(5000);
-    await this.waitContainerIsRunning(engineId, container).catch((error: unknown) => {
-      console.error('Error monitoring container', error);
-    });
+    throw new Error(`Container ${container.name} not started in time`);
   }
 
   async createApplicationPod(

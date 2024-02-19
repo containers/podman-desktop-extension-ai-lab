@@ -15,6 +15,8 @@ import Button from './button/Button.svelte';
 import VSCodeIcon from '/@/lib/images/VSCodeIcon.svelte';
 import { localRepositories } from '../stores/localRepositories';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
+import PodIcon from '/@/lib/images/PodIcon.svelte';
+import StatusIcon from '/@/lib/StatusIcon.svelte';
 
 export let recipeId: string;
 export let modelId: string;
@@ -24,6 +26,8 @@ $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: recipeStatus = $recipes.find(r => recipeId === r.recipeId && r.modelId === modelId);
 $: model = $catalog.models.find(m => m.id === modelId);
 $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipeId);
+
+$: runningTask = recipeStatus?.tasks.find(t => t.state === 'loading');
 
 let open: boolean = true;
 
@@ -45,6 +49,18 @@ const openVSCode = () => {
     studioClient.openVSCode(localPath.path);
   }
 };
+
+const navigateToPod = () => {
+  if (envState?.pod.Id !== undefined) {
+    studioClient.navigateToPod(envState.pod.Id);
+  }
+};
+
+function startApplication() {
+  studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {
+    console.error('Something went wrong while pulling application', err);
+  });
+}
 </script>
 
 <div class="lg:my-5 max-lg:w-full max-lg:min-w-full" class:w-[375px]="{open}" class:min-w-[375px]="{open}">
@@ -62,25 +78,31 @@ const openVSCode = () => {
 
       <div class="w-full bg-charcoal-600 rounded-md p-4">
         <div class="flex flex-row items-center">
-          {#if envState && envState.pod.Status === 'Running'}
-            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-300">
-              {envState.pod.Name}
+          {#if envState && envState.pod}
+            <div class="grow flex overflow-hidden whitespace-nowrap items-center">
+              <a title="Navigate to Pod details" href="{'javascript:void(0);'}" on:click="{navigateToPod}">
+                <StatusIcon size="{22}" status="{envState.pod.Status.toUpperCase()}" icon="{PodIcon}" />
+              </a>
+              <div class="ml-2 overflow-hidden">
+                <div class="text-base text-gray-300 overflow-hidden text-ellipsis leading-tight">
+                  {envState.pod.Name}
+                </div>
+                <div class="text-xs text-gray-800 leading-tight">
+                  {envState.pod.Status.toUpperCase()}
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0">
+              <EnvironmentActions recipeId="{recipeId}" object="{envState}" />
             </div>
           {:else}
-            <div class="grow whitespace-nowrap overflow-hidden text-ellipsis text-sm text-gray-500 italic">
-              (no pod running)
-            </div>
+            <Button inProgress="{runningTask !== undefined}" on:click="{startApplication}" class="grow text-gray-500">
+              Start application
+            </Button>
           {/if}
-          <div class="shrink-0">
-            <EnvironmentActions
-              recipeId="{recipeId}"
-              modelId="{modelId}"
-              object="{envState}"
-              tasks="{recipeStatus?.tasks}" />
-          </div>
         </div>
-        {#if recipeStatus !== undefined && recipeStatus.tasks.length > 0}
-          <div class="mt-4 text-sm font-normal py-2">
+        {#if recipeStatus && recipeStatus.tasks.length > 0}
+          <div class="mt-4 text-sm font-normal">
             <TasksProgress tasks="{recipeStatus.tasks}" />
           </div>
         {/if}
@@ -139,7 +161,7 @@ const openVSCode = () => {
         <div class="flex flex-col space-y-2 w-[45px]">
           <div class="text-base">Repository</div>
           <div class="cursor-pointer flex text-nowrap items-center">
-            <Fa size="20" icon="{faGithub}" />
+            <Fa size="lg" icon="{faGithub}" />
             <div class="text-sm ml-2">
               <a on:click="{onClickRepository}">{getDisplayName(recipe?.repository)}</a>
             </div>

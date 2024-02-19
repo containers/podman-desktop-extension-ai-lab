@@ -5,7 +5,7 @@
       "description" : "Chat bot application",
       "name" : "ChatBot",
       "repository": "https://github.com/redhat-et/locallm",
-      "ref": "4899efe",
+      "ref": "b0b2eca",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"

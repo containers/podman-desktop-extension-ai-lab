@@ -19,7 +19,7 @@
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { ApplicationManager } from './managers/applicationManager';
 import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
-import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
+import type { RecipeModelStatus } from '@shared/src/models/IRecipeStatus';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { PlayGroundManager } from './managers/playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
@@ -60,11 +60,11 @@ export class StudioApiImpl implements StudioAPI {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
   }
 
-  async getPullingStatus(recipeId: string): Promise<RecipeStatus> {
-    return this.recipeStatusRegistry.getStatus(recipeId);
+  async getPullingStatus(recipeId: string, modelId: string): Promise<RecipeModelStatus> {
+    return this.recipeStatusRegistry.getStatus(recipeId, modelId);
   }
 
-  async getPullingStatuses(): Promise<Map<string, RecipeStatus>> {
+  async getPullingStatuses(): Promise<RecipeModelStatus[]> {
     return this.recipeStatusRegistry.getStatuses();
   }
 
@@ -160,7 +160,7 @@ export class StudioApiImpl implements StudioAPI {
     return this.applicationManager.getEnvironmentsState();
   }
 
-  async requestRemoveEnvironment(recipeId: string): Promise<void> {
+  async requestRemoveEnvironment(recipeId: string, modelId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipeById(recipeId);
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
@@ -171,7 +171,7 @@ export class StudioApiImpl implements StudioAPI {
       )
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.applicationManager.deleteEnvironment(recipeId).catch((err: unknown) => {
+          this.applicationManager.deleteEnvironment(recipeId, modelId).catch((err: unknown) => {
             console.error(`error deleting environment pod: ${String(err)}`);
             podmanDesktopApi.window
               .showErrorMessage(
@@ -188,7 +188,7 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async requestRestartEnvironment(recipeId: string): Promise<void> {
+  async requestRestartEnvironment(recipeId: string, modelId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipeById(recipeId);
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
@@ -199,7 +199,7 @@ export class StudioApiImpl implements StudioAPI {
       )
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.applicationManager.restartEnvironment(recipeId).catch((err: unknown) => {
+          this.applicationManager.restartEnvironment(recipeId, modelId).catch((err: unknown) => {
             console.error(`error restarting environment: ${String(err)}`);
             podmanDesktopApi.window
               .showErrorMessage(`Error restarting the environment "${recipe.name}"`)

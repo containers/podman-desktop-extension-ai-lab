@@ -44,6 +44,7 @@ import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import type { PodmanConnection } from './podmanConnection';
 import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
+import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 
@@ -75,9 +76,7 @@ export interface ImageInfo {
 }
 
 export class ApplicationManager {
-  // Map recipeId => EnvironmentState
-  #environments: Map<string, EnvironmentState>;
-
+  #applications: ApplicationRegistry<EnvironmentState>;
   protectTasks: Set<string> = new Set();
 
   constructor(
@@ -91,7 +90,7 @@ export class ApplicationManager {
     private telemetry: TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
   ) {
-    this.#environments = new Map();
+    this.#applications = new ApplicationRegistry<EnvironmentState>();
   }
 
   async pullApplication(recipe: Recipe, model: ModelInfo, taskUtil?: RecipeStatusUtils) {
@@ -99,7 +98,7 @@ export class ApplicationManager {
     try {
       // Create a TaskUtils object to help us
       if (!taskUtil) {
-        taskUtil = new RecipeStatusUtils(recipe.id, this.recipeStatusRegistry);
+        taskUtil = new RecipeStatusUtils({ recipeId: recipe.id, modelId: model.id }, this.recipeStatusRegistry);
       }
 
       const localFolder = path.join(this.appUserDirectory, recipe.id);
@@ -142,8 +141,8 @@ export class ApplicationManager {
       );
 
       // first delete any existing pod with matching labels
-      if (await this.hasEnvironmentPod(recipe.id)) {
-        await this.deleteEnvironment(recipe.id);
+      if (await this.hasEnvironmentPod(recipe.id, model.id)) {
+        await this.deleteEnvironment(recipe.id, model.id);
       }
 
       // create a pod containing all the containers to run the application
@@ -617,16 +616,16 @@ export class ApplicationManager {
     this.podmanConnection.onMachineStop(() => {
       // Podman Machine has been stopped, we consider all recipe pods are stopped
 
-      for (const recipeId of this.#environments.keys()) {
-        const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+      for (const recipeModelIndex of this.#applications.keys()) {
+        const taskUtil = new RecipeStatusUtils(recipeModelIndex, this.recipeStatusRegistry);
         taskUtil.setTask({
-          id: `stopped-${recipeId}`,
+          id: `stopped-${recipeModelIndex.recipeId}-${recipeModelIndex.modelId}`,
           state: 'success',
           name: `Application stopped manually`,
         });
       }
 
-      this.#environments.clear();
+      this.#applications.clear();
       this.sendEnvironmentState();
     });
 
@@ -647,7 +646,7 @@ export class ApplicationManager {
     }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
     const modelId = pod.Labels[LABEL_MODEL_ID];
-    if (this.#environments.has(recipeId)) {
+    if (this.#applications.has({ recipeId, modelId })) {
       return;
     }
     const state: EnvironmentState = {
@@ -655,7 +654,7 @@ export class ApplicationManager {
       modelId,
       pod,
     };
-    this.updateEnvironmentState(recipeId, state);
+    this.updateEnvironmentState(recipeId, modelId, state);
   }
 
   forgetPod(pod: PodInfo) {
@@ -663,22 +662,23 @@ export class ApplicationManager {
       return;
     }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
-    if (!this.#environments.has(recipeId)) {
+    const modelId = pod.Labels[LABEL_MODEL_ID];
+    if (!this.#applications.has({ recipeId, modelId })) {
       return;
     }
-    this.#environments.delete(recipeId);
+    this.#applications.delete({ recipeId, modelId });
     this.sendEnvironmentState();
 
-    const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+    const taskUtil = new RecipeStatusUtils({ recipeId, modelId }, this.recipeStatusRegistry);
     taskUtil.setTask({
-      id: `stopped-${recipeId}`,
+      id: `stopped-${recipeId}-${modelId}`,
       state: 'success',
       name: `Application stopped manually`,
     });
   }
 
   forgetPodById(podId: string) {
-    const env = Array.from(this.#environments.values()).find(p => p.pod.Id === podId);
+    const env = Array.from(this.#applications.values()).find(p => p.pod.Id === podId);
     if (!env) {
       return;
     }
@@ -686,17 +686,18 @@ export class ApplicationManager {
       return;
     }
     const recipeId = env.pod.Labels[LABEL_RECIPE_ID];
-    if (!this.#environments.has(recipeId)) {
+    const modelId = env.pod.Labels[LABEL_MODEL_ID];
+    if (!this.#applications.has({ recipeId, modelId })) {
       return;
     }
-    this.#environments.delete(recipeId);
+    this.#applications.delete({ recipeId, modelId });
     this.sendEnvironmentState();
 
     const protect = this.protectTasks.has(podId);
     if (!protect) {
-      const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+      const taskUtil = new RecipeStatusUtils({ recipeId, modelId }, this.recipeStatusRegistry);
       taskUtil.setTask({
-        id: `stopped-${recipeId}`,
+        id: `stopped-${recipeId}-${modelId}`,
         state: 'success',
         name: `Application stopped manually`,
       });
@@ -705,13 +706,13 @@ export class ApplicationManager {
     }
   }
 
-  updateEnvironmentState(recipeId: string, state: EnvironmentState): void {
-    this.#environments.set(recipeId, state);
+  updateEnvironmentState(recipeId: string, modelId: string, state: EnvironmentState): void {
+    this.#applications.set({ recipeId, modelId }, state);
     this.sendEnvironmentState();
   }
 
   getEnvironmentsState(): EnvironmentState[] {
-    return Array.from(this.#environments.values());
+    return Array.from(this.#applications.values());
   }
 
   sendEnvironmentState() {
@@ -725,24 +726,24 @@ export class ApplicationManager {
       });
   }
 
-  async deleteEnvironment(recipeId: string, taskUtil?: RecipeStatusUtils) {
+  async deleteEnvironment(recipeId: string, modelId: string, taskUtil?: RecipeStatusUtils) {
     if (!taskUtil) {
-      taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
+      taskUtil = new RecipeStatusUtils({ recipeId, modelId }, this.recipeStatusRegistry);
     }
     try {
       taskUtil.setTask({
-        id: `stopping-${recipeId}`,
+        id: `stopping-${recipeId}-${modelId}`,
         state: 'loading',
         name: `Stopping application`,
       });
-      const envPod = await this.getEnvironmentPod(recipeId);
+      const envPod = await this.getEnvironmentPod(recipeId, modelId);
       try {
         await containerEngine.stopPod(envPod.engineId, envPod.Id);
       } catch (err: unknown) {
         // continue when the pod is already stopped
         if (!String(err).includes('pod already stopped')) {
           taskUtil.setTask({
-            id: `stopping-${recipeId}`,
+            id: `stopping-${recipeId}-${modelId}`,
             state: 'error',
             error: 'error stopping the pod. Please try to stop and remove the pod manually',
             name: `Error stopping application`,
@@ -753,13 +754,13 @@ export class ApplicationManager {
       this.protectTasks.add(envPod.Id);
       await containerEngine.removePod(envPod.engineId, envPod.Id);
       taskUtil.setTask({
-        id: `stopping-${recipeId}`,
+        id: `stopping-${recipeId}-${modelId}`,
         state: 'success',
         name: `Application stopped`,
       });
     } catch (err: unknown) {
       taskUtil.setTask({
-        id: `removing-${recipeId}`,
+        id: `stopping-${recipeId}-${modelId}`,
         state: 'error',
         error: 'error removing the pod. Please try to remove the pod manually',
         name: `Error stopping application`,
@@ -768,35 +769,41 @@ export class ApplicationManager {
     }
   }
 
-  async restartEnvironment(recipeId: string) {
-    const taskUtil = new RecipeStatusUtils(recipeId, this.recipeStatusRegistry);
-    const envPod = await this.getEnvironmentPod(recipeId);
-    await this.deleteEnvironment(recipeId, taskUtil);
+  async restartEnvironment(recipeId: string, modelId: string) {
+    const taskUtil = new RecipeStatusUtils({ recipeId, modelId }, this.recipeStatusRegistry);
+    const envPod = await this.getEnvironmentPod(recipeId, modelId);
+    await this.deleteEnvironment(recipeId, modelId, taskUtil);
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
     await this.pullApplication(recipe, model, taskUtil);
   }
 
-  async getEnvironmentPod(recipeId: string): Promise<PodInfo> {
-    const envPod = await this.queryPod(recipeId);
+  async getEnvironmentPod(recipeId: string, modelId: string): Promise<PodInfo> {
+    const envPod = await this.queryPod(recipeId, modelId);
     if (!envPod) {
-      throw new Error(`no pod found with recipe Id ${recipeId}`);
+      throw new Error(`no pod found with recipe Id ${recipeId} and model Id ${modelId}`);
     }
     return envPod;
   }
 
-  async hasEnvironmentPod(recipeId: string): Promise<boolean> {
-    const envPod = await this.queryPod(recipeId);
+  async hasEnvironmentPod(recipeId: string, modelId: string): Promise<boolean> {
+    const envPod = await this.queryPod(recipeId, modelId);
     return !!envPod;
   }
 
-  async queryPod(recipeId: string): Promise<PodInfo | undefined> {
+  async queryPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {
     if (!containerEngine.listPods || !containerEngine.stopPod || !containerEngine.removePod) {
       // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
       // and the extension minimal version is set to 1.8
       return;
     }
     const pods = await containerEngine.listPods();
-    return pods.find(pod => LABEL_RECIPE_ID in pod.Labels && pod.Labels[LABEL_RECIPE_ID] === recipeId);
+    return pods.find(
+      pod =>
+        LABEL_RECIPE_ID in pod.Labels &&
+        pod.Labels[LABEL_RECIPE_ID] === recipeId &&
+        LABEL_MODEL_ID in pod.Labels &&
+        pod.Labels[LABEL_MODEL_ID] === modelId,
+    );
   }
 }

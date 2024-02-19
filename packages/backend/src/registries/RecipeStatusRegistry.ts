@@ -16,41 +16,42 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { RecipeStatus } from '@shared/src/models/IRecipeStatus';
+import type { RecipeModelStatus } from '@shared/src/models/IRecipeStatus';
 import type { TaskRegistry } from './TaskRegistry';
 import type { Webview } from '@podman-desktop/api';
 import { MSG_NEW_RECIPE_STATE } from '@shared/Messages';
+import { ApplicationRegistry } from './ApplicationRegistry';
 
 export class RecipeStatusRegistry {
-  private statuses: Map<string, RecipeStatus> = new Map<string, RecipeStatus>();
+  private statuses = new ApplicationRegistry<RecipeModelStatus>();
 
   constructor(
     private taskRegistry: TaskRegistry,
     private webview: Webview,
   ) {}
 
-  setStatus(recipeId: string, status: RecipeStatus) {
+  setStatus(recipeId: string, modelId: string, status: RecipeModelStatus) {
     // Update the TaskRegistry
     if (status.tasks) {
       status.tasks.map(task => this.taskRegistry.set(task));
     }
-    this.statuses.set(recipeId, status);
+    this.statuses.set({ recipeId, modelId }, status);
     this.notify();
   }
 
-  getStatus(recipeId: string): RecipeStatus | undefined {
-    return this.statuses.get(recipeId);
+  getStatus(recipeId: string, modelId: string): RecipeModelStatus | undefined {
+    return this.statuses.get({ recipeId, modelId });
   }
 
-  getStatuses(): Map<string, RecipeStatus> {
-    return this.statuses;
+  getStatuses(): RecipeModelStatus[] {
+    return Array.from(this.statuses.values());
   }
 
   private notify() {
     this.webview
       .postMessage({
         id: MSG_NEW_RECIPE_STATE,
-        body: this.statuses,
+        body: this.getStatuses(),
       })
       .catch((err: unknown) => {
         console.error('error notifying recipe statuses', err);

@@ -18,7 +18,8 @@
 
 import type { Task } from './ITask';
 
-export interface RecipeStatus {
+export interface RecipeModelStatus {
   recipeId: string;
+  modelId: string;
   tasks: Task[];
 }

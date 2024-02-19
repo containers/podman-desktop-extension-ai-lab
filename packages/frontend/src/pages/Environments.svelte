@@ -15,13 +15,11 @@ import ColumnAge from '../lib/table/environment/ColumnAge.svelte';
 
 let data: EnvironmentCell[];
 
-$: recipesArray = Array.from($recipes.values());
-
 $: data = $environmentStates.map((env: EnvironmentState) => ({
   recipeId: env.recipeId,
   modelId: env.modelId,
   envState: env,
-  tasks: recipesArray.find(r => r.recipeId === env.recipeId)?.tasks,
+  tasks: $recipes.find(r => r.recipeId === env.recipeId && r.modelId === env.modelId)?.tasks,
 }));
 
 const columns: Column<EnvironmentCell>[] = [

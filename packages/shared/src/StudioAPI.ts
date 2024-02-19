@@ -48,7 +48,10 @@ export abstract class StudioAPI {
   abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
   abstract getModelsDirectory(): Promise<string>;
+
   abstract navigateToContainer(containerId: string): Promise<void>;
+  abstract navigateToPod(podId: string): Promise<void>;
+
   abstract getEnvironmentsState(): Promise<EnvironmentState[]>;
   abstract requestRemoveEnvironment(recipeId: string, modelId: string): Promise<void>;
   abstract requestRestartEnvironment(recipeId: string, modelId: string): Promise<void>;

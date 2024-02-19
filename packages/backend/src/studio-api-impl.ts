@@ -156,6 +156,13 @@ export class StudioApiImpl implements StudioAPI {
     return podmanDesktopApi.navigation.navigateToContainer(containerId);
   }
 
+  async navigateToPod(podId: string): Promise<void> {
+    const pods = await podmanDesktopApi.containerEngine.listPods();
+    const pod = pods.find(pod => pod.Id === podId);
+    if (pod === undefined) throw new Error(`Pod with id ${podId} not found.`);
+    return podmanDesktopApi.navigation.navigateToPod(pod.kind, pod.Name, pod.engineId);
+  }
+
   async getEnvironmentsState(): Promise<EnvironmentState[]> {
     return this.applicationManager.getEnvironmentsState();
   }

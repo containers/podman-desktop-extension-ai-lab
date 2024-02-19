@@ -22,12 +22,12 @@
       "description" : "Summarizer application",
       "name" : "Summarizer",
       "repository": "https://github.com/redhat-et/locallm",
-      "ref": "bccd1c1",
+      "ref": "4ac7950",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
       ],
-      "config": "summarizer/ai-studio.yaml",
+      "config": "summarizer-langchain/ai-studio.yaml",
       "readme": "# Summarizer\n\nThis model service is intended be be used for text summarization tasks. This service can ingest an arbitrarily long text input. If the input length is less than the models maximum context window it will summarize the input directly. If the input is longer than the maximum context window, the input will be divided into appropriately sized chunks. Each chunk will be summarized and a final \"summary of summaries\" will be the services final output. ",
       "models": [
         "llama-2-7b-chat.Q5_K_S",

@@ -262,7 +262,6 @@ describe('pullApplication', () => {
       hw: '',
       license: '',
       name: 'Model 1',
-      popularity: 1,
       registry: '',
       url: '',
     };
@@ -325,7 +324,6 @@ describe('pullApplication', () => {
       hw: '',
       license: '',
       name: 'Model 1',
-      popularity: 1,
       registry: '',
       url: '',
     };
@@ -354,7 +352,6 @@ describe('pullApplication', () => {
       hw: '',
       license: '',
       name: 'Model 1',
-      popularity: 1,
       registry: '',
       url: '',
     };
@@ -383,7 +380,6 @@ describe('pullApplication', () => {
       hw: '',
       license: '',
       name: 'Model 1',
-      popularity: 1,
       registry: '',
       url: '',
     };

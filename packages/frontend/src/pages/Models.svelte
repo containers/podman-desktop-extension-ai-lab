@@ -6,7 +6,6 @@ import { Column, Row } from '../lib/table/table';
 import { modelsInfo } from '../stores/modelsInfo';
 import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
 import ModelColumnRegistry from '../lib/table/model/ModelColumnRegistry.svelte';
-import ModelColumnPopularity from '../lib/table/model/ModelColumnPopularity.svelte';
 import ModelColumnLicense from '../lib/table/model/ModelColumnLicense.svelte';
 import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
 import type { Task } from '@shared/src/models/ITask';
@@ -26,7 +25,6 @@ const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Creation', { width: '1fr', renderer: ModelColumnCreation }),
   new Column<ModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),
   new Column<ModelInfo>('Registry', { width: '2fr', renderer: ModelColumnRegistry }),
-  new Column<ModelInfo>('Popularity', { width: '1fr', renderer: ModelColumnPopularity }),
   new Column<ModelInfo>('License', { width: '2fr', renderer: ModelColumnLicense }),
   new Column<ModelInfo>('Actions', { align: 'right', width: '80px', renderer: ModelColumnActions }),
 ];

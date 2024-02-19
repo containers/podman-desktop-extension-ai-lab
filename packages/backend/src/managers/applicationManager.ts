@@ -37,7 +37,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
-import { getDurationSecondsSince, isEndpointAlive, timeout } from '../utils/utils';
+import { getDurationSecondsSince, timeout } from '../utils/utils';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
 import { LABEL_MODEL_ID } from './playground';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
@@ -174,26 +174,9 @@ export class ApplicationManager {
     // it starts the pod
     await containerEngine.startPod(podInfo.engineId, podInfo.Id);
 
-    // most probably the sample app will fail at starting as it tries to connect to the model_service which is still loading the model
-    // so we check if the endpoint is ready before to restart the sample app
-    // check if sample app container actually started
-    const sampleApp = podInfo.containers?.find(container => !container.modelService);
-    if (sampleApp) {
-      const modelServiceContainer = podInfo.containers?.find(container => container.modelService);
-      if (modelServiceContainer) {
-        const modelServicePortMapping = podInfo.portmappings.find(
-          port => port.container_port === Number(modelServiceContainer.ports[0]),
-        );
-        if (modelServicePortMapping) {
-          await this.restartContainerWhenModelServiceIsUp(
-            podInfo.engineId,
-            `http://localhost:${modelServicePortMapping.host_port}`,
-            sampleApp,
-          ).catch((e: unknown) => {
-            console.error(String(e));
-          });
-        }
-      }
+    // check if all containers have started successfully
+    for (const container of podInfo.containers ?? []) {
+      await this.waitContainerIsRunning(podInfo.engineId, container);
     }
 
     taskUtil.setTask({
@@ -203,25 +186,17 @@ export class ApplicationManager {
     });
   }
 
-  async restartContainerWhenModelServiceIsUp(
-    engineId: string,
-    modelServiceEndpoint: string,
-    container: ContainerAttachedInfo,
-  ): Promise<void> {
-    const alive = await isEndpointAlive(modelServiceEndpoint);
-    if (alive) {
+  async waitContainerIsRunning(engineId: string, container: ContainerAttachedInfo): Promise<void> {
+    const TIME_FRAME_MS = 5000;
+    const MAX_ATTEMPTS = 60 * (60000 / TIME_FRAME_MS); // try for 1 hour
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
       const sampleAppContainerInspectInfo = await containerEngine.inspectContainer(engineId, container.name);
-      if (!sampleAppContainerInspectInfo.State.Running) {
-        await containerEngine.startContainer(engineId, container.name);
+      if (sampleAppContainerInspectInfo.State.Running) {
+        return;
       }
-      return;
+      await timeout(TIME_FRAME_MS);
     }
-    await timeout(5000);
-    await this.restartContainerWhenModelServiceIsUp(engineId, modelServiceEndpoint, container).catch(
-      (error: unknown) => {
-        console.error('Error monitoring endpoint', error);
-      },
-    );
+    throw new Error(`Container ${container.name} not started in time`);
   }
 
   async createApplicationPod(

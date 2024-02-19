@@ -65,4 +65,10 @@ export abstract class StudioAPI {
    * @param directory the directory to open the editor from
    */
   abstract openVSCode(directory: string): Promise<void>;
+
+  /**
+   * Download a model from the catalog
+   * @param modelId the id of the model we want to download
+   */
+  abstract downloadModel(modelId: string): Promise<void>;
 }

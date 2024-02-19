@@ -154,7 +154,7 @@ test('should call runApplication execution when run application button is clicke
     modelId: 'model1',
   });
 
-  const btnRunApplication = screen.getByLabelText('Start Environment');
+  const btnRunApplication = screen.getByText('Start application');
   await userEvent.click(btnRunApplication);
 
   expect(mocks.pullApplicationMock).toBeCalledWith('recipe 1', 'model1');
@@ -250,4 +250,23 @@ test('button vs code should be visible if local repository is not empty', async 
 
   const button = screen.getByTitle('Open in VS Code Desktop');
   expect(button).toBeDefined();
+});
+
+test('start application button should be the only one displayed', async () => {
+  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  mocks.getPullingStatusesMock.mockResolvedValue([]);
+  render(RecipeDetails, {
+    recipeId: 'recipe 1',
+    modelId: 'model1',
+  });
+
+  const btnRunApplication = screen.getByText('Start application');
+  expect(btnRunApplication).toBeInTheDocument();
+
+  const btnStop = screen.queryByTitle('Stop Environment');
+  expect(btnStop).toBeNull();
+
+  const btnRestart = screen.queryByTitle('Restart Environment');
+  expect(btnRestart).toBeNull();
 });

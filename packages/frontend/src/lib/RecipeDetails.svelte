@@ -21,7 +21,7 @@ export let modelId: string;
 
 $: envState = $environmentStates.find((env: EnvironmentState) => env.recipeId === recipeId);
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
-$: recipeStatus = $recipes.get(recipeId);
+$: recipeStatus = $recipes.find(r => recipeId === r.recipeId && r.modelId === modelId);
 $: model = $catalog.models.find(m => m.id === modelId);
 $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipeId);
 

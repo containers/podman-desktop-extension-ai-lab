@@ -18,13 +18,13 @@ function startEnvironment() {
 }
 
 function stopEnvironment() {
-  studioClient.requestRemoveEnvironment(recipeId).catch(err => {
+  studioClient.requestRemoveEnvironment(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to stop environment: ${String(err)}.`);
   });
 }
 
 function restartEnvironment() {
-  studioClient.requestRestartEnvironment(recipeId).catch(err => {
+  studioClient.requestRestartEnvironment(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to restart environment: ${String(err)}.`);
   });
 }

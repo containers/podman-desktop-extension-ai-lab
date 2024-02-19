@@ -130,7 +130,7 @@ test('requestRemoveEnvironment should ask confirmation', async () => {
     name: 'Recipe 1',
   });
   mocks.showWarningMessageMock.mockResolvedValue('Confirm');
-  await studioApiImpl.requestRemoveEnvironment('recipe-id-1');
+  await studioApiImpl.requestRemoveEnvironment('recipe-id-1', 'model-id-1');
   await timeout(0);
   expect(mocks.deleteEnvironmentMock).toHaveBeenCalled();
 });

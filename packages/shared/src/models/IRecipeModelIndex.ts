@@ -16,10 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Task } from './ITask';
-
-export interface RecipeModelStatus {
+export interface RecipeModelIndex {
   recipeId: string;
   modelId: string;
-  tasks: Task[];
 }

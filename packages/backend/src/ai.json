@@ -39,7 +39,7 @@
       "description" : "Code Generation application",
       "name" : "Code Generation",
       "repository": "https://github.com/redhat-et/locallm",
-      "ref": "4899efe",
+      "ref": "a1ee3db",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"

@@ -410,14 +410,14 @@ describe('downloadModel', () => {
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
-    const setMock = vi.spyOn(taskRegistry, 'set');
+    const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     await manager.downloadModel({
       id: 'id',
       url: 'url',
       name: 'name',
     } as ModelInfo);
-    expect(setMock).toHaveBeenLastCalledWith({
-      id: 'id',
+    expect(updateTaskMock).toHaveBeenLastCalledWith({
+      id: expect.any(String),
       name: 'Downloading model name',
       labels: {
         'model-pulling': 'id',
@@ -437,7 +437,7 @@ describe('downloadModel', () => {
       telemetryLogger,
       taskRegistry,
     );
-    const setMock = vi.spyOn(taskRegistry, 'set');
+    const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
     const getLocalModelPathMock = vi.spyOn(manager, 'getLocalModelPath').mockReturnValue('');
     await manager.downloadModel({
@@ -446,8 +446,8 @@ describe('downloadModel', () => {
       name: 'name',
     } as ModelInfo);
     expect(getLocalModelPathMock).toBeCalledWith('id');
-    expect(setMock).toHaveBeenLastCalledWith({
-      id: 'id',
+    expect(updateTaskMock).toHaveBeenLastCalledWith({
+      id: expect.any(String),
       name: 'Model name already present on disk',
       labels: {
         'model-pulling': 'id',

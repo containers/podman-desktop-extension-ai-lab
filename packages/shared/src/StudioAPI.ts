@@ -16,7 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { RecipeModelStatus } from './models/IRecipeStatus';
 import type { ModelInfo } from './models/IModelInfo';
 import type { QueryState } from './models/IPlaygroundQueryState';
 import type { Catalog } from './models/ICatalog';
@@ -29,8 +28,6 @@ import type { LocalRepository } from './models/ILocalRepository';
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
   abstract getCatalog(): Promise<Catalog>;
-  abstract getPullingStatus(recipeId: string, modelId: string): Promise<RecipeModelStatus>;
-  abstract getPullingStatuses(): Promise<RecipeModelStatus[]>;
   abstract pullApplication(recipeId: string, modelId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
   abstract openFile(file: string): Promise<boolean>;

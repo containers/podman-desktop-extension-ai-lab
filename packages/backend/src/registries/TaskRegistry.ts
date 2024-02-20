@@ -16,11 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Task } from '@shared/src/models/ITask';
+import type { Task, TaskState } from '@shared/src/models/ITask';
 import { MSG_TASKS_UPDATE } from '@shared/Messages';
 import type { Webview } from '@podman-desktop/api';
 
 export class TaskRegistry {
+  private counter: number = 0;
   private tasks: Map<string, Task> = new Map<string, Task>();
 
   constructor(private webview: Webview) {}
@@ -30,18 +31,51 @@ export class TaskRegistry {
     return undefined;
   }
 
-  set(task: Task) {
+  createTask(name: string, state: TaskState, labels: { [id: string]: string } = {}): Task {
+    const task = {
+      id: `task-${++this.counter}`,
+      name: name,
+      state: state,
+      labels: labels,
+    };
     this.tasks.set(task.id, task);
+    this.notify();
+    return task;
+  }
+
+  updateTask(task: Task) {
+    if (!this.tasks.has(task.id)) throw new Error(`Task with id ${task.id} does not exist.`);
+    this.tasks.set(task.id, {
+      ...task,
+      state: task.error !== undefined ? 'error' : task.state, // enforce error state when error is defined
+    });
+    console.log('update task notify', this.tasks.get(task.id));
     this.notify();
   }
 
   delete(taskId: string) {
-    this.tasks.delete(taskId);
+    this.deleteAll([taskId]);
+  }
+
+  deleteAll(taskIds: string[]) {
+    taskIds.map(taskId => this.tasks.delete(taskId));
     this.notify();
   }
 
   getTasks(): Task[] {
     return Array.from(this.tasks.values());
+  }
+
+  getTasksByLabels(labels: { [key: string]: string }): Task[] {
+    return this.getTasks().filter(task => {
+      return (
+        task.labels && Object.entries(labels).map(([key, value]) => key in task.labels && task.labels[key] === value)
+      );
+    });
+  }
+
+  deleteByLabels(labels: { [key: string]: string }): void {
+    this.deleteAll(this.getTasksByLabels(labels).map(task => task.id));
   }
 
   private notify() {

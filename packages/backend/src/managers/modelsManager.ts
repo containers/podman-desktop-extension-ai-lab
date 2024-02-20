@@ -28,18 +28,6 @@ import { Downloader, type DownloadEvent, isCompletionEvent, isProgressEvent } fr
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
 
-export type DownloadModelResult = DownloadModelSuccessfulResult | DownloadModelFailureResult;
-
-interface DownloadModelSuccessfulResult {
-  successful: true;
-  path: string;
-}
-
-interface DownloadModelFailureResult {
-  successful: false;
-  error: string;
-}
-
 export class ModelsManager implements Disposable {
   #modelsDir: string;
   #models: Map<string, ModelInfo>;
@@ -183,28 +171,26 @@ export class ModelsManager implements Disposable {
     }
   }
 
-  async downloadModel(model: ModelInfo): Promise<string> {
-    const task: Task = this.taskRegistry.get(model.id) || {
-      id: model.id,
-      state: 'loading',
-      name: `Downloading model ${model.name}`,
-      labels: {
-        'model-pulling': model.id,
-      },
-    };
+  async downloadModel(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
+    const task: Task = this.taskRegistry.createTask(`Downloading model ${model.name}`, 'loading', {
+      ...labels,
+      'model-pulling': model.id,
+    });
+
+    console.log('Creating model pulling task', task);
 
     // Check if the model is already on disk.
     if (this.isModelOnDisk(model.id)) {
       task.state = 'success';
       task.name = `Model ${model.name} already present on disk`;
-      this.taskRegistry.set(task); // update task
+      this.taskRegistry.updateTask(task); // update task
 
       // return model path
       return this.getLocalModelPath(model.id);
     }
 
     // update task to loading state
-    this.taskRegistry.set(task);
+    this.taskRegistry.updateTask(task);
 
     // Ensure path to model directory exist
     const destDir = path.join(this.appUserDirectory, 'models', model.id);
@@ -244,7 +230,8 @@ export class ModelsManager implements Disposable {
         }
       }
 
-      this.taskRegistry.set(task); // update task
+      console.log('model manager sending task', task);
+      this.taskRegistry.updateTask(task); // update task
     });
 
     // perform download

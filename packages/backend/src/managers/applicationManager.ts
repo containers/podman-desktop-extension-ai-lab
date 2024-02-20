@@ -27,11 +27,9 @@ import {
   type PodInfo,
   type Webview,
 } from '@podman-desktop/api';
-import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
-import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import { getParentDirectory } from '../utils/pathUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
@@ -45,6 +43,7 @@ import type { PodmanConnection } from './podmanConnection';
 import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import { ApplicationRegistry } from '../registries/ApplicationRegistry';
+import type { TaskRegistry } from '../registries/TaskRegistry';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 
@@ -82,7 +81,7 @@ export class ApplicationManager {
   constructor(
     private appUserDirectory: string,
     private git: GitManager,
-    private recipeStatusRegistry: RecipeStatusRegistry,
+    private taskRegistry: TaskRegistry,
     private webview: Webview,
     private podmanConnection: PodmanConnection,
     private catalogManager: CatalogManager,
@@ -93,14 +92,10 @@ export class ApplicationManager {
     this.#applications = new ApplicationRegistry<EnvironmentState>();
   }
 
-  async pullApplication(recipe: Recipe, model: ModelInfo, taskUtil?: RecipeStatusUtils) {
+  async pullApplication(recipe: Recipe, model: ModelInfo) {
+    // const recipeStatus = this.recipeStatusRegistry.
     const startTime = performance.now();
     try {
-      // Create a TaskUtils object to help us
-      if (!taskUtil) {
-        taskUtil = new RecipeStatusUtils({ recipeId: recipe.id, modelId: model.id }, this.recipeStatusRegistry);
-      }
-
       const localFolder = path.join(this.appUserDirectory, recipe.id);
 
       // clone the recipe repository on the local folder
@@ -109,7 +104,11 @@ export class ApplicationManager {
         ref: recipe.ref,
         targetDirectory: localFolder,
       };
-      await this.doCheckout(gitCloneInfo, taskUtil);
+      await this.doCheckout(gitCloneInfo, {
+        'recipe-id': recipe.id,
+        'model-id': model.id,
+      });
+
       this.localRepositories.register({
         path: gitCloneInfo.targetDirectory,
         labels: {
@@ -119,25 +118,22 @@ export class ApplicationManager {
 
       // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
       // and backend (that define which model supports)
-      const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder, taskUtil);
+      const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder);
 
-      // Create the task on the recipe (which will be propagated to the TaskRegistry
-      taskUtil.setTask({
-        id: model.id,
-        state: 'loading',
-        name: `Downloading model ${model.name}`,
-        labels: {
-          'model-pulling': model.id,
-        },
-      });
       // get model by downloading it or retrieving locally
-      const modelPath = await this.modelsManager.downloadModel(model);
+      const modelPath = await this.modelsManager.downloadModel(model, {
+        'recipe-id': recipe.id,
+        'model-id': model.id,
+      });
 
       // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
       const images = await this.buildImages(
         configAndFilteredContainers.containers,
         configAndFilteredContainers.aiConfigFile.path,
-        taskUtil,
+        {
+          'recipe-id': recipe.id,
+          'model-id': model.id,
+        },
       );
 
       // first delete any existing pod with matching labels
@@ -146,9 +142,15 @@ export class ApplicationManager {
       }
 
       // create a pod containing all the containers to run the application
-      const podInfo = await this.createApplicationPod(recipe, model, images, modelPath, taskUtil);
+      const podInfo = await this.createApplicationPod(recipe, model, images, modelPath, {
+        'recipe-id': recipe.id,
+        'model-id': model.id,
+      });
 
-      await this.runApplication(podInfo, taskUtil);
+      await this.runApplication(podInfo, {
+        'recipe-id': recipe.id,
+        'model-id': model.id,
+      });
       const durationSeconds = getDurationSecondsSince(startTime);
       this.telemetry.logUsage('recipe.pull', { 'recipe.id': recipe.id, 'recipe.name': recipe.name, durationSeconds });
     } catch (err: unknown) {
@@ -164,12 +166,8 @@ export class ApplicationManager {
     }
   }
 
-  async runApplication(podInfo: ApplicationPodInfo, taskUtil: RecipeStatusUtils) {
-    taskUtil.setTask({
-      id: `running-${podInfo.Id}`,
-      state: 'loading',
-      name: `Starting application`,
-    });
+  async runApplication(podInfo: ApplicationPodInfo, labels?: { [key: string]: string }) {
+    const task = this.taskRegistry.createTask('Starting application', 'loading', labels);
 
     // it starts the pod
     await containerEngine.startPod(podInfo.engineId, podInfo.Id);
@@ -179,10 +177,11 @@ export class ApplicationManager {
       await this.waitContainerIsRunning(podInfo.engineId, container);
     }
 
-    taskUtil.setTask({
-      id: `running-${podInfo.Id}`,
+    // Update task registry
+    this.taskRegistry.updateTask({
+      ...task,
       state: 'success',
-      name: `Application is running`,
+      name: 'Application is running',
     });
   }
 
@@ -204,48 +203,36 @@ export class ApplicationManager {
     model: ModelInfo,
     images: ImageInfo[],
     modelPath: string,
-    taskUtil: RecipeStatusUtils,
+    labels?: { [key: string]: string },
   ): Promise<ApplicationPodInfo> {
+    const task = this.taskRegistry.createTask('Creating application', 'loading', labels);
+
     // create empty pod
     let podInfo: ApplicationPodInfo;
     try {
       podInfo = await this.createPod(recipe, model, images);
+      task.labels['pod-id'] = podInfo.Id;
     } catch (e) {
       console.error('error when creating pod', e);
-      taskUtil.setTask({
-        id: 'fake-pod-id',
-        state: 'error',
-        error: `Something went wrong while creating pod: ${String(e)}`,
-        name: 'Creating application',
-      });
+      task.state = 'error';
+      task.error = `Something went wrong while creating pod: ${String(e)}`;
       throw e;
+    } finally {
+      this.taskRegistry.updateTask(task);
     }
-
-    taskUtil.setTask({
-      id: podInfo.Id,
-      state: 'loading',
-      name: `Creating application`,
-    });
 
     let attachedContainers: ContainerAttachedInfo[];
     try {
       attachedContainers = await this.createAndAddContainersToPod(podInfo, images, modelPath);
+      task.state = 'success';
     } catch (e) {
       console.error(`error when creating pod ${podInfo.Id}`, e);
-      taskUtil.setTask({
-        id: podInfo.Id,
-        state: 'error',
-        error: `Something went wrong while creating pod: ${String(e)}`,
-        name: 'Creating application',
-      });
+      task.state = 'error';
+      task.error = `Something went wrong while creating pod: ${String(e)}`;
       throw e;
+    } finally {
+      this.taskRegistry.updateTask(task);
     }
-
-    taskUtil.setTask({
-      id: podInfo.Id,
-      state: 'success',
-      name: `Creating application`,
-    });
 
     podInfo.containers = attachedContainers;
     return podInfo;
@@ -367,28 +354,30 @@ export class ApplicationManager {
   async buildImages(
     containers: ContainerConfig[],
     configPath: string,
-    taskUtil: RecipeStatusUtils,
+    labels?: { [key: string]: string },
   ): Promise<ImageInfo[]> {
-    containers.forEach(container => {
-      taskUtil.setTask({
-        id: container.name,
-        state: 'loading',
-        name: `Building ${container.name}`,
-      });
-    });
+    const containerTasks: { [key: string]: Task } = Object.fromEntries(
+      containers.map(container => [
+        container.name,
+        this.taskRegistry.createTask(`Building ${container.name}`, 'loading', labels),
+      ]),
+    );
 
     const imageInfoList: ImageInfo[] = [];
 
     // Promise all the build images
     await Promise.all(
       containers.map(container => {
+        const task = containerTasks[container.name];
+
         // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
         const context = path.join(getParentDirectory(configPath), container.contextdir);
         console.log(`Application Manager using context ${context} for container ${container.name}`);
 
         // Ensure the context provided exist otherwise throw an Error
         if (!fs.existsSync(context)) {
-          taskUtil.setTaskError(container.name, 'The context provided does not exist.');
+          task.error = 'The context provided does not exist.';
+          this.taskRegistry.updateTask(task);
           throw new Error('Context configured does not exist.');
         }
 
@@ -396,7 +385,7 @@ export class ApplicationManager {
           containerFile: container.containerfile,
           tag: `${container.name}:latest`,
           labels: {
-            [LABEL_RECIPE_ID]: taskUtil.toRecipeStatus().recipeId,
+            [LABEL_RECIPE_ID]: labels !== undefined && 'recipe-id' in labels ? labels['recipe-id'] : undefined,
           },
         };
 
@@ -407,13 +396,15 @@ export class ApplicationManager {
               // todo: do something with the event
               if (event === 'error' || (event === 'finish' && data !== '')) {
                 console.error('Something went wrong while building the image: ', data);
-                taskUtil.setTaskError(container.name, `Something went wrong while building the image: ${data}`);
+                task.error = `Something went wrong while building the image: ${data}`;
+                this.taskRegistry.updateTask(task);
               }
             },
             buildOptions,
           )
           .catch((err: unknown) => {
-            taskUtil.setTaskError(container.name, `Something went wrong while building the image: ${String(err)}`);
+            task.error = `Something went wrong while building the image: ${String(err)}`;
+            this.taskRegistry.updateTask(task);
             throw new Error(`Something went wrong while building the image: ${String(err)}`);
           });
       }),
@@ -423,12 +414,15 @@ export class ApplicationManager {
     const images = await containerEngine.listImages();
     await Promise.all(
       containers.map(async container => {
+        const task = containerTasks[container.name];
+
         const image = images.find(im => {
           return im.RepoTags?.some(tag => tag.endsWith(`${container.name}:latest`));
         });
 
         if (!image) {
-          taskUtil.setTaskError(container.name, 'no image found');
+          task.error = `no image found for ${container.name}:latest`;
+          this.taskRegistry.updateTask(task);
           throw new Error(`no image found for ${container.name}:latest`);
         }
 
@@ -447,29 +441,29 @@ export class ApplicationManager {
           appName: container.name,
         });
 
-        taskUtil.setTaskState(container.name, 'success');
+        task.state = 'success';
+        this.taskRegistry.updateTask(task);
       }),
     );
 
     return imageInfoList;
   }
 
-  getConfigAndFilterContainers(recipeConfig: string, localFolder: string, taskUtil: RecipeStatusUtils): AIContainers {
+  getConfigAndFilterContainers(
+    recipeConfig: string,
+    localFolder: string,
+    labels?: { [key: string]: string },
+  ): AIContainers {
     // Adding loading configuration task
-    const loadingConfiguration: Task = {
-      id: 'loading-config',
-      name: 'Loading configuration',
-      state: 'loading',
-    };
-    taskUtil.setTask(loadingConfiguration);
+    const task = this.taskRegistry.createTask('Loading configuration', 'loading', labels);
 
     let aiConfigFile: AIConfigFile;
     try {
       // load and parse the recipe configuration file
       aiConfigFile = this.getConfiguration(recipeConfig, localFolder);
     } catch (e) {
-      loadingConfiguration.state = 'error';
-      taskUtil.setTaskError('loading-config', `Something went wrong while loading configuration: ${String(e)}.`);
+      task.error = `Something went wrong while loading configuration: ${String(e)}.`;
+      this.taskRegistry.updateTask(task);
       throw e;
     }
 
@@ -477,12 +471,12 @@ export class ApplicationManager {
     const filteredContainers: ContainerConfig[] = this.filterContainers(aiConfigFile.aiConfig);
     if (filteredContainers.length > 0) {
       // Mark as success.
-      loadingConfiguration.state = 'success';
-      taskUtil.setTask(loadingConfiguration);
+      task.state = 'success';
+      this.taskRegistry.updateTask(task);
     } else {
       // Mark as failure.
-      loadingConfiguration.state = 'error';
-      taskUtil.setTask(loadingConfiguration);
+      task.error = 'No containers available.';
+      this.taskRegistry.updateTask(task);
       throw new Error('No containers available.');
     }
 
@@ -536,17 +530,12 @@ export class ApplicationManager {
     };
   }
 
-  async doCheckout(gitCloneInfo: GitCloneInfo, taskUtil: RecipeStatusUtils) {
-    // Adding checkout task
-    const checkoutTask: Task = {
-      id: 'checkout',
-      name: 'Checkout repository',
-      state: 'loading',
-      labels: {
-        git: 'checkout',
-      },
-    };
-    taskUtil.setTask(checkoutTask);
+  async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }) {
+    // Creating checkout task
+    const checkoutTask: Task = this.taskRegistry.createTask('Checkout repository', 'loading', {
+      ...labels,
+      git: 'checkout',
+    });
 
     // We might already have the repository cloned
     if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
@@ -564,8 +553,8 @@ export class ApplicationManager {
       // Update checkout state
       checkoutTask.state = 'success';
     }
-    // Update task
-    taskUtil.setTask(checkoutTask);
+    // Update task registry
+    this.taskRegistry.updateTask(checkoutTask);
   }
 
   adoptRunningEnvironments() {
@@ -590,13 +579,10 @@ export class ApplicationManager {
 
     this.podmanConnection.onMachineStop(() => {
       // Podman Machine has been stopped, we consider all recipe pods are stopped
-
       for (const recipeModelIndex of this.#applications.keys()) {
-        const taskUtil = new RecipeStatusUtils(recipeModelIndex, this.recipeStatusRegistry);
-        taskUtil.setTask({
-          id: `stopped-${recipeModelIndex.recipeId}-${recipeModelIndex.modelId}`,
-          state: 'success',
-          name: `Application stopped manually`,
+        this.taskRegistry.createTask('Application stopped manually', 'success', {
+          'recipe-id': recipeModelIndex.recipeId,
+          'model-id': recipeModelIndex.modelId,
         });
       }
 
@@ -644,11 +630,9 @@ export class ApplicationManager {
     this.#applications.delete({ recipeId, modelId });
     this.sendEnvironmentState();
 
-    const taskUtil = new RecipeStatusUtils({ recipeId, modelId }, this.recipeStatusRegistry);
-    taskUtil.setTask({
-      id: `stopped-${recipeId}-${modelId}`,
-      state: 'success',
-      name: `Application stopped manually`,
+    this.taskRegistry.createTask('Application stopped manually', 'success', {
+      'recipe-id': recipeId,
+      'model-id': modelId,
     });
   }
 
@@ -670,11 +654,9 @@ export class ApplicationManager {
 
     const protect = this.protectTasks.has(podId);
     if (!protect) {
-      const taskUtil = new RecipeStatusUtils({ recipeId, modelId }, this.recipeStatusRegistry);
-      taskUtil.setTask({
-        id: `stopped-${recipeId}-${modelId}`,
-        state: 'success',
-        name: `Application stopped manually`,
+      this.taskRegistry.createTask('Application stopped manually', 'success', {
+        'recipe-id': recipeId,
+        'model-id': modelId,
       });
     } else {
       this.protectTasks.delete(podId);
@@ -701,56 +683,50 @@ export class ApplicationManager {
       });
   }
 
-  async deleteEnvironment(recipeId: string, modelId: string, taskUtil?: RecipeStatusUtils) {
-    if (!taskUtil) {
-      taskUtil = new RecipeStatusUtils({ recipeId, modelId }, this.recipeStatusRegistry);
-    }
+  async deleteEnvironment(recipeId: string, modelId: string) {
+    // clear any existing status / tasks related to the pair recipeId-modelId.
+    this.taskRegistry.deleteByLabels({
+      'recipe-id': recipeId,
+      'model-id': modelId,
+    });
+
+    const stoppingTask = this.taskRegistry.createTask(`Stopping application`, 'loading', {
+      'recipe-id': recipeId,
+      'model-id': modelId,
+    });
     try {
-      taskUtil.setTask({
-        id: `stopping-${recipeId}-${modelId}`,
-        state: 'loading',
-        name: `Stopping application`,
-      });
       const envPod = await this.getEnvironmentPod(recipeId, modelId);
       try {
         await containerEngine.stopPod(envPod.engineId, envPod.Id);
       } catch (err: unknown) {
         // continue when the pod is already stopped
         if (!String(err).includes('pod already stopped')) {
-          taskUtil.setTask({
-            id: `stopping-${recipeId}-${modelId}`,
-            state: 'error',
-            error: 'error stopping the pod. Please try to stop and remove the pod manually',
-            name: `Error stopping application`,
-          });
+          stoppingTask.error = 'error stopping the pod. Please try to stop and remove the pod manually';
+          stoppingTask.name = 'Error stopping application';
+          this.taskRegistry.updateTask(stoppingTask);
           throw err;
         }
       }
       this.protectTasks.add(envPod.Id);
       await containerEngine.removePod(envPod.engineId, envPod.Id);
-      taskUtil.setTask({
-        id: `stopping-${recipeId}-${modelId}`,
-        state: 'success',
-        name: `Application stopped`,
-      });
+
+      stoppingTask.state = 'success';
+      stoppingTask.name = `Application stopped`;
     } catch (err: unknown) {
-      taskUtil.setTask({
-        id: `stopping-${recipeId}-${modelId}`,
-        state: 'error',
-        error: 'error removing the pod. Please try to remove the pod manually',
-        name: `Error stopping application`,
-      });
+      stoppingTask.error = 'error removing the pod. Please try to remove the pod manually';
+      stoppingTask.name = 'Error stopping application';
       throw err;
+    } finally {
+      this.taskRegistry.updateTask(stoppingTask);
     }
   }
 
   async restartEnvironment(recipeId: string, modelId: string) {
-    const taskUtil = new RecipeStatusUtils({ recipeId, modelId }, this.recipeStatusRegistry);
     const envPod = await this.getEnvironmentPod(recipeId, modelId);
-    await this.deleteEnvironment(recipeId, modelId, taskUtil);
+    await this.deleteEnvironment(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
-    await this.pullApplication(recipe, model, taskUtil);
+    await this.pullApplication(recipe, model);
   }
 
   async getEnvironmentPod(recipeId: string, modelId: string): Promise<PodInfo> {

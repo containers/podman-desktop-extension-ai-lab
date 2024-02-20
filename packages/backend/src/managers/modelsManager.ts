@@ -33,6 +33,8 @@ export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
   #watcher?: podmanDesktopApi.FileSystemWatcher;
 
+  #downloadCallback = new Map<string, {resolve: (path: string) => void, reject: (error: Error) => void}[]>();
+
   constructor(
     private appUserDirectory: string,
     private webview: Webview,
@@ -171,7 +173,34 @@ export class ModelsManager implements Disposable {
     }
   }
 
+  requestDownload(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      if(this.#downloadCallback)
+
+      this.#downloadCallback.set(model.id, [
+        ...(this.#downloadCallback.get(model.id) ?? []),
+        {
+          resolve: resolve,
+          reject: reject,
+        }]);
+
+
+    });
+  }
+
   async downloadModel(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
+    const prevTasks = this.taskRegistry.getTasksByLabels({'model-pulling': model.id});
+    const runningTasks = prevTasks.find(task => task.state === 'loading');
+    if(runningTasks !== undefined) {
+      // let's append the labels to our running tasks.
+      runningTasks.labels = {
+        ...labels,
+        ...runningTasks.labels,
+      };
+      this.taskRegistry.updateTask(runningTasks);
+      return;
+    }
+
     const task: Task = this.taskRegistry.createTask(`Downloading model ${model.name}`, 'loading', {
       ...labels,
       'model-pulling': model.id,

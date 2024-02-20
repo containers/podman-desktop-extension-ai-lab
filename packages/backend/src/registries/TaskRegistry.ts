@@ -73,7 +73,6 @@ export class TaskRegistry {
       ...task,
       state: task.error !== undefined ? 'error' : task.state, // enforce error state when error is defined
     });
-    console.log('update task notify', this.tasks.get(task.id));
     this.notify();
   }
 

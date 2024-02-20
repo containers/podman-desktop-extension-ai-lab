@@ -74,6 +74,7 @@ const mocks = vi.hoisted(() => {
     stopPodMock: vi.fn(),
     removePodMock: vi.fn(),
     performDownloadMock: vi.fn(),
+    getTargetMock: vi.fn(),
     onEventDownloadMock: vi.fn(),
     // TaskRegistry
     getTaskMock: vi.fn(),
@@ -94,6 +95,7 @@ vi.mock('../utils/downloader', () => ({
   Downloader: class {
     onEvent = mocks.onEventDownloadMock;
     perform = mocks.performDownloadMock;
+    getTarget = mocks.getTargetMock;
   },
 }));
 

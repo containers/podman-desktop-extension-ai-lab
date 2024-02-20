@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => {
     logErrorMock: vi.fn(),
     performDownloadMock: vi.fn(),
     onEventDownloadMock: vi.fn(),
+    getTargetMock: vi.fn(),
   };
 });
 
@@ -56,6 +57,7 @@ vi.mock('../utils/downloader', () => ({
   Downloader: class {
     onEvent = mocks.onEventDownloadMock;
     perform = mocks.performDownloadMock;
+    getTarget = mocks.getTargetMock;
   },
 }));
 
@@ -411,7 +413,7 @@ describe('downloadModel', () => {
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
-    await manager.downloadModel({
+    await manager.requestDownloadModel({
       id: 'id',
       url: 'url',
       name: 'name',
@@ -440,7 +442,7 @@ describe('downloadModel', () => {
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
     const getLocalModelPathMock = vi.spyOn(manager, 'getLocalModelPath').mockReturnValue('');
-    await manager.downloadModel({
+    await manager.requestDownloadModel({
       id: 'id',
       url: 'url',
       name: 'name',

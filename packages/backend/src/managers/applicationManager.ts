@@ -131,7 +131,7 @@ export class ApplicationManager {
       const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder);
 
       // get model by downloading it or retrieving locally
-      const modelPath = await this.modelsManager.downloadModel(model, {
+      const modelPath = await this.modelsManager.requestDownloadModel(model, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });

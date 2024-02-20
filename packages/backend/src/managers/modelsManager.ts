@@ -24,7 +24,12 @@ import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { Downloader, type DownloadEvent, isCompletionEvent, isProgressEvent } from '../utils/downloader';
+import {
+  Downloader,
+  type DownloadEvent,
+  isCompletionEvent,
+  isProgressEvent,
+} from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
 
@@ -33,7 +38,7 @@ export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
   #watcher?: podmanDesktopApi.FileSystemWatcher;
 
-  #downloadCallback = new Map<string, {resolve: (path: string) => void, reject: (error: Error) => void}[]>();
+  #downloaders: Map<string, Downloader> = new Map<string, Downloader>;
 
   constructor(
     private appUserDirectory: string,
@@ -173,34 +178,102 @@ export class ModelsManager implements Disposable {
     }
   }
 
-  requestDownload(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      if(this.#downloadCallback)
+  async requestDownloadModel(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
+    // Check there is no existing downloader running
+    if(!this.#downloaders.has(model.id)) {
+      console.debug('no downloader has been found.');
+      return this.downloadModel(model, labels);
+    }
 
-      this.#downloadCallback.set(model.id, [
-        ...(this.#downloadCallback.get(model.id) ?? []),
-        {
-          resolve: resolve,
-          reject: reject,
-        }]);
+    const task = this.taskRegistry.findTaskByLabels({'model-pulling': model.id});
+    if(task !== undefined) {
+      task.labels = {
+        ...labels,
+        ...task.labels,
+      };
+      this.taskRegistry.updateTask(task);
+    }
 
+    const existingDownloader = this.#downloaders.get(model.id);
+    if(existingDownloader.completed) {
+      return existingDownloader.getTarget();
+    }
 
+    // If we have an existing downloader running we
+    return new Promise((resolve, reject) => {
+      const disposable = existingDownloader.onEvent((event) => {
+        if(!isCompletionEvent(event))
+          return;
+
+        switch (event.status) {
+          case 'completed':
+            resolve(existingDownloader.getTarget());
+            break;
+          default:
+            reject(new Error(event.message));
+        }
+        disposable.dispose();
+      });
     });
   }
 
-  async downloadModel(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
-    const prevTasks = this.taskRegistry.getTasksByLabels({'model-pulling': model.id});
-    const runningTasks = prevTasks.find(task => task.state === 'loading');
-    if(runningTasks !== undefined) {
-      // let's append the labels to our running tasks.
-      runningTasks.labels = {
-        ...labels,
-        ...runningTasks.labels,
-      };
-      this.taskRegistry.updateTask(runningTasks);
+  private onDownloadEvent(event: DownloadEvent): void {
+    // Always use the task registry as source of truth for tasks
+    const task = this.taskRegistry.findTaskByLabels({'model-pulling': event.id});
+    if(task === undefined) {
+      // tasks might have been cleared but still an error.
+      console.error('received download event but no task is associated.');
       return;
     }
 
+    if (isProgressEvent(event)) {
+      task.state = 'loading';
+      task.progress = event.value;
+    } else if (isCompletionEvent(event)) {
+      // status error or canceled
+      if (event.status === 'error' || event.status === 'canceled') {
+        task.state = 'error';
+        task.progress = undefined;
+        task.error = event.message;
+
+        // telemetry usage
+        this.telemetry.logError('model.download', {
+          'model.id': event.id,
+          message: 'error downloading model',
+          error: event.message,
+          durationSeconds: event.duration,
+        });
+      } else {
+        task.state = 'success';
+        task.progress = 100;
+
+        // telemetry usage
+        this.telemetry.logUsage('model.download', { 'model.id': event.id, durationSeconds: event.duration });
+      }
+    }
+
+    this.taskRegistry.updateTask(task); // update task
+  }
+
+  private createDownloader(model: ModelInfo): Downloader {
+    console.log('Creating a downloader.');
+
+    // Ensure path to model directory exist
+    const destDir = path.join(this.appUserDirectory, 'models', model.id);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+
+    const target = path.resolve(destDir, path.basename(model.url));
+    // Create a downloader
+    const downloader = new Downloader(model.url, target);
+
+    this.#downloaders.set(model.id, downloader);
+
+    return downloader;
+  }
+
+  private async downloadModel(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
     const task: Task = this.taskRegistry.createTask(`Downloading model ${model.name}`, 'loading', {
       ...labels,
       'model-pulling': model.id,
@@ -219,49 +292,13 @@ export class ModelsManager implements Disposable {
     // update task to loading state
     this.taskRegistry.updateTask(task);
 
-    // Ensure path to model directory exist
-    const destDir = path.join(this.appUserDirectory, 'models', model.id);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
-
-    const target = path.resolve(destDir, path.basename(model.url));
-    // Create a downloader
-    const downloader = new Downloader(model.url, target);
+    const downloader = this.createDownloader(model);
 
     // Capture downloader events
-    downloader.onEvent((event: DownloadEvent) => {
-      if (isProgressEvent(event)) {
-        task.state = 'loading';
-        task.progress = event.value;
-      } else if (isCompletionEvent(event)) {
-        // status error or canceled
-        if (event.status === 'error' || event.status === 'canceled') {
-          task.state = 'error';
-          task.progress = undefined;
-          task.error = event.message;
-
-          // telemetry usage
-          this.telemetry.logError('model.download', {
-            'model.id': model.id,
-            message: 'error downloading model',
-            error: event.message,
-            durationSeconds: event.duration,
-          });
-        } else {
-          task.state = 'success';
-          task.progress = 100;
-
-          // telemetry usage
-          this.telemetry.logUsage('model.download', { 'model.id': model.id, durationSeconds: event.duration });
-        }
-      }
-
-      this.taskRegistry.updateTask(task); // update task
-    });
+    downloader.onEvent(this.onDownloadEvent.bind(this));
 
     // perform download
-    await downloader.perform();
-    return target;
+    await downloader.perform(model.id);
+    return downloader.getTarget();
   }
 }

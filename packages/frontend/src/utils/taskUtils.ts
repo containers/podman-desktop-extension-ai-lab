@@ -23,7 +23,7 @@ export const filterByLabel = (tasks: Task[], requestedLabels: { [key: string]: s
     const labels = task.labels;
     if (labels === undefined) return false;
 
-    for (let [key, value] of Object.entries(requestedLabels)) {
+    for (const [key, value] of Object.entries(requestedLabels)) {
       if (!(key in labels) || labels[key] !== value) return false;
     }
 

@@ -177,8 +177,6 @@ export class ModelsManager implements Disposable {
       'model-pulling': model.id,
     });
 
-    console.log('Creating model pulling task', task);
-
     // Check if the model is already on disk.
     if (this.isModelOnDisk(model.id)) {
       task.state = 'success';
@@ -230,7 +228,6 @@ export class ModelsManager implements Disposable {
         }
       }
 
-      console.log('model manager sending task', task);
       this.taskRegistry.updateTask(task); // update task
     });
 

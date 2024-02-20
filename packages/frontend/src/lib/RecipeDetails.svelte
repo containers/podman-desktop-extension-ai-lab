@@ -30,7 +30,6 @@ $: filteredTasks = filterByLabel($tasks, {
   'model-id': modelId,
 });
 
-// $: recipeStatus = $recipes.find(r => recipeId === r.recipeId && r.modelId === modelId);
 $: model = $catalog.models.find(m => m.id === modelId);
 $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipeId);
 

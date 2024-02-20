@@ -32,6 +32,7 @@ const mocks = vi.hoisted(() => {
     getEnvironmentsStateMock: vi.fn(),
     findMock: vi.fn(),
     getLocalRepositoriesMock: vi.fn(),
+    getTasksMock: vi.fn(),
   };
 });
 
@@ -50,6 +51,17 @@ vi.mock('../utils/client', async () => {
     },
   };
 });
+
+
+vi.mock('../stores/tasks', () => ({
+  tasks: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getTasksMock());
+      return () => {};
+    },
+  },
+}));
+
 
 vi.mock('/@/stores/catalog', async () => {
   return {
@@ -112,6 +124,7 @@ const initialCatalog: Catalog = {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.getLocalRepositoriesMock.mockReturnValue([]);
+  mocks.getTasksMock.mockReturnValue([]);
 });
 
 test('should open/close application details panel when clicking on toggle button', async () => {
@@ -247,7 +260,6 @@ test('button vs code should be visible if local repository is not empty', async 
 test('start application button should be the only one displayed', async () => {
   mocks.getEnvironmentsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
-  mocks.getPullingStatusesMock.mockResolvedValue([]);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
     modelId: 'model1',

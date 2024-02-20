@@ -32,8 +32,18 @@ const mocks = vi.hoisted(() => {
     telemetryLogUsageMock: vi.fn(),
     getEnvironmentsStateMock: vi.fn(),
     getLocalRepositoriesMock: vi.fn(),
+    getTasksMock: vi.fn(),
   };
 });
+
+vi.mock('../stores/tasks', () => ({
+  tasks: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getTasksMock());
+      return () => {};
+    },
+  },
+}));
 
 vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
@@ -158,6 +168,7 @@ const updatedCatalog: Catalog = {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.getLocalRepositoriesMock.mockReturnValue([]);
+  mocks.getTasksMock.mockReturnValue([]);
 });
 
 test('should display recipe information', async () => {

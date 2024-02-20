@@ -34,7 +34,7 @@ $: filteredTasks = filterByLabel($tasks, {
 $: model = $catalog.models.find(m => m.id === modelId);
 $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipeId);
 
-$: runningTask = $filteredTasks.find(t => t.state === 'loading');
+$: runningTask = filteredTasks.find(t => t.state === 'loading');
 
 let open: boolean = true;
 

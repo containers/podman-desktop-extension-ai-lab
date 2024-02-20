@@ -24,12 +24,7 @@ import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import {
-  Downloader,
-  type DownloadEvent,
-  isCompletionEvent,
-  isProgressEvent,
-} from '../utils/downloader';
+import { Downloader, type DownloadEvent, isCompletionEvent, isProgressEvent } from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
 
@@ -38,7 +33,7 @@ export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
   #watcher?: podmanDesktopApi.FileSystemWatcher;
 
-  #downloaders: Map<string, Downloader> = new Map<string, Downloader>;
+  #downloaders: Map<string, Downloader> = new Map<string, Downloader>();
 
   constructor(
     private appUserDirectory: string,
@@ -180,13 +175,13 @@ export class ModelsManager implements Disposable {
 
   async requestDownloadModel(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
     // Check there is no existing downloader running
-    if(!this.#downloaders.has(model.id)) {
+    if (!this.#downloaders.has(model.id)) {
       console.debug('no downloader has been found.');
       return this.downloadModel(model, labels);
     }
 
-    const task = this.taskRegistry.findTaskByLabels({'model-pulling': model.id});
-    if(task !== undefined) {
+    const task = this.taskRegistry.findTaskByLabels({ 'model-pulling': model.id });
+    if (task !== undefined) {
       task.labels = {
         ...labels,
         ...task.labels,
@@ -195,15 +190,14 @@ export class ModelsManager implements Disposable {
     }
 
     const existingDownloader = this.#downloaders.get(model.id);
-    if(existingDownloader.completed) {
+    if (existingDownloader.completed) {
       return existingDownloader.getTarget();
     }
 
     // If we have an existing downloader running we
     return new Promise((resolve, reject) => {
-      const disposable = existingDownloader.onEvent((event) => {
-        if(!isCompletionEvent(event))
-          return;
+      const disposable = existingDownloader.onEvent(event => {
+        if (!isCompletionEvent(event)) return;
 
         switch (event.status) {
           case 'completed':
@@ -219,8 +213,8 @@ export class ModelsManager implements Disposable {
 
   private onDownloadEvent(event: DownloadEvent): void {
     // Always use the task registry as source of truth for tasks
-    const task = this.taskRegistry.findTaskByLabels({'model-pulling': event.id});
-    if(task === undefined) {
+    const task = this.taskRegistry.findTaskByLabels({ 'model-pulling': event.id });
+    if (task === undefined) {
       // tasks might have been cleared but still an error.
       console.error('received download event but no task is associated.');
       return;

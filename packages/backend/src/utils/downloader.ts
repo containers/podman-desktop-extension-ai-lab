@@ -22,7 +22,7 @@ import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
 
 export interface DownloadEvent {
-  id: string,
+  id: string;
   status: 'error' | 'completed' | 'progress' | 'canceled';
   message?: string;
 }

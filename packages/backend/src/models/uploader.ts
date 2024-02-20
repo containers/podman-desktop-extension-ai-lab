@@ -27,8 +27,8 @@ export interface UploadWorker {
 }
 
 export class Uploader {
-  private readonly _onEvent = new EventEmitter<ProgressiveEvent>();
-  readonly onEvent: Event<ProgressiveEvent> = this._onEvent.event;
+  readonly #_onEvent = new EventEmitter<ProgressiveEvent>();
+  readonly onEvent: Event<ProgressiveEvent> = this.#_onEvent.event;
   readonly #workers: UploadWorker[] = [];
 
   constructor(
@@ -50,7 +50,7 @@ export class Uploader {
         const startTime = performance.now();
         modelPath = await worker.upload(this.localModelPath);
         const durationSeconds = getDurationSecondsSince(startTime);
-        this._onEvent.fire({
+        this.#_onEvent.fire({
           id,
           status: 'completed',
           message: `Duration ${durationSeconds}s.`,
@@ -60,13 +60,13 @@ export class Uploader {
       }
     } catch (err) {
       if (!this.abortSignal?.aborted) {
-        this._onEvent.fire({
+        this.#_onEvent.fire({
           id,
           status: 'error',
           message: `Something went wrong: ${String(err)}.`,
         });
       } else {
-        this._onEvent.fire({
+        this.#_onEvent.fire({
           id,
           status: 'canceled',
           message: `Request cancelled: ${String(err)}.`,
@@ -74,7 +74,7 @@ export class Uploader {
       }
     }
 
-    this._onEvent.fire({
+    this.#_onEvent.fire({
       id,
       status: 'completed',
       message: `Use local model`,

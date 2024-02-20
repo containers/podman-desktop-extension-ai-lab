@@ -304,7 +304,11 @@ export class ModelsManager implements Disposable {
     return downloader.getTarget();
   }
 
-  async uploadModelToPodmanMachine(model: ModelInfo, localModelPath: string, labels?: { [key: string]: string }): Promise<string> {
+  async uploadModelToPodmanMachine(
+    model: ModelInfo,
+    localModelPath: string,
+    labels?: { [key: string]: string },
+  ): Promise<string> {
     const task: Task = this.taskRegistry.createTask(`Uploading model ${model.name}`, 'loading', {
       ...labels,
       'model-uploading': model.id,

@@ -259,6 +259,7 @@ describe('pullApplication', () => {
     });
     mocks.listPodsMock.mockResolvedValue([]);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
+    vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     mocks.performDownloadMock.mockResolvedValue('path');
     const recipe: Recipe = {
       id: 'recipe1',
@@ -321,6 +322,7 @@ describe('pullApplication', () => {
     });
     mocks.listPodsMock.mockResolvedValue([]);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
+    vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     mocks.performDownloadMock.mockResolvedValue('path');
     const recipe: Recipe = {
       id: 'recipe1',
@@ -349,6 +351,7 @@ describe('pullApplication', () => {
     });
     mocks.listPodsMock.mockResolvedValue([]);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(true);
+    vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     vi.spyOn(modelsManager, 'getLocalModelPath').mockReturnValue('path');
     const recipe: Recipe = {
       id: 'recipe1',

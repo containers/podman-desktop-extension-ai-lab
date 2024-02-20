@@ -132,7 +132,6 @@ export class ApplicationManager {
         'model-id': model.id,
       });
 
-
       // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
       const images = await this.buildImages(
         configAndFilteredContainers.containers,

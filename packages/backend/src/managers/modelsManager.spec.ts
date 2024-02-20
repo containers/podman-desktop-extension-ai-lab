@@ -518,7 +518,7 @@ describe('downloadModel', () => {
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
 
-    mocks.onEventDownloadMock.mockImplementation((listener) => {
+    mocks.onEventDownloadMock.mockImplementation(listener => {
       listener({
         status: 'completed',
       });

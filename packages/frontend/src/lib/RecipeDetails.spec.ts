@@ -52,7 +52,6 @@ vi.mock('../utils/client', async () => {
   };
 });
 
-
 vi.mock('../stores/tasks', () => ({
   tasks: {
     subscribe: (f: (msg: any) => void) => {
@@ -61,7 +60,6 @@ vi.mock('../stores/tasks', () => ({
     },
   },
 }));
-
 
 vi.mock('/@/stores/catalog', async () => {
   return {

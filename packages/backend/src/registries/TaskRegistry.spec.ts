@@ -50,7 +50,7 @@ test('should notify when update task', () => {
     postMessage: mocks.postMessageMock,
   } as unknown as Webview);
 
- const task = taskRegistry.createTask('random', 'loading');
+  const task = taskRegistry.createTask('random', 'loading');
   taskRegistry.updateTask(task);
 
   expect(mocks.postMessageMock).toHaveBeenCalledTimes(2);
@@ -61,11 +61,11 @@ test('should get tasks by label', () => {
     postMessage: mocks.postMessageMock,
   } as unknown as Webview);
 
-  taskRegistry.createTask('random-1', 'loading', { 'index': '1' });
-  taskRegistry.createTask('random-2', 'loading', { 'index': '2' });
+  taskRegistry.createTask('random-1', 'loading', { index: '1' });
+  taskRegistry.createTask('random-2', 'loading', { index: '2' });
 
-  const tasksWithIndex1 = taskRegistry.getTasksByLabels({ 'index': '1' });
-  const tasksWithIndex2 = taskRegistry.getTasksByLabels({ 'index': '2' });
+  const tasksWithIndex1 = taskRegistry.getTasksByLabels({ index: '1' });
+  const tasksWithIndex2 = taskRegistry.getTasksByLabels({ index: '2' });
 
   expect(tasksWithIndex1.length).toBe(1);
   expect(tasksWithIndex2.length).toBe(1);
@@ -78,10 +78,10 @@ test('should delete tasks by label', () => {
     postMessage: mocks.postMessageMock,
   } as unknown as Webview);
 
-  taskRegistry.createTask('random-1', 'loading', { 'index': '1' });
-  taskRegistry.createTask('random-2', 'loading', { 'index': '2' });
+  taskRegistry.createTask('random-1', 'loading', { index: '1' });
+  taskRegistry.createTask('random-2', 'loading', { index: '2' });
 
-  taskRegistry.deleteByLabels({ 'index': '1' });
+  taskRegistry.deleteByLabels({ index: '1' });
 
   expect(taskRegistry.getTasks().length).toBe(1);
   expect(taskRegistry.getTasks()[0].name).toBe('random-2');
@@ -92,13 +92,13 @@ test('should get tasks by multiple labels', () => {
     postMessage: mocks.postMessageMock,
   } as unknown as Webview);
 
-  taskRegistry.createTask('task-1', 'loading', { 'type': 'A', 'priority': 'high' });
-  taskRegistry.createTask('task-2', 'loading', { 'type': 'B', 'priority': 'low' });
-  taskRegistry.createTask('task-3', 'loading', { 'type': 'A', 'priority': 'medium' });
+  taskRegistry.createTask('task-1', 'loading', { type: 'A', priority: 'high' });
+  taskRegistry.createTask('task-2', 'loading', { type: 'B', priority: 'low' });
+  taskRegistry.createTask('task-3', 'loading', { type: 'A', priority: 'medium' });
 
-  const tasksWithTypeA = taskRegistry.getTasksByLabels({ 'type': 'A' });
-  const tasksWithHighPriority = taskRegistry.getTasksByLabels({ 'priority': 'high' });
-  const tasksWithTypeAAndHighPriority = taskRegistry.getTasksByLabels({ 'type': 'A', 'priority': 'high' });
+  const tasksWithTypeA = taskRegistry.getTasksByLabels({ type: 'A' });
+  const tasksWithHighPriority = taskRegistry.getTasksByLabels({ priority: 'high' });
+  const tasksWithTypeAAndHighPriority = taskRegistry.getTasksByLabels({ type: 'A', priority: 'high' });
 
   expect(tasksWithTypeA.length).toBe(2);
   expect(tasksWithHighPriority.length).toBe(1);

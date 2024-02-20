@@ -37,7 +37,7 @@ import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, timeout } from '../utils/utils';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
-import { LABEL_MODEL_ID, LABEL_MODEL_PORT } from './playground';
+import { LABEL_MODEL_ID, LABEL_MODEL_PORTS } from './playground';
 import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
 import type { PodmanConnection } from './podmanConnection';
 import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
@@ -46,7 +46,7 @@ import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
-export const LABEL_APP_PORT = 'ai-studio-app-port';
+export const LABEL_APP_PORTS = 'ai-studio-app-ports';
 
 export const CONFIG_FILENAME = 'ai-studio.yaml';
 
@@ -339,11 +339,11 @@ export class ApplicationManager {
     };
     const modelPorts = images.filter(img => img.modelService).flatMap(img => img.ports);
     if (modelPorts.length) {
-      labels[LABEL_MODEL_PORT] = modelPorts[0];
+      labels[LABEL_MODEL_PORTS] = modelPorts.join(',');
     }
     const appPorts = images.filter(img => !img.modelService).flatMap(img => img.ports);
     if (appPorts.length) {
-      labels[LABEL_APP_PORT] = appPorts[0];
+      labels[LABEL_APP_PORTS] = appPorts.join(',');
     }
     const pod = await containerEngine.createPod({
       name: this.getRandomName(`pod-${sampleAppImageInfo.appName}`),

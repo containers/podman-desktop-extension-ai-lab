@@ -38,6 +38,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export const LABEL_MODEL_ID = 'ai-studio-model-id';
 export const LABEL_MODEL_PORT = 'ai-studio-model-port';
+export const LABEL_MODEL_PORTS = 'ai-studio-model-ports';
 
 // TODO: this should not be hardcoded
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';

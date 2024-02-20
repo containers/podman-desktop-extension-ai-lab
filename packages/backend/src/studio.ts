@@ -28,7 +28,6 @@ import { RpcExtension } from '@shared/src/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
 import { GitManager } from './managers/gitManager';
-import { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { PlayGroundManager } from './managers/playground';
 import { CatalogManager } from './managers/catalogManager';
@@ -119,7 +118,7 @@ export class Studio {
 
     const podmanConnection = new PodmanConnection();
     const taskRegistry = new TaskRegistry(this.#panel.webview);
-    const recipeStatusRegistry = new RecipeStatusRegistry(taskRegistry, this.#panel.webview);
+
     this.playgroundManager = new PlayGroundManager(
       this.#panel.webview,
       containerRegistry,
@@ -139,7 +138,7 @@ export class Studio {
     const applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,
-      recipeStatusRegistry,
+      taskRegistry,
       this.#panel.webview,
       podmanConnection,
       this.catalogManager,
@@ -155,7 +154,6 @@ export class Studio {
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
       applicationManager,
-      recipeStatusRegistry,
       this.playgroundManager,
       this.catalogManager,
       this.modelsManager,

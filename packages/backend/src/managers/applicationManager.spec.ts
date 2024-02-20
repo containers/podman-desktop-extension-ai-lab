@@ -15,16 +15,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { type MockInstance, describe, expect, test, vi, beforeEach } from 'vitest';
+import { describe, expect, test, vi, beforeEach } from 'vitest';
 import type { ContainerAttachedInfo, ImageInfo, ApplicationPodInfo } from './applicationManager';
 import { LABEL_RECIPE_ID, ApplicationManager } from './applicationManager';
-import type { RecipeStatusRegistry } from '../registries/RecipeStatusRegistry';
 import type { GitManager } from './gitManager';
 import os from 'os';
 import fs from 'node:fs';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { RecipeStatusUtils } from '../utils/recipeStatusUtils';
 import { ModelsManager } from './modelsManager';
 import path from 'node:path';
 import type { AIConfig, ContainerConfig } from '../models/AIConfig';
@@ -77,6 +75,15 @@ const mocks = vi.hoisted(() => {
     removePodMock: vi.fn(),
     performDownloadMock: vi.fn(),
     onEventDownloadMock: vi.fn(),
+    // TaskRegistry
+    getTaskMock: vi.fn(),
+    createTaskMock: vi.fn(),
+    updateTaskMock: vi.fn(),
+    deleteMock: vi.fn(),
+    deleteAllMock: vi.fn(),
+    getTasksMock: vi.fn(),
+    getTasksByLabelsMock: vi.fn(),
+    deleteByLabelsMock: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
@@ -114,15 +121,21 @@ vi.mock('@podman-desktop/api', () => ({
   },
 }));
 
-let setTaskMock: MockInstance;
-let taskUtils: RecipeStatusUtils;
-let setTaskStateMock: MockInstance;
-let setTaskErrorMock: MockInstance;
-
 const telemetryLogger = {
   logUsage: mocks.logUsageMock,
   logError: mocks.logErrorMock,
 } as unknown as TelemetryLogger;
+
+const taskRegistry = {
+  getTask: mocks.getTaskMock,
+  createTask: mocks.createTaskMock,
+  updateTask: mocks.updateTaskMock,
+  delete: mocks.deleteMock,
+  deleteAll: mocks.deleteAllMock,
+  getTasks: mocks.getTasksMock,
+  getTasksByLabels: mocks.getTasksByLabelsMock,
+  deleteByLabels: mocks.deleteByLabelsMock,
+} as unknown as TaskRegistry;
 
 const localRepositoryRegistry = {
   register: mocks.registerLocalRepositoryMock,
@@ -130,18 +143,20 @@ const localRepositoryRegistry = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  taskUtils = new RecipeStatusUtils({ recipeId: 'recipe', modelId: 'model' }, {
-    setStatus: vi.fn(),
-  } as unknown as RecipeStatusRegistry);
-  setTaskMock = vi.spyOn(taskUtils, 'setTask');
-  setTaskStateMock = vi.spyOn(taskUtils, 'setTaskState');
-  setTaskErrorMock = vi.spyOn(taskUtils, 'setTaskError');
+
+  mocks.createTaskMock.mockImplementation((name, state, labels) => ({
+    id: 'random',
+    name: name,
+    state: state,
+    labels: labels ?? {},
+    error: undefined,
+  }));
 });
+
 describe('pullApplication', () => {
   interface mockForPullApplicationOptions {
     recipeFolderExists: boolean;
   }
-  const setStatusMock = vi.fn();
   const cloneRepositoryMock = vi.fn();
   let manager: ApplicationManager;
   let modelsManager: ModelsManager;
@@ -229,9 +244,7 @@ describe('pullApplication', () => {
       {
         cloneRepository: cloneRepositoryMock,
       } as unknown as GitManager,
-      {
-        setStatus: setStatusMock,
-      } as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -406,7 +419,7 @@ describe('doCheckout', () => {
       {
         cloneRepository: cloneRepositoryMock,
       } as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -419,11 +432,11 @@ describe('doCheckout', () => {
       ref: '000000',
       targetDirectory: 'folder',
     };
-    await manager.doCheckout(gitCloneOptions, taskUtils);
+    await manager.doCheckout(gitCloneOptions);
 
     expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
-    expect(setTaskMock).toHaveBeenLastCalledWith({
-      id: 'checkout',
+    expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
+      id: expect.any(String),
       name: 'Checkout repository',
       state: 'success',
       labels: {
@@ -444,7 +457,7 @@ describe('doCheckout', () => {
       {
         cloneRepository: cloneRepositoryMock,
       } as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -452,18 +465,15 @@ describe('doCheckout', () => {
       telemetryLogger,
       localRepositoryRegistry,
     );
-    await manager.doCheckout(
-      {
-        repository: 'repo',
-        ref: '000000',
-        targetDirectory: 'folder',
-      },
-      taskUtils,
-    );
+    await manager.doCheckout({
+      repository: 'repo',
+      ref: '000000',
+      targetDirectory: 'folder',
+    });
     expect(mkdirSyncMock).not.toHaveBeenCalled();
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
-    expect(setTaskMock).toHaveBeenLastCalledWith({
-      id: 'checkout',
+    expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
+      id: expect.any(String),
       name: 'Checkout repository (cached).',
       state: 'success',
       labels: {
@@ -478,7 +488,7 @@ describe('getConfiguration', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -496,7 +506,7 @@ describe('getConfiguration', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -551,7 +561,7 @@ describe('filterContainers', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -591,7 +601,7 @@ describe('filterContainers', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -641,7 +651,7 @@ describe('filterContainers', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -661,7 +671,7 @@ describe('getRandomName', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -677,7 +687,7 @@ describe('getRandomName', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
       {} as unknown as GitManager,
-      {} as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
       {} as CatalogManager,
@@ -704,7 +714,7 @@ describe('buildImages', () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
     {} as unknown as GitManager,
-    {} as unknown as RecipeStatusRegistry,
+    taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
     {} as CatalogManager,
@@ -715,27 +725,35 @@ describe('buildImages', () => {
   test('setTaskState should be called with error if context does not exist', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     mocks.listImagesMock.mockRejectedValue([]);
-    await expect(manager.buildImages(containers, 'config', taskUtils)).rejects.toThrow(
-      'Context configured does not exist.',
-    );
+    await expect(manager.buildImages(containers, 'config')).rejects.toThrow('Context configured does not exist.');
   });
   test('setTaskState should be called with error if buildImage executon fails', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     mocks.buildImageMock.mockRejectedValue('error');
     mocks.listImagesMock.mockRejectedValue([]);
-    await expect(manager.buildImages(containers, 'config', taskUtils)).rejects.toThrow(
+    await expect(manager.buildImages(containers, 'config')).rejects.toThrow(
       'Something went wrong while building the image: error',
     );
-    expect(setTaskErrorMock).toBeCalledWith('container1', 'Something went wrong while building the image: error');
+    expect(mocks.updateTaskMock).toBeCalledWith({
+      error: 'Something went wrong while building the image: error',
+      name: 'Building container1',
+      id: expect.any(String),
+      state: expect.any(String),
+      labels: {},
+    });
   });
   test('setTaskState should be called with error if unable to find the image after built', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     mocks.buildImageMock.mockResolvedValue({});
     mocks.listImagesMock.mockResolvedValue([]);
-    await expect(manager.buildImages(containers, 'config', taskUtils)).rejects.toThrow(
-      'no image found for container1:latest',
-    );
-    expect(setTaskErrorMock).toBeCalledWith('container1', 'no image found');
+    await expect(manager.buildImages(containers, 'config')).rejects.toThrow('no image found for container1:latest');
+    expect(mocks.updateTaskMock).toBeCalledWith({
+      error: 'no image found for container1:latest',
+      name: 'Building container1',
+      id: expect.any(String),
+      state: expect.any(String),
+      labels: {},
+    });
   });
   test('succeed if building image do not fail', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
@@ -754,8 +772,13 @@ describe('buildImages', () => {
         },
       },
     });
-    const imageInfoList = await manager.buildImages(containers, 'config', taskUtils);
-    expect(setTaskStateMock).toBeCalledWith('container1', 'success');
+    const imageInfoList = await manager.buildImages(containers, 'config');
+    expect(mocks.updateTaskMock).toBeCalledWith({
+      name: 'Building container1',
+      id: expect.any(String),
+      state: 'success',
+      labels: {},
+    });
     expect(imageInfoList.length).toBe(1);
     expect(imageInfoList[0].ports.length).toBe(1);
     expect(imageInfoList[0].ports[0]).equals('8080');
@@ -778,7 +801,7 @@ describe('createPod', async () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
     {} as unknown as GitManager,
-    {} as unknown as RecipeStatusRegistry,
+    taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
     {} as CatalogManager,
@@ -843,7 +866,7 @@ describe('createApplicationPod', () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
     {} as unknown as GitManager,
-    {} as unknown as RecipeStatusRegistry,
+    taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
     {} as CatalogManager,
@@ -855,19 +878,14 @@ describe('createApplicationPod', () => {
   test('throw if createPod fails', async () => {
     vi.spyOn(manager, 'createPod').mockRejectedValue('error createPod');
     await expect(
-      manager.createApplicationPod(
-        { id: 'recipe-id' } as Recipe,
-        { id: 'model-id' } as ModelInfo,
-        images,
-        'path',
-        taskUtils,
-      ),
+      manager.createApplicationPod({ id: 'recipe-id' } as Recipe, { id: 'model-id' } as ModelInfo, images, 'path'),
     ).rejects.toThrowError('error createPod');
-    expect(setTaskMock).toBeCalledWith({
+    expect(mocks.updateTaskMock).toBeCalledWith({
       error: 'Something went wrong while creating pod: error createPod',
-      id: 'fake-pod-id',
+      id: expect.any(String),
       state: 'error',
       name: 'Creating application',
+      labels: {},
     });
   });
   test('call createAndAddContainersToPod after pod is created', async () => {
@@ -880,18 +898,15 @@ describe('createApplicationPod', () => {
     const createAndAddContainersToPodMock = vi
       .spyOn(manager, 'createAndAddContainersToPod')
       .mockImplementation((_pod: ApplicationPodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve([]));
-    await manager.createApplicationPod(
-      { id: 'recipe-id' } as Recipe,
-      { id: 'model-id' } as ModelInfo,
-      images,
-      'path',
-      taskUtils,
-    );
+    await manager.createApplicationPod({ id: 'recipe-id' } as Recipe, { id: 'model-id' } as ModelInfo, images, 'path');
     expect(createAndAddContainersToPodMock).toBeCalledWith(pod, images, 'path');
-    expect(setTaskMock).toBeCalledWith({
-      id: 'id',
+    expect(mocks.updateTaskMock).toBeCalledWith({
+      id: expect.any(String),
       state: 'success',
       name: 'Creating application',
+      labels: {
+        'pod-id': pod.Id,
+      },
     });
   });
   test('throw if createAndAddContainersToPod fails', async () => {
@@ -903,19 +918,16 @@ describe('createApplicationPod', () => {
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
     vi.spyOn(manager, 'createAndAddContainersToPod').mockRejectedValue('error');
     await expect(() =>
-      manager.createApplicationPod(
-        { id: 'recipe-id' } as Recipe,
-        { id: 'model-id' } as ModelInfo,
-        images,
-        'path',
-        taskUtils,
-      ),
+      manager.createApplicationPod({ id: 'recipe-id' } as Recipe, { id: 'model-id' } as ModelInfo, images, 'path'),
     ).rejects.toThrowError('error');
-    expect(setTaskMock).toHaveBeenLastCalledWith({
-      id: 'id',
+    expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
+      id: expect.any(String),
       state: 'error',
       error: 'Something went wrong while creating pod: error',
       name: 'Creating application',
+      labels: {
+        'pod-id': pod.Id,
+      },
     });
   });
 });
@@ -924,7 +936,7 @@ describe('runApplication', () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
     {} as unknown as GitManager,
-    {} as unknown as RecipeStatusRegistry,
+    taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
     {} as CatalogManager,
@@ -962,7 +974,7 @@ describe('runApplication', () => {
       .spyOn(manager, 'waitContainerIsRunning')
       .mockImplementation((_engineId: string, _container: ContainerAttachedInfo) => Promise.resolve());
     vi.spyOn(utils, 'timeout').mockResolvedValue();
-    await manager.runApplication(pod, taskUtils);
+    await manager.runApplication(pod);
     expect(mocks.startPod).toBeCalledWith(pod.engineId, pod.Id);
     expect(waitContainerIsRunningMock).toBeCalledWith(pod.engineId, {
       name: 'first',
@@ -976,7 +988,7 @@ describe('createAndAddContainersToPod', () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
     {} as unknown as GitManager,
-    {} as unknown as RecipeStatusRegistry,
+    taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
     {} as CatalogManager,
@@ -1033,12 +1045,18 @@ describe('pod detection', async () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
+    mocks.createTaskMock.mockImplementation((name, state, labels) => ({
+      id: 'random',
+      name: name,
+      state: state,
+      labels: labels ?? {},
+      error: undefined,
+    }));
+
     manager = new ApplicationManager(
       '/path/to/user/dir',
       {} as GitManager,
-      {
-        setStatus: vi.fn(),
-      } as unknown as RecipeStatusRegistry,
+      taskRegistry,
       {
         postMessage: mocks.postMessageMock,
       } as unknown as Webview,

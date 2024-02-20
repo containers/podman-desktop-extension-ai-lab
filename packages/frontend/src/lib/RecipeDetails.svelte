@@ -2,7 +2,6 @@
 import { faList } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { getDisplayName } from '/@/utils/versionControlUtils';
-import { recipes } from '/@/stores/recipe';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
@@ -15,6 +14,8 @@ import Button from './button/Button.svelte';
 import VSCodeIcon from '/@/lib/images/VSCodeIcon.svelte';
 import { localRepositories } from '../stores/localRepositories';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
+import { tasks } from '/@/stores/tasks';
+import { filterByLabel } from '/@/utils/taskUtils';
 import PodIcon from '/@/lib/images/PodIcon.svelte';
 import StatusIcon from '/@/lib/StatusIcon.svelte';
 
@@ -23,11 +24,16 @@ export let modelId: string;
 
 $: envState = $environmentStates.find((env: EnvironmentState) => env.recipeId === recipeId);
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
-$: recipeStatus = $recipes.find(r => recipeId === r.recipeId && r.modelId === modelId);
+
+$: filteredTasks = filterByLabel($tasks, {
+  'recipe-id': recipeId,
+  'model-id': modelId,
+});
+
 $: model = $catalog.models.find(m => m.id === modelId);
 $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipeId);
 
-$: runningTask = recipeStatus?.tasks.find(t => t.state === 'loading');
+$: runningTask = filteredTasks.find(t => t.state === 'loading');
 
 let open: boolean = true;
 
@@ -101,9 +107,9 @@ function startApplication() {
             </Button>
           {/if}
         </div>
-        {#if recipeStatus && recipeStatus.tasks.length > 0}
+        {#if filteredTasks.length > 0}
           <div class="mt-4 text-sm font-normal">
-            <TasksProgress tasks="{recipeStatus.tasks}" />
+            <TasksProgress tasks="{filteredTasks}" />
           </div>
         {/if}
       </div>

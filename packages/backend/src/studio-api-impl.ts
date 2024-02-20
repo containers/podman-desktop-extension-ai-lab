@@ -18,8 +18,6 @@
 
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { ApplicationManager } from './managers/applicationManager';
-import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
-import type { RecipeModelStatus } from '@shared/src/models/IRecipeStatus';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { PlayGroundManager } from './managers/playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
@@ -39,7 +37,6 @@ import path from 'node:path';
 export class StudioApiImpl implements StudioAPI {
   constructor(
     private applicationManager: ApplicationManager,
-    private recipeStatusRegistry: RecipeStatusRegistry,
     private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
@@ -58,14 +55,6 @@ export class StudioApiImpl implements StudioAPI {
 
   async openFile(file: string): Promise<boolean> {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
-  }
-
-  async getPullingStatus(recipeId: string, modelId: string): Promise<RecipeModelStatus> {
-    return this.recipeStatusRegistry.getStatus(recipeId, modelId);
-  }
-
-  async getPullingStatuses(): Promise<RecipeModelStatus[]> {
-    return this.recipeStatusRegistry.getStatuses();
   }
 
   async pullApplication(recipeId: string, modelId: string): Promise<void> {

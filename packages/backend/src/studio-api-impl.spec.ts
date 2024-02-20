@@ -22,7 +22,6 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import content from './ai-test.json';
 import userContent from './ai-user-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
-import type { RecipeStatusRegistry } from './registries/RecipeStatusRegistry';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './managers/playground';
 import type { TelemetryLogger, Webview } from '@podman-desktop/api';
@@ -102,7 +101,6 @@ beforeEach(async () => {
     {
       deleteEnvironment: mocks.deleteEnvironmentMock,
     } as unknown as ApplicationManager,
-    {} as unknown as RecipeStatusRegistry,
     {} as unknown as PlayGroundManager,
     catalogManager,
     {} as unknown as ModelsManager,

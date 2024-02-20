@@ -20,7 +20,6 @@ import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import { router } from 'tinro';
-import type { RecipeModelStatus } from '@shared/src/models/IRecipeStatus';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -95,14 +94,6 @@ test('should display There is no model yet and have a task running', async () =>
       },
     },
   ]);
-  const map = new Map<string, RecipeModelStatus>();
-  map.set('random', {
-    recipeId: 'random-recipe-id',
-    modelId: 'random-model-id',
-    tasks: [],
-  });
-  mocks.getPullingStatusesMock.mockResolvedValue(map);
-
   render(Models);
 
   const status = screen.getByRole('status');

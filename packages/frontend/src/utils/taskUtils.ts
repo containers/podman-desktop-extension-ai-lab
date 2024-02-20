@@ -16,10 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Task } from './ITask';
+import type { Task } from '@shared/src/models/ITask';
 
-export interface RecipeModelStatus {
-  recipeId: string;
-  modelId: string;
-  tasks: Task[];
-}
+export const filterByLabel = (tasks: Task[], requestedLabels: { [key: string]: string }): Task[] => {
+  return tasks.filter(task => {
+    const labels = task.labels;
+    if (labels === undefined) return false;
+
+    for (const [key, value] of Object.entries(requestedLabels)) {
+      if (!(key in labels) || labels[key] !== value) return false;
+    }
+
+    return true;
+  });
+};

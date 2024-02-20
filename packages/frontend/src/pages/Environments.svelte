@@ -6,12 +6,13 @@ import { Column, Row } from '../lib/table/table';
 import { environmentStates } from '/@/stores/environment-states';
 import ColumnActions from '../lib/table/environment/ColumnActions.svelte';
 import ColumnStatus from '../lib/table/environment/ColumnStatus.svelte';
-import { recipes } from '/@/stores/recipe';
 import type { EnvironmentCell } from './environments';
 import ColumnRecipe from '../lib/table/environment/ColumnRecipe.svelte';
 import ColumnModel from '../lib/table/environment/ColumnModel.svelte';
 import ColumnPod from '../lib/table/environment/ColumnPod.svelte';
 import ColumnAge from '../lib/table/environment/ColumnAge.svelte';
+import { filterByLabel } from '/@/utils/taskUtils';
+import { tasks } from '/@/stores/tasks';
 
 let data: EnvironmentCell[];
 
@@ -19,7 +20,10 @@ $: data = $environmentStates.map((env: EnvironmentState) => ({
   recipeId: env.recipeId,
   modelId: env.modelId,
   envState: env,
-  tasks: $recipes.find(r => r.recipeId === env.recipeId && r.modelId === env.modelId)?.tasks,
+  tasks: filterByLabel($tasks, {
+    'recipe-id': env.recipeId,
+    'model-id': env.modelId,
+  }),
 }));
 
 const columns: Column<EnvironmentCell>[] = [

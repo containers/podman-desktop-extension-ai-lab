@@ -20,43 +20,11 @@ import { getDurationSecondsSince } from './utils';
 import { createWriteStream, promises } from 'node:fs';
 import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
-
-export interface DownloadEvent {
-  id: string;
-  status: 'error' | 'completed' | 'progress' | 'canceled';
-  message?: string;
-}
-
-export interface CompletionEvent extends DownloadEvent {
-  status: 'completed' | 'error' | 'canceled';
-  duration: number;
-}
-
-export interface ProgressEvent extends DownloadEvent {
-  status: 'progress';
-  value: number;
-}
-
-export const isCompletionEvent = (value: unknown): value is CompletionEvent => {
-  return (
-    !!value &&
-    typeof value === 'object' &&
-    'status' in value &&
-    typeof value['status'] === 'string' &&
-    ['canceled', 'completed', 'error'].includes(value['status']) &&
-    'duration' in value
-  );
-};
-
-export const isProgressEvent = (value: unknown): value is ProgressEvent => {
-  return (
-    !!value && typeof value === 'object' && 'status' in value && value['status'] === 'progress' && 'value' in value
-  );
-};
+import type { CompletionProgressiveEvent, ProgressProgressiveEvent, ProgressiveEvent } from './progressiveEvent';
 
 export class Downloader {
-  private readonly _onEvent = new EventEmitter<DownloadEvent>();
-  readonly onEvent: Event<DownloadEvent> = this._onEvent.event;
+  private readonly _onEvent = new EventEmitter<ProgressiveEvent>();
+  readonly onEvent: Event<ProgressiveEvent> = this._onEvent.event;
   private requestedIdentifier: string;
 
   completed: boolean;
@@ -83,7 +51,7 @@ export class Downloader {
         status: 'completed',
         message: `Duration ${durationSeconds}s.`,
         duration: durationSeconds,
-      } as CompletionEvent);
+      } as CompletionProgressiveEvent);
     } catch (err: unknown) {
       if (!this.abortSignal?.aborted) {
         this._onEvent.fire({
@@ -161,7 +129,7 @@ export class Downloader {
             id: this.requestedIdentifier,
             status: 'progress',
             value: progressValue,
-          } as ProgressEvent);
+          } as ProgressProgressiveEvent);
         }
       });
       resp.pipe(stream);

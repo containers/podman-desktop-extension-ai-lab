@@ -24,9 +24,12 @@ import { Messages } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { Downloader, type DownloadEvent, isCompletionEvent, isProgressEvent } from '../utils/downloader';
+import { Downloader } from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
+import type { ProgressiveEvent } from '../utils/progressiveEvent';
+import { isCompletionProgressiveEvent, isProgressProgressiveEvent } from '../utils/progressiveEvent';
+import { Uploader } from '../models/uploader';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string;
@@ -201,7 +204,7 @@ export class ModelsManager implements Disposable {
     // If we have an existing downloader running we subscribe on its events
     return new Promise((resolve, reject) => {
       const disposable = existingDownloader.onEvent(event => {
-        if (!isCompletionEvent(event)) return;
+        if (!isCompletionProgressiveEvent(event)) return;
 
         switch (event.status) {
           case 'completed':
@@ -215,7 +218,7 @@ export class ModelsManager implements Disposable {
     });
   }
 
-  private onDownloadEvent(event: DownloadEvent): void {
+  private onDownloadEvent(event: ProgressiveEvent): void {
     // Always use the task registry as source of truth for tasks
     const tasks = this.taskRegistry.getTasksByLabels({ 'model-pulling': event.id });
     if (tasks.length === 0) {
@@ -225,10 +228,10 @@ export class ModelsManager implements Disposable {
     }
 
     tasks.forEach(task => {
-      if (isProgressEvent(event)) {
+      if (isProgressProgressiveEvent(event)) {
         task.state = 'loading';
         task.progress = event.value;
-      } else if (isCompletionEvent(event)) {
+      } else if (isCompletionProgressiveEvent(event)) {
         // status error or canceled
         if (event.status === 'error' || event.status === 'canceled') {
           task.state = 'error';
@@ -299,5 +302,46 @@ export class ModelsManager implements Disposable {
     // perform download
     await downloader.perform(model.id);
     return downloader.getTarget();
+  }
+
+  async uploadModelToPodmanMachine(model: ModelInfo, localModelPath: string, labels?: { [key: string]: string }): Promise<string> {
+    const task: Task = this.taskRegistry.createTask(`Uploading model ${model.name}`, 'loading', {
+      ...labels,
+      'model-uploading': model.id,
+    });
+
+    const uploader = new Uploader(localModelPath);
+    uploader.onEvent((event: ProgressiveEvent) => {
+      if (isProgressProgressiveEvent(event)) {
+        task.state = 'loading';
+        task.progress = event.value;
+      } else if (isCompletionProgressiveEvent(event)) {
+        // status error or canceled
+        if (event.status === 'error' || event.status === 'canceled') {
+          task.state = 'error';
+          task.progress = undefined;
+          task.error = event.message;
+
+          // telemetry usage
+          this.telemetry.logError('model.upload', {
+            'model.id': model.id,
+            message: 'error uploading model',
+            error: event.message,
+            durationSeconds: event.duration,
+          });
+        } else {
+          task.state = 'success';
+          task.progress = 100;
+
+          // telemetry usage
+          this.telemetry.logUsage('model.upload', { 'model.id': model.id, durationSeconds: event.duration });
+        }
+      }
+
+      this.taskRegistry.updateTask(task); // update task
+    });
+
+    // perform download
+    return await uploader.perform(model.id);
   }
 }

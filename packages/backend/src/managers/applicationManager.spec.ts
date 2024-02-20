@@ -214,13 +214,6 @@ describe('pullApplication', () => {
         Id: 'id1',
       },
     ]);
-    mocks.getImageInspectMock.mockResolvedValue({
-      Config: {
-        ExposedPorts: {
-          '8080': '8080',
-        },
-      },
-    });
     mocks.createPodMock.mockResolvedValue({
       engineId: 'engine',
       Id: 'id',
@@ -709,6 +702,7 @@ describe('buildImages', () => {
       arch: ['amd64'],
       modelService: false,
       gpu_env: [],
+      ports: [8080],
     },
   ];
   const manager = new ApplicationManager(
@@ -765,13 +759,6 @@ describe('buildImages', () => {
         Id: 'id1',
       },
     ]);
-    mocks.getImageInspectMock.mockResolvedValue({
-      Config: {
-        ExposedPorts: {
-          '8080': '8080',
-        },
-      },
-    });
     const imageInfoList = await manager.buildImages(containers, 'config');
     expect(mocks.updateTaskMock).toBeCalledWith({
       name: 'Building container1',
@@ -844,7 +831,9 @@ describe('createPod', async () => {
       ],
       labels: {
         'ai-studio-recipe-id': 'recipe-id',
+        'ai-studio-app-port': '8080',
         'ai-studio-model-id': 'model-id',
+        'ai-studio-model-port': '8082',
       },
     });
   });

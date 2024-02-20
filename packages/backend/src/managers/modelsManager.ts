@@ -24,9 +24,12 @@ import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { Downloader, type DownloadEvent, isCompletionEvent, isProgressEvent } from '../utils/downloader';
+import { Downloader } from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
+import type { ProgressiveEvent } from '../utils/progressiveEvent';
+import { isCompletionProgressiveEvent, isProgressProgressiveEvent } from '../utils/progressiveEvent';
+import { Uploader } from '../models/uploader';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string;
@@ -201,11 +204,11 @@ export class ModelsManager implements Disposable {
     const downloader = new Downloader(model.url, target);
 
     // Capture downloader events
-    downloader.onEvent((event: DownloadEvent) => {
-      if (isProgressEvent(event)) {
+    downloader.onEvent((event: ProgressiveEvent) => {
+      if (isProgressProgressiveEvent(event)) {
         task.state = 'loading';
         task.progress = event.value;
-      } else if (isCompletionEvent(event)) {
+      } else if (isCompletionProgressiveEvent(event)) {
         // status error or canceled
         if (event.status === 'error' || event.status === 'canceled') {
           task.state = 'error';
@@ -234,5 +237,46 @@ export class ModelsManager implements Disposable {
     // perform download
     await downloader.perform();
     return target;
+  }
+
+  async uploadModelToPodmanMachine(model: ModelInfo, localModelPath: string, labels?: { [key: string]: string }): Promise<string> {
+    const task: Task = this.taskRegistry.createTask(`Uploading model ${model.name}`, 'loading', {
+      ...labels,
+      'model-uploading': model.id,
+    });
+
+    const uploader = new Uploader(localModelPath);
+    uploader.onEvent((event: ProgressiveEvent) => {
+      if (isProgressProgressiveEvent(event)) {
+        task.state = 'loading';
+        task.progress = event.value;
+      } else if (isCompletionProgressiveEvent(event)) {
+        // status error or canceled
+        if (event.status === 'error' || event.status === 'canceled') {
+          task.state = 'error';
+          task.progress = undefined;
+          task.error = event.message;
+
+          // telemetry usage
+          this.telemetry.logError('model.upload', {
+            'model.id': model.id,
+            message: 'error uploading model',
+            error: event.message,
+            durationSeconds: event.duration,
+          });
+        } else {
+          task.state = 'success';
+          task.progress = 100;
+
+          // telemetry usage
+          this.telemetry.logUsage('model.upload', { 'model.id': model.id, durationSeconds: event.duration });
+        }
+      }
+
+      this.taskRegistry.updateTask(task); // update task
+    });
+
+    // perform download
+    return await uploader.perform();
   }
 }

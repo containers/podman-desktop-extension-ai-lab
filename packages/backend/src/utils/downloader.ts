@@ -20,42 +20,11 @@ import { getDurationSecondsSince } from './utils';
 import fs from 'fs';
 import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
-
-export interface DownloadEvent {
-  status: 'error' | 'completed' | 'progress' | 'canceled';
-  message?: string;
-}
-
-export interface CompletionEvent extends DownloadEvent {
-  status: 'completed' | 'error' | 'canceled';
-  duration: number;
-}
-
-export interface ProgressEvent extends DownloadEvent {
-  status: 'progress';
-  value: number;
-}
-
-export const isCompletionEvent = (value: unknown): value is CompletionEvent => {
-  return (
-    !!value &&
-    typeof value === 'object' &&
-    'status' in value &&
-    typeof value['status'] === 'string' &&
-    ['canceled', 'completed', 'error'].includes(value['status']) &&
-    'duration' in value
-  );
-};
-
-export const isProgressEvent = (value: unknown): value is ProgressEvent => {
-  return (
-    !!value && typeof value === 'object' && 'status' in value && value['status'] === 'progress' && 'value' in value
-  );
-};
+import type { CompletionProgressiveEvent, ProgressProgressiveEvent, ProgressiveEvent } from './progressiveEvent';
 
 export class Downloader {
-  private readonly _onEvent = new EventEmitter<DownloadEvent>();
-  readonly onEvent: Event<DownloadEvent> = this._onEvent.event;
+  private readonly _onEvent = new EventEmitter<ProgressiveEvent>();
+  readonly onEvent: Event<ProgressiveEvent> = this._onEvent.event;
 
   constructor(
     private url: string,
@@ -73,7 +42,7 @@ export class Downloader {
         status: 'completed',
         message: `Duration ${durationSeconds}s.`,
         duration: durationSeconds,
-      } as CompletionEvent);
+      } as CompletionProgressiveEvent);
     } catch (err: unknown) {
       if (!this.abortSignal?.aborted) {
         this._onEvent.fire({
@@ -126,7 +95,7 @@ export class Downloader {
           this._onEvent.fire({
             status: 'progress',
             value: progressValue,
-          } as ProgressEvent);
+          } as ProgressProgressiveEvent);
         }
 
         // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend

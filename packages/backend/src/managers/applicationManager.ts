@@ -121,10 +121,17 @@ export class ApplicationManager {
       const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder);
 
       // get model by downloading it or retrieving locally
-      const modelPath = await this.modelsManager.downloadModel(model, {
+      let modelPath = await this.modelsManager.downloadModel(model, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });
+
+      // upload model to podman machine if user system is supported
+      modelPath = await this.modelsManager.uploadModelToPodmanMachine(model, modelPath, {
+        'recipe-id': recipe.id,
+        'model-id': model.id,
+      });
+
 
       // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
       const images = await this.buildImages(

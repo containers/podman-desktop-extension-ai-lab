@@ -16,9 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export function displayPorts(ports: number[]) {
+export function displayPorts(ports: number[]): string {
   if (!ports || ports.length === 0) {
-    return;
+    return '';
   }
   if (ports.length === 1) {
     return `PORT ${ports[0]}`;

@@ -103,7 +103,7 @@ function startApplication() {
             </div>
           {:else}
             <Button inProgress="{runningTask !== undefined}" on:click="{startApplication}" class="grow text-gray-500">
-              Start application
+              Start AI App
             </Button>
           {/if}
         </div>

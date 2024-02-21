@@ -9,19 +9,19 @@ export let modelId: string;
 
 function stopEnvironment() {
   studioClient.requestRemoveEnvironment(recipeId, modelId).catch(err => {
-    console.error(`Something went wrong while trying to stop environment: ${String(err)}.`);
+    console.error(`Something went wrong while trying to stop AI App: ${String(err)}.`);
   });
 }
 
 function restartEnvironment() {
   studioClient.requestRestartEnvironment(recipeId, modelId).catch(err => {
-    console.error(`Something went wrong while trying to restart environment: ${String(err)}.`);
+    console.error(`Something went wrong while trying to restart AI App: ${String(err)}.`);
   });
 }
 </script>
 
 {#if object?.pod !== undefined}
-  <ListItemButtonIcon icon="{faStop}" onClick="{() => stopEnvironment()}" title="Stop Environment" />
+  <ListItemButtonIcon icon="{faStop}" onClick="{() => stopEnvironment()}" title="Stop AI App" />
 
-  <ListItemButtonIcon icon="{faRotateForward}" onClick="{() => restartEnvironment()}" title="Restart Environment" />
+  <ListItemButtonIcon icon="{faRotateForward}" onClick="{() => restartEnvironment()}" title="Restart AI App" />
 {/if}

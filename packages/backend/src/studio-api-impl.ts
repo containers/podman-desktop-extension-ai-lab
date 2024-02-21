@@ -161,17 +161,17 @@ export class StudioApiImpl implements StudioAPI {
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
       .showWarningMessage(
-        `Stop the environment "${recipe.name}"? This will delete the containers running the application and model.`,
+        `Stop the AI App "${recipe.name}"? This will delete the containers running the application and model.`,
         'Confirm',
         'Cancel',
       )
       .then((result: string) => {
         if (result === 'Confirm') {
           this.applicationManager.deleteEnvironment(recipeId, modelId).catch((err: unknown) => {
-            console.error(`error deleting environment pod: ${String(err)}`);
+            console.error(`error deleting AI App's pod: ${String(err)}`);
             podmanDesktopApi.window
               .showErrorMessage(
-                `Error deleting the environment "${recipe.name}". You can try to stop and delete the environment's pod manually.`,
+                `Error deleting the AI App "${recipe.name}". You can try to stop and delete the AI App's pod manually.`,
               )
               .catch((err: unknown) => {
                 console.error(`Something went wrong with confirmation modals`, err);
@@ -189,16 +189,16 @@ export class StudioApiImpl implements StudioAPI {
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
       .showWarningMessage(
-        `Restart the environment "${recipe.name}"? This will delete the containers running the application and model, rebuild the images with the current sources, and restart the containers.`,
+        `Restart the AI App "${recipe.name}"? This will delete the containers running the application and model, rebuild the images with the current sources, and restart the containers.`,
         'Confirm',
         'Cancel',
       )
       .then((result: string) => {
         if (result === 'Confirm') {
           this.applicationManager.restartEnvironment(recipeId, modelId).catch((err: unknown) => {
-            console.error(`error restarting environment: ${String(err)}`);
+            console.error(`error restarting AI App: ${String(err)}`);
             podmanDesktopApi.window
-              .showErrorMessage(`Error restarting the environment "${recipe.name}"`)
+              .showErrorMessage(`Error restarting the AI App "${recipe.name}"`)
               .catch((err: unknown) => {
                 console.error(`Something went wrong with confirmation modals`, err);
               });

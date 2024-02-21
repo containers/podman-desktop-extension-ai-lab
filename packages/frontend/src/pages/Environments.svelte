@@ -37,14 +37,14 @@ const columns: Column<EnvironmentCell>[] = [
 const row = new Row<EnvironmentCell>({});
 </script>
 
-<NavPage title="Environments" searchEnabled="{false}">
+<NavPage title="AI Apps" searchEnabled="{false}">
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="mt-4 px-5 space-y-5 h-full">
         {#if data.length > 0}
-          <Table kind="environment" data="{data}" columns="{columns}" row="{row}"></Table>
+          <Table kind="AI App" data="{data}" columns="{columns}" row="{row}"></Table>
         {:else}
-          <div role="status">There is no environment yet</div>
+          <div role="status">There is no AI App yet</div>
         {/if}
       </div>
     </div>

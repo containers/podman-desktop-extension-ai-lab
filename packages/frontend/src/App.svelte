@@ -43,7 +43,7 @@ onMount(() => {
       </Route>
 
       <!-- Environments -->
-      <Route path="/environments" breadcrumb="Environments">
+      <Route path="/environments" breadcrumb="AI Apps">
         <Environments />
       </Route>
 

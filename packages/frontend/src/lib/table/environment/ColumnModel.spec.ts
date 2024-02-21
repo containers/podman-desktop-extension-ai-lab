@@ -66,3 +66,31 @@ test('display model name', async () => {
   const text = screen.getByText('Model 1');
   expect(text).toBeInTheDocument();
 });
+
+test('display model port', async () => {
+  const obj = {
+    modelId: 'model1',
+    modelPorts: [8080],
+  } as unknown as EnvironmentCell;
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  render(ColumnModel, { object: obj });
+
+  const text = screen.getByText('Model 1');
+  expect(text).toBeInTheDocument();
+  const ports = screen.getByText('PORT 8080');
+  expect(ports).toBeInTheDocument();
+});
+
+test('display multpile model ports', async () => {
+  const obj = {
+    modelId: 'model1',
+    modelPorts: [8080, 5000],
+  } as unknown as EnvironmentCell;
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  render(ColumnModel, { object: obj });
+
+  const text = screen.getByText('Model 1');
+  expect(text).toBeInTheDocument();
+  const ports = screen.getByText('PORTS 8080, 5000');
+  expect(ports).toBeInTheDocument();
+});

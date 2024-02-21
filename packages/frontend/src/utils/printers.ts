@@ -16,14 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
-import type { Task } from '@shared/src/models/ITask';
-
-export interface EnvironmentCell {
-  tasks?: Task[];
-  envState: EnvironmentState;
-  recipeId: string;
-  modelId: string;
-  appPorts: number[];
-  modelPorts: number[];
+export function displayPorts(ports: number[]) {
+  if (!ports || ports.length === 0) {
+    return;
+  }
+  if (ports.length === 1) {
+    return `PORT ${ports[0]}`;
+  } else {
+    return `PORTS ${ports.join(', ')}`;
+  }
 }

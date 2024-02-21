@@ -1076,6 +1076,8 @@ describe('pod detection', async () => {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
           'ai-studio-model-id': 'model-id-1',
+          'ai-studio-app-ports': '5000,5001',
+          'ai-studio-model-ports': '8000,8001',
         },
       },
     ]);
@@ -1090,10 +1092,14 @@ describe('pod detection', async () => {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
           'ai-studio-model-id': 'model-id-1',
+          'ai-studio-app-ports': '5000,5001',
+          'ai-studio-model-ports': '8000,8001',
         },
       },
       recipeId: 'recipe-id-1',
       modelId: 'model-id-1',
+      appPorts: [5000, 5001],
+      modelPorts: [8000, 8001],
     });
   });
 

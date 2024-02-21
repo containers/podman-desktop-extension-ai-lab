@@ -65,3 +65,31 @@ test('display recipe name', async () => {
   const text = screen.getByText('Recipe 1');
   expect(text).toBeInTheDocument();
 });
+
+test('display recipe port', async () => {
+  const obj = {
+    recipeId: 'recipe 1',
+    appPorts: [3000],
+  } as unknown as EnvironmentCell;
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  render(ColumnRecipe, { object: obj });
+
+  const text = screen.getByText('Recipe 1');
+  expect(text).toBeInTheDocument();
+  const ports = screen.getByText('PORT 3000');
+  expect(ports).toBeInTheDocument();
+});
+
+test('display multiple recipe ports', async () => {
+  const obj = {
+    recipeId: 'recipe 1',
+    appPorts: [3000, 5000],
+  } as unknown as EnvironmentCell;
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  render(ColumnRecipe, { object: obj });
+
+  const text = screen.getByText('Recipe 1');
+  expect(text).toBeInTheDocument();
+  const ports = screen.getByText('PORTS 3000, 5000');
+  expect(ports).toBeInTheDocument();
+});

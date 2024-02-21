@@ -22,4 +22,6 @@ export interface EnvironmentState {
   recipeId: string;
   modelId: string;
   pod: PodInfo;
+  appPorts: number[];
+  modelPorts: number[];
 }

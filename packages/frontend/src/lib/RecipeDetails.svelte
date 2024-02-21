@@ -64,7 +64,7 @@ const navigateToPod = () => {
 
 function startApplication() {
   studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {
-    console.error('Something went wrong while pulling application', err);
+    console.error('Something went wrong while pulling AI App', err);
   });
 }
 </script>
@@ -77,7 +77,7 @@ function startApplication() {
     aria-label="application details panel">
     <div class="flex flex-col px-4 space-y-4 mx-auto">
       <div class="w-full flex flex-row justify-between max-lg:hidden">
-        <span class="text-base">Application Details</span>
+        <span class="text-base">AI App Details</span>
         <button on:click="{toggle}" aria-label="hide application details"
           ><i class="fas fa-angle-right text-gray-900"></i></button>
       </div>

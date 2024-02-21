@@ -30,8 +30,10 @@ application:
       arch: ["x86"]
       model-service: true
       gpu-env: ["env1", "env2"]
+      ports: [ 8080 ]
     - name: container2
       arch: ["arm"]
+      ports: [ 8001 ]
 `;
 
 const readFileSync = vi.spyOn(fs, 'readFileSync');
@@ -50,6 +52,7 @@ describe('parseYaml', () => {
             arch: ['x86'],
             modelService: true,
             gpu_env: ['env1', 'env2'],
+            ports: [8080],
           },
           {
             name: 'container2',
@@ -57,6 +60,7 @@ describe('parseYaml', () => {
             arch: ['arm'],
             modelService: false,
             gpu_env: [],
+            ports: [8001],
           },
         ],
       },

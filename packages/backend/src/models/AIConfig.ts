@@ -26,6 +26,7 @@ export interface ContainerConfig {
   arch: string[];
   modelService: boolean;
   gpu_env: string[];
+  ports?: number[];
 }
 export interface AIConfig {
   application: {
@@ -75,6 +76,7 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
           contextdir: contextdir,
           name: assertString(container['name']),
           gpu_env: Array.isArray(container['gpu-env']) ? container['gpu-env'] : [],
+          ports: Array.isArray(container['ports']) ? container['ports'] : [],
         };
       }),
     },

@@ -214,13 +214,6 @@ describe('pullApplication', () => {
         Id: 'id1',
       },
     ]);
-    mocks.getImageInspectMock.mockResolvedValue({
-      Config: {
-        ExposedPorts: {
-          '8080': '8080',
-        },
-      },
-    });
     mocks.createPodMock.mockResolvedValue({
       engineId: 'engine',
       Id: 'id',
@@ -709,6 +702,7 @@ describe('buildImages', () => {
       arch: ['amd64'],
       modelService: false,
       gpu_env: [],
+      ports: [8080],
     },
   ];
   const manager = new ApplicationManager(
@@ -765,13 +759,6 @@ describe('buildImages', () => {
         Id: 'id1',
       },
     ]);
-    mocks.getImageInspectMock.mockResolvedValue({
-      Config: {
-        ExposedPorts: {
-          '8080': '8080',
-        },
-      },
-    });
     const imageInfoList = await manager.buildImages(containers, 'config');
     expect(mocks.updateTaskMock).toBeCalledWith({
       name: 'Building container1',
@@ -790,7 +777,7 @@ describe('createPod', async () => {
     id: 'id',
     appName: 'appName',
     modelService: false,
-    ports: ['8080'],
+    ports: ['8080', '8081'],
   };
   const imageInfo2: ImageInfo = {
     id: 'id2',
@@ -835,6 +822,13 @@ describe('createPod', async () => {
           range: 1,
         },
         {
+          container_port: 8081,
+          host_port: 9000,
+          host_ip: '',
+          protocol: '',
+          range: 1,
+        },
+        {
           container_port: 8082,
           host_port: 9000,
           host_ip: '',
@@ -844,7 +838,9 @@ describe('createPod', async () => {
       ],
       labels: {
         'ai-studio-recipe-id': 'recipe-id',
+        'ai-studio-app-ports': '8080,8081',
         'ai-studio-model-id': 'model-id',
+        'ai-studio-model-ports': '8082',
       },
     });
   });
@@ -855,7 +851,7 @@ describe('createApplicationPod', () => {
     id: 'id',
     appName: 'appName',
     modelService: false,
-    ports: ['8080'],
+    ports: ['8080', '8081'],
   };
   const imageInfo2: ImageInfo = {
     id: 'id2',
@@ -951,7 +947,7 @@ describe('runApplication', () => {
       {
         name: 'first',
         modelService: false,
-        ports: ['8080'],
+        ports: ['8080', '8081'],
       },
       {
         name: 'second',
@@ -979,7 +975,7 @@ describe('runApplication', () => {
     expect(waitContainerIsRunningMock).toBeCalledWith(pod.engineId, {
       name: 'first',
       modelService: false,
-      ports: ['8080'],
+      ports: ['8080', '8081'],
     });
   });
 });
@@ -1005,7 +1001,7 @@ describe('createAndAddContainersToPod', () => {
     id: 'id',
     appName: 'appName',
     modelService: false,
-    ports: ['8080'],
+    ports: ['8080', '8081'],
   };
   test('check that after the creation and copy inside the pod, the container outside the pod is actually deleted', async () => {
     mocks.createContainerMock.mockResolvedValue({

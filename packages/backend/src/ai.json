@@ -54,8 +54,8 @@
   ],
   "models": [
     {
-      "id": "llama-2-7b-chat.Q5_K_S",
-      "name": "Llama-2-7B-Chat-GGUF",
+      "id": "hf.TheBloke.llama-2-7b-chat.Q5_K_S",
+      "name": "TheBloke/Llama-2-7B-Chat-GGUF",
       "description": "Llama 2 is a family of state-of-the-art open-access large language models released by Meta today, and we’re excited to fully support the launch with comprehensive integration in Hugging Face. Llama 2 is being released with a very permissive community license and is available for commercial use. The code, pretrained models, and fine-tuned models are all being released today 🔥",
       "hw": "CPU",
       "registry": "Hugging Face",
@@ -63,8 +63,8 @@
       "url": "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf"
     },
     {
-      "id": "mistral-7b-instruct-v0.1.Q4_K_M",
-      "name": "Mistral-7B-Instruct-v0.1-GGUF",
+      "id": "hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M",
+      "name": "TheBloke/Mistral-7B-Instruct-v0.1-GGUF",
       "description": "The Mistral-7B-Instruct-v0.1 Large Language Model (LLM) is a instruct fine-tuned version of the [Mistral-7B-v0.1](https://huggingface.co/mistralai/Mistral-7B-v0.1) generative text model using a variety of publicly available conversation datasets. For full details of this model please read our [release blog post](https://mistral.ai/news/announcing-mistral-7b/)",
       "hw": "CPU",
       "registry": "Hugging Face",

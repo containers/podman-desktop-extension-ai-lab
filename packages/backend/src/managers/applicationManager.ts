@@ -778,7 +778,7 @@ export class ApplicationManager {
     );
   }
 
-  getPortsFromLabel(labels: { [key: string]: string }, key: string) {
+  getPortsFromLabel(labels: { [key: string]: string }, key: string): number[] {
     if (!(key in labels)) {
       return [];
     }

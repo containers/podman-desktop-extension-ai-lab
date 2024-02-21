@@ -93,6 +93,15 @@ export class ApplicationManager {
   }
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
+    // clear any existing status / tasks related to the pair recipeId-modelId.
+    this.taskRegistry.deleteByLabels({
+      'recipe-id': recipe.id,
+      'model-id': model.id,
+    });
+    return this.startApplication(recipe, model);
+  }
+
+  async startApplication(recipe: Recipe, model: ModelInfo) {
     // const recipeStatus = this.recipeStatusRegistry.
     const startTime = performance.now();
     try {
@@ -726,7 +735,7 @@ export class ApplicationManager {
     await this.deleteEnvironment(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
-    await this.pullApplication(recipe, model);
+    await this.startApplication(recipe, model);
   }
 
   async getEnvironmentPod(recipeId: string, modelId: string): Promise<PodInfo> {

@@ -630,10 +630,15 @@ export class ApplicationManager {
     this.#applications.delete({ recipeId, modelId });
     this.sendEnvironmentState();
 
-    this.taskRegistry.createTask('Application stopped manually', 'success', {
-      'recipe-id': recipeId,
-      'model-id': modelId,
-    });
+    const protect = this.protectTasks.has(pod.Id);
+    if (!protect) {
+      this.taskRegistry.createTask('Application stopped manually', 'success', {
+        'recipe-id': recipeId,
+        'model-id': modelId,
+      });
+    } else {
+      this.protectTasks.delete(pod.Id);
+    }
   }
 
   forgetPodById(podId: string) {

@@ -17,17 +17,32 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { test, expect, vi } from 'vitest';
+import { test, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import * as catalogStore from '/@/stores/catalog';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import { readable } from 'svelte/store';
 import type { EnvironmentCell } from '/@/pages/environments';
 import ColumnRecipe from './ColumnRecipe.svelte';
+import userEvent from '@testing-library/user-event';
+
+const mocks = vi.hoisted(() => {
+  return {
+    openURL: vi.fn(),
+  };
+});
 
 vi.mock('/@/stores/catalog', async () => {
   return {
     catalog: vi.fn(),
+  };
+});
+
+vi.mock('/@/utils/client', async () => {
+  return {
+    studioClient: {
+      openURL: mocks.openURL,
+    },
   };
 });
 
@@ -54,6 +69,10 @@ const initialCatalog: Catalog = {
     },
   ],
 };
+
+beforeEach(() => {
+  vi.resetAllMocks();
+});
 
 test('display recipe name', async () => {
   const obj = {
@@ -92,4 +111,17 @@ test('display multiple recipe ports', async () => {
   expect(text).toBeInTheDocument();
   const ports = screen.getByText('PORTS 3000, 5000');
   expect(ports).toBeInTheDocument();
+});
+
+test('click on open port', async () => {
+  const obj = {
+    recipeId: 'recipe 1',
+    appPorts: [3000, 5000],
+  } as unknown as EnvironmentCell;
+  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  render(ColumnRecipe, { object: obj });
+  mocks.openURL.mockResolvedValue(undefined);
+  const link = screen.getByRole('button', { name: 'open AI App on port 5000' });
+  await userEvent.click(link);
+  expect(mocks.openURL).toHaveBeenCalledWith('http://localhost:5000');
 });

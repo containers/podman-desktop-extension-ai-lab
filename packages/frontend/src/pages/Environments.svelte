@@ -19,6 +19,8 @@ let data: EnvironmentCell[];
 $: data = $environmentStates.map((env: EnvironmentState) => ({
   recipeId: env.recipeId,
   modelId: env.modelId,
+  appPorts: env.appPorts,
+  modelPorts: env.modelPorts,
   envState: env,
   tasks: filterByLabel($tasks, {
     'recipe-id': env.recipeId,

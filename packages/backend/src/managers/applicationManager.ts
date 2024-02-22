@@ -618,6 +618,8 @@ export class ApplicationManager {
     }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
     const modelId = pod.Labels[LABEL_MODEL_ID];
+    const appPorts = this.getPortsFromLabel(pod.Labels, LABEL_APP_PORTS);
+    const modelPorts = this.getPortsFromLabel(pod.Labels, LABEL_MODEL_PORTS);
     if (this.#applications.has({ recipeId, modelId })) {
       return;
     }
@@ -625,6 +627,8 @@ export class ApplicationManager {
       recipeId,
       modelId,
       pod,
+      appPorts,
+      modelPorts,
     };
     this.updateEnvironmentState(recipeId, modelId, state);
   }
@@ -772,5 +776,23 @@ export class ApplicationManager {
         LABEL_MODEL_ID in pod.Labels &&
         pod.Labels[LABEL_MODEL_ID] === modelId,
     );
+  }
+
+  getPortsFromLabel(labels: { [key: string]: string }, key: string): number[] {
+    if (!(key in labels)) {
+      return [];
+    }
+    const value = labels[key];
+    const portsStr = value.split(',');
+    const result: number[] = [];
+    for (const portStr of portsStr) {
+      const port = parseInt(portStr, 10);
+      if (isNaN(port)) {
+        // malformed label, just ignore it
+        return [];
+      }
+      result.push(port);
+    }
+    return result;
   }
 }

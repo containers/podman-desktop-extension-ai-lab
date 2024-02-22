@@ -177,7 +177,7 @@ export class ApplicationManager {
   }
 
   async runApplication(podInfo: ApplicationPodInfo, labels?: { [key: string]: string }) {
-    const task = this.taskRegistry.createTask('Starting application', 'loading', labels);
+    const task = this.taskRegistry.createTask('Starting AI App', 'loading', labels);
 
     // it starts the pod
     await containerEngine.startPod(podInfo.engineId, podInfo.Id);
@@ -191,7 +191,7 @@ export class ApplicationManager {
     this.taskRegistry.updateTask({
       ...task,
       state: 'success',
-      name: 'Application is running',
+      name: 'AI App is running',
     });
   }
 
@@ -215,7 +215,7 @@ export class ApplicationManager {
     modelPath: string,
     labels?: { [key: string]: string },
   ): Promise<ApplicationPodInfo> {
-    const task = this.taskRegistry.createTask('Creating application', 'loading', labels);
+    const task = this.taskRegistry.createTask('Creating AI App', 'loading', labels);
 
     // create empty pod
     let podInfo: ApplicationPodInfo;
@@ -591,7 +591,7 @@ export class ApplicationManager {
     this.podmanConnection.onMachineStop(() => {
       // Podman Machine has been stopped, we consider all recipe pods are stopped
       for (const recipeModelIndex of this.#applications.keys()) {
-        this.taskRegistry.createTask('Application stopped manually', 'success', {
+        this.taskRegistry.createTask('AI App stopped manually', 'success', {
           'recipe-id': recipeModelIndex.recipeId,
           'model-id': recipeModelIndex.modelId,
         });
@@ -647,7 +647,7 @@ export class ApplicationManager {
 
     const protect = this.protectTasks.has(pod.Id);
     if (!protect) {
-      this.taskRegistry.createTask('Application stopped manually', 'success', {
+      this.taskRegistry.createTask('AI App stopped manually', 'success', {
         'recipe-id': recipeId,
         'model-id': modelId,
       });
@@ -674,7 +674,7 @@ export class ApplicationManager {
 
     const protect = this.protectTasks.has(podId);
     if (!protect) {
-      this.taskRegistry.createTask('Application stopped manually', 'success', {
+      this.taskRegistry.createTask('AI App stopped manually', 'success', {
         'recipe-id': recipeId,
         'model-id': modelId,
       });
@@ -710,7 +710,7 @@ export class ApplicationManager {
       'model-id': modelId,
     });
 
-    const stoppingTask = this.taskRegistry.createTask(`Stopping application`, 'loading', {
+    const stoppingTask = this.taskRegistry.createTask(`Stopping AI App`, 'loading', {
       'recipe-id': recipeId,
       'model-id': modelId,
     });
@@ -722,7 +722,7 @@ export class ApplicationManager {
         // continue when the pod is already stopped
         if (!String(err).includes('pod already stopped')) {
           stoppingTask.error = 'error stopping the pod. Please try to stop and remove the pod manually';
-          stoppingTask.name = 'Error stopping application';
+          stoppingTask.name = 'Error stopping AI App';
           this.taskRegistry.updateTask(stoppingTask);
           throw err;
         }
@@ -731,10 +731,10 @@ export class ApplicationManager {
       await containerEngine.removePod(envPod.engineId, envPod.Id);
 
       stoppingTask.state = 'success';
-      stoppingTask.name = `Application stopped`;
+      stoppingTask.name = `AI App stopped`;
     } catch (err: unknown) {
       stoppingTask.error = 'error removing the pod. Please try to remove the pod manually';
-      stoppingTask.name = 'Error stopping application';
+      stoppingTask.name = 'Error stopping AI App';
       throw err;
     } finally {
       this.taskRegistry.updateTask(stoppingTask);

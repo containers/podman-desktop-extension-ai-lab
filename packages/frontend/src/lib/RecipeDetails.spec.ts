@@ -162,7 +162,7 @@ test('should call runApplication execution when run application button is clicke
     modelId: 'model1',
   });
 
-  const btnRunApplication = screen.getByText('Start application');
+  const btnRunApplication = screen.getByText('Start AI App');
   await userEvent.click(btnRunApplication);
 
   expect(mocks.pullApplicationMock).toBeCalledWith('recipe 1', 'model1');
@@ -263,12 +263,12 @@ test('start application button should be the only one displayed', async () => {
     modelId: 'model1',
   });
 
-  const btnRunApplication = screen.getByText('Start application');
+  const btnRunApplication = screen.getByText('Start AI App');
   expect(btnRunApplication).toBeInTheDocument();
 
-  const btnStop = screen.queryByTitle('Stop Environment');
+  const btnStop = screen.queryByTitle('Stop AI App');
   expect(btnStop).toBeNull();
 
-  const btnRestart = screen.queryByTitle('Restart Environment');
+  const btnRestart = screen.queryByTitle('Restart AI App');
   expect(btnRestart).toBeNull();
 });

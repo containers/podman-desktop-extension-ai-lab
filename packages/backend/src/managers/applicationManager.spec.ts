@@ -880,7 +880,7 @@ describe('createApplicationPod', () => {
       error: 'Something went wrong while creating pod: error createPod',
       id: expect.any(String),
       state: 'error',
-      name: 'Creating application',
+      name: 'Creating AI App',
       labels: {},
     });
   });
@@ -899,7 +899,7 @@ describe('createApplicationPod', () => {
     expect(mocks.updateTaskMock).toBeCalledWith({
       id: expect.any(String),
       state: 'success',
-      name: 'Creating application',
+      name: 'Creating AI App',
       labels: {
         'pod-id': pod.Id,
       },
@@ -920,7 +920,7 @@ describe('createApplicationPod', () => {
       id: expect.any(String),
       state: 'error',
       error: 'Something went wrong while creating pod: error',
-      name: 'Creating application',
+      name: 'Creating AI App',
       labels: {
         'pod-id': pod.Id,
       },

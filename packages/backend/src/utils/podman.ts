@@ -15,7 +15,18 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { configuration, env } from '@podman-desktop/api';
+import { ProviderContainerConnection, configuration, env, process, provider } from '@podman-desktop/api';
+
+export type MachineJSON = {
+  Name: string;
+  CPUs: number;
+  Memory: string;
+  DiskSize: string;
+  Running: boolean;
+  Starting: boolean;
+  Default: boolean;
+  UserModeNetworking?: boolean;
+};
 
 export function getPodmanCli(): string {
   // If we have a custom binary path regardless if we are running Windows or not
@@ -34,4 +45,26 @@ export function getPodmanCli(): string {
 // return string or undefined
 export function getCustomBinaryPath(): string | undefined {
   return configuration.getConfiguration('podman').get('binary.path');
+}
+
+async function getJSONMachineList(): Promise<string> {
+  const { stdout } = await process.exec(getPodmanCli(), ['machine', 'list', '--format', 'json']);
+  return stdout;
+}
+
+export async function getFirstRunningPodmanConnection(): Promise<ProviderContainerConnection | undefined> {
+  let engine: ProviderContainerConnection;
+  try {
+    const machineListOutput = await getJSONMachineList();
+    const machines = JSON.parse(machineListOutput) as MachineJSON[];
+    const machine = machines.find(machine => machine.Default && machine.Running);
+    engine = provider
+    .getContainerConnections()
+    .filter(connection => connection.connection.type === 'podman')
+    .find(connection => connection.connection.name === machine.Name);
+  } catch(e) {
+    console.log(e)
+  } 
+  
+  return engine;
 }

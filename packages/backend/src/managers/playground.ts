@@ -35,6 +35,7 @@ import type { PodmanConnection } from './podmanConnection';
 import OpenAI from 'openai';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION, getDurationSecondsSince, timeout } from '../utils/utils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { getFirstRunningPodmanConnection } from '../utils/podman';
 
 export const LABEL_MODEL_ID = 'ai-studio-model-id';
 export const LABEL_MODEL_PORT = 'ai-studio-model-port';
@@ -44,14 +45,6 @@ export const LABEL_MODEL_PORTS = 'ai-studio-model-ports';
 const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
 
 const STARTING_TIME_MAX = 3600 * 1000;
-
-function findFirstProvider(): ProviderContainerConnection | undefined {
-  const engines = provider
-    .getContainerConnections()
-    .filter(connection => connection.connection.type === 'podman')
-    .filter(connection => connection.connection.status() === 'started');
-  return engines.length > 0 ? engines[0] : undefined;
-}
 
 export class PlayGroundManager {
   private queryIdCounter = 0;
@@ -172,7 +165,7 @@ export class PlayGroundManager {
 
     this.setPlaygroundStatus(modelId, 'starting');
 
-    const connection = findFirstProvider();
+    const connection = await getFirstRunningPodmanConnection();
     if (!connection) {
       const error = 'Unable to find an engine to start playground';
       this.setPlaygroundError(modelId, error);

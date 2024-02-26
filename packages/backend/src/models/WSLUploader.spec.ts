@@ -36,6 +36,7 @@ vi.mock('@podman-desktop/api', () => ({
     exec: mocks.execMock,
   },
 }));
+
 const wslUploader = new WSLUploader();
 
 beforeEach(() => {
@@ -57,21 +58,32 @@ describe('canUpload', () => {
 
 describe('upload', () => {
   vi.spyOn(utils, 'getPodmanCli').mockReturnValue('podman');
-  test('throw if localpath is not defined', async () => {
-    await expect(wslUploader.upload('')).rejects.toThrowError('invalid local path');
+  vi.spyOn(utils, 'getFirstRunningPodmanConnection').mockResolvedValue({
+    connection: {
+      name: 'test',
+      status: vi.fn(),
+      endpoint: {
+        socketPath: '/endpoint.sock',
+      },
+      type: 'podman'
+    },
+    providerId: 'podman'
   });
+  test('throw if localpath is not defined', async () => {
+    await expect(wslUploader.upload('')).rejects.toThrowError('invalid local path');  });
   test('copy model if not exists on podman machine', async () => {
-    mocks.execMock.mockRejectedValueOnce('');
+    mocks.execMock.mockRejectedValueOnce('');    
     await wslUploader.upload('C:\\Users\\podman\\folder\\file');
-    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'stat', '/home/user/file']);
+    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'test', 'stat', '/home/user/file']);
   });
   test('do not copy model if it exists on podman machine', async () => {
     mocks.execMock.mockResolvedValue('');
     await wslUploader.upload('C:\\Users\\podman\\folder\\file');
-    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'stat', '/home/user/file']);
+    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'test', 'stat', '/home/user/file']);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
       'ssh',
+      'test',
       'cp',
       '/mnt/c/Users/podman/folder/file',
       '/home/user/file',

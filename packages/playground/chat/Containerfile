@@ -1,0 +1,7 @@
+FROM registry.access.redhat.com/ubi9/python-39:1-165
+
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+COPY run.sh run.sh
+EXPOSE 8001
+ENTRYPOINT [ "sh", "run.sh" ]

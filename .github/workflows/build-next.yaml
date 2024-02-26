@@ -54,13 +54,24 @@ jobs:
       - name: Login to ghcr.io
         run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
 
-      - name: Publish Image
-        id: publish-image
+      - name: Publish Image (Extension)
+        id: publish-image-extension
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/ai-studio
           IMAGE_NIGHTLY=${IMAGE_NAME}:nightly
           IMAGE_SHA=${IMAGE_NAME}:${GITHUB_SHA}
           podman build -t $IMAGE_NIGHTLY .
+          podman push $IMAGE_NIGHTLY
+          podman tag $IMAGE_NIGHTLY $IMAGE_SHA
+          podman push $IMAGE_SHA
+
+      - name: Publish Image (Playground)
+        id: publish-image-playground
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/ai-studio-playground-chat
+          IMAGE_NIGHTLY=${IMAGE_NAME}:nightly
+          IMAGE_SHA=${IMAGE_NAME}:${GITHUB_SHA}
+          podman build -t $IMAGE_NIGHTLY packages/playground-chat
           podman push $IMAGE_NIGHTLY
           podman tag $IMAGE_NIGHTLY $IMAGE_SHA
           podman push $IMAGE_SHA

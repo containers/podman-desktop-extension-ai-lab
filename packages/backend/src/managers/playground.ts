@@ -16,14 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import {
-  containerEngine,
-  type Webview,
-  type ImageInfo,
-  type ProviderContainerConnection,
-  provider,
-  type TelemetryLogger,
-} from '@podman-desktop/api';
+import { containerEngine, type Webview, type ImageInfo, type TelemetryLogger } from '@podman-desktop/api';
 
 import path from 'node:path';
 import { getFreePort } from '../utils/ports';

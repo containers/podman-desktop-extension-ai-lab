@@ -65,14 +65,15 @@ describe('upload', () => {
       endpoint: {
         socketPath: '/endpoint.sock',
       },
-      type: 'podman'
+      type: 'podman',
     },
-    providerId: 'podman'
+    providerId: 'podman',
   });
   test('throw if localpath is not defined', async () => {
-    await expect(wslUploader.upload('')).rejects.toThrowError('invalid local path');  });
+    await expect(wslUploader.upload('')).rejects.toThrowError('invalid local path');
+  });
   test('copy model if not exists on podman machine', async () => {
-    mocks.execMock.mockRejectedValueOnce('');    
+    mocks.execMock.mockRejectedValueOnce('');
     await wslUploader.upload('C:\\Users\\podman\\folder\\file');
     expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'test', 'stat', '/home/user/file']);
   });

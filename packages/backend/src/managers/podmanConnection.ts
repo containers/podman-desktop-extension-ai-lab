@@ -45,7 +45,7 @@ export class PodmanConnection implements Disposable {
   #onEventDisposable: Disposable | undefined;
 
   init(): void {
-    this.listenRegistration();
+    this.listenRegistration().catch((e: unknown) => console.error(String(e)));
     this.listenMachine();
     this.watchPods();
   }
@@ -78,7 +78,6 @@ export class PodmanConnection implements Disposable {
       disposable.dispose();
       this.#firstFound = true;
     }
-    
   }
 
   // startupSubscribe registers f to be executed when a podman container provider

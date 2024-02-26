@@ -44,14 +44,12 @@ vi.mock('../utils/podman', () => {
 test('startupSubscribe should execute immediately if provider already registered', async () => {
   const manager = new PodmanConnection();
   // one provider is already registered
-  mocks.getFirstRunningPodmanConnectionMock.mockResolvedValue(
-    {
-      connection: {
-        type: 'podman',
-        status: () => 'started',
-      },
+  mocks.getFirstRunningPodmanConnectionMock.mockResolvedValue({
+    connection: {
+      type: 'podman',
+      status: () => 'started',
     },
-  );
+  });
   mocks.onDidRegisterContainerConnection.mockReturnValue({
     dispose: vi.fn,
   });

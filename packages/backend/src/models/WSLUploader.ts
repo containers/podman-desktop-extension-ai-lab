@@ -40,14 +40,27 @@ export class WSLUploader implements UploadWorker {
     // check if model already loaded on the podman machine
     let existsRemote = true;
     try {
-      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', connection.connection.name, 'stat', remotePath]);
+      await podmanDesktopApi.process.exec(getPodmanCli(), [
+        'machine',
+        'ssh',
+        connection.connection.name,
+        'stat',
+        remotePath,
+      ]);
     } catch (e) {
       existsRemote = false;
     }
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {
-      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', connection.connection.name, 'cp', convertToMntPath, remotePath]);
+      await podmanDesktopApi.process.exec(getPodmanCli(), [
+        'machine',
+        'ssh',
+        connection.connection.name,
+        'cp',
+        convertToMntPath,
+        remotePath,
+      ]);
     }
 
     return remotePath;

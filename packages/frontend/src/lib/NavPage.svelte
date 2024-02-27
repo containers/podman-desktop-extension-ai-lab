@@ -18,7 +18,7 @@ export let contentBackground = '';
         <div class="flex flex-row">
           {#if icon}
             <div class="bg-charcoal-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">
-              <Fa size="20" class="text-purple-500" icon="{icon}" />
+              <Fa size="1.125x" class="text-purple-500" icon="{icon}" />
             </div>
           {/if}
           <h1 class="text-xl first-letter:uppercase">{title}</h1>

@@ -167,10 +167,12 @@ function startApplication() {
         <div class="flex flex-col space-y-2 w-[45px]">
           <div class="text-base">Repository</div>
           <div class="cursor-pointer flex text-nowrap items-center">
-            <Fa size="lg" icon="{faGithub}" />
-            <div class="text-sm ml-2">
-              <a on:click="{onClickRepository}">{getDisplayName(recipe?.repository)}</a>
-            </div>
+            <button on:click="{onClickRepository}">
+              <div class="flex flex-row p-0 m-0 bg-transparent justify-center items-center space-x-2">
+                <Fa size="lg" icon="{faGithub}" />
+                <span>{getDisplayName(recipe?.repository)}</span>
+              </div>
+            </button>
           </div>
         </div>
         {#if localPath}

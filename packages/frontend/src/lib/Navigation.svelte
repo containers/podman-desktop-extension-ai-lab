@@ -12,7 +12,7 @@ export let meta: TinroRouteMeta;
   aria-label="PreferencesNavigation">
   <div class="flex items-center">
     <div class="pt-4 px-5 mb-10 flex items-center">
-      <Fa size="24" class="text-purple-500 cursor-pointer mr-4" icon="{faBrain}" />
+      <Fa size="1.5x" class="text-purple-500 cursor-pointer mr-4" icon="{faBrain}" />
       <p class="text-xl first-letter:uppercase">AI Studio</p>
     </div>
   </div>

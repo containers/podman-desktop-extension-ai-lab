@@ -8,10 +8,11 @@ import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 import { playgroundStates } from '/@/stores/playground-states';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import Card from '/@/lib/Card.svelte';
-export let model: ModelInfo | undefined;
 import { faPlay, faStop, faInfo, faWarning } from '@fortawesome/free-solid-svg-icons';
 import ContainerIcon from '/@/lib/images/ContainerIcon.svelte';
 import ErrorMessage from '/@/lib/ErrorMessage.svelte';
+
+export let model: ModelInfo | undefined;
 
 let prompt = '';
 let queryId: number;
@@ -41,11 +42,13 @@ onMount(() => {
   });
 
   const unsubscribeStates = playgroundStates.subscribe((states: PlaygroundState[]) => {
-    playgroundState = states.find(state => state.modelId === model.id);
-    if (playgroundState === undefined) {
-      playgroundState = { modelId: model.id, status: 'none' };
-    }
-    error = playgroundState.error ?? error;
+    if (model) {
+      playgroundState = states.find(state => state.modelId === model?.id);
+      if (playgroundState === undefined) {
+        playgroundState = { modelId: model.id, status: 'none' };
+      }
+      error = playgroundState.error ?? error;
+    }    
   });
 
   return () => {

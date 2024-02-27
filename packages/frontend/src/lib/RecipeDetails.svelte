@@ -167,8 +167,7 @@ function startApplication() {
         <div class="flex flex-col space-y-2 w-[45px]">
           <div class="text-base">Repository</div>
           <div class="cursor-pointer flex text-nowrap items-center">
-            <button
-              on:click="{onClickRepository}">
+            <button on:click="{onClickRepository}">
               <div class="flex flex-row p-0 m-0 bg-transparent justify-center items-center space-x-2">
                 <Fa size="lg" icon="{faGithub}" />
                 <span>{getDisplayName(recipe?.repository)}</span>

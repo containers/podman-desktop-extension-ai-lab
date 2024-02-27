@@ -48,7 +48,7 @@ onMount(() => {
         playgroundState = { modelId: model.id, status: 'none' };
       }
       error = playgroundState.error ?? error;
-    }    
+    }
   });
 
   return () => {

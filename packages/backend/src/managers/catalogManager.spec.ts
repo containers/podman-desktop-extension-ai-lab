@@ -95,9 +95,9 @@ describe('invalid user catalog', () => {
   });
 
   test('expect correct model is returned with valid id', () => {
-    const model = catalogManager.getModelById('llama-2-7b-chat.Q5_K_S');
+    const model = catalogManager.getModelById('hf.TheBloke.llama-2-7b-chat.Q5_K_S');
     expect(model).toBeDefined();
-    expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
+    expect(model.name).toEqual('TheBloke/Llama-2-7B-Chat-GGUF');
     expect(model.registry).toEqual('Hugging Face');
     expect(model.url).toEqual(
       'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
@@ -112,9 +112,9 @@ describe('invalid user catalog', () => {
 test('expect correct model is returned from default catalog with valid id when no user catalog exists', async () => {
   vi.spyOn(fs, 'existsSync').mockReturnValue(false);
   await catalogManager.loadCatalog();
-  const model = catalogManager.getModelById('llama-2-7b-chat.Q5_K_S');
+  const model = catalogManager.getModelById('hf.TheBloke.llama-2-7b-chat.Q5_K_S');
   expect(model).toBeDefined();
-  expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
+  expect(model.name).toEqual('TheBloke/Llama-2-7B-Chat-GGUF');
   expect(model.registry).toEqual('Hugging Face');
   expect(model.url).toEqual(
     'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',

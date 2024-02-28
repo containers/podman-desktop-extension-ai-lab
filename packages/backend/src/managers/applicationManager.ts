@@ -548,24 +548,31 @@ export class ApplicationManager {
       git: 'checkout',
     });
 
-    // We might already have the repository cloned
-    if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
-      // Update checkout state
-      checkoutTask.name = 'Checkout repository (cached).';
-      checkoutTask.state = 'success';
-    } else {
-      // Create folder
-      fs.mkdirSync(gitCloneInfo.targetDirectory, { recursive: true });
+    try {
+      // We might already have the repository cloned
+      if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
+        // Update checkout state
+        checkoutTask.name = 'Checkout repository (cached).';
+        checkoutTask.state = 'success';
+      } else {
+        // Create folder
+        fs.mkdirSync(gitCloneInfo.targetDirectory, { recursive: true });
 
-      // Clone the repository
-      console.log(`Cloning repository ${gitCloneInfo.repository} in ${gitCloneInfo.targetDirectory}.`);
-      await this.git.cloneRepository(gitCloneInfo);
+        // Clone the repository
+        console.log(`Cloning repository ${gitCloneInfo.repository} in ${gitCloneInfo.targetDirectory}.`);
+        await this.git.cloneRepository(gitCloneInfo);
 
-      // Update checkout state
-      checkoutTask.state = 'success';
+        // Update checkout state
+        checkoutTask.state = 'success';
+      }
+    } catch (err: unknown) {
+      checkoutTask.state = 'error';
+      checkoutTask.error = String(err);
+      throw err;
+    } finally {
+      // Update task registry
+      this.taskRegistry.updateTask(checkoutTask);
     }
-    // Update task registry
-    this.taskRegistry.updateTask(checkoutTask);
   }
 
   adoptRunningEnvironments() {

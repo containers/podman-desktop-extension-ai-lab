@@ -29,6 +29,7 @@ import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
+import * as pathUtils from '../utils/pathUtils';
 import type { Webview, TelemetryLogger, PodInfo } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
@@ -50,10 +51,8 @@ const mocks = vi.hoisted(() => {
     getImageInspectMock: vi.fn(),
     createPodMock: vi.fn(),
     createContainerMock: vi.fn(),
-    replicatePodmanContainerMock: vi.fn(),
     startContainerMock: vi.fn(),
     startPod: vi.fn(),
-    deleteContainerMock: vi.fn(),
     inspectContainerMock: vi.fn(),
     logUsageMock: vi.fn(),
     logErrorMock: vi.fn(),
@@ -109,10 +108,8 @@ vi.mock('@podman-desktop/api', () => ({
     getImageInspect: mocks.getImageInspectMock,
     createPod: mocks.createPodMock,
     createContainer: mocks.createContainerMock,
-    replicatePodmanContainer: mocks.replicatePodmanContainerMock,
     startContainer: mocks.startContainerMock,
     startPod: mocks.startPod,
-    deleteContainer: mocks.deleteContainerMock,
     inspectContainer: mocks.inspectContainerMock,
     pullImage: mocks.pullImageMock,
     stopContainer: mocks.stopContainerMock,
@@ -1058,35 +1055,45 @@ describe('createAndAddContainersToPod', () => {
     modelService: false,
     ports: ['8080', '8081'],
   };
-  test('check that after the creation and copy inside the pod, the container outside the pod is actually deleted', async () => {
+  const imageInfo2: ImageInfo = {
+    id: 'id2',
+    appName: 'appName2',
+    modelService: true,
+    ports: ['8085'],
+  };
+  test('check that containers are correctly created', async () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'container-1',
     });
+    vi.spyOn(pathUtils, 'getMappedPathInPodmanMachine').mockReturnValue('mapped');
     vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
-    await manager.createAndAddContainersToPod(pod, [imageInfo1], 'path');
-    expect(mocks.createContainerMock).toBeCalledWith('engine', {
+    await manager.createAndAddContainersToPod(pod, [imageInfo1, imageInfo2], 'path');
+    expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {
       Image: 'id',
       Detach: true,
-      HostConfig: {
-        AutoRemove: true,
-      },
-      Env: [],
+      Env: ['MODEL_ENDPOINT=http://localhost:8085'],
       start: false,
+      name: 'name',
+      pod: 'id',
     });
-    expect(mocks.replicatePodmanContainerMock).toBeCalledWith(
-      {
-        id: 'container-1',
-        engineId: 'engine',
+    expect(mocks.createContainerMock).toHaveBeenNthCalledWith(2, 'engine', {
+      Image: 'id2',
+      Detach: true,
+      Env: ['MODEL_PATH=/path'],
+      start: false,
+      name: 'name',
+      pod: 'id',
+      HostConfig: {
+        Mounts: [
+          {
+            Mode: 'Z',
+            Source: 'mapped',
+            Target: '/path',
+            Type: 'bind',
+          },
+        ],
       },
-      {
-        engineId: 'engine',
-      },
-      {
-        pod: 'id',
-        name: 'name',
-      },
-    );
-    expect(mocks.deleteContainerMock).toBeCalledWith('engine', 'container-1');
+    });
   });
 });
 

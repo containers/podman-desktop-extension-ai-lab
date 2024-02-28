@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { env } from '@podman-desktop/api';
 import path from 'path';
 
 export function getParentDirectory(filePath: string): string {
@@ -24,4 +25,12 @@ export function getParentDirectory(filePath: string): string {
 
   // Get the directory name using path.dirname
   return path.dirname(normalizedPath);
+}
+
+export function getMappedPathInPodmanMachine(path: string): string {
+  if (env.isWindows) {
+    path = path.replace(':', '').replace(/\\/g, '/').toLowerCase();
+    return `/mnt/${path}`;
+  }
+  return path;
 }

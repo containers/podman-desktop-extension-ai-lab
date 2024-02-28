@@ -41,7 +41,7 @@
     "eslint-plugin-redundant-undefined": "^1.0.0",
     "eslint-plugin-sonarjs": "^0.24.0",
     "prettier": "^3.2.5",
-    "prettier-plugin-svelte": "^3.2.1",
+    "prettier-plugin-svelte": "^3.2.2",
     "svelte-check": "^3.6.5",
     "typescript": "5.3.3",
     "vite": "^5.1.4",

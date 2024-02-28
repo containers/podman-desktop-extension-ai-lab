@@ -58,8 +58,11 @@ A recipe has the following attributes:
 
 The configuration file is called ```ai-studio.yaml``` and follows the following syntax.
 
-The root element is called ```application```. This element contains an attribute called ```containers```
-whose syntax is an array of objects containing the following attributes:
+The root elements are called ```version``` and ```application```.
+
+```version``` represents the version of the specifications that ai-studio adheres to (so far, the only accepted value here is `v1.0`). 
+
+```application``` contains an attribute called ```containers``` whose syntax is an array of objects containing the following attributes:
 - ```name```: the name of the container
 - ```contextdir```: the context directory used to build the container.
 - ```containerfile```: the containerfile used to build the image

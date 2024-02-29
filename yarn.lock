@@ -579,10 +579,10 @@
     "@types/node" "*"
     form-data "^4.0.0"
 
-"@types/node@*":
-  version "20.11.15"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.11.15.tgz#b853a86cfedbc768360c552b4653302b4e7417bf"
-  integrity sha512-gscmuADZfvNULx1eyirVbr3kVOVZtpQtzKMCZpeSZcN6MfbkRXAR4s9/gsQ4CzxLHw6EStDtKLNtSDL3vbq05A==
+"@types/node@*", "@types/node@^20":
+  version "20.11.20"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.11.20.tgz#f0a2aee575215149a62784210ad88b3a34843659"
+  integrity sha512-7/rR21OS+fq8IyHTgtLkDK949uzsa6n8BkziAKtPVpugIkO6D+/ooXMvzXxDnZrmtXVfjb1bKQafYpb8s89LOg==
   dependencies:
     undici-types "~5.26.4"
 
@@ -590,13 +590,6 @@
   version "18.19.18"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.18.tgz#7526471b28828d1fef1f7e4960fb9477e6e4369c"
   integrity sha512-80CP7B8y4PzZF0GWx15/gVWRrB5y/bIjNI84NK3cmQJu0WZwvmj2WMA5LcofQFVfLqqCSp545+U2LsrVzX36Zg==
-  dependencies:
-    undici-types "~5.26.4"
-
-"@types/node@^20":
-  version "20.11.20"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.11.20.tgz#f0a2aee575215149a62784210ad88b3a34843659"
-  integrity sha512-7/rR21OS+fq8IyHTgtLkDK949uzsa6n8BkziAKtPVpugIkO6D+/ooXMvzXxDnZrmtXVfjb1bKQafYpb8s89LOg==
   dependencies:
     undici-types "~5.26.4"
 
@@ -3100,10 +3093,10 @@ onetime@^6.0.0:
   dependencies:
     mimic-fn "^4.0.0"
 
-openai@^4.28.0:
-  version "4.28.0"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-4.28.0.tgz#ded00e3d98c25758b5406c9675ec27a957e00930"
-  integrity sha512-JM8fhcpmpGN0vrUwGquYIzdcEQHtFuom6sRCbbCM6CfzZXNuRk33G7KfeRAIfnaCxSpzrP5iHtwJzIm6biUZ2Q==
+openai@^4.28.4:
+  version "4.28.4"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.28.4.tgz#d4bf1f53a89ef151bf066ef284489e12e7dd1657"
+  integrity sha512-RNIwx4MT/F0zyizGcwS+bXKLzJ8QE9IOyigDG/ttnwB220d58bYjYFp0qjvGwEFBO6+pvFVIDABZPGDl46RFsg==
   dependencies:
     "@types/node" "^18.11.18"
     "@types/node-fetch" "^2.6.4"

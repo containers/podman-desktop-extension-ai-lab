@@ -106,7 +106,7 @@ test('startPlayground should fail if no provider', async () => {
 
 test('startPlayground should download image if not present then create container', async () => {
   mocks.postMessage.mockResolvedValue(undefined);
-  mocks.getFirstRunningPodmanConnectionMock.mockResolvedValue({
+  mocks.getFirstRunningPodmanConnectionMock.mockReturnValue({
     connection: {
       type: 'podman',
       status: () => 'started',
@@ -162,7 +162,7 @@ test('stopPlayground should fail if no playground is running', async () => {
 
 test('stopPlayground should stop a started playground', async () => {
   mocks.postMessage.mockResolvedValue(undefined);
-  mocks.getFirstRunningPodmanConnectionMock.mockResolvedValue({
+  mocks.getFirstRunningPodmanConnectionMock.mockReturnValue({
     connection: {
       type: 'podman',
       status: () => 'started',

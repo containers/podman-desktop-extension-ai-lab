@@ -18,7 +18,7 @@
 
 import path from 'node:path';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { getFirstRunningPodmanConnection, getPodmanCli } from '../utils/podman';
+import { getFirstRunningMachine, getPodmanCli } from '../utils/podman';
 import type { UploadWorker } from './uploader';
 
 export class WSLUploader implements UploadWorker {
@@ -36,17 +36,11 @@ export class WSLUploader implements UploadWorker {
       .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
       .replace(/\\/g, '/');
     const remotePath = `/home/user/${path.basename(convertToMntPath)}`;
-    const connection = await getFirstRunningPodmanConnection();
+    const machine = await getFirstRunningMachine();
     // check if model already loaded on the podman machine
     let existsRemote = true;
     try {
-      await podmanDesktopApi.process.exec(getPodmanCli(), [
-        'machine',
-        'ssh',
-        connection.connection.name,
-        'stat',
-        remotePath,
-      ]);
+      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', machine.Name, 'stat', remotePath]);
     } catch (e) {
       existsRemote = false;
     }
@@ -56,7 +50,7 @@ export class WSLUploader implements UploadWorker {
       await podmanDesktopApi.process.exec(getPodmanCli(), [
         'machine',
         'ssh',
-        connection.connection.name,
+        machine.Name,
         'cp',
         convertToMntPath,
         remotePath,

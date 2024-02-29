@@ -45,7 +45,7 @@ export class PodmanConnection implements Disposable {
   #onEventDisposable: Disposable | undefined;
 
   init(): void {
-    this.listenRegistration().catch((e: unknown) => console.error(String(e)));
+    this.listenRegistration();
     this.listenMachine();
     this.watchPods();
   }
@@ -54,7 +54,7 @@ export class PodmanConnection implements Disposable {
     this.#onEventDisposable?.dispose();
   }
 
-  async listenRegistration() {
+  listenRegistration() {
     // In case the extension has not yet registered, we listen for new registrations
     // and retain the first started podman provider
     const disposable = provider.onDidRegisterContainerConnection((e: RegisterContainerConnectionEvent) => {
@@ -73,7 +73,7 @@ export class PodmanConnection implements Disposable {
     });
 
     // In case at least one extension has already registered, we get one started podman provider
-    const engine = await getFirstRunningPodmanConnection();
+    const engine = getFirstRunningPodmanConnection();
     if (engine) {
       disposable.dispose();
       this.#firstFound = true;

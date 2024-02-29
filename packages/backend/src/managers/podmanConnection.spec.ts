@@ -44,7 +44,7 @@ vi.mock('../utils/podman', () => {
 test('startupSubscribe should execute immediately if provider already registered', async () => {
   const manager = new PodmanConnection();
   // one provider is already registered
-  mocks.getFirstRunningPodmanConnectionMock.mockResolvedValue({
+  mocks.getFirstRunningPodmanConnectionMock.mockReturnValue({
     connection: {
       type: 'podman',
       status: () => 'started',
@@ -53,7 +53,7 @@ test('startupSubscribe should execute immediately if provider already registered
   mocks.onDidRegisterContainerConnection.mockReturnValue({
     dispose: vi.fn,
   });
-  await manager.listenRegistration();
+  manager.listenRegistration();
   const handler = vi.fn();
   manager.startupSubscribe(handler);
   // the handler is called immediately
@@ -64,7 +64,7 @@ test('startupSubscribe should execute  when provider is registered', async () =>
   const manager = new PodmanConnection();
 
   // no provider is already registered
-  mocks.getFirstRunningPodmanConnectionMock.mockResolvedValue(undefined);
+  mocks.getFirstRunningPodmanConnectionMock.mockReturnValue(undefined);
   mocks.onDidRegisterContainerConnection.mockImplementation((f: (e: RegisterContainerConnectionEvent) => void) => {
     setTimeout(() => {
       f({
@@ -78,7 +78,7 @@ test('startupSubscribe should execute  when provider is registered', async () =>
       dispose: vi.fn(),
     };
   });
-  await manager.listenRegistration();
+  manager.listenRegistration();
   const handler = vi.fn();
   manager.startupSubscribe(handler);
   // the handler is not called immediately

@@ -24,7 +24,6 @@ import { beforeEach } from 'node:test';
 const mocks = vi.hoisted(() => {
   return {
     getConfigurationMock: vi.fn(),
-    execMock: vi.fn(),
     getContainerConnectionsMock: vi.fn(),
   };
 });
@@ -41,9 +40,6 @@ vi.mock('@podman-desktop/api', () => ({
   },
   configuration: {
     getConfiguration: () => config,
-  },
-  process: {
-    exec: mocks.execMock,
   },
   provider: {
     getContainerConnections: mocks.getContainerConnectionsMock,
@@ -75,63 +71,17 @@ describe('getPodmanCli', () => {
 });
 
 describe('getFirstRunningPodmanConnection', () => {
-  test('should return undefined if failing at retrieving machine list', async () => {
-    mocks.execMock.mockRejectedValue('error');
-    const result = await utils.getFirstRunningPodmanConnection();
+  test('should return undefined if failing at retrieving connection', async () => {
+    mocks.getConfigurationMock.mockRejectedValue('error');
+    const result = utils.getFirstRunningPodmanConnection();
     expect(result).toBeUndefined();
   });
   test('should return undefined if default podman machine is not running', async () => {
-    const machine = {
-      Name: 'machine',
-      CPUs: 2,
-      Memory: 2000,
-      DiskSize: '100',
-      Running: false,
-      Starting: false,
-      Default: true,
-    };
-    const machine2 = {
-      Name: 'machine2',
-      CPUs: 2,
-      Memory: 2000,
-      DiskSize: '100',
-      Running: true,
-      Starting: false,
-      Default: false,
-    };
-    mocks.execMock.mockResolvedValue({
-      stdout: JSON.stringify([machine2, machine]),
-    });
-    const result = await utils.getFirstRunningPodmanConnection();
-    expect(result).toBeUndefined();
-  });
-  test('should return default running podman connection', async () => {
-    const machine = {
-      Name: 'machine',
-      CPUs: 2,
-      Memory: 2000,
-      DiskSize: '100',
-      Running: false,
-      Starting: false,
-      Default: false,
-    };
-    const machine2 = {
-      Name: 'machine2',
-      CPUs: 2,
-      Memory: 2000,
-      DiskSize: '100',
-      Running: true,
-      Starting: false,
-      Default: true,
-    };
-    mocks.execMock.mockResolvedValue({
-      stdout: JSON.stringify([machine, machine2]),
-    });
     mocks.getContainerConnectionsMock.mockReturnValue([
       {
         connection: {
           name: 'machine',
-          status: vi.fn(),
+          status: () => 'stopped',
           endpoint: {
             socketPath: '/endpoint.sock',
           },
@@ -142,7 +92,7 @@ describe('getFirstRunningPodmanConnection', () => {
       {
         connection: {
           name: 'machine2',
-          status: vi.fn(),
+          status: () => 'stopped',
           endpoint: {
             socketPath: '/endpoint.sock',
           },
@@ -151,7 +101,35 @@ describe('getFirstRunningPodmanConnection', () => {
         providerId: 'podman2',
       },
     ]);
-    const result = await utils.getFirstRunningPodmanConnection();
+    const result = utils.getFirstRunningPodmanConnection();
+    expect(result).toBeUndefined();
+  });
+  test('should return default running podman connection', async () => {
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'machine',
+          status: () => 'stopped',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+      {
+        connection: {
+          name: 'machine2',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman2',
+      },
+    ]);
+    const result = utils.getFirstRunningPodmanConnection();
     expect(result.connection.name).equal('machine2');
   });
 });

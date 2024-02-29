@@ -53,18 +53,25 @@ async function getJSONMachineList(): Promise<string> {
   return stdout;
 }
 
-export async function getFirstRunningPodmanConnection(): Promise<ProviderContainerConnection | undefined> {
-  let engine: ProviderContainerConnection;
+export async function getFirstRunningMachine(): Promise<MachineJSON | undefined> {
   try {
     const machineListOutput = await getJSONMachineList();
     const machines = JSON.parse(machineListOutput) as MachineJSON[];
-    const machine = machines.find(machine => machine.Default && machine.Running);
-    if (machine) {
-      engine = provider
-        .getContainerConnections()
-        .filter(connection => connection.connection.type === 'podman')
-        .find(connection => connection.connection.name === machine.Name);
-    }
+    return machines.find(machine => machine.Default && machine.Running);
+  } catch (e) {
+    console.log(e);
+  }
+
+  return undefined;
+}
+
+export function getFirstRunningPodmanConnection(): ProviderContainerConnection | undefined {
+  let engine: ProviderContainerConnection;
+  try {
+    engine = provider
+      .getContainerConnections()
+      .filter(connection => connection.connection.type === 'podman')
+      .find(connection => connection.connection.status() === 'started');
   } catch (e) {
     console.log(e);
   }

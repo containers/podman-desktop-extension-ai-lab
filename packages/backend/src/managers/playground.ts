@@ -158,7 +158,7 @@ export class PlayGroundManager {
 
     this.setPlaygroundStatus(modelId, 'starting');
 
-    const connection = await getFirstRunningPodmanConnection();
+    const connection = getFirstRunningPodmanConnection();
     if (!connection) {
       const error = 'Unable to find an engine to start playground';
       this.setPlaygroundError(modelId, error);

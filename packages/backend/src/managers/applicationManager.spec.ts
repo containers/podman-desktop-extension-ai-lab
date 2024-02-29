@@ -437,6 +437,49 @@ describe('doCheckout', () => {
       },
     });
   });
+  test('doCheckout report an error if clone is errored', async () => {
+    vi.spyOn(fs, 'existsSync').mockReturnValue(false);
+    vi.spyOn(fs, 'mkdirSync');
+    const cloneRepositoryMock = vi.fn().mockRejectedValue(new Error('Unknown Git reference'));
+    const manager = new ApplicationManager(
+      '/home/user/aistudio',
+      {
+        cloneRepository: cloneRepositoryMock,
+      } as unknown as GitManager,
+      taskRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
+      {} as unknown as ModelsManager,
+      telemetryLogger,
+      localRepositoryRegistry,
+    );
+    const gitCloneOptions = {
+      repository: 'repo',
+      ref: '000000',
+      targetDirectory: 'folder',
+    };
+    let expectedError: unknown;
+
+    try {
+      await manager.doCheckout(gitCloneOptions);
+    } catch (err: unknown) {
+      expectedError = err;
+    }
+
+    expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
+    expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
+      id: expect.any(String),
+      name: 'Checkout repository',
+      state: 'error',
+      labels: {
+        git: 'checkout',
+      },
+      error: 'Error: Unknown Git reference',
+    });
+    expect(expectedError).to.be.a('Error');
+    expect((expectedError as Error).message).equal('Unknown Git reference');
+  });
   test('do not clone repo if already present locally', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     const stats = {

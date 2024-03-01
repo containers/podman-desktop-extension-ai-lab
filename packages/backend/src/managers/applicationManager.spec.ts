@@ -50,10 +50,8 @@ const mocks = vi.hoisted(() => {
     getImageInspectMock: vi.fn(),
     createPodMock: vi.fn(),
     createContainerMock: vi.fn(),
-    replicatePodmanContainerMock: vi.fn(),
     startContainerMock: vi.fn(),
     startPod: vi.fn(),
-    deleteContainerMock: vi.fn(),
     inspectContainerMock: vi.fn(),
     logUsageMock: vi.fn(),
     logErrorMock: vi.fn(),
@@ -107,10 +105,8 @@ vi.mock('@podman-desktop/api', () => ({
     getImageInspect: mocks.getImageInspectMock,
     createPod: mocks.createPodMock,
     createContainer: mocks.createContainerMock,
-    replicatePodmanContainer: mocks.replicatePodmanContainerMock,
     startContainer: mocks.startContainerMock,
     startPod: mocks.startPod,
-    deleteContainer: mocks.deleteContainerMock,
     inspectContainer: mocks.inspectContainerMock,
     pullImage: mocks.pullImageMock,
     stopContainer: mocks.stopContainerMock,
@@ -1010,7 +1006,7 @@ describe('createAndAddContainersToPod', () => {
     modelService: false,
     ports: ['8080'],
   };
-  test('check that after the creation and copy inside the pod, the container outside the pod is actually deleted', async () => {
+  test('check that container is created inside the pod', async () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'container-1',
     });
@@ -1018,27 +1014,15 @@ describe('createAndAddContainersToPod', () => {
     await manager.createAndAddContainersToPod(pod, [imageInfo1], 'path');
     expect(mocks.createContainerMock).toBeCalledWith('engine', {
       Image: 'id',
+      name: 'name',
       Detach: true,
       HostConfig: {
         AutoRemove: true,
       },
       Env: [],
       start: false,
+      pod: pod.Id,
     });
-    expect(mocks.replicatePodmanContainerMock).toBeCalledWith(
-      {
-        id: 'container-1',
-        engineId: 'engine',
-      },
-      {
-        engineId: 'engine',
-      },
-      {
-        pod: 'id',
-        name: 'name',
-      },
-    );
-    expect(mocks.deleteContainerMock).toBeCalledWith('engine', 'container-1');
   });
 });
 

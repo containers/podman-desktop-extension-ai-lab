@@ -24,7 +24,7 @@ import path from 'node:path';
 export class QemuUploader implements UploadWorker {
   async canUpload(): Promise<boolean> {
     const machine = await getFirstRunningMachine();
-    return machine.VMType === 'qemu';
+    return machine?.VMType === 'qemu';
   }
 
   async upload(localPath: string): Promise<string> {

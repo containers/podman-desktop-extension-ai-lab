@@ -17,10 +17,9 @@
  ***********************************************************************/
 
 import { expect, test, describe, vi } from 'vitest';
-import { WSLUploader } from './WSLUploader';
-import * as podmanDesktopApi from '@podman-desktop/api';
 import * as utils from '../utils/podman';
 import { beforeEach } from 'node:test';
+import { QemuUploader } from './QemuUploader';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -37,28 +36,48 @@ vi.mock('@podman-desktop/api', () => ({
   },
 }));
 
-const wslUploader = new WSLUploader();
+const qemuUploader = new QemuUploader();
 
 beforeEach(() => {
   vi.resetAllMocks();
 });
 
 describe('canUpload', () => {
-  test('should return false if system is not windows', async () => {
-    vi.mocked(podmanDesktopApi.env).isWindows = false;
-    const result = await wslUploader.canUpload();
+  test('should return false if system is not qemu', async () => {
+    const machine: utils.MachineJSON = {
+      Name: 'machine',
+      CPUs: 2,
+      Memory: '2000',
+      DiskSize: '100',
+      Running: true,
+      Starting: false,
+      Default: true,
+      VMType: 'WSL',
+    };
+    vi.spyOn(utils, 'getFirstRunningMachine').mockResolvedValue(machine);
+    const result = await qemuUploader.canUpload();
     expect(result).toBeFalsy();
   });
-  test('should return true if system is windows', async () => {
-    vi.mocked(podmanDesktopApi.env).isWindows = true;
-    const result = await wslUploader.canUpload();
+  test('should return true if system is qemu', async () => {
+    const machine: utils.MachineJSON = {
+      Name: 'machine',
+      CPUs: 2,
+      Memory: '2000',
+      DiskSize: '100',
+      Running: true,
+      Starting: false,
+      Default: true,
+      VMType: 'qemu',
+    };
+    vi.spyOn(utils, 'getFirstRunningMachine').mockResolvedValue(machine);
+    const result = await qemuUploader.canUpload();
     expect(result).toBeTruthy();
   });
 });
 
 describe('upload', () => {
-  const machine2: utils.MachineJSON = {
-    Name: 'machine2',
+  const machine: utils.MachineJSON = {
+    Name: 'machine',
     CPUs: 2,
     Memory: '2000',
     DiskSize: '100',
@@ -67,38 +86,26 @@ describe('upload', () => {
     Default: true,
   };
   vi.spyOn(utils, 'getPodmanCli').mockReturnValue('podman');
-  vi.spyOn(utils, 'getFirstRunningPodmanConnection').mockResolvedValue({
-    connection: {
-      name: 'test',
-      status: vi.fn(),
-      endpoint: {
-        socketPath: '/endpoint.sock',
-      },
-      type: 'podman',
-    },
-    providerId: 'podman',
-  });
+  vi.spyOn(utils, 'getFirstRunningMachine').mockResolvedValue(machine);
   test('throw if localpath is not defined', async () => {
-    await expect(wslUploader.upload('')).rejects.toThrowError('invalid local path');
+    await expect(qemuUploader.upload('')).rejects.toThrowError('invalid local path');
   });
   test('copy model if not exists on podman machine', async () => {
     mocks.execMock.mockRejectedValueOnce('error');
-    vi.spyOn(utils, 'getFirstRunningMachine').mockResolvedValue(machine2);
-    await wslUploader.upload('C:\\Users\\podman\\folder\\file');
-    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'machine2', 'stat', '/home/user/file']);
+    await qemuUploader.upload('/home/user/folder/file');
+    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'machine', 'stat', '/var/home/core/file']);
   });
   test('do not copy model if it exists on podman machine', async () => {
     mocks.execMock.mockResolvedValue('');
-    vi.spyOn(utils, 'getFirstRunningMachine').mockResolvedValue(machine2);
-    await wslUploader.upload('C:\\Users\\podman\\folder\\file');
-    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'machine2', 'stat', '/home/user/file']);
+    await qemuUploader.upload('/home/user/folder/file');
+    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'machine', 'stat', '/var/home/core/file']);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
       'ssh',
-      'machine2',
+      'machine',
       'cp',
-      '/mnt/c/Users/podman/folder/file',
-      '/home/user/file',
+      '/home/user/folder/file',
+      '/var/home/core/file',
     ]);
   });
 });

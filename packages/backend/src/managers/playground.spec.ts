@@ -16,11 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { beforeEach, afterEach, expect, test, vi } from 'vitest';
+import { beforeEach, afterEach, expect, test, vi, describe, beforeAll } from 'vitest';
 import { LABEL_MODEL_ID, LABEL_MODEL_PORT, PlayGroundManager } from './playground';
 import type { PodmanConnection, machineStopHandle, startupHandle } from './podmanConnection';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { ImageInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import OpenAI from 'openai';
+import { Stream } from 'openai/streaming';
 
 const mocks = vi.hoisted(() => ({
   postMessage: vi.fn(),
@@ -243,4 +246,43 @@ test('error cleared when status changed', async () => {
   manager.setPlaygroundStatus('random', 'running');
 
   expect(manager.getPlaygroundsState()[0].error).toBeUndefined();
+});
+
+describe('askPlayground tests', () => {
+  const mockCreate = vi.fn();
+  beforeAll(() => {
+    vi.mock('openai');
+  });
+
+  test('askPlayground should send total duration to telemetry', async () => {
+    vi.mocked(OpenAI).mockReturnValue({
+      completions: {
+        create: mockCreate,
+      },
+    } as unknown as OpenAI);
+    mockCreate.mockReturnValue(
+      Stream.fromReadableStream(
+        new ReadableStream({
+          start(controller): void {
+            controller.enqueue('{ "id": "chunk1", "choices": [ { "finish_reason": "end" } ] }');
+            controller.close();
+          },
+        }),
+        undefined,
+      ),
+    );
+    mocks.postMessage.mockResolvedValue(undefined);
+    manager.updatePlaygroundState('model1', {
+      modelId: 'model1',
+      status: 'running',
+      container: { containerId: 'container1', engineId: 'podman', port: 8000 },
+    });
+    await manager.askPlayground({ id: 'model1', file: { file: 'a-file' } } as unknown as ModelInfo, 'question?');
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(mocks.logUsage).toHaveBeenCalledWith('playground.ask', {
+      'model.id': 'model1',
+      responseDurationSeconds: expect.any(Number),
+    });
+  });
 });

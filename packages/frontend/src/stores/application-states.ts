@@ -22,7 +22,7 @@ import { MSG_APPLICATIONS_STATE_UPDATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 
-export const environmentStates: Readable<ApplicationState[]> = readable<ApplicationState[]>([], set => {
+export const applicationStates: Readable<ApplicationState[]> = readable<ApplicationState[]>([], set => {
   const sub = rpcBrowser.subscribe(MSG_APPLICATIONS_STATE_UPDATE, msg => {
     set(msg);
   });

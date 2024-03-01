@@ -3,7 +3,7 @@ import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import NavPage from '../lib/NavPage.svelte';
 import Table from '../lib/table/Table.svelte';
 import { Column, Row } from '../lib/table/table';
-import { environmentStates } from '/@/stores/environment-states';
+import { applicationStates } from '../stores/application-states';
 import ColumnActions from '../lib/table/environment/ColumnActions.svelte';
 import ColumnStatus from '../lib/table/environment/ColumnStatus.svelte';
 import type { ApplicationCell } from './applications';
@@ -16,7 +16,7 @@ import { tasks } from '/@/stores/tasks';
 
 let data: ApplicationCell[];
 
-$: data = $environmentStates.map((env: ApplicationState) => ({
+$: data = $applicationStates.map((env: ApplicationState) => ({
   recipeId: env.recipeId,
   modelId: env.modelId,
   appPorts: env.appPorts,

@@ -1162,9 +1162,9 @@ describe('pod detection', async () => {
     mocks.onMachineStopMock.mockImplementation((f: machineStopHandle) => {
       f();
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
     manager.adoptRunningApplications();
-    expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
+    expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
 
   test('onPodStart updates the environments state with the started pod', async () => {
@@ -1181,9 +1181,9 @@ describe('pod detection', async () => {
         },
       } as unknown as PodInfo);
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
     manager.adoptRunningApplications();
-    expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
+    expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
 
   test('onPodStart does no update the environments state with the started pod without labels', async () => {
@@ -1196,9 +1196,9 @@ describe('pod detection', async () => {
         kind: 'podman',
       } as unknown as PodInfo);
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
     manager.adoptRunningApplications();
-    expect(sendEnvironmentStateSpy).not.toHaveBeenCalledOnce();
+    expect(sendApplicationStateSpy).not.toHaveBeenCalledOnce();
   });
 
   test('onPodStop updates the environments state by removing the stopped pod', async () => {
@@ -1227,10 +1227,10 @@ describe('pod detection', async () => {
         } as unknown as PodInfo);
       }, 1);
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
     manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 10));
-    expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+    expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);
   });
 
   test('onPodRemove updates the environments state by removing the removed pod', async () => {
@@ -1252,10 +1252,10 @@ describe('pod detection', async () => {
         f('pod-id-1');
       }, 1);
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
     manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 10));
-    expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+    expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);
   });
 
   test('getEnvironmentPod', async () => {

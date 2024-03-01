@@ -605,7 +605,7 @@ export class ApplicationManager {
       }
 
       this.#applications.clear();
-      this.sendEnvironmentState();
+      this.sendApplicationState();
     });
 
     this.podmanConnection.onPodStart((pod: PodInfo) => {
@@ -650,7 +650,7 @@ export class ApplicationManager {
       return;
     }
     this.#applications.delete({ recipeId, modelId });
-    this.sendEnvironmentState();
+    this.sendApplicationState();
 
     const protect = this.protectTasks.has(pod.Id);
     if (!protect) {
@@ -677,7 +677,7 @@ export class ApplicationManager {
       return;
     }
     this.#applications.delete({ recipeId, modelId });
-    this.sendEnvironmentState();
+    this.sendApplicationState();
 
     const protect = this.protectTasks.has(podId);
     if (!protect) {
@@ -692,14 +692,14 @@ export class ApplicationManager {
 
   updateEnvironmentState(recipeId: string, modelId: string, state: ApplicationState): void {
     this.#applications.set({ recipeId, modelId }, state);
-    this.sendEnvironmentState();
+    this.sendApplicationState();
   }
 
   getApplicationsState(): ApplicationState[] {
     return Array.from(this.#applications.values());
   }
 
-  sendEnvironmentState() {
+  sendApplicationState() {
     this.webview
       .postMessage({
         id: MSG_APPLICATIONS_STATE_UPDATE,

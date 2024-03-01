@@ -9,7 +9,7 @@ import { catalog } from '/@/stores/catalog';
 import { router } from 'tinro';
 import { applicationStates } from '../stores/application-states';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
-import EnvironmentActions from './EnvironmentActions.svelte';
+import ApplicationActions from './ApplicationActions.svelte';
 import Button from './button/Button.svelte';
 import VSCodeIcon from '/@/lib/images/VSCodeIcon.svelte';
 import { localRepositories } from '../stores/localRepositories';
@@ -99,7 +99,7 @@ function startApplication() {
               </div>
             </div>
             <div class="shrink-0">
-              <EnvironmentActions recipeId="{recipeId}" object="{envState}" modelId="{modelId}" />
+              <ApplicationActions recipeId="{recipeId}" object="{envState}" modelId="{modelId}" />
             </div>
           {:else}
             <Button inProgress="{runningTask !== undefined}" on:click="{startApplication}" class="grow text-gray-500">

@@ -585,8 +585,8 @@ export class ApplicationManager {
       containerEngine
         .listPods()
         .then(pods => {
-          const envsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
-          for (const podToAdopt of envsPods) {
+          const appsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
+          for (const podToAdopt of appsPods) {
             this.adoptPod(podToAdopt);
           }
         })
@@ -664,15 +664,15 @@ export class ApplicationManager {
   }
 
   forgetPodById(podId: string) {
-    const env = Array.from(this.#applications.values()).find(p => p.pod.Id === podId);
-    if (!env) {
+    const app = Array.from(this.#applications.values()).find(p => p.pod.Id === podId);
+    if (!app) {
       return;
     }
-    if (!env.pod.Labels) {
+    if (!app.pod.Labels) {
       return;
     }
-    const recipeId = env.pod.Labels[LABEL_RECIPE_ID];
-    const modelId = env.pod.Labels[LABEL_MODEL_ID];
+    const recipeId = app.pod.Labels[LABEL_RECIPE_ID];
+    const modelId = app.pod.Labels[LABEL_MODEL_ID];
     if (!this.#applications.has({ recipeId, modelId })) {
       return;
     }
@@ -722,9 +722,9 @@ export class ApplicationManager {
       'model-id': modelId,
     });
     try {
-      const envPod = await this.getApplicationPod(recipeId, modelId);
+      const appPod = await this.getApplicationPod(recipeId, modelId);
       try {
-        await containerEngine.stopPod(envPod.engineId, envPod.Id);
+        await containerEngine.stopPod(appPod.engineId, appPod.Id);
       } catch (err: unknown) {
         // continue when the pod is already stopped
         if (!String(err).includes('pod already stopped')) {
@@ -734,8 +734,8 @@ export class ApplicationManager {
           throw err;
         }
       }
-      this.protectTasks.add(envPod.Id);
-      await containerEngine.removePod(envPod.engineId, envPod.Id);
+      this.protectTasks.add(appPod.Id);
+      await containerEngine.removePod(appPod.engineId, appPod.Id);
 
       stoppingTask.state = 'success';
       stoppingTask.name = `AI App stopped`;
@@ -749,24 +749,24 @@ export class ApplicationManager {
   }
 
   async restartApplication(recipeId: string, modelId: string) {
-    const envPod = await this.getApplicationPod(recipeId, modelId);
+    const appPod = await this.getApplicationPod(recipeId, modelId);
     await this.deleteApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
-    const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
+    const model = this.catalogManager.getModelById(appPod.Labels[LABEL_MODEL_ID]);
     await this.startApplication(recipe, model);
   }
 
   async getApplicationPod(recipeId: string, modelId: string): Promise<PodInfo> {
-    const envPod = await this.queryPod(recipeId, modelId);
-    if (!envPod) {
+    const appPod = await this.queryPod(recipeId, modelId);
+    if (!appPod) {
       throw new Error(`no pod found with recipe Id ${recipeId} and model Id ${modelId}`);
     }
-    return envPod;
+    return appPod;
   }
 
   async hasApplicationPod(recipeId: string, modelId: string): Promise<boolean> {
-    const envPod = await this.queryPod(recipeId, modelId);
-    return !!envPod;
+    const appPod = await this.queryPod(recipeId, modelId);
+    return !!appPod;
   }
 
   async queryPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {

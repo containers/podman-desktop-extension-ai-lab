@@ -22,7 +22,7 @@ import StatusIcon from '/@/lib/StatusIcon.svelte';
 export let recipeId: string;
 export let modelId: string;
 
-$: appState = $applicationStates.find((env: ApplicationState) => env.recipeId === recipeId);
+$: appState = $applicationStates.find((app: ApplicationState) => app.recipeId === recipeId);
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 
 $: filteredTasks = filterByLabel($tasks, {

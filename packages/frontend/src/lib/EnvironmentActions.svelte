@@ -13,8 +13,8 @@ function stopApplication() {
   });
 }
 
-function restartEnvironment() {
-  studioClient.requestRestartEnvironment(recipeId, modelId).catch(err => {
+function restartApplication() {
+  studioClient.requestRestartApplication(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to restart AI App: ${String(err)}.`);
   });
 }
@@ -23,5 +23,5 @@ function restartEnvironment() {
 {#if object?.pod !== undefined}
   <ListItemButtonIcon icon="{faStop}" onClick="{() => stopApplication()}" title="Stop AI App" />
 
-  <ListItemButtonIcon icon="{faRotateForward}" onClick="{() => restartEnvironment()}" title="Restart AI App" />
+  <ListItemButtonIcon icon="{faRotateForward}" onClick="{() => restartApplication()}" title="Restart AI App" />
 {/if}

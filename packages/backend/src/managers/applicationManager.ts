@@ -748,7 +748,7 @@ export class ApplicationManager {
     }
   }
 
-  async restartEnvironment(recipeId: string, modelId: string) {
+  async restartApplication(recipeId: string, modelId: string) {
     const envPod = await this.getEnvironmentPod(recipeId, modelId);
     await this.deleteApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);

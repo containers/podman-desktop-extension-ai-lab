@@ -184,7 +184,7 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async requestRestartEnvironment(recipeId: string, modelId: string): Promise<void> {
+  async requestRestartApplication(recipeId: string, modelId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipeById(recipeId);
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
@@ -195,7 +195,7 @@ export class StudioApiImpl implements StudioAPI {
       )
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.applicationManager.restartEnvironment(recipeId, modelId).catch((err: unknown) => {
+          this.applicationManager.restartApplication(recipeId, modelId).catch((err: unknown) => {
             console.error(`error restarting AI App: ${String(err)}`);
             podmanDesktopApi.window
               .showErrorMessage(`Error restarting the AI App "${recipe.name}"`)

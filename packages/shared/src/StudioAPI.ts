@@ -51,7 +51,7 @@ export abstract class StudioAPI {
 
   abstract getApplicationsState(): Promise<ApplicationState[]>;
   abstract requestRemoveApplication(recipeId: string, modelId: string): Promise<void>;
-  abstract requestRestartEnvironment(recipeId: string, modelId: string): Promise<void>;
+  abstract requestRestartApplication(recipeId: string, modelId: string): Promise<void>;
 
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;

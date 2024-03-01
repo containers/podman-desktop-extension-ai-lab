@@ -20,9 +20,10 @@ import { EventEmitter, type Event } from '@podman-desktop/api';
 import { WSLUploader } from './WSLUploader';
 import { getDurationSecondsSince } from '../utils/utils';
 import type { CompletionProgressiveEvent, ProgressiveEvent } from '../utils/progressiveEvent';
+import { QemuUploader } from './QemuUploader';
 
 export interface UploadWorker {
-  canUpload: () => boolean;
+  canUpload: () => Promise<boolean>;
   upload: (path: string) => Promise<string>;
 }
 
@@ -35,11 +36,17 @@ export class Uploader {
     private localModelPath: string,
     private abortSignal?: AbortSignal,
   ) {
-    this.#workers = [new WSLUploader()];
+    this.#workers = [new WSLUploader(), new QemuUploader()];
   }
 
   async perform(): Promise<string> {
-    const workers = this.#workers.filter(w => w.canUpload());
+    const workers = [];
+    for (const worker of this.#workers) {
+      const canUpload = await worker.canUpload();
+      if (canUpload) {
+        workers.push(worker);
+      }
+    }
     let modelPath = this.localModelPath;
     try {
       if (workers && workers.length > 1) {

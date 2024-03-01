@@ -16,14 +16,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import path from 'node:path';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { getFirstRunningMachine, getPodmanCli } from '../utils/podman';
 import type { UploadWorker } from './uploader';
+import path from 'node:path';
 
-export class WSLUploader implements UploadWorker {
+export class QemuUploader implements UploadWorker {
   async canUpload(): Promise<boolean> {
-    return podmanDesktopApi.env.isWindows;
+    const machine = await getFirstRunningMachine();
+    return machine.VMType === 'qemu';
   }
 
   async upload(localPath: string): Promise<string> {
@@ -31,12 +32,8 @@ export class WSLUploader implements UploadWorker {
       throw new Error('invalid local path');
     }
 
-    const driveLetter = localPath.charAt(0);
-    const convertToMntPath = localPath
-      .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
-      .replace(/\\/g, '/');
-    const remotePath = `/home/user/${path.basename(convertToMntPath)}`;
     const machine = await getFirstRunningMachine();
+    const remotePath = `/var/home/core/${path.basename(localPath)}`;
     // check if model already loaded on the podman machine
     let existsRemote = true;
     try {
@@ -52,7 +49,7 @@ export class WSLUploader implements UploadWorker {
         'ssh',
         machine.Name,
         'cp',
-        convertToMntPath,
+        localPath,
         remotePath,
       ]);
     }

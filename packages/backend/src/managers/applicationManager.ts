@@ -264,6 +264,7 @@ export class ApplicationManager {
                 Target: `/${modelName}`,
                 Source: modelPath,
                 Type: 'bind',
+                Mode: 'Z',
               },
             ],
           };
@@ -279,35 +280,21 @@ export class ApplicationManager {
             envs = [`MODEL_ENDPOINT=${endPoint}`];
           }
         }
-        const createdContainer = await containerEngine.createContainer(podInfo.engineId, {
+        const podifiedName = this.getRandomName(`${image.appName}-podified`);
+        await containerEngine.createContainer(podInfo.engineId, {
           Image: image.id,
+          name: podifiedName,
           Detach: true,
           HostConfig: hostConfig,
           Env: envs,
           start: false,
+          pod: podInfo.Id,
         });
-
-        // now, for each container, put it in the pod
-        if (createdContainer) {
-          const podifiedName = this.getRandomName(`${image.appName}-podified`);
-          await containerEngine.replicatePodmanContainer(
-            {
-              id: createdContainer.id,
-              engineId: podInfo.engineId,
-            },
-            { engineId: podInfo.engineId },
-            { pod: podInfo.Id, name: podifiedName },
-          );
-          containers.push({
-            name: podifiedName,
-            modelService: image.modelService,
-            ports: image.ports,
-          });
-          // remove the external container
-          await containerEngine.deleteContainer(podInfo.engineId, createdContainer.id);
-        } else {
-          throw new Error(`failed at creating container for image ${image.id}`);
-        }
+        containers.push({
+          name: podifiedName,
+          modelService: image.modelService,
+          ports: image.ports,
+        });
       }),
     );
     return containers;

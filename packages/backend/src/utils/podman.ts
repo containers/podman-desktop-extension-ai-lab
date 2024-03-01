@@ -27,6 +27,7 @@ export type MachineJSON = {
   Starting: boolean;
   Default: boolean;
   UserModeNetworking?: boolean;
+  VMType?: string;
 };
 
 export function getPodmanCli(): string {

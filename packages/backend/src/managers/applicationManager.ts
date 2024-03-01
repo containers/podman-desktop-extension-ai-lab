@@ -147,7 +147,7 @@ export class ApplicationManager {
       );
 
       // first delete any existing pod with matching labels
-      if (await this.hasEnvironmentPod(recipe.id, model.id)) {
+      if (await this.hasApplicationPod(recipe.id, model.id)) {
         await this.deleteApplication(recipe.id, model.id);
       }
 
@@ -764,7 +764,7 @@ export class ApplicationManager {
     return envPod;
   }
 
-  async hasEnvironmentPod(recipeId: string, modelId: string): Promise<boolean> {
+  async hasApplicationPod(recipeId: string, modelId: string): Promise<boolean> {
     const envPod = await this.queryPod(recipeId, modelId);
     return !!envPod;
   }

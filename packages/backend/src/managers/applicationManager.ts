@@ -637,7 +637,7 @@ export class ApplicationManager {
       appPorts,
       modelPorts,
     };
-    this.updateEnvironmentState(recipeId, modelId, state);
+    this.updateApplicationState(recipeId, modelId, state);
   }
 
   forgetPod(pod: PodInfo) {
@@ -690,7 +690,7 @@ export class ApplicationManager {
     }
   }
 
-  updateEnvironmentState(recipeId: string, modelId: string, state: ApplicationState): void {
+  updateApplicationState(recipeId: string, modelId: string, state: ApplicationState): void {
     this.#applications.set({ recipeId, modelId }, state);
     this.sendApplicationState();
   }

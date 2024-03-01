@@ -1127,10 +1127,10 @@ describe('pod detection', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
-    const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
+    const updateApplicationStateSpy = vi.spyOn(manager, 'updateApplicationState');
     manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(updateEnvironmentStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'model-id-1', {
+    expect(updateApplicationStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'model-id-1', {
       pod: {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
@@ -1151,10 +1151,10 @@ describe('pod detection', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
-    const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
+    const updateApplicationStateSpy = vi.spyOn(manager, 'updateApplicationState');
     manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(updateEnvironmentStateSpy).not.toHaveBeenCalled();
+    expect(updateApplicationStateSpy).not.toHaveBeenCalled();
   });
 
   test('onMachineStop updates the environments state with no environment running', async () => {

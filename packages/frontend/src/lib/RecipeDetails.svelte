@@ -8,7 +8,7 @@ import { studioClient } from '/@/utils/client';
 import { catalog } from '/@/stores/catalog';
 import { router } from 'tinro';
 import { environmentStates } from '../stores/environment-states';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import EnvironmentActions from './EnvironmentActions.svelte';
 import Button from './button/Button.svelte';
 import VSCodeIcon from '/@/lib/images/VSCodeIcon.svelte';
@@ -22,7 +22,7 @@ import StatusIcon from '/@/lib/StatusIcon.svelte';
 export let recipeId: string;
 export let modelId: string;
 
-$: envState = $environmentStates.find((env: EnvironmentState) => env.recipeId === recipeId);
+$: envState = $environmentStates.find((env: ApplicationState) => env.recipeId === recipeId);
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 
 $: filteredTasks = filterByLabel($tasks, {

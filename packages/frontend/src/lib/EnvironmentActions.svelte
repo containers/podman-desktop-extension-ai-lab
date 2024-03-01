@@ -1,9 +1,9 @@
 <script lang="ts">
-import { faPlay, faRotateForward, faStop } from '@fortawesome/free-solid-svg-icons';
+import { faRotateForward, faStop } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
-export let object: EnvironmentState | undefined;
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
+export let object: ApplicationState | undefined;
 export let recipeId: string;
 export let modelId: string;
 

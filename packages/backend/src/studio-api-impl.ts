@@ -27,7 +27,7 @@ import type { CatalogManager } from './managers/catalogManager';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { Task } from '@shared/src/models/ITask';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
@@ -152,7 +152,7 @@ export class StudioApiImpl implements StudioAPI {
     return podmanDesktopApi.navigation.navigateToPod(pod.kind, pod.Name, pod.engineId);
   }
 
-  async getEnvironmentsState(): Promise<EnvironmentState[]> {
+  async getEnvironmentsState(): Promise<ApplicationState[]> {
     return this.applicationManager.getEnvironmentsState();
   }
 

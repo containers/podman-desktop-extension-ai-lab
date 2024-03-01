@@ -18,7 +18,7 @@
 
 import type { PodInfo } from '@podman-desktop/api';
 
-export interface EnvironmentState {
+export interface ApplicationState {
   recipeId: string;
   modelId: string;
   pod: PodInfo;

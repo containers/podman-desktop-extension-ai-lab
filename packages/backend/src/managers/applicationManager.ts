@@ -38,9 +38,9 @@ import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, timeout } from '../utils/utils';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
 import { LABEL_MODEL_ID, LABEL_MODEL_PORTS } from './playground';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { PodmanConnection } from './podmanConnection';
-import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
+import { MSG_APPLICATIONS_STATE_UPDATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
@@ -76,7 +76,7 @@ export interface ImageInfo {
 }
 
 export class ApplicationManager {
-  #applications: ApplicationRegistry<EnvironmentState>;
+  #applications: ApplicationRegistry<ApplicationState>;
   protectTasks: Set<string> = new Set();
 
   constructor(
@@ -90,7 +90,7 @@ export class ApplicationManager {
     private telemetry: TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
   ) {
-    this.#applications = new ApplicationRegistry<EnvironmentState>();
+    this.#applications = new ApplicationRegistry<ApplicationState>();
   }
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
@@ -630,7 +630,7 @@ export class ApplicationManager {
     if (this.#applications.has({ recipeId, modelId })) {
       return;
     }
-    const state: EnvironmentState = {
+    const state: ApplicationState = {
       recipeId,
       modelId,
       pod,
@@ -690,23 +690,23 @@ export class ApplicationManager {
     }
   }
 
-  updateEnvironmentState(recipeId: string, modelId: string, state: EnvironmentState): void {
+  updateEnvironmentState(recipeId: string, modelId: string, state: ApplicationState): void {
     this.#applications.set({ recipeId, modelId }, state);
     this.sendEnvironmentState();
   }
 
-  getEnvironmentsState(): EnvironmentState[] {
+  getEnvironmentsState(): ApplicationState[] {
     return Array.from(this.#applications.values());
   }
 
   sendEnvironmentState() {
     this.webview
       .postMessage({
-        id: MSG_ENVIRONMENTS_STATE_UPDATE,
+        id: MSG_APPLICATIONS_STATE_UPDATE,
         body: this.getEnvironmentsState(),
       })
       .catch((err: unknown) => {
-        console.error(`Something went wrong while emitting MSG_ENVIRONMENTS_STATE_UPDATE: ${String(err)}`);
+        console.error(`Something went wrong while emitting MSG_APPLICATIONS_STATE_UPDATE: ${String(err)}`);
       });
   }
 

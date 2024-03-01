@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import NavPage from '../lib/NavPage.svelte';
 import Table from '../lib/table/Table.svelte';
 import { Column, Row } from '../lib/table/table';
@@ -16,7 +16,7 @@ import { tasks } from '/@/stores/tasks';
 
 let data: EnvironmentCell[];
 
-$: data = $environmentStates.map((env: EnvironmentState) => ({
+$: data = $environmentStates.map((env: ApplicationState) => ({
   recipeId: env.recipeId,
   modelId: env.modelId,
   appPorts: env.appPorts,

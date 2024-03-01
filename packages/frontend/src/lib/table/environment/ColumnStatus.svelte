@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { Task } from '@shared/src/models/ITask';
-import type { EnvironmentCell } from '/@/pages/environments';
+import type { ApplicationCell } from '../../../pages/applications';
 import TaskItem from '../../progress/TaskItem.svelte';
-export let object: EnvironmentCell;
+export let object: ApplicationCell;
 let task: Task | undefined = undefined;
 
 $: {

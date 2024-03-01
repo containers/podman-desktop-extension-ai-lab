@@ -1,10 +1,10 @@
 <script lang="ts">
 import moment from 'moment';
-import type { EnvironmentCell } from '/@/pages/environments';
+import type { ApplicationCell } from '../../../pages/applications';
 import { catalog } from '/@/stores/catalog';
 import { humanizeAge } from '/@/utils/dimensions';
 
-export let object: EnvironmentCell;
+export let object: ApplicationCell;
 </script>
 
 <div class="text-sm text-gray-700 overflow-hidden text-ellipsis">

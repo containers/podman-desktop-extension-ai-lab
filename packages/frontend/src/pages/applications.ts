@@ -19,7 +19,7 @@
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { Task } from '@shared/src/models/ITask';
 
-export interface EnvironmentCell {
+export interface ApplicationCell {
   tasks?: Task[];
   envState: ApplicationState;
   recipeId: string;

@@ -1113,7 +1113,7 @@ describe('pod detection', async () => {
     );
   });
 
-  test('adoptRunningEnvironments updates the environment state with the found pod', async () => {
+  test('adoptRunningApplications updates the app state with the found pod', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         Labels: {
@@ -1128,7 +1128,7 @@ describe('pod detection', async () => {
       f();
     });
     const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
-    manager.adoptRunningEnvironments();
+    manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(updateEnvironmentStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'model-id-1', {
       pod: {
@@ -1146,13 +1146,13 @@ describe('pod detection', async () => {
     });
   });
 
-  test('adoptRunningEnvironments does not update the environment state with the found pod without label', async () => {
+  test('adoptRunningApplications does not update the environment state with the found pod without label', async () => {
     mocks.listPodsMock.mockResolvedValue([{}]);
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
     const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
-    manager.adoptRunningEnvironments();
+    manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(updateEnvironmentStateSpy).not.toHaveBeenCalled();
   });
@@ -1163,7 +1163,7 @@ describe('pod detection', async () => {
       f();
     });
     const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
+    manager.adoptRunningApplications();
     expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
   });
 
@@ -1182,7 +1182,7 @@ describe('pod detection', async () => {
       } as unknown as PodInfo);
     });
     const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
+    manager.adoptRunningApplications();
     expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
   });
 
@@ -1197,7 +1197,7 @@ describe('pod detection', async () => {
       } as unknown as PodInfo);
     });
     const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
+    manager.adoptRunningApplications();
     expect(sendEnvironmentStateSpy).not.toHaveBeenCalledOnce();
   });
 
@@ -1228,7 +1228,7 @@ describe('pod detection', async () => {
       }, 1);
     });
     const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
+    manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 10));
     expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
   });
@@ -1253,7 +1253,7 @@ describe('pod detection', async () => {
       }, 1);
     });
     const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
+    manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 10));
     expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
   });

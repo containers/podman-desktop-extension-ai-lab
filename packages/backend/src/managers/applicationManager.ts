@@ -575,7 +575,7 @@ export class ApplicationManager {
     }
   }
 
-  adoptRunningEnvironments() {
+  adoptRunningApplications() {
     this.podmanConnection.startupSubscribe(() => {
       if (!containerEngine.listPods) {
         // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released

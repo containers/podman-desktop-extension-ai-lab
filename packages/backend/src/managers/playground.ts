@@ -339,6 +339,10 @@ export class PlayGroundManager {
         } else {
           query.response = chunk;
         }
+        if (query.response.choices.some(choice => choice.finish_reason)) {
+          const responseDurationSeconds = getDurationSecondsSince(startTime);
+          this.telemetry.logUsage('playground.ask', { 'model.id': modelInfo.id, responseDurationSeconds });
+        }
         this.sendQueriesState();
       }
     })().catch((err: unknown) => console.warn(`Error while reading streamed response for model ${modelInfo.id}`, err));

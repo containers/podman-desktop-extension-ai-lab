@@ -21,7 +21,7 @@ import type { Task } from '@shared/src/models/ITask';
 
 export interface ApplicationCell {
   tasks?: Task[];
-  envState: ApplicationState;
+  appState: ApplicationState;
   recipeId: string;
   modelId: string;
   appPorts: number[];

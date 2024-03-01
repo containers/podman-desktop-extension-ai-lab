@@ -8,5 +8,5 @@ export let object: ApplicationCell;
 </script>
 
 <div class="text-sm text-gray-700 overflow-hidden text-ellipsis">
-  {humanizeAge(moment(object.envState.pod.Created).unix())}
+  {humanizeAge(moment(object.appState.pod.Created).unix())}
 </div>

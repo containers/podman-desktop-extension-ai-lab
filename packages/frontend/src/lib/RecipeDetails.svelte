@@ -22,7 +22,7 @@ import StatusIcon from '/@/lib/StatusIcon.svelte';
 export let recipeId: string;
 export let modelId: string;
 
-$: envState = $applicationStates.find((env: ApplicationState) => env.recipeId === recipeId);
+$: appState = $applicationStates.find((env: ApplicationState) => env.recipeId === recipeId);
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 
 $: filteredTasks = filterByLabel($tasks, {
@@ -57,8 +57,8 @@ const openVSCode = () => {
 };
 
 const navigateToPod = () => {
-  if (envState?.pod.Id !== undefined) {
-    studioClient.navigateToPod(envState.pod.Id);
+  if (appState?.pod.Id !== undefined) {
+    studioClient.navigateToPod(appState.pod.Id);
   }
 };
 
@@ -84,22 +84,22 @@ function startApplication() {
 
       <div class="w-full bg-charcoal-600 rounded-md p-4">
         <div class="flex flex-row items-center">
-          {#if envState && envState.pod}
+          {#if appState && appState.pod}
             <div class="grow flex overflow-hidden whitespace-nowrap items-center">
               <a title="Navigate to Pod details" href="{'javascript:void(0);'}" on:click="{navigateToPod}">
-                <StatusIcon size="{22}" status="{envState.pod.Status.toUpperCase()}" icon="{PodIcon}" />
+                <StatusIcon size="{22}" status="{appState.pod.Status.toUpperCase()}" icon="{PodIcon}" />
               </a>
               <div class="ml-2 overflow-hidden">
                 <div class="text-base text-gray-300 overflow-hidden text-ellipsis leading-tight">
-                  {envState.pod.Name}
+                  {appState.pod.Name}
                 </div>
                 <div class="text-xs text-gray-800 leading-tight">
-                  {envState.pod.Status.toUpperCase()}
+                  {appState.pod.Status.toUpperCase()}
                 </div>
               </div>
             </div>
             <div class="shrink-0">
-              <ApplicationActions recipeId="{recipeId}" object="{envState}" modelId="{modelId}" />
+              <ApplicationActions recipeId="{recipeId}" object="{appState}" modelId="{modelId}" />
             </div>
           {:else}
             <Button inProgress="{runningTask !== undefined}" on:click="{startApplication}" class="grow text-gray-500">

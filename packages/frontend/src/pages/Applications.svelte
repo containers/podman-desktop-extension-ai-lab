@@ -16,15 +16,15 @@ import { tasks } from '/@/stores/tasks';
 
 let data: ApplicationCell[];
 
-$: data = $applicationStates.map((env: ApplicationState) => ({
-  recipeId: env.recipeId,
-  modelId: env.modelId,
-  appPorts: env.appPorts,
-  modelPorts: env.modelPorts,
-  envState: env,
+$: data = $applicationStates.map((app: ApplicationState) => ({
+  recipeId: app.recipeId,
+  modelId: app.modelId,
+  appPorts: app.appPorts,
+  modelPorts: app.modelPorts,
+  appState: app,
   tasks: filterByLabel($tasks, {
-    'recipe-id': env.recipeId,
-    'model-id': env.modelId,
+    'recipe-id': app.recipeId,
+    'model-id': app.modelId,
   }),
 }));
 

@@ -5,5 +5,5 @@ export let object: ApplicationCell;
 </script>
 
 <div class="text-sm text-gray-700 overflow-hidden text-ellipsis">
-  {object.envState.pod.Name}
+  {object.appState.pod.Name}
 </div>

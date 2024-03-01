@@ -25,7 +25,7 @@ import ColumnStatus from './ColumnStatus.svelte';
 test('display Pod Running when no task', async () => {
   const obj = {
     recipeId: 'recipe 1',
-    envState: {
+    appState: {
       pod: {
         Id: 'pod-1',
       },
@@ -40,7 +40,7 @@ test('display Pod Running when no task', async () => {
 test('display latest task', async () => {
   const obj = {
     recipeId: 'recipe 1',
-    envState: {
+    appState: {
       pod: {
         Id: 'pod-1',
       },

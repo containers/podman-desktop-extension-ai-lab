@@ -15,7 +15,7 @@ $: {
 <div class="text-sm text-gray-700 overflow-hidden text-ellipsis">
   {#if task}
     <TaskItem task="{task}" />
-  {:else if !!object.envState.pod}
+  {:else if !!object.appState.pod}
     Pod running
   {/if}
 </div>

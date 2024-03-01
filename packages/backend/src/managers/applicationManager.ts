@@ -148,7 +148,7 @@ export class ApplicationManager {
 
       // first delete any existing pod with matching labels
       if (await this.hasEnvironmentPod(recipe.id, model.id)) {
-        await this.deleteEnvironment(recipe.id, model.id);
+        await this.deleteApplication(recipe.id, model.id);
       }
 
       // create a pod containing all the containers to run the application
@@ -710,7 +710,7 @@ export class ApplicationManager {
       });
   }
 
-  async deleteEnvironment(recipeId: string, modelId: string) {
+  async deleteApplication(recipeId: string, modelId: string) {
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
       'recipe-id': recipeId,
@@ -750,7 +750,7 @@ export class ApplicationManager {
 
   async restartEnvironment(recipeId: string, modelId: string) {
     const envPod = await this.getEnvironmentPod(recipeId, modelId);
-    await this.deleteEnvironment(recipeId, modelId);
+    await this.deleteApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
     await this.startApplication(recipe, model);

@@ -1282,7 +1282,7 @@ describe('pod detection', async () => {
     });
   });
 
-  test('deleteEnvironment calls stopPod and removePod', async () => {
+  test('deleteApplication calls stopPod and removePod', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         engineId: 'engine-1',
@@ -1301,12 +1301,12 @@ describe('pod detection', async () => {
         },
       },
     ]);
-    await manager.deleteEnvironment('recipe-id-1', 'model-id-1');
+    await manager.deleteApplication('recipe-id-1', 'model-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });
 
-  test('deleteEnvironment calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
+  test('deleteApplication calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         engineId: 'engine-1',
@@ -1326,7 +1326,7 @@ describe('pod detection', async () => {
       },
     ]);
     mocks.stopPodMock.mockRejectedValue('something went wrong, pod already stopped...');
-    await manager.deleteEnvironment('recipe-id-1', 'model-id-1');
+    await manager.deleteApplication('recipe-id-1', 'model-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });

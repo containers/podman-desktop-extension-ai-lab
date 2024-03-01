@@ -7,8 +7,8 @@ export let object: ApplicationState | undefined;
 export let recipeId: string;
 export let modelId: string;
 
-function stopEnvironment() {
-  studioClient.requestRemoveEnvironment(recipeId, modelId).catch(err => {
+function stopApplication() {
+  studioClient.requestRemoveApplication(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to stop AI App: ${String(err)}.`);
   });
 }
@@ -21,7 +21,7 @@ function restartEnvironment() {
 </script>
 
 {#if object?.pod !== undefined}
-  <ListItemButtonIcon icon="{faStop}" onClick="{() => stopEnvironment()}" title="Stop AI App" />
+  <ListItemButtonIcon icon="{faStop}" onClick="{() => stopApplication()}" title="Stop AI App" />
 
   <ListItemButtonIcon icon="{faRotateForward}" onClick="{() => restartEnvironment()}" title="Restart AI App" />
 {/if}

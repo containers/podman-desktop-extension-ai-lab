@@ -50,7 +50,7 @@ export abstract class StudioAPI {
   abstract navigateToPod(podId: string): Promise<void>;
 
   abstract getApplicationsState(): Promise<ApplicationState[]>;
-  abstract requestRemoveEnvironment(recipeId: string, modelId: string): Promise<void>;
+  abstract requestRemoveApplication(recipeId: string, modelId: string): Promise<void>;
   abstract requestRestartEnvironment(recipeId: string, modelId: string): Promise<void>;
 
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;

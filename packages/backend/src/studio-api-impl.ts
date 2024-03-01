@@ -156,7 +156,7 @@ export class StudioApiImpl implements StudioAPI {
     return this.applicationManager.getApplicationsState();
   }
 
-  async requestRemoveEnvironment(recipeId: string, modelId: string): Promise<void> {
+  async requestRemoveApplication(recipeId: string, modelId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipeById(recipeId);
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
@@ -167,7 +167,7 @@ export class StudioApiImpl implements StudioAPI {
       )
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.applicationManager.deleteEnvironment(recipeId, modelId).catch((err: unknown) => {
+          this.applicationManager.deleteApplication(recipeId, modelId).catch((err: unknown) => {
             console.error(`error deleting AI App's pod: ${String(err)}`);
             podmanDesktopApi.window
               .showErrorMessage(

@@ -152,8 +152,8 @@ export class StudioApiImpl implements StudioAPI {
     return podmanDesktopApi.navigation.navigateToPod(pod.kind, pod.Name, pod.engineId);
   }
 
-  async getEnvironmentsState(): Promise<ApplicationState[]> {
-    return this.applicationManager.getEnvironmentsState();
+  async getApplicationsState(): Promise<ApplicationState[]> {
+    return this.applicationManager.getApplicationsState();
   }
 
   async requestRemoveEnvironment(recipeId: string, modelId: string): Promise<void> {

@@ -49,7 +49,7 @@ export abstract class StudioAPI {
   abstract navigateToContainer(containerId: string): Promise<void>;
   abstract navigateToPod(podId: string): Promise<void>;
 
-  abstract getEnvironmentsState(): Promise<ApplicationState[]>;
+  abstract getApplicationsState(): Promise<ApplicationState[]>;
   abstract requestRemoveEnvironment(recipeId: string, modelId: string): Promise<void>;
   abstract requestRestartEnvironment(recipeId: string, modelId: string): Promise<void>;
 

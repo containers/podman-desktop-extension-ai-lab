@@ -695,7 +695,7 @@ export class ApplicationManager {
     this.sendEnvironmentState();
   }
 
-  getEnvironmentsState(): ApplicationState[] {
+  getApplicationsState(): ApplicationState[] {
     return Array.from(this.#applications.values());
   }
 
@@ -703,7 +703,7 @@ export class ApplicationManager {
     this.webview
       .postMessage({
         id: MSG_APPLICATIONS_STATE_UPDATE,
-        body: this.getEnvironmentsState(),
+        body: this.getApplicationsState(),
       })
       .catch((err: unknown) => {
         console.error(`Something went wrong while emitting MSG_APPLICATIONS_STATE_UPDATE: ${String(err)}`);

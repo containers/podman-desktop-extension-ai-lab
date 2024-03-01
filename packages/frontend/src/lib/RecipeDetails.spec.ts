@@ -29,7 +29,7 @@ import { router } from 'tinro';
 const mocks = vi.hoisted(() => {
   return {
     pullApplicationMock: vi.fn(),
-    getEnvironmentsStateMock: vi.fn(),
+    getApplicationsStateMock: vi.fn(),
     findMock: vi.fn(),
     getLocalRepositoriesMock: vi.fn(),
     getTasksMock: vi.fn(),
@@ -40,7 +40,7 @@ vi.mock('../utils/client', async () => {
   return {
     studioClient: {
       pullApplication: mocks.pullApplicationMock,
-      getEnvironmentsState: mocks.getEnvironmentsStateMock,
+      getApplicationsState: mocks.getApplicationsStateMock,
     },
     rpcBrowser: {
       subscribe: () => {
@@ -126,7 +126,7 @@ beforeEach(() => {
 });
 
 test('should open/close application details panel when clicking on toggle button', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
 
   render(RecipeDetails, {
@@ -154,7 +154,7 @@ test('should open/close application details panel when clicking on toggle button
 });
 
 test('should call runApplication execution when run application button is clicked', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   mocks.pullApplicationMock.mockResolvedValue(undefined);
   render(RecipeDetails, {
@@ -169,7 +169,7 @@ test('should call runApplication execution when run application button is clicke
 });
 
 test('swap model button should move user to models tab', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   const gotoMock = vi.spyOn(router, 'goto');
   render(RecipeDetails, {
@@ -184,7 +184,7 @@ test('swap model button should move user to models tab', async () => {
 });
 
 test('swap model panel should be hidden on models tab', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
@@ -206,7 +206,7 @@ test('swap model panel should be hidden on models tab', async () => {
 });
 
 test('should display default model information when model is the recommended', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
@@ -222,7 +222,7 @@ test('should display default model information when model is the recommended', a
 });
 
 test('should display non-default model information when model is not the recommended one', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
@@ -236,7 +236,7 @@ test('should display non-default model information when model is not the recomme
 });
 
 test('button vs code should be visible if local repository is not empty', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
   mocks.getLocalRepositoriesMock.mockReturnValue([
     {
       path: 'random-path',
@@ -256,7 +256,7 @@ test('button vs code should be visible if local repository is not empty', async 
 });
 
 test('start application button should be the only one displayed', async () => {
-  mocks.getEnvironmentsStateMock.mockResolvedValue([]);
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',

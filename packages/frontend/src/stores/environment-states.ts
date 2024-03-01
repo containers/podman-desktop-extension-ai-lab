@@ -27,7 +27,7 @@ export const environmentStates: Readable<ApplicationState[]> = readable<Applicat
     set(msg);
   });
   // Initialize the store manually
-  studioClient.getEnvironmentsState().then(state => {
+  studioClient.getApplicationsState().then(state => {
     set(state);
   });
   return () => {

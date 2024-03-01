@@ -722,7 +722,7 @@ export class ApplicationManager {
       'model-id': modelId,
     });
     try {
-      const envPod = await this.getEnvironmentPod(recipeId, modelId);
+      const envPod = await this.getApplicationPod(recipeId, modelId);
       try {
         await containerEngine.stopPod(envPod.engineId, envPod.Id);
       } catch (err: unknown) {
@@ -749,14 +749,14 @@ export class ApplicationManager {
   }
 
   async restartApplication(recipeId: string, modelId: string) {
-    const envPod = await this.getEnvironmentPod(recipeId, modelId);
+    const envPod = await this.getApplicationPod(recipeId, modelId);
     await this.deleteApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
     await this.startApplication(recipe, model);
   }
 
-  async getEnvironmentPod(recipeId: string, modelId: string): Promise<PodInfo> {
+  async getApplicationPod(recipeId: string, modelId: string): Promise<PodInfo> {
     const envPod = await this.queryPod(recipeId, modelId);
     if (!envPod) {
       throw new Error(`no pod found with recipe Id ${recipeId} and model Id ${modelId}`);

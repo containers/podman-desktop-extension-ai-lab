@@ -1258,7 +1258,7 @@ describe('pod detection', async () => {
     expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);
   });
 
-  test('getEnvironmentPod', async () => {
+  test('getApplicationPod', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         Labels: {
@@ -1273,7 +1273,7 @@ describe('pod detection', async () => {
         },
       },
     ]);
-    const result = await manager.getEnvironmentPod('recipe-id-1', 'model-id-1');
+    const result = await manager.getApplicationPod('recipe-id-1', 'model-id-1');
     expect(result).toEqual({
       Labels: {
         'ai-studio-recipe-id': 'recipe-id-1',

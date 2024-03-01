@@ -1146,7 +1146,7 @@ describe('pod detection', async () => {
     });
   });
 
-  test('adoptRunningApplications does not update the environment state with the found pod without label', async () => {
+  test('adoptRunningApplications does not update the application state with the found pod without label', async () => {
     mocks.listPodsMock.mockResolvedValue([{}]);
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
@@ -1157,7 +1157,7 @@ describe('pod detection', async () => {
     expect(updateApplicationStateSpy).not.toHaveBeenCalled();
   });
 
-  test('onMachineStop updates the environments state with no environment running', async () => {
+  test('onMachineStop updates the applications state with no application running', async () => {
     mocks.listPodsMock.mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((f: machineStopHandle) => {
       f();
@@ -1167,7 +1167,7 @@ describe('pod detection', async () => {
     expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
 
-  test('onPodStart updates the environments state with the started pod', async () => {
+  test('onPodStart updates the applications state with the started pod', async () => {
     mocks.listPodsMock.mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
@@ -1186,7 +1186,7 @@ describe('pod detection', async () => {
     expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
 
-  test('onPodStart does no update the environments state with the started pod without labels', async () => {
+  test('onPodStart does no update the applications state with the started pod without labels', async () => {
     mocks.listPodsMock.mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
@@ -1201,7 +1201,7 @@ describe('pod detection', async () => {
     expect(sendApplicationStateSpy).not.toHaveBeenCalledOnce();
   });
 
-  test('onPodStop updates the environments state by removing the stopped pod', async () => {
+  test('onPodStop updates the applications state by removing the stopped pod', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
@@ -1233,7 +1233,7 @@ describe('pod detection', async () => {
     expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);
   });
 
-  test('onPodRemove updates the environments state by removing the removed pod', async () => {
+  test('onPodRemove updates the applications state by removing the removed pod', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });

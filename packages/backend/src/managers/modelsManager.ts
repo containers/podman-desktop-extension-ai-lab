@@ -224,8 +224,6 @@ export class ModelsManager implements Disposable {
       return;
     }
 
-    console.log(`onDownloadEvent updating ${tasks.length} tasks.`);
-
     tasks.forEach(task => {
       if (isProgressEvent(event)) {
         task.state = 'loading';
@@ -257,8 +255,6 @@ export class ModelsManager implements Disposable {
   }
 
   private createDownloader(model: ModelInfo): Downloader {
-    console.log('Creating a downloader.');
-
     // Ensure path to model directory exist
     const destDir = path.join(this.appUserDirectory, 'models', model.id);
     if (!fs.existsSync(destDir)) {

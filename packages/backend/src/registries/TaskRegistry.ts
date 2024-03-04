@@ -110,6 +110,10 @@ export class TaskRegistry {
     return this.getTasks().filter(task => this.filter(task, requestedLabels));
   }
 
+  /**
+   * Return the first task matching all the labels provided
+   * @param requestedLabels
+   */
   findTaskByLabels(requestedLabels: { [key: string]: string }): Task | undefined {
     return this.getTasks().find(task => this.filter(task, requestedLabels));
   }

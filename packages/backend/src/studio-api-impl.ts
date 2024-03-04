@@ -68,9 +68,10 @@ export class StudioApiImpl implements StudioAPI {
       .withProgress({ location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` }, () =>
         this.applicationManager.pullApplication(recipe, model),
       )
-      .catch(() => {
+      .catch((err: unknown) => {
+        console.error('Something went wrong while trying to start application', err);
         podmanDesktopApi.window
-          .showErrorMessage(`Error starting the application "${recipe.name}"`)
+          .showErrorMessage(`Error starting the application "${recipe.name}": ${String(err)}`)
           .catch((err: unknown) => {
             console.error(`Something went wrong with confirmation modals`, err);
           });

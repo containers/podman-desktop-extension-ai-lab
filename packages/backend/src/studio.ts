@@ -38,7 +38,7 @@ import fs from 'node:fs';
 import { ContainerRegistry } from './registries/ContainerRegistry';
 import { PodmanConnection } from './managers/podmanConnection';
 import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
-import { InferenceManager } from './managers/playground/inferenceManager';
+import { InferenceManager } from './managers/inference/inferenceManager';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');

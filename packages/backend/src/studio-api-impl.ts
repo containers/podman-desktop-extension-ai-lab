@@ -35,7 +35,7 @@ import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegist
 import path from 'node:path';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import type { InferenceManager } from './managers/playground/inferenceManager';
+import type { InferenceManager } from './managers/inference/inferenceManager';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(

@@ -37,8 +37,8 @@ vi.mock('@podman-desktop/api', async () => {
 });
 
 beforeEach(() => {
-  const listeners: ((value: unknown) => {})[] = [];
-  const eventSubscriber = (listener: (value: unknown) => {}) => {
+  const listeners: ((value: unknown) => void)[] = [];
+  const eventSubscriber = (listener: (value: unknown) => void) => {
     listeners.push(listener);
   };
   const fire = (value: unknown) => {

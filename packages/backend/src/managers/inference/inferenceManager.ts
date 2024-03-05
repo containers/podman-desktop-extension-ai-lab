@@ -18,7 +18,7 @@
 import type { InferenceServer } from '@shared/src/models/IInference';
 import type { PodmanConnection } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
-import type { ContainerInfo, ImageInfo, PullEvent, type TelemetryLogger, type Webview } from '@podman-desktop/api';
+import { type ContainerInfo, type ImageInfo, type PullEvent, type TelemetryLogger, type Webview } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
 import {
   GenerateContainerCreateOptions,
@@ -29,7 +29,7 @@ import {
 import { Publisher } from '../../utils/Publisher';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import type { Manager } from '../IManager';
+import type { Manager } from '../../utils/IManager';
 import type { ModelsManager } from '../modelsManager';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Manager {

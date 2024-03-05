@@ -18,7 +18,13 @@
 import type { InferenceServer } from '@shared/src/models/IInference';
 import type { PodmanConnection } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
-import { type ContainerInfo, type ImageInfo, type PullEvent, type TelemetryLogger, type Webview } from '@podman-desktop/api';
+import {
+  type ContainerInfo,
+  type ImageInfo,
+  type PullEvent,
+  type TelemetryLogger,
+  type Webview,
+} from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
 import {
   GenerateContainerCreateOptions,

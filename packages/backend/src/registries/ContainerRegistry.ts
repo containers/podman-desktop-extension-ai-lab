@@ -22,12 +22,25 @@ export type Subscriber = {
   callback: (status: string) => void;
 };
 
+export interface ContainerStart {
+  id: string;
+}
+
 export class ContainerRegistry {
   private count: number = 0;
   private subscribers: Map<string, Subscriber[]> = new Map();
 
+  private readonly _onStartContainerEvent = new podmanDesktopApi.EventEmitter<ContainerStart>();
+  readonly onStartContainerEvent: podmanDesktopApi.Event<ContainerStart> = this._onStartContainerEvent.event;
+
   init(): podmanDesktopApi.Disposable {
     return podmanDesktopApi.containerEngine.onEvent(event => {
+      if(event.status === 'start') {
+        this._onStartContainerEvent.fire({
+          id: event.id,
+        });
+      }
+
       if (this.subscribers.has(event.id)) {
         this.subscribers.get(event.id).forEach(subscriber => subscriber.callback(event.status));
 

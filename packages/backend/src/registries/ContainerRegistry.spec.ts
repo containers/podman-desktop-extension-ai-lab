@@ -24,7 +24,6 @@ const mocks = vi.hoisted(() => ({
   DisposableCreateMock: vi.fn(),
 }));
 
-
 vi.mock('@podman-desktop/api', async () => {
   return {
     EventEmitter: vi.fn(),
@@ -38,17 +37,17 @@ vi.mock('@podman-desktop/api', async () => {
 });
 
 beforeEach(() => {
-  let listeners: ((value: unknown) => {})[] = [];
+  const listeners: ((value: unknown) => {})[] = [];
   const eventSubscriber = (listener: (value: unknown) => {}) => {
     listeners.push(listener);
-  }
+  };
   const fire = (value: unknown) => {
     listeners.forEach(listener => listener(value));
-  }
+  };
   vi.mocked(EventEmitter).mockReturnValue({
     event: eventSubscriber,
     fire: fire,
-  } as unknown as EventEmitter<unknown>)
+  } as unknown as EventEmitter<unknown>);
 });
 
 test('ContainerRegistry init', () => {

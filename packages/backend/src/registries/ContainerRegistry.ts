@@ -35,7 +35,7 @@ export class ContainerRegistry {
 
   init(): podmanDesktopApi.Disposable {
     return podmanDesktopApi.containerEngine.onEvent(event => {
-      if(event.status === 'start') {
+      if (event.status === 'start') {
         this._onStartContainerEvent.fire({
           id: event.id,
         });

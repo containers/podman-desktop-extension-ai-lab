@@ -15,15 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { Disposable } from '@podman-desktop/api';
 
-export const MSG_PLAYGROUNDS_STATE_UPDATE = 'playgrounds-state-update';
-export const MSG_NEW_PLAYGROUND_QUERIES_STATE = 'new-playground-queries-state';
-export const MSG_NEW_CATALOG_STATE = 'new-catalog-state';
-export const MSG_NEW_RECIPE_STATE = 'new-recipe-state';
-export const MSG_TASKS_UPDATE = 'tasks-update';
-export const MSG_NEW_MODELS_STATE = 'new-models-state';
-export const MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update';
-export const MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update';
-
-export const MSG_INFERENCE_SERVERS_UPDATE = 'inference-servers-update';
-
+export interface Manager {
+  init(): Disposable;
+}

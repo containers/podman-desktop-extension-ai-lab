@@ -22,6 +22,7 @@ import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
 
 export interface DownloadEvent {
+  id: string;
   status: 'error' | 'completed' | 'progress' | 'canceled';
   message?: string;
 }
@@ -56,6 +57,9 @@ export const isProgressEvent = (value: unknown): value is ProgressEvent => {
 export class Downloader {
   private readonly _onEvent = new EventEmitter<DownloadEvent>();
   readonly onEvent: Event<DownloadEvent> = this._onEvent.event;
+  private requestedIdentifier: string;
+
+  completed: boolean;
 
   constructor(
     private url: string,
@@ -63,13 +67,19 @@ export class Downloader {
     private abortSignal?: AbortSignal,
   ) {}
 
-  async perform() {
+  getTarget(): string {
+    return this.target;
+  }
+
+  async perform(id: string) {
+    this.requestedIdentifier = id;
     const startTime = performance.now();
 
     try {
       await this.download(this.url);
       const durationSeconds = getDurationSecondsSince(startTime);
       this._onEvent.fire({
+        id: this.requestedIdentifier,
         status: 'completed',
         message: `Duration ${durationSeconds}s.`,
         duration: durationSeconds,
@@ -77,15 +87,19 @@ export class Downloader {
     } catch (err: unknown) {
       if (!this.abortSignal?.aborted) {
         this._onEvent.fire({
+          id: this.requestedIdentifier,
           status: 'error',
           message: `Something went wrong: ${String(err)}.`,
         });
       } else {
         this._onEvent.fire({
+          id: this.requestedIdentifier,
           status: 'canceled',
           message: `Request cancelled: ${String(err)}.`,
         });
       }
+    } finally {
+      this.completed = true;
     }
   }
 
@@ -124,6 +138,7 @@ export class Downloader {
         if (progressValue === 100 || progressValue - previousProgressValue > 1) {
           previousProgressValue = progressValue;
           this._onEvent.fire({
+            id: this.requestedIdentifier,
             status: 'progress',
             value: progressValue,
           } as ProgressEvent);

@@ -34,6 +34,9 @@ const mocks = vi.hoisted(() => {
     logErrorMock: vi.fn(),
     performDownloadMock: vi.fn(),
     onEventDownloadMock: vi.fn(),
+    getTargetMock: vi.fn(),
+    getDownloaderCompleter: vi.fn(),
+    isCompletionEventMock: vi.fn(),
   };
 });
 
@@ -53,9 +56,14 @@ vi.mock('@podman-desktop/api', () => {
 });
 
 vi.mock('../utils/downloader', () => ({
+  isCompletionEvent: mocks.isCompletionEventMock,
   Downloader: class {
+    get completed() {
+      return mocks.getDownloaderCompleter();
+    }
     onEvent = mocks.onEventDownloadMock;
     perform = mocks.performDownloadMock;
+    getTarget = mocks.getTargetMock;
   },
 }));
 
@@ -69,6 +77,8 @@ const telemetryLogger = {
 beforeEach(() => {
   vi.resetAllMocks();
   taskRegistry = new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview);
+
+  mocks.isCompletionEventMock.mockReturnValue(true);
 });
 
 const dirent = [
@@ -411,7 +421,7 @@ describe('downloadModel', () => {
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
-    await manager.downloadModel({
+    await manager.requestDownloadModel({
       id: 'id',
       url: 'url',
       name: 'name',
@@ -440,7 +450,7 @@ describe('downloadModel', () => {
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
     const getLocalModelPathMock = vi.spyOn(manager, 'getLocalModelPath').mockReturnValue('');
-    await manager.downloadModel({
+    await manager.requestDownloadModel({
       id: 'id',
       url: 'url',
       name: 'name',
@@ -454,5 +464,80 @@ describe('downloadModel', () => {
       },
       state: 'success',
     });
+  });
+  test('multiple download request same model - second call after first completed', async () => {
+    mocks.getDownloaderCompleter.mockReturnValue(true);
+
+    const manager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels(): ModelInfo[] {
+          return [];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+    );
+
+    vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
+    vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
+
+    await manager.requestDownloadModel({
+      id: 'id',
+      url: 'url',
+      name: 'name',
+    } as ModelInfo);
+
+    await manager.requestDownloadModel({
+      id: 'id',
+      url: 'url',
+      name: 'name',
+    } as ModelInfo);
+
+    // Only called once
+    expect(mocks.performDownloadMock).toHaveBeenCalledTimes(1);
+    expect(mocks.onEventDownloadMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('multiple download request same model - second call before first completed', async () => {
+    mocks.getDownloaderCompleter.mockReturnValue(false);
+
+    const manager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels(): ModelInfo[] {
+          return [];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+    );
+
+    vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
+    vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
+
+    mocks.onEventDownloadMock.mockImplementation(listener => {
+      listener({
+        status: 'completed',
+      });
+    });
+
+    await manager.requestDownloadModel({
+      id: 'id',
+      url: 'url',
+      name: 'name',
+    } as ModelInfo);
+
+    await manager.requestDownloadModel({
+      id: 'id',
+      url: 'url',
+      name: 'name',
+    } as ModelInfo);
+
+    // Only called once
+    expect(mocks.performDownloadMock).toHaveBeenCalledTimes(1);
+    expect(mocks.onEventDownloadMock).toHaveBeenCalledTimes(2);
   });
 });

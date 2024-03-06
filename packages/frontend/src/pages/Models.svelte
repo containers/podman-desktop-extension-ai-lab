@@ -55,7 +55,21 @@ function filterModels(): void {
 onMount(() => {
   // Subscribe to the tasks store
   const tasksUnsubscribe = tasks.subscribe(value => {
-    pullingTasks = value.filter(task => task.state === 'loading' && task.labels && 'model-pulling' in task.labels);
+    // Filter out duplicates
+    const modelIds = new Set<string>();
+    pullingTasks = value.reduce((filtered: Task[], task: Task) => {
+      if (
+        task.state === 'loading' &&
+        task.labels !== undefined &&
+        'model-pulling' in task.labels &&
+        !modelIds.has(task.labels['model-pulling'])
+      ) {
+        modelIds.add(task.labels['model-pulling']);
+        filtered.push(task);
+      }
+      return filtered;
+    }, []);
+
     loading = false;
     filterModels();
   });

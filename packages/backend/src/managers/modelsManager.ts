@@ -33,6 +33,8 @@ export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
   #watcher?: podmanDesktopApi.FileSystemWatcher;
 
+  #downloaders: Map<string, Downloader> = new Map<string, Downloader>();
+
   constructor(
     private appUserDirectory: string,
     private webview: Webview,
@@ -171,12 +173,111 @@ export class ModelsManager implements Disposable {
     }
   }
 
-  async downloadModel(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
-    const task: Task = this.taskRegistry.createTask(`Downloading model ${model.name}`, 'loading', {
+  /**
+   * This method will resolve when the provided model will be downloaded.
+   *
+   * This can method can be call multiple time for the same model, it will reuse existing downloader and wait on
+   * their completion.
+   * @param model
+   * @param labels
+   */
+  async requestDownloadModel(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
+    // Create a task to follow progress
+    const task: Task = this.createDownloadTask(model, labels);
+
+    // Check there is no existing downloader running
+    if (!this.#downloaders.has(model.id)) {
+      return this.downloadModel(model, task);
+    }
+
+    const existingDownloader = this.#downloaders.get(model.id);
+    if (existingDownloader.completed) {
+      task.state = 'success';
+      this.taskRegistry.updateTask(task);
+
+      return existingDownloader.getTarget();
+    }
+
+    // If we have an existing downloader running we subscribe on its events
+    return new Promise((resolve, reject) => {
+      const disposable = existingDownloader.onEvent(event => {
+        if (!isCompletionEvent(event)) return;
+
+        switch (event.status) {
+          case 'completed':
+            resolve(existingDownloader.getTarget());
+            break;
+          default:
+            reject(new Error(event.message));
+        }
+        disposable.dispose();
+      });
+    });
+  }
+
+  private onDownloadEvent(event: DownloadEvent): void {
+    // Always use the task registry as source of truth for tasks
+    const tasks = this.taskRegistry.getTasksByLabels({ 'model-pulling': event.id });
+    if (tasks.length === 0) {
+      // tasks might have been cleared but still an error.
+      console.error('received download event but no task is associated.');
+      return;
+    }
+
+    tasks.forEach(task => {
+      if (isProgressEvent(event)) {
+        task.state = 'loading';
+        task.progress = event.value;
+      } else if (isCompletionEvent(event)) {
+        // status error or canceled
+        if (event.status === 'error' || event.status === 'canceled') {
+          task.state = 'error';
+          task.progress = undefined;
+          task.error = event.message;
+
+          // telemetry usage
+          this.telemetry.logError('model.download', {
+            'model.id': event.id,
+            message: 'error downloading model',
+            error: event.message,
+            durationSeconds: event.duration,
+          });
+        } else {
+          task.state = 'success';
+          task.progress = 100;
+
+          // telemetry usage
+          this.telemetry.logUsage('model.download', { 'model.id': event.id, durationSeconds: event.duration });
+        }
+      }
+      this.taskRegistry.updateTask(task); // update task
+    });
+  }
+
+  private createDownloader(model: ModelInfo): Downloader {
+    // Ensure path to model directory exist
+    const destDir = path.join(this.appUserDirectory, 'models', model.id);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+
+    const target = path.resolve(destDir, path.basename(model.url));
+    // Create a downloader
+    const downloader = new Downloader(model.url, target);
+
+    this.#downloaders.set(model.id, downloader);
+
+    return downloader;
+  }
+
+  private createDownloadTask(model: ModelInfo, labels?: { [key: string]: string }): Task {
+    return this.taskRegistry.createTask(`Downloading model ${model.name}`, 'loading', {
       ...labels,
       'model-pulling': model.id,
     });
+  }
 
+  private async downloadModel(model: ModelInfo, task: Task): Promise<string> {
     // Check if the model is already on disk.
     if (this.isModelOnDisk(model.id)) {
       task.state = 'success';
@@ -190,49 +291,13 @@ export class ModelsManager implements Disposable {
     // update task to loading state
     this.taskRegistry.updateTask(task);
 
-    // Ensure path to model directory exist
-    const destDir = path.join(this.appUserDirectory, 'models', model.id);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
-
-    const target = path.resolve(destDir, path.basename(model.url));
-    // Create a downloader
-    const downloader = new Downloader(model.url, target);
+    const downloader = this.createDownloader(model);
 
     // Capture downloader events
-    downloader.onEvent((event: DownloadEvent) => {
-      if (isProgressEvent(event)) {
-        task.state = 'loading';
-        task.progress = event.value;
-      } else if (isCompletionEvent(event)) {
-        // status error or canceled
-        if (event.status === 'error' || event.status === 'canceled') {
-          task.state = 'error';
-          task.progress = undefined;
-          task.error = event.message;
-
-          // telemetry usage
-          this.telemetry.logError('model.download', {
-            'model.id': model.id,
-            message: 'error downloading model',
-            error: event.message,
-            durationSeconds: event.duration,
-          });
-        } else {
-          task.state = 'success';
-          task.progress = 100;
-
-          // telemetry usage
-          this.telemetry.logUsage('model.download', { 'model.id': model.id, durationSeconds: event.duration });
-        }
-      }
-
-      this.taskRegistry.updateTask(task); // update task
-    });
+    downloader.onEvent(this.onDownloadEvent.bind(this));
 
     // perform download
-    await downloader.perform();
-    return target;
+    await downloader.perform(model.id);
+    return downloader.getTarget();
   }
 }

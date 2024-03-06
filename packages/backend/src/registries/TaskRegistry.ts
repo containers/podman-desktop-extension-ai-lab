@@ -107,16 +107,26 @@ export class TaskRegistry {
    * @returns An array of tasks that match the specified labels.
    */
   getTasksByLabels(requestedLabels: { [key: string]: string }): Task[] {
-    return this.getTasks().filter(task => {
-      const labels = task.labels;
-      if (labels === undefined) return false;
+    return this.getTasks().filter(task => this.filter(task, requestedLabels));
+  }
 
-      for (const [key, value] of Object.entries(requestedLabels)) {
-        if (!(key in labels) || labels[key] !== value) return false;
-      }
+  /**
+   * Return the first task matching all the labels provided
+   * @param requestedLabels
+   */
+  findTaskByLabels(requestedLabels: { [key: string]: string }): Task | undefined {
+    return this.getTasks().find(task => this.filter(task, requestedLabels));
+  }
 
-      return true;
-    });
+  private filter(task: Task, requestedLabels: { [key: string]: string }): boolean {
+    const labels = task.labels;
+    if (labels === undefined) return false;
+
+    for (const [key, value] of Object.entries(requestedLabels)) {
+      if (!(key in labels) || labels[key] !== value) return false;
+    }
+
+    return true;
   }
 
   /**

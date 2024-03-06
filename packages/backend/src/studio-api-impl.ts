@@ -68,9 +68,10 @@ export class StudioApiImpl implements StudioAPI {
       .withProgress({ location: podmanDesktopApi.ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` }, () =>
         this.applicationManager.pullApplication(recipe, model),
       )
-      .catch(() => {
+      .catch((err: unknown) => {
+        console.error('Something went wrong while trying to start application', err);
         podmanDesktopApi.window
-          .showErrorMessage(`Error starting the application "${recipe.name}"`)
+          .showErrorMessage(`Error starting the application "${recipe.name}": ${String(err)}`)
           .catch((err: unknown) => {
             console.error(`Something went wrong with confirmation modals`, err);
           });
@@ -250,7 +251,7 @@ export class StudioApiImpl implements StudioAPI {
     const modelInfo: ModelInfo = this.modelsManager.getModelInfo(modelId);
 
     // Do not wait for the download task as it is too long.
-    this.modelsManager.downloadModel(modelInfo).catch((err: unknown) => {
+    this.modelsManager.requestDownloadModel(modelInfo).catch((err: unknown) => {
       console.error(`Something went wrong while trying to download the model ${modelId}`, err);
     });
   }

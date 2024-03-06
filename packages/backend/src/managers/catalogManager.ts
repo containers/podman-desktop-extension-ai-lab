@@ -22,7 +22,7 @@ import defaultCatalog from '../ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
-import { type Disposable, type Webview, fs } from '@podman-desktop/api';
+import { type Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 
@@ -49,9 +49,9 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
     // Creating a json watcher
     const jsonWatcher: JsonWatcher<Catalog> = new JsonWatcher(
       path.resolve(this.appUserDirectory, 'catalog.json'),
-      defaultCatalog
-    )
-    jsonWatcher.onContentUpdated((content) => this.onCatalogUpdated(content));
+      defaultCatalog,
+    );
+    jsonWatcher.onContentUpdated(content => this.onCatalogUpdated(content));
     jsonWatcher.init();
 
     this.#disposables.push(jsonWatcher);

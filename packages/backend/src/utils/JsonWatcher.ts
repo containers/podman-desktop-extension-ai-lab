@@ -8,7 +8,10 @@ export class JsonWatcher<T> implements Disposable {
   private readonly _onEvent = new EventEmitter<T>();
   readonly onContentUpdated: Event<T> = this._onEvent.event;
 
-  constructor(private path: string, private defaultValue: T) {}
+  constructor(
+    private path: string,
+    private defaultValue: T,
+  ) {}
 
   init(): void {
     try {
@@ -36,13 +39,13 @@ export class JsonWatcher<T> implements Disposable {
   }
 
   private requestUpdate(): void {
-    this.updateContent().catch((err) => {
+    this.updateContent().catch((err: unknown) => {
       console.error('Something went wrong in update content', err);
     });
   }
 
   private async updateContent(): Promise<void> {
-    if(!nodeFs.existsSync(this.path)) {
+    if (!nodeFs.existsSync(this.path)) {
       this._onEvent.fire(this.defaultValue);
       return;
     }

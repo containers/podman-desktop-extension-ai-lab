@@ -24,7 +24,8 @@ import userContent from './ai-user-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './managers/playground';
-import { EventEmitter, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { TelemetryLogger, Webview } from '@podman-desktop/api';
+import { EventEmitter } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
 
@@ -32,7 +33,7 @@ import * as fs from 'node:fs';
 import { timeout } from './utils/utils';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
-import { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/src/models/IRecipe';
 
 vi.mock('./ai.json', () => {
   return {
@@ -84,10 +85,12 @@ beforeEach(async () => {
   const appUserDirectory = '.';
 
   // Creating CatalogManager
-  catalogManager = new CatalogManager({
+  catalogManager = new CatalogManager(
+    {
       postMessage: vi.fn().mockResolvedValue(undefined),
     } as unknown as Webview,
-    appUserDirectory);
+    appUserDirectory,
+  );
 
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
@@ -106,11 +109,11 @@ beforeEach(async () => {
   const listeners: ((value: unknown) => void)[] = [];
 
   vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn().mockImplementation((callback) => {
+    event: vi.fn().mockImplementation(callback => {
       listeners.push(callback);
     }),
     fire: vi.fn().mockImplementation((content: unknown) => {
-      listeners.forEach((listener) => listener(content));
+      listeners.forEach(listener => listener(content));
     }),
   } as unknown as EventEmitter<unknown>);
 });

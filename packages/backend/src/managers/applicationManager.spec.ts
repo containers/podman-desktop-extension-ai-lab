@@ -1113,7 +1113,7 @@ describe('pod detection', async () => {
     );
   });
 
-  test('adoptRunningEnvironments updates the environment state with the found pod', async () => {
+  test('adoptRunningApplications updates the app state with the found pod', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         Labels: {
@@ -1127,10 +1127,10 @@ describe('pod detection', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
-    const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
-    manager.adoptRunningEnvironments();
+    const updateApplicationStateSpy = vi.spyOn(manager, 'updateApplicationState');
+    manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(updateEnvironmentStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'model-id-1', {
+    expect(updateApplicationStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'model-id-1', {
       pod: {
         Labels: {
           'ai-studio-recipe-id': 'recipe-id-1',
@@ -1146,28 +1146,28 @@ describe('pod detection', async () => {
     });
   });
 
-  test('adoptRunningEnvironments does not update the environment state with the found pod without label', async () => {
+  test('adoptRunningApplications does not update the application state with the found pod without label', async () => {
     mocks.listPodsMock.mockResolvedValue([{}]);
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
-    const updateEnvironmentStateSpy = vi.spyOn(manager, 'updateEnvironmentState');
-    manager.adoptRunningEnvironments();
+    const updateApplicationStateSpy = vi.spyOn(manager, 'updateApplicationState');
+    manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(updateEnvironmentStateSpy).not.toHaveBeenCalled();
+    expect(updateApplicationStateSpy).not.toHaveBeenCalled();
   });
 
-  test('onMachineStop updates the environments state with no environment running', async () => {
+  test('onMachineStop updates the applications state with no application running', async () => {
     mocks.listPodsMock.mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((f: machineStopHandle) => {
       f();
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
-    expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    manager.adoptRunningApplications();
+    expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
 
-  test('onPodStart updates the environments state with the started pod', async () => {
+  test('onPodStart updates the applications state with the started pod', async () => {
     mocks.listPodsMock.mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
@@ -1181,12 +1181,12 @@ describe('pod detection', async () => {
         },
       } as unknown as PodInfo);
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
-    expect(sendEnvironmentStateSpy).toHaveBeenCalledOnce();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    manager.adoptRunningApplications();
+    expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
 
-  test('onPodStart does no update the environments state with the started pod without labels', async () => {
+  test('onPodStart does no update the applications state with the started pod without labels', async () => {
     mocks.listPodsMock.mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
@@ -1196,12 +1196,12 @@ describe('pod detection', async () => {
         kind: 'podman',
       } as unknown as PodInfo);
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
-    expect(sendEnvironmentStateSpy).not.toHaveBeenCalledOnce();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    manager.adoptRunningApplications();
+    expect(sendApplicationStateSpy).not.toHaveBeenCalledOnce();
   });
 
-  test('onPodStop updates the environments state by removing the stopped pod', async () => {
+  test('onPodStop updates the applications state by removing the stopped pod', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
@@ -1227,13 +1227,13 @@ describe('pod detection', async () => {
         } as unknown as PodInfo);
       }, 1);
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 10));
-    expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+    expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);
   });
 
-  test('onPodRemove updates the environments state by removing the removed pod', async () => {
+  test('onPodRemove updates the applications state by removing the removed pod', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
@@ -1252,13 +1252,13 @@ describe('pod detection', async () => {
         f('pod-id-1');
       }, 1);
     });
-    const sendEnvironmentStateSpy = vi.spyOn(manager, 'sendEnvironmentState').mockResolvedValue();
-    manager.adoptRunningEnvironments();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 10));
-    expect(sendEnvironmentStateSpy).toHaveBeenCalledTimes(2);
+    expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);
   });
 
-  test('getEnvironmentPod', async () => {
+  test('getApplicationPod', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         Labels: {
@@ -1273,7 +1273,7 @@ describe('pod detection', async () => {
         },
       },
     ]);
-    const result = await manager.getEnvironmentPod('recipe-id-1', 'model-id-1');
+    const result = await manager.getApplicationPod('recipe-id-1', 'model-id-1');
     expect(result).toEqual({
       Labels: {
         'ai-studio-recipe-id': 'recipe-id-1',
@@ -1282,7 +1282,7 @@ describe('pod detection', async () => {
     });
   });
 
-  test('deleteEnvironment calls stopPod and removePod', async () => {
+  test('deleteApplication calls stopPod and removePod', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         engineId: 'engine-1',
@@ -1301,12 +1301,12 @@ describe('pod detection', async () => {
         },
       },
     ]);
-    await manager.deleteEnvironment('recipe-id-1', 'model-id-1');
+    await manager.deleteApplication('recipe-id-1', 'model-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });
 
-  test('deleteEnvironment calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
+  test('deleteApplication calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         engineId: 'engine-1',
@@ -1326,7 +1326,7 @@ describe('pod detection', async () => {
       },
     ]);
     mocks.stopPodMock.mockRejectedValue('something went wrong, pod already stopped...');
-    await manager.deleteEnvironment('recipe-id-1', 'model-id-1');
+    await manager.deleteApplication('recipe-id-1', 'model-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });

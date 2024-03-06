@@ -63,7 +63,7 @@ vi.mock('@podman-desktop/api', () => {
 const mocks = vi.hoisted(() => ({
   withProgressMock: vi.fn(),
   showWarningMessageMock: vi.fn(),
-  deleteEnvironmentMock: vi.fn(),
+  deleteApplicationMock: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -99,7 +99,7 @@ beforeEach(async () => {
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
     {
-      deleteEnvironment: mocks.deleteEnvironmentMock,
+      deleteApplication: mocks.deleteApplicationMock,
     } as unknown as ApplicationManager,
     {} as unknown as PlayGroundManager,
     catalogManager,
@@ -123,12 +123,12 @@ test('expect pull application to call the withProgress api method', async () => 
   expect(mocks.withProgressMock).toHaveBeenCalledOnce();
 });
 
-test('requestRemoveEnvironment should ask confirmation', async () => {
+test('requestRemoveApplication should ask confirmation', async () => {
   vi.spyOn(catalogManager, 'getRecipeById').mockReturnValue({
     name: 'Recipe 1',
   });
   mocks.showWarningMessageMock.mockResolvedValue('Confirm');
-  await studioApiImpl.requestRemoveEnvironment('recipe-id-1', 'model-id-1');
+  await studioApiImpl.requestRemoveApplication('recipe-id-1', 'model-id-1');
   await timeout(0);
-  expect(mocks.deleteEnvironmentMock).toHaveBeenCalled();
+  expect(mocks.deleteApplicationMock).toHaveBeenCalled();
 });

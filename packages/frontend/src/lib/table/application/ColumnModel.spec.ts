@@ -22,7 +22,7 @@ import { render, screen } from '@testing-library/svelte';
 import * as catalogStore from '/@/stores/catalog';
 import type { Catalog } from '@shared/src/models/ICatalog';
 import { readable } from 'svelte/store';
-import type { EnvironmentCell } from '/@/pages/environments';
+import type { ApplicationCell } from '../../../pages/applications';
 import ColumnModel from './ColumnModel.svelte';
 
 vi.mock('/@/stores/catalog', async () => {
@@ -59,7 +59,7 @@ const initialCatalog: Catalog = {
 test('display model name', async () => {
   const obj = {
     modelId: 'model1',
-  } as unknown as EnvironmentCell;
+  } as unknown as ApplicationCell;
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   render(ColumnModel, { object: obj });
 
@@ -71,7 +71,7 @@ test('display model port', async () => {
   const obj = {
     modelId: 'model1',
     modelPorts: [8080],
-  } as unknown as EnvironmentCell;
+  } as unknown as ApplicationCell;
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   render(ColumnModel, { object: obj });
 
@@ -85,7 +85,7 @@ test('display multpile model ports', async () => {
   const obj = {
     modelId: 'model1',
     modelPorts: [8080, 5000],
-  } as unknown as EnvironmentCell;
+  } as unknown as ApplicationCell;
   vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
   render(ColumnModel, { object: obj });
 

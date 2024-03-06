@@ -16,21 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Readable } from 'svelte/store';
-import { readable } from 'svelte/store';
-import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
-import { rpcBrowser, studioClient } from '/@/utils/client';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { Task } from '@shared/src/models/ITask';
 
-export const environmentStates: Readable<EnvironmentState[]> = readable<EnvironmentState[]>([], set => {
-  const sub = rpcBrowser.subscribe(MSG_ENVIRONMENTS_STATE_UPDATE, msg => {
-    set(msg);
-  });
-  // Initialize the store manually
-  studioClient.getEnvironmentsState().then(state => {
-    set(state);
-  });
-  return () => {
-    sub.unsubscribe();
-  };
-});
+export interface ApplicationCell {
+  tasks?: Task[];
+  appState: ApplicationState;
+  recipeId: string;
+  modelId: string;
+  appPorts: number[];
+  modelPorts: number[];
+}

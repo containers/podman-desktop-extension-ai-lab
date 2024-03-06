@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { EnvironmentCell } from '/@/pages/environments';
+import type { ApplicationCell } from '../../../pages/applications';
 import { catalog } from '/@/stores/catalog';
 import { displayPorts } from '/@/utils/printers';
 
-export let object: EnvironmentCell;
+export let object: ApplicationCell;
 
 $: name = $catalog.models.find(r => r.id === object.modelId)?.name;
 </script>

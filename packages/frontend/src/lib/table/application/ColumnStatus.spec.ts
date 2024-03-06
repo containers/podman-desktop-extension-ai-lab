@@ -19,18 +19,18 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import type { EnvironmentCell } from '/@/pages/environments';
+import type { ApplicationCell } from '../../../pages/applications';
 import ColumnStatus from './ColumnStatus.svelte';
 
 test('display Pod Running when no task', async () => {
   const obj = {
     recipeId: 'recipe 1',
-    envState: {
+    appState: {
       pod: {
         Id: 'pod-1',
       },
     },
-  } as EnvironmentCell;
+  } as ApplicationCell;
   render(ColumnStatus, { object: obj });
 
   const text = screen.getByText('Pod running');
@@ -40,7 +40,7 @@ test('display Pod Running when no task', async () => {
 test('display latest task', async () => {
   const obj = {
     recipeId: 'recipe 1',
-    envState: {
+    appState: {
       pod: {
         Id: 'pod-1',
       },
@@ -57,7 +57,7 @@ test('display latest task', async () => {
         state: 'loading',
       },
     ],
-  } as EnvironmentCell;
+  } as ApplicationCell;
   render(ColumnStatus, { object: obj });
 
   const text = screen.getByText('task 2 running');

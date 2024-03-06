@@ -38,9 +38,9 @@ import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, timeout } from '../utils/utils';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
 import { LABEL_MODEL_ID, LABEL_MODEL_PORTS } from './playground';
-import type { EnvironmentState } from '@shared/src/models/IEnvironmentState';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { PodmanConnection } from './podmanConnection';
-import { MSG_ENVIRONMENTS_STATE_UPDATE } from '@shared/Messages';
+import { MSG_APPLICATIONS_STATE_UPDATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
@@ -76,7 +76,7 @@ export interface ImageInfo {
 }
 
 export class ApplicationManager {
-  #applications: ApplicationRegistry<EnvironmentState>;
+  #applications: ApplicationRegistry<ApplicationState>;
   protectTasks: Set<string> = new Set();
 
   constructor(
@@ -90,7 +90,7 @@ export class ApplicationManager {
     private telemetry: TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
   ) {
-    this.#applications = new ApplicationRegistry<EnvironmentState>();
+    this.#applications = new ApplicationRegistry<ApplicationState>();
   }
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
@@ -147,8 +147,8 @@ export class ApplicationManager {
       );
 
       // first delete any existing pod with matching labels
-      if (await this.hasEnvironmentPod(recipe.id, model.id)) {
-        await this.deleteEnvironment(recipe.id, model.id);
+      if (await this.hasApplicationPod(recipe.id, model.id)) {
+        await this.deleteApplication(recipe.id, model.id);
       }
 
       // create a pod containing all the containers to run the application
@@ -575,7 +575,7 @@ export class ApplicationManager {
     }
   }
 
-  adoptRunningEnvironments() {
+  adoptRunningApplications() {
     this.podmanConnection.startupSubscribe(() => {
       if (!containerEngine.listPods) {
         // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
@@ -585,8 +585,8 @@ export class ApplicationManager {
       containerEngine
         .listPods()
         .then(pods => {
-          const envsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
-          for (const podToAdopt of envsPods) {
+          const appsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
+          for (const podToAdopt of appsPods) {
             this.adoptPod(podToAdopt);
           }
         })
@@ -605,7 +605,7 @@ export class ApplicationManager {
       }
 
       this.#applications.clear();
-      this.sendEnvironmentState();
+      this.sendApplicationState();
     });
 
     this.podmanConnection.onPodStart((pod: PodInfo) => {
@@ -630,14 +630,14 @@ export class ApplicationManager {
     if (this.#applications.has({ recipeId, modelId })) {
       return;
     }
-    const state: EnvironmentState = {
+    const state: ApplicationState = {
       recipeId,
       modelId,
       pod,
       appPorts,
       modelPorts,
     };
-    this.updateEnvironmentState(recipeId, modelId, state);
+    this.updateApplicationState(recipeId, modelId, state);
   }
 
   forgetPod(pod: PodInfo) {
@@ -650,7 +650,7 @@ export class ApplicationManager {
       return;
     }
     this.#applications.delete({ recipeId, modelId });
-    this.sendEnvironmentState();
+    this.sendApplicationState();
 
     const protect = this.protectTasks.has(pod.Id);
     if (!protect) {
@@ -664,20 +664,20 @@ export class ApplicationManager {
   }
 
   forgetPodById(podId: string) {
-    const env = Array.from(this.#applications.values()).find(p => p.pod.Id === podId);
-    if (!env) {
+    const app = Array.from(this.#applications.values()).find(p => p.pod.Id === podId);
+    if (!app) {
       return;
     }
-    if (!env.pod.Labels) {
+    if (!app.pod.Labels) {
       return;
     }
-    const recipeId = env.pod.Labels[LABEL_RECIPE_ID];
-    const modelId = env.pod.Labels[LABEL_MODEL_ID];
+    const recipeId = app.pod.Labels[LABEL_RECIPE_ID];
+    const modelId = app.pod.Labels[LABEL_MODEL_ID];
     if (!this.#applications.has({ recipeId, modelId })) {
       return;
     }
     this.#applications.delete({ recipeId, modelId });
-    this.sendEnvironmentState();
+    this.sendApplicationState();
 
     const protect = this.protectTasks.has(podId);
     if (!protect) {
@@ -690,27 +690,27 @@ export class ApplicationManager {
     }
   }
 
-  updateEnvironmentState(recipeId: string, modelId: string, state: EnvironmentState): void {
+  updateApplicationState(recipeId: string, modelId: string, state: ApplicationState): void {
     this.#applications.set({ recipeId, modelId }, state);
-    this.sendEnvironmentState();
+    this.sendApplicationState();
   }
 
-  getEnvironmentsState(): EnvironmentState[] {
+  getApplicationsState(): ApplicationState[] {
     return Array.from(this.#applications.values());
   }
 
-  sendEnvironmentState() {
+  sendApplicationState() {
     this.webview
       .postMessage({
-        id: MSG_ENVIRONMENTS_STATE_UPDATE,
-        body: this.getEnvironmentsState(),
+        id: MSG_APPLICATIONS_STATE_UPDATE,
+        body: this.getApplicationsState(),
       })
       .catch((err: unknown) => {
-        console.error(`Something went wrong while emitting MSG_ENVIRONMENTS_STATE_UPDATE: ${String(err)}`);
+        console.error(`Something went wrong while emitting MSG_APPLICATIONS_STATE_UPDATE: ${String(err)}`);
       });
   }
 
-  async deleteEnvironment(recipeId: string, modelId: string) {
+  async deleteApplication(recipeId: string, modelId: string) {
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
       'recipe-id': recipeId,
@@ -722,9 +722,9 @@ export class ApplicationManager {
       'model-id': modelId,
     });
     try {
-      const envPod = await this.getEnvironmentPod(recipeId, modelId);
+      const appPod = await this.getApplicationPod(recipeId, modelId);
       try {
-        await containerEngine.stopPod(envPod.engineId, envPod.Id);
+        await containerEngine.stopPod(appPod.engineId, appPod.Id);
       } catch (err: unknown) {
         // continue when the pod is already stopped
         if (!String(err).includes('pod already stopped')) {
@@ -734,8 +734,8 @@ export class ApplicationManager {
           throw err;
         }
       }
-      this.protectTasks.add(envPod.Id);
-      await containerEngine.removePod(envPod.engineId, envPod.Id);
+      this.protectTasks.add(appPod.Id);
+      await containerEngine.removePod(appPod.engineId, appPod.Id);
 
       stoppingTask.state = 'success';
       stoppingTask.name = `AI App stopped`;
@@ -748,25 +748,25 @@ export class ApplicationManager {
     }
   }
 
-  async restartEnvironment(recipeId: string, modelId: string) {
-    const envPod = await this.getEnvironmentPod(recipeId, modelId);
-    await this.deleteEnvironment(recipeId, modelId);
+  async restartApplication(recipeId: string, modelId: string) {
+    const appPod = await this.getApplicationPod(recipeId, modelId);
+    await this.deleteApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
-    const model = this.catalogManager.getModelById(envPod.Labels[LABEL_MODEL_ID]);
+    const model = this.catalogManager.getModelById(appPod.Labels[LABEL_MODEL_ID]);
     await this.startApplication(recipe, model);
   }
 
-  async getEnvironmentPod(recipeId: string, modelId: string): Promise<PodInfo> {
-    const envPod = await this.queryPod(recipeId, modelId);
-    if (!envPod) {
+  async getApplicationPod(recipeId: string, modelId: string): Promise<PodInfo> {
+    const appPod = await this.queryPod(recipeId, modelId);
+    if (!appPod) {
       throw new Error(`no pod found with recipe Id ${recipeId} and model Id ${modelId}`);
     }
-    return envPod;
+    return appPod;
   }
 
-  async hasEnvironmentPod(recipeId: string, modelId: string): Promise<boolean> {
-    const envPod = await this.queryPod(recipeId, modelId);
-    return !!envPod;
+  async hasApplicationPod(recipeId: string, modelId: string): Promise<boolean> {
+    const appPod = await this.queryPod(recipeId, modelId);
+    return !!appPod;
   }
 
   async queryPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {

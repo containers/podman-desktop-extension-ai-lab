@@ -166,7 +166,7 @@ export class Studio {
     await this.modelsManager.loadLocalModels();
     podmanConnection.init();
     this.playgroundManager.adoptRunningPlaygrounds();
-    applicationManager.adoptRunningEnvironments();
+    applicationManager.adoptRunningApplications();
 
     // Register the instance
     this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);

@@ -21,7 +21,7 @@ import type { QueryState } from './models/IPlaygroundQueryState';
 import type { Catalog } from './models/ICatalog';
 import type { PlaygroundState } from './models/IPlaygroundState';
 import type { TelemetryTrustedValue } from '@podman-desktop/api';
-import type { EnvironmentState } from './models/IEnvironmentState';
+import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
 
@@ -49,9 +49,9 @@ export abstract class StudioAPI {
   abstract navigateToContainer(containerId: string): Promise<void>;
   abstract navigateToPod(podId: string): Promise<void>;
 
-  abstract getEnvironmentsState(): Promise<EnvironmentState[]>;
-  abstract requestRemoveEnvironment(recipeId: string, modelId: string): Promise<void>;
-  abstract requestRestartEnvironment(recipeId: string, modelId: string): Promise<void>;
+  abstract getApplicationsState(): Promise<ApplicationState[]>;
+  abstract requestRemoveApplication(recipeId: string, modelId: string): Promise<void>;
+  abstract requestRestartApplication(recipeId: string, modelId: string): Promise<void>;
 
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;

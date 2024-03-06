@@ -138,6 +138,7 @@ export class ApplicationManager {
 
       // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
       const images = await this.buildImages(
+        recipe,
         configAndFilteredContainers.containers,
         configAndFilteredContainers.aiConfigFile.path,
         {
@@ -371,6 +372,7 @@ export class ApplicationManager {
   }
 
   async buildImages(
+    recipe: Recipe,
     containers: ContainerConfig[],
     configPath: string,
     labels?: { [key: string]: string },
@@ -400,9 +402,10 @@ export class ApplicationManager {
           throw new Error('Context configured does not exist.');
         }
 
+        const imageTag = this.getImageTag(recipe, container);
         const buildOptions = {
           containerFile: container.containerfile,
-          tag: `${container.name}:latest`,
+          tag: imageTag,
           labels: {
             [LABEL_RECIPE_ID]: labels !== undefined && 'recipe-id' in labels ? labels['recipe-id'] : undefined,
           },
@@ -434,9 +437,10 @@ export class ApplicationManager {
     await Promise.all(
       containers.map(async container => {
         const task = containerTasks[container.name];
+        const imageTag = this.getImageTag(recipe, container);
 
         const image = images.find(im => {
-          return im.RepoTags?.some(tag => tag.endsWith(`${container.name}:latest`));
+          return im.RepoTags?.some(tag => tag.endsWith(imageTag));
         });
 
         if (!image) {
@@ -458,6 +462,10 @@ export class ApplicationManager {
     );
 
     return imageInfoList;
+  }
+
+  private getImageTag(recipe: Recipe, container: ContainerConfig) {
+    return `${recipe.id}-${container.name}:latest`;
   }
 
   getConfigAndFilterContainers(

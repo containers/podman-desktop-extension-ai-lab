@@ -209,7 +209,7 @@ describe('pullApplication', () => {
     mocks.buildImageMock.mockResolvedValue(undefined);
     mocks.listImagesMock.mockResolvedValue([
       {
-        RepoTags: ['container1:latest'],
+        RepoTags: ['recipe1-container1:latest'],
         engineId: 'engine',
         Id: 'id1',
       },
@@ -296,7 +296,7 @@ describe('pullApplication', () => {
       expect.anything(),
       {
         containerFile: 'Containerfile',
-        tag: 'container1:latest',
+        tag: 'recipe1-container1:latest',
         labels: {
           [LABEL_RECIPE_ID]: 'recipe1',
         },
@@ -737,6 +737,9 @@ describe('getRandomName', () => {
 });
 
 describe('buildImages', () => {
+  const recipe = {
+    id: 'recipe1',
+  } as Recipe;
   const containers: ContainerConfig[] = [
     {
       name: 'container1',
@@ -762,13 +765,15 @@ describe('buildImages', () => {
   test('setTaskState should be called with error if context does not exist', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     mocks.listImagesMock.mockRejectedValue([]);
-    await expect(manager.buildImages(containers, 'config')).rejects.toThrow('Context configured does not exist.');
+    await expect(manager.buildImages(recipe, containers, 'config')).rejects.toThrow(
+      'Context configured does not exist.',
+    );
   });
   test('setTaskState should be called with error if buildImage executon fails', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     mocks.buildImageMock.mockRejectedValue('error');
     mocks.listImagesMock.mockRejectedValue([]);
-    await expect(manager.buildImages(containers, 'config')).rejects.toThrow(
+    await expect(manager.buildImages(recipe, containers, 'config')).rejects.toThrow(
       'Something went wrong while building the image: error',
     );
     expect(mocks.updateTaskMock).toBeCalledWith({
@@ -783,7 +788,9 @@ describe('buildImages', () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     mocks.buildImageMock.mockResolvedValue({});
     mocks.listImagesMock.mockResolvedValue([]);
-    await expect(manager.buildImages(containers, 'config')).rejects.toThrow('no image found for container1:latest');
+    await expect(manager.buildImages(recipe, containers, 'config')).rejects.toThrow(
+      'no image found for container1:latest',
+    );
     expect(mocks.updateTaskMock).toBeCalledWith({
       error: 'no image found for container1:latest',
       name: 'Building container1',
@@ -797,12 +804,12 @@ describe('buildImages', () => {
     mocks.buildImageMock.mockResolvedValue({});
     mocks.listImagesMock.mockResolvedValue([
       {
-        RepoTags: ['container1:latest'],
+        RepoTags: ['recipe1-container1:latest'],
         engineId: 'engine',
         Id: 'id1',
       },
     ]);
-    const imageInfoList = await manager.buildImages(containers, 'config');
+    const imageInfoList = await manager.buildImages(recipe, containers, 'config');
     expect(mocks.updateTaskMock).toBeCalledWith({
       name: 'Building container1',
       id: expect.any(String),

@@ -20,7 +20,7 @@
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { Studio } from './studio';
-import { EventEmitter, ExtensionContext, fs as fsApi } from '@podman-desktop/api';
+import { type ExtensionContext, EventEmitter } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
 

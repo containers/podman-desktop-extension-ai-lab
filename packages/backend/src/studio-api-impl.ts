@@ -59,7 +59,7 @@ export class StudioApiImpl implements StudioAPI {
 
   async pullApplication(recipeId: string, modelId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
-    if (!recipe) throw new Error('Not found');
+    if (!recipe) throw new Error(`recipe with if ${recipeId} not found`);
 
     const model = this.catalogManager.getModelById(modelId);
 

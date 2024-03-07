@@ -25,6 +25,7 @@ import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './managers/playground';
 import type { TelemetryLogger, Webview } from '@podman-desktop/api';
+import { EventEmitter } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
 
@@ -32,6 +33,7 @@ import * as fs from 'node:fs';
 import { timeout } from './utils/utils';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
+import type { Recipe } from '@shared/src/models/IRecipe';
 
 vi.mock('./ai.json', () => {
   return {
@@ -48,18 +50,6 @@ vi.mock('node:fs', () => {
   };
 });
 
-vi.mock('@podman-desktop/api', () => {
-  return {
-    fs: {
-      createFileSystemWatcher: () => ({
-        onDidCreate: vi.fn(),
-        onDidDelete: vi.fn(),
-        onDidChange: vi.fn(),
-      }),
-    },
-  };
-});
-
 const mocks = vi.hoisted(() => ({
   withProgressMock: vi.fn(),
   showWarningMessageMock: vi.fn(),
@@ -68,6 +58,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@podman-desktop/api', async () => {
   return {
+    EventEmitter: vi.fn(),
     window: {
       withProgress: mocks.withProgressMock,
       showWarningMessage: mocks.showWarningMessageMock,
@@ -86,15 +77,20 @@ vi.mock('@podman-desktop/api', async () => {
 });
 
 let studioApiImpl: StudioApiImpl;
-let catalogManager;
+let catalogManager: CatalogManager;
 
 beforeEach(async () => {
+  vi.resetAllMocks();
+
   const appUserDirectory = '.';
 
   // Creating CatalogManager
-  catalogManager = new CatalogManager(appUserDirectory, {
-    postMessage: vi.fn(),
-  } as unknown as Webview);
+  catalogManager = new CatalogManager(
+    {
+      postMessage: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Webview,
+    appUserDirectory,
+  );
 
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
@@ -108,8 +104,18 @@ beforeEach(async () => {
     {} as LocalRepositoryRegistry,
     {} as unknown as TaskRegistry,
   );
-  vi.resetAllMocks();
   vi.mock('node:fs');
+
+  const listeners: ((value: unknown) => void)[] = [];
+
+  vi.mocked(EventEmitter).mockReturnValue({
+    event: vi.fn().mockImplementation(callback => {
+      listeners.push(callback);
+    }),
+    fire: vi.fn().mockImplementation((content: unknown) => {
+      listeners.forEach(listener => listener(content));
+    }),
+  } as unknown as EventEmitter<unknown>);
 });
 
 test('expect pull application to call the withProgress api method', async () => {
@@ -118,7 +124,8 @@ test('expect pull application to call the withProgress api method', async () => 
 
   mocks.withProgressMock.mockResolvedValue(undefined);
 
-  await catalogManager.loadCatalog();
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
   await studioApiImpl.pullApplication('recipe 1', 'model1');
   expect(mocks.withProgressMock).toHaveBeenCalledOnce();
 });
@@ -126,7 +133,7 @@ test('expect pull application to call the withProgress api method', async () => 
 test('requestRemoveApplication should ask confirmation', async () => {
   vi.spyOn(catalogManager, 'getRecipeById').mockReturnValue({
     name: 'Recipe 1',
-  });
+  } as unknown as Recipe);
   mocks.showWarningMessageMock.mockResolvedValue('Confirm');
   await studioApiImpl.requestRemoveApplication('recipe-id-1', 'model-id-1');
   await timeout(0);

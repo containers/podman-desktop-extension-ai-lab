@@ -126,7 +126,7 @@ export class Studio {
       this.telemetry,
     );
     // Create catalog manager, responsible for loading the catalog files and watching for changes
-    this.catalogManager = new CatalogManager(appUserDirectory, this.#panel.webview);
+    this.catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);
     this.modelsManager = new ModelsManager(
       appUserDirectory,
       this.#panel.webview,
@@ -162,7 +162,7 @@ export class Studio {
       taskRegistry,
     );
 
-    await this.catalogManager.loadCatalog();
+    this.catalogManager.init();
     await this.modelsManager.loadLocalModels();
     podmanConnection.init();
     this.playgroundManager.adoptRunningPlaygrounds();

@@ -21,8 +21,8 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import content from '../ai-test.json';
 import userContent from '../ai-user-test.json';
-import type { Webview } from '@podman-desktop/api';
-import { CatalogManager } from '../managers/catalogManager';
+import { type Webview, EventEmitter } from '@podman-desktop/api';
+import { CatalogManager } from './catalogManager';
 
 import * as fs from 'node:fs';
 
@@ -41,24 +41,13 @@ vi.mock('node:fs', () => {
   };
 });
 
-vi.mock('@podman-desktop/api', () => {
-  return {
-    fs: {
-      createFileSystemWatcher: () => ({
-        onDidCreate: vi.fn(),
-        onDidDelete: vi.fn(),
-        onDidChange: vi.fn(),
-      }),
-    },
-  };
-});
-
 const mocks = vi.hoisted(() => ({
   withProgressMock: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
   return {
+    EventEmitter: vi.fn(),
     window: {
       withProgress: mocks.withProgressMock,
     },
@@ -78,20 +67,35 @@ vi.mock('@podman-desktop/api', async () => {
 let catalogManager: CatalogManager;
 
 beforeEach(async () => {
-  const appUserDirectory = '.';
-
-  // Creating CatalogManager
-  catalogManager = new CatalogManager(appUserDirectory, {
-    postMessage: vi.fn(),
-  } as unknown as Webview);
   vi.resetAllMocks();
+
+  const appUserDirectory = '.';
+  // Creating CatalogManager
+  catalogManager = new CatalogManager(
+    {
+      postMessage: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Webview,
+    appUserDirectory,
+  );
+
   vi.mock('node:fs');
+
+  const listeners: ((value: unknown) => void)[] = [];
+
+  vi.mocked(EventEmitter).mockReturnValue({
+    event: vi.fn().mockImplementation(callback => {
+      listeners.push(callback);
+    }),
+    fire: vi.fn().mockImplementation((content: unknown) => {
+      listeners.forEach(listener => listener(content));
+    }),
+  } as unknown as EventEmitter<unknown>);
 });
 
 describe('invalid user catalog', () => {
   beforeEach(async () => {
     vi.spyOn(fs.promises, 'readFile').mockResolvedValue('invalid json');
-    await catalogManager.loadCatalog();
+    catalogManager.init();
   });
 
   test('expect correct model is returned with valid id', () => {
@@ -111,7 +115,9 @@ describe('invalid user catalog', () => {
 
 test('expect correct model is returned from default catalog with valid id when no user catalog exists', async () => {
   vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-  await catalogManager.loadCatalog();
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
+
   const model = catalogManager.getModelById('hf.TheBloke.llama-2-7b-chat.Q5_K_S');
   expect(model).toBeDefined();
   expect(model.name).toEqual('TheBloke/Llama-2-7B-Chat-GGUF');
@@ -125,7 +131,9 @@ test('expect correct model is returned with valid id when the user catalog is va
   vi.spyOn(fs, 'existsSync').mockReturnValue(true);
   vi.spyOn(fs.promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
 
-  await catalogManager.loadCatalog();
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
+
   const model = catalogManager.getModelById('model1');
   expect(model).toBeDefined();
   expect(model.name).toEqual('Model 1');

@@ -20,7 +20,7 @@
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { Studio } from './studio';
-import type { ExtensionContext } from '@podman-desktop/api';
+import { type ExtensionContext, EventEmitter } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
 
@@ -39,6 +39,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@podman-desktop/api', async () => {
   return {
+    fs: {
+      createFileSystemWatcher: vi.fn(),
+    },
+    EventEmitter: vi.fn(),
     Uri: class {
       static joinPath = () => ({ fsPath: '.' });
     },
@@ -76,6 +80,11 @@ const consoleLogMock = vi.fn();
 beforeEach(() => {
   vi.clearAllMocks();
   console.log = consoleLogMock;
+
+  vi.mocked(EventEmitter).mockReturnValue({
+    event: vi.fn(),
+    fire: vi.fn(),
+  } as unknown as EventEmitter<unknown>);
 });
 
 afterEach(() => {

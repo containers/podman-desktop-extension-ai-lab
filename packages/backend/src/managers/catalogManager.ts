@@ -26,6 +26,9 @@ import { type Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 
+/**
+ * @deprecated
+ */
 export class CatalogManager extends Publisher<Catalog> implements Disposable {
   private catalog: Catalog;
   #disposables: Disposable[];
@@ -44,6 +47,9 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
     this.#disposables = [];
   }
 
+  /**
+   * @deprecated
+   */
   init(): void {
     // Creating a json watcher
     const jsonWatcher: JsonWatcher<Catalog> = new JsonWatcher(
@@ -65,14 +71,23 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
     this.#disposables.forEach(watcher => watcher.dispose());
   }
 
+  /**
+   * @deprecated
+   */
   public getCatalog(): Catalog {
     return this.catalog;
   }
 
+  /**
+   * @deprecated
+   */
   public getModels(): ModelInfo[] {
     return this.catalog.models;
   }
 
+  /**
+   * @deprecated
+   */
   public getModelById(modelId: string): ModelInfo {
     const model = this.getModels().find(m => modelId === m.id);
     if (!model) {
@@ -81,10 +96,16 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
     return model;
   }
 
+  /**
+   * @deprecated
+   */
   public getRecipes(): Recipe[] {
     return this.catalog.recipes;
   }
 
+  /**
+   * @deprecated
+   */
   public getRecipeById(recipeId: string): Recipe {
     const recipe = this.getRecipes().find(r => recipeId === r.id);
     if (!recipe) {

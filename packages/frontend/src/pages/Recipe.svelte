@@ -63,9 +63,7 @@ function setSelectedModel(modelId: string) {
   <svelte:fragment slot="subtitle">
     <div class="mt-2">
       {#each recipe?.categories || [] as categoryId}
-        <Card
-          title="{categories.find(category => category.id === categoryId)?.name || '?'}"
-          classes="bg-charcoal-800 p-1 text-xs w-fit" />
+        <Card title="{categoryId}" classes="bg-charcoal-800 p-1 text-xs w-fit" />
       {/each}
     </div>
   </svelte:fragment>

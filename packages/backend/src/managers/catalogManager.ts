@@ -37,7 +37,6 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
     super(webview, MSG_NEW_CATALOG_STATE, () => this.getCatalog());
     // We start with an empty catalog, for the methods to work before the catalog is loaded
     this.catalog = {
-      categories: [],
       models: [],
       recipes: [],
     };

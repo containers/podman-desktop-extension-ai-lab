@@ -47,7 +47,6 @@ vi.mock('/@/utils/client', async () => {
 });
 
 const initialCatalog: Catalog = {
-  categories: [],
   models: [],
   recipes: [
     {

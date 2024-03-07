@@ -23,5 +23,4 @@ import type { Recipe } from './IRecipe';
 export interface Catalog {
   recipes: Recipe[];
   models: ModelInfo[];
-  categories: Category[];
 }

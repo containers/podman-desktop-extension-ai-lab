@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { getDurationSecondsSince } from './utils';
-import fs from 'fs';
+import { createWriteStream, promises } from 'node:fs';
 import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
 
@@ -117,7 +117,27 @@ export class Downloader {
   }
 
   private followRedirects(url: string, callback: (message: { ok?: boolean; error?: string }) => void) {
-    const file = fs.createWriteStream(this.target);
+    const tmpFile = `${this.target}.tmp`;
+    const stream = createWriteStream(tmpFile);
+
+    stream.on('finish', () => {
+      stream.close();
+      // Rename from tmp to expected file name.
+      promises
+        .rename(tmpFile, this.target)
+        .then(() => {
+          callback({ ok: true });
+        })
+        .catch((err: unknown) => {
+          callback({ error: `Something went wrong while trying to rename downloaded file: ${String(err)}.` });
+        });
+    });
+    stream.on('error', e => {
+      callback({
+        error: e.message,
+      });
+    });
+
     let totalFileSize = 0;
     let progress = 0;
     https.get(url, { signal: this.abortSignal }, resp => {
@@ -143,21 +163,8 @@ export class Downloader {
             value: progressValue,
           } as ProgressEvent);
         }
-
-        // send progress in percentage (ex. 1.2%, 2.6%, 80.1%) to frontend
-        if (progressValue === 100) {
-          callback({ ok: true });
-        }
       });
-      file.on('finish', () => {
-        file.close();
-      });
-      file.on('error', e => {
-        callback({
-          error: e.message,
-        });
-      });
-      resp.pipe(file);
+      resp.pipe(stream);
     });
   }
 }

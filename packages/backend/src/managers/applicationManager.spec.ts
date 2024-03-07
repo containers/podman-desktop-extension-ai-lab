@@ -1171,7 +1171,7 @@ describe('pod detection', async () => {
     mocks.onMachineStopMock.mockImplementation((f: machineStopHandle) => {
       f();
     });
-    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
     expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
@@ -1190,7 +1190,7 @@ describe('pod detection', async () => {
         },
       } as unknown as PodInfo);
     });
-    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
     expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
@@ -1205,7 +1205,7 @@ describe('pod detection', async () => {
         kind: 'podman',
       } as unknown as PodInfo);
     });
-    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
     expect(sendApplicationStateSpy).not.toHaveBeenCalledOnce();
   });
@@ -1236,7 +1236,7 @@ describe('pod detection', async () => {
         } as unknown as PodInfo);
       }, 1);
     });
-    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 10));
     expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);
@@ -1261,7 +1261,7 @@ describe('pod detection', async () => {
         f('pod-id-1');
       }, 1);
     });
-    const sendApplicationStateSpy = vi.spyOn(manager, 'sendApplicationState').mockResolvedValue();
+    const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
     await new Promise(resolve => setTimeout(resolve, 10));
     expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);

@@ -44,6 +44,7 @@ import { MSG_APPLICATIONS_STATE_UPDATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
+import { Publisher } from '../utils/Publisher';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 export const LABEL_APP_PORTS = 'ai-studio-app-ports';
@@ -75,7 +76,7 @@ export interface ImageInfo {
   appName: string;
 }
 
-export class ApplicationManager {
+export class ApplicationManager extends Publisher<ApplicationState[]> {
   #applications: ApplicationRegistry<ApplicationState>;
   protectTasks: Set<string> = new Set();
 
@@ -83,13 +84,14 @@ export class ApplicationManager {
     private appUserDirectory: string,
     private git: GitManager,
     private taskRegistry: TaskRegistry,
-    private webview: Webview,
+    webview: Webview,
     private podmanConnection: PodmanConnection,
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
     private telemetry: TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
   ) {
+    super(webview, MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
   }
 
@@ -613,7 +615,7 @@ export class ApplicationManager {
       }
 
       this.#applications.clear();
-      this.sendApplicationState();
+      this.notify();
     });
 
     this.podmanConnection.onPodStart((pod: PodInfo) => {
@@ -658,7 +660,7 @@ export class ApplicationManager {
       return;
     }
     this.#applications.delete({ recipeId, modelId });
-    this.sendApplicationState();
+    this.notify();
 
     const protect = this.protectTasks.has(pod.Id);
     if (!protect) {
@@ -685,7 +687,7 @@ export class ApplicationManager {
       return;
     }
     this.#applications.delete({ recipeId, modelId });
-    this.sendApplicationState();
+    this.notify();
 
     const protect = this.protectTasks.has(podId);
     if (!protect) {
@@ -700,22 +702,11 @@ export class ApplicationManager {
 
   updateApplicationState(recipeId: string, modelId: string, state: ApplicationState): void {
     this.#applications.set({ recipeId, modelId }, state);
-    this.sendApplicationState();
+    this.notify();
   }
 
   getApplicationsState(): ApplicationState[] {
     return Array.from(this.#applications.values());
-  }
-
-  sendApplicationState() {
-    this.webview
-      .postMessage({
-        id: MSG_APPLICATIONS_STATE_UPDATE,
-        body: this.getApplicationsState(),
-      })
-      .catch((err: unknown) => {
-        console.error(`Something went wrong while emitting MSG_APPLICATIONS_STATE_UPDATE: ${String(err)}`);
-      });
   }
 
   async deleteApplication(recipeId: string, modelId: string) {

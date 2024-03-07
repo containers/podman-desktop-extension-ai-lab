@@ -130,7 +130,7 @@ export class Downloader {
         })
         .catch((err: unknown) => {
           callback({ error: `Something went wrong while trying to rename downloaded file: ${String(err)}.` });
-        })
+        });
     });
     stream.on('error', e => {
       callback({

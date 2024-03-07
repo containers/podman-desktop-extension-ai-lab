@@ -18,8 +18,6 @@
 
 export const MSG_PLAYGROUNDS_STATE_UPDATE = 'playgrounds-state-update';
 export const MSG_NEW_PLAYGROUND_QUERIES_STATE = 'new-playground-queries-state';
-export const MSG_NEW_CATALOG_STATE = 'new-catalog-state';
-export const MSG_NEW_RECIPE_STATE = 'new-recipe-state';
 export const MSG_TASKS_UPDATE = 'tasks-update';
 export const MSG_NEW_MODELS_STATE = 'new-models-state';
 export const MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update';
@@ -27,6 +25,6 @@ export const MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update';
 
 export enum MESSAGES {
   UPDATE_MODEL_CATALOG = 'update-mode-catalog',
-  UPDATE_RECIPE_CATALOG = 'update-recipe-catalog',
+  UPDATE_APP_CATALOG = 'update-app-catalog',
 }
 

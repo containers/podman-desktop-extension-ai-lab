@@ -1,0 +1,29 @@
+[
+  {
+    "id": "test-llama-2-7b-chat.Q5_K_S",
+    "name": "Llama-2-7B-Chat-GGUF",
+    "description": "Llama 2 is a family of state-of-the-art open-access large language models released by Meta today, and we’re excited to fully support the launch with comprehensive integration in Hugging Face. Llama 2 is being released with a very permissive community license and is available for commercial use. The code, pretrained models, and fine-tuned models are all being released today 🔥",
+    "hw": "CPU",
+    "registry": "Hugging Face",
+    "license": "?",
+    "url": "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf"
+  },
+  {
+    "id": "albedobase-xl-1.3",
+    "name": "AlbedoBase XL 1.3",
+    "description": "Stable Diffusion XL has 6.6 billion parameters, which is about 6.6 times more than the SD v1.5 version. I believe that this is not just a number, but a number that can lead to a significant improvement in performance. It has been a while since we realized that the overall performance of SD v1.5 has improved beyond imagination thanks to the explosive contributions of our community. Therefore, I am working on completing this AlbedoBase XL model in order to optimally reproduce the performance improvement that occurred in v1.5 in this XL version as well. My goal is to directly test the performance of all Checkpoints and LoRAs that are publicly uploaded to Civitai, and merge only the resources that are judged to be optimal after passing through several filters. This will surpass the performance of image-generating AI of companies such as Midjourney. As of now, AlbedoBase XL v0.4 has merged exactly 55 selected checkpoints and 138 LoRAs.",
+    "hw": "CPU",
+    "registry": "Civital",
+    "license": "openrail++",
+    "url": ""
+  },
+  {
+    "id": "sdxl-turbo",
+    "name": "SDXL Turbo",
+    "description": "SDXL Turbo achieves state-of-the-art performance with a new distillation technology, enabling single-step image generation with unprecedented quality, reducing the required step count from 50 to just one.",
+    "hw": "CPU",
+    "registry": "Hugging Face",
+    "license": "sai-c-community",
+    "url": ""
+  }
+]

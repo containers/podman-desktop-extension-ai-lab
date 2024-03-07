@@ -17,72 +17,57 @@
  ***********************************************************************/
 
 import type { Catalog } from '@shared/src/models/ICatalog';
-import path from 'node:path';
-import defaultCatalog from '../ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
 import { type Disposable, type Webview } from '@podman-desktop/api';
-import { JsonWatcher } from '../utils/JsonWatcher';
-import { Publisher } from '../utils/Publisher';
+import { ModelCatalog } from './catalogs/ModelCatalog';
+import { ApplicationCatalog } from './catalogs/ApplicationCatalog';
 
 /**
  * @deprecated
  */
-export class CatalogManager extends Publisher<Catalog> implements Disposable {
-  private catalog: Catalog;
-  #disposables: Disposable[];
+export class CatalogManager implements Disposable {
+
+  #modelCatalog: ModelCatalog;
+  #applicationCatalog: ApplicationCatalog;
 
   constructor(
     webview: Webview,
-    private appUserDirectory: string,
+    appUserDirectory: string,
   ) {
-    super(webview, MSG_NEW_CATALOG_STATE, () => this.getCatalog());
-    // We start with an empty catalog, for the methods to work before the catalog is loaded
-    this.catalog = {
-      models: [],
-      recipes: [],
-    };
-
-    this.#disposables = [];
+    this.#modelCatalog = new ModelCatalog(webview, appUserDirectory);
+    this.#applicationCatalog = new ApplicationCatalog(webview, appUserDirectory);
   }
 
   /**
    * @deprecated
    */
   init(): void {
-    // Creating a json watcher
-    const jsonWatcher: JsonWatcher<Catalog> = new JsonWatcher(
-      path.resolve(this.appUserDirectory, 'catalog.json'),
-      defaultCatalog,
-    );
-    jsonWatcher.onContentUpdated(content => this.onCatalogUpdated(content));
-    jsonWatcher.init();
-
-    this.#disposables.push(jsonWatcher);
+    this.#modelCatalog.init();
+    this.#applicationCatalog.init();
   }
 
-  private onCatalogUpdated(content: Catalog): void {
-    this.catalog = content;
-    this.notify();
-  }
 
   dispose(): void {
-    this.#disposables.forEach(watcher => watcher.dispose());
+    this.#modelCatalog.dispose();
+    this.#applicationCatalog.dispose();
   }
 
   /**
    * @deprecated
    */
   public getCatalog(): Catalog {
-    return this.catalog;
+    return {
+      recipes: this.#applicationCatalog.getApplications(),
+      models: this.#modelCatalog.getModels(),
+    };
   }
 
   /**
    * @deprecated
    */
   public getModels(): ModelInfo[] {
-    return this.catalog.models;
+    return this.#modelCatalog.getModels();
   }
 
   /**
@@ -100,7 +85,7 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
    * @deprecated
    */
   public getRecipes(): Recipe[] {
-    return this.catalog.recipes;
+    return this.#applicationCatalog.getApplications();
   }
 
   /**

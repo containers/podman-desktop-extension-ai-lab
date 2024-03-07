@@ -19,9 +19,13 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Publisher } from '../../utils/Publisher';
 import { MESSAGES } from '@shared/Messages';
 import type { Disposable, Webview } from '@podman-desktop/api';
+import { JsonWatcher } from '../../utils/JsonWatcher';
+import path from 'node:path';
+import defaultModels from '../../assets/models-catalog.json';
 
 export class ModelCatalog extends Publisher<ModelInfo[]> implements Disposable {
   #models: Map<string, ModelInfo>;
+  #disposables: Disposable[];
 
   constructor(
     webview: Webview,
@@ -29,10 +33,29 @@ export class ModelCatalog extends Publisher<ModelInfo[]> implements Disposable {
   ) {
     super(webview, MESSAGES.UPDATE_MODEL_CATALOG, () => this.getModels());
     this.#models = new Map<string, ModelInfo>();
+    this.#disposables = [];
+  }
+
+  init(): void {
+    // Creating a json watcher
+    const jsonWatcher: JsonWatcher<ModelInfo[]> = new JsonWatcher(
+      path.resolve(this.appUserDirectory, 'models-catalog.json'),
+      defaultModels,
+    );
+    jsonWatcher.onContentUpdated(content => this.onModelCatalogUpdate(content));
+    jsonWatcher.init();
+
+    this.#disposables.push(jsonWatcher);
+  }
+
+  private onModelCatalogUpdate(models: ModelInfo[]): void {
+    this.#models = new Map(models.map((model) => [model.id, model]));
+    this.notify();
   }
 
   dispose(): void {
     this.#models.clear();
+    this.#disposables.forEach(watcher => watcher.dispose());
   }
 
   getModels(): ModelInfo[] {

@@ -18,7 +18,7 @@
 
 import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
-import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
+import { MESSAGES } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { Catalog } from '@shared/src/models/ICatalog';
 
@@ -29,14 +29,23 @@ const emptyCatalog = {
 };
 
 export const catalog: Readable<Catalog> = readable<Catalog>(emptyCatalog, set => {
-  const sub = rpcBrowser.subscribe(MSG_NEW_CATALOG_STATE, msg => {
-    set(msg);
+  const Update = () => {
+    studioClient.getCatalog().then(state => {
+      set(state);
+    });
+  }
+  const subModels = rpcBrowser.subscribe(MESSAGES.UPDATE_MODEL_CATALOG, msg => {
+    Update();
   });
+  const subApps = rpcBrowser.subscribe(MESSAGES.UPDATE_APP_CATALOG, msg => {
+    Update();
+  });
+
   // Initialize the store manually
-  studioClient.getCatalog().then(state => {
-    set(state);
-  });
+  Update();
+
   return () => {
-    sub.unsubscribe();
+    subModels.unsubscribe();
+    subApps.unsubscribe();
   };
 });

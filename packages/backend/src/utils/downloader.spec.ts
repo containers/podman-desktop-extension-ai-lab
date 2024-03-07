@@ -41,7 +41,6 @@ vi.mock('node:fs', () => {
     existsSync: vi.fn(),
     promises: {
       rename: vi.fn(),
-      rm: vi.fn(),
     },
   };
 });
@@ -97,7 +96,6 @@ test('perform download failed', async () => {
 test('perform download successfully', async () => {
   const downloader = new Downloader('dummyUrl', 'dummyTarget');
   vi.spyOn(promises, 'rename').mockResolvedValue(undefined);
-  vi.spyOn(promises, 'rm').mockResolvedValue(undefined);
 
   const closeMock = vi.fn();
   const onMock = vi.fn();
@@ -119,16 +117,12 @@ test('perform download successfully', async () => {
   // perform download logic
   await downloader.perform('followUpId');
 
+  expect(promises.rename).toHaveBeenCalledWith('dummyTarget.tmp', 'dummyTarget');
   expect(downloader.completed).toBeTruthy();
   expect(listenerMock).toHaveBeenCalledWith({
     id: 'followUpId',
     duration: expect.anything(),
     message: expect.anything(),
     status: 'completed',
-  });
-
-  await vi.waitFor(() => {
-    expect(promises.rename).toHaveBeenCalledWith('dummyTarget.tmp', 'dummyTarget');
-    expect(promises.rm).toHaveBeenCalledWith('dummyTarget.tmp');
   });
 });

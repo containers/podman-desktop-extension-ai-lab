@@ -131,12 +131,6 @@ export class Downloader {
         .catch((err: unknown) => {
           callback({ error: `Something went wrong while trying to rename downloaded file: ${String(err)}.` });
         })
-        .finally(() => {
-          // Finally delete the tmp file
-          promises.rm(tmpFile).catch((err: unknown) => {
-            console.error('Something went wrong while trying to delete the temporary file', err);
-          });
-        });
     });
     stream.on('error', e => {
       callback({

@@ -33,7 +33,7 @@ vi.mock('node:fs', () => {
 });
 
 const webviewMock = {
-  postMessage:  vi.fn(),
+  postMessage: vi.fn(),
 } as unknown as Webview;
 
 beforeEach(async () => {
@@ -78,4 +78,3 @@ test('applications should contain test data', async () => {
   });
   expect(catalog.getApplications().some(model => model.id === 'test-chatbot')).toBeTruthy();
 });
-

@@ -49,7 +49,7 @@ export class ModelCatalog extends Publisher<ModelInfo[]> implements Disposable {
   }
 
   private onModelCatalogUpdate(models: ModelInfo[]): void {
-    this.#models = new Map(models.map((model) => [model.id, model]));
+    this.#models = new Map(models.map(model => [model.id, model]));
     this.notify();
   }
 

@@ -49,7 +49,7 @@ export class ApplicationCatalog extends Publisher<Recipe[]> implements Disposabl
   }
 
   private onApplicationCatalogUpdate(applications: Recipe[]): void {
-    this.#applications = new Map(applications.map((app) => [app.id, app]));
+    this.#applications = new Map(applications.map(app => [app.id, app]));
     this.notify();
   }
 

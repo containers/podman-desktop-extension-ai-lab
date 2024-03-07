@@ -27,14 +27,10 @@ import { ApplicationCatalog } from './catalogs/ApplicationCatalog';
  * @deprecated
  */
 export class CatalogManager implements Disposable {
-
   #modelCatalog: ModelCatalog;
   #applicationCatalog: ApplicationCatalog;
 
-  constructor(
-    webview: Webview,
-    appUserDirectory: string,
-  ) {
+  constructor(webview: Webview, appUserDirectory: string) {
     this.#modelCatalog = new ModelCatalog(webview, appUserDirectory);
     this.#applicationCatalog = new ApplicationCatalog(webview, appUserDirectory);
   }
@@ -46,7 +42,6 @@ export class CatalogManager implements Disposable {
     this.#modelCatalog.init();
     this.#applicationCatalog.init();
   }
-
 
   dispose(): void {
     this.#modelCatalog.dispose();

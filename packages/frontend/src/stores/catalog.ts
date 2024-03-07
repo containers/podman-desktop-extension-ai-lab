@@ -33,11 +33,11 @@ export const catalog: Readable<Catalog> = readable<Catalog>(emptyCatalog, set =>
     studioClient.getCatalog().then(state => {
       set(state);
     });
-  }
-  const subModels = rpcBrowser.subscribe(MESSAGES.UPDATE_MODEL_CATALOG, msg => {
+  };
+  const subModels = rpcBrowser.subscribe(MESSAGES.UPDATE_MODEL_CATALOG, () => {
     Update();
   });
-  const subApps = rpcBrowser.subscribe(MESSAGES.UPDATE_APP_CATALOG, msg => {
+  const subApps = rpcBrowser.subscribe(MESSAGES.UPDATE_APP_CATALOG, () => {
     Update();
   });
 

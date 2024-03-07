@@ -24,6 +24,7 @@ import type { ImageInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import OpenAI from 'openai';
 import { Stream } from 'openai/streaming';
+import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../utils/utils';
 
 const mocks = vi.hoisted(() => ({
   postMessage: vi.fn(),
@@ -138,6 +139,7 @@ test('startPlayground should download image if not present then create container
           Type: 'bind',
         },
       ],
+      SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
       PortBindings: {
         '8000/tcp': [
           {

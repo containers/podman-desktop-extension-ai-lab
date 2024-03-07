@@ -33,7 +33,7 @@ import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlay
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { PodmanConnection } from './podmanConnection';
 import OpenAI from 'openai';
-import { getDurationSecondsSince, timeout } from '../utils/utils';
+import { DISABLE_SELINUX_LABEL_SECURITY_OPTION, getDurationSecondsSince, timeout } from '../utils/utils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export const LABEL_MODEL_ID = 'ai-studio-model-id';
@@ -212,6 +212,7 @@ export class PlayGroundManager {
             Type: 'bind',
           },
         ],
+        SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
         PortBindings: {
           '8000/tcp': [
             {

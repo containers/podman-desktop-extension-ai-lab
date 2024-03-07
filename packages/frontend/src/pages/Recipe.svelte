@@ -14,7 +14,6 @@ export let recipeId: string;
 
 // The recipe model provided
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
-$: categories = $catalog.categories;
 let selectedModelId: string;
 $: selectedModelId = recipe?.models?.[0] ?? '';
 

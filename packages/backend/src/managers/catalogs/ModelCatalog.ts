@@ -15,18 +15,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { Publisher } from '../../utils/Publisher';
+import { MESSAGES } from '@shared/Messages';
+import type { Disposable, Webview } from '@podman-desktop/api';
 
-export const MSG_PLAYGROUNDS_STATE_UPDATE = 'playgrounds-state-update';
-export const MSG_NEW_PLAYGROUND_QUERIES_STATE = 'new-playground-queries-state';
-export const MSG_NEW_CATALOG_STATE = 'new-catalog-state';
-export const MSG_NEW_RECIPE_STATE = 'new-recipe-state';
-export const MSG_TASKS_UPDATE = 'tasks-update';
-export const MSG_NEW_MODELS_STATE = 'new-models-state';
-export const MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update';
-export const MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update';
+export class ModelCatalog extends Publisher<ModelInfo[]> implements Disposable {
+  #models: Map<string, ModelInfo>;
 
-export enum MESSAGES {
-  UPDATE_MODEL_CATALOG = 'update-mode-catalog',
-  UPDATE_RECIPE_CATALOG = 'update-recipe-catalog',
+  constructor(
+    webview: Webview,
+    private appUserDirectory: string,
+  ) {
+    super(webview, MESSAGES.UPDATE_MODEL_CATALOG, () => this.getModels());
+    this.#models = new Map<string, ModelInfo>();
+  }
+
+  dispose(): void {
+    this.#models.clear();
+  }
+
+  getModels(): ModelInfo[] {
+    return Array.from(this.#models.values());
+  }
 }
-

@@ -15,18 +15,24 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Disposable, Webview } from '@podman-desktop/api';
+import { MESSAGES } from '@shared/Messages';
+import { Publisher } from '../../utils/Publisher';
 
-export const MSG_PLAYGROUNDS_STATE_UPDATE = 'playgrounds-state-update';
-export const MSG_NEW_PLAYGROUND_QUERIES_STATE = 'new-playground-queries-state';
-export const MSG_NEW_CATALOG_STATE = 'new-catalog-state';
-export const MSG_NEW_RECIPE_STATE = 'new-recipe-state';
-export const MSG_TASKS_UPDATE = 'tasks-update';
-export const MSG_NEW_MODELS_STATE = 'new-models-state';
-export const MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update';
-export const MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update';
+export class ApplicationCatalog extends Publisher<Recipe[]> implements Disposable {
+  #applications: Map<string, Recipe>;
 
-export enum MESSAGES {
-  UPDATE_MODEL_CATALOG = 'update-mode-catalog',
-  UPDATE_RECIPE_CATALOG = 'update-recipe-catalog',
+  constructor(webview: Webview) {
+    super(webview, MESSAGES.UPDATE_RECIPE_CATALOG, () => this.getApplications());
+    this.#applications = new Map<string, Recipe>();
+  }
+
+  dispose(): void {
+    this.#applications.clear();
+  }
+
+  getApplications(): Recipe[] {
+    return Array.from(this.#applications.values());
+  }
 }
-

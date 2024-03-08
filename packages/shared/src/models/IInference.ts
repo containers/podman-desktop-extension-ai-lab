@@ -53,9 +53,4 @@ export interface InferenceServer {
    * Exit code
    */
   exit?: number;
-  /**
-   * Logs
-   * @deprecated
-   */
-  logs?: string[];
 }

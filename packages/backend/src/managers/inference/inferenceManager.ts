@@ -35,10 +35,9 @@ import {
 import { Publisher } from '../../utils/Publisher';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import type { Manager } from '../../utils/IManager';
 import type { ModelsManager } from '../modelsManager';
 
-export class InferenceManager extends Publisher<InferenceServer[]> implements Manager {
+export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
   #servers: Map<string, InferenceServer>;
   // Is initialized
@@ -59,20 +58,27 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Ma
     this.#initialized = false;
   }
 
-  init(): Disposable {
+  init(): void {
     this.podmanConnection.onMachineStart(this.watchMachineEvent.bind(this, 'start'));
     this.podmanConnection.onMachineStop(this.watchMachineEvent.bind(this, 'stop'));
-    const onStartContainerEventDisposable = this.containerRegistry.onStartContainerEvent(
+    this.containerRegistry.onStartContainerEvent(
       this.watchContainerStart.bind(this),
     );
 
     this.retryableRefresh(3);
-
-    return Disposable.from(onStartContainerEventDisposable, this.cleanDisposables.bind(this));
   }
 
   public isInitialize(): boolean {
     return this.#initialized;
+  }
+
+  /**
+   * Cleanup the manager
+   */
+  dispose(): void {
+    this.cleanDisposables();
+    this.#servers.clear();
+    this.#initialized = false;
   }
 
   /**

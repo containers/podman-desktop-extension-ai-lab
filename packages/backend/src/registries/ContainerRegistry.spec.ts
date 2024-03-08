@@ -154,6 +154,8 @@ test('ContainerRegistry should fire ContainerStart when container start', () => 
   // Generate a remove event
   callback({ status: 'remove', id: 'random', type: 'container' });
 
+  expect(startListenerMock).not.toHaveBeenCalled();
+
   // Call it a second time
   callback({ status: 'start', id: 'random', type: 'container' });
 

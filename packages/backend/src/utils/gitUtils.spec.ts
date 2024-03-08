@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import { GitManager } from './gitManager';
+import { cloneRepository } from './gitUtils';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -39,9 +39,8 @@ beforeEach(() => {
 });
 
 describe('cloneRepository', () => {
-  const gitmanager = new GitManager();
   test('clone and checkout if ref is specified', async () => {
-    await gitmanager.cloneRepository({
+    await cloneRepository({
       repository: 'repo',
       targetDirectory: 'target',
       ref: '000',
@@ -50,7 +49,7 @@ describe('cloneRepository', () => {
     expect(mocks.checkoutMock).toBeCalledWith(['000']);
   });
   test('clone and checkout if ref is NOT specified', async () => {
-    await gitmanager.cloneRepository({
+    await cloneRepository({
       repository: 'repo',
       targetDirectory: 'target',
     });

@@ -18,7 +18,6 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import type { ContainerAttachedInfo, ImageInfo, ApplicationPodInfo } from './applicationManager';
 import { LABEL_RECIPE_ID, ApplicationManager } from './applicationManager';
-import type { GitManager } from './gitManager';
 import os from 'os';
 import fs from 'node:fs';
 import type { Recipe } from '@shared/src/models/IRecipe';
@@ -85,10 +84,15 @@ const mocks = vi.hoisted(() => {
     getTasksMock: vi.fn(),
     getTasksByLabelsMock: vi.fn(),
     deleteByLabelsMock: vi.fn(),
+    cloneRepositoryMock: vi.fn(),
   };
 });
 vi.mock('../models/AIConfig', () => ({
   parseYamlFile: mocks.parseYamlFileMock,
+}));
+
+vi.mock('../utils/gitUtils', () => ({
+  cloneRepository: mocks.cloneRepositoryMock,
 }));
 
 vi.mock('../utils/downloader', () => ({
@@ -159,7 +163,6 @@ describe('pullApplication', () => {
   interface mockForPullApplicationOptions {
     recipeFolderExists: boolean;
   }
-  const cloneRepositoryMock = vi.fn();
   let manager: ApplicationManager;
   let modelsManager: ModelsManager;
   vi.spyOn(utils, 'timeout').mockResolvedValue();
@@ -236,9 +239,6 @@ describe('pullApplication', () => {
     );
     manager = new ApplicationManager(
       '/home/user/aistudio',
-      {
-        cloneRepository: cloneRepositoryMock,
-      } as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -286,10 +286,10 @@ describe('pullApplication', () => {
       targetDirectory: '\\home\\user\\aistudio\\recipe1',
     };
     if (process.platform === 'win32') {
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
+      expect(mocks.cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     } else {
       gitCloneOptions.targetDirectory = '/home/user/aistudio/recipe1';
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
+      expect(mocks.cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     }
     expect(mocks.performDownloadMock).toHaveBeenCalledOnce();
     expect(mocks.buildImageMock).toHaveBeenCalledOnce();
@@ -336,7 +336,7 @@ describe('pullApplication', () => {
       url: '',
     };
     await manager.pullApplication(recipe, model);
-    expect(cloneRepositoryMock).not.toHaveBeenCalled();
+    expect(mocks.cloneRepositoryMock).not.toHaveBeenCalled();
   });
   test('pullApplication should not download model if already on disk', async () => {
     mockForPullApplication({
@@ -364,7 +364,7 @@ describe('pullApplication', () => {
       url: '',
     };
     await manager.pullApplication(recipe, model);
-    expect(cloneRepositoryMock).not.toHaveBeenCalled();
+    expect(mocks.cloneRepositoryMock).not.toHaveBeenCalled();
     expect(mocks.performDownloadMock).not.toHaveBeenCalled();
   });
 
@@ -400,7 +400,7 @@ describe('pullApplication', () => {
 
     await expect(manager.pullApplication(recipe, model)).rejects.toThrowError('No containers available.');
 
-    expect(cloneRepositoryMock).not.toHaveBeenCalled();
+    expect(mocks.cloneRepositoryMock).not.toHaveBeenCalled();
     expect(mocks.performDownloadMock).not.toHaveBeenCalled();
   });
 });
@@ -408,12 +408,8 @@ describe('doCheckout', () => {
   test('clone repo if not present locally', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     vi.spyOn(fs, 'mkdirSync');
-    const cloneRepositoryMock = vi.fn();
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {
-        cloneRepository: cloneRepositoryMock,
-      } as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -429,7 +425,7 @@ describe('doCheckout', () => {
     };
     await manager.doCheckout(gitCloneOptions);
 
-    expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
+    expect(mocks.cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
     expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
       id: expect.any(String),
       name: 'Checkout repository',
@@ -442,12 +438,9 @@ describe('doCheckout', () => {
   test('doCheckout report an error if clone is errored', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     vi.spyOn(fs, 'mkdirSync');
-    const cloneRepositoryMock = vi.fn().mockRejectedValue(new Error('Unknown Git reference'));
+    mocks.cloneRepositoryMock.mockRejectedValue(new Error('Unknown Git reference'));
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {
-        cloneRepository: cloneRepositoryMock,
-      } as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -469,7 +462,7 @@ describe('doCheckout', () => {
       expectedError = err;
     }
 
-    expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
+    expect(mocks.cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
     expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
       id: expect.any(String),
       name: 'Checkout repository',
@@ -489,12 +482,8 @@ describe('doCheckout', () => {
     } as unknown as fs.Stats;
     vi.spyOn(fs, 'statSync').mockReturnValue(stats);
     const mkdirSyncMock = vi.spyOn(fs, 'mkdirSync');
-    const cloneRepositoryMock = vi.fn();
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {
-        cloneRepository: cloneRepositoryMock,
-      } as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -509,7 +498,7 @@ describe('doCheckout', () => {
       targetDirectory: 'folder',
     });
     expect(mkdirSyncMock).not.toHaveBeenCalled();
-    expect(cloneRepositoryMock).not.toHaveBeenCalled();
+    expect(mocks.cloneRepositoryMock).not.toHaveBeenCalled();
     expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
       id: expect.any(String),
       name: 'Checkout repository (cached).',
@@ -525,7 +514,6 @@ describe('getConfiguration', () => {
   test('throws error if config file do not exists', async () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {} as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -543,7 +531,6 @@ describe('getConfiguration', () => {
   test('return AIConfigFile', async () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {} as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -598,7 +585,6 @@ describe('filterContainers', () => {
     });
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {} as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -638,7 +624,6 @@ describe('filterContainers', () => {
     });
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {} as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -688,7 +673,6 @@ describe('filterContainers', () => {
     });
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {} as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -708,7 +692,6 @@ describe('getRandomName', () => {
   test('return base name plus random string', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {} as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -724,7 +707,6 @@ describe('getRandomName', () => {
   test('return random string when base is empty', () => {
     const manager = new ApplicationManager(
       '/home/user/aistudio',
-      {} as unknown as GitManager,
       taskRegistry,
       {} as Webview,
       {} as PodmanConnection,
@@ -755,7 +737,6 @@ describe('buildImages', () => {
   ];
   const manager = new ApplicationManager(
     '/home/user/aistudio',
-    {} as unknown as GitManager,
     taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
@@ -839,7 +820,6 @@ describe('createPod', async () => {
   };
   const manager = new ApplicationManager(
     '/home/user/aistudio',
-    {} as unknown as GitManager,
     taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
@@ -913,7 +893,6 @@ describe('createApplicationPod', () => {
   };
   const manager = new ApplicationManager(
     '/home/user/aistudio',
-    {} as unknown as GitManager,
     taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
@@ -983,7 +962,6 @@ describe('createApplicationPod', () => {
 describe('runApplication', () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
-    {} as unknown as GitManager,
     taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
@@ -1035,7 +1013,6 @@ describe('runApplication', () => {
 describe('createAndAddContainersToPod', () => {
   const manager = new ApplicationManager(
     '/home/user/aistudio',
-    {} as unknown as GitManager,
     taskRegistry,
     {} as Webview,
     {} as PodmanConnection,
@@ -1103,7 +1080,6 @@ describe('pod detection', async () => {
 
     manager = new ApplicationManager(
       '/path/to/user/dir',
-      {} as GitManager,
       taskRegistry,
       {
         postMessage: mocks.postMessageMock,

@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { Recipe } from '@shared/src/models/IRecipe';
-import type { GitCloneInfo, GitManager } from './gitManager';
+import type { GitCloneInfo } from '../models/GitCloneInfo';
 import fs from 'fs';
 import * as path from 'node:path';
 import {
@@ -45,6 +45,7 @@ import type { CatalogManager } from './catalogManager';
 import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import { Publisher } from '../utils/Publisher';
+import { cloneRepository } from '../utils/gitUtils';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 export const LABEL_APP_PORTS = 'ai-studio-app-ports';
@@ -82,7 +83,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
 
   constructor(
     private appUserDirectory: string,
-    private git: GitManager,
     private taskRegistry: TaskRegistry,
     webview: Webview,
     private podmanConnection: PodmanConnection,
@@ -570,7 +570,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
 
         // Clone the repository
         console.log(`Cloning repository ${gitCloneInfo.repository} in ${gitCloneInfo.targetDirectory}.`);
-        await this.git.cloneRepository(gitCloneInfo);
+        await cloneRepository(gitCloneInfo);
 
         // Update checkout state
         checkoutTask.state = 'success';

@@ -27,7 +27,6 @@ import type {
 import { RpcExtension } from '@shared/src/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
-import { GitManager } from './managers/gitManager';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { PlayGroundManager } from './managers/playground';
 import { CatalogManager } from './managers/catalogManager';
@@ -114,7 +113,6 @@ export class Studio {
     const appUserDirectory = path.join(os.homedir(), AI_STUDIO_FOLDER);
 
     this.rpcExtension = new RpcExtension(this.#panel.webview);
-    const gitManager = new GitManager();
 
     const podmanConnection = new PodmanConnection();
     const taskRegistry = new TaskRegistry(this.#panel.webview);
@@ -137,7 +135,6 @@ export class Studio {
     const localRepositoryRegistry = new LocalRepositoryRegistry(this.#panel.webview);
     const applicationManager = new ApplicationManager(
       appUserDirectory,
-      gitManager,
       taskRegistry,
       this.#panel.webview,
       podmanConnection,

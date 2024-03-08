@@ -61,9 +61,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   init(): void {
     this.podmanConnection.onMachineStart(this.watchMachineEvent.bind(this, 'start'));
     this.podmanConnection.onMachineStop(this.watchMachineEvent.bind(this, 'stop'));
-    this.containerRegistry.onStartContainerEvent(
-      this.watchContainerStart.bind(this),
-    );
+    this.containerRegistry.onStartContainerEvent(this.watchContainerStart.bind(this));
 
     this.retryableRefresh(3);
   }

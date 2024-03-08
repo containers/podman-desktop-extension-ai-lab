@@ -15,7 +15,13 @@ We should introduce a `ManagerRegistry`. This class should be responsible for th
 Inside the StudioAPI we can have an instance of the `ManagerRegistry` and calling the `getInstance` for each manager we require when the api is triggered.
 
 ````ts
-const applicationManager = this.managers.getInstance<ApplicationManager>(ApplicationManager);
+import type { ModelsManager } from './modelsManager';
+
+... 
+
+async getModelsDirectory(): Promise <string> {
+  return this.managers.getInstance(ModelsManager).getModelsDirectory();
+}
 ````
 
 Having this architecture would allow to lazy init all the managers. The instances of each of them does not exist until we need them.

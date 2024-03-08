@@ -61,8 +61,8 @@ export class ManagerRegistry extends PrivateRegistry<string, AbstractManager> {
 ````
 ### Implication for registries
 
-Registries should be like the Manager, be singleton, therefore we should simplify the registries, as shown in the UML, we could have `PrivateRegistry` and `PublicRegistry` meaning, the public one would automatically post to the webview its content when updated.
-We could simplify **a lot** the code by having more abstraction.
+Registries should be like the Manager, be singleton, therefore we should simplify the registries, as shown in the UML above, we could have `PrivateRegistry` and `PublicRegistry` meaning, the public one would automatically post to the webview its content when updated.
+We could simplify the code by having more abstraction.
 
 ![managers-and-registries.png](managers-and-registries.png)
 

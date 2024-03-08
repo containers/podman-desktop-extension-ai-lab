@@ -27,7 +27,7 @@ import {
 } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
 import {
-  GenerateContainerCreateOptions,
+  generateContainerCreateOptions,
   getImageInfo,
   getProviderContainerConnection,
   LABEL_INFERENCE_SERVER,
@@ -104,14 +104,12 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     const provider = getProviderContainerConnection(config.providerId);
 
     // Get the image inspect info
-    const imageInfo: ImageInfo = await getImageInfo(provider.connection, config.image, (event: PullEvent) => {
-      console.debug('pull image event', event);
-    });
+    const imageInfo: ImageInfo = await getImageInfo(provider.connection, config.image, (_event: PullEvent) => {});
 
     // Create container on requested engine
     const result = await containerEngine.createContainer(
       imageInfo.engineId,
-      GenerateContainerCreateOptions(config, imageInfo),
+      generateContainerCreateOptions(config, imageInfo),
     );
 
     // Adding a new inference server

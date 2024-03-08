@@ -67,8 +67,6 @@ export async function getImageInfo(
   image: string,
   callback: (event: PullEvent) => void,
 ): Promise<ImageInfo> {
-  console.debug(`get image ${image} with connection ${connection.name}.`);
-
   let imageInfo: ImageInfo;
   try {
     // Pull image
@@ -94,7 +92,7 @@ export async function getImageInfo(
  * @param config the config to use
  * @param imageInfo the image to use
  */
-export function GenerateContainerCreateOptions(
+export function generateContainerCreateOptions(
   config: InferenceServerConfig,
   imageInfo: ImageInfo,
 ): ContainerCreateOptions {

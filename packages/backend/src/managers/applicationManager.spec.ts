@@ -432,7 +432,7 @@ describe('doCheckout', () => {
     expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
     expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
       id: expect.any(String),
-      name: 'Checkout repository',
+      name: 'Checking out repository',
       state: 'success',
       labels: {
         git: 'checkout',
@@ -472,7 +472,7 @@ describe('doCheckout', () => {
     expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
     expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
       id: expect.any(String),
-      name: 'Checkout repository',
+      name: 'Checking out repository',
       state: 'error',
       labels: {
         git: 'checkout',
@@ -512,7 +512,7 @@ describe('doCheckout', () => {
     expect(cloneRepositoryMock).not.toHaveBeenCalled();
     expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
       id: expect.any(String),
-      name: 'Checkout repository (cached).',
+      name: 'Checking out repository (cached).',
       state: 'success',
       labels: {
         git: 'checkout',

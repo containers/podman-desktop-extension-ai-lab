@@ -553,7 +553,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
 
   async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }) {
     // Creating checkout task
-    const checkoutTask: Task = this.taskRegistry.createTask('Checkout repository', 'loading', {
+    const checkoutTask: Task = this.taskRegistry.createTask('Checking out repository', 'loading', {
       ...labels,
       git: 'checkout',
     });
@@ -562,7 +562,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
       // We might already have the repository cloned
       if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
         // Update checkout state
-        checkoutTask.name = 'Checkout repository (cached).';
+        checkoutTask.name = 'Checking out repository (cached).';
         checkoutTask.state = 'success';
       } else {
         // Create folder

@@ -27,7 +27,7 @@ export interface StatsInfo {
 
 export interface StatsHistory {
   containerId: string;
-  stats: StatsInfo[]
+  stats: StatsInfo[];
 }
 
 export const MAX_AGE: number = 5 * 60 * 1000; // 5 minutes
@@ -43,36 +43,35 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
   }
 
   async monitor(containerId: string, engineId: string): Promise<Disposable> {
-    const disposable = await containerEngine.statsContainer(
-      engineId,
-      containerId,
-      (statsInfo) => {
-        if('cause' in statsInfo) {
-          console.error('Cannot stats container', statsInfo.cause);
-          disposable.dispose();
-        } else {
-          this.push(containerId, statsInfo);
-        }
-      },
-    );
+    const disposable = await containerEngine.statsContainer(engineId, containerId, statsInfo => {
+      if ('cause' in statsInfo) {
+        console.error('Cannot stats container', statsInfo.cause);
+        disposable.dispose();
+      } else {
+        this.push(containerId, statsInfo);
+      }
+    });
     this.#disposables.push(disposable);
     return disposable;
   }
 
   private push(containerId: string, statsInfo: ContainerStatsInfo): void {
     let stats: StatsInfo[] = [];
-    if(this.#containerStats.has(containerId)) {
+    if (this.#containerStats.has(containerId)) {
       const now = Date.now();
       stats = this.#containerStats.get(containerId).stats.filter(stats => stats.timestamp + MAX_AGE > now);
     }
 
     this.#containerStats.set(containerId, {
       containerId: containerId,
-      stats: [...stats, {
-        timestamp: Date.now(),
-        cpu_usage: statsInfo.cpu_stats.cpu_usage.total_usage,
-        memory_usage: statsInfo.memory_stats.usage,
-      }],
+      stats: [
+        ...stats,
+        {
+          timestamp: Date.now(),
+          cpu_usage: statsInfo.cpu_stats.cpu_usage.total_usage,
+          memory_usage: statsInfo.memory_stats.usage,
+        },
+      ],
     });
     this.notify();
   }

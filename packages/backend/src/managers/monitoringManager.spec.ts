@@ -113,16 +113,18 @@ test('expect webview to be notified when statsContainer call back', async () => 
 
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
     id: Messages.MSG_MONITORING_UPDATE,
-    body: [{
-      containerId: 'randomContainerId',
-      stats: [
-        {
-          timestamp: Date.now(),
-          cpu_usage: 123,
-          memory_usage: 99,
-        },
-      ],
-    }],
+    body: [
+      {
+        containerId: 'randomContainerId',
+        stats: [
+          {
+            timestamp: Date.now(),
+            cpu_usage: 123,
+            memory_usage: 99,
+          },
+        ],
+      },
+    ],
   });
 });
 
@@ -166,7 +168,7 @@ test('expect old stats to be removed', async () => {
 
   simplifiedCallback(mCallback, 0, 0);
 
-  vi.setSystemTime( new Date(2005, 1, 1, 13));
+  vi.setSystemTime(new Date(2005, 1, 1, 13));
 
   simplifiedCallback(mCallback, 1, 1);
   simplifiedCallback(mCallback, 2, 2);
@@ -191,7 +193,7 @@ test('expect stats to be disposed if stats result is an error', async () => {
     expect(mCallback).toBeDefined();
   });
 
-  mCallback({ cause: 'container is stopped'} as unknown as ContainerStatsInfo);
+  mCallback({ cause: 'container is stopped' } as unknown as ContainerStatsInfo);
 
   const stats = manager.getStats();
   expect(stats.length).toBe(0);

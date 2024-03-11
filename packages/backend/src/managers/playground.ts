@@ -28,7 +28,7 @@ import {
 import path from 'node:path';
 import { getFreePort } from '../utils/ports';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
-import { MSG_NEW_PLAYGROUND_QUERIES_STATE, MSG_PLAYGROUNDS_STATE_UPDATE } from '@shared/Messages';
+import { MESSAGES } from '@shared/Messages';
 import type { PlaygroundState, PlaygroundStatus } from '@shared/src/models/IPlaygroundState';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { PodmanConnection } from './podmanConnection';
@@ -144,7 +144,7 @@ export class PlayGroundManager {
   sendPlaygroundState() {
     this.webview
       .postMessage({
-        id: MSG_PLAYGROUNDS_STATE_UPDATE,
+        id: MESSAGES.MSG_PLAYGROUNDS_STATE_UPDATE,
         body: this.getPlaygroundsState(),
       })
       .catch((err: unknown) => {
@@ -366,7 +366,7 @@ export class PlayGroundManager {
   sendQueriesState(): void {
     this.webview
       .postMessage({
-        id: MSG_NEW_PLAYGROUND_QUERIES_STATE,
+        id: MESSAGES.MSG_NEW_PLAYGROUND_QUERIES_STATE,
         body: this.getQueriesState(),
       })
       .catch((err: unknown) => {

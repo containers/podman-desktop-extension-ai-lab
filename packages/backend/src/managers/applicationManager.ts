@@ -40,7 +40,7 @@ import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegis
 import { LABEL_MODEL_ID, LABEL_MODEL_PORTS } from './playground';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { PodmanConnection } from './podmanConnection';
-import { MSG_APPLICATIONS_STATE_UPDATE } from '@shared/Messages';
+import { MESSAGES } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
@@ -91,7 +91,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     private telemetry: TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
   ) {
-    super(webview, MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
+    super(webview, MESSAGES.MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
   }
 

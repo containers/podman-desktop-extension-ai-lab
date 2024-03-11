@@ -21,7 +21,7 @@ import path from 'node:path';
 import defaultCatalog from '../ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
+import { MESSAGES } from '@shared/Messages';
 import { type Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
@@ -34,7 +34,7 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
     webview: Webview,
     private appUserDirectory: string,
   ) {
-    super(webview, MSG_NEW_CATALOG_STATE, () => this.getCatalog());
+    super(webview, MESSAGES.MSG_NEW_CATALOG_STATE, () => this.getCatalog());
     // We start with an empty catalog, for the methods to work before the catalog is loaded
     this.catalog = {
       categories: [],

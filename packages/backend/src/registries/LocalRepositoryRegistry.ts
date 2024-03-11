@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
-import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 import { type Webview, Disposable } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
 
@@ -28,7 +28,7 @@ export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> {
   private repositories: Map<string, LocalRepository> = new Map();
 
   constructor(webview: Webview) {
-    super(webview, MSG_LOCAL_REPOSITORY_UPDATE, () => this.getLocalRepositories());
+    super(webview, Messages.MSG_LOCAL_REPOSITORY_UPDATE, () => this.getLocalRepositories());
   }
 
   register(localRepository: LocalRepository): Disposable {

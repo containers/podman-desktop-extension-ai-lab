@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { Task, TaskState } from '@shared/src/models/ITask';
-import { MSG_TASKS_UPDATE } from '@shared/Messages';
+import { MESSAGES } from '@shared/Messages';
 import type { Webview } from '@podman-desktop/api';
 
 /**
@@ -140,7 +140,7 @@ export class TaskRegistry {
   private notify() {
     this.webview
       .postMessage({
-        id: MSG_TASKS_UPDATE,
+        id: MESSAGES.MSG_TASKS_UPDATE,
         body: this.getTasks(),
       })
       .catch((err: unknown) => {

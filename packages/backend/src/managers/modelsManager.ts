@@ -27,9 +27,9 @@ import * as podmanDesktopApi from '@podman-desktop/api';
 import { Downloader } from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
-import type { ProgressiveEvent } from '../utils/progressiveEvent';
-import { isCompletionProgressiveEvent, isProgressProgressiveEvent } from '../utils/progressiveEvent';
-import { Uploader } from '../models/uploader';
+import type { ProgressiveEvent } from '../models/progressiveEvent';
+import { isCompletionProgressiveEvent, isExecutingProgressiveEvent } from '../models/progressiveEvent';
+import { Uploader } from '../utils/uploader';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string;
@@ -228,7 +228,7 @@ export class ModelsManager implements Disposable {
     }
 
     tasks.forEach(task => {
-      if (isProgressProgressiveEvent(event)) {
+      if (isExecutingProgressiveEvent(event)) {
         task.state = 'loading';
         task.progress = event.value;
       } else if (isCompletionProgressiveEvent(event)) {
@@ -316,7 +316,7 @@ export class ModelsManager implements Disposable {
 
     const uploader = new Uploader(localModelPath);
     uploader.onEvent((event: ProgressiveEvent) => {
-      if (isProgressProgressiveEvent(event)) {
+      if (isExecutingProgressiveEvent(event)) {
         task.state = 'loading';
         task.progress = event.value;
       } else if (isCompletionProgressiveEvent(event)) {

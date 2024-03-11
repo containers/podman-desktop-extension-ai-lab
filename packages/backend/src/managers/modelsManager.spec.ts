@@ -520,7 +520,9 @@ describe('downloadModel', () => {
 
     mocks.onEventDownloadMock.mockImplementation(listener => {
       listener({
+        id: 'id',
         status: 'completed',
+        duration: 1000,
       });
     });
 

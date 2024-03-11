@@ -20,7 +20,11 @@ import { getDurationSecondsSince } from './utils';
 import { createWriteStream, promises } from 'node:fs';
 import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
-import type { CompletionProgressiveEvent, ProgressProgressiveEvent, ProgressiveEvent } from './progressiveEvent';
+import type {
+  CompletionProgressiveEvent,
+  ExecutingProgressiveEvent,
+  ProgressiveEvent,
+} from '../models/progressiveEvent';
 
 export class Downloader {
   private readonly _onEvent = new EventEmitter<ProgressiveEvent>();
@@ -129,7 +133,7 @@ export class Downloader {
             id: this.requestedIdentifier,
             status: 'progress',
             value: progressValue,
-          } as ProgressProgressiveEvent);
+          } as ExecutingProgressiveEvent);
         }
       });
       resp.pipe(stream);

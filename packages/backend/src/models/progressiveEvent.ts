@@ -27,7 +27,7 @@ export interface CompletionProgressiveEvent extends ProgressiveEvent {
   duration: number;
 }
 
-export interface ProgressProgressiveEvent extends ProgressiveEvent {
+export interface ExecutingProgressiveEvent extends ProgressiveEvent {
   status: 'progress';
   value: number;
 }
@@ -43,7 +43,7 @@ export const isCompletionProgressiveEvent = (value: unknown): value is Completio
   );
 };
 
-export const isProgressProgressiveEvent = (value: unknown): value is ProgressProgressiveEvent => {
+export const isExecutingProgressiveEvent = (value: unknown): value is ExecutingProgressiveEvent => {
   return (
     !!value && typeof value === 'object' && 'status' in value && value['status'] === 'progress' && 'value' in value
   );

@@ -19,7 +19,7 @@
 import { expect, test, describe, vi } from 'vitest';
 import { WSLUploader } from './WSLUploader';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import * as utils from '../utils/podman';
+import * as utils from './podman';
 import { beforeEach } from 'node:test';
 
 const mocks = vi.hoisted(() => {

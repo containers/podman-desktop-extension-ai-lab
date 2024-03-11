@@ -52,13 +52,13 @@ beforeEach(() => {
 describe('perform', () => {
   test('should return localModelPath if no workers for current system', async () => {
     vi.mocked(podmanDesktopApi.env).isWindows = false;
-    const result = await uploader.perform();
+    const result = await uploader.perform('id');
     expect(result).toBe('localpath');
   });
   test('should return remote path if there is a worker for current system', async () => {
     vi.spyOn(WSLUploader.prototype, 'upload').mockResolvedValue('remote');
     vi.mocked(podmanDesktopApi.env).isWindows = true;
-    const result = await uploader.perform();
+    const result = await uploader.perform('id');
     expect(result).toBe('remote');
   });
 });

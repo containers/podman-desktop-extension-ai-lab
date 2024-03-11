@@ -18,7 +18,7 @@
 
 import path from 'node:path';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { getFirstRunningMachine, getPodmanCli } from '../utils/podman';
+import { getFirstRunningMachine, getPodmanCli } from './podman';
 import type { UploadWorker } from './uploader';
 
 export class WSLUploader implements UploadWorker {

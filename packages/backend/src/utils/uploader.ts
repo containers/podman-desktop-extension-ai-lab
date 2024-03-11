@@ -18,8 +18,8 @@
 
 import { EventEmitter, type Event } from '@podman-desktop/api';
 import { WSLUploader } from './WSLUploader';
-import { getDurationSecondsSince } from '../utils/utils';
-import type { CompletionProgressiveEvent, ProgressiveEvent } from '../utils/progressiveEvent';
+import { getDurationSecondsSince } from './utils';
+import type { CompletionProgressiveEvent, ProgressiveEvent } from '../models/progressiveEvent';
 
 export interface UploadWorker {
   canUpload: () => boolean;

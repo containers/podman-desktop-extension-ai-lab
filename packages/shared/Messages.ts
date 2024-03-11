@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export enum MESSAGES {
+export enum Messages {
   MSG_PLAYGROUNDS_STATE_UPDATE = 'playgrounds-state-update',
   MSG_NEW_PLAYGROUND_QUERIES_STATE = 'new-playground-queries-state',
   MSG_NEW_CATALOG_STATE = 'new-catalog-state',

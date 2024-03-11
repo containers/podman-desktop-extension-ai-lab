@@ -18,12 +18,12 @@
 
 import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
-import { MESSAGES } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 
 export const applicationStates: Readable<ApplicationState[]> = readable<ApplicationState[]>([], set => {
-  const sub = rpcBrowser.subscribe(MESSAGES.MSG_APPLICATIONS_STATE_UPDATE, msg => {
+  const sub = rpcBrowser.subscribe(Messages.MSG_APPLICATIONS_STATE_UPDATE, msg => {
     set(msg);
   });
   // Initialize the store manually

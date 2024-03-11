@@ -18,12 +18,12 @@
 
 import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
-import { MESSAGES } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 
 export const playgroundStates: Readable<PlaygroundState[]> = readable<PlaygroundState[]>([], set => {
-  const sub = rpcBrowser.subscribe(MESSAGES.MSG_PLAYGROUNDS_STATE_UPDATE, msg => {
+  const sub = rpcBrowser.subscribe(Messages.MSG_PLAYGROUNDS_STATE_UPDATE, msg => {
     set(msg);
   });
   // Initialize the store manually

@@ -18,7 +18,7 @@
 import { expect, test, vi } from 'vitest';
 import { Publisher } from './Publisher';
 import type { Webview } from '@podman-desktop/api';
-import { MESSAGES } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 
 test('ensure publisher properly use getter', async () => {
   const postMessageMock = vi.fn().mockResolvedValue(undefined);
@@ -27,14 +27,14 @@ test('ensure publisher properly use getter', async () => {
     {
       postMessage: postMessageMock,
     } as unknown as Webview,
-    MESSAGES.MSG_TASKS_UPDATE,
+    Messages.MSG_TASKS_UPDATE,
     getterMock,
   );
   publisher.notify();
 
   await vi.waitFor(() => {
     expect(postMessageMock).toHaveBeenCalledWith({
-      id: MESSAGES.MSG_TASKS_UPDATE,
+      id: Messages.MSG_TASKS_UPDATE,
       body: 'dummyValue',
     });
   });

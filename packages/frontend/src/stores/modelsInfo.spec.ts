@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { MESSAGES } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 import { rpcBrowser } from '../utils/client';
 import type { Unsubscriber } from 'svelte/store';
 import { modelsInfo } from './modelsInfo';
@@ -70,7 +70,7 @@ test('check getLocalModels is called at subscription', async () => {
 });
 
 test('check getLocalModels is called twice if event is fired (one at init, one for the event)', async () => {
-  rpcBrowser.invoke(MESSAGES.MSG_NEW_MODELS_STATE);
+  rpcBrowser.invoke(Messages.MSG_NEW_MODELS_STATE);
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
   expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);

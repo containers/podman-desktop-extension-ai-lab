@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { test, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import * as catalogStore from '/@/stores/catalog';
-import type { Catalog } from '@shared/src/models/ICatalog';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import { readable } from 'svelte/store';
 import type { ApplicationCell } from '../../../pages/applications';
 import ColumnRecipe from './ColumnRecipe.svelte';
@@ -46,7 +46,7 @@ vi.mock('/@/utils/client', async () => {
   };
 });
 
-const initialCatalog: Catalog = {
+const initialCatalog: ApplicationCatalog = {
   categories: [],
   models: [],
   recipes: [
@@ -78,7 +78,7 @@ test('display recipe name', async () => {
   const obj = {
     recipeId: 'recipe 1',
   } as unknown as ApplicationCell;
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnRecipe, { object: obj });
 
   const text = screen.getByText('Recipe 1');
@@ -90,7 +90,7 @@ test('display recipe port', async () => {
     recipeId: 'recipe 1',
     appPorts: [3000],
   } as unknown as ApplicationCell;
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnRecipe, { object: obj });
 
   const text = screen.getByText('Recipe 1');
@@ -104,7 +104,7 @@ test('display multiple recipe ports', async () => {
     recipeId: 'recipe 1',
     appPorts: [3000, 5000],
   } as unknown as ApplicationCell;
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnRecipe, { object: obj });
 
   const text = screen.getByText('Recipe 1');
@@ -118,7 +118,7 @@ test('click on open port', async () => {
     recipeId: 'recipe 1',
     appPorts: [3000, 5000],
   } as unknown as ApplicationCell;
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnRecipe, { object: obj });
   mocks.openURL.mockResolvedValue(undefined);
   const link = screen.getByRole('button', { name: 'open AI App on port 5000' });

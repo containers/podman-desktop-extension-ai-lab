@@ -17,7 +17,7 @@ export let meta: TinroRouteMeta;
     </div>
   </div>
   <div class="h-full overflow-hidden hover:overflow-y-auto" style="margin-bottom:auto">
-    <SettingsNavItem title="Recipe Catalog" href="/recipes" bind:meta="{meta}" />
+    <SettingsNavItem title="Recipe ApplicationCatalog" href="/recipes" bind:meta="{meta}" />
 
     <SettingsNavItem title="AI Apps" href="/applications" bind:meta="{meta}" />
 

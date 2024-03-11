@@ -18,7 +18,7 @@
 
 import type { ModelInfo } from './models/IModelInfo';
 import type { QueryState } from './models/IPlaygroundQueryState';
-import type { Catalog } from './models/ICatalog';
+import type { ApplicationCatalog } from './models/IApplicationCatalog';
 import type { PlaygroundState } from './models/IPlaygroundState';
 import type { TelemetryTrustedValue } from '@podman-desktop/api';
 import type { ApplicationState } from './models/IApplicationState';
@@ -27,7 +27,7 @@ import type { LocalRepository } from './models/ILocalRepository';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
-  abstract getCatalog(): Promise<Catalog>;
+  abstract getCatalog(): Promise<ApplicationCatalog>;
   abstract pullApplication(recipeId: string, modelId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
   abstract openFile(file: string): Promise<boolean>;

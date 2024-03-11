@@ -20,7 +20,7 @@ import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
 import { Messages } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
-import type { Catalog } from '@shared/src/models/ICatalog';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 
 const emptyCatalog = {
   categories: [],
@@ -28,7 +28,7 @@ const emptyCatalog = {
   recipes: [],
 };
 
-export const catalog: Readable<Catalog> = readable<Catalog>(emptyCatalog, set => {
+export const catalog: Readable<ApplicationCatalog> = readable<ApplicationCatalog>(emptyCatalog, set => {
   const sub = rpcBrowser.subscribe(Messages.MSG_NEW_CATALOG_STATE, msg => {
     set(msg);
   });

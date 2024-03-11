@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import Recipe from './Recipe.svelte';
-import type { Catalog } from '@shared/src/models/ICatalog';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import * as catalogStore from '/@/stores/catalog';
 import { readable, writable } from 'svelte/store';
 
@@ -79,7 +79,7 @@ vi.mock('/@/stores/catalog', async () => {
   };
 });
 
-const initialCatalog: Catalog = {
+const initialCatalog: ApplicationCatalog = {
   categories: [],
   models: [
     {
@@ -122,7 +122,7 @@ const initialCatalog: Catalog = {
   ],
 };
 
-const updatedCatalog: Catalog = {
+const updatedCatalog: ApplicationCatalog = {
   categories: [],
   models: [
     {
@@ -172,7 +172,7 @@ beforeEach(() => {
 });
 
 test('should display recipe information', async () => {
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   mocks.getApplicationsStateMock.mockResolvedValue([]);
   mocks.getPullingStatusesMock.mockResolvedValue([]);
   render(Recipe, {
@@ -185,7 +185,7 @@ test('should display recipe information', async () => {
 
 test('should display updated recipe information', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  const customCatalog = writable<Catalog>(initialCatalog);
+  const customCatalog = writable<ApplicationCatalog>(initialCatalog);
   vi.mocked(catalogStore).catalog = customCatalog;
   mocks.getPullingStatusesMock.mockResolvedValue([]);
   render(Recipe, {
@@ -202,7 +202,7 @@ test('should display updated recipe information', async () => {
 
 test('should send telemetry data', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   mocks.getPullingStatusesMock.mockResolvedValue([]);
   mocks.pullApplicationMock.mockResolvedValue(undefined);
 

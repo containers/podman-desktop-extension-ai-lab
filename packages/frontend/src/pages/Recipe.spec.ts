@@ -80,6 +80,7 @@ vi.mock('/@/stores/catalog', async () => {
 });
 
 const initialCatalog: Catalog = {
+  categories: [],
   models: [
     {
       id: 'model1',
@@ -122,6 +123,7 @@ const initialCatalog: Catalog = {
 };
 
 const updatedCatalog: Catalog = {
+  categories: [],
   models: [
     {
       id: 'model1',

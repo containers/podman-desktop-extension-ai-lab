@@ -15,50 +15,50 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Recipe } from '@shared/src/models/IRecipe';
-import type { Disposable, Webview } from '@podman-desktop/api';
-import { MESSAGES } from '@shared/Messages';
+import type { Category } from '@shared/src/models/ICategory';
 import { Publisher } from '../../utils/Publisher';
+import { MESSAGES } from '@shared/Messages';
+import type { Disposable, Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../../utils/JsonWatcher';
 import path from 'node:path';
-import defaultApplications from '../../assets/applications-catalog.json';
+import defaultCategories from '../../assets/categories-catalog.json';
 
-export class ApplicationCatalog extends Publisher<Recipe[]> implements Disposable {
-  #applications: Map<string, Recipe>;
+export class CategoryCatalog extends Publisher<Category[]> implements Disposable {
+  #categories: Map<string, Category>;
   #disposables: Disposable[];
 
   constructor(
     webview: Webview,
     private appUserDirectory: string,
   ) {
-    super(webview, MESSAGES.UPDATE_APP_CATALOG, () => this.getApplications());
-    this.#applications = new Map<string, Recipe>();
+    super(webview, MESSAGES.UPDATE_CATEGORY_CATALOG, () => this.getCategories());
+    this.#categories = new Map<string, Category>();
     this.#disposables = [];
   }
 
   init(): void {
     // Creating a json watcher
-    const jsonWatcher: JsonWatcher<Recipe[]> = new JsonWatcher(
-      path.resolve(this.appUserDirectory, 'applications-catalog.json'),
-      defaultApplications,
+    const jsonWatcher: JsonWatcher<Category[]> = new JsonWatcher(
+      path.resolve(this.appUserDirectory, 'categories-catalog.json'),
+      defaultCategories,
     );
-    jsonWatcher.onContentUpdated(content => this.onApplicationCatalogUpdate(content));
+    jsonWatcher.onContentUpdated(content => this.onCategoryCatalogUpdate(content));
     jsonWatcher.init();
 
     this.#disposables.push(jsonWatcher);
   }
 
-  private onApplicationCatalogUpdate(applications: Recipe[]): void {
-    this.#applications = new Map(applications.map(app => [app.id, app]));
+  private onCategoryCatalogUpdate(categories: Category[]): void {
+    this.#categories = new Map(categories.map(category => [category.id, category]));
     this.notify();
   }
 
   dispose(): void {
-    this.#applications.clear();
-    this.#disposables.forEach((disposable) => disposable.dispose());
+    this.#categories.clear();
+    this.#disposables.forEach(watcher => watcher.dispose());
   }
 
-  getApplications(): Recipe[] {
-    return Array.from(this.#applications.values());
+  getCategories(): Category[] {
+    return Array.from(this.#categories.values());
   }
 }

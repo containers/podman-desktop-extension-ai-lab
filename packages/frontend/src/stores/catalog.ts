@@ -40,6 +40,9 @@ export const catalog: Readable<Catalog> = readable<Catalog>(emptyCatalog, set =>
   const subApps = rpcBrowser.subscribe(MESSAGES.UPDATE_APP_CATALOG, () => {
     Update();
   });
+  const subCategories = rpcBrowser.subscribe(MESSAGES.UPDATE_CATEGORY_CATALOG, () => {
+    Update();
+  });
 
   // Initialize the store manually
   Update();
@@ -47,5 +50,6 @@ export const catalog: Readable<Catalog> = readable<Catalog>(emptyCatalog, set =>
   return () => {
     subModels.unsubscribe();
     subApps.unsubscribe();
+    subCategories.unsubscribe();
   };
 });

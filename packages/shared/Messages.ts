@@ -24,7 +24,8 @@ export const MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update';
 export const MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update';
 
 export enum MESSAGES {
-  UPDATE_MODEL_CATALOG = 'update-mode-catalog',
+  UPDATE_MODEL_CATALOG = 'update-model-catalog',
+  UPDATE_CATEGORY_CATALOG = 'update-category-catalog',
   UPDATE_APP_CATALOG = 'update-app-catalog',
 }
 

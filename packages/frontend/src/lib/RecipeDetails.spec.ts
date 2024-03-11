@@ -77,6 +77,7 @@ vi.mock('../stores/localRepositories', () => ({
 }));
 
 const initialCatalog: Catalog = {
+  categories: [],
   models: [
     {
       id: 'model1',

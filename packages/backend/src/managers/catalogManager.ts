@@ -22,6 +22,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { type Disposable, type Webview } from '@podman-desktop/api';
 import { ModelCatalog } from './catalogs/ModelCatalog';
 import { ApplicationCatalog } from './catalogs/ApplicationCatalog';
+import { CategoryCatalog } from './catalogs/CategoryCatalog';
 
 /**
  * @deprecated
@@ -29,10 +30,12 @@ import { ApplicationCatalog } from './catalogs/ApplicationCatalog';
 export class CatalogManager implements Disposable {
   #modelCatalog: ModelCatalog;
   #applicationCatalog: ApplicationCatalog;
+  #categoryCatalog: CategoryCatalog;
 
   constructor(webview: Webview, appUserDirectory: string) {
     this.#modelCatalog = new ModelCatalog(webview, appUserDirectory);
     this.#applicationCatalog = new ApplicationCatalog(webview, appUserDirectory);
+    this.#categoryCatalog = new CategoryCatalog(webview, appUserDirectory);
   }
 
   /**
@@ -55,6 +58,7 @@ export class CatalogManager implements Disposable {
     return {
       recipes: this.#applicationCatalog.getApplications(),
       models: this.#modelCatalog.getModels(),
+      categories: this.#categoryCatalog.getCategories(),
     };
   }
 

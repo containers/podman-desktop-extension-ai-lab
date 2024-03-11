@@ -17,8 +17,8 @@
  ***********************************************************************/
 
 import { studioClient } from '/@/utils/client';
-import { MSG_TASKS_UPDATE } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 import { RPCReadable } from './rpcReadable';
 import type { Task } from '@shared/src/models/ITask';
 
-export const tasks = RPCReadable<Task[]>([], [MSG_TASKS_UPDATE], studioClient.getTasks);
+export const tasks = RPCReadable<Task[]>([], [Messages.MSG_TASKS_UPDATE], studioClient.getTasks);

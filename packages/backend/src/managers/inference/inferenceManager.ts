@@ -33,7 +33,7 @@ import {
   LABEL_INFERENCE_SERVER,
 } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
-import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { ModelsManager } from '../modelsManager';
 
@@ -52,7 +52,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     private modelsManager: ModelsManager,
     private telemetry: TelemetryLogger,
   ) {
-    super(webview, MSG_INFERENCE_SERVERS_UPDATE, () => this.getServers());
+    super(webview, Messages.MSG_INFERENCE_SERVERS_UPDATE, () => this.getServers());
     this.#servers = new Map<string, InferenceServer>();
     this.#disposables = [];
     this.#initialized = false;

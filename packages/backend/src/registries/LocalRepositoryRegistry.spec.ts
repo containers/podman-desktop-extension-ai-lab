@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { beforeEach, expect, test, vi } from 'vitest';
 import { LocalRepositoryRegistry } from './LocalRepositoryRegistry';
-import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 import type { Webview } from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => ({
@@ -51,7 +51,7 @@ test('should notify webview when register', () => {
   } as unknown as Webview);
   localRepositories.register({ path: 'random', labels: { 'recipe-id': 'random' } });
   expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1, {
-    id: MSG_LOCAL_REPOSITORY_UPDATE,
+    id: Messages.MSG_LOCAL_REPOSITORY_UPDATE,
     body: [{ path: 'random', labels: { 'recipe-id': 'random' } }],
   });
 });
@@ -64,7 +64,7 @@ test('should notify webview when unregister', () => {
   localRepositories.unregister('random');
 
   expect(mocks.postMessageMock).toHaveBeenLastCalledWith({
-    id: MSG_LOCAL_REPOSITORY_UPDATE,
+    id: Messages.MSG_LOCAL_REPOSITORY_UPDATE,
     body: [],
   });
 });

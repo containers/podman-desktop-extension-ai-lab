@@ -16,11 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { Webview } from '@podman-desktop/api';
+import type { Messages } from '@shared/Messages';
 
 export class Publisher<T> {
   constructor(
     private webview: Webview,
-    private channel: string,
+    private channel: Messages,
     private getter: () => T,
   ) {}
 

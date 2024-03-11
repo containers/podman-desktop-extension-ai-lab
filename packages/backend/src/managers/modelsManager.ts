@@ -20,7 +20,7 @@ import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'fs';
 import * as path from 'node:path';
 import { type Webview, fs as apiFs, type Disposable } from '@podman-desktop/api';
-import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
@@ -75,7 +75,7 @@ export class ModelsManager implements Disposable {
   async sendModelsInfo() {
     const models = this.getModelsInfo();
     await this.webview.postMessage({
-      id: MSG_NEW_MODELS_STATE,
+      id: Messages.MSG_NEW_MODELS_STATE,
       body: models,
     });
   }

@@ -17,6 +17,7 @@
  ***********************************************************************/
 import { type Disposable, type Webview, containerEngine, type ContainerStatsInfo } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
+import { Messages } from '@shared/Messages';
 
 export interface StatsInfo {
   timestamp: number;
@@ -36,7 +37,7 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
   #disposables: Disposable[];
 
   constructor(webview: Webview) {
-    super(webview, '', () => this.getStats());
+    super(webview, Messages.MSG_MONITORING_UPDATE, () => this.getStats());
     this.#containerStats = new Map<string, StatsHistory>();
     this.#disposables = [];
   }
@@ -45,7 +46,7 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
     const disposable = await containerEngine.statsContainer(
       engineId,
       containerId,
-      (statsInfo) => this.push.bind(this, containerId, statsInfo)
+      (statsInfo) => this.push(containerId, statsInfo),
     );
     this.#disposables.push(disposable);
     return disposable;
@@ -67,6 +68,10 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
       }],
     });
     this.notify();
+  }
+
+  clear(containerId: string): void {
+    this.#containerStats.delete(containerId);
   }
 
   getStats(): StatsHistory[] {

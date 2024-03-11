@@ -46,7 +46,14 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
     const disposable = await containerEngine.statsContainer(
       engineId,
       containerId,
-      (statsInfo) => this.push(containerId, statsInfo),
+      (statsInfo) => {
+        if('cause' in statsInfo) {
+          console.error('Cannot stats container', statsInfo.cause);
+          disposable.dispose();
+        } else {
+          this.push(containerId, statsInfo);
+        }
+      },
     );
     this.#disposables.push(disposable);
     return disposable;

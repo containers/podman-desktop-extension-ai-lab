@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { beforeEach, expect, afterEach, test, vi } from 'vitest';
-import { MonitoringManager } from './MonitoringManager';
+import { MonitoringManager } from './monitoringManager';
 import { containerEngine, type ContainerStatsInfo, type Webview } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
 
@@ -175,4 +175,25 @@ test('expect old stats to be removed', async () => {
   const stats = manager.getStats();
   expect(stats.length).toBe(1);
   expect(stats[0].stats.length).toBe(3);
+});
+
+test('expect stats to be disposed if stats result is an error', async () => {
+  const manager = new MonitoringManager(webviewMock);
+  let mCallback: (stats: ContainerStatsInfo) => void;
+  const fakeDisposable = vi.fn();
+  vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
+    mCallback = callback;
+    return { dispose: fakeDisposable };
+  });
+
+  await manager.monitor('randomContainerId', 'dummyEngineId');
+  await vi.waitFor(() => {
+    expect(mCallback).toBeDefined();
+  });
+
+  mCallback({ cause: 'container is stopped'} as unknown as ContainerStatsInfo);
+
+  const stats = manager.getStats();
+  expect(stats.length).toBe(0);
+  expect(fakeDisposable).toHaveBeenCalled();
 });

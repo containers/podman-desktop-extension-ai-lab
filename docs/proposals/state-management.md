@@ -9,17 +9,17 @@ at initial time.
 
 The pages of the front-end subscribe to the store to get the value of the state in a reactive manner.
 
-## ApplicationCatalog
+## Catalog
 
 The catalog is persisted as a file in the user's filesystem. The backend reads the file at startup,
 and watches the file for changes. The backend updates the state as soon as changes it detects changes.
 
-The front-end uses a `readable` store, which waits for changes on the ApplicationCatalog state 
+The front-end uses a `readable` store, which waits for changes on the Catalog state 
 (using `onMessage('new-catalog-state', data)`),
 and asks for the current state at startup (with `postMessage('ask-catalog-state')`).
 
 The interested pages of the front-end subscribe to the store to get the value
-of the ApplicationCatalog state in a reactive manner.
+of the Catalog state in a reactive manner.
 
 ## Pulled applications
 

@@ -8,7 +8,6 @@ import Dashboard from '/@/pages/Dashboard.svelte';
 import Recipes from '/@/pages/Recipes.svelte';
 import Applications from './pages/Applications.svelte';
 import Preferences from '/@/pages/Preferences.svelte';
-import Registries from '/@/pages/Registries.svelte';
 import Models from '/@/pages/Models.svelte';
 import Recipe from '/@/pages/Recipe.svelte';
 import Model from './pages/Model.svelte';
@@ -45,11 +44,6 @@ onMount(() => {
       <!-- Applications -->
       <Route path="/applications" breadcrumb="AI Apps">
         <Applications />
-      </Route>
-
-      <!-- Registries -->
-      <Route path="/registries" breadcrumb="Registries">
-        <Registries />
       </Route>
 
       <!-- Preferences -->

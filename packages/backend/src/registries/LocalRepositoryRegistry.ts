@@ -18,15 +18,18 @@
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
 import { type Webview, Disposable } from '@podman-desktop/api';
+import { Publisher } from '../utils/Publisher';
 
 /**
  * The LocalRepositoryRegistry is responsible for keeping track of the directories where recipe are cloned
  */
-export class LocalRepositoryRegistry {
+export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> {
   // Map path => LocalRepository
   private repositories: Map<string, LocalRepository> = new Map();
 
-  constructor(private webview: Webview) {}
+  constructor(webview: Webview) {
+    super(webview, MSG_LOCAL_REPOSITORY_UPDATE, () => this.getLocalRepositories());
+  }
 
   register(localRepository: LocalRepository): Disposable {
     this.repositories.set(localRepository.path, localRepository);
@@ -44,16 +47,5 @@ export class LocalRepositoryRegistry {
 
   getLocalRepositories(): LocalRepository[] {
     return Array.from(this.repositories.values());
-  }
-
-  private notify() {
-    this.webview
-      .postMessage({
-        id: MSG_LOCAL_REPOSITORY_UPDATE,
-        body: this.getLocalRepositories(),
-      })
-      .catch((err: unknown) => {
-        console.error('Something went wrong while notifying local repositories update', err);
-      });
   }
 }

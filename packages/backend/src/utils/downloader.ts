@@ -20,15 +20,11 @@ import { getDurationSecondsSince } from './utils';
 import { createWriteStream, promises } from 'node:fs';
 import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
-import type {
-  CompletionProgressiveEvent,
-  ExecutingProgressiveEvent,
-  ProgressiveEvent,
-} from '../models/progressiveEvent';
+import type { CompletionEvent, ProgressEvent, BaseEvent } from '../models/baseEvent';
 
 export class Downloader {
-  private readonly _onEvent = new EventEmitter<ProgressiveEvent>();
-  readonly onEvent: Event<ProgressiveEvent> = this._onEvent.event;
+  private readonly _onEvent = new EventEmitter<BaseEvent>();
+  readonly onEvent: Event<BaseEvent> = this._onEvent.event;
   private requestedIdentifier: string;
 
   completed: boolean;
@@ -55,7 +51,7 @@ export class Downloader {
         status: 'completed',
         message: `Duration ${durationSeconds}s.`,
         duration: durationSeconds,
-      } as CompletionProgressiveEvent);
+      } as CompletionEvent);
     } catch (err: unknown) {
       if (!this.abortSignal?.aborted) {
         this._onEvent.fire({
@@ -133,7 +129,7 @@ export class Downloader {
             id: this.requestedIdentifier,
             status: 'progress',
             value: progressValue,
-          } as ExecutingProgressiveEvent);
+          } as ProgressEvent);
         }
       });
       resp.pipe(stream);

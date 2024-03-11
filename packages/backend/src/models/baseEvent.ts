@@ -16,23 +16,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export interface ProgressiveEvent {
+export interface BaseEvent {
   id: string;
   status: 'error' | 'completed' | 'progress' | 'canceled';
   message?: string;
 }
 
-export interface CompletionProgressiveEvent extends ProgressiveEvent {
+export interface CompletionEvent extends BaseEvent {
   status: 'completed' | 'error' | 'canceled';
   duration: number;
 }
 
-export interface ExecutingProgressiveEvent extends ProgressiveEvent {
+export interface ProgressEvent extends BaseEvent {
   status: 'progress';
   value: number;
 }
 
-export const isCompletionProgressiveEvent = (value: unknown): value is CompletionProgressiveEvent => {
+export const isCompletionEvent = (value: unknown): value is CompletionEvent => {
   return (
     !!value &&
     typeof value === 'object' &&
@@ -43,7 +43,7 @@ export const isCompletionProgressiveEvent = (value: unknown): value is Completio
   );
 };
 
-export const isExecutingProgressiveEvent = (value: unknown): value is ExecutingProgressiveEvent => {
+export const isProgressEvent = (value: unknown): value is ProgressEvent => {
   return (
     !!value && typeof value === 'object' && 'status' in value && value['status'] === 'progress' && 'value' in value
   );

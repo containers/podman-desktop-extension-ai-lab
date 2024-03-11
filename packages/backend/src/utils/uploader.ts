@@ -19,7 +19,7 @@
 import { EventEmitter, type Event } from '@podman-desktop/api';
 import { WSLUploader } from './WSLUploader';
 import { getDurationSecondsSince } from './utils';
-import type { CompletionProgressiveEvent, ProgressiveEvent } from '../models/progressiveEvent';
+import type { CompletionEvent, BaseEvent } from '../models/baseEvent';
 
 export interface UploadWorker {
   canUpload: () => boolean;
@@ -27,8 +27,8 @@ export interface UploadWorker {
 }
 
 export class Uploader {
-  readonly #_onEvent = new EventEmitter<ProgressiveEvent>();
-  readonly onEvent: Event<ProgressiveEvent> = this.#_onEvent.event;
+  readonly #_onEvent = new EventEmitter<BaseEvent>();
+  readonly onEvent: Event<BaseEvent> = this.#_onEvent.event;
   readonly #workers: UploadWorker[] = [];
 
   constructor(
@@ -55,7 +55,7 @@ export class Uploader {
           status: 'completed',
           message: `Duration ${durationSeconds}s.`,
           duration: durationSeconds,
-        } as CompletionProgressiveEvent);
+        } as CompletionEvent);
         return modelPath;
       }
     } catch (err) {
@@ -78,7 +78,7 @@ export class Uploader {
       id,
       status: 'completed',
       message: `Use local model`,
-    } as CompletionProgressiveEvent);
+    } as CompletionEvent);
 
     return modelPath;
   }

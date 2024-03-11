@@ -27,8 +27,8 @@ import * as podmanDesktopApi from '@podman-desktop/api';
 import { Downloader } from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
-import type { ProgressiveEvent } from '../models/progressiveEvent';
-import { isCompletionProgressiveEvent, isExecutingProgressiveEvent } from '../models/progressiveEvent';
+import type { BaseEvent } from '../models/baseEvent';
+import { isCompletionEvent, isProgressEvent } from '../models/baseEvent';
 import { Uploader } from '../utils/uploader';
 
 export class ModelsManager implements Disposable {
@@ -204,7 +204,7 @@ export class ModelsManager implements Disposable {
     // If we have an existing downloader running we subscribe on its events
     return new Promise((resolve, reject) => {
       const disposable = existingDownloader.onEvent(event => {
-        if (!isCompletionProgressiveEvent(event)) return;
+        if (!isCompletionEvent(event)) return;
 
         switch (event.status) {
           case 'completed':
@@ -218,7 +218,7 @@ export class ModelsManager implements Disposable {
     });
   }
 
-  private onDownloadEvent(event: ProgressiveEvent): void {
+  private onDownloadEvent(event: BaseEvent): void {
     // Always use the task registry as source of truth for tasks
     const tasks = this.taskRegistry.getTasksByLabels({ 'model-pulling': event.id });
     if (tasks.length === 0) {
@@ -228,10 +228,10 @@ export class ModelsManager implements Disposable {
     }
 
     tasks.forEach(task => {
-      if (isExecutingProgressiveEvent(event)) {
+      if (isProgressEvent(event)) {
         task.state = 'loading';
         task.progress = event.value;
-      } else if (isCompletionProgressiveEvent(event)) {
+      } else if (isCompletionEvent(event)) {
         // status error or canceled
         if (event.status === 'error' || event.status === 'canceled') {
           task.state = 'error';
@@ -315,11 +315,11 @@ export class ModelsManager implements Disposable {
     });
 
     const uploader = new Uploader(localModelPath);
-    uploader.onEvent((event: ProgressiveEvent) => {
-      if (isExecutingProgressiveEvent(event)) {
+    uploader.onEvent((event: BaseEvent) => {
+      if (isProgressEvent(event)) {
         task.state = 'loading';
         task.progress = event.value;
-      } else if (isCompletionProgressiveEvent(event)) {
+      } else if (isCompletionEvent(event)) {
         // status error or canceled
         if (event.status === 'error' || event.status === 'canceled') {
           task.state = 'error';

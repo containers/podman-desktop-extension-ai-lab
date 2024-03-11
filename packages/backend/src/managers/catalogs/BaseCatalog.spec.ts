@@ -1,8 +1,9 @@
-import { beforeEach, vi, expect, test } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import modelsCatalogTest from '../../tests/models-catalog-test.json';
-import { existsSync } from 'node:fs';
-import { ModelCatalog } from './ModelCatalog';
+import { existsSync, promises } from 'node:fs';
+import { BaseCatalog } from './BaseCatalog';
 import { EventEmitter, type Webview } from '@podman-desktop/api';
+import { MESSAGES } from '@shared/Messages';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -14,12 +15,6 @@ vi.mock('@podman-desktop/api', async () => {
         onDidChange: vi.fn(),
       }),
     },
-  };
-});
-
-vi.mock('../../assets/models-catalog.json', () => {
-  return {
-    default: modelsCatalogTest,
   };
 });
 
@@ -55,26 +50,32 @@ beforeEach(async () => {
 
 test('models array should be empty when init not called', async () => {
   vi.mocked(existsSync).mockReturnValue(false);
-  const catalog = new ModelCatalog(webviewMock, '.');
-  expect(catalog.getModels().length).toBe(0);
+  const catalog = new BaseCatalog(webviewMock, MESSAGES.UPDATE_MODEL_CATALOG, '.', []);
+  expect(catalog.getAll().length).toBe(0);
 });
 
 test('models array should not be empty when init called', async () => {
   vi.mocked(existsSync).mockReturnValue(false);
-  const catalog = new ModelCatalog(webviewMock, '.');
+  const catalog = new BaseCatalog(webviewMock, MESSAGES.UPDATE_MODEL_CATALOG, '.', [{
+    id: 'dummyId',
+  }]);
   catalog.init();
   await vi.waitFor(() => {
-    expect(catalog.getModels().length).toBeGreaterThan(0);
+    expect(catalog.getAll().length).toBeGreaterThan(0);
   });
-  expect(webviewMock.postMessage).toHaveBeenCalled();
+  expect(webviewMock.postMessage).toHaveBeenCalledWith({
+    id: MESSAGES.UPDATE_MODEL_CATALOG,
+    body: [{id: 'dummyId'}],
+  });
 });
 
 test('models should contain test data', async () => {
-  vi.mocked(existsSync).mockReturnValue(false);
-  const catalog = new ModelCatalog(webviewMock, '.');
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(modelsCatalogTest));
+  const catalog = new BaseCatalog(webviewMock, MESSAGES.UPDATE_MODEL_CATALOG, '.', []);
   catalog.init();
   await vi.waitFor(() => {
-    expect(catalog.getModels().length).toBeGreaterThan(0);
+    expect(catalog.getAll().length).toBeGreaterThan(0);
   });
-  expect(catalog.getModels().some(model => model.id === 'test-llama-2-7b-chat.Q5_K_S')).toBeTruthy();
+  expect(catalog.getAll().some(model => model.id === 'test-llama-2-7b-chat.Q5_K_S')).toBeTruthy();
 });

@@ -19,23 +19,42 @@
 import type { Catalog } from '@shared/src/models/ICatalog';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { Category } from '@shared/src/models/ICategory';
 import { type Disposable, type Webview } from '@podman-desktop/api';
-import { ModelCatalog } from './catalogs/ModelCatalog';
-import { ApplicationCatalog } from './catalogs/ApplicationCatalog';
-import { CategoryCatalog } from './catalogs/CategoryCatalog';
+import { BaseCatalog } from './catalogs/BaseCatalog';
+import { MESSAGES } from '@shared/Messages';
+import path from 'node:path';
+import defaultModels from '../assets/models-catalog.json';
+import defaultApplications from '../assets/applications-catalog.json';
+import defaultCategories from '../assets/categories-catalog.json';
 
 /**
  * @deprecated
  */
 export class CatalogManager implements Disposable {
-  #modelCatalog: ModelCatalog;
-  #applicationCatalog: ApplicationCatalog;
-  #categoryCatalog: CategoryCatalog;
+  #modelCatalog: BaseCatalog<ModelInfo>;
+  #applicationCatalog: BaseCatalog<Recipe>;
+  #categoryCatalog: BaseCatalog<Category>;
 
   constructor(webview: Webview, appUserDirectory: string) {
-    this.#modelCatalog = new ModelCatalog(webview, appUserDirectory);
-    this.#applicationCatalog = new ApplicationCatalog(webview, appUserDirectory);
-    this.#categoryCatalog = new CategoryCatalog(webview, appUserDirectory);
+    this.#modelCatalog = new BaseCatalog(
+      webview,
+      MESSAGES.UPDATE_MODEL_CATALOG,
+      path.resolve(appUserDirectory, 'models-catalog.json'),
+      defaultModels,
+      );
+    this.#applicationCatalog = new BaseCatalog(
+      webview,
+      MESSAGES.UPDATE_APP_CATALOG,
+      path.resolve(appUserDirectory, 'applications-catalog.json'),
+      defaultApplications,
+    );
+    this.#categoryCatalog = new BaseCatalog(
+      webview,
+      MESSAGES.UPDATE_CATEGORY_CATALOG,
+      path.resolve(appUserDirectory, 'categories-catalog.json'),
+      defaultCategories,
+    );
   }
 
   /**
@@ -56,9 +75,9 @@ export class CatalogManager implements Disposable {
    */
   public getCatalog(): Catalog {
     return {
-      recipes: this.#applicationCatalog.getApplications(),
-      models: this.#modelCatalog.getModels(),
-      categories: this.#categoryCatalog.getCategories(),
+      recipes: this.#applicationCatalog.getAll(),
+      models: this.#modelCatalog.getAll(),
+      categories: this.#categoryCatalog.getAll(),
     };
   }
 
@@ -66,7 +85,7 @@ export class CatalogManager implements Disposable {
    * @deprecated
    */
   public getModels(): ModelInfo[] {
-    return this.#modelCatalog.getModels();
+    return this.#modelCatalog.getAll();
   }
 
   /**
@@ -84,7 +103,7 @@ export class CatalogManager implements Disposable {
    * @deprecated
    */
   public getRecipes(): Recipe[] {
-    return this.#applicationCatalog.getApplications();
+    return this.#applicationCatalog.getAll();
   }
 
   /**

@@ -19,11 +19,11 @@ import type { Disposable, Webview } from '@podman-desktop/api';
 import { getLanguageList, convert, type Language } from 'postman-code-generators';
 import { Request } from 'postman-collection';
 import { Publisher } from '../utils/Publisher';
-import { MSG_SUPPORTED_LANGUAGES_UPDATE } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 
 export class SnippetManager extends Publisher<Language[]> implements Disposable {
   constructor(webview: Webview) {
-    super(webview, MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
+    super(webview, Messages.MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
   }
 
   getLanguageList(): Language[] {

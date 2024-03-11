@@ -19,7 +19,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { SnippetManager } from './SnippetManager';
 import type { Webview } from '@podman-desktop/api';
-import { MSG_SUPPORTED_LANGUAGES_UPDATE } from '@shared/Messages';
+import { Messages } from '@shared/Messages';
 
 const webviewMock = {
   postMessage: vi.fn(),
@@ -35,7 +35,7 @@ test('expect init to notify webview', () => {
   manager.init();
 
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: MSG_SUPPORTED_LANGUAGES_UPDATE,
+    id: Messages.MSG_SUPPORTED_LANGUAGES_UPDATE,
     body: manager.getLanguageList(),
   });
 });

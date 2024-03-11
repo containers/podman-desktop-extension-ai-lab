@@ -23,8 +23,6 @@ export let meta: TinroRouteMeta;
 
     <SettingsNavItem title="Models" href="/models" bind:meta="{meta}" />
 
-    <SettingsNavItem title="Registries" href="/registries" bind:meta="{meta}" />
-
     <SettingsNavItem title="Preferences" href="/preferences" bind:meta="{meta}" />
   </div>
 </nav>

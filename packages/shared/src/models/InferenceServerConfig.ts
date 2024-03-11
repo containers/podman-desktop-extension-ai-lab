@@ -15,15 +15,28 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { ModelInfo } from './IModelInfo';
 
-export const MSG_PLAYGROUNDS_STATE_UPDATE = 'playgrounds-state-update';
-export const MSG_NEW_PLAYGROUND_QUERIES_STATE = 'new-playground-queries-state';
-export const MSG_NEW_CATALOG_STATE = 'new-catalog-state';
-export const MSG_NEW_RECIPE_STATE = 'new-recipe-state';
-export const MSG_TASKS_UPDATE = 'tasks-update';
-export const MSG_NEW_MODELS_STATE = 'new-models-state';
-export const MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update';
-export const MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update';
+export interface InferenceServerConfig {
+  /**
+   * Port to expose
+   */
+  port: number;
+  /**
+   * The identifier of the container provider to use
+   */
+  providerId?: string;
+  /**
+   * Image to use
+   */
+  image: string;
+  /**
+   * Labels to use for the container
+   */
+  labels: { [id: string]: string };
 
-export const MSG_INFERENCE_SERVERS_UPDATE = 'inference-servers-update';
-
+  /**
+   * Model info for the models
+   */
+  modelsInfo: ModelInfo[];
+}

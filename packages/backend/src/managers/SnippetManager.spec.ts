@@ -16,18 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, describe, vi } from 'vitest';
 import { SnippetManager } from './SnippetManager';
 import { getLanguageList, convert } from 'postman-code-generators';
 import type { Webview } from '@podman-desktop/api';
 import { Request } from 'postman-collection';
 import { MSG_SUPPORTED_LANGUAGES_UPDATE } from '@shared/Messages';
-vi.mock('postman-code-generators', () => {
-  return {
-    getLanguageList: vi.fn(),
-    convert: vi.fn(),
-  };
-});
 
 const webviewMock = {
   postMessage: vi.fn(),
@@ -35,50 +29,106 @@ const webviewMock = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-
   vi.mocked(webviewMock.postMessage).mockResolvedValue(undefined);
-  vi.mocked(getLanguageList).mockReturnValue([]);
 });
 
-test('expect init to notify webview', () => {
-  const manager = new SnippetManager(webviewMock);
-  manager.init();
+describe('mocking postman-code-generators', () => {
+  vi.mock('postman-code-generators', () => {
+    return {
+      getLanguageList: vi.fn(),
+      convert: vi.fn(),
+    };
+  });
 
-  expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: MSG_SUPPORTED_LANGUAGES_UPDATE,
-    body: [],
+  beforeEach(() => {
+    vi.mocked(getLanguageList).mockReturnValue([]);
+  });
+
+  test('expect init to notify webview', () => {
+    const manager = new SnippetManager(webviewMock);
+    manager.init();
+
+    expect(webviewMock.postMessage).toHaveBeenCalledWith({
+      id: MSG_SUPPORTED_LANGUAGES_UPDATE,
+      body: [],
+    });
+  });
+
+  test('expect getLanguageList to call postman code generator getLanguageList', () => {
+    const manager = new SnippetManager(webviewMock);
+    manager.getLanguageList();
+
+    expect(getLanguageList).toHaveBeenCalledOnce();
+  });
+
+  test('expect generate to call postman code generator convert', async () => {
+    vi.mocked(convert).mockImplementation((language, variant, request, options, callback) => {
+      expect(language).toBe('nodejs');
+      expect(variant).toBe('request');
+      expect(request).toStrictEqual(new Request('http://localhost:8888'));
+      expect(options).toStrictEqual({});
+      callback(undefined, 'valid-snippet');
+    });
+
+    const manager = new SnippetManager(webviewMock);
+    const snippet = await manager.generate('http://localhost:8888', 'nodejs', 'request');
+
+    expect(snippet).toBe('valid-snippet');
+    expect(convert).toHaveBeenCalled();
+  });
+
+  test('expect generate reject if callback provide an error', async () => {
+    vi.mocked(convert).mockImplementation((_language, _variant, _request, _options, callback) => {
+      callback(new Error('random'), undefined);
+    });
+
+    const manager = new SnippetManager(webviewMock);
+    await expect(manager.generate('http://localhost:8888', 'nodejs', 'request')).rejects.toThrowError('random');
+    expect(convert).toHaveBeenCalled();
   });
 });
 
-test('expect getLanguageList to call postman code generator getLanguageList', () => {
-  const manager = new SnippetManager(webviewMock);
-  manager.getLanguageList();
-
-  expect(getLanguageList).toHaveBeenCalledOnce();
-});
-
-test('expect generate to call postman code generator convert', async () => {
-  vi.mocked(convert).mockImplementation((language, variant, request, options, callback) => {
-    expect(language).toBe('nodejs');
-    expect(variant).toBe('request');
-    expect(request).toStrictEqual(new Request('http://localhost:8888'));
-    expect(options).toStrictEqual({});
-    callback(undefined, 'valid-snippet');
+describe('default postman-code-generators', async () => {
+  vi.mock('postman-code-generators', async importOriginal => {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    return importOriginal<typeof import('postman-code-generators')>();
   });
 
-  const manager = new SnippetManager(webviewMock);
-  const snippet = await manager.generate('http://localhost:8888', 'nodejs', 'request');
+  test('expect postman-code-generators to have many languages available.', () => {
+    const manager = new SnippetManager(webviewMock);
+    manager.init();
 
-  expect(snippet).toBe('valid-snippet');
-  expect(convert).toHaveBeenCalled();
-});
-
-test('expect generate reject if callback provide an error', async () => {
-  vi.mocked(convert).mockImplementation((_language, _variant, _request, _options, callback) => {
-    callback(new Error('random'), undefined);
+    expect(manager.getLanguageList().length).toBeGreaterThan(0);
   });
 
-  const manager = new SnippetManager(webviewMock);
-  await expect(manager.generate('http://localhost:8888', 'nodejs', 'request')).rejects.toThrowError('random');
-  expect(convert).toHaveBeenCalled();
+  test('expect postman-code-generators to have nodejs supported.', () => {
+    const manager = new SnippetManager(webviewMock);
+    manager.init();
+
+    const languages = manager.getLanguageList();
+    const nodejs = languages.find(language => language.key === 'nodejs');
+    expect(nodejs).toBeDefined();
+    expect(nodejs.variants.length).toBeGreaterThan(0);
+
+    const native = nodejs.variants.find(variant => variant.key === 'Request');
+    expect(native).toBeDefined();
+  });
+
+  test('expect postman-code-generators to generate proper nodejs native code', async () => {
+    const manager = new SnippetManager(webviewMock);
+
+    const snippet = await manager.generate('http://localhost:8080', 'nodejs', 'Request');
+    expect(snippet).toBe(`var request = require('request');
+var options = {
+  'method': 'GET',
+  'url': 'http://localhost:8080',
+  'headers': {
+  }
+};
+request(options, function (error, response) {
+  if (error) throw new Error(error);
+  console.log(response.body);
+});
+`);
+  });
 });

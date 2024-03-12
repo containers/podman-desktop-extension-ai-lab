@@ -11,7 +11,7 @@ export let icon: IconDefinition | undefined = undefined;
 export let contentBackground = '';
 </script>
 
-<div class="flex flex-col w-full h-full shadow-pageheader">
+<div class="flex flex-col w-full h-full shadow-pageheader bg-charcoal-600">
   <div class="flex flex-col w-full h-full pt-4" role="region" aria-label="{title}">
     <div class="flex pb-2 px-5" role="region" aria-label="header">
       <div class="flex flex-col">

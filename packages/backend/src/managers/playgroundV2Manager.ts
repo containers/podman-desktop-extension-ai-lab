@@ -53,6 +53,10 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
     if (server.health.Status !== 'healthy')
       throw new Error(`Inference server is not healthy, currently status: ${server.health.Status}.`);
 
+    const modelInfo = server.models.find(model => model.id === modelId);
+    if(modelInfo === undefined)
+      throw new Error(`modelId '${modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`)
+
     const requestId = this.getUniqueId();
     this.#messages.set(requestId, {
       id: requestId,
@@ -71,7 +75,7 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
     const response = await client.chat.completions.create({
       messages: this.getFormattedMessages(),
       stream: true,
-      model: modelId,
+      model: modelInfo.file.file,
       ...options,
     });
     // process stream async

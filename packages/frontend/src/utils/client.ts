@@ -39,5 +39,3 @@ export const getRouterState = (): RouterState => {
   if (isRouterState(state)) return state;
   return { url: '/' };
 };
-
-(window as any).studioclient = studioClient;

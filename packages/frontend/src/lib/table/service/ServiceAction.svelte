@@ -12,17 +12,10 @@ function stopInferenceServer() {
 function startInferenceServer() {
   studioClient.startInferenceServer(object.container.containerId);
 }
-
-function deleteInferenceServer() {
-  alert('not implemented');
-}
 </script>
 
-{#key object.status}
-  {#if object.status === 'running'}
-    <ListItemButtonIcon icon="{faStop}" onClick="{stopInferenceServer}" title="Stop container" />
-  {:else}
-    <ListItemButtonIcon icon="{faPlay}" onClick="{startInferenceServer}" title="Start container" />
-    <ListItemButtonIcon icon="{faTrash}" onClick="{deleteInferenceServer}" title="Delete container" />
-  {/if}
-{/key}
+{#if object.status === 'running'}
+  <ListItemButtonIcon icon="{faStop}" onClick="{stopInferenceServer}" title="Stop container" />
+{:else}
+  <ListItemButtonIcon icon="{faPlay}" onClick="{startInferenceServer}" title="Start container" />
+{/if}

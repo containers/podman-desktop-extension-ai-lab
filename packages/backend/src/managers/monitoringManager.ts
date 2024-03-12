@@ -58,8 +58,8 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
   private push(containerId: string, statsInfo: ContainerStatsInfo): void {
     let stats: StatsInfo[] = [];
     if (this.#containerStats.has(containerId)) {
-      const now = Date.now();
-      stats = this.#containerStats.get(containerId).stats.filter(stats => stats.timestamp + MAX_AGE > now);
+      const limit = Date.now() - MAX_AGE;
+      stats = this.#containerStats.get(containerId).stats.filter(stats => stats.timestamp > limit);
     }
 
     this.#containerStats.set(containerId, {

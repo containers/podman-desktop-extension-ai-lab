@@ -16,18 +16,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { expect, test, vi } from 'vitest';
+import { expect, test, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import ServiceAction from './ServiceAction.svelte';
 import { studioClient } from '/@/utils/client';
 
 vi.mock('../../../utils/client', async () => ({
   studioClient: {
-    deleteInferenceServer: vi.fn(),
     startInferenceServer: vi.fn(),
     stopInferenceServer: vi.fn(),
   },
 }));
+
+beforeEach(() => {
+  vi.resetAllMocks();
+  vi.mocked(studioClient.startInferenceServer).mockResolvedValue(undefined);
+  vi.mocked(studioClient.stopInferenceServer).mockResolvedValue(undefined);
+});
 
 test('should display stop button when status running', async () => {
   render(ServiceAction, {

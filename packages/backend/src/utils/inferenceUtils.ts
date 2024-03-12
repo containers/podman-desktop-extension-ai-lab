@@ -26,6 +26,7 @@ import {
   type ListImagesOptions,
 } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-studio-inference-server';
 
@@ -121,6 +122,7 @@ export function generateContainerCreateOptions(
           Type: 'bind',
         },
       ],
+      SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
       PortBindings: {
         '8000/tcp': [
           {

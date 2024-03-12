@@ -18,7 +18,7 @@ export let data: any[];
 export let columns: Column<any>[];
 export let row: Row<any>;
 export let defaultSortColumn: string | undefined = undefined;
-export let headerBackground = 'bg-charcoal-700';
+export let headerBackground = 'bg-charcoal-600';
 
 // number of selected items in the list
 export let selectedItemsNumber: number = 0;

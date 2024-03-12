@@ -22,7 +22,7 @@ export let primaryBackground: string = 'bg-charcoal-800';
         {#if icon}
           <button
             on:click="{() => dispatch('click')}"
-            class="{primaryBackground} rounded-full w-7 h-7 flex items-center justify-center mr-3">
+            class="{primaryBackground} rounded-full min-w-7 min-h-7 w-7 h-7 flex items-center justify-center mr-3">
             <Fa size="1x" class="text-purple-500 cursor-pointer" icon="{icon}" />
           </button>
         {/if}

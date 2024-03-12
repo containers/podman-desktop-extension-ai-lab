@@ -24,6 +24,7 @@ import userContent from './ai-user-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './managers/playground';
+import type { InferenceManager } from './managers/inference/inferenceManager';
 import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import { EventEmitter } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
@@ -103,6 +104,7 @@ beforeEach(async () => {
     {} as TelemetryLogger,
     {} as LocalRepositoryRegistry,
     {} as unknown as TaskRegistry,
+    {} as unknown as InferenceManager,
   );
   vi.mock('node:fs');
 

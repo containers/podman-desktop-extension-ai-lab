@@ -33,6 +33,9 @@ import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import path from 'node:path';
+import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { InferenceManager } from './managers/inference/inferenceManager';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -43,7 +46,29 @@ export class StudioApiImpl implements StudioAPI {
     private telemetry: podmanDesktopApi.TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
     private taskRegistry: TaskRegistry,
+    private inferenceManager: InferenceManager,
   ) {}
+
+  async getInferenceServers(): Promise<InferenceServer[]> {
+    return this.inferenceManager.getServers();
+  }
+
+  createInferenceServer(config: InferenceServerConfig): Promise<void> {
+    try {
+      return this.inferenceManager.createInferenceServer(config);
+    } catch (err: unknown) {
+      console.error('Something went wrong while trying to start inference server', err);
+      throw err;
+    }
+  }
+
+  startInferenceServer(containerId: string): Promise<void> {
+    return this.inferenceManager.startInferenceServer(containerId);
+  }
+
+  stopInferenceServer(containerId: string): Promise<void> {
+    return this.inferenceManager.stopInferenceServer(containerId);
+  }
 
   async ping(): Promise<string> {
     return 'pong';

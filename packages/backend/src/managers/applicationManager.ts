@@ -348,11 +348,17 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
       [LABEL_RECIPE_ID]: recipe.id,
       [LABEL_MODEL_ID]: model.id,
     };
-    const modelPorts = images.filter(img => img.modelService).flatMap(img => img.ports);
+    const modelPorts = images
+      .filter(img => img.modelService)
+      .flatMap(img => img.ports)
+      .map(port => portmappings.find(pm => `${pm.container_port}` === port)?.host_port);
     if (modelPorts.length) {
       labels[LABEL_MODEL_PORTS] = modelPorts.join(',');
     }
-    const appPorts = images.filter(img => !img.modelService).flatMap(img => img.ports);
+    const appPorts = images
+      .filter(img => !img.modelService)
+      .flatMap(img => img.ports)
+      .map(port => portmappings.find(pm => `${pm.container_port}` === port)?.host_port);
     if (appPorts.length) {
       labels[LABEL_APP_PORTS] = appPorts.join(',');
     }

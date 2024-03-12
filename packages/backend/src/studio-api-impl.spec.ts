@@ -35,6 +35,7 @@ import { timeout } from './utils/utils';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import type { Recipe } from '@shared/src/models/IRecipe';
+import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 
 vi.mock('./ai.json', () => {
   return {
@@ -105,6 +106,7 @@ beforeEach(async () => {
     {} as LocalRepositoryRegistry,
     {} as unknown as TaskRegistry,
     {} as unknown as InferenceManager,
+    {} as unknown as PlaygroundV2Manager,
   );
   vi.mock('node:fs');
 

@@ -21,14 +21,14 @@ import { Messages } from '@shared/Messages';
 import type { IPlaygroundMessage } from '@shared/src/models/IPlaygroundMessage';
 import type { InferenceManager } from './inference/inferenceManager';
 import OpenAI from 'openai';
-import {
+import type {
   ChatCompletionChunk,
   ChatCompletionMessageParam,
   ChatCompletionSystemMessageParam,
   ChatCompletionUserMessageParam,
 } from 'openai/src/resources/chat/completions';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
-import { Stream } from 'openai/streaming';
+import type { Stream } from 'openai/streaming';
 
 export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> implements Disposable {
   #messages: Map<string, IPlaygroundMessage>;
@@ -51,7 +51,9 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
     const server = this.inferenceManager.get(containerId);
     if (server === undefined) throw new Error('Inference server not found.');
 
-    if (server.health.Status !== 'healthy')
+    if (server.status !== 'running') throw new Error('Inference server is not running.');
+
+    if (server.health?.Status !== 'healthy')
       throw new Error(`Inference server is not healthy, currently status: ${server.health.Status}.`);
 
     const modelInfo = server.models.find(model => model.id === modelId);
@@ -68,6 +70,7 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
       userInput: userInput,
       completed: false,
     });
+    this.notify();
 
     const client = new OpenAI({
       baseURL: `http://localhost:${server.connection.port}/v1`,
@@ -82,7 +85,7 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
       ...options,
     });
     // process stream async
-    this.processStream(requestId, response).catch(err => {
+    this.processStream(requestId, response).catch((err: unknown) => {
       console.error('Something went wrong while processing stream', err);
     });
   }

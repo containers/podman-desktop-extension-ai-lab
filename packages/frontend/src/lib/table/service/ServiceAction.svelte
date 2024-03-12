@@ -6,11 +6,15 @@ import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 export let object: InferenceServer;
 
 function stopInferenceServer() {
-  studioClient.stopInferenceServer(object.container.containerId);
+  studioClient.stopInferenceServer(object.container.containerId).catch((err: unknown) => {
+    console.error('Something went wrong while trying to stop inference server', err);
+  });
 }
 
 function startInferenceServer() {
-  studioClient.startInferenceServer(object.container.containerId);
+  studioClient.startInferenceServer(object.container.containerId).catch((err: unknown) => {
+    console.error('Something went wrong while trying to start inference server', err);
+  });
 }
 </script>
 

@@ -19,8 +19,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { beforeEach, expect, test, vi } from 'vitest';
-import content from './ai-test.json';
-import userContent from './ai-user-test.json';
+import content from './tests/ai-test.json';
+import userContent from './tests/ai-user-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { PlayGroundManager } from './managers/playground';

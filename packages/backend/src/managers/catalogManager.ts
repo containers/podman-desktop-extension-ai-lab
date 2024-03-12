@@ -18,7 +18,7 @@
 
 import type { Catalog } from '@shared/src/models/ICatalog';
 import path from 'node:path';
-import defaultCatalog from '../ai.json';
+import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Messages } from '@shared/Messages';

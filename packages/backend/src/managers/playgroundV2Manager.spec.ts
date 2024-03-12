@@ -83,7 +83,7 @@ test('submit should throw an error is the model id provided does not exist.', as
   } as unknown as InferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
   await expect(manager.submit('dummyContainerId', 'invalidModelId', 'dummyUserInput')).rejects.toThrowError(
-    'modelId \'invalidModelId\' is not available on the inference server, valid model ids are: dummyModelId.',
+    `modelId 'invalidModelId' is not available on the inference server, valid model ids are: dummyModelId.`,
   );
 });
 

@@ -16,22 +16,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export enum Messages {
-  /**
-   * @deprecated
-   */
-  MSG_PLAYGROUNDS_STATE_UPDATE = 'playgrounds-state-update',
-  /**
-   * @deprecated
-   */
-  MSG_NEW_PLAYGROUND_QUERIES_STATE = 'new-playground-queries-state',
-  MSG_PLAYGROUNDS_MESSAGES_UPDATE = 'playgrounds-messages-update',
-  MSG_NEW_CATALOG_STATE = 'new-catalog-state',
-  MSG_TASKS_UPDATE = 'tasks-update',
-  MSG_NEW_MODELS_STATE = 'new-models-state',
-  MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update',
-  MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update',
-  MSG_INFERENCE_SERVERS_UPDATE = 'inference-servers-update',
-  MSG_MONITORING_UPDATE = 'monitoring-update',
-  MSG_SUPPORTED_LANGUAGES_UPDATE = 'supported-languages-supported',
+export interface Choice {
+  content: string;
+  role?: 'system' | 'user' | 'assistant' | 'tool';
+}
+export interface IPlaygroundMessage {
+  id: string;
+  completed: boolean;
+
+  // time in ms
+  timestamp: number;
+
+  userInput: string;
+  choices: Choice[];
+
+  request?: {
+    body: string;
+    url: string;
+    method: string;
+  };
+  response?: {
+    body: string;
+    code: number;
+  };
 }

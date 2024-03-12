@@ -25,6 +25,7 @@ import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
 import type { InferenceServer } from './models/IInference';
+import type { IPlaygroundMessage } from './models/IPlaygroundMessage';
 import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
 
 export abstract class StudioAPI {
@@ -41,10 +42,25 @@ export abstract class StudioAPI {
    * Delete the folder containing the model from local storage
    */
   abstract requestRemoveLocalModel(modelId: string): Promise<void>;
+  /**
+   * @deprecated
+   */
   abstract startPlayground(modelId: string): Promise<void>;
+  /**
+   * @deprecated
+   */
   abstract stopPlayground(modelId: string): Promise<void>;
+  /**
+   * @deprecated
+   */
   abstract askPlayground(modelId: string, prompt: string): Promise<number>;
+  /**
+   * @deprecated
+   */
   abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
+  /**
+   * @deprecated
+   */
   abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
   abstract getModelsDirectory(): Promise<string>;
 
@@ -101,4 +117,7 @@ export abstract class StudioAPI {
    * Return a free random port on the host machine
    */
   abstract getHostFreePort(): Promise<number>;
+
+  abstract submitPlaygroundV2(containerId: string, model: string, userInput: string): Promise<void>;
+  abstract getPlaygroundV2Messages(): Promise<IPlaygroundMessage[]>;
 }

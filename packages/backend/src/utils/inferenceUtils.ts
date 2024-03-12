@@ -131,7 +131,7 @@ export function generateContainerCreateOptions(
     },
     HealthCheck: {
       // must be the port INSIDE the container not the exposed one
-      Test: ['CMD-SHELL', `curl -sSf localhost:9990/docs > /dev/null`],
+      Test: ['CMD-SHELL', `curl -sSf localhost:8000/docs > /dev/null`],
       Interval: 1_000_000_000 * 15, // 15s
       Retries: 4 * 5, // 20 * 15s = 300s = 5 minutes
     },

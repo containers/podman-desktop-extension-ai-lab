@@ -22,7 +22,7 @@ $: categories = $catalog.categories;
           <RecipesCard
             category="{category}"
             primaryBackground=""
-            secondaryBackground="bg-charcoal-800"
+            secondaryBackground="bg-charcoal-700"
             displayCategory="{false}" />
         {/each}
       </div>

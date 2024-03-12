@@ -23,7 +23,8 @@ import type { InferenceManager } from './inference/inferenceManager';
 import OpenAI from 'openai';
 import {
   ChatCompletionChunk,
-  ChatCompletionMessageParam, ChatCompletionSystemMessageParam,
+  ChatCompletionMessageParam,
+  ChatCompletionSystemMessageParam,
   ChatCompletionUserMessageParam,
 } from 'openai/src/resources/chat/completions';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
@@ -43,7 +44,7 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
   }
 
   private getUniqueId(): string {
-    return `playground-${++this.#counter}`
+    return `playground-${++this.#counter}`;
   }
 
   async submit(containerId: string, modelId: string, userInput: string, options?: ModelOptions): Promise<void> {
@@ -54,8 +55,10 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
       throw new Error(`Inference server is not healthy, currently status: ${server.health.Status}.`);
 
     const modelInfo = server.models.find(model => model.id === modelId);
-    if(modelInfo === undefined)
-      throw new Error(`modelId '${modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`)
+    if (modelInfo === undefined)
+      throw new Error(
+        `modelId '${modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`,
+      );
 
     const requestId = this.getUniqueId();
     this.#messages.set(requestId, {
@@ -79,7 +82,7 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
       ...options,
     });
     // process stream async
-    this.processStream(requestId, response).catch((err) => {
+    this.processStream(requestId, response).catch(err => {
       console.error('Something went wrong while processing stream', err);
     });
   }
@@ -92,8 +95,8 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
    */
   private async fetchMiddleware(requestId: string, url: RequestInfo, init?: RequestInit): Promise<Response> {
     const message = this.#messages.get(requestId);
-    if(message === undefined) {
-      throw new Error('message not found, aborting stream process.')
+    if (message === undefined) {
+      throw new Error('message not found, aborting stream process.');
     }
     this.#messages.set(requestId, {
       ...message,
@@ -115,23 +118,26 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
   private async processStream(requestId: string, stream: Stream<ChatCompletionChunk>): Promise<void> {
     for await (const chunk of stream) {
       const message = this.#messages.get(requestId);
-      if(message === undefined) {
+      if (message === undefined) {
         console.error('message not found, aborting stream process.');
         // TODO: abort OpenAI request using AbortSignal.
         return;
       }
       this.#messages.set(requestId, {
         ...message,
-        choices: [...message.choices, {
-          role: chunk.choices[0]?.delta?.role,
-          content: chunk.choices[0]?.delta?.content || '',
-        }]
+        choices: [
+          ...message.choices,
+          {
+            role: chunk.choices[0]?.delta?.role,
+            content: chunk.choices[0]?.delta?.content || '',
+          },
+        ],
       });
       this.notify();
     }
 
     const message = this.#messages.get(requestId);
-    if(message !== undefined) {
+    if (message !== undefined) {
       this.#messages.set(requestId, {
         ...message,
         completed: true,
@@ -153,7 +159,7 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
       } as ChatCompletionUserMessageParam);
 
       // then if completed add the system message
-      if(message.completed) {
+      if (message.completed) {
         previousValue.push({
           role: 'system',
           content: message.choices.map(choice => choice.content).join(''),

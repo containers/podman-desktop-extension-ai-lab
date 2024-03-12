@@ -52,8 +52,7 @@ export class StudioApiImpl implements StudioAPI {
     private taskRegistry: TaskRegistry,
     private inferenceManager: InferenceManager,
     private playgroundV2: PlaygroundV2Manager,
-  ) {
-  }
+  ) {}
 
   submitPlaygroundV2(containerId: string, model: string, userInput: string): Promise<void> {
     return this.playgroundV2.submit(containerId, model, userInput, { temperature: 0.7 });

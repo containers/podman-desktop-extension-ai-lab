@@ -38,8 +38,7 @@ export const isCompletionEvent = (value: unknown): value is CompletionEvent => {
     typeof value === 'object' &&
     'status' in value &&
     typeof value['status'] === 'string' &&
-    ['canceled', 'completed', 'error'].includes(value['status']) &&
-    'duration' in value
+    ['canceled', 'completed', 'error'].includes(value['status'])
   );
 };
 

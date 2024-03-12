@@ -157,6 +157,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
           status: result.State.Status === 'running' ? 'running' : 'stopped',
           health: result.State.Health,
         });
+        this.notify();
       })
       .catch((err: unknown) => {
         console.error(

@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import type { Catalog } from '@shared/src/models/ICatalog';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import * as catalogStore from '/@/stores/catalog';
 import { readable } from 'svelte/store';
 import RecipeDetails from './RecipeDetails.svelte';
@@ -76,7 +76,7 @@ vi.mock('../stores/localRepositories', () => ({
   },
 }));
 
-const initialCatalog: Catalog = {
+const initialCatalog: ApplicationCatalog = {
   categories: [],
   models: [
     {
@@ -127,7 +127,7 @@ beforeEach(() => {
 
 test('should open/close application details panel when clicking on toggle button', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
 
   render(RecipeDetails, {
     recipeId: 'recipe 1',
@@ -155,7 +155,7 @@ test('should open/close application details panel when clicking on toggle button
 
 test('should call runApplication execution when run application button is clicked', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   mocks.pullApplicationMock.mockResolvedValue(undefined);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
@@ -170,7 +170,7 @@ test('should call runApplication execution when run application button is clicke
 
 test('swap model button should move user to models tab', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   const gotoMock = vi.spyOn(router, 'goto');
   render(RecipeDetails, {
     recipeId: 'recipe 1',
@@ -185,7 +185,7 @@ test('swap model button should move user to models tab', async () => {
 
 test('swap model panel should be hidden on models tab', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
     modelId: 'model1',
@@ -207,7 +207,7 @@ test('swap model panel should be hidden on models tab', async () => {
 
 test('should display default model information when model is the recommended', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
     modelId: 'model1',
@@ -223,7 +223,7 @@ test('should display default model information when model is the recommended', a
 
 test('should display non-default model information when model is not the recommended one', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
     modelId: 'model2',
@@ -245,7 +245,7 @@ test('button vs code should be visible if local repository is not empty', async 
       },
     },
   ]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
     modelId: 'model2',
@@ -257,7 +257,7 @@ test('button vs code should be visible if local repository is not empty', async 
 
 test('start application button should be the only one displayed', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(RecipeDetails, {
     recipeId: 'recipe 1',
     modelId: 'model1',

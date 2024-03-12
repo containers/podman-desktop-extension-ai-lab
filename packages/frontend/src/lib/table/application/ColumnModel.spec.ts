@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import * as catalogStore from '/@/stores/catalog';
-import type { Catalog } from '@shared/src/models/ICatalog';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import { readable } from 'svelte/store';
 import type { ApplicationCell } from '../../../pages/applications';
 import ColumnModel from './ColumnModel.svelte';
@@ -31,7 +31,7 @@ vi.mock('/@/stores/catalog', async () => {
   };
 });
 
-const initialCatalog: Catalog = {
+const initialCatalog: ApplicationCatalog = {
   categories: [],
   models: [
     {
@@ -60,7 +60,7 @@ test('display model name', async () => {
   const obj = {
     modelId: 'model1',
   } as unknown as ApplicationCell;
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnModel, { object: obj });
 
   const text = screen.getByText('Model 1');
@@ -72,7 +72,7 @@ test('display model port', async () => {
     modelId: 'model1',
     modelPorts: [8080],
   } as unknown as ApplicationCell;
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnModel, { object: obj });
 
   const text = screen.getByText('Model 1');
@@ -86,7 +86,7 @@ test('display multpile model ports', async () => {
     modelId: 'model1',
     modelPorts: [8080, 5000],
   } as unknown as ApplicationCell;
-  vi.mocked(catalogStore).catalog = readable<Catalog>(initialCatalog);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnModel, { object: obj });
 
   const text = screen.getByText('Model 1');

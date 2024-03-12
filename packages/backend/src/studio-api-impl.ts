@@ -24,7 +24,7 @@ import * as podmanDesktopApi from '@podman-desktop/api';
 import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 
 import type { CatalogManager } from './managers/catalogManager';
-import type { Catalog } from '@shared/src/models/ICatalog';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
@@ -133,7 +133,7 @@ export class StudioApiImpl implements StudioAPI {
     return this.playgroundManager.getPlaygroundsState();
   }
 
-  async getCatalog(): Promise<Catalog> {
+  async getCatalog(): Promise<ApplicationCatalog> {
     return this.catalogManager.getCatalog();
   }
 

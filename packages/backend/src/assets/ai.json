@@ -2,7 +2,7 @@
   "recipes": [
     {
       "id": "chatbot",
-      "description" : "Chat bot application",
+      "description" : "This is a Streamlit chat demo application.",
       "name" : "ChatBot",
       "repository": "https://github.com/redhat-et/locallm",
       "ref": "b0b2eca",
@@ -19,7 +19,7 @@
     },
     {
       "id": "summarizer",
-      "description" : "Summarizer application",
+      "description" : "This is a Streamlit demo application for summarizing text.",
       "name" : "Summarizer",
       "repository": "https://github.com/redhat-et/locallm",
       "ref": "4ac7950",
@@ -36,11 +36,11 @@
     },
     {
       "id": "codegeneration",
-      "description" : "Code Generation application",
+      "description" : "This is a code-generation demo application.",
       "name" : "Code Generation",
       "repository": "https://github.com/redhat-et/locallm",
       "ref": "a1ee3db",
-      "icon": "natural-language-processing",
+      "icon": "generator",
       "categories": [
         "natural-language-processing"
       ],

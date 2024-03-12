@@ -19,7 +19,7 @@
 import { vi, test, expect } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import Model from './Model.svelte';
-import catalog from '../../../backend/src/ai-user-test.json';
+import catalog from '../../../backend/src/tests/ai-user-test.json';
 
 const mocks = vi.hoisted(() => {
   return {

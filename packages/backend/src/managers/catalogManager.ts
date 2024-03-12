@@ -16,9 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Catalog } from '@shared/src/models/ICatalog';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import path from 'node:path';
-import defaultCatalog from '../ai.json';
+import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Messages } from '@shared/Messages';
@@ -26,8 +26,8 @@ import { type Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 
-export class CatalogManager extends Publisher<Catalog> implements Disposable {
-  private catalog: Catalog;
+export class CatalogManager extends Publisher<ApplicationCatalog> implements Disposable {
+  private catalog: ApplicationCatalog;
   #disposables: Disposable[];
 
   constructor(
@@ -47,7 +47,7 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
 
   init(): void {
     // Creating a json watcher
-    const jsonWatcher: JsonWatcher<Catalog> = new JsonWatcher(
+    const jsonWatcher: JsonWatcher<ApplicationCatalog> = new JsonWatcher(
       path.resolve(this.appUserDirectory, 'catalog.json'),
       defaultCatalog,
     );
@@ -57,7 +57,7 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
     this.#disposables.push(jsonWatcher);
   }
 
-  private onCatalogUpdated(content: Catalog): void {
+  private onCatalogUpdated(content: ApplicationCatalog): void {
     this.catalog = content;
     this.notify();
   }
@@ -66,7 +66,7 @@ export class CatalogManager extends Publisher<Catalog> implements Disposable {
     this.#disposables.forEach(watcher => watcher.dispose());
   }
 
-  public getCatalog(): Catalog {
+  public getCatalog(): ApplicationCatalog {
     return this.catalog;
   }
 

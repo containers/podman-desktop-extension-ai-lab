@@ -15,13 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { RPCReadable } from '/@/stores/rpcReadable';
+import { Messages } from '@shared/Messages';
+import { studioClient } from '/@/utils/client';
+import type { InferenceServer } from '@shared/src/models/IInference';
 
-import type { Category } from './ICategory';
-import type { ModelInfo } from './IModelInfo';
-import type { Recipe } from './IRecipe';
-
-export interface Catalog {
-  recipes: Recipe[];
-  models: ModelInfo[];
-  categories: Category[];
-}
+export const inferenceServers = RPCReadable<InferenceServer[]>(
+  [],
+  [Messages.MSG_INFERENCE_SERVERS_UPDATE],
+  studioClient.getInferenceServers,
+);

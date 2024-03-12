@@ -16,27 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Readable } from 'svelte/store';
-import { readable } from 'svelte/store';
-import { Messages } from '@shared/Messages';
-import { rpcBrowser, studioClient } from '/@/utils/client';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { Category } from './ICategory';
+import type { ModelInfo } from './IModelInfo';
+import type { Recipe } from './IRecipe';
 
-const emptyCatalog = {
-  categories: [],
-  models: [],
-  recipes: [],
-};
-
-export const catalog: Readable<ApplicationCatalog> = readable<ApplicationCatalog>(emptyCatalog, set => {
-  const sub = rpcBrowser.subscribe(Messages.MSG_NEW_CATALOG_STATE, msg => {
-    set(msg);
-  });
-  // Initialize the store manually
-  studioClient.getCatalog().then(state => {
-    set(state);
-  });
-  return () => {
-    sub.unsubscribe();
-  };
-});
+export interface ApplicationCatalog {
+  recipes: Recipe[];
+  models: ModelInfo[];
+  categories: Category[];
+}

@@ -1,6 +1,6 @@
 # Packaging guide
 
-## Catalog
+## ApplicationCatalog
 
 AI Studio uses an internal catalog embedded within the application. This catalog is loaded
 by AI Studio and displayed when you access the catalog page.

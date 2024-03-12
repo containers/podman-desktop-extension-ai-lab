@@ -18,16 +18,18 @@
 
 import type { ModelInfo } from './models/IModelInfo';
 import type { QueryState } from './models/IPlaygroundQueryState';
-import type { Catalog } from './models/ICatalog';
+import type { ApplicationCatalog } from './models/IApplicationCatalog';
 import type { PlaygroundState } from './models/IPlaygroundState';
 import type { TelemetryTrustedValue } from '@podman-desktop/api';
 import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
+import type { InferenceServer } from './models/IInference';
+import type { InferenceServerConfig } from './models/InferenceServerConfig';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
-  abstract getCatalog(): Promise<Catalog>;
+  abstract getCatalog(): Promise<ApplicationCatalog>;
   abstract pullApplication(recipeId: string, modelId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
   abstract openFile(file: string): Promise<boolean>;
@@ -71,4 +73,27 @@ export abstract class StudioAPI {
    * @param modelId the id of the model we want to download
    */
   abstract downloadModel(modelId: string): Promise<void>;
+
+  /**
+   * Get inference servers
+   */
+  abstract getInferenceServers(): Promise<InferenceServer[]>;
+
+  /**
+   * Start an inference server
+   * @param config The configuration to use
+   */
+  abstract createInferenceServer(config: InferenceServerConfig): Promise<void>;
+
+  /**
+   * Start an inference server
+   * @param containerId the container id of the inference server
+   */
+  abstract startInferenceServer(containerId: string): Promise<void>;
+
+  /**
+   * Stop an inference server
+   * @param containerId the container id of the inference server
+   */
+  abstract stopInferenceServer(containerId: string): Promise<void>;
 }

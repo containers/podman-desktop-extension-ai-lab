@@ -77,7 +77,7 @@ export abstract class StudioAPI {
   /**
    * Get inference servers
    */
-  abstract getInferenceServer(): Promise<InferenceServer[]>;
+  abstract getInferenceServers(): Promise<InferenceServer[]>;
 
   /**
    * Start an inference server

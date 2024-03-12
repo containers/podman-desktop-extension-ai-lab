@@ -49,7 +49,7 @@ export class StudioApiImpl implements StudioAPI {
     private inferenceManager: InferenceManager,
   ) {}
 
-  async getInferenceServer(): Promise<InferenceServer[]> {
+  async getInferenceServers(): Promise<InferenceServer[]> {
     return this.inferenceManager.getServers();
   }
 

@@ -23,5 +23,5 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 export const inferenceServers = RPCReadable<InferenceServer[]>(
   [],
   [Messages.MSG_INFERENCE_SERVERS_UPDATE],
-  studioClient.getInferenceServer,
+  studioClient.getInferenceServers,
 );

@@ -20,13 +20,6 @@ function openApp(port: number) {
 <div class="flex flex-col">
   <div class="text-sm text-gray-300 overflow-hidden text-ellipsis">
     {name}
-    {#if object.appPorts}
-      {#each object.appPorts as port}
-        <button title="{`open AI App on port ${port}`}" on:click="{() => openApp(port)}">
-          <Fa class="h-4 w-6" icon="{faSquareArrowUpRight}" />
-        </button>
-      {/each}
-    {/if}
   </div>
   <div class="text-sm text-gray-700 overflow-hidden text-ellipsis">
     {displayPorts(object.appPorts)}

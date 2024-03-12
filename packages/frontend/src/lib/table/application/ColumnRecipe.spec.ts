@@ -24,7 +24,6 @@ import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog'
 import { readable } from 'svelte/store';
 import type { ApplicationCell } from '../../../pages/applications';
 import ColumnRecipe from './ColumnRecipe.svelte';
-import userEvent from '@testing-library/user-event';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -111,17 +110,4 @@ test('display multiple recipe ports', async () => {
   expect(text).toBeInTheDocument();
   const ports = screen.getByText('PORTS 3000, 5000');
   expect(ports).toBeInTheDocument();
-});
-
-test('click on open port', async () => {
-  const obj = {
-    recipeId: 'recipe 1',
-    appPorts: [3000, 5000],
-  } as unknown as ApplicationCell;
-  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
-  render(ColumnRecipe, { object: obj });
-  mocks.openURL.mockResolvedValue(undefined);
-  const link = screen.getByRole('button', { name: 'open AI App on port 5000' });
-  await userEvent.click(link);
-  expect(mocks.openURL).toHaveBeenCalledWith('http://localhost:5000');
 });

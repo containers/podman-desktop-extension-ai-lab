@@ -8,6 +8,6 @@ function openDetails() {
 }
 </script>
 
-<button class="text-sm text-gray-700" on:click="{() => openDetails()}">
+<button title="Open service details" class="text-sm text-gray-700" on:click="{() => openDetails()}">
   {object.container.containerId}
 </button>

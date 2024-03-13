@@ -35,7 +35,7 @@ const onContainerPortInput = (event: Event): void => {
   }
 }
 const submit = () => {
-  const model: ModelInfo | undefined = localModels.find(model => model.id = modelId);
+  const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if(model === undefined)
     throw new Error('model id not valid.');
 

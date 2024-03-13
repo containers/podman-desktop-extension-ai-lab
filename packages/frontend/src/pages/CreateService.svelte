@@ -21,10 +21,10 @@ let modelId: string | undefined = undefined;
 
 const onServiceInput = (event: Event): void => {
   serviceName = (event.target as HTMLInputElement).value || '';
-}
+};
 const onImageNameInput = (event: Event): void => {
   imageName = (event.target as HTMLInputElement).value || '';
-}
+};
 const onContainerPortInput = (event: Event): void => {
   const raw = (event.target as HTMLInputElement).value;
   try {
@@ -33,31 +33,33 @@ const onContainerPortInput = (event: Event): void => {
     console.warn('invalid value for container port', e);
     containerPort = 8888;
   }
-}
+};
 const submit = () => {
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
-  if(model === undefined)
-    throw new Error('model id not valid.');
+  if (model === undefined) throw new Error('model id not valid.');
   submitting = true;
 
-  studioClient.createInferenceServer({
-    modelsInfo: [model],
-    port: containerPort,
-    image: imageName,
-    labels: {},
-  }).catch((err) => {
-    console.error('Something wrong while trying to create the inference server.', err);
-  }).finally(() => {
-    submitting = false;
-    router.goto('/services');
-  })
-}
+  studioClient
+    .createInferenceServer({
+      modelsInfo: [model],
+      port: containerPort,
+      image: imageName,
+      labels: {},
+    })
+    .catch(err => {
+      console.error('Something wrong while trying to create the inference server.', err);
+    })
+    .finally(() => {
+      submitting = false;
+      router.goto('/services');
+    });
+};
 const openModelsPage = () => {
   router.goto(`/models`);
-}
+};
 onMount(() => {
   const queryModelId = router.location.query.get('model-id');
-  if(queryModelId !== undefined && typeof queryModelId === 'string') {
+  if (queryModelId !== undefined && typeof queryModelId === 'string') {
     modelId = queryModelId;
   }
 });
@@ -84,7 +86,7 @@ onMount(() => {
         <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
         <select
           required
-          bind:value={modelId}
+          bind:value="{modelId}"
           id="providerChoice"
           class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
           name="providerChoice">
@@ -93,12 +95,10 @@ onMount(() => {
           {/each}
         </select>
         {#if localModels.length === 0}
-          <div
-            class="text-red-500 p-1 flex flex-row items-center">
+          <div class="text-red-500 p-1 flex flex-row items-center">
             <Fa size="1.1x" class="cursor-pointer text-red-500" icon="{faExclamationCircle}" />
             <div role="alert" aria-label="Error Message Content" class="ml-2">
-              You don't have any models downloaded. You can download them in
-              <a href="{'javascript:void(0);'}" class="underline" title="Models page" on:click={openModelsPage}>models page</a>.
+              You don't have any models downloaded. You can download them in <a href="{'javascript:void(0);'}" class="underline" title="Models page" on:click="{openModelsPage}">models page</a>.
             </div>
           </div>
         {/if}
@@ -109,32 +109,26 @@ onMount(() => {
           id="containerImage"
           class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
           type="text"
-          on:input={onImageNameInput}
-          bind:value={imageName}
+          on:input="{onImageNameInput}"
+          bind:value="{imageName}"
           name="containerImage"
           placeholder="Container image to use for the inference manager"
-          aria-label="containerImage"
-        />
+          aria-label="containerImage" />
 
         <!-- container port input -->
         <label for="containerPort" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Container port</label>
         <input
           type="number"
-          bind:value={containerPort}
-          on:input={onContainerPortInput}
+          bind:value="{containerPort}"
+          on:input="{onContainerPortInput}"
           class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
           placeholder="8888"
           name="containerPort"
-          required/>
-
+          required />
       </div>
       <footer>
         <div class="w-full flex flex-col">
-          <Button
-            inProgress="{submitting}"
-            on:click={submit}
-            disabled={!modelId}
-            icon="{faPlusCircle}">
+          <Button title="Create service" inProgress="{submitting}" on:click="{submit}" disabled="{!modelId}" icon="{faPlusCircle}">
             Create service
           </Button>
         </div>

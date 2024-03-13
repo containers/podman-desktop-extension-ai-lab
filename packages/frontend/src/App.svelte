@@ -68,7 +68,7 @@ onMount(() => {
         <Services />
       </Route>
 
-      <Route path="/service/:id/*" breadcrumb="Service Details"  let:meta>
+      <Route path="/service/:id/*" breadcrumb="Service Details" let:meta>
         <ServiceDetails containerId="{meta.params.id}" />
       </Route>
     </div>

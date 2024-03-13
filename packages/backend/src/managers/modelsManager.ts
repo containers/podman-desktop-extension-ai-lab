@@ -24,9 +24,12 @@ import { Messages } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { Downloader, type DownloadEvent, isCompletionEvent, isProgressEvent } from '../utils/downloader';
+import { Downloader } from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
+import type { BaseEvent } from '../models/baseEvent';
+import { isCompletionEvent, isProgressEvent } from '../models/baseEvent';
+import { Uploader } from '../utils/uploader';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string;
@@ -215,12 +218,18 @@ export class ModelsManager implements Disposable {
     });
   }
 
-  private onDownloadEvent(event: DownloadEvent): void {
+  private onDownloadUploadEvent(event: BaseEvent, action: 'download' | 'upload'): void {
+    let taskLabel = 'model-pulling';
+    let eventName = 'model.download';
+    if (action === 'upload') {
+      taskLabel = 'model-uploading';
+      eventName = 'model.upload';
+    }
     // Always use the task registry as source of truth for tasks
-    const tasks = this.taskRegistry.getTasksByLabels({ 'model-pulling': event.id });
+    const tasks = this.taskRegistry.getTasksByLabels({ [taskLabel]: event.id });
     if (tasks.length === 0) {
       // tasks might have been cleared but still an error.
-      console.error('received download event but no task is associated.');
+      console.error(`received ${action} event but no task is associated.`);
       return;
     }
 
@@ -236,9 +245,9 @@ export class ModelsManager implements Disposable {
           task.error = event.message;
 
           // telemetry usage
-          this.telemetry.logError('model.download', {
+          this.telemetry.logError(eventName, {
             'model.id': event.id,
-            message: 'error downloading model',
+            message: `error ${action}ing model`,
             error: event.message,
             durationSeconds: event.duration,
           });
@@ -247,7 +256,7 @@ export class ModelsManager implements Disposable {
           task.progress = 100;
 
           // telemetry usage
-          this.telemetry.logUsage('model.download', { 'model.id': event.id, durationSeconds: event.duration });
+          this.telemetry.logUsage(eventName, { 'model.id': event.id, durationSeconds: event.duration });
         }
       }
       this.taskRegistry.updateTask(task); // update task
@@ -294,10 +303,27 @@ export class ModelsManager implements Disposable {
     const downloader = this.createDownloader(model);
 
     // Capture downloader events
-    downloader.onEvent(this.onDownloadEvent.bind(this));
+    downloader.onEvent(event => this.onDownloadUploadEvent(event, 'download'), this);
 
     // perform download
     await downloader.perform(model.id);
     return downloader.getTarget();
+  }
+
+  async uploadModelToPodmanMachine(
+    model: ModelInfo,
+    localModelPath: string,
+    labels?: { [key: string]: string },
+  ): Promise<string> {
+    this.taskRegistry.createTask(`Uploading model ${model.name}`, 'loading', {
+      ...labels,
+      'model-uploading': model.id,
+    });
+
+    const uploader = new Uploader(localModelPath);
+    uploader.onEvent(event => this.onDownloadUploadEvent(event, 'upload'), this);
+
+    // perform download
+    return uploader.perform(model.id);
   }
 }

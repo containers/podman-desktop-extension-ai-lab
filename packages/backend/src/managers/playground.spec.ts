@@ -39,6 +39,7 @@ const mocks = vi.hoisted(() => ({
   listContainers: vi.fn(),
   logUsage: vi.fn(),
   logError: vi.fn(),
+  getFirstRunningPodmanConnectionMock: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -52,6 +53,12 @@ vi.mock('@podman-desktop/api', async () => {
       stopContainer: mocks.stopContainer,
       listContainers: mocks.listContainers,
     },
+  };
+});
+
+vi.mock('../utils/podman', () => {
+  return {
+    getFirstRunningPodmanConnection: mocks.getFirstRunningPodmanConnectionMock,
   };
 });
 
@@ -103,14 +110,12 @@ test('startPlayground should fail if no provider', async () => {
 
 test('startPlayground should download image if not present then create container', async () => {
   mocks.postMessage.mockResolvedValue(undefined);
-  mocks.getContainerConnections.mockReturnValue([
-    {
-      connection: {
-        type: 'podman',
-        status: () => 'started',
-      },
+  mocks.getFirstRunningPodmanConnectionMock.mockReturnValue({
+    connection: {
+      type: 'podman',
+      status: () => 'started',
     },
-  ]);
+  });
   vi.spyOn(manager, 'selectImage')
     .mockResolvedValueOnce(undefined)
     .mockResolvedValueOnce({
@@ -162,14 +167,12 @@ test('stopPlayground should fail if no playground is running', async () => {
 
 test('stopPlayground should stop a started playground', async () => {
   mocks.postMessage.mockResolvedValue(undefined);
-  mocks.getContainerConnections.mockReturnValue([
-    {
-      connection: {
-        type: 'podman',
-        status: () => 'started',
-      },
+  mocks.getFirstRunningPodmanConnectionMock.mockReturnValue({
+    connection: {
+      type: 'podman',
+      status: () => 'started',
     },
-  ]);
+  });
   vi.spyOn(manager, 'selectImage').mockResolvedValue({
     Id: 'image1',
     engineId: 'engine1',

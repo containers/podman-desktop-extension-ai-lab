@@ -20,43 +20,11 @@ import { getDurationSecondsSince } from './utils';
 import { createWriteStream, promises } from 'node:fs';
 import https from 'node:https';
 import { EventEmitter, type Event } from '@podman-desktop/api';
-
-export interface DownloadEvent {
-  id: string;
-  status: 'error' | 'completed' | 'progress' | 'canceled';
-  message?: string;
-}
-
-export interface CompletionEvent extends DownloadEvent {
-  status: 'completed' | 'error' | 'canceled';
-  duration: number;
-}
-
-export interface ProgressEvent extends DownloadEvent {
-  status: 'progress';
-  value: number;
-}
-
-export const isCompletionEvent = (value: unknown): value is CompletionEvent => {
-  return (
-    !!value &&
-    typeof value === 'object' &&
-    'status' in value &&
-    typeof value['status'] === 'string' &&
-    ['canceled', 'completed', 'error'].includes(value['status']) &&
-    'duration' in value
-  );
-};
-
-export const isProgressEvent = (value: unknown): value is ProgressEvent => {
-  return (
-    !!value && typeof value === 'object' && 'status' in value && value['status'] === 'progress' && 'value' in value
-  );
-};
+import type { CompletionEvent, ProgressEvent, BaseEvent } from '../models/baseEvent';
 
 export class Downloader {
-  private readonly _onEvent = new EventEmitter<DownloadEvent>();
-  readonly onEvent: Event<DownloadEvent> = this._onEvent.event;
+  private readonly _onEvent = new EventEmitter<BaseEvent>();
+  readonly onEvent: Event<BaseEvent> = this._onEvent.event;
   private requestedIdentifier: string;
 
   completed: boolean;

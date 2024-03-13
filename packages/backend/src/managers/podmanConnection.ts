@@ -24,6 +24,7 @@ import {
   type PodInfo,
   type Disposable,
 } from '@podman-desktop/api';
+import { getFirstRunningPodmanConnection } from '../utils/podman';
 
 export type startupHandle = () => void;
 export type machineStartHandle = () => void;
@@ -72,11 +73,8 @@ export class PodmanConnection implements Disposable {
     });
 
     // In case at least one extension has already registered, we get one started podman provider
-    const engines = provider
-      .getContainerConnections()
-      .filter(connection => connection.connection.type === 'podman')
-      .filter(connection => connection.connection.status() === 'started');
-    if (engines.length > 0) {
+    const engine = getFirstRunningPodmanConnection();
+    if (engine) {
       disposable.dispose();
       this.#firstFound = true;
     }

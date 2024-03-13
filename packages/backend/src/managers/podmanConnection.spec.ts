@@ -21,7 +21,7 @@ import { PodmanConnection } from './podmanConnection';
 import type { RegisterContainerConnectionEvent, UpdateContainerConnectionEvent } from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => ({
-  getContainerConnections: vi.fn(),
+  getFirstRunningPodmanConnectionMock: vi.fn(),
   onDidRegisterContainerConnection: vi.fn(),
   onDidUpdateContainerConnection: vi.fn(),
 }));
@@ -30,23 +30,26 @@ vi.mock('@podman-desktop/api', async () => {
   return {
     provider: {
       onDidRegisterContainerConnection: mocks.onDidRegisterContainerConnection,
-      getContainerConnections: mocks.getContainerConnections,
       onDidUpdateContainerConnection: mocks.onDidUpdateContainerConnection,
     },
   };
 });
 
-test('startupSubscribe should execute immediately if provider already registered', () => {
+vi.mock('../utils/podman', () => {
+  return {
+    getFirstRunningPodmanConnection: mocks.getFirstRunningPodmanConnectionMock,
+  };
+});
+
+test('startupSubscribe should execute immediately if provider already registered', async () => {
   const manager = new PodmanConnection();
   // one provider is already registered
-  mocks.getContainerConnections.mockReturnValue([
-    {
-      connection: {
-        type: 'podman',
-        status: () => 'started',
-      },
+  mocks.getFirstRunningPodmanConnectionMock.mockReturnValue({
+    connection: {
+      type: 'podman',
+      status: () => 'started',
     },
-  ]);
+  });
   mocks.onDidRegisterContainerConnection.mockReturnValue({
     dispose: vi.fn,
   });
@@ -61,7 +64,7 @@ test('startupSubscribe should execute  when provider is registered', async () =>
   const manager = new PodmanConnection();
 
   // no provider is already registered
-  mocks.getContainerConnections.mockReturnValue([]);
+  mocks.getFirstRunningPodmanConnectionMock.mockReturnValue(undefined);
   mocks.onDidRegisterContainerConnection.mockImplementation((f: (e: RegisterContainerConnectionEvent) => void) => {
     setTimeout(() => {
       f({

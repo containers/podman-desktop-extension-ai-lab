@@ -133,7 +133,13 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
       const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder);
 
       // get model by downloading it or retrieving locally
-      const modelPath = await this.modelsManager.requestDownloadModel(model, {
+      let modelPath = await this.modelsManager.requestDownloadModel(model, {
+        'recipe-id': recipe.id,
+        'model-id': model.id,
+      });
+
+      // upload model to podman machine if user system is supported
+      modelPath = await this.modelsManager.uploadModelToPodmanMachine(model, modelPath, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });

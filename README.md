@@ -4,7 +4,7 @@
 
 You can install this extension from Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
 
-The name of the image to use is `ghcr.io/projectatomic/ai-studio:latest`.
+The name of the image to use is `ghcr.io/projectatomic/ai-studio:nightly`.
 
 You can get earlier tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
 

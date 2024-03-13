@@ -9,7 +9,7 @@ import { router } from 'tinro';
 import { onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
 
-let loading: boolean = false;
+let submitting: boolean = false;
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
@@ -38,6 +38,7 @@ const submit = () => {
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if(model === undefined)
     throw new Error('model id not valid.');
+  submitting = true;
 
   studioClient.createInferenceServer({
     modelsInfo: [model],
@@ -45,8 +46,9 @@ const submit = () => {
     image: imageName,
     labels: {},
   }).catch((err) => {
-    console.error('Something wrong while trying to create the inference server.', err)
+    console.error('Something wrong while trying to create the inference server.', err);
   }).finally(() => {
+    submitting = false;
     router.goto('/services');
   })
 }
@@ -61,7 +63,7 @@ onMount(() => {
 });
 </script>
 
-<NavPage icon="{faPlus}" title="Creating Model service" searchEnabled="{false}" loading="{loading}">
+<NavPage icon="{faPlus}" title="Creating Model service" searchEnabled="{false}">
   <svelte:fragment slot="content">
     <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg w-full h-fit">
       <div class="w-full">
@@ -129,6 +131,7 @@ onMount(() => {
       <footer>
         <div class="w-full flex flex-col">
           <Button
+            inProgress="{submitting}"
             on:click={submit}
             disabled={!modelId}
             icon="{faPlusCircle}">

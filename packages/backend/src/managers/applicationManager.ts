@@ -20,13 +20,8 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import {
-  type PodCreatePortOptions,
-  containerEngine,
-  type TelemetryLogger,
-  type PodInfo,
-  type Webview,
-} from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
+import type { HostConfig, PodCreatePortOptions, TelemetryLogger, PodInfo, Webview } from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
@@ -265,26 +260,23 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     const containers: ContainerAttachedInfo[] = [];
     await Promise.all(
       images.map(async image => {
-        let hostConfig: unknown;
+        let hostConfig: HostConfig;
         let envs: string[] = [];
         // if it's a model service we mount the model as a volume
         if (image.modelService) {
           const modelName = path.basename(modelPath);
           hostConfig = {
-            AutoRemove: true,
             Mounts: [
               {
                 Target: `/${modelName}`,
                 Source: modelPath,
                 Type: 'bind',
+                Mode: 'Z',
               },
             ],
           };
           envs = [`MODEL_PATH=/${modelName}`];
         } else {
-          hostConfig = {
-            AutoRemove: true,
-          };
           // TODO: remove static port
           const modelService = images.find(image => image.modelService);
           if (modelService && modelService.ports.length > 0) {
@@ -292,35 +284,22 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
             envs = [`MODEL_ENDPOINT=${endPoint}`];
           }
         }
-        const createdContainer = await containerEngine.createContainer(podInfo.engineId, {
+
+        const podifiedName = this.getRandomName(`${image.appName}-podified`);
+        await containerEngine.createContainer(podInfo.engineId, {
           Image: image.id,
+          name: podifiedName,
           Detach: true,
           HostConfig: hostConfig,
           Env: envs,
           start: false,
+          pod: podInfo.Id,
         });
-
-        // now, for each container, put it in the pod
-        if (createdContainer) {
-          const podifiedName = this.getRandomName(`${image.appName}-podified`);
-          await containerEngine.replicatePodmanContainer(
-            {
-              id: createdContainer.id,
-              engineId: podInfo.engineId,
-            },
-            { engineId: podInfo.engineId },
-            { pod: podInfo.Id, name: podifiedName },
-          );
-          containers.push({
-            name: podifiedName,
-            modelService: image.modelService,
-            ports: image.ports,
-          });
-          // remove the external container
-          await containerEngine.deleteContainer(podInfo.engineId, createdContainer.id);
-        } else {
-          throw new Error(`failed at creating container for image ${image.id}`);
-        }
+        containers.push({
+          name: podifiedName,
+          modelService: image.modelService,
+          ports: image.ports,
+        });
       }),
     );
     return containers;

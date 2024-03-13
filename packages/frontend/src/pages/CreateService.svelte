@@ -65,8 +65,8 @@ onMount(() => {
   <svelte:fragment slot="content">
     <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg w-full h-fit">
       <div class="w-full">
-        <!-- service name input -->
-        <label for="serviceName" class="block mb-2 text-sm font-bold text-gray-400">Service name</label>
+        <!-- service name input (currently not supported) -->
+        <!-- <label for="serviceName" class="block mb-2 text-sm font-bold text-gray-400">Service name</label>
         <input
           id="serviceName"
           class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
@@ -76,7 +76,7 @@ onMount(() => {
           bind:value={serviceName}
           placeholder="Leave blank to generate a name"
           aria-label="serviceName"
-        />
+        /> -->
 
         <!-- model input -->
         <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>

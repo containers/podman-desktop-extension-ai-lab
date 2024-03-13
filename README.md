@@ -8,7 +8,7 @@ The name of the image to use is `ghcr.io/projectatomic/ai-studio:version_to_use`
 
 You can get released tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
 
-The released tags follow the major.minor.micro convention.
+The released tags follow the major.minor.patch convention.
 
 If you want to install the last release version, use the latest tag.
 

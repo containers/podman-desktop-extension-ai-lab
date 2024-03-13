@@ -329,7 +329,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     }
 
     const portmappings: PodCreatePortOptions[] = [];
-    // N.B: it may not work with ranges
     // we expose all ports so we can check the model service if it is actually running
     for (const image of images) {
       for (const exposed of image.ports) {

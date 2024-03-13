@@ -141,7 +141,7 @@ export class RpcBrowser {
       const message = event.data;
       if (isMessageResponse(message)) {
         if (!this.promises.has(message.id)) {
-          console.error('Unknown message id.');
+          console.error(`Unknown message id '${message.id}'.`);
           return;
         }
 

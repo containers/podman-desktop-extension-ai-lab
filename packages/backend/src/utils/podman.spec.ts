@@ -70,6 +70,77 @@ describe('getPodmanCli', () => {
   });
 });
 
+describe('getFirstRunningMachineName', () => {
+  test('return machine name if connection name does contain default Podman Machine name', () => {
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'Podman Machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    const machineName = utils.getFirstRunningMachineName();
+    expect(machineName).equals('podman-machine-default');
+  });
+  test('return machine name if connection name does contain custom Podman Machine name', () => {
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'Podman Machine test',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    const machineName = utils.getFirstRunningMachineName();
+    expect(machineName).equals('podman-machine-test');
+  });
+  test('return machine name if connection name does not contain Podman Machine', () => {
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'test',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    const machineName = utils.getFirstRunningMachineName();
+    expect(machineName).equals('test');
+  });
+  test('return undefined if there is no running connection', () => {
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'machine',
+          status: () => 'stopped',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    const machineName = utils.getFirstRunningMachineName();
+    expect(machineName).toBeUndefined();
+  });
+});
+
 describe('getFirstRunningPodmanConnection', () => {
   test('should return undefined if failing at retrieving connection', async () => {
     mocks.getConfigurationMock.mockRejectedValue('error');

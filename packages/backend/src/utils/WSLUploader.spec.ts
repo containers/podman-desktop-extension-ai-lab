@@ -57,15 +57,6 @@ describe('canUpload', () => {
 });
 
 describe('upload', () => {
-  const machine2: utils.MachineJSON = {
-    Name: 'machine2',
-    CPUs: 2,
-    Memory: '2000',
-    DiskSize: '100',
-    Running: true,
-    Starting: false,
-    Default: true,
-  };
   vi.spyOn(utils, 'getPodmanCli').mockReturnValue('podman');
   vi.spyOn(utils, 'getFirstRunningPodmanConnection').mockResolvedValue({
     connection: {
@@ -83,13 +74,13 @@ describe('upload', () => {
   });
   test('copy model if not exists on podman machine', async () => {
     mocks.execMock.mockRejectedValueOnce('error');
-    vi.spyOn(utils, 'getFirstRunningMachine').mockResolvedValue(machine2);
+    vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
     await wslUploader.upload('C:\\Users\\podman\\folder\\file');
     expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'machine2', 'stat', '/home/user/file']);
   });
   test('do not copy model if it exists on podman machine', async () => {
     mocks.execMock.mockResolvedValue('');
-    vi.spyOn(utils, 'getFirstRunningMachine').mockResolvedValue(machine2);
+    vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
     await wslUploader.upload('C:\\Users\\podman\\folder\\file');
     expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'machine2', 'stat', '/home/user/file']);
     expect(mocks.execMock).toBeCalledWith('podman', [

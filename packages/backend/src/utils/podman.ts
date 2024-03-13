@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ProviderContainerConnection } from '@podman-desktop/api';
-import { configuration, env, process, provider } from '@podman-desktop/api';
+import { configuration, env, provider } from '@podman-desktop/api';
 
 export type MachineJSON = {
   Name: string;
@@ -48,16 +48,25 @@ export function getCustomBinaryPath(): string | undefined {
   return configuration.getConfiguration('podman').get('binary.path');
 }
 
-async function getJSONMachineList(): Promise<string> {
-  const { stdout } = await process.exec(getPodmanCli(), ['machine', 'list', '--format', 'json']);
-  return stdout;
-}
+export function getFirstRunningMachineName(): string | undefined {
+  // the name of the podman connection is the name of the podman machine updated to make it more user friendly,
+  // so to retrieve the real machine name we need to revert the process
 
-export async function getFirstRunningMachine(): Promise<MachineJSON | undefined> {
+  // podman-machine-default -> Podman Machine
+  // podman-machine-{name} -> Podman Machine {name}
+  // {name} -> {name}
   try {
-    const machineListOutput = await getJSONMachineList();
-    const machines = JSON.parse(machineListOutput) as MachineJSON[];
-    return machines.find(machine => machine.Default && machine.Running);
+    const runningConnection = getFirstRunningPodmanConnection();
+    const runningConnectionName = runningConnection.connection.name;
+    if (runningConnectionName.startsWith('Podman Machine')) {
+      const machineName = runningConnectionName.replace(/Podman Machine\s*/, 'podman-machine-');
+      if (machineName.endsWith('-')) {
+        return `${machineName}default`;
+      }
+      return machineName;
+    } else {
+      return runningConnectionName;
+    }
   } catch (e) {
     console.log(e);
   }
@@ -75,6 +84,5 @@ export function getFirstRunningPodmanConnection(): ProviderContainerConnection |
   } catch (e) {
     console.log(e);
   }
-
   return engine;
 }

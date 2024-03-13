@@ -16,9 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, beforeEach, test, expect} from 'vitest';
+import { vi, beforeEach, test, expect } from 'vitest';
 import { studioClient } from '/@/utils/client';
-import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
 
 const mocks = vi.hoisted(() => {
@@ -45,7 +45,6 @@ vi.mock('../utils/client', async () => ({
   },
 }));
 
-
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.modelsInfoSubscribeMock.mockReturnValue([]);
@@ -68,7 +67,7 @@ test('expect error message to be displayed when no model locally', () => {
 });
 
 test('expect error message to be hidden when models locally', () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{id: 'random', file: true}]);
+  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
   render(CreateService);
 
   const alert = screen.queryByRole('alert');
@@ -76,7 +75,7 @@ test('expect error message to be hidden when models locally', () => {
 });
 
 test('button click should call createInferenceServer', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{id: 'random', file: true}]);
+  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
   render(CreateService);
 
   const createBtn = screen.getByTitle('Create service');
@@ -84,7 +83,7 @@ test('button click should call createInferenceServer', async () => {
   expect(vi.mocked(studioClient.createInferenceServer)).toHaveBeenCalledWith({
     image: 'quay.io/bootsy/playground:v0',
     labels: {},
-    modelsInfo: [{id: 'random', file: true}],
+    modelsInfo: [{ id: 'random', file: true }],
     port: 8888,
   });
 });

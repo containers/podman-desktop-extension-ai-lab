@@ -98,7 +98,12 @@ onMount(() => {
           <div class="text-red-500 p-1 flex flex-row items-center">
             <Fa size="1.1x" class="cursor-pointer text-red-500" icon="{faExclamationCircle}" />
             <div role="alert" aria-label="Error Message Content" class="ml-2">
-              You don't have any models downloaded. You can download them in <a href="{'javascript:void(0);'}" class="underline" title="Models page" on:click="{openModelsPage}">models page</a>.
+              You don't have any models downloaded. You can download them in <a
+                href="{'javascript:void(0);'}"
+                class="underline"
+                title="Models page"
+                on:click="{openModelsPage}">models page</a
+              >.
             </div>
           </div>
         {/if}
@@ -128,7 +133,12 @@ onMount(() => {
       </div>
       <footer>
         <div class="w-full flex flex-col">
-          <Button title="Create service" inProgress="{submitting}" on:click="{submit}" disabled="{!modelId}" icon="{faPlusCircle}">
+          <Button
+            title="Create service"
+            inProgress="{submitting}"
+            on:click="{submit}"
+            disabled="{!modelId}"
+            icon="{faPlusCircle}">
             Create service
           </Button>
         </div>

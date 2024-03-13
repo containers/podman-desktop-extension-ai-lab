@@ -29,7 +29,6 @@ import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
-import * as pathUtils from '../utils/pathUtils';
 import type { Webview, TelemetryLogger, PodInfo } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
@@ -1065,7 +1064,6 @@ describe('createAndAddContainersToPod', () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'container-1',
     });
-    vi.spyOn(pathUtils, 'getMappedPathInPodmanMachine').mockReturnValue('mapped');
     vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
     await manager.createAndAddContainersToPod(pod, [imageInfo1, imageInfo2], 'path');
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {
@@ -1087,7 +1085,7 @@ describe('createAndAddContainersToPod', () => {
         Mounts: [
           {
             Mode: 'Z',
-            Source: 'mapped',
+            Source: 'path',
             Target: '/path',
             Type: 'bind',
           },

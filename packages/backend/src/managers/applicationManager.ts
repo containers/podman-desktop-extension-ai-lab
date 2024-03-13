@@ -25,7 +25,7 @@ import type { HostConfig, PodCreatePortOptions, TelemetryLogger, PodInfo, Webvie
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
-import { getMappedPathInPodmanMachine, getParentDirectory } from '../utils/pathUtils';
+import { getParentDirectory } from '../utils/pathUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
 import { getPortsInfo } from '../utils/ports';
@@ -265,12 +265,11 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
         // if it's a model service we mount the model as a volume
         if (image.modelService) {
           const modelName = path.basename(modelPath);
-          const mappedMountPath = getMappedPathInPodmanMachine(modelPath);
           hostConfig = {
             Mounts: [
               {
                 Target: `/${modelName}`,
-                Source: mappedMountPath,
+                Source: modelPath,
                 Type: 'bind',
                 Mode: 'Z',
               },

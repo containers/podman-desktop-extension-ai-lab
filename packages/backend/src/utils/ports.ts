@@ -36,25 +36,6 @@ export async function getFreePort(port = 0): Promise<number> {
   return port;
 }
 
-/**
- * Find a free port range
- */
-export async function getFreePortRange(rangeSize: number): Promise<string> {
-  let port = 9000;
-  let startPort = port;
-
-  do {
-    if (await isFreePort(port)) {
-      ++port;
-    } else {
-      ++port;
-      startPort = port;
-    }
-  } while (port + 1 - startPort <= rangeSize);
-
-  return `${startPort}-${port - 1}`;
-}
-
 function isFreeAddressPort(address: string, port: number): Promise<boolean> {
   const server = net.createServer();
   return new Promise((resolve, reject) =>
@@ -70,37 +51,11 @@ export async function isFreePort(port: number): Promise<boolean> {
 }
 
 export async function getPortsInfo(portDescriptor: string): Promise<string | undefined> {
-  // check if portDescriptor is a range of ports
-  if (portDescriptor.includes('-')) {
-    return await getPortRange(portDescriptor);
-  } else {
-    const localPort = await getPort(portDescriptor);
-    if (!localPort) {
-      return undefined;
-    }
-    return `${localPort}`;
-  }
-}
-
-/**
- * return a range of the same length as portDescriptor containing free ports
- * undefined if the portDescriptor range is not valid
- * e.g 5000:5001 -> 9000:9001
- */
-async function getPortRange(portDescriptor: string): Promise<string | undefined> {
-  const rangeValues = getStartEndRange(portDescriptor);
-  if (!rangeValues) {
-    return Promise.resolve(undefined);
-  }
-
-  const rangeSize = rangeValues.endRange + 1 - rangeValues.startRange;
-  try {
-    // if free port range fails, return undefined
-    return await getFreePortRange(rangeSize);
-  } catch (e) {
-    console.error(e);
+  const localPort = await getPort(portDescriptor);
+  if (!localPort) {
     return undefined;
   }
+  return `${localPort}`;
 }
 
 async function getPort(portDescriptor: string): Promise<number | undefined> {
@@ -121,25 +76,4 @@ async function getPort(portDescriptor: string): Promise<number | undefined> {
     console.error(e);
     return undefined;
   }
-}
-
-function getStartEndRange(range: string) {
-  if (range.endsWith('/tcp') || range.endsWith('/udp')) {
-    range = range.substring(0, range.length - 4);
-  }
-
-  const rangeValues = range.split('-');
-  if (rangeValues.length !== 2) {
-    return undefined;
-  }
-  const startRange = parseInt(rangeValues[0]);
-  const endRange = parseInt(rangeValues[1]);
-
-  if (isNaN(startRange) || isNaN(endRange)) {
-    return undefined;
-  }
-  return {
-    startRange,
-    endRange,
-  };
 }

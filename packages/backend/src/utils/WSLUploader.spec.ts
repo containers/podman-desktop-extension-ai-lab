@@ -76,20 +76,43 @@ describe('upload', () => {
     mocks.execMock.mockRejectedValueOnce('error');
     vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
     await wslUploader.upload('C:\\Users\\podman\\folder\\file');
-    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'machine2', 'stat', '/home/user/file']);
-  });
-  test('do not copy model if it exists on podman machine', async () => {
-    mocks.execMock.mockResolvedValue('');
-    vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
-    await wslUploader.upload('C:\\Users\\podman\\folder\\file');
-    expect(mocks.execMock).toBeCalledWith('podman', ['machine', 'ssh', 'machine2', 'stat', '/home/user/file']);
+    expect(mocks.execMock).toBeCalledWith('podman', [
+      'machine',
+      'ssh',
+      'machine2',
+      'stat',
+      '/home/user/ai-studio/models/file',
+    ]);
+    expect(mocks.execMock).toBeCalledWith('podman', [
+      'machine',
+      'ssh',
+      'machine2',
+      'mkdir',
+      '-p',
+      '/home/user/ai-studio/models/',
+    ]);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
       'ssh',
       'machine2',
       'cp',
       '/mnt/c/Users/podman/folder/file',
-      '/home/user/file',
+      '/home/user/ai-studio/models/file',
     ]);
+    mocks.execMock.mockClear();
+  });
+  test('do not copy model if it exists on podman machine', async () => {
+    mocks.execMock.mockResolvedValue('');
+    vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
+    await wslUploader.upload('C:\\Users\\podman\\folder\\file');
+    expect(mocks.execMock).toBeCalledWith('podman', [
+      'machine',
+      'ssh',
+      'machine2',
+      'stat',
+      '/home/user/ai-studio/models/file',
+    ]);
+    expect(mocks.execMock).toBeCalledTimes(1);
+    mocks.execMock.mockClear();
   });
 });

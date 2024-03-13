@@ -35,7 +35,8 @@ export class WSLUploader implements UploadWorker {
     const convertToMntPath = localPath
       .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
       .replace(/\\/g, '/');
-    const remotePath = `/home/user/${path.basename(convertToMntPath)}`;
+    const remotePath = '/home/user/ai-studio/models/';
+    const remoteFile = `${remotePath}${path.basename(convertToMntPath)}`;
     const machineName = getFirstRunningMachineName();
 
     if (!machineName) {
@@ -44,23 +45,24 @@ export class WSLUploader implements UploadWorker {
     // check if model already loaded on the podman machine
     let existsRemote = true;
     try {
-      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', machineName, 'stat', remotePath]);
+      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', machineName, 'stat', remoteFile]);
     } catch (e) {
       existsRemote = false;
     }
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {
+      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', machineName, 'mkdir', '-p', remotePath]);
       await podmanDesktopApi.process.exec(getPodmanCli(), [
         'machine',
         'ssh',
         machineName,
         'cp',
         convertToMntPath,
-        remotePath,
+        remoteFile,
       ]);
     }
 
-    return remotePath;
+    return remoteFile;
   }
 }

@@ -321,7 +321,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       this.#servers.set(server.container.containerId, {
         ...server,
         status: 'running',
-        health: undefined,
+        health: undefined, // remove existing health checks
       });
       this.notify();
     } catch (error: unknown) {
@@ -348,6 +348,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       this.#servers.set(server.container.containerId, {
         ...server,
         status: 'stopped',
+        health: undefined, // remove existing health checks
       });
       this.notify();
     } catch (error: unknown) {

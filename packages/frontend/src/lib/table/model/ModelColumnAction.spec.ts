@@ -21,6 +21,7 @@ import { test, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import ModelColumnActions from '/@/lib/table/model/ModelColumnActions.svelte';
+import { router } from 'tinro';
 
 const mocks = vi.hoisted(() => ({
   requestRemoveLocalModel: vi.fn(),
@@ -71,6 +72,9 @@ test('Expect folder and delete button in document', async () => {
   const deleteBtn = screen.getByTitle('Delete Model');
   expect(deleteBtn).toBeInTheDocument();
 
+  const rocketBtn = screen.getByTitle('Create Model Service');
+  expect(rocketBtn).toBeInTheDocument();
+
   const downloadBtn = screen.queryByTitle('Download Model');
   expect(downloadBtn).toBeNull();
 });
@@ -93,6 +97,9 @@ test('Expect download button in document', async () => {
 
   const deleteBtn = screen.queryByTitle('Delete Model');
   expect(deleteBtn).toBeNull();
+
+  const rocketBtn = screen.queryByTitle('Create Model Service');
+  expect(rocketBtn).toBeNull();
 
   const downloadBtn = screen.getByTitle('Download Model');
   expect(downloadBtn).toBeInTheDocument();
@@ -117,5 +124,35 @@ test('Expect downloadModel to be call on click', async () => {
   await fireEvent.click(downloadBtn);
   await waitFor(() => {
     expect(mocks.downloadModel).toHaveBeenCalledWith('my-model');
+  });
+});
+
+test('Expect router to be called when rocket icon clicked', async () => {
+  const gotoMock = vi.spyOn(router, 'goto');
+  const replaceMock = vi.spyOn(router.location.query, 'replace');
+
+  const object: ModelInfo = {
+    id: 'my-model',
+    description: '',
+    hw: '',
+    license: '',
+    name: '',
+    registry: '',
+    url: '',
+    file: {
+      file: 'file',
+      creation: new Date(),
+      size: 1000,
+      path: 'path',
+    },
+  };
+  render(ModelColumnActions, { object });
+
+  const rocketBtn = screen.getByTitle('Create Model Service');
+
+  await fireEvent.click(rocketBtn);
+  await waitFor(() => {
+    expect(gotoMock).toHaveBeenCalledWith('/service/create');
+    expect(replaceMock).toHaveBeenCalledWith({ 'model-id': 'my-model' });
   });
 });

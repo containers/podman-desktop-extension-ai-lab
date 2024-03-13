@@ -38,8 +38,7 @@ function createModelService() {
     icon="{faRocket}"
     title="Create Model Service"
     enabled="{!object.state}"
-    onClick="{() => createModelService()}"
-  />
+    onClick="{() => createModelService()}" />
   <ListItemButtonIcon
     icon="{faFolderOpen}"
     onClick="{() => openModelFolder()}"

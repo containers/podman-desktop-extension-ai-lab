@@ -52,7 +52,15 @@ const openApplicationCatalog = () => {
           <Table kind="AI App" data="{data}" columns="{columns}" row="{row}"></Table>
         {:else}
           <div class="w-full flex items-center justify-center">
-            <div role="status">There is no AI App running. Explore the one available in the <a href="{'javascript:void(0);'}" class="underline" role="button" title="Open the catalog page" on:click="{openApplicationCatalog}">application catalog</a>.</div>
+            <div role="status">
+              There is no AI App running. Explore the one available in the <a
+                href="{'javascript:void(0);'}"
+                class="underline"
+                role="button"
+                title="Open the catalog page"
+                on:click="{openApplicationCatalog}">application catalog</a
+              >.
+            </div>
           </div>
         {/if}
       </div>

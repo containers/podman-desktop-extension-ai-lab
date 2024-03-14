@@ -234,11 +234,17 @@ describe('isQEMUMachine', () => {
         providerId: 'podman',
       },
     ]);
+    vi.mocked(podmanDesktopApi.env).isMac = true;
     vi.spyOn(podmanDesktopApi.process, 'exec').mockResolvedValue({
       stdout: JSON.stringify([machine]),
     } as podmanDesktopApi.RunResult);
     const isQEMU = await utils.isQEMUMachine();
     expect(isQEMU).toBeTruthy();
+  });
+  test('return false if machine is not a mac one', async () => {
+    vi.mocked(podmanDesktopApi.env).isMac = false;
+    const isQEMU = await utils.isQEMUMachine();
+    expect(isQEMU).toBeFalsy();
   });
   test('return false if non-qemu machine', async () => {
     const machine: utils.MachineJSON = {
@@ -249,8 +255,9 @@ describe('isQEMUMachine', () => {
       Running: true,
       Starting: false,
       Default: true,
-      VMType: 'wsl',
+      VMType: 'applehv',
     };
+    vi.mocked(podmanDesktopApi.env).isMac = true;
     mocks.getContainerConnectionsMock.mockReturnValue([
       {
         connection: {

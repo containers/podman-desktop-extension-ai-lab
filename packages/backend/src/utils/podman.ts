@@ -95,6 +95,10 @@ async function getJSONMachineList(): Promise<string> {
 
 export async function isQEMUMachine(): Promise<boolean> {
   try {
+    if (!env.isMac) {
+      return false;
+    }
+
     const runningMachineName = getFirstRunningMachineName();
     if (!runningMachineName) {
       return false;

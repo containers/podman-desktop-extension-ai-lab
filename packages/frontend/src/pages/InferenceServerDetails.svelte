@@ -146,7 +146,7 @@ const generate = async () => {
                     <option class="my-1" value="{language.key}">{language.label}</option>
                   {/each}
                 </select>
-                {#if selectedLanguage !== undefined}
+                {#if selectedVariant !== undefined}
                   <select
                     required
                     id="variants"
@@ -161,11 +161,13 @@ const generate = async () => {
                 {/if}
               </div>
 
-              <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2">
-                <code class="whitespace-break-spaces">
-                  {snippet}
-                </code>
-              </div>
+              {#if snippet !== undefined}
+                <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2">
+                  <code class="whitespace-break-spaces">
+                    {snippet}
+                  </code>
+                </div>
+              {/if}
             </div>
           {/if}
         </div>

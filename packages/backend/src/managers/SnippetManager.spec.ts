@@ -63,7 +63,9 @@ test('expect postman-code-generators to have nodejs supported.', () => {
 test('expect postman-code-generators to generate proper nodejs native code', async () => {
   const manager = new SnippetManager(webviewMock);
 
-  const snippet = await manager.generate('http://localhost:8080', 'nodejs', 'Request');
+  const snippet = await manager.generate({
+    url: 'http://localhost:8080',
+  }, 'nodejs', 'Request');
   expect(snippet).toBe(`var request = require('request');
 var options = {
   'method': 'GET',

@@ -29,6 +29,7 @@ import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
+import * as podman from '../utils/podman';
 import type { Webview, TelemetryLogger, PodInfo } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
@@ -249,6 +250,7 @@ describe('pullApplication', () => {
       recipeFolderExists: false,
     });
     mocks.listPodsMock.mockResolvedValue([]);
+    vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     mocks.performDownloadMock.mockResolvedValue('path');
@@ -312,6 +314,7 @@ describe('pullApplication', () => {
       recipeFolderExists: true,
     });
     mocks.listPodsMock.mockResolvedValue([]);
+    vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     mocks.performDownloadMock.mockResolvedValue('path');
@@ -1066,6 +1069,7 @@ describe('createAndAddContainersToPod', () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'container-1',
     });
+    vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
     await manager.createAndAddContainersToPod(pod, [imageInfo1, imageInfo2], 'path');
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {

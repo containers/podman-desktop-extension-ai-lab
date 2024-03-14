@@ -40,6 +40,7 @@ import type { CatalogManager } from './catalogManager';
 import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import { Publisher } from '../utils/Publisher';
+import { isQEMUMachine } from '../utils/podman';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 export const LABEL_APP_PORTS = 'ai-studio-app-ports';
@@ -258,6 +259,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     modelPath: string,
   ): Promise<ContainerAttachedInfo[]> {
     const containers: ContainerAttachedInfo[] = [];
+    // temporary check to set Z flag or not - to be removed when switching to podman 5
+    const isQEMUVM = await isQEMUMachine();
     await Promise.all(
       images.map(async image => {
         let hostConfig: HostConfig;
@@ -271,7 +274,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
                 Target: `/${modelName}`,
                 Source: modelPath,
                 Type: 'bind',
-                Mode: 'Z',
+                Mode: isQEMUVM ? undefined : 'Z',
               },
             ],
           };

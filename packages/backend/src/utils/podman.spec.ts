@@ -16,10 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { expect, test, describe, vi } from 'vitest';
+import { beforeEach, expect, test, describe, vi } from 'vitest';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import * as utils from '../utils/podman';
-import { beforeEach } from 'node:test';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -34,17 +33,22 @@ const config: podmanDesktopApi.Configuration = {
   update: () => Promise.resolve(),
 };
 
-vi.mock('@podman-desktop/api', () => ({
-  env: {
-    isWindows: false,
-  },
-  configuration: {
-    getConfiguration: () => config,
-  },
-  provider: {
-    getContainerConnections: mocks.getContainerConnectionsMock,
-  },
-}));
+vi.mock('@podman-desktop/api', () => {
+  return {
+    env: {
+      isWindows: false,
+    },
+    configuration: {
+      getConfiguration: () => config,
+    },
+    provider: {
+      getContainerConnections: mocks.getContainerConnectionsMock,
+    },
+    process: {
+      exec: vi.fn(),
+    },
+  };
+});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -202,5 +206,68 @@ describe('getFirstRunningPodmanConnection', () => {
     ]);
     const result = utils.getFirstRunningPodmanConnection();
     expect(result.connection.name).equal('machine2');
+  });
+});
+
+describe('isQEMUMachine', () => {
+  test('return true if qemu machine', async () => {
+    const machine: utils.MachineJSON = {
+      Name: 'machine',
+      CPUs: 2,
+      Memory: '2000',
+      DiskSize: '100',
+      Running: true,
+      Starting: false,
+      Default: true,
+      VMType: 'qemu',
+    };
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    vi.spyOn(podmanDesktopApi.process, 'exec').mockResolvedValue({
+      stdout: JSON.stringify([machine]),
+    } as podmanDesktopApi.RunResult);
+    const isQEMU = await utils.isQEMUMachine();
+    expect(isQEMU).toBeTruthy();
+  });
+  test('return false if non-qemu machine', async () => {
+    const machine: utils.MachineJSON = {
+      Name: 'machine',
+      CPUs: 2,
+      Memory: '2000',
+      DiskSize: '100',
+      Running: true,
+      Starting: false,
+      Default: true,
+      VMType: 'wsl',
+    };
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    vi.spyOn(podmanDesktopApi.process, 'exec').mockResolvedValue({
+      stdout: JSON.stringify([machine]),
+    } as podmanDesktopApi.RunResult);
+    const isQEMU = await utils.isQEMUMachine();
+    expect(isQEMU).toBeFalsy();
   });
 });

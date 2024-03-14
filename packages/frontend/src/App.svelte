@@ -16,6 +16,8 @@ import { getRouterState } from '/@/utils/client';
 import CreateService from '/@/pages/CreateService.svelte';
 import Services from '/@/pages/InferenceServers.svelte';
 import ServiceDetails from '/@/pages/InferenceServerDetails.svelte';
+import Playgrounds from './pages/Playgrounds.svelte';
+import Playground from './pages/Playground.svelte';
 
 router.mode.hash();
 
@@ -47,6 +49,14 @@ onMount(() => {
       <!-- Applications -->
       <Route path="/applications" breadcrumb="AI Apps">
         <Applications />
+      </Route>
+
+      <!-- Playgrounds -->
+      <Route path="/playgrounds" breadcrumb="Playgrounds environments">
+        <Playgrounds />
+      </Route>
+      <Route path="/playground/:id/*" breadcrumb="Playground environment" let:meta>
+        <Playground playgroundId="{meta.params.id}" />
       </Route>
 
       <!-- Preferences -->

@@ -42,4 +42,32 @@ test('the model name should be displayed', async () => {
 
   const modelName = screen.getByText('dummyName');
   expect(modelName).toBeDefined();
+  expect(modelName.localName).toBe('span');
+});
+
+test('multiple models name should be displayed as list', async () => {
+  render(ServiceColumnModelName, {
+    object: {
+      health: undefined,
+      models: [
+        {
+          name: 'dummyName-1',
+        } as unknown as ModelInfo,
+        {
+          name: 'dummyName-2',
+        } as unknown as ModelInfo,
+      ],
+      connection: { port: 8888 },
+      status: 'running',
+      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+    },
+  });
+
+  const model1Name = screen.getByText('dummyName-1');
+  expect(model1Name).toBeDefined();
+  expect(model1Name.localName).toBe('li');
+
+  const model2Name = screen.getByText('dummyName-2');
+  expect(model2Name).toBeDefined();
+  expect(model2Name.localName).toBe('li');
 });

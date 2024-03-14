@@ -25,6 +25,7 @@ import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
 import type { InferenceServer } from './models/IInference';
+import type { Language } from 'postman-code-generators';
 import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
 import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
@@ -146,6 +147,8 @@ export abstract class StudioAPI {
    * Create a new conversation and return a conversationId
    */
   abstract createPlaygroundConversation(): Promise<string>;
+
+  abstract createSnippet(options: {}): Promise<string>;
 
   abstract createPlayground(name: string, model: ModelInfo): Promise<void>;
 

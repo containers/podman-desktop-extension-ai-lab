@@ -20,6 +20,7 @@ import { getLanguageList, convert, type Language } from 'postman-code-generators
 import { Request } from 'postman-collection';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
+import { RequestOptions } from '../models/RequestOptions';
 
 export class SnippetManager extends Publisher<Language[]> implements Disposable {
   constructor(webview: Webview) {
@@ -30,9 +31,9 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
     return getLanguageList();
   }
 
-  generate(url: string, language: string, variant: string): Promise<string> {
+  generate(requestOptions: RequestOptions, language: string, variant: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const request = new Request(url);
+      const request = new Request(requestOptions);
       convert(language, variant, request, {}, (error: unknown, snippet: string) => {
         if (error) {
           reject(error);

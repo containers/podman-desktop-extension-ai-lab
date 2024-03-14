@@ -29,4 +29,4 @@ function deleteInferenceServer() {
 {:else if object.status === 'stopped' || object.status === 'starting'}
   <ListItemButtonIcon enabled={object.status === 'stopped'} icon="{faPlay}" onClick="{startInferenceServer}" title="Start container" />
 {/if}
-<ListItemButtonIcon icon="{faTrash}" onClick="{deleteInferenceServer}" title="Delete service" />
+<ListItemButtonIcon enabled="{object.status !== 'deleting'}" icon="{faTrash}" onClick="{deleteInferenceServer}" title="Delete service" />

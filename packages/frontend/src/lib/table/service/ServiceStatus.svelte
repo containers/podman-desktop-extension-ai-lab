@@ -15,6 +15,9 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
     return '';
   }
 
+  if(object.status === 'error')
+    return 'DEGRADED';
+
   switch (object.health?.Status) {
     case 'healthy':
       return 'RUNNING';
@@ -26,10 +29,20 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
       return '';
   }
 }
+
+function isLoading(): boolean {
+  switch (object.status) {
+    case "deleting":
+    case "stopping":
+    case "starting":
+      return true;
+  }
+  return object.health === undefined && object.status !== 'stopped';
+}
 </script>
 
 {#key object.status}
-  {#if object.health === undefined && object.status !== 'stopped'}
+  {#if isLoading()}
     <Spinner />
   {:else}
     <button on:click="{navigateToContainer}">

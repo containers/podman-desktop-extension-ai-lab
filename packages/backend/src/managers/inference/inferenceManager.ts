@@ -321,7 +321,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
 
     try {
       // Set status a deleting
-      this.setInferenceServerStatus(server.container.engineId, 'deleting');
+      this.setInferenceServerStatus(server.container.containerId, 'deleting');
 
       // If the server is running we need to stop it.
       if (server.status === 'running') {
@@ -352,19 +352,19 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
 
     try {
       // set status as starting
-      this.setInferenceServerStatus(server.container.engineId, 'starting');
+      this.setInferenceServerStatus(server.container.containerId, 'starting');
 
       await containerEngine.startContainer(server.container.engineId, server.container.containerId);
 
       // set status as running
-      this.setInferenceServerStatus(server.container.engineId, 'running');
+      this.setInferenceServerStatus(server.container.containerId, 'running');
     } catch (error: unknown) {
       console.error(error);
       this.telemetry.logError('inference.start', {
         message: 'error starting inference',
         error: error,
       });
-      this.setInferenceServerStatus(server.container.engineId, 'error');
+      this.setInferenceServerStatus(server.container.containerId, 'error');
     }
   }
 
@@ -382,13 +382,13 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
 
     try {
       // Set and notify server status as stopping
-      this.setInferenceServerStatus(server.container.engineId, 'stopping');
+      this.setInferenceServerStatus(server.container.containerId, 'stopping');
 
       // Stop container
       await containerEngine.stopContainer(server.container.engineId, server.container.containerId);
 
       // Notify as stopped.
-      this.setInferenceServerStatus(server.container.engineId, 'stopped');
+      this.setInferenceServerStatus(server.container.containerId, 'stopped');
     } catch (error: unknown) {
       console.error(error);
       this.telemetry.logError('inference.stop', {

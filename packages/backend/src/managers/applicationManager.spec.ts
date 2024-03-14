@@ -856,7 +856,9 @@ describe('createPod', async () => {
   test('call createPod with sample app exposed port', async () => {
     const images = [imageInfo1, imageInfo2];
     vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
-    vi.spyOn(portsUtils, 'getPortsInfo').mockResolvedValue('9000');
+    vi.spyOn(portsUtils, 'getPortsInfo').mockResolvedValueOnce('9000');
+    vi.spyOn(portsUtils, 'getPortsInfo').mockResolvedValueOnce('9001');
+    vi.spyOn(portsUtils, 'getPortsInfo').mockResolvedValueOnce('9002');
     mocks.createPodMock.mockResolvedValue({
       Id: 'podId',
       engineId: 'engineId',
@@ -867,14 +869,14 @@ describe('createPod', async () => {
       portmappings: [
         {
           container_port: 8080,
-          host_port: 9000,
+          host_port: 9002,
           host_ip: '',
           protocol: '',
           range: 1,
         },
         {
           container_port: 8081,
-          host_port: 9000,
+          host_port: 9001,
           host_ip: '',
           protocol: '',
           range: 1,
@@ -889,9 +891,9 @@ describe('createPod', async () => {
       ],
       labels: {
         'ai-studio-recipe-id': 'recipe-id',
-        'ai-studio-app-ports': '8080,8081',
+        'ai-studio-app-ports': '9002,9001',
         'ai-studio-model-id': 'model-id',
-        'ai-studio-model-ports': '8082',
+        'ai-studio-model-ports': '9000',
       },
     });
   });

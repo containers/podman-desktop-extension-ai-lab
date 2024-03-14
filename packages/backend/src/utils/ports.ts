@@ -18,6 +18,27 @@
 
 import * as net from 'net';
 
+export async function getFreeRandomPort(address: string): Promise<number> {
+  const server = net.createServer();
+  return new Promise((resolve, reject) =>
+    server
+      .on('error', (error: NodeJS.ErrnoException) => reject(error))
+      .on('listening', () => {
+        const addr = server.address();
+        if (typeof addr === 'string') {
+          // this should not happen, as it is only for pipes and unix domain sockets
+          server.close(() => reject(new Error('error getting allocated port')));
+        } else {
+          // not sure what the call to close will do on the addr value
+          // => the port value is saved before to call close
+          const allocatedPort = addr.port;
+          server.close(() => resolve(allocatedPort));
+        }
+      })
+      .listen(0, address),
+  );
+}
+
 /**
  * Find a free port starting from the given port
  */
@@ -70,8 +91,7 @@ async function getPort(portDescriptor: string): Promise<number | undefined> {
     return Promise.resolve(undefined);
   }
   try {
-    // if getFreePort fails, it returns undefined
-    return await getFreePort(port);
+    return await getFreeRandomPort('0.0.0.0');
   } catch (e) {
     console.error(e);
     return undefined;

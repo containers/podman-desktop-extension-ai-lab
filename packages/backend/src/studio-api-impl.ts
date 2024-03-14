@@ -36,6 +36,7 @@ import path from 'node:path';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { InferenceManager } from './managers/inference/inferenceManager';
+import { getFreeRandomPort } from './utils/ports';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -279,5 +280,9 @@ export class StudioApiImpl implements StudioAPI {
     this.modelsManager.requestDownloadModel(modelInfo).catch((err: unknown) => {
       console.error(`Something went wrong while trying to download the model ${modelId}`, err);
     });
+  }
+
+  getHostFreePort(): Promise<number> {
+    return getFreeRandomPort('0.0.0.0');
   }
 }

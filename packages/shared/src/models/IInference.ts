@@ -17,6 +17,8 @@
  ***********************************************************************/
 import type { ModelInfo } from './IModelInfo';
 
+export type InferenceServerStatus = 'stopped' | 'running' | 'deleting' | 'stopping' | 'error' | 'starting';
+
 export interface InferenceServer {
   /**
    * Supported models
@@ -35,7 +37,7 @@ export interface InferenceServer {
   /**
    * Inference server status
    */
-  status: 'stopped' | 'running' | 'deleting' | 'stopping' | 'error' | 'starting';
+  status: InferenceServerStatus;
   /**
    * Health check
    */

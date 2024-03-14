@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
 import type { PodmanConnection } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import {
@@ -320,6 +320,9 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     const server = this.#servers.get(containerId);
 
     try {
+      // Set status a deleting
+      this.setInferenceServerStatus(server.container.engineId, 'deleting');
+
       // If the server is running we need to stop it.
       if (server.status === 'running') {
         await containerEngine.stopContainer(server.container.engineId, server.container.containerId);
@@ -348,19 +351,20 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     if(isTransitioning(server)) throw new Error(`cannot start a transitioning server.`);
 
     try {
+      // set status as starting
+      this.setInferenceServerStatus(server.container.engineId, 'starting');
+
       await containerEngine.startContainer(server.container.engineId, server.container.containerId);
-      this.#servers.set(server.container.containerId, {
-        ...server,
-        status: 'running',
-        health: undefined, // remove existing health checks
-      });
-      this.notify();
+
+      // set status as running
+      this.setInferenceServerStatus(server.container.engineId, 'running');
     } catch (error: unknown) {
       console.error(error);
       this.telemetry.logError('inference.start', {
         message: 'error starting inference',
         error: error,
       });
+      this.setInferenceServerStatus(server.container.engineId, 'error');
     }
   }
 
@@ -378,35 +382,33 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
 
     try {
       // Set and notify server status as stopping
-      this.#servers.set(server.container.containerId, {
-        ...server,
-        status: 'stopping',
-        health: undefined, // remove existing health checks
-      });
-      this.notify();
+      this.setInferenceServerStatus(server.container.engineId, 'stopping');
 
       // Stop container
       await containerEngine.stopContainer(server.container.engineId, server.container.containerId);
+
       // Notify as stopped.
-      this.#servers.set(server.container.containerId, {
-        ...server,
-        status: 'stopped',
-        health: undefined, // remove existing health checks
-      });
-      this.notify();
+      this.setInferenceServerStatus(server.container.engineId, 'stopped');
     } catch (error: unknown) {
       console.error(error);
       this.telemetry.logError('inference.stop', {
         message: 'error stopping inference',
         error: error,
       });
-
-      // Set status as error
-      this.#servers.set(server.container.containerId, {
-        ...server,
-        status: 'error',
-      });
-      this.notify();
+      // Set inference server error status
+      this.setInferenceServerStatus(server.container.containerId, 'error');
     }
+  }
+
+  private setInferenceServerStatus(containerId: string, status: InferenceServerStatus): void {
+    const server = this.#servers.get(containerId);
+    if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
+
+    this.#servers.set(server.container.containerId, {
+      ...server,
+      status: status,
+      health: undefined, // always reset health history when changing status
+    });
+    this.notify();
   }
 }

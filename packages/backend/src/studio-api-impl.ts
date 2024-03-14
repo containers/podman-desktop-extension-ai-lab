@@ -34,9 +34,10 @@ import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import path from 'node:path';
 import type { InferenceServer } from '@shared/src/models/IInference';
-import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { CreationInferenceServerOptions } from '@shared/src/models/InferenceServerConfig';
 import type { InferenceManager } from './managers/inference/inferenceManager';
 import { getFreeRandomPort } from './utils/ports';
+import { withDefaultConfiguration } from './utils/inferenceUtils';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -54,8 +55,9 @@ export class StudioApiImpl implements StudioAPI {
     return this.inferenceManager.getServers();
   }
 
-  createInferenceServer(config: InferenceServerConfig): Promise<void> {
+  async createInferenceServer(options: CreationInferenceServerOptions): Promise<void> {
     try {
+      const config = await withDefaultConfiguration(options);
       return this.inferenceManager.createInferenceServer(config);
     } catch (err: unknown) {
       console.error('Something went wrong while trying to start inference server', err);

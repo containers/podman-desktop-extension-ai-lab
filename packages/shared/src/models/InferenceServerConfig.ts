@@ -17,6 +17,8 @@
  ***********************************************************************/
 import type { ModelInfo } from './IModelInfo';
 
+export type CreationInferenceServerOptions = Partial<InferenceServerConfig> & { modelsInfo: ModelInfo[] };
+
 export interface InferenceServerConfig {
   /**
    * Port to expose

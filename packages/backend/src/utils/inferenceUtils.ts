@@ -25,8 +25,9 @@ import {
   type ImageInfo,
   type ListImagesOptions,
 } from '@podman-desktop/api';
-import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
+import { getFreeRandomPort } from './ports';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-studio-inference-server';
 
@@ -143,5 +144,19 @@ export function generateContainerCreateOptions(
     },
     Env: [`MODEL_PATH=/models/${modelInfo.file.file}`],
     Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
+  };
+}
+
+export async function withDefaultConfiguration(
+  options: CreationInferenceServerOptions,
+): Promise<InferenceServerConfig> {
+  if (options.modelsInfo.length === 0) throw new Error('modelsInfo need to contain at least one element.');
+
+  return {
+    port: options.port || (await getFreeRandomPort('0.0.0.0')),
+    image: options.image || 'quay.io/bootsy/playground:v0',
+    labels: options.labels || {},
+    modelsInfo: options.modelsInfo,
+    providerId: options.providerId,
   };
 }

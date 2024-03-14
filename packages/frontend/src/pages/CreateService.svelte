@@ -37,7 +37,7 @@ const onContainerPortInput = (event: Event): void => {
 const submit = () => {
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
-  if(containerPort === undefined) throw new Error('invalid container port');
+  if (containerPort === undefined) throw new Error('invalid container port');
   // disable submit button
   submitting = true;
 
@@ -59,7 +59,7 @@ const submit = () => {
 const openModelsPage = () => {
   router.goto(`/models`);
 };
-onMount( async () => {
+onMount(async () => {
   containerPort = await studioClient.getHostFreePort();
 
   const queryModelId = router.location.query.get('model-id');

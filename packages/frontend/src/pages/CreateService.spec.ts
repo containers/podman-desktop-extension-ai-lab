@@ -42,6 +42,7 @@ vi.mock('../stores/modelsInfo', async () => {
 vi.mock('../utils/client', async () => ({
   studioClient: {
     createInferenceServer: vi.fn(),
+    getHostFreePort: vi.fn(),
   },
 }));
 
@@ -49,21 +50,26 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.modelsInfoSubscribeMock.mockReturnValue([]);
   vi.mocked(studioClient.createInferenceServer).mockResolvedValue(undefined);
+  vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
 });
 
-test('create button should be disabled when no model id provided', () => {
+test('create button should be disabled when no model id provided', async () => {
   render(CreateService);
 
-  const createBtn = screen.getByTitle('Create service');
-  expect(createBtn).toBeDefined();
-  expect(createBtn.attributes.getNamedItem('disabled')).toBeTruthy();
+  await vi.waitFor(() => {
+    const createBtn = screen.getByTitle('Create service');
+    expect(createBtn).toBeDefined();
+    expect(createBtn.attributes.getNamedItem('disabled')).toBeTruthy();
+  });
 });
 
-test('expect error message to be displayed when no model locally', () => {
+test('expect error message to be displayed when no model locally', async () => {
   render(CreateService);
 
-  const alert = screen.getByRole('alert');
-  expect(alert).toBeDefined();
+  await vi.waitFor(() => {
+    const alert = screen.getByRole('alert');
+    expect(alert).toBeDefined();
+  });
 });
 
 test('expect error message to be hidden when models locally', () => {
@@ -78,7 +84,14 @@ test('button click should call createInferenceServer', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
   render(CreateService);
 
-  const createBtn = screen.getByTitle('Create service');
+  let createBtn: HTMLElement | undefined = undefined;
+  await vi.waitFor(() => {
+    createBtn = screen.getByTitle('Create service');
+    expect(createBtn).toBeDefined();
+  });
+
+  if (createBtn === undefined) throw new Error('createBtn undefined');
+
   await fireEvent.click(createBtn);
   expect(vi.mocked(studioClient.createInferenceServer)).toHaveBeenCalledWith({
     image: 'quay.io/bootsy/playground:v0',

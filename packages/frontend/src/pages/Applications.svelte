@@ -13,6 +13,7 @@ import ColumnPod from '../lib/table/application/ColumnPod.svelte';
 import ColumnAge from '../lib/table/application/ColumnAge.svelte';
 import { filterByLabel } from '/@/utils/taskUtils';
 import { tasks } from '/@/stores/tasks';
+import { router } from 'tinro';
 
 let data: ApplicationCell[];
 
@@ -37,6 +38,10 @@ const columns: Column<ApplicationCell>[] = [
   new Column<ApplicationCell>('Actions', { align: 'right', width: '120px', renderer: ColumnActions }),
 ];
 const row = new Row<ApplicationCell>({});
+
+const openApplicationCatalog = () => {
+  router.goto('/recipes');
+};
 </script>
 
 <NavPage title="AI Apps" searchEnabled="{false}">
@@ -46,7 +51,17 @@ const row = new Row<ApplicationCell>({});
         {#if data.length > 0}
           <Table kind="AI App" data="{data}" columns="{columns}" row="{row}"></Table>
         {:else}
-          <div role="status">There is no AI App yet</div>
+          <div class="w-full flex items-center justify-center">
+            <div role="status">
+              There is no AI App running. Explore the one available in the <a
+                href="{'javascript:void(0);'}"
+                class="underline"
+                role="button"
+                title="Open the catalog page"
+                on:click="{openApplicationCatalog}">application catalog</a
+              >.
+            </div>
+          </div>
         {/if}
       </div>
     </div>

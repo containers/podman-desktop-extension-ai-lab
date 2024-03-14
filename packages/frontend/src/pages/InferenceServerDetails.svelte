@@ -4,7 +4,7 @@ import NavPage from '/@/lib/NavPage.svelte';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
-import { faBuildingColumns, faCopy, faMicrochip, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
+import { faBuildingColumns, faMicrochip, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
@@ -137,6 +137,7 @@ const generate = async () => {
                 <!-- language choice -->
                 <select
                   required
+                  aria-label="snippet language selection"
                   bind:value="{selectedLanguage}"
                   on:change="{onLanguageChange}"
                   id="languages"
@@ -149,6 +150,7 @@ const generate = async () => {
                 {#if selectedVariant !== undefined}
                   <select
                     required
+                    aria-label="snippet language variant"
                     id="variants"
                     bind:value="{selectedVariant}"
                     on:change="{generate}"

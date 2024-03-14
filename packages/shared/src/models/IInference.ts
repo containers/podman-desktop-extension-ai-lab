@@ -35,7 +35,7 @@ export interface InferenceServer {
   /**
    * Inference server status
    */
-  status: 'stopped' | 'running';
+  status: 'stopped' | 'running' | 'deleting' | 'stopping' | 'error' | 'starting';
   /**
    * Health check
    */

@@ -27,6 +27,7 @@ import {
 } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
+import { InferenceServer } from '@shared/src/models/IInference';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-studio-inference-server';
 
@@ -144,4 +145,16 @@ export function generateContainerCreateOptions(
     Env: [`MODEL_PATH=/models/${modelInfo.file.file}`],
     Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
   };
+}
+
+export function isTransitioning(server: InferenceServer): boolean {
+  switch (server.status) {
+    case 'deleting':
+    case 'stopping':
+      return true;
+    default:
+      break;
+  }
+
+  return false;
 }

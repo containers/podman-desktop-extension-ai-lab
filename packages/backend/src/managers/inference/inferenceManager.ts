@@ -29,7 +29,7 @@ import type { ContainerRegistry, ContainerStart } from '../../registries/Contain
 import {
   generateContainerCreateOptions,
   getImageInfo,
-  getProviderContainerConnection,
+  getProviderContainerConnection, isTransitioning,
   LABEL_INFERENCE_SERVER,
 } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
@@ -150,6 +150,9 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
         const server = this.#servers.get(containerId);
         if (server === undefined)
           throw new Error('Something went wrong while trying to get container status got undefined Inference Server.');
+
+        // If we are transitioning we ignore result of inspect for now
+        if(isTransitioning(server)) return;
 
         // Update server
         this.#servers.set(containerId, {
@@ -342,6 +345,8 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     const server = this.#servers.get(containerId);
     if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
 
+    if(isTransitioning(server)) throw new Error(`cannot start a transitioning server.`);
+
     try {
       await containerEngine.startContainer(server.container.engineId, server.container.containerId);
       this.#servers.set(server.container.containerId, {
@@ -369,8 +374,20 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     const server = this.#servers.get(containerId);
     if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
 
+    if(isTransitioning(server)) throw new Error(`cannot stop a transitioning server.`);
+
     try {
+      // Set and notify server status as stopping
+      this.#servers.set(server.container.containerId, {
+        ...server,
+        status: 'stopping',
+        health: undefined, // remove existing health checks
+      });
+      this.notify();
+
+      // Stop container
       await containerEngine.stopContainer(server.container.engineId, server.container.containerId);
+      // Notify as stopped.
       this.#servers.set(server.container.containerId, {
         ...server,
         status: 'stopped',
@@ -383,6 +400,13 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
         message: 'error stopping inference',
         error: error,
       });
+
+      // Set status as error
+      this.#servers.set(server.container.containerId, {
+        ...server,
+        status: 'error',
+      });
+      this.notify();
     }
   }
 }

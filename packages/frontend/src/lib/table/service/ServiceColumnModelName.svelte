@@ -1,7 +1,6 @@
 <script lang="ts">
 import type { InferenceServer } from '@shared/src/models/IInference';
 export let object: InferenceServer;
-
 </script>
 
 <span class="text-sm text-gray-700">
@@ -10,7 +9,7 @@ export let object: InferenceServer;
   {:else}
     <ul>
       {#each object.models as model}
-      <li>{model.name}</li>
+        <li>{model.name}</li>
       {/each}
     </ul>
   {/if}

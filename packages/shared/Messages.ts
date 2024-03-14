@@ -25,5 +25,6 @@ export enum Messages {
   MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update',
   MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update',
   MSG_INFERENCE_SERVERS_UPDATE = 'inference-servers-update',
+  MSG_MONITORING_UPDATE = 'monitoring-update',
   MSG_SUPPORTED_LANGUAGES_UPDATE = 'supported-languages-supported',
 }

@@ -15,8 +15,7 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
     return '';
   }
 
-  if(object.status === 'error')
-    return 'DEGRADED';
+  if (object.status === 'error') return 'DEGRADED';
 
   switch (object.health?.Status) {
     case 'healthy':
@@ -32,9 +31,9 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
 
 function isLoading(): boolean {
   switch (object.status) {
-    case "deleting":
-    case "stopping":
-    case "starting":
+    case 'deleting':
+    case 'stopping':
+    case 'starting':
       return true;
   }
   return object.health === undefined && object.status !== 'stopped';

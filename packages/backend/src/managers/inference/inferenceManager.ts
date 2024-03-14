@@ -29,7 +29,8 @@ import type { ContainerRegistry, ContainerStart } from '../../registries/Contain
 import {
   generateContainerCreateOptions,
   getImageInfo,
-  getProviderContainerConnection, isTransitioning,
+  getProviderContainerConnection,
+  isTransitioning,
   LABEL_INFERENCE_SERVER,
 } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
@@ -152,7 +153,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
           throw new Error('Something went wrong while trying to get container status got undefined Inference Server.');
 
         // If we are transitioning we ignore result of inspect for now
-        if(isTransitioning(server)) return;
+        if (isTransitioning(server)) return;
 
         // Update server
         this.#servers.set(containerId, {
@@ -348,7 +349,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     const server = this.#servers.get(containerId);
     if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
 
-    if(isTransitioning(server)) throw new Error(`cannot start a transitioning server.`);
+    if (isTransitioning(server)) throw new Error(`cannot start a transitioning server.`);
 
     try {
       // set status as starting
@@ -378,7 +379,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     const server = this.#servers.get(containerId);
     if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
 
-    if(isTransitioning(server)) throw new Error(`cannot stop a transitioning server.`);
+    if (isTransitioning(server)) throw new Error(`cannot stop a transitioning server.`);
 
     try {
       // Set and notify server status as stopping

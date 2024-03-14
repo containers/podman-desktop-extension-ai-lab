@@ -25,8 +25,20 @@ function deleteInferenceServer() {
 </script>
 
 {#if object.status === 'running' || object.status === 'stopping'}
-  <ListItemButtonIcon enabled={object.status === 'running'} icon="{faStop}" onClick="{stopInferenceServer}" title="Stop container" />
+  <ListItemButtonIcon
+    enabled="{object.status === 'running'}"
+    icon="{faStop}"
+    onClick="{stopInferenceServer}"
+    title="Stop container" />
 {:else if object.status === 'stopped' || object.status === 'starting'}
-  <ListItemButtonIcon enabled={object.status === 'stopped'} icon="{faPlay}" onClick="{startInferenceServer}" title="Start container" />
+  <ListItemButtonIcon
+    enabled="{object.status === 'stopped'}"
+    icon="{faPlay}"
+    onClick="{startInferenceServer}"
+    title="Start container" />
 {/if}
-<ListItemButtonIcon enabled="{object.status !== 'deleting'}" icon="{faTrash}" onClick="{deleteInferenceServer}" title="Delete service" />
+<ListItemButtonIcon
+  enabled="{object.status !== 'deleting'}"
+  icon="{faTrash}"
+  onClick="{deleteInferenceServer}"
+  title="Delete service" />

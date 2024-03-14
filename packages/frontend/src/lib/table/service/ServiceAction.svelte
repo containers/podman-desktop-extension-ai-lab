@@ -16,10 +16,17 @@ function startInferenceServer() {
     console.error('Something went wrong while trying to start inference server', err);
   });
 }
+
+function deleteInferenceServer() {
+  studioClient.deleteInferenceServer(object.container.containerId).catch((err: unknown) => {
+    console.error('Something went wrong while trying to delete inference server', err);
+  });
+}
 </script>
 
 {#if object.status === 'running'}
-  <ListItemButtonIcon icon="{faStop}" onClick="{stopInferenceServer}" title="Stop container" />
+  <ListItemButtonIcon icon="{faStop}" onClick="{stopInferenceServer}" title="Stop service" />
 {:else}
-  <ListItemButtonIcon icon="{faPlay}" onClick="{startInferenceServer}" title="Start container" />
+  <ListItemButtonIcon icon="{faPlay}" onClick="{startInferenceServer}" title="Start service" />
 {/if}
+<ListItemButtonIcon icon="{faTrash}" onClick="{deleteInferenceServer}" title="Delete service" />

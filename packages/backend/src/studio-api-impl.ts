@@ -77,6 +77,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.inferenceManager.getServers();
   }
 
+  deleteInferenceServer(containerId: string): Promise<void> {
+    return this.inferenceManager.deleteInferenceServer(containerId);
+  }
+
   async createInferenceServer(options: CreationInferenceServerOptions): Promise<void> {
     try {
       const config = await withDefaultConfiguration(options);

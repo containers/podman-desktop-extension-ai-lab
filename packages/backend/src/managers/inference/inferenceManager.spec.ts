@@ -43,6 +43,7 @@ vi.mock('@podman-desktop/api', async () => {
       pullImage: vi.fn(),
       listImages: vi.fn(),
       createContainer: vi.fn(),
+      deleteContainer: vi.fn(),
     },
     Disposable: {
       from: vi.fn(),
@@ -369,5 +370,61 @@ describe('Stop Inference Server', () => {
     const servers = inferenceManager.getServers();
     expect(servers.length).toBe(1);
     expect(servers[0].status).toBe('stopped');
+  });
+});
+
+describe('Delete Inference Server', () => {
+  test('containerId unknown', async () => {
+    const inferenceManager = await getInitializedInferenceManager();
+    await expect(inferenceManager.deleteInferenceServer('unknownContainerId')).rejects.toThrowError(
+      'cannot find a corresponding server for container id unknownContainerId.',
+    );
+  });
+
+  test('valid running containerId', async () => {
+    mockListContainers([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+        },
+      },
+    ]);
+    const inferenceManager = await getInitializedInferenceManager();
+    await inferenceManager.deleteInferenceServer('dummyId');
+
+    expect(containerEngine.stopContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
+    expect(containerEngine.deleteContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
+
+    const servers = inferenceManager.getServers();
+    expect(servers.length).toBe(0);
+  });
+
+  test('valid stopped containerId', async () => {
+    mockListContainers([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+        },
+      },
+    ]);
+    vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
+      State: {
+        Status: 'stopped',
+        Health: undefined,
+      },
+    } as unknown as ContainerInspectInfo);
+
+    const inferenceManager = await getInitializedInferenceManager();
+    await inferenceManager.deleteInferenceServer('dummyId');
+
+    expect(containerEngine.stopContainer).not.toHaveBeenCalled();
+    expect(containerEngine.deleteContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
+
+    const servers = inferenceManager.getServers();
+    expect(servers.length).toBe(0);
   });
 });

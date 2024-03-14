@@ -252,6 +252,56 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
   ]);
 });
 
+test('getLocalModelsFromDisk should skip folders containing tmp files', async () => {
+  const now = new Date();
+  mockFiles(now);
+  const statSyncSpy = vi.spyOn(fs, 'statSync');
+  statSyncSpy.mockImplementation((path: PathLike) => {
+    if (`${path}`.endsWith('model-id-1')) throw new Error('random-error');
+    return { isDirectory: () => true } as Stats;
+  });
+
+  const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
+    [path: string],
+    string[] | fs.Dirent[]
+  >;
+  readdirSyncMock.mockImplementation((dir: string) => {
+    if (dir.endsWith('model-id-1') || dir.endsWith('model-id-2')) {
+      const base = path.basename(dir);
+      return [base + '-model.tmp'];
+    } else {
+      return dirent;
+    }
+  });
+
+  let appdir: string;
+  if (process.platform === 'win32') {
+    appdir = 'C:\\home\\user\\aistudio';
+  } else {
+    appdir = '/home/user/aistudio';
+  }
+  const manager = new ModelsManager(
+    appdir,
+    {
+      postMessage: vi.fn(),
+    } as unknown as Webview,
+    {
+      getModels(): ModelInfo[] {
+        return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
+      },
+    } as CatalogManager,
+    telemetryLogger,
+    taskRegistry,
+  );
+  await manager.loadLocalModels();
+  expect(manager.getModelsInfo()).toEqual([
+    {
+      id: 'model-id-1',
+      name: 'model-id-1-model',
+    },
+  ]);
+});
+
 test('loadLocalModels should post a message with the message on disk and on catalog', async () => {
   const now = new Date();
   mockFiles(now);

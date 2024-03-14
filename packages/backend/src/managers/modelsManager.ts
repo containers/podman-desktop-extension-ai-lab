@@ -111,6 +111,12 @@ export class ModelsManager implements Disposable {
 
       const model = this.#models.get(d.name);
       if (model) {
+        // if the model file ends with .tmp and it is not in downloaders list,
+        // we skip it as it was not probably downloaded completed in a previous session
+        if (fullPath.endsWith('.tmp') && !this.#downloaders.has(model.id)) {
+          continue;
+        }
+
         model.file = {
           file: modelFile,
           path: path.resolve(d.path, d.name),

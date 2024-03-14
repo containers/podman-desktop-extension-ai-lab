@@ -8,6 +8,8 @@ function openDetails() {
 }
 </script>
 
-<button class="text-sm text-gray-700" on:click="{() => openDetails()}">
-  {object.name}
+<button on:click="{() => openDetails()}">
+  <div class="text-sm text-gray-300 overflow-hidden text-ellipsis">
+    {object.name}
+  </div>
 </button>

@@ -96,4 +96,9 @@ export abstract class StudioAPI {
    * @param containerId the container id of the inference server
    */
   abstract stopInferenceServer(containerId: string): Promise<void>;
+
+  /**
+   * Return a free random port on the host machine
+   */
+  abstract getHostFreePort(): Promise<number>;
 }

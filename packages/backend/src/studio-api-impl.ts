@@ -54,6 +54,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.inferenceManager.getServers();
   }
 
+  deleteInferenceServer(containerId: string): Promise<void> {
+    return this.inferenceManager.deleteInferenceServer(containerId);
+  }
+
   createInferenceServer(config: InferenceServerConfig): Promise<void> {
     try {
       return this.inferenceManager.createInferenceServer(config);

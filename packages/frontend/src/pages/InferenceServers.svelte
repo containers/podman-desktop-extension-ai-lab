@@ -11,7 +11,7 @@ import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 const columns: Column<InferenceServer>[] = [
   new Column<InferenceServer>('Status', { width: '50px', renderer: ServiceStatus, align: 'center' }),
   new Column<InferenceServer>('Name', { width: '3fr', renderer: ServiceColumnName, align: 'center' }),
-  new Column<InferenceServer>('Action', { width: '50px', renderer: ServiceAction, align: 'center' }),
+  new Column<InferenceServer>('Action', { width: '80px', renderer: ServiceAction, align: 'center' }),
 ];
 const row = new Row<InferenceServer>({});
 

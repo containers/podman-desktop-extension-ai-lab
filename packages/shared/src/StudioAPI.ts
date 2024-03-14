@@ -25,7 +25,7 @@ import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
 import type { InferenceServer } from './models/IInference';
-import type { InferenceServerConfig } from './models/InferenceServerConfig';
+import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -81,9 +81,9 @@ export abstract class StudioAPI {
 
   /**
    * Start an inference server
-   * @param config The configuration to use
+   * @param options The options to use
    */
-  abstract createInferenceServer(config: InferenceServerConfig): Promise<void>;
+  abstract createInferenceServer(options: CreationInferenceServerOptions): Promise<void>;
 
   /**
    * Start an inference server

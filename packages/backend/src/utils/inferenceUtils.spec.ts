@@ -16,12 +16,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { generateContainerCreateOptions } from './inferenceUtils';
+import { generateContainerCreateOptions, withDefaultConfiguration } from './inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { ImageInfo } from '@podman-desktop/api';
+import { getFreeRandomPort } from './ports';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
+
+vi.mock('./ports', () => ({
+  getFreeRandomPort: vi.fn(),
+}));
 
 beforeEach(() => {
   vi.resetAllMocks();
+
+  vi.mocked(getFreeRandomPort).mockResolvedValue(8888);
 });
 
 describe('generateContainerCreateOptions', () => {
@@ -82,5 +90,41 @@ describe('generateContainerCreateOptions', () => {
         'ai-studio-inference-server': '["dummyModelId"]',
       },
     });
+  });
+});
+
+describe('withDefaultConfiguration', () => {
+  test('zero modelsInfo', async () => {
+    await expect(withDefaultConfiguration({ modelsInfo: [] })).rejects.toThrowError(
+      'modelsInfo need to contain at least one element.',
+    );
+  });
+
+  test('expect all default values', async () => {
+    const result = await withDefaultConfiguration({ modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo] });
+
+    expect(getFreeRandomPort).toHaveBeenCalledWith('0.0.0.0');
+
+    expect(result.port).toBe(8888);
+    expect(result.image).toBe('quay.io/bootsy/playground:v0');
+    expect(result.labels).toStrictEqual({});
+    expect(result.providerId).toBe(undefined);
+  });
+
+  test('expect no default values', async () => {
+    const result = await withDefaultConfiguration({
+      modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
+      port: 9999,
+      providerId: 'dummyProviderId',
+      image: 'random-image',
+      labels: { hello: 'world' },
+    });
+
+    expect(getFreeRandomPort).not.toHaveBeenCalled();
+
+    expect(result.port).toBe(9999);
+    expect(result.image).toBe('random-image');
+    expect(result.labels).toStrictEqual({ hello: 'world' });
+    expect(result.providerId).toBe('dummyProviderId');
   });
 });

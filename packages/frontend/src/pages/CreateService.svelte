@@ -16,7 +16,7 @@ $: localModels = $modelsInfo.filter(model => model.file);
 
 let serviceName: string = '';
 let imageName: string = 'quay.io/bootsy/playground:v0';
-let containerPort: number = 8888;
+let containerPort: number | undefined = undefined;
 let modelId: string | undefined = undefined;
 
 const onServiceInput = (event: Event): void => {
@@ -37,6 +37,8 @@ const onContainerPortInput = (event: Event): void => {
 const submit = () => {
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
+  if(containerPort === undefined) throw new Error('invalid container port');
+  // disable submit button
   submitting = true;
 
   studioClient
@@ -57,7 +59,9 @@ const submit = () => {
 const openModelsPage = () => {
   router.goto(`/models`);
 };
-onMount(() => {
+onMount( async () => {
+  containerPort = await studioClient.getHostFreePort();
+
   const queryModelId = router.location.query.get('model-id');
   if (queryModelId !== undefined && typeof queryModelId === 'string') {
     modelId = queryModelId;
@@ -65,7 +69,7 @@ onMount(() => {
 });
 </script>
 
-<NavPage icon="{faPlus}" title="Creating Model service" searchEnabled="{false}">
+<NavPage icon="{faPlus}" title="Creating Model service" searchEnabled="{false}" loading="{containerPort === undefined}">
   <svelte:fragment slot="content">
     <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg w-full h-fit">
       <div class="w-full">

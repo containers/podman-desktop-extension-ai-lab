@@ -54,12 +54,12 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
   update(conversationId: string, messageId: string, message: Partial<ChatMessage>) {
     const conversation = this.#conversations.get(conversationId);
 
-    if(conversation === undefined) {
+    if (conversation === undefined) {
       throw new Error(`conversation with id ${conversationId} does not exist.`);
     }
 
-    const messageIndex = conversation.messages.findIndex((message) => message.id === messageId);
-    if(messageIndex === -1)
+    const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
+    if (messageIndex === -1)
       throw new Error(`message with id ${messageId} does not exist in conversation ${conversationId}.`);
 
     // Update the message with the provided content
@@ -88,14 +88,15 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    */
   completeMessage(conversationId: string, messageId: string): void {
     const conversation = this.#conversations.get(conversationId);
-    if(conversation === undefined)
-      throw new Error(`conversation with id ${conversationId} does not exist.`);
+    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
 
-    const messageIndex = conversation.messages.findIndex((message) => message.id === messageId);
-    if(messageIndex === -1)
+    const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
+    if (messageIndex === -1)
       throw new Error(`message with id ${messageId} does not exist in conversation ${conversationId}.`);
 
-    const content = ((conversation.messages[messageIndex] as PendingChat)?.choices || []).map(choice => choice.content).join('');
+    const content = ((conversation.messages[messageIndex] as PendingChat)?.choices || [])
+      .map(choice => choice.content)
+      .join('');
 
     this.update(conversationId, messageId, {
       ...conversation.messages[messageIndex],
@@ -114,19 +115,15 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    */
   appendChoice(conversationId: string, messageId: string, choice: Choice): void {
     const conversation = this.#conversations.get(conversationId);
-    if(conversation === undefined)
-      throw new Error(`conversation with id ${conversationId} does not exist.`);
+    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
 
-    const messageIndex = conversation.messages.findIndex((message) => message.id === messageId);
-    if(messageIndex === -1)
+    const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
+    if (messageIndex === -1)
       throw new Error(`message with id ${messageId} does not exist in conversation ${conversationId}.`);
 
     this.update(conversationId, messageId, {
       ...conversation.messages[messageIndex],
-      choices: [
-        ...((conversation.messages[messageIndex] as PendingChat)?.choices || []),
-        choice,
-      ],
+      choices: [...((conversation.messages[messageIndex] as PendingChat)?.choices || []), choice],
     } as PendingChat);
   }
 
@@ -137,8 +134,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    */
   submit(conversationId: string, message: ChatMessage): void {
     const conversation = this.#conversations.get(conversationId);
-    if(conversation === undefined)
-      throw new Error(`conversation with id ${conversationId} does not exist.`);
+    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
 
     this.#conversations.set(conversationId, {
       ...conversation,

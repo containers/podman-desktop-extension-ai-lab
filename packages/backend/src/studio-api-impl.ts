@@ -55,7 +55,13 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundV2: PlaygroundV2Manager,
   ) {}
 
-  submitPlaygroundMessage(containerId: string, modelId: string, conversationId: string, userInput: string, options?: ModelOptions): Promise<void> {
+  submitPlaygroundMessage(
+    containerId: string,
+    modelId: string,
+    conversationId: string,
+    userInput: string,
+    options?: ModelOptions,
+  ): Promise<void> {
     return this.playgroundV2.submit(containerId, modelId, conversationId, userInput, options);
   }
 

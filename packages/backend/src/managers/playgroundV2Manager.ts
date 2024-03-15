@@ -18,10 +18,7 @@
 import type { Disposable, Webview } from '@podman-desktop/api';
 import type { InferenceManager } from './inference/inferenceManager';
 import OpenAI from 'openai';
-import type {
-  ChatCompletionChunk,
-  ChatCompletionMessageParam,
-} from 'openai/src/resources/chat/completions';
+import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src/resources/chat/completions';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/conversationRegistry';
@@ -54,7 +51,13 @@ export class PlaygroundV2Manager implements Disposable {
    * @param userInput the user input
    * @param options the model configuration
    */
-  async submit(containerId: string, modelId: string, conversationId: string, userInput: string, options?: ModelOptions): Promise<void> {
+  async submit(
+    containerId: string,
+    modelId: string,
+    conversationId: string,
+    userInput: string,
+    options?: ModelOptions,
+  ): Promise<void> {
     const server = this.inferenceManager.get(containerId);
     if (server === undefined) throw new Error('Inference server not found.');
 
@@ -70,8 +73,7 @@ export class PlaygroundV2Manager implements Disposable {
       );
 
     const conversation = this.#conversationRegistry.get(conversationId);
-    if(conversation === undefined)
-      throw new Error(`conversation with id ${conversationId} does not exist.`);
+    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
 
     this.#conversationRegistry.submit(conversation.id, {
       content: userInput,
@@ -127,10 +129,13 @@ export class PlaygroundV2Manager implements Disposable {
    * @private
    */
   private getFormattedMessages(conversationId: string): ChatCompletionMessageParam[] {
-    return this.#conversationRegistry.get(conversationId).messages.map((message) => ({
-      name: undefined,
-      ...message,
-    } as ChatCompletionMessageParam));
+    return this.#conversationRegistry.get(conversationId).messages.map(
+      message =>
+        ({
+          name: undefined,
+          ...message,
+        }) as ChatCompletionMessageParam,
+    );
   }
 
   getConversations(): Conversation[] {

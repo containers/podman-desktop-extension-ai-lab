@@ -27,7 +27,7 @@ export interface ChatMessage {
 
 export interface AssistantChat extends ChatMessage {
   role: 'assistant';
-  completed: boolean
+  completed: boolean;
 }
 
 export interface PendingChat extends AssistantChat {
@@ -36,8 +36,8 @@ export interface PendingChat extends AssistantChat {
 }
 
 export interface UserChat extends ChatMessage {
-  role: 'user',
-  options?: ModelOptions,
+  role: 'user';
+  options?: ModelOptions;
 }
 
 export interface Conversation {

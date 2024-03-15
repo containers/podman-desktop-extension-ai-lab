@@ -56,9 +56,9 @@ test('submit should throw an error is the server is stopped', async () => {
     status: 'stopped',
   } as unknown as InferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await expect(manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput')).rejects.toThrowError(
-    'Inference server is not running.',
-  );
+  await expect(
+    manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput'),
+  ).rejects.toThrowError('Inference server is not running.');
 });
 
 test('submit should throw an error is the server is unhealthy', async () => {
@@ -69,9 +69,9 @@ test('submit should throw an error is the server is unhealthy', async () => {
     },
   } as unknown as InferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await expect(manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput')).rejects.toThrowError(
-    'Inference server is not healthy, currently status: unhealthy.',
-  );
+  await expect(
+    manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput'),
+  ).rejects.toThrowError('Inference server is not healthy, currently status: unhealthy.');
 });
 
 test('submit should throw an error is the model id provided does not exist.', async () => {
@@ -87,7 +87,9 @@ test('submit should throw an error is the model id provided does not exist.', as
     ],
   } as unknown as InferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await expect(manager.submit('dummyContainerId', 'invalidModelId', 'dummyConversationId', 'dummyUserInput')).rejects.toThrowError(
+  await expect(
+    manager.submit('dummyContainerId', 'invalidModelId', 'dummyConversationId', 'dummyUserInput'),
+  ).rejects.toThrowError(
     `modelId 'invalidModelId' is not available on the inference server, valid model ids are: dummyModelId.`,
   );
 });
@@ -108,9 +110,9 @@ test('submit should throw an error is the conversation id provided does not exis
     ],
   } as unknown as InferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await expect(manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput')).rejects.toThrowError(
-    `conversation with id dummyConversationId does not exist.`,
-  );
+  await expect(
+    manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput'),
+  ).rejects.toThrowError(`conversation with id dummyConversationId does not exist.`);
 });
 
 test('create conversation should create conversation.', async () => {
@@ -153,9 +155,8 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
   const conversationId = manager.createConversation();
 
-  const date = new Date(2000, 1, 1, 13)
+  const date = new Date(2000, 1, 1, 13);
   vi.setSystemTime(date);
-
 
   await manager.submit('dummyContainerId', 'dummyModelId', conversationId, 'dummyUserInput');
 
@@ -168,25 +169,21 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
 
   expect(conversations.length).toBe(1);
   expect(conversations[0].messages.length).toBe(2);
-  expect(conversations[0].messages[0]).toStrictEqual(
-    {
-      content: 'dummyUserInput',
-      id: expect.anything(),
-      options: undefined,
-      role: 'user',
-      timestamp: date.getTime(),
-    },
-  );
-  expect(conversations[0].messages[1]).toStrictEqual(
-    {
-      choices: undefined,
-      completed: true,
-      content: '',
-      id: expect.anything(),
-      role: 'assistant',
-      timestamp: date.getTime(),
-    },
-  );
+  expect(conversations[0].messages[0]).toStrictEqual({
+    content: 'dummyUserInput',
+    id: expect.anything(),
+    options: undefined,
+    role: 'user',
+    timestamp: date.getTime(),
+  });
+  expect(conversations[0].messages[1]).toStrictEqual({
+    choices: undefined,
+    completed: true,
+    content: '',
+    id: expect.anything(),
+    role: 'assistant',
+    timestamp: date.getTime(),
+  });
 
   expect(webviewMock.postMessage).toHaveBeenLastCalledWith({
     id: Messages.MSG_CONVERSATIONS_UPDATE,

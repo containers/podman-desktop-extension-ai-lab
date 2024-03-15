@@ -30,12 +30,10 @@ import { Messages } from '@shared/Messages';
 export class ConversationRegistry extends Publisher<Conversation[]> implements Disposable {
   #conversations: Map<string, Conversation>;
   #counter: number;
-  #scheduledSave: ReturnType<typeof setTimeout> | undefined;
 
   constructor(webview: Webview) {
     super(webview, Messages.MSG_CONVERSATIONS_UPDATE, () => this.getAll());
     this.#conversations = new Map<string, Conversation>();
-    this.#scheduledSave = undefined;
     this.#counter = 0;
   }
 
@@ -79,6 +77,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
       messages: [],
       id: conversationId,
     });
+    this.notify();
     return conversationId;
   }
 
@@ -145,36 +144,11 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
       ...conversation,
       messages: [...conversation.messages, message],
     });
-    this.scheduleSave();
-  }
-
-  private scheduleSave(): void {
-    if(this.#scheduledSave !== undefined)
-      return;
-    this.#scheduledSave = setTimeout(() => {
-      this.save().catch((err: unknown) => {
-        console.error('Something went wrong while trying to save', err);
-      });
-      this.#scheduledSave = undefined;
-    }, 1000 * 60);
-  }
-
-  private async save(): Promise<void> {
-    // TODO: save to local filesystem
+    this.notify();
   }
 
   dispose(): void {
-    // If we have a save scheduled it mean that we need to save.
-    if(this.#scheduledSave) {
-      clearTimeout(this.#scheduledSave);
-      this.save().catch((err: unknown) => {
-        console.error('Something went wrong while trying to save', err);
-      }).finally(() => {
-        this.#conversations.clear();
-      });
-    } else {
-      this.#conversations.clear();
-    }
+    this.#conversations.clear();
   }
 
   get(conversationId: string): Conversation | undefined {

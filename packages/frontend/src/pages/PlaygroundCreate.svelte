@@ -1,5 +1,5 @@
 <script lang="ts">
-import { faExclamationCircle, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faExclamationCircle, faInfoCircle, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import NavPage from '../lib/NavPage.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { modelsInfo } from '/@/stores/modelsInfo';
@@ -9,6 +9,7 @@ import { studioClient } from '../utils/client';
 import { router } from 'tinro';
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
+$: availModels = $modelsInfo.filter(model => !model.file);
 let modelId: string | undefined = undefined;
 let submitting: boolean = false;
 let playgroundName: string;
@@ -70,6 +71,18 @@ function submit() {
             <Fa size="1.1x" class="cursor-pointer text-red-500" icon="{faExclamationCircle}" />
             <div role="alert" aria-label="Error Message Content" class="ml-2">
               You don't have any models downloaded. You can download them in <a
+                href="{'javascript:void(0);'}"
+                class="underline"
+                title="Models page"
+                on:click="{openModelsPage}">models page</a
+              >.
+            </div>
+          </div>
+        {:else if availModels.length > 0}
+          <div class="text-sm p-1 flex flex-row items-center text-gray-500">
+            <Fa size="1.1x" class="cursor-pointer" icon="{faInfoCircle}" />
+            <div role="alert" aria-label="Info Message Content" class="ml-2">
+              Other models are available, but must be downloaded from the <a
                 href="{'javascript:void(0);'}"
                 class="underline"
                 title="Models page"

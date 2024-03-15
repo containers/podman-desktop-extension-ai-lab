@@ -40,7 +40,7 @@ import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { getFreeRandomPort } from './utils/ports';
 import { withDefaultConfiguration } from './utils/inferenceUtils';
-import type { RequestOptions } from './models/RequestOptions';
+import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import type { SnippetManager } from './managers/SnippetManager';
 import type { Language } from 'postman-code-generators';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';

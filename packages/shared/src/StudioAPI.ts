@@ -25,7 +25,7 @@ import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
 import type { InferenceServer } from './models/IInference';
-import type { RequestOptions } from '../../backend/src/models/RequestOptions';
+import type { RequestOptions } from './models/RequestOptions';
 import type { Language } from 'postman-code-generators';
 import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
 import type { ModelOptions } from './models/IModelOptions';

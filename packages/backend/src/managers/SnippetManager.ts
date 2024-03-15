@@ -20,7 +20,7 @@ import { getLanguageList, convert, type Language } from 'postman-code-generators
 import { Request } from 'postman-collection';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
-import type { RequestOptions } from '../models/RequestOptions';
+import type { RequestOptions } from '@shared/src/models/RequestOptions';
 
 export class SnippetManager extends Publisher<Language[]> implements Disposable {
   constructor(webview: Webview) {

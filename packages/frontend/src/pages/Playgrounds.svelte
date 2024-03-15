@@ -1,24 +1,34 @@
 <script lang="ts">
+import { router } from 'tinro';
 import NavPage from '../lib/NavPage.svelte';
+import Button from '../lib/button/Button.svelte';
 import Table from '../lib/table/Table.svelte';
 import PlaygroundColumnModel from '../lib/table/playground/PlaygroundColumnModel.svelte';
 import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.svelte';
 import { Row, Column } from '../lib/table/table';
-import { playgroundsList, type PlaygroundInfo } from './playgrounds';
+import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
+import { playgrounds } from '../stores/playgrounds-v2';
 
-const columns: Column<PlaygroundInfo>[] = [
-  new Column<PlaygroundInfo>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
-  new Column<PlaygroundInfo>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
+const columns: Column<PlaygroundV2>[] = [
+  new Column<PlaygroundV2>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
+  new Column<PlaygroundV2>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
 ];
-const row = new Row<PlaygroundInfo>({});
+const row = new Row<PlaygroundV2>({});
+
+function createNewPlayground() {
+  router.goto('/playground/create');
+}
 </script>
 
 <NavPage title="Playgrounds environments" searchEnabled="{false}">
+  <svelte:fragment slot="additional-actions">
+    <Button on:click="{() => createNewPlayground()}">New Playground</Button>
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="min-w-full min-h-full flex-1">
         <div class="mt-4 px-5 space-y-5 h-full">
-          <Table kind="playground" data="{playgroundsList}" columns="{columns}" row="{row}"></Table>
+          <Table kind="playground" data="{$playgrounds}" columns="{columns}" row="{row}"></Table>
         </div>
       </div>
     </div>

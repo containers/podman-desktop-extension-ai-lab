@@ -18,6 +18,7 @@ import Services from '/@/pages/InferenceServers.svelte';
 import ServiceDetails from '/@/pages/InferenceServerDetails.svelte';
 import Playgrounds from './pages/Playgrounds.svelte';
 import Playground from './pages/Playground.svelte';
+import PlaygroundCreate from './pages/PlaygroundCreate.svelte';
 
 router.mode.hash();
 
@@ -56,7 +57,11 @@ onMount(() => {
         <Playgrounds />
       </Route>
       <Route path="/playground/:id/*" breadcrumb="Playground environment" let:meta>
-        <Playground playgroundId="{meta.params.id}" />
+        {#if meta.params.id === 'create'}
+          <PlaygroundCreate />
+        {:else}
+          <Playground playgroundId="{meta.params.id}" />
+        {/if}
       </Route>
 
       <!-- Preferences -->

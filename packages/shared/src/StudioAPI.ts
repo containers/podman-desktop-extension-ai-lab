@@ -28,6 +28,7 @@ import type { InferenceServer } from './models/IInference';
 import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
 import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
+import type { PlaygroundV2 } from './models/IPlaygroundV2';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -144,4 +145,8 @@ export abstract class StudioAPI {
    * Create a new conversation and return a conversationId
    */
   abstract createPlaygroundConversation(): Promise<string>;
+
+  abstract createPlayground(name: string, model: ModelInfo): Promise<void>;
+
+  abstract getPlaygroundsV2(): Promise<PlaygroundV2[]>;
 }

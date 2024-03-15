@@ -23,21 +23,62 @@ import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/conversationRegistry';
 import type { Conversation, PendingChat, UserChat } from '@shared/src/models/IPlaygroundMessage';
+import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
+import { Publisher } from '../utils/Publisher';
+import { Messages } from '@shared/Messages';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { withDefaultConfiguration } from '../utils/inferenceUtils';
 
-export class PlaygroundV2Manager implements Disposable {
+export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Disposable {
+  #playgrounds: Map<string, PlaygroundV2>;
   #conversationRegistry: ConversationRegistry;
-  #counter: number;
+  #playgroundCounter = 0;
+  #UIDcounter: number;
 
   constructor(
     webview: Webview,
     private inferenceManager: InferenceManager,
   ) {
+    super(webview, Messages.MSG_PLAYGROUNDS_V2_UPDATE, () => this.getPlaygrounds());
+    this.#playgrounds = new Map();
     this.#conversationRegistry = new ConversationRegistry(webview);
-    this.#counter = 0;
+    this.#UIDcounter = 0;
+  }
+
+  async createPlayground(name: string, model: ModelInfo): Promise<void> {
+    const id = `${this.#playgroundCounter++}`;
+
+    if (!name) {
+      name = this.getFreeName();
+    }
+
+    this.#playgrounds.set(id, {
+      id,
+      name,
+      modelId: model.id,
+    });
+
+    // create/start inference server if necessary
+    const servers = this.inferenceManager.getServers();
+    const server = servers.find(s => s.models.map(mi => mi.id).includes(model.id));
+    if (!server) {
+      await this.inferenceManager.createInferenceServer(
+        await withDefaultConfiguration({
+          modelsInfo: [model],
+        }),
+      );
+    } else if (server.status === 'stopped') {
+      await this.inferenceManager.startInferenceServer(server.container.containerId);
+    }
+    this.notify();
+  }
+
+  getPlaygrounds(): PlaygroundV2[] {
+    return Array.from(this.#playgrounds.values());
   }
 
   private getUniqueId(): string {
-    return `playground-${++this.#counter}`;
+    return `playground-${++this.#UIDcounter}`;
   }
 
   createConversation(): string {
@@ -144,5 +185,14 @@ export class PlaygroundV2Manager implements Disposable {
 
   dispose(): void {
     this.#conversationRegistry.dispose();
+  }
+
+  getFreeName(): string {
+    let i = 0;
+    let name: string;
+    do {
+      name = `playground ${++i}`;
+    } while (this.getPlaygrounds().find(p => p.name === name));
+    return name;
   }
 }

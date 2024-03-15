@@ -1,6 +1,6 @@
 <script lang="ts">
-import type { PlaygroundInfo } from '/@/pages/playgrounds';
-export let object: PlaygroundInfo;
+import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
+export let object: PlaygroundV2;
 import { catalog } from '/@/stores/catalog';
 
 $: name = $catalog.models.find(r => r.id === object.modelId)?.name;

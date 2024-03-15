@@ -41,6 +41,7 @@ import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { getFreeRandomPort } from './utils/ports';
 import { withDefaultConfiguration } from './utils/inferenceUtils';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
+import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -54,6 +55,14 @@ export class StudioApiImpl implements StudioAPI {
     private inferenceManager: InferenceManager,
     private playgroundV2: PlaygroundV2Manager,
   ) {}
+
+  async createPlayground(name: string, model: ModelInfo): Promise<void> {
+    return this.playgroundV2.createPlayground(name, model);
+  }
+
+  async getPlaygroundsV2(): Promise<PlaygroundV2[]> {
+    return this.playgroundV2.getPlaygrounds();
+  }
 
   submitPlaygroundMessage(
     containerId: string,

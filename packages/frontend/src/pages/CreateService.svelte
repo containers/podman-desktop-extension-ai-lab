@@ -14,17 +14,9 @@ let submitting: boolean = false;
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
 
-let serviceName: string = '';
-let imageName: string = 'quay.io/bootsy/playground:v0';
 let containerPort: number | undefined = undefined;
 let modelId: string | undefined = undefined;
 
-const onServiceInput = (event: Event): void => {
-  serviceName = (event.target as HTMLInputElement).value || '';
-};
-const onImageNameInput = (event: Event): void => {
-  imageName = (event.target as HTMLInputElement).value || '';
-};
 const onContainerPortInput = (event: Event): void => {
   const raw = (event.target as HTMLInputElement).value;
   try {
@@ -45,7 +37,6 @@ const submit = () => {
     .createInferenceServer({
       modelsInfo: [model],
       port: containerPort,
-      image: imageName,
       labels: {},
     })
     .catch(err => {
@@ -73,19 +64,6 @@ onMount(async () => {
   <svelte:fragment slot="content">
     <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg w-full h-fit">
       <div class="w-full">
-        <!-- service name input (currently not supported) -->
-        <!-- <label for="serviceName" class="block mb-2 text-sm font-bold text-gray-400">Service name</label>
-        <input
-          id="serviceName"
-          class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
-          type="text"
-          name="serviceName"
-          on:input={onServiceInput}
-          bind:value={serviceName}
-          placeholder="Leave blank to generate a name"
-          aria-label="serviceName"
-        /> -->
-
         <!-- model input -->
         <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
         <select
@@ -111,19 +89,6 @@ onMount(async () => {
             </div>
           </div>
         {/if}
-
-        <!-- container image input -->
-        <label for="containerImage" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Container image</label>
-        <input
-          id="containerImage"
-          class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
-          type="text"
-          on:input="{onImageNameInput}"
-          bind:value="{imageName}"
-          name="containerImage"
-          placeholder="Container image to use for the inference manager"
-          aria-label="containerImage" />
-
         <!-- container port input -->
         <label for="containerPort" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Container port</label>
         <input

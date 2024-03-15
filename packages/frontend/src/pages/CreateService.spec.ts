@@ -94,8 +94,6 @@ test('button click should call createInferenceServer', async () => {
 
   await fireEvent.click(createBtn);
   expect(vi.mocked(studioClient.createInferenceServer)).toHaveBeenCalledWith({
-    image: 'quay.io/bootsy/playground:v0',
-    labels: {},
     modelsInfo: [{ id: 'random', file: true }],
     port: 8888,
   });

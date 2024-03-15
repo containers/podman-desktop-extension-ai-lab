@@ -37,7 +37,6 @@ const submit = () => {
     .createInferenceServer({
       modelsInfo: [model],
       port: containerPort,
-      labels: {},
     })
     .catch(err => {
       console.error('Something wrong while trying to create the inference server.', err);

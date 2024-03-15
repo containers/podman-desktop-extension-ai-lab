@@ -1,26 +1,16 @@
 # AI studio
 
-## Installing a released version
+The Podman Desktop AI Studio extension simplifies getting started and developing with AI in a local environment.  It provides key open-source technologies to start building on AI.  A curated catalog of so-called recipes helps navigate the jungle of AI use cases and AI models.  AI Studio further ships playgrounds: environments to experiment with and test AI models, for instance, a chat bot.
 
-If you want to install a specific version of the extension, go to Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
+## Installation
 
-The name of the image to use is `ghcr.io/projectatomic/ai-studio:version_to_use`.
+To install the extension, go to the Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
 
-You can get released tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
+The name of the image to use is `ghcr.io/projectatomic/ai-studio`.  You can get released tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
 
-The released tags follow the major.minor.patch convention.
+To install a development version, use the `:nightly` tag as shown in the recording below.
 
-If you want to install the last release version, use the latest tag.
-
-## Installing a development version
-
-You can install this extension from Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
-
-The name of the image to use is `ghcr.io/projectatomic/ai-studio:nightly`.
-
-You can get earlier tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
-
-These images contain development versions of the extension. There is no stable release yet.
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/gifs/installation.gif)
 
 ## Running in development mode
 

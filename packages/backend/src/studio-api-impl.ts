@@ -36,10 +36,11 @@ import path from 'node:path';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import type { CreationInferenceServerOptions } from '@shared/src/models/InferenceServerConfig';
 import type { InferenceManager } from './managers/inference/inferenceManager';
-import type { IPlaygroundMessage } from '@shared/src/models/IPlaygroundMessage';
+import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { getFreeRandomPort } from './utils/ports';
 import { withDefaultConfiguration } from './utils/inferenceUtils';
+import type { ModelOptions } from '@shared/src/models/IModelOptions';
 
 export class StudioApiImpl implements StudioAPI {
   constructor(
@@ -54,12 +55,12 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundV2: PlaygroundV2Manager,
   ) {}
 
-  submitPlaygroundV2(containerId: string, model: string, userInput: string): Promise<void> {
-    return this.playgroundV2.submit(containerId, model, userInput, { temperature: 0.7 });
+  submitPlaygroundMessage(containerId: string, modelId: string, conversationId: string, userInput: string, options?: ModelOptions): Promise<void> {
+    return this.playgroundV2.submit(containerId, modelId, conversationId, userInput, options);
   }
 
-  async getPlaygroundV2Messages(): Promise<IPlaygroundMessage[]> {
-    return this.playgroundV2.getAll();
+  async getPlaygroundConversations(): Promise<Conversation[]> {
+    return this.playgroundV2.getConversations();
   }
 
   async getInferenceServers(): Promise<InferenceServer[]> {

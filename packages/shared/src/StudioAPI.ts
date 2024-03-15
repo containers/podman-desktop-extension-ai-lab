@@ -25,8 +25,9 @@ import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
 import type { InferenceServer } from './models/IInference';
-import type { IPlaygroundMessage } from './models/IPlaygroundMessage';
 import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
+import type { ModelOptions } from './models/IModelOptions';
+import type { Conversation } from './models/IPlaygroundMessage';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -118,6 +119,18 @@ export abstract class StudioAPI {
    */
   abstract getHostFreePort(): Promise<number>;
 
-  abstract submitPlaygroundV2(containerId: string, model: string, userInput: string): Promise<void>;
-  abstract getPlaygroundV2Messages(): Promise<IPlaygroundMessage[]>;
+  /**
+   * Submit a user input to the Playground linked to a conversation, model, and inference server
+   * @param containerId the container id of the inference server we want to use
+   * @param modelId the model to use
+   * @param conversationId the conversation to input the message in
+   * @param userInput the user input, e.g. 'What is the capital of France ?'
+   * @param options the options for the model, e.g. temperature
+   */
+  abstract submitPlaygroundMessage(containerId: string, modelId: string, conversationId: string, userInput: string, options?: ModelOptions): Promise<void>;
+
+  /**
+   * Return the conversations
+   */
+  abstract getPlaygroundConversations(): Promise<Conversation[]>;
 }

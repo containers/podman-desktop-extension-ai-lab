@@ -15,31 +15,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { Publisher } from '../utils/Publisher';
 import type { Disposable, Webview } from '@podman-desktop/api';
-import { Messages } from '@shared/Messages';
-import type { IPlaygroundMessage } from '@shared/src/models/IPlaygroundMessage';
 import type { InferenceManager } from './inference/inferenceManager';
 import OpenAI from 'openai';
 import type {
   ChatCompletionChunk,
   ChatCompletionMessageParam,
-  ChatCompletionSystemMessageParam,
-  ChatCompletionUserMessageParam,
 } from 'openai/src/resources/chat/completions';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
+import { ConversationRegistry } from '../registries/conversationRegistry';
+import type { Conversation, PendingChat, UserChat } from '@shared/src/models/IPlaygroundMessage';
 
-export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> implements Disposable {
-  #messages: Map<string, IPlaygroundMessage>;
+export class PlaygroundV2Manager implements Disposable {
+  #conversationRegistry: ConversationRegistry;
   #counter: number;
 
   constructor(
     webview: Webview,
     private inferenceManager: InferenceManager,
   ) {
-    super(webview, Messages.MSG_PLAYGROUNDS_MESSAGES_UPDATE, () => this.getAll());
-    this.#messages = new Map();
+    this.#conversationRegistry = new ConversationRegistry(webview);
     this.#counter = 0;
   }
 
@@ -47,7 +43,14 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
     return `playground-${++this.#counter}`;
   }
 
-  async submit(containerId: string, modelId: string, userInput: string, options?: ModelOptions): Promise<void> {
+  /**
+   * @param containerId must be corresponding to an inference server container
+   * @param modelId the model to use, should be included in the inference server matching the containerId
+   * @param conversationId the conversation id to happen the message to.
+   * @param userInput the user input
+   * @param options the model configuration
+   */
+  async submit(containerId: string, modelId: string, conversationId: string, userInput: string, options?: ModelOptions): Promise<void> {
     const server = this.inferenceManager.get(containerId);
     if (server === undefined) throw new Error('Inference server not found.');
 
@@ -62,126 +65,75 @@ export class PlaygroundV2Manager extends Publisher<IPlaygroundMessage[]> impleme
         `modelId '${modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`,
       );
 
-    const requestId = this.getUniqueId();
-    this.#messages.set(requestId, {
-      id: requestId,
-      choices: [],
+    const conversation = this.#conversationRegistry.get(conversationId);
+    if(conversation === undefined)
+      throw new Error(`conversation with id ${conversationId} does not exist.`);
+
+    this.#conversationRegistry.submit(conversation.id, {
+      content: userInput,
+      options: options,
+      role: 'user',
+      id: this.getUniqueId(),
       timestamp: Date.now(),
-      userInput: userInput,
-      completed: false,
-    });
-    this.notify();
+    } as UserChat);
 
     const client = new OpenAI({
       baseURL: `http://localhost:${server.connection.port}/v1`,
       apiKey: 'dummy',
-      fetch: (url: RequestInfo, init?: RequestInit): Promise<Response> => this.fetchMiddleware(requestId, url, init),
     });
 
     const response = await client.chat.completions.create({
-      messages: this.getFormattedMessages(),
+      messages: this.getFormattedMessages(conversationId),
       stream: true,
       model: modelInfo.file.file,
       ...options,
     });
     // process stream async
-    this.processStream(requestId, response).catch((err: unknown) => {
+    this.processStream(conversationId, response).catch((err: unknown) => {
       console.error('Something went wrong while processing stream', err);
     });
   }
 
   /**
-   * OpenIA fetch middleware. Useful to intercept request body
-   * @param requestId the linked requestId
-   * @param url the url for the request
-   * @param init the request init
-   */
-  private async fetchMiddleware(requestId: string, url: RequestInfo, init?: RequestInit): Promise<Response> {
-    const message = this.#messages.get(requestId);
-    if (message === undefined) {
-      throw new Error('message not found, aborting stream process.');
-    }
-    this.#messages.set(requestId, {
-      ...message,
-      request: {
-        body: `${init.body}`,
-        url: `${url}`,
-        method: `${init.method}`,
-      },
-    });
-    this.notify();
-    return fetch(url, init);
-  }
-
-  /**
    * Given a Stream from the OpenAI library update and notify the publisher
-   * @param requestId
+   * @param conversationId
    * @param stream
    */
-  private async processStream(requestId: string, stream: Stream<ChatCompletionChunk>): Promise<void> {
+  private async processStream(conversationId: string, stream: Stream<ChatCompletionChunk>): Promise<void> {
+    const messageId = this.getUniqueId();
+    this.#conversationRegistry.submit(conversationId, {
+      role: 'assistant',
+      choices: [],
+      completed: false,
+      id: messageId,
+      timestamp: Date.now(),
+    } as PendingChat);
+
     for await (const chunk of stream) {
-      const message = this.#messages.get(requestId);
-      if (message === undefined) {
-        console.error('message not found, aborting stream process.');
-        // TODO: abort OpenAI request using AbortSignal.
-        return;
-      }
-      this.#messages.set(requestId, {
-        ...message,
-        choices: [
-          ...message.choices,
-          {
-            role: chunk.choices[0]?.delta?.role,
-            content: chunk.choices[0]?.delta?.content || '',
-          },
-        ],
+      this.#conversationRegistry.appendChoice(conversationId, messageId, {
+        content: chunk.choices[0]?.delta?.content || '',
       });
-      this.notify();
     }
 
-    const message = this.#messages.get(requestId);
-    if (message !== undefined) {
-      this.#messages.set(requestId, {
-        ...message,
-        completed: true,
-      });
-      this.notify();
-    }
+    this.#conversationRegistry.completeMessage(conversationId, messageId);
   }
 
   /**
-   * Transform the Map<string, IPlaygroundMessage> to OpenAI compatible object for chat interaction
+   * Transform the ChatMessage interface to the OpenAI ChatCompletionMessageParam
    * @private
    */
-  private getFormattedMessages(): ChatCompletionMessageParam[] {
-    return this.getAll().reduce((previousValue, message) => {
-      // first add the user input as message
-      previousValue.push({
-        content: message.userInput,
-        role: 'user',
-      } as ChatCompletionUserMessageParam);
-
-      // then if completed add the system message
-      if (message.completed) {
-        previousValue.push({
-          role: 'system',
-          content: message.choices.map(choice => choice.content).join(''),
-        } as ChatCompletionSystemMessageParam);
-      }
-
-      return previousValue;
-    }, [] as ChatCompletionMessageParam[]);
+  private getFormattedMessages(conversationId: string): ChatCompletionMessageParam[] {
+    return this.#conversationRegistry.get(conversationId).messages.map((message) => ({
+      name: undefined,
+      ...message,
+    } as ChatCompletionMessageParam));
   }
 
-  getAll(): IPlaygroundMessage[] {
-    return Array.from(this.#messages.values());
-  }
-
-  clear(): void {
-    this.#messages.clear();
+  getConversations(): Conversation[] {
+    return this.#conversationRegistry.getAll();
   }
 
   dispose(): void {
-    this.clear();
+    this.#conversationRegistry.dispose();
   }
 }

@@ -16,27 +16,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import type { ModelOptions } from './IModelOptions';
+
+export interface ChatMessage {
+  id: string;
+  role: 'system' | 'user' | 'assistant';
+  content?: string;
+  timestamp: number;
+}
+
+export interface AssistantChat extends ChatMessage {
+  role: 'assistant';
+  completed: boolean
+}
+
+export interface PendingChat extends AssistantChat {
+  completed: false;
+  choices: Choice[];
+}
+
+export interface UserChat extends ChatMessage {
+  role: 'user',
+  options?: ModelOptions,
+}
+
+export interface Conversation {
+  id: string;
+  messages: ChatMessage[];
+}
+
 export interface Choice {
   content: string;
-  role?: 'system' | 'user' | 'assistant' | 'tool';
-}
-export interface IPlaygroundMessage {
-  id: string;
-  completed: boolean;
-
-  // time in ms
-  timestamp: number;
-
-  userInput: string;
-  choices: Choice[];
-
-  request?: {
-    body: string;
-    url: string;
-    method: string;
-  };
-  response?: {
-    body: string;
-    code: number;
-  };
 }

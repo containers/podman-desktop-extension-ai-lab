@@ -34,4 +34,5 @@ export enum Messages {
   MSG_INFERENCE_SERVERS_UPDATE = 'inference-servers-update',
   MSG_MONITORING_UPDATE = 'monitoring-update',
   MSG_SUPPORTED_LANGUAGES_UPDATE = 'supported-languages-supported',
+  MSG_CONVERSATIONS_UPDATE = 'conversations-update',
 }

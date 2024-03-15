@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023 Red Hat, Inc.
+ * Copyright (C) 2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import path from 'node:path';
-import { join } from 'path';
+import '@testing-library/jest-dom/vitest';
+import { test, expect, vi } from 'vitest';
+import { screen, render } from '@testing-library/svelte';
+import Dashboard from '/@/pages/Dashboard.svelte';
 
-const PACKAGE_ROOT = __dirname;
+vi.mock('../utils/client', async () => {
+  return {
+    studioClient: {},
+  };
+});
 
-const config = {
-  test: {
-    include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)', '../shared/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['lcov', 'text'],
-      extension: '.ts',
-    },
-},
-resolve: {
-    alias: {
-      '@podman-desktop/api': path.resolve(__dirname, '__mocks__/@podman-desktop/api.js'),
-      '/@/': join(PACKAGE_ROOT, 'src') + '/',
-      '/@gen/': join(PACKAGE_ROOT, 'src-generated') + '/',
-      '@shared/': join(PACKAGE_ROOT, '../shared') + '/',
-    },
-  },
-};
+test('ensure dashboard is not empty', async () => {
+  render(Dashboard);
 
-export default config;
+  const innerContent = screen.getByLabelText('inner-content');
+  expect(innerContent).toBeDefined();
+  const renderer = innerContent.getElementsByTagName('article');
+  expect(renderer.length).toBe(1);
+});

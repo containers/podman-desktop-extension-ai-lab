@@ -2,7 +2,7 @@
   "name": "ai-studio",
   "displayName": "AI Studio",
   "description": "Podman Desktop AI Studio",
-  "version": "0.2.0-next",
+  "version": "0.2.0",
   "icon": "icon.png",
   "publisher": "redhat",
   "license": "Apache-2.0",

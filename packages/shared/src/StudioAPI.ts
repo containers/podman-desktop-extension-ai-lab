@@ -133,4 +133,9 @@ export abstract class StudioAPI {
    * Return the conversations
    */
   abstract getPlaygroundConversations(): Promise<Conversation[]>;
+
+  /**
+   * Create a new conversation and return a conversationId
+   */
+  abstract createPlaygroundConversation(): Promise<string>;
 }

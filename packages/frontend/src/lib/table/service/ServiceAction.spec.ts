@@ -25,7 +25,7 @@ vi.mock('../../../utils/client', async () => ({
   studioClient: {
     startInferenceServer: vi.fn(),
     stopInferenceServer: vi.fn(),
-    deleteInferenceServer: vi.fn(),
+    requestDeleteInferenceServer: vi.fn(),
   },
 }));
 
@@ -33,7 +33,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(studioClient.startInferenceServer).mockResolvedValue(undefined);
   vi.mocked(studioClient.stopInferenceServer).mockResolvedValue(undefined);
-  vi.mocked(studioClient.deleteInferenceServer).mockResolvedValue(undefined);
+  vi.mocked(studioClient.requestDeleteInferenceServer).mockResolvedValue(undefined);
 });
 
 test('should display stop button when status running', async () => {
@@ -111,5 +111,5 @@ test('should call deleteInferenceServer when click delete', async () => {
 
   const startBtn = screen.getByTitle('Delete service');
   await fireEvent.click(startBtn);
-  expect(studioClient.deleteInferenceServer).toHaveBeenCalledWith('dummyContainerId');
+  expect(studioClient.requestDeleteInferenceServer).toHaveBeenCalledWith('dummyContainerId');
 });

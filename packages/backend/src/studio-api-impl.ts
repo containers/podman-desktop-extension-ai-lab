@@ -77,8 +77,24 @@ export class StudioApiImpl implements StudioAPI {
     return this.inferenceManager.getServers();
   }
 
-  deleteInferenceServer(containerId: string): Promise<void> {
-    return this.inferenceManager.deleteInferenceServer(containerId);
+  async requestDeleteInferenceServer(containerId: string): Promise<void> {
+    // Do not wait on the promise as the api would probably timeout before the user answer.
+    podmanDesktopApi.window
+      .showWarningMessage(
+        `Are you sure you want to delete this service ?`,
+        'Confirm',
+        'Cancel',
+      )
+      .then((result: string) => {
+        if (result === 'Confirm') {
+          this.inferenceManager.deleteInferenceServer(containerId).catch((err) => {
+            console.error('Something went wrong while trying to delete the inference server', err);
+          })
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong with confirmation modals`, err);
+      });
   }
 
   async createInferenceServer(options: CreationInferenceServerOptions): Promise<void> {

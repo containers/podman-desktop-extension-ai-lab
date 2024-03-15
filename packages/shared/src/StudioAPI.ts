@@ -118,7 +118,7 @@ export abstract class StudioAPI {
    * Delete an inference server container
    * @param containerId the container id of the inference server
    */
-  abstract deleteInferenceServer(containerId: string): Promise<void>;
+  abstract requestDeleteInferenceServer(containerId: string): Promise<void>;
 
   /**
    * Return a free random port on the host machine

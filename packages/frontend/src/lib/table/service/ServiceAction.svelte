@@ -18,7 +18,7 @@ function startInferenceServer() {
 }
 
 function deleteInferenceServer() {
-  studioClient.deleteInferenceServer(object.container.containerId).catch((err: unknown) => {
+  studioClient.requestDeleteInferenceServer(object.container.containerId).catch((err: unknown) => {
     console.error('Something went wrong while trying to delete inference server', err);
   });
 }

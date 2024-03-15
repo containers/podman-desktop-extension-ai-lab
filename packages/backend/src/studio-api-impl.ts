@@ -83,7 +83,7 @@ export class StudioApiImpl implements StudioAPI {
       .showWarningMessage(`Are you sure you want to delete this service ?`, 'Confirm', 'Cancel')
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.inferenceManager.deleteInferenceServer(containerId).catch(err => {
+          this.inferenceManager.deleteInferenceServer(containerId).catch((err: unknown) => {
             console.error('Something went wrong while trying to delete the inference server', err);
           });
         }

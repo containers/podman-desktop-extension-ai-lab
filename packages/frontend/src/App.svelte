@@ -13,6 +13,7 @@ import Recipe from '/@/pages/Recipe.svelte';
 import Model from './pages/Model.svelte';
 import { onMount } from 'svelte';
 import { getRouterState } from '/@/utils/client';
+import CreateService from '/@/pages/CreateService.svelte';
 import Services from '/@/pages/InferenceServers.svelte';
 import ServiceDetails from '/@/pages/InferenceServerDetails.svelte';
 
@@ -60,6 +61,7 @@ onMount(() => {
       <Route path="/models/*" breadcrumb="Models">
         <Models />
       </Route>
+
       <Route path="/model/:id/*" breadcrumb="Model Details" let:meta>
         <Model modelId="{meta.params.id}" />
       </Route>
@@ -69,7 +71,11 @@ onMount(() => {
       </Route>
 
       <Route path="/service/:id/*" breadcrumb="Service Details" let:meta>
-        <ServiceDetails containerId="{meta.params.id}" />
+        {#if meta.params.id === 'create'}
+          <CreateService />
+        {:else}
+          <ServiceDetails containerId="{meta.params.id}" />
+        {/if}
       </Route>
     </div>
   </main>

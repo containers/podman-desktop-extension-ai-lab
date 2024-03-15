@@ -1,9 +1,10 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { faDownload, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faRocket, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '../../button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
+import { router } from 'tinro';
 export let object: ModelInfo;
 
 function deleteModel() {
@@ -25,9 +26,19 @@ function downloadModel() {
     });
   }
 }
+
+function createModelService() {
+  router.goto('/service/create');
+  router.location.query.replace({ 'model-id': object.id });
+}
 </script>
 
 {#if object.file !== undefined}
+  <ListItemButtonIcon
+    icon="{faRocket}"
+    title="Create Model Service"
+    enabled="{!object.state}"
+    onClick="{() => createModelService()}" />
   <ListItemButtonIcon
     icon="{faFolderOpen}"
     onClick="{() => openModelFolder()}"

@@ -10,7 +10,7 @@ $: categories = $catalog.categories;
 <NavPage title="Recipe Catalog" searchEnabled="{false}">
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
-      <div class="px-5 space-y-5 h-full">
+      <div class="px-5 space-y-5">
         <!-- Recent recipes -->
         <RecipesCard
           category="{{ id: RECENT_CATEGORY_ID, name: 'Recently-viewed recipes' }}"

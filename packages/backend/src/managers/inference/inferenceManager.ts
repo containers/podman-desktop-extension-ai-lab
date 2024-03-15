@@ -94,6 +94,14 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
+   * return an inference server
+   * @param containerId the containerId of the inference server
+   */
+  public get(containerId: string): InferenceServer | undefined {
+    return this.#servers.get(containerId);
+  }
+
+  /**
    * Given an engineId, it will create an inference server.
    * @param config
    */

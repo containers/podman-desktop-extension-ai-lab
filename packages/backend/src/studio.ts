@@ -39,6 +39,7 @@ import { ContainerRegistry } from './registries/ContainerRegistry';
 import { PodmanConnection } from './managers/podmanConnection';
 import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import { InferenceManager } from './managers/inference/inferenceManager';
+import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
@@ -168,6 +169,8 @@ export class Studio {
       this.telemetry.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
     });
 
+    const playgroundV2 = new PlaygroundV2Manager(this.#panel.webview, this.#inferenceManager);
+
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
       applicationManager,
@@ -178,6 +181,7 @@ export class Studio {
       localRepositoryRegistry,
       taskRegistry,
       this.#inferenceManager,
+      playgroundV2,
     );
 
     this.catalogManager.init();

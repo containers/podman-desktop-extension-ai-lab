@@ -43,6 +43,10 @@ export class PlaygroundV2Manager implements Disposable {
     return `playground-${++this.#counter}`;
   }
 
+  createConversation(): string {
+    return this.#conversationRegistry.createConversation();
+  }
+
   /**
    * @param containerId must be corresponding to an inference server container
    * @param modelId the model to use, should be included in the inference server matching the containerId

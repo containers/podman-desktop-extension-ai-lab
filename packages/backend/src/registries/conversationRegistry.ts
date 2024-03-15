@@ -29,16 +29,22 @@ import { Messages } from '@shared/Messages';
 
 export class ConversationRegistry extends Publisher<Conversation[]> implements Disposable {
   #conversations: Map<string, Conversation>;
+  #counter: number;
   #scheduledSave: ReturnType<typeof setTimeout> | undefined;
 
   constructor(webview: Webview) {
     super(webview, Messages.MSG_CONVERSATIONS_UPDATE, () => this.getAll());
     this.#conversations = new Map<string, Conversation>();
     this.#scheduledSave = undefined;
+    this.#counter = 0;
   }
 
   init(): void {
     // TODO: load from file
+  }
+
+  private getUniqueId(): string {
+    return `conversation-${++this.#counter}`;
   }
 
   /**
@@ -65,6 +71,15 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
       id: messageId, // preventing we are not updating the id
     };
     this.notify();
+  }
+
+  createConversation(): string {
+    const conversationId = this.getUniqueId();
+    this.#conversations.set(conversationId, {
+      messages: [],
+      id: conversationId,
+    });
+    return conversationId;
   }
 
   /**
@@ -122,11 +137,10 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    * @param message
    */
   submit(conversationId: string, message: ChatMessage): void {
-    if(this.#conversations.has(conversationId)) {
-      throw new Error('Trying to submit a message to a non-existing conversation.');
-    }
-
     const conversation = this.#conversations.get(conversationId);
+    if(conversation === undefined)
+      throw new Error(`conversation with id ${conversationId} does not exist.`);
+
     this.#conversations.set(conversationId, {
       ...conversation,
       messages: [...conversation.messages, message],

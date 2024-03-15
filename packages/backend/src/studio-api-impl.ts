@@ -59,6 +59,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.playgroundV2.submit(containerId, modelId, conversationId, userInput, options);
   }
 
+  async createPlaygroundConversation(): Promise<string> {
+    return this.playgroundV2.createConversation();
+  }
+
   async getPlaygroundConversations(): Promise<Conversation[]> {
     return this.playgroundV2.getConversations();
   }

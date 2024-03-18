@@ -67,7 +67,7 @@ function askPlayground() {
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full">
-        <div class="w-full h-full overflow-auto">
+        <div aria-label="conversation" class="w-full h-full overflow-auto">
           {#if conversation?.messages}
             <ul class="p-4">
               {#each conversation?.messages as message}

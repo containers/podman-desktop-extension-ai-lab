@@ -55,81 +55,101 @@ test('manager should be properly initialized', () => {
   expect(manager.getConversations().length).toBe(0);
 });
 
-test('submit should throw an error is the server is stopped', async () => {
-  vi.mocked(inferenceManagerMock.get).mockReturnValue({
-    status: 'stopped',
-  } as unknown as InferenceServer);
+test('submit should throw an error if the server is stopped', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      status: 'running',
+      models: [
+        {
+          id: 'model1',
+        },
+      ],
+    } as unknown as InferenceServer,
+  ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await expect(
-    manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput'),
-  ).rejects.toThrowError('Inference server is not running.');
+  await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo);
+
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      status: 'stopped',
+      models: [
+        {
+          id: 'model1',
+        },
+      ],
+    } as unknown as InferenceServer,
+  ]);
+
+  await expect(manager.submit('0', 'dummyUserInput')).rejects.toThrowError('Inference server is not running.');
 });
 
-test('submit should throw an error is the server is unhealthy', async () => {
-  vi.mocked(inferenceManagerMock.get).mockReturnValue({
-    status: 'running',
-    health: {
-      Status: 'unhealthy',
-    },
-  } as unknown as InferenceServer);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await expect(
-    manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput'),
-  ).rejects.toThrowError('Inference server is not healthy, currently status: unhealthy.');
-});
-
-test('submit should throw an error is the model id provided does not exist.', async () => {
-  vi.mocked(inferenceManagerMock.get).mockReturnValue({
-    status: 'running',
-    health: {
-      Status: 'healthy',
-    },
-    models: [
-      {
-        id: 'dummyModelId',
+test('submit should throw an error if the server is unhealthy', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      status: 'running',
+      health: {
+        Status: 'unhealthy',
       },
-    ],
-  } as unknown as InferenceServer);
+      models: [
+        {
+          id: 'model1',
+        },
+      ],
+    } as unknown as InferenceServer,
+  ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await expect(
-    manager.submit('dummyContainerId', 'invalidModelId', 'dummyConversationId', 'dummyUserInput'),
-  ).rejects.toThrowError(
-    `modelId 'invalidModelId' is not available on the inference server, valid model ids are: dummyModelId.`,
+  await manager.createPlayground('p1', { id: 'model1' } as ModelInfo);
+  const playgroundId = manager.getPlaygrounds()[0].id;
+  await expect(manager.submit(playgroundId, 'dummyUserInput')).rejects.toThrowError(
+    'Inference server is not healthy, currently status: unhealthy.',
   );
 });
 
-test('submit should throw an error is the conversation id provided does not exist.', async () => {
-  vi.mocked(inferenceManagerMock.get).mockReturnValue({
-    status: 'running',
-    health: {
-      Status: 'healthy',
-    },
-    models: [
-      {
-        id: 'dummyModelId',
-        file: {
-          file: 'dummyModelFile',
-        },
+test('create playground should create conversation.', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      status: 'running',
+      health: {
+        Status: 'healthy',
       },
-    ],
-  } as unknown as InferenceServer);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await expect(
-    manager.submit('dummyContainerId', 'dummyModelId', 'dummyConversationId', 'dummyUserInput'),
-  ).rejects.toThrowError(`conversation with id dummyConversationId does not exist.`);
-});
-
-test('create conversation should create conversation.', async () => {
+      models: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyModelFile',
+          },
+        },
+      ],
+    } as unknown as InferenceServer,
+  ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
   expect(manager.getConversations().length).toBe(0);
-  const conversationId = manager.createConversation();
+  await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo);
 
   const conversations = manager.getConversations();
   expect(conversations.length).toBe(1);
-  expect(conversations[0].id).toBe(conversationId);
 });
 
 test('valid submit should create IPlaygroundMessage and notify the webview', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      status: 'running',
+      health: {
+        Status: 'healthy',
+      },
+      models: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyModelFile',
+          },
+        },
+      ],
+      connection: {
+        port: 8888,
+      },
+    } as unknown as InferenceServer,
+  ]);
   const createMock = vi.fn().mockResolvedValue([]);
   vi.mocked(OpenAI).mockReturnValue({
     chat: {
@@ -139,30 +159,14 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     },
   } as unknown as OpenAI);
 
-  vi.mocked(inferenceManagerMock.get).mockReturnValue({
-    status: 'running',
-    health: {
-      Status: 'healthy',
-    },
-    models: [
-      {
-        id: 'dummyModelId',
-        file: {
-          file: 'dummyModelFile',
-        },
-      },
-    ],
-    connection: {
-      port: 8888,
-    },
-  } as unknown as InferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  const conversationId = manager.createConversation();
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
 
   const date = new Date(2000, 1, 1, 13);
   vi.setSystemTime(date);
 
-  await manager.submit('dummyContainerId', 'dummyModelId', conversationId, 'dummyUserInput');
+  const playgrounds = manager.getPlaygrounds();
+  await manager.submit(playgrounds[0].id, 'dummyUserInput');
 
   // Wait for assistant message to be completed
   await vi.waitFor(() => {

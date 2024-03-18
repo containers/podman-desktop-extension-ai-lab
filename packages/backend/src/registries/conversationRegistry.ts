@@ -102,6 +102,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
       role: 'assistant',
       completed: true,
       content: content,
+      endTimestamp: Date.now(),
     } as AssistantChat);
   }
 

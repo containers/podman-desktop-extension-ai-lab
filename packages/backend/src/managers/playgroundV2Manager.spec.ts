@@ -191,6 +191,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     id: expect.anything(),
     role: 'assistant',
     timestamp: date.getTime(),
+    endTimestamp: expect.anything(),
   });
 
   expect(webviewMock.postMessage).toHaveBeenLastCalledWith({

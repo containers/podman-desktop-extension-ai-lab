@@ -28,6 +28,7 @@ export interface ChatMessage {
 export interface AssistantChat extends ChatMessage {
   role: 'assistant';
   completed: boolean;
+  endTimestamp?: number;
 }
 
 export interface PendingChat extends AssistantChat {

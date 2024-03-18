@@ -7,6 +7,7 @@ import {
   type UserChat,
   isPendingChat,
   isUserChat,
+  type AssistantChat,
 } from '@shared/src/models/IPlaygroundMessage';
 import NavPage from '../lib/NavPage.svelte';
 import { playgrounds } from '../stores/playgrounds-v2';
@@ -77,6 +78,17 @@ afterUpdate(() => {
 async function scrollToBottom(element: Element) {
   element.scroll?.({ top: element.scrollHeight, behavior: 'smooth' });
 }
+
+function elapsedTime(msg: AssistantChat): string {
+  if (isPendingChat(msg)) {
+    return ((Date.now() - msg.timestamp) / 1000).toFixed(1);
+  } else if (!!msg.endTimestamp) {
+    return ((msg.endTimestamp - msg.timestamp) / 1000).toFixed(1);
+  } else {
+    // should not happen
+    return '';
+  }
+}
 </script>
 
 {#if playground}
@@ -100,6 +112,10 @@ async function scrollToBottom(element: Element) {
                       <p>{paragraph}</p>
                     {/each}
                   </div>
+                  {#if isAssistantChat(message)}
+                    <div class="text-sm text-gray-400 text-right" aria-label="elapsed">{elapsedTime(message)} s</div>
+                  {/if}
+                  <div></div>
                 </li>
               {/each}
             </ul>

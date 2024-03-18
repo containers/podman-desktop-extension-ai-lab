@@ -14,6 +14,18 @@ To install a development version, use the `:nightly` tag as shown in the recordi
 
 ## Running in development mode
 
+From the AI Studio packages/frontend folder:
+
+```
+$ yarn watch
+```
+
+If you are not live editing the frontend package, you can just run (from the AI Studio sources folder):
+
+```
+$ yarn build
+```
+
 From the Podman Desktop sources folder:
 
 ```

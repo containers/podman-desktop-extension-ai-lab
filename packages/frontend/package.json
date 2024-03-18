@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "preview": "vite preview",
-    "build": "(cp ../../README.md src || copy ../../README.md src) && vite build",
+    "build": "vite build",
     "test": "vitest run --coverage",
     "test:watch": "vitest watch --coverage",
     "watch": "vite --mode development build -w"

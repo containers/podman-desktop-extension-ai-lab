@@ -1,7 +1,7 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
-import readme from '../README.md?raw';
+import readme from '../../../../README.md?raw';
 </script>
 
 <NavPage searchEnabled="{false}" title="Dashboard">

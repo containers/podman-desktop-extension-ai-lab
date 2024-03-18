@@ -14,6 +14,12 @@ let modelId: string | undefined = undefined;
 let submitting: boolean = false;
 let playgroundName: string;
 
+$: {
+  if (!modelId && localModels.length > 0) {
+    modelId = localModels[0].id;
+  }
+}
+
 function openModelsPage() {
   router.goto(`/models`);
 }

@@ -22,7 +22,7 @@ $ yarn watch --extension-folder path-to-extension-sources-folder/packages/backen
 
 ## Cleaning up resources 
 
-We'll be adding a way in AI Lab to let a user being able to cleanup the environment: see issue .
+We'll be adding a way in AI Lab to let a user being able to cleanup the environment: see issue https://github.com/projectatomic/ai-studio/issues/469.
 For the time being, please consider the following actions:
 1. Remove the extension from Podman Desktop, from the Settings > Extensions
 2. Remove the running playground environments from the list of Pods

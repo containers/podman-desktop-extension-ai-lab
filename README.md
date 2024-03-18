@@ -20,6 +20,16 @@ From the Podman Desktop sources folder:
 $ yarn watch --extension-folder path-to-extension-sources-folder/packages/backend
 ```
 
+## Cleaning up resources 
+
+We'll be adding a way in AI Lab to let a user being able to cleanup the environment: see issue .
+For the time being, please consider the following actions:
+1. Remove the extension from Podman Desktop, from the Settings > Extensions
+2. Remove the running playground environments from the list of Pods
+3. Remove the images built by the recipes
+4. Remove the containers related to AI
+5. Cleanup your local clone of the recipes: `$HOME/podman-desktop/ai-studio`
+
 ## Providing a custom catalog
 
 The extension provides a default catalog, but you can build your own catalog by creating a file `$HOME/podman-desktop/ai-studio/catalog.json`.
@@ -33,6 +43,7 @@ The format of the catalog is not stable nor versioned yet, you can see the curre
 ## Packaging sample applications
 
 Sample applications may be added to the catalog. See [packaging guide](PACKAGING-GUIDE.md) for detailed information.
+
 
 ## Feedback
 

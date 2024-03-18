@@ -23,6 +23,7 @@ import type { Webview } from '@podman-desktop/api';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import type { InferenceManager } from './inference/inferenceManager';
 import { Messages } from '@shared/Messages';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 vi.mock('openai', () => ({
   default: vi.fn(),
@@ -34,6 +35,9 @@ const webviewMock = {
 
 const inferenceManagerMock = {
   get: vi.fn(),
+  getServers: vi.fn(),
+  createInferenceServer: vi.fn(),
+  startInferenceServer: vi.fn(),
 } as unknown as InferenceManager;
 
 beforeEach(() => {
@@ -189,4 +193,107 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     id: Messages.MSG_CONVERSATIONS_UPDATE,
     body: conversations,
   });
+});
+
+test('creating a new playground should send new playground to frontend', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  await manager.createPlayground('a name', {
+    id: 'model-1',
+    name: 'Model 1',
+  } as unknown as ModelInfo);
+  expect(webviewMock.postMessage).toHaveBeenCalledWith({
+    id: Messages.MSG_PLAYGROUNDS_V2_UPDATE,
+    body: [
+      {
+        id: '0',
+        modelId: 'model-1',
+        name: 'a name',
+      },
+    ],
+  });
+});
+
+test('creating a new playground with no name should send new playground to frontend with generated name', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  await manager.createPlayground('', {
+    id: 'model-1',
+    name: 'Model 1',
+  } as unknown as ModelInfo);
+  expect(webviewMock.postMessage).toHaveBeenCalledWith({
+    id: Messages.MSG_PLAYGROUNDS_V2_UPDATE,
+    body: [
+      {
+        id: '0',
+        modelId: 'model-1',
+        name: 'playground 1',
+      },
+    ],
+  });
+});
+
+test('creating a new playground with no model served should start an inference server', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
+  const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  await manager.createPlayground('a name', {
+    id: 'model-1',
+    name: 'Model 1',
+  } as unknown as ModelInfo);
+  expect(createInferenceServerMock).toHaveBeenCalledWith({
+    image: 'quay.io/bootsy/playground:v0',
+    labels: {},
+    modelsInfo: [
+      {
+        id: 'model-1',
+        name: 'Model 1',
+      },
+    ],
+    port: expect.anything(),
+  });
+});
+
+test('creating a new playground with the model already served should not start an inference server', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      models: [
+        {
+          id: 'model-1',
+        },
+      ],
+    },
+  ] as InferenceServer[]);
+  const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  await manager.createPlayground('a name', {
+    id: 'model-1',
+    name: 'Model 1',
+  } as unknown as ModelInfo);
+  expect(createInferenceServerMock).not.toHaveBeenCalled();
+});
+
+test('creating a new playground with the model server stopped should start the inference server', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      models: [
+        {
+          id: 'model-1',
+        },
+      ],
+      status: 'stopped',
+      container: {
+        containerId: 'container-1',
+      },
+    },
+  ] as InferenceServer[]);
+  const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
+  const startInferenceServerMock = vi.mocked(inferenceManagerMock.startInferenceServer);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  await manager.createPlayground('a name', {
+    id: 'model-1',
+    name: 'Model 1',
+  } as unknown as ModelInfo);
+  expect(createInferenceServerMock).not.toHaveBeenCalled();
+  expect(startInferenceServerMock).toHaveBeenCalledWith('container-1');
 });

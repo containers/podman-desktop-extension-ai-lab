@@ -137,23 +137,12 @@ export abstract class StudioAPI {
    * @param userInput the user input, e.g. 'What is the capital of France ?'
    * @param options the options for the model, e.g. temperature
    */
-  abstract submitPlaygroundMessage(
-    containerId: string,
-    modelId: string,
-    conversationId: string,
-    userInput: string,
-    options?: ModelOptions,
-  ): Promise<void>;
+  abstract submitPlaygroundMessage(containerId: string, userInput: string, options?: ModelOptions): Promise<void>;
 
   /**
    * Return the conversations
    */
   abstract getPlaygroundConversations(): Promise<Conversation[]>;
-
-  /**
-   * Create a new conversation and return a conversationId
-   */
-  abstract createPlaygroundConversation(): Promise<string>;
 
   /**
    * Return the list of supported languages to generate code from.

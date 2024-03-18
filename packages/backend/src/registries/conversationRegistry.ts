@@ -71,14 +71,12 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     this.notify();
   }
 
-  createConversation(): string {
-    const conversationId = this.getUniqueId();
-    this.#conversations.set(conversationId, {
+  createConversation(id: string): void {
+    this.#conversations.set(id, {
       messages: [],
-      id: conversationId,
+      id,
     });
     this.notify();
-    return conversationId;
   }
 
   /**

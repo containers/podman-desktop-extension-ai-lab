@@ -48,3 +48,15 @@ export interface Conversation {
 export interface Choice {
   content: string;
 }
+
+export function isAssistantChat(msg: ChatMessage): msg is AssistantChat {
+  return msg.role === 'assistant';
+}
+
+export function isUserChat(msg: ChatMessage): msg is UserChat {
+  return msg.role === 'user';
+}
+
+export function isPendingChat(msg: ChatMessage): msg is PendingChat {
+  return isAssistantChat(msg) && !msg.completed;
+}

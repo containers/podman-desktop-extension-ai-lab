@@ -12,10 +12,13 @@ import NavPage from '../lib/NavPage.svelte';
 import { playgrounds } from '../stores/playgrounds-v2';
 import { catalog } from '../stores/catalog';
 import Button from '../lib/button/Button.svelte';
+import { afterUpdate } from 'svelte';
 
 export let playgroundId: string;
 let prompt: string;
 let sendEnabled = false;
+let scrollable: Element;
+let lastIsUserMessage = false;
 
 $: conversation = $conversations.find(conversation => conversation.id === playgroundId);
 $: playground = $playgrounds.find(playground => playground.id === playgroundId);
@@ -26,6 +29,7 @@ $: {
     if (isAssistantChat(latest) && !isPendingChat(latest)) {
       sendEnabled = true;
     }
+    lastIsUserMessage = isUserChat(latest);
   } else {
     sendEnabled = true;
   }
@@ -40,7 +44,6 @@ const roleNames = {
 function getMessageParagraphs(message: ChatMessage): string[] {
   if (isAssistantChat(message)) {
     if (!isPendingChat(message)) {
-      console.log('assistant content', message.content);
       return message.content?.split('\n') ?? [];
     } else {
       return message.choices
@@ -60,6 +63,20 @@ function askPlayground() {
   sendEnabled = false;
   prompt = '';
 }
+
+afterUpdate(() => {
+  if (!conversation?.messages.length) {
+    return;
+  }
+  const latest = conversation.messages[conversation.messages.length - 1];
+  if (isUserChat(latest) || (isAssistantChat(latest) && isPendingChat(latest))) {
+    scrollToBottom(scrollable);
+  }
+});
+
+async function scrollToBottom(element: Element) {
+  element.scroll?.({ top: element.scrollHeight, behavior: 'smooth' });
+}
 </script>
 
 {#if playground}
@@ -67,7 +84,7 @@ function askPlayground() {
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full">
-        <div aria-label="conversation" class="w-full h-full overflow-auto">
+        <div bind:this="{scrollable}" aria-label="conversation" class="w-full h-full overflow-auto">
           {#if conversation?.messages}
             <ul class="p-4">
               {#each conversation?.messages as message}

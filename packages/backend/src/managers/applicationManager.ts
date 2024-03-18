@@ -20,8 +20,14 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import { containerEngine } from '@podman-desktop/api';
-import type { HostConfig, PodCreatePortOptions, TelemetryLogger, PodInfo, Webview } from '@podman-desktop/api';
+import {
+  type PodCreatePortOptions,
+  containerEngine,
+  type TelemetryLogger,
+  type PodInfo,
+  type Webview,
+  type HostConfig,
+} from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
@@ -746,6 +752,15 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(appPod.Labels[LABEL_MODEL_ID]);
     await this.startApplication(recipe, model);
+  }
+
+  async getApplicationPorts(recipeId: string, modelId: string): Promise<number[]> {
+    const recipe = this.catalogManager.getRecipeById(recipeId);
+    const state = this.#applications.get({ recipeId, modelId });
+    if (state) {
+      return state.appPorts;
+    }
+    throw new Error(`Recipe ${recipe.name} has no ports available`);
   }
 
   async getApplicationPod(recipeId: string, modelId: string): Promise<PodInfo> {

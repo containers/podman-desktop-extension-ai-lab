@@ -43,6 +43,10 @@ import { withDefaultConfiguration } from './utils/inferenceUtils';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 
+interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
+  port: number;
+}
+
 export class StudioApiImpl implements StudioAPI {
   constructor(
     private applicationManager: ApplicationManager,
@@ -267,6 +271,50 @@ export class StudioApiImpl implements StudioAPI {
       })
       .catch((err: unknown) => {
         console.error(`Something went wrong with confirmation modals`, err);
+      });
+  }
+
+  async requestOpenApplication(recipeId: string, modelId: string): Promise<void> {
+    const recipe = this.catalogManager.getRecipeById(recipeId);
+    this.applicationManager
+      .getApplicationPorts(recipeId, modelId)
+      .then((ports: number[]) => {
+        if (ports.length === 0) {
+          podmanDesktopApi.window
+            .showErrorMessage(`AI App ${recipe.name} has no application ports to open`)
+            .catch((err: unknown) => {
+              console.error(`Something went wrong with confirmation modals`, err);
+            });
+        } else if (ports.length === 1) {
+          const uri = `http://localhost:${ports[0]}`;
+          podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(uri)).catch((err: unknown) => {
+            console.error(`Something went wrong while opening ${uri}`, err);
+          });
+        } else {
+          podmanDesktopApi.window
+            .showQuickPick(
+              ports.map(p => {
+                const item: PortQuickPickItem = { port: p, label: `${p}`, description: `Port ${p}` };
+                return item;
+              }),
+              { placeHolder: 'Select the port to open' },
+            )
+            .then((selectedPort: PortQuickPickItem) => {
+              const uri = `http://localhost:${selectedPort.port}`;
+              podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(uri)).catch((err: unknown) => {
+                console.error(`Something went wrong while opening ${uri}`, err);
+              });
+            })
+            .catch((err: unknown) => {
+              console.error(`Something went wrong with confirmation modals`, err);
+            });
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(`error opening AI App: ${String(err)}`);
+        podmanDesktopApi.window.showErrorMessage(`Error opening the AI App "${recipe.name}"`).catch((err: unknown) => {
+          console.error(`Something went wrong with confirmation modals`, err);
+        });
       });
   }
 

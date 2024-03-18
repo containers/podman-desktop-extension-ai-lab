@@ -1129,7 +1129,9 @@ describe('pod detection', async () => {
         startupSubscribe: mocks.startupSubscribeMock,
         onMachineStop: mocks.onMachineStopMock,
       } as unknown as PodmanConnection,
-      {} as CatalogManager,
+      {
+        getRecipeById: vi.fn().mockReturnValue({ name: 'MyRecipe' } as Recipe),
+      } as unknown as CatalogManager,
       {} as ModelsManager,
       {} as TelemetryLogger,
       localRepositoryRegistry,
@@ -1167,6 +1169,8 @@ describe('pod detection', async () => {
       appPorts: [5000, 5001],
       modelPorts: [8000, 8001],
     });
+    const ports = await manager.getApplicationPorts('recipe-id-1', 'model-id-1');
+    expect(ports).toStrictEqual([5000, 5001]);
   });
 
   test('adoptRunningApplications does not update the application state with the found pod without label', async () => {

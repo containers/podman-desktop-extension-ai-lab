@@ -35,6 +35,7 @@ const studio = new Studio(mockedExtensionContext);
 const mocks = vi.hoisted(() => ({
   listContainers: vi.fn(),
   getContainerConnections: vi.fn(),
+  postMessage: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -51,7 +52,7 @@ vi.mock('@podman-desktop/api', async () => {
         webview: {
           html: '',
           onDidReceiveMessage: vi.fn(),
-          postMessage: vi.fn(),
+          postMessage: mocks.postMessage,
         },
         onDidChangeViewState: vi.fn(),
       }),
@@ -85,6 +86,8 @@ beforeEach(() => {
     event: vi.fn(),
     fire: vi.fn(),
   } as unknown as EventEmitter<unknown>);
+
+  mocks.postMessage.mockResolvedValue(undefined);
 });
 
 afterEach(() => {

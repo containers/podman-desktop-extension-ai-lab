@@ -4,13 +4,67 @@ import NavPage from '/@/lib/NavPage.svelte';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
-import { faBuildingColumns, faCopy, faMicrochip, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
+import { faBuildingColumns, faMicrochip, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
 import type { InferenceServer } from '@shared/src/models/IInference';
+import { snippetLanguages } from '/@/stores/snippetLanguages';
+import type { LanguageVariant } from 'postman-code-generators';
+import { studioClient } from '/@/utils/client';
 
 export let containerId: string | undefined = undefined;
 
 let service: InferenceServer | undefined;
 $: service = $inferenceServers.find(server => server.container.containerId === containerId);
+
+let selectedLanguage: string | undefined = undefined;
+$: selectedLanguage;
+
+let variants: LanguageVariant[] = [];
+$: variants = $snippetLanguages.find(language => language.key === selectedLanguage)?.variants || [];
+
+let selectedVariant: string | undefined = undefined;
+$: selectedVariant;
+
+const onLanguageChange = (): void => {
+  selectedVariant = variants.length > 0 ? variants[0].key : undefined;
+  generate();
+};
+
+let snippet: string | undefined = undefined;
+$: snippet;
+
+const generate = async () => {
+  if (selectedVariant === undefined || selectedLanguage === undefined) return;
+
+  snippet = await studioClient.createSnippet(
+    {
+      url: `http://localhost:${service?.connection.port || '??'}/v1/chat/completions`,
+      method: 'POST',
+      header: [
+        {
+          key: 'Content-Type',
+          value: 'application/json',
+        },
+      ],
+      body: {
+        mode: 'raw',
+        raw: `{
+  "messages": [
+    {
+      "content": "You are a helpful assistant.",
+      "role": "system"
+    },
+    {
+      "content": "What is the capital of France?",
+      "role": "user"
+    }
+  ]
+}`,
+      },
+    },
+    selectedLanguage,
+    selectedVariant,
+  );
+};
 </script>
 
 <NavPage title="Service Details" searchEnabled="{false}">
@@ -73,6 +127,50 @@ $: service = $inferenceServers.find(server => server.container.containerId === c
                   <Fa class="ml-2" icon="{faMicrochip}" />
                 </div>
               </div>
+            </div>
+
+            <!-- code client -->
+            <div>
+              <div class="flex flex-row">
+                <span class="text-base grow">Client code</span>
+
+                <!-- language choice -->
+                <select
+                  required
+                  aria-label="snippet language selection"
+                  bind:value="{selectedLanguage}"
+                  on:change="{onLanguageChange}"
+                  id="languages"
+                  class="border text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-1 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
+                  name="languages">
+                  {#each $snippetLanguages as language}
+                    <option class="my-1" value="{language.key}">{language.label}</option>
+                  {/each}
+                </select>
+                {#if selectedVariant !== undefined}
+                  <select
+                    required
+                    aria-label="snippet language variant"
+                    id="variants"
+                    bind:value="{selectedVariant}"
+                    on:change="{generate}"
+                    disabled="{variants.length === 1}"
+                    class="border ml-1 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-1 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
+                    name="variants">
+                    {#each variants as variant}
+                      <option class="my-1" value="{variant.key}">{variant.key}</option>
+                    {/each}
+                  </select>
+                {/if}
+              </div>
+
+              {#if snippet !== undefined}
+                <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2">
+                  <code class="whitespace-break-spaces">
+                    {snippet}
+                  </code>
+                </div>
+              {/if}
             </div>
           {/if}
         </div>

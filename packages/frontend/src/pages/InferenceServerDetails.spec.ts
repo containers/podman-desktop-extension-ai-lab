@@ -21,10 +21,12 @@ import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
+import type { Language } from 'postman-code-generators';
 
 const mocks = vi.hoisted(() => {
   return {
     getInferenceServersMock: vi.fn(),
+    getSnippetLanguagesMock: vi.fn(),
   };
 });
 
@@ -37,7 +39,16 @@ vi.mock('../stores/inferenceServers', () => ({
   },
 }));
 
-vi.mock('../utils/client', async () => {
+vi.mock('../stores/snippetLanguages', () => ({
+  snippetLanguages: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getSnippetLanguagesMock());
+      return () => {};
+    },
+  },
+}));
+
+vi.mock('../utils/client', () => {
   return {
     studioClient: {},
   };
@@ -45,6 +56,22 @@ vi.mock('../utils/client', async () => {
 
 beforeEach(() => {
   vi.resetAllMocks();
+
+  mocks.getSnippetLanguagesMock.mockReturnValue([
+    {
+      key: 'dummyLanguageKey',
+      label: 'dummyLanguageLabel',
+      syntax_mode: 'dummySynthaxMode',
+      variants: [
+        {
+          key: 'dummyLanguageVariant1',
+        },
+        {
+          key: 'dummyLanguageVariant2',
+        },
+      ],
+    },
+  ] as Language[]);
 
   mocks.getInferenceServersMock.mockReturnValue([
     {
@@ -67,4 +94,24 @@ test('ensure address is displayed', async () => {
 
   const address = screen.getByText('http://localhost:9999/v1');
   expect(address).toBeDefined();
+});
+
+test('language select must have the mocked snippet languages', async () => {
+  render(InferenceServerDetails, {
+    containerId: 'dummyContainerId',
+  });
+
+  const select: HTMLSelectElement = screen.getByLabelText('snippet language selection');
+  expect(select).toBeDefined();
+  expect(select.options.length).toBe(1);
+  expect(select.options[0].value).toBe('dummyLanguageKey');
+});
+
+test('variant select must be hidden when no language selected', async () => {
+  render(InferenceServerDetails, {
+    containerId: 'dummyContainerId',
+  });
+
+  const variantSelect = screen.queryByLabelText('snippet language variant');
+  expect(variantSelect).toBeNull();
 });

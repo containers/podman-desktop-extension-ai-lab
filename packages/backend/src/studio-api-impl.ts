@@ -40,6 +40,9 @@ import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { getFreeRandomPort } from './utils/ports';
 import { withDefaultConfiguration } from './utils/inferenceUtils';
+import type { RequestOptions } from '@shared/src/models/RequestOptions';
+import type { SnippetManager } from './managers/SnippetManager';
+import type { Language } from 'postman-code-generators';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 
@@ -58,6 +61,7 @@ export class StudioApiImpl implements StudioAPI {
     private taskRegistry: TaskRegistry,
     private inferenceManager: InferenceManager,
     private playgroundV2: PlaygroundV2Manager,
+    private snippetManager: SnippetManager,
   ) {}
 
   async createPlayground(name: string, model: ModelInfo): Promise<void> {
@@ -84,6 +88,14 @@ export class StudioApiImpl implements StudioAPI {
 
   async getPlaygroundConversations(): Promise<Conversation[]> {
     return this.playgroundV2.getConversations();
+  }
+
+  async getSnippetLanguages(): Promise<Language[]> {
+    return this.snippetManager.getLanguageList();
+  }
+
+  createSnippet(options: RequestOptions, language: string, variant: string): Promise<string> {
+    return this.snippetManager.generate(options, language, variant);
   }
 
   async getInferenceServers(): Promise<InferenceServer[]> {

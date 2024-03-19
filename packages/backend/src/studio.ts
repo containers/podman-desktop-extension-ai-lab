@@ -40,6 +40,7 @@ import { PodmanConnection } from './managers/podmanConnection';
 import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import { InferenceManager } from './managers/inference/inferenceManager';
 import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
+import { SnippetManager } from './managers/SnippetManager';
 
 // TODO: Need to be configured
 export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
@@ -171,6 +172,9 @@ export class Studio {
 
     const playgroundV2 = new PlaygroundV2Manager(this.#panel.webview, this.#inferenceManager);
 
+    const snippetManager = new SnippetManager(this.#panel.webview);
+    snippetManager.init();
+
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
       applicationManager,
@@ -182,6 +186,7 @@ export class Studio {
       taskRegistry,
       this.#inferenceManager,
       playgroundV2,
+      snippetManager,
     );
 
     this.catalogManager.init();

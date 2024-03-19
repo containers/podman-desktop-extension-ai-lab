@@ -9,6 +9,7 @@ import { getIcon } from '/@/utils/categoriesUtils';
 import RecipeModels from './RecipeModels.svelte';
 import { catalog } from '/@/stores/catalog';
 import RecipeDetails from '/@/lib/RecipeDetails.svelte';
+import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 
 export let recipeId: string;
 
@@ -40,10 +41,8 @@ function setSelectedModel(modelId: string) {
     <Tab title="Models" url="{recipeId}/models" />
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <!-- recipe container -->
-    <div class="grid w-full overflow-y-auto lg:grid-cols-[1fr_auto] max-lg:grid-cols-[auto]">
-      <!-- recipe content -->
-      <div class="p-5 inline-grid">
+    <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">
+      <svelte:fragment slot="content">
         <Route path="/" breadcrumb="Summary">
           <MarkdownRenderer source="{recipe?.readme}" />
         </Route>
@@ -53,12 +52,11 @@ function setSelectedModel(modelId: string) {
             selectedModelId="{selectedModelId}"
             setSelectedModel="{setSelectedModel}" />
         </Route>
-      </div>
-      <!-- recipe details -->
-      <div class="inline-grid max-lg:order-first">
+      </svelte:fragment>
+      <svelte:fragment slot="details">
         <RecipeDetails recipeId="{recipeId}" modelId="{selectedModelId}" />
-      </div>
-    </div>
+      </svelte:fragment>
+    </ContentDetailsLayout>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">
     <div class="mt-2">

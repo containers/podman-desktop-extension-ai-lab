@@ -23,10 +23,19 @@ import CreateService from '/@/pages/CreateService.svelte';
 
 const mocks = vi.hoisted(() => {
   return {
+    // models store
     modelsInfoSubscribeMock: vi.fn(),
     modelsInfoQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.modelsInfoSubscribeMock());
+        return () => {};
+      },
+    },
+    // tasks store
+    tasksSubscribeMock: vi.fn(),
+    tasksQueriesMock: {
+      subscribe: (f: (msg: any) => void) => {
+        f(mocks.tasksSubscribeMock());
         return () => {};
       },
     },
@@ -39,9 +48,15 @@ vi.mock('../stores/modelsInfo', async () => {
   };
 });
 
+vi.mock('../stores/tasks', async () => {
+  return {
+    tasks: mocks.tasksQueriesMock,
+  };
+});
+
 vi.mock('../utils/client', async () => ({
   studioClient: {
-    createInferenceServer: vi.fn(),
+    requestCreateInferenceServer: vi.fn(),
     getHostFreePort: vi.fn(),
   },
 }));
@@ -49,7 +64,9 @@ vi.mock('../utils/client', async () => ({
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.modelsInfoSubscribeMock.mockReturnValue([]);
-  vi.mocked(studioClient.createInferenceServer).mockResolvedValue(undefined);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
+
+  vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
 });
 
@@ -93,7 +110,7 @@ test('button click should call createInferenceServer', async () => {
   if (createBtn === undefined) throw new Error('createBtn undefined');
 
   await fireEvent.click(createBtn);
-  expect(vi.mocked(studioClient.createInferenceServer)).toHaveBeenCalledWith({
+  expect(vi.mocked(studioClient.requestCreateInferenceServer)).toHaveBeenCalledWith({
     modelsInfo: [{ id: 'random', file: true }],
     port: 8888,
   });

@@ -108,10 +108,10 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async createInferenceServer(options: CreationInferenceServerOptions): Promise<void> {
+  async requestCreateInferenceServer(options: CreationInferenceServerOptions): Promise<string> {
     try {
       const config = await withDefaultConfiguration(options);
-      return this.inferenceManager.createInferenceServer(config);
+      return this.inferenceManager.requestCreateInferenceServer(config);
     } catch (err: unknown) {
       console.error('Something went wrong while trying to start inference server', err);
       throw err;

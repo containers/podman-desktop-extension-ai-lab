@@ -32,6 +32,7 @@ import { InferenceManager } from './inferenceManager';
 import type { ModelsManager } from '../modelsManager';
 import { LABEL_INFERENCE_SERVER, INFERENCE_SERVER_IMAGE } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { TaskRegistry } from '../../registries/TaskRegistry';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -76,6 +77,11 @@ const telemetryMock = {
   logError: vi.fn(),
 } as unknown as TelemetryLogger;
 
+const taskRegistryMock = {
+  createTask: vi.fn(),
+  updateTask: vi.fn(),
+} as unknown as TaskRegistry;
+
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
   const manager = new InferenceManager(
     webviewMock,
@@ -83,6 +89,7 @@ const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
     podmanConnectionMock,
     modelsManager,
     telemetryMock,
+    taskRegistryMock,
   );
   manager.init();
   await vi.waitUntil(manager.isInitialize.bind(manager), {
@@ -221,9 +228,12 @@ describe('Create Inference Server', () => {
   test('unknown providerId', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
-        providerId: 'unknown',
-      } as unknown as InferenceServerConfig),
+      inferenceManager.createInferenceServer(
+        {
+          providerId: 'unknown',
+        } as unknown as InferenceServerConfig,
+        'dummyTrackingId',
+      ),
     ).rejects.toThrowError('cannot find any started container provider.');
 
     expect(provider.getContainerConnections).toHaveBeenCalled();
@@ -232,10 +242,13 @@ describe('Create Inference Server', () => {
   test('unknown imageId', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
-        providerId: 'test@providerId',
-        image: 'unknown',
-      } as unknown as InferenceServerConfig),
+      inferenceManager.createInferenceServer(
+        {
+          providerId: 'test@providerId',
+          image: 'unknown',
+        } as unknown as InferenceServerConfig,
+        'dummyTrackingId',
+      ),
     ).rejects.toThrowError('image unknown not found.');
 
     expect(containerEngine.listImages).toHaveBeenCalled();
@@ -248,7 +261,8 @@ describe('Create Inference Server', () => {
         providerId: 'test@providerId',
         image: INFERENCE_SERVER_IMAGE,
         modelsInfo: [],
-      } as unknown as InferenceServerConfig),
+      } as unknown as InferenceServerConfig,
+        'dummyTrackingId',),
     ).rejects.toThrowError('Need at least one model info to start an inference server.');
   });
 
@@ -263,7 +277,8 @@ describe('Create Inference Server', () => {
             id: 'dummyModelId',
           },
         ],
-      } as unknown as InferenceServerConfig),
+      } as unknown as InferenceServerConfig,
+        'dummyTrackingId',),
     ).rejects.toThrowError('The model info file provided is undefined');
   });
 
@@ -282,7 +297,9 @@ describe('Create Inference Server', () => {
           },
         },
       ],
-    } as unknown as InferenceServerConfig);
+    } as unknown as InferenceServerConfig,
+      'dummyTrackingId',
+    );
 
     expect(containerEngine.createContainer).toHaveBeenCalled();
     expect(inferenceManager.getServers()).toStrictEqual([

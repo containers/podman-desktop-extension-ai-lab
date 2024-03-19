@@ -158,6 +158,7 @@ export class Studio {
       podmanConnection,
       this.modelsManager,
       this.telemetry,
+      taskRegistry,
     );
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {

@@ -20,6 +20,7 @@ let prompt: string;
 let sendEnabled = false;
 let scrollable: Element;
 let lastIsUserMessage = false;
+let errorMsg = '';
 
 $: conversation = $conversations.find(conversation => conversation.id === playgroundId);
 $: playground = $playgrounds.find(playground => playground.id === playgroundId);
@@ -60,9 +61,17 @@ function getMessageParagraphs(message: ChatMessage): string[] {
 }
 
 function askPlayground() {
-  studioClient.submitPlaygroundMessage(playgroundId, prompt);
-  sendEnabled = false;
-  prompt = '';
+  studioClient
+    .submitPlaygroundMessage(playgroundId, prompt)
+    .then(() => {
+      errorMsg = '';
+      sendEnabled = false;
+      prompt = '';
+    })
+    .catch((err: unknown) => {
+      errorMsg = String(err);
+      sendEnabled = true;
+    });
 }
 
 afterUpdate(() => {
@@ -121,6 +130,9 @@ function elapsedTime(msg: AssistantChat): string {
             </ul>
           {/if}
         </div>
+        {#if errorMsg}
+          <div class="text-red-500 text-sm p-2">{errorMsg}</div>
+        {/if}
         <div class="flex flex-row flex-none w-full">
           <textarea
             aria-label="prompt"

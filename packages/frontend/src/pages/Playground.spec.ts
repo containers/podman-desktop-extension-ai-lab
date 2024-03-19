@@ -133,6 +133,7 @@ test('sending prompt should disable the send button', async () => {
       modelId: 'model-1',
     },
   ]);
+  vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
   const customConversations = writable<Conversation[]>([]);
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {

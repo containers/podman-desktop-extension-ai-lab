@@ -37,7 +37,7 @@ const generate = async () => {
 
   snippet = await studioClient.createSnippet(
     {
-      url: `http://localhost:${service?.connection.port || '??'}`,
+      url: `http://localhost:${service?.connection.port || '??'}/v1/chat/completions`,
       method: 'POST',
       header: [
         {
@@ -154,6 +154,7 @@ const generate = async () => {
                     id="variants"
                     bind:value="{selectedVariant}"
                     on:change="{generate}"
+                    disabled="{variants.length === 1}"
                     class="border ml-1 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-1 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
                     name="variants">
                     {#each variants as variant}

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-declare module '*.md' {
+declare module '*.md?raw' {
   const contents: string;
   export = contents;
 }

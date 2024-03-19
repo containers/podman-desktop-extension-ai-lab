@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { generateContainerCreateOptions, withDefaultConfiguration } from './inferenceUtils';
+import { generateContainerCreateOptions, withDefaultConfiguration, INFERENCE_SERVER_IMAGE } from './inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { ImageInfo } from '@podman-desktop/api';
 import { getFreeRandomPort } from './ports';
@@ -38,7 +38,7 @@ describe('generateContainerCreateOptions', () => {
       {
         port: 8888,
         providerId: 'test@providerId',
-        image: 'quay.io/bootsy/playground:v0',
+        image: INFERENCE_SERVER_IMAGE,
         modelsInfo: [
           {
             id: 'dummyModelId',
@@ -52,7 +52,7 @@ describe('generateContainerCreateOptions', () => {
       {
         Id: 'dummyImageId',
         engineId: 'dummyEngineId',
-        RepoTags: ['quay.io/bootsy/playground:v0'],
+        RepoTags: [INFERENCE_SERVER_IMAGE],
       } as unknown as ImageInfo,
     );
     expect(result).toStrictEqual({
@@ -106,7 +106,7 @@ describe('withDefaultConfiguration', () => {
     expect(getFreeRandomPort).toHaveBeenCalledWith('0.0.0.0');
 
     expect(result.port).toBe(8888);
-    expect(result.image).toBe('quay.io/bootsy/playground:v0');
+    expect(result.image).toBe(INFERENCE_SERVER_IMAGE);
     expect(result.labels).toStrictEqual({});
     expect(result.providerId).toBe(undefined);
   });

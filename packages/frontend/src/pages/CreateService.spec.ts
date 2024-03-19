@@ -20,6 +20,7 @@ import { vi, beforeEach, test, expect } from 'vitest';
 import { studioClient } from '/@/utils/client';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
+import type { Task } from '@shared/src/models/ITask';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -121,4 +122,52 @@ test('tasks progress should not be visible by default', async () => {
 
   const status = screen.queryByRole('status');
   expect(status).toBeNull();
+});
+
+test('tasks should be displayed after requestCreateInferenceServer', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
+
+  let listener: ((tasks: Task[]) => void) | undefined;
+  vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
+    listener = f;
+    listener([]);
+    return () => {};
+  });
+
+  render(CreateService);
+
+  // wait for listener to be defined
+  await vi.waitFor(() => {
+    expect(listener).toBeDefined();
+  });
+
+  let createBtn: HTMLElement | undefined = undefined;
+  await vi.waitFor(() => {
+    createBtn = screen.getByTitle('Create service');
+    expect(createBtn).toBeDefined();
+  });
+
+  if (createBtn === undefined || listener === undefined) throw new Error('properties undefined');
+
+  await fireEvent.click(createBtn);
+
+  await vi.waitFor(() => {
+    expect(studioClient.requestCreateInferenceServer).toHaveBeenCalled();
+  });
+
+  listener([
+    {
+      id: 'dummyTaskId',
+      labels: {
+        trackingId: 'dummyTrackingId',
+      },
+      name: 'Dummy Task name',
+      state: 'loading',
+    },
+  ]);
+
+  await vi.waitFor(() => {
+    const status = screen.getByRole('status');
+    expect(status).toBeDefined();
+  });
 });

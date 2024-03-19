@@ -31,6 +31,9 @@ import { getFreeRandomPort } from './ports';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-studio-inference-server';
 
+export const INFERENCE_SERVER_IMAGE =
+  'ghcr.io/projectatomic/ai-studio-playground-images/ai-studio-playground-chat:0.1.0';
+
 /**
  * Return container connection provider
  */
@@ -154,7 +157,7 @@ export async function withDefaultConfiguration(
 
   return {
     port: options.port || (await getFreeRandomPort('0.0.0.0')),
-    image: options.image || 'quay.io/bootsy/playground:v0',
+    image: options.image || INFERENCE_SERVER_IMAGE,
     labels: options.labels || {},
     modelsInfo: options.modelsInfo,
     providerId: options.providerId,

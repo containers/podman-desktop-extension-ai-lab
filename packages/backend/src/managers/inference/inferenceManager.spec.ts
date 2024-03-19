@@ -30,7 +30,7 @@ import type { PodmanConnection } from '../podmanConnection';
 import { beforeEach, expect, describe, test, vi } from 'vitest';
 import { InferenceManager } from './inferenceManager';
 import type { ModelsManager } from '../modelsManager';
-import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
+import { LABEL_INFERENCE_SERVER, INFERENCE_SERVER_IMAGE } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 
 vi.mock('@podman-desktop/api', async () => {
@@ -121,7 +121,7 @@ beforeEach(() => {
     {
       Id: 'dummyImageId',
       engineId: 'dummyEngineId',
-      RepoTags: ['quay.io/bootsy/playground:v0'],
+      RepoTags: [INFERENCE_SERVER_IMAGE],
     },
   ] as unknown as ImageInfo[]);
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
@@ -246,7 +246,7 @@ describe('Create Inference Server', () => {
     await expect(
       inferenceManager.createInferenceServer({
         providerId: 'test@providerId',
-        image: 'quay.io/bootsy/playground:v0',
+        image: INFERENCE_SERVER_IMAGE,
         modelsInfo: [],
       } as unknown as InferenceServerConfig),
     ).rejects.toThrowError('Need at least one model info to start an inference server.');
@@ -257,7 +257,7 @@ describe('Create Inference Server', () => {
     await expect(
       inferenceManager.createInferenceServer({
         providerId: 'test@providerId',
-        image: 'quay.io/bootsy/playground:v0',
+        image: INFERENCE_SERVER_IMAGE,
         modelsInfo: [
           {
             id: 'dummyModelId',
@@ -272,7 +272,7 @@ describe('Create Inference Server', () => {
     await inferenceManager.createInferenceServer({
       port: 8888,
       providerId: 'test@providerId',
-      image: 'quay.io/bootsy/playground:v0',
+      image: INFERENCE_SERVER_IMAGE,
       modelsInfo: [
         {
           id: 'dummyModelId',

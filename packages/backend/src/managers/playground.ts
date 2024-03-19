@@ -29,13 +29,11 @@ import OpenAI from 'openai';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION, getDurationSecondsSince, timeout } from '../utils/utils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getFirstRunningPodmanConnection } from '../utils/podman';
+import { INFERENCE_SERVER_IMAGE } from '../utils/inferenceUtils';
 
 export const LABEL_MODEL_ID = 'ai-studio-model-id';
 export const LABEL_MODEL_PORT = 'ai-studio-model-port';
 export const LABEL_MODEL_PORTS = 'ai-studio-model-ports';
-
-// TODO: this should not be hardcoded
-const PLAYGROUND_IMAGE = 'quay.io/bootsy/playground:v0';
 
 const STARTING_TIME_MAX = 3600 * 1000;
 
@@ -193,12 +191,12 @@ export class PlayGroundManager {
       throw new Error(error);
     }
 
-    let image = await this.selectImage(PLAYGROUND_IMAGE);
+    let image = await this.selectImage(INFERENCE_SERVER_IMAGE);
     if (!image) {
-      await containerEngine.pullImage(connection.connection, PLAYGROUND_IMAGE, () => {});
-      image = await this.selectImage(PLAYGROUND_IMAGE);
+      await containerEngine.pullImage(connection.connection, INFERENCE_SERVER_IMAGE, () => {});
+      image = await this.selectImage(INFERENCE_SERVER_IMAGE);
       if (!image) {
-        const error = `Unable to find ${PLAYGROUND_IMAGE} image`;
+        const error = `Unable to find ${INFERENCE_SERVER_IMAGE} image`;
         this.setPlaygroundError(modelId, error);
         this.telemetry.logError('playground.start', {
           'model.id': modelId,

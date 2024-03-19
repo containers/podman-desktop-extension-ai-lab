@@ -24,6 +24,7 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 import type { InferenceManager } from './inference/inferenceManager';
 import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { INFERENCE_SERVER_IMAGE } from '../utils/inferenceUtils';
 
 vi.mock('openai', () => ({
   default: vi.fn(),
@@ -246,7 +247,7 @@ test('creating a new playground with no model served should start an inference s
     name: 'Model 1',
   } as unknown as ModelInfo);
   expect(createInferenceServerMock).toHaveBeenCalledWith({
-    image: 'quay.io/bootsy/playground:v0',
+    image: INFERENCE_SERVER_IMAGE,
     labels: {},
     modelsInfo: [
       {

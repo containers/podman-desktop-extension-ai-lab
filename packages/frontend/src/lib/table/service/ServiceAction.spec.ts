@@ -25,6 +25,7 @@ vi.mock('../../../utils/client', async () => ({
   studioClient: {
     startInferenceServer: vi.fn(),
     stopInferenceServer: vi.fn(),
+    requestDeleteInferenceServer: vi.fn(),
   },
 }));
 
@@ -32,6 +33,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(studioClient.startInferenceServer).mockResolvedValue(undefined);
   vi.mocked(studioClient.stopInferenceServer).mockResolvedValue(undefined);
+  vi.mocked(studioClient.requestDeleteInferenceServer).mockResolvedValue(undefined);
 });
 
 test('should display stop button when status running', async () => {
@@ -45,7 +47,7 @@ test('should display stop button when status running', async () => {
     },
   });
 
-  const stopBtn = screen.getByTitle('Stop container');
+  const stopBtn = screen.getByTitle('Stop service');
   expect(stopBtn).toBeDefined();
 });
 
@@ -60,7 +62,7 @@ test('should display start button when status stopped', async () => {
     },
   });
 
-  const startBtn = screen.getByTitle('Start container');
+  const startBtn = screen.getByTitle('Start service');
   expect(startBtn).toBeDefined();
 });
 
@@ -75,7 +77,7 @@ test('should call stopInferenceServer when click stop', async () => {
     },
   });
 
-  const stopBtn = screen.getByTitle('Stop container');
+  const stopBtn = screen.getByTitle('Stop service');
   await fireEvent.click(stopBtn);
   expect(studioClient.stopInferenceServer).toHaveBeenCalledWith('dummyContainerId');
 });
@@ -91,7 +93,23 @@ test('should call startInferenceServer when click start', async () => {
     },
   });
 
-  const startBtn = screen.getByTitle('Start container');
+  const startBtn = screen.getByTitle('Start service');
   await fireEvent.click(startBtn);
   expect(studioClient.startInferenceServer).toHaveBeenCalledWith('dummyContainerId');
+});
+
+test('should call deleteInferenceServer when click delete', async () => {
+  render(ServiceAction, {
+    object: {
+      health: undefined,
+      models: [],
+      connection: { port: 8888 },
+      status: 'stopped',
+      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+    },
+  });
+
+  const startBtn = screen.getByTitle('Delete service');
+  await fireEvent.click(startBtn);
+  expect(studioClient.requestDeleteInferenceServer).toHaveBeenCalledWith('dummyContainerId');
 });

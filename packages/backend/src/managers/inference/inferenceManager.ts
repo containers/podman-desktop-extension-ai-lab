@@ -306,12 +306,39 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
-   * Remove the InferenceServer instance from #servers using the containerId
-   * @param containerId the id of the container running the Inference Server
+   * Remove the reference of the inference server
+   * /!\ Does not delete the corresponding container
+   * @param containerId
    */
   private removeInferenceServer(containerId: string): void {
     this.#servers.delete(containerId);
     this.notify();
+  }
+
+  /**
+   * Delete the InferenceServer instance from #servers and matching container
+   * @param containerId the id of the container running the Inference Server
+   */
+  async deleteInferenceServer(containerId: string): Promise<void> {
+    if (!this.#servers.has(containerId)) {
+      throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
+    }
+    const server = this.#servers.get(containerId);
+
+    try {
+      // If the server is running we need to stop it.
+      if (server.status === 'running') {
+        await containerEngine.stopContainer(server.container.engineId, server.container.containerId);
+      }
+      // Delete the container
+      await containerEngine.deleteContainer(server.container.engineId, server.container.containerId);
+
+      // Delete the reference
+      this.removeInferenceServer(containerId);
+    } catch (err: unknown) {
+      console.error('Something went wrong while trying to delete the inference server.', err);
+      this.retryableRefresh(2);
+    }
   }
 
   /**

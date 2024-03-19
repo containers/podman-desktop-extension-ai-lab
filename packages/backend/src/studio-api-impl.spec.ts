@@ -23,7 +23,6 @@ import content from './tests/ai-test.json';
 import userContent from './tests/ai-user-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
-import type { PlayGroundManager } from './managers/playground';
 import type { InferenceManager } from './managers/inference/inferenceManager';
 import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import { EventEmitter } from '@podman-desktop/api';
@@ -100,7 +99,6 @@ beforeEach(async () => {
     {
       deleteApplication: mocks.deleteApplicationMock,
     } as unknown as ApplicationManager,
-    {} as unknown as PlayGroundManager,
     catalogManager,
     {} as unknown as ModelsManager,
     {} as TelemetryLogger,

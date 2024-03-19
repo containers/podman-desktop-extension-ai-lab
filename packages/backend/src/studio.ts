@@ -29,7 +29,6 @@ import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/applicationManager';
 import { GitManager } from './managers/gitManager';
 import { TaskRegistry } from './registries/TaskRegistry';
-import { PlayGroundManager } from './managers/playground';
 import { CatalogManager } from './managers/catalogManager';
 import { ModelsManager } from './managers/modelsManager';
 import path from 'node:path';
@@ -52,7 +51,6 @@ export class Studio {
 
   rpcExtension: RpcExtension;
   studioApi: StudioApiImpl;
-  playgroundManager: PlayGroundManager;
   catalogManager: CatalogManager;
   modelsManager: ModelsManager;
   telemetry: TelemetryLogger;
@@ -124,12 +122,6 @@ export class Studio {
     const podmanConnection = new PodmanConnection();
     const taskRegistry = new TaskRegistry(this.#panel.webview);
 
-    this.playgroundManager = new PlayGroundManager(
-      this.#panel.webview,
-      containerRegistry,
-      podmanConnection,
-      this.telemetry,
-    );
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);
     this.modelsManager = new ModelsManager(
@@ -178,7 +170,6 @@ export class Studio {
     // Creating StudioApiImpl
     this.studioApi = new StudioApiImpl(
       applicationManager,
-      this.playgroundManager,
       this.catalogManager,
       this.modelsManager,
       this.telemetry,
@@ -192,7 +183,6 @@ export class Studio {
     this.catalogManager.init();
     await this.modelsManager.loadLocalModels();
     podmanConnection.init();
-    this.playgroundManager.adoptRunningPlaygrounds();
     applicationManager.adoptRunningApplications();
 
     // Register the instance

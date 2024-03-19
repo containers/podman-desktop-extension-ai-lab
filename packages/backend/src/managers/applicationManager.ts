@@ -38,7 +38,6 @@ import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, timeout } from '../utils/utils';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
-import { LABEL_MODEL_ID, LABEL_MODEL_PORTS } from './playground';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { PodmanConnection } from './podmanConnection';
 import { Messages } from '@shared/Messages';
@@ -47,6 +46,9 @@ import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import { Publisher } from '../utils/Publisher';
 import { isQEMUMachine } from '../utils/podman';
+
+export const LABEL_MODEL_ID = 'ai-studio-model-id';
+export const LABEL_MODEL_PORTS = 'ai-studio-model-ports';
 
 export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
 export const LABEL_APP_PORTS = 'ai-studio-app-ports';

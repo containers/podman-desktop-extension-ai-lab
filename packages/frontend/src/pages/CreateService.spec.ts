@@ -115,3 +115,10 @@ test('button click should call createInferenceServer', async () => {
     port: 8888,
   });
 });
+
+test('tasks progress should not be visible by default', async () => {
+  render(CreateService);
+
+  const status = screen.queryByRole('status');
+  expect(status).toBeNull();
+});

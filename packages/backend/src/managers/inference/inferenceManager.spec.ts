@@ -80,6 +80,7 @@ const telemetryMock = {
 const taskRegistryMock = {
   createTask: vi.fn(),
   updateTask: vi.fn(),
+  getTasksByLabels: vi.fn(),
 } as unknown as TaskRegistry;
 
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
@@ -134,6 +135,7 @@ beforeEach(() => {
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
     id: 'dummyCreatedContainerId',
   });
+  vi.mocked(taskRegistryMock.getTasksByLabels).mockReturnValue([]);
 });
 
 /**
@@ -452,5 +454,76 @@ describe('Delete Inference Server', () => {
 
     const servers = inferenceManager.getServers();
     expect(servers.length).toBe(0);
+  });
+});
+
+describe('Request Create Inference Server', () => {
+  test('Should return unique string identifier', async () => {
+    const inferenceManager = await getInitializedInferenceManager();
+    const identifier = inferenceManager.requestCreateInferenceServer({
+      port: 8888,
+      providerId: 'test@providerId',
+      image: 'quay.io/bootsy/playground:v0',
+      modelsInfo: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyFile',
+            path: 'dummyPath',
+          },
+        },
+      ],
+    } as unknown as InferenceServerConfig);
+    expect(identifier).toBeDefined();
+    expect(typeof identifier).toBe('string');
+  });
+
+  test('Task registry should have tasks matching unique identifier provided', async () => {
+    const inferenceManager = await getInitializedInferenceManager();
+    const identifier = inferenceManager.requestCreateInferenceServer({
+      port: 8888,
+      providerId: 'test@providerId',
+      image: 'quay.io/bootsy/playground:v0',
+      modelsInfo: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyFile',
+            path: 'dummyPath',
+          },
+        },
+      ],
+    } as unknown as InferenceServerConfig);
+
+    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(1, 'Creating Inference server', 'loading', {
+      trackingId: identifier,
+    });
+  });
+
+  test('Pull image error should be reflected in task registry', async () => {
+    vi.mocked(containerEngine.pullImage).mockRejectedValue(new Error('dummy pull image error'));
+
+    const inferenceManager = await getInitializedInferenceManager();
+    inferenceManager.requestCreateInferenceServer({
+      port: 8888,
+      providerId: 'test@providerId',
+      image: 'quay.io/bootsy/playground:v0',
+      modelsInfo: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyFile',
+            path: 'dummyPath',
+          },
+        },
+      ],
+    } as unknown as InferenceServerConfig);
+
+    await vi.waitFor(() => {
+      expect(taskRegistryMock.updateTask).toHaveBeenLastCalledWith({
+        state: 'error',
+        error: 'Something went wrong while trying to create an inference server Error: dummy pull image error.',
+      });
+    });
   });
 });

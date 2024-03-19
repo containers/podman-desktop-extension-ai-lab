@@ -131,6 +131,20 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
         });
       })
       .catch((err: unknown) => {
+        // Get all tasks using the tracker
+        const tasks = this.taskRegistry.getTasksByLabels({
+          trackingId: trackingId,
+        });
+        // Filter the one no in loading state
+        tasks
+          .filter(t => t.state === 'loading' && t.id !== task.id)
+          .forEach(t => {
+            this.taskRegistry.updateTask({
+              ...t,
+              state: 'error',
+            });
+          });
+        // Update the main task
         this.taskRegistry.updateTask({
           ...task,
           state: 'error',

@@ -20,6 +20,7 @@ import { vi, beforeEach, test, expect } from 'vitest';
 import { studioClient } from '/@/utils/client';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
+import type { Task } from '@shared/src/models/ITask';
 
 const mocks = vi.hoisted(() => {
   return {

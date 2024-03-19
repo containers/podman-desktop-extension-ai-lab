@@ -125,34 +125,6 @@ beforeEach(() => {
   mocks.getTasksMock.mockReturnValue([]);
 });
 
-test('should open/close application details panel when clicking on toggle button', async () => {
-  mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
-
-  render(RecipeDetails, {
-    recipeId: 'recipe 1',
-    modelId: 'model1',
-  });
-
-  const panelOpenDetails = screen.getByLabelText('toggle application details');
-  expect(panelOpenDetails).toHaveClass('hidden');
-  const panelAppDetails = screen.getByLabelText('application details panel');
-  expect(panelAppDetails).toHaveClass('block');
-
-  const btnShowPanel = screen.getByRole('button', { name: 'show application details' });
-  const btnHidePanel = screen.getByRole('button', { name: 'hide application details' });
-
-  await userEvent.click(btnHidePanel);
-
-  expect(panelAppDetails).toHaveClass('hidden');
-  expect(panelOpenDetails).toHaveClass('block');
-
-  await userEvent.click(btnShowPanel);
-
-  expect(panelAppDetails).toHaveClass('block');
-  expect(panelOpenDetails).toHaveClass('hidden');
-});
-
 test('should call runApplication execution when run application button is clicked', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
   vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import readme from '../../../../README.md?raw';
+import readme from './dashboard.md?raw';
 
 export function getDashboardContent(): string {
   return readme;

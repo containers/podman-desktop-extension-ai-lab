@@ -27,12 +27,11 @@ export interface ChatMessage {
 
 export interface AssistantChat extends ChatMessage {
   role: 'assistant';
-  completed: boolean;
-  endTimestamp?: number;
+  completed?: number;
 }
 
 export interface PendingChat extends AssistantChat {
-  completed: false;
+  completed: undefined;
   choices: Choice[];
 }
 

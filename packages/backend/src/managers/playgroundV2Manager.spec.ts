@@ -186,12 +186,11 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   });
   expect(conversations[0].messages[1]).toStrictEqual({
     choices: undefined,
-    completed: true,
+    completed: expect.any(Number),
     content: '',
     id: expect.anything(),
     role: 'assistant',
     timestamp: date.getTime(),
-    endTimestamp: expect.anything(),
   });
 
   expect(webviewMock.postMessage).toHaveBeenLastCalledWith({

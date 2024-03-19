@@ -82,8 +82,8 @@ async function scrollToBottom(element: Element) {
 function elapsedTime(msg: AssistantChat): string {
   if (isPendingChat(msg)) {
     return ((Date.now() - msg.timestamp) / 1000).toFixed(1);
-  } else if (!!msg.endTimestamp) {
-    return ((msg.endTimestamp - msg.timestamp) / 1000).toFixed(1);
+  } else if (!!msg.completed) {
+    return ((msg.completed - msg.timestamp) / 1000).toFixed(1);
   } else {
     // should not happen
     return '';

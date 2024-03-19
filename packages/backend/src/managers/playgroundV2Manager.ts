@@ -83,7 +83,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
   }
 
   /**
-   * @param playgroundId 
+   * @param playgroundId
    * @param userInput the user input
    * @param options the model configuration
    */
@@ -144,7 +144,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     this.#conversationRegistry.submit(conversationId, {
       role: 'assistant',
       choices: [],
-      completed: false,
+      completed: undefined,
       id: messageId,
       timestamp: Date.now(),
     } as PendingChat);

@@ -100,9 +100,8 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
       ...conversation.messages[messageIndex],
       choices: undefined,
       role: 'assistant',
-      completed: true,
+      completed: Date.now(),
       content: content,
-      endTimestamp: Date.now(),
     } as AssistantChat);
   }
 

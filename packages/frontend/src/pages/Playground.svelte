@@ -61,17 +61,13 @@ function getMessageParagraphs(message: ChatMessage): string[] {
 }
 
 function askPlayground() {
-  studioClient
-    .submitPlaygroundMessage(playgroundId, prompt)
-    .then(() => {
-      errorMsg = '';
-      sendEnabled = false;
-      prompt = '';
-    })
-    .catch((err: unknown) => {
-      errorMsg = String(err);
-      sendEnabled = true;
-    });
+  errorMsg = '';
+  sendEnabled = false;
+  studioClient.submitPlaygroundMessage(playgroundId, prompt).catch((err: unknown) => {
+    errorMsg = String(err);
+    sendEnabled = true;
+  });
+  prompt = '';
 }
 
 afterUpdate(() => {
@@ -142,7 +138,10 @@ function elapsedTime(msg: AssistantChat): string {
             placeholder="Type your prompt here"></textarea>
 
           <div class="flex-none text-right m-4">
-            <Button disabled="{!sendEnabled}" on:click="{() => askPlayground()}">Send prompt</Button>
+            <Button
+              inProgress="{!sendEnabled}"
+              on:click="{() => askPlayground()}"
+              title="{!sendEnabled ? 'Please wait, assistant is replying' : ''}">Send prompt</Button>
           </div>
         </div>
       </div>

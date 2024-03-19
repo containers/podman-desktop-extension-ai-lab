@@ -52,6 +52,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
       name = this.getFreeName();
     }
 
+    this.#conversationRegistry.createConversation(id);
     this.#playgrounds.set(id, {
       id,
       name,
@@ -81,25 +82,17 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     return `playground-${++this.#UIDcounter}`;
   }
 
-  createConversation(): string {
-    return this.#conversationRegistry.createConversation();
-  }
-
   /**
-   * @param containerId must be corresponding to an inference server container
-   * @param modelId the model to use, should be included in the inference server matching the containerId
-   * @param conversationId the conversation id to happen the message to.
+   * @param playgroundId
    * @param userInput the user input
    * @param options the model configuration
    */
-  async submit(
-    containerId: string,
-    modelId: string,
-    conversationId: string,
-    userInput: string,
-    options?: ModelOptions,
-  ): Promise<void> {
-    const server = this.inferenceManager.get(containerId);
+  async submit(playgroundId: string, userInput: string, options?: ModelOptions): Promise<void> {
+    const playground = this.#playgrounds.get(playgroundId);
+    if (playground === undefined) throw new Error('Playground not found.');
+
+    const servers = this.inferenceManager.getServers();
+    const server = servers.find(s => s.models.map(mi => mi.id).includes(playground.modelId));
     if (server === undefined) throw new Error('Inference server not found.');
 
     if (server.status !== 'running') throw new Error('Inference server is not running.');
@@ -107,14 +100,14 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     if (server.health?.Status !== 'healthy')
       throw new Error(`Inference server is not healthy, currently status: ${server.health.Status}.`);
 
-    const modelInfo = server.models.find(model => model.id === modelId);
+    const modelInfo = server.models.find(model => model.id === playground.modelId);
     if (modelInfo === undefined)
       throw new Error(
-        `modelId '${modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`,
+        `modelId '${playground.modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`,
       );
 
-    const conversation = this.#conversationRegistry.get(conversationId);
-    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
+    const conversation = this.#conversationRegistry.get(playground.id);
+    if (conversation === undefined) throw new Error(`conversation with id ${playground.id} does not exist.`);
 
     this.#conversationRegistry.submit(conversation.id, {
       content: userInput,
@@ -130,13 +123,13 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     });
 
     const response = await client.chat.completions.create({
-      messages: this.getFormattedMessages(conversationId),
+      messages: this.getFormattedMessages(playground.id),
       stream: true,
       model: modelInfo.file.file,
       ...options,
     });
     // process stream async
-    this.processStream(conversationId, response).catch((err: unknown) => {
+    this.processStream(playground.id, response).catch((err: unknown) => {
       console.error('Something went wrong while processing stream', err);
     });
   }
@@ -151,7 +144,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     this.#conversationRegistry.submit(conversationId, {
       role: 'assistant',
       choices: [],
-      completed: false,
+      completed: undefined,
       id: messageId,
       timestamp: Date.now(),
     } as PendingChat);

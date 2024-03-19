@@ -7,12 +7,16 @@ import Fa from 'svelte-fa';
 import Button from '../lib/button/Button.svelte';
 import { studioClient } from '../utils/client';
 import { router } from 'tinro';
+import { playgrounds } from '../stores/playgrounds-v2';
+import type { Unsubscriber } from 'svelte/store';
+import { onDestroy } from 'svelte';
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let modelId: string | undefined = undefined;
 let submitting: boolean = false;
 let playgroundName: string;
+let unsubscribe: Unsubscriber | undefined = undefined;
 
 $: {
   if (!modelId && localModels.length > 0) {
@@ -33,6 +37,7 @@ function submit() {
   if (model === undefined) throw new Error('model id not valid.');
   // disable submit button
   submitting = true;
+  const playgroundsIdsBefore = $playgrounds.map(playground => playground.id);
   studioClient
     .createPlayground(playgroundName, model)
     .catch(err => {
@@ -40,9 +45,20 @@ function submit() {
     })
     .finally(() => {
       submitting = false;
-      router.goto('/playgrounds');
+      unsubscribe = playgrounds.subscribe(playgrounds => {
+        if (playgrounds.length > playgroundsIdsBefore.length) {
+          const newId = playgrounds.map(pl => pl.id).find(id => !playgroundsIdsBefore.includes(id));
+          if (!!newId) {
+            router.goto(`/playground/${newId}`);
+          }
+        }
+      });
     });
 }
+
+onDestroy(() => {
+  unsubscribe?.();
+});
 </script>
 
 <NavPage icon="{faPlus}" title="New Playground environment" searchEnabled="{false}">

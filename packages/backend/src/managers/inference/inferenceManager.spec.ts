@@ -301,6 +301,15 @@ describe('Create Inference Server', () => {
       'dummyTrackingId',
     );
 
+    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(1, 'Pulling quay.io/bootsy/playground:v0.', 'loading', {
+      'trackingId': 'dummyTrackingId',
+    });
+    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(2, 'Creating container.', 'loading', {
+      'trackingId': 'dummyTrackingId',
+    });
+    expect(taskRegistryMock.updateTask).toHaveBeenLastCalledWith({
+      state: 'success',
+    });
     expect(containerEngine.createContainer).toHaveBeenCalled();
     expect(inferenceManager.getServers()).toStrictEqual([
       {

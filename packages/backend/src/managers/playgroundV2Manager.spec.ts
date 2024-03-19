@@ -246,17 +246,20 @@ test('creating a new playground with no model served should start an inference s
     id: 'model-1',
     name: 'Model 1',
   } as unknown as ModelInfo);
-  expect(createInferenceServerMock).toHaveBeenCalledWith({
-    image: INFERENCE_SERVER_IMAGE,
-    labels: {},
-    modelsInfo: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ],
-    port: expect.anything(),
-  });
+  expect(createInferenceServerMock).toHaveBeenCalledWith(
+    {
+      image: INFERENCE_SERVER_IMAGE,
+      labels: {},
+      modelsInfo: [
+        {
+          id: 'model-1',
+          name: 'Model 1',
+        },
+      ],
+      port: expect.anything(),
+    },
+    expect.anything(),
+  );
 });
 
 test('creating a new playground with the model already served should not start an inference server', async () => {

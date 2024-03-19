@@ -67,6 +67,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
         await withDefaultConfiguration({
           modelsInfo: [model],
         }),
+        `playground-tracking-${id}`,
       );
     } else if (server.status === 'stopped') {
       await this.inferenceManager.startInferenceServer(server.container.containerId);

@@ -198,7 +198,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       switch (status) {
         case 'remove':
           // Update the list of servers
-          this.removeInferenceServerRef(containerId);
+          this.removeInferenceServer(containerId);
           disposable.dispose();
           clearInterval(intervalId);
           break;
@@ -307,9 +307,10 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
 
   /**
    * Remove the reference of the inference server
+   * /!\ Does not delete the corresponding container
    * @param containerId
    */
-  private removeInferenceServerRef(containerId: string): void {
+  private removeInferenceServer(containerId: string): void {
     this.#servers.delete(containerId);
     this.notify();
   }
@@ -333,7 +334,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       await containerEngine.deleteContainer(server.container.engineId, server.container.containerId);
 
       // Delete the reference
-      this.removeInferenceServerRef(containerId);
+      this.removeInferenceServer(containerId);
     } catch (err: unknown) {
       console.error('Something went wrong while trying to delete the inference server.', err);
       this.retryableRefresh(2);

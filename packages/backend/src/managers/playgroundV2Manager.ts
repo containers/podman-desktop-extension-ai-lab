@@ -83,14 +83,12 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
   }
 
   /**
-   * @param containerId must be corresponding to an inference server container
-   * @param modelId the model to use, should be included in the inference server matching the containerId
-   * @param conversationId the conversation id to happen the message to.
+   * @param playgroundId 
    * @param userInput the user input
    * @param options the model configuration
    */
-  async submit(containerId: string, userInput: string, options?: ModelOptions): Promise<void> {
-    const playground = this.#playgrounds.get(containerId);
+  async submit(playgroundId: string, userInput: string, options?: ModelOptions): Promise<void> {
+    const playground = this.#playgrounds.get(playgroundId);
     if (playground === undefined) throw new Error('Playground not found.');
 
     const servers = this.inferenceManager.getServers();

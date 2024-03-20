@@ -60,7 +60,7 @@ onMount(() => {
         {#if meta.params.id === 'create'}
           <PlaygroundCreate />
         {:else}
-          <Playground playgroundId="{meta.params.id}" />
+          <Playground conversationId="{meta.params.id}" />
         {/if}
       </Route>
 

@@ -20,7 +20,7 @@ import {
   generateContainerCreateOptions,
   withDefaultConfiguration,
   INFERENCE_SERVER_IMAGE,
-  SECONDS,
+  SECOND,
 } from './inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { ImageInfo } from '@podman-desktop/api';
@@ -68,7 +68,7 @@ describe('generateContainerCreateOptions', () => {
         '8888': {},
       },
       HealthCheck: {
-        Interval: SECONDS * 5,
+        Interval: SECOND * 5,
         Retries: 20,
         Test: ['CMD-SHELL', 'curl -sSf localhost:8000/docs > /dev/null'],
       },

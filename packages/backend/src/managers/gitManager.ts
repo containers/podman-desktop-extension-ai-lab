@@ -82,7 +82,7 @@ export class GitManager {
         result.updatable ? 'Update' : 'Reset',
       );
 
-      if (selected === undefined || selected === 'Cancel') {
+      if (!selected || selected === 'Cancel') {
         throw new Error('Cancelled');
       }
 

@@ -36,6 +36,8 @@ import { Publisher } from '../../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { ModelsManager } from '../modelsManager';
+import type { TaskRegistry } from '../../registries/TaskRegistry';
+import { getRandomString } from '../../utils/randomUtils';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -51,6 +53,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     private podmanConnection: PodmanConnection,
     private modelsManager: ModelsManager,
     private telemetry: TelemetryLogger,
+    private taskRegistry: TaskRegistry,
   ) {
     super(webview, Messages.MSG_INFERENCE_SERVERS_UPDATE, () => this.getServers());
     this.#servers = new Map<string, InferenceServer>();
@@ -102,23 +105,92 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
+   * Creating an inference server can be heavy task (pulling image, uploading model to WSL etc.)
+   * The frontend cannot wait endlessly, therefore we provide a method returning a tracking identifier
+   * that can be used to fetch the tasks
+   *
+   * @param config the config to use to create the inference server
+   *
+   * @return a unique tracking identifier to follow the creation request
+   */
+  requestCreateInferenceServer(config: InferenceServerConfig): string {
+    const trackingId: string = getRandomString();
+    const task = this.taskRegistry.createTask('Creating Inference server', 'loading', {
+      trackingId: trackingId,
+    });
+
+    this.createInferenceServer(config, trackingId)
+      .then((containerId: string) => {
+        this.taskRegistry.updateTask({
+          ...task,
+          state: 'success',
+          labels: {
+            ...task.labels,
+            containerId: containerId,
+          },
+        });
+      })
+      .catch((err: unknown) => {
+        // Get all tasks using the tracker
+        const tasks = this.taskRegistry.getTasksByLabels({
+          trackingId: trackingId,
+        });
+        // Filter the one no in loading state
+        tasks
+          .filter(t => t.state === 'loading' && t.id !== task.id)
+          .forEach(t => {
+            this.taskRegistry.updateTask({
+              ...t,
+              state: 'error',
+            });
+          });
+        // Update the main task
+        this.taskRegistry.updateTask({
+          ...task,
+          state: 'error',
+          error: `Something went wrong while trying to create an inference server ${String(err)}.`,
+        });
+      });
+    return trackingId;
+  }
+
+  /**
    * Given an engineId, it will create an inference server.
    * @param config
+   * @param trackingId
+   *
+   * @return the containerId of the created inference server
    */
-  async createInferenceServer(config: InferenceServerConfig): Promise<void> {
+  async createInferenceServer(config: InferenceServerConfig, trackingId: string): Promise<string> {
     if (!this.isInitialize()) throw new Error('Cannot start the inference server: not initialized.');
 
     // Fetch a provider container connection
     const provider = getProviderContainerConnection(config.providerId);
 
+    // Creating a task to follow pulling progress
+    const pullingTask = this.taskRegistry.createTask(`Pulling ${config.image}.`, 'loading', { trackingId: trackingId });
+
     // Get the image inspect info
     const imageInfo: ImageInfo = await getImageInfo(provider.connection, config.image, (_event: PullEvent) => {});
+
+    this.taskRegistry.updateTask({
+      ...pullingTask,
+      state: 'success',
+      progress: undefined,
+    });
+
+    const containerTask = this.taskRegistry.createTask(`Creating container.`, 'loading', { trackingId: trackingId });
 
     // Create container on requested engine
     const result = await containerEngine.createContainer(
       imageInfo.engineId,
       generateContainerCreateOptions(config, imageInfo),
     );
+
+    this.taskRegistry.updateTask({
+      ...containerTask,
+      state: 'success',
+    });
 
     // Adding a new inference server
     this.#servers.set(result.id, {
@@ -142,6 +214,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     });
 
     this.notify();
+    return result.id;
   }
 
   /**

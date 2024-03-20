@@ -80,10 +80,12 @@ export abstract class StudioAPI {
   abstract getInferenceServers(): Promise<InferenceServer[]>;
 
   /**
-   * Start an inference server
+   * Request to start an inference server
    * @param options The options to use
+   *
+   * @return a tracking identifier to follow progress
    */
-  abstract createInferenceServer(options: CreationInferenceServerOptions): Promise<void>;
+  abstract requestCreateInferenceServer(options: CreationInferenceServerOptions): Promise<string>;
 
   /**
    * Start an inference server

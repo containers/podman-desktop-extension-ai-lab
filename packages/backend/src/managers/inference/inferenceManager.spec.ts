@@ -32,6 +32,7 @@ import { InferenceManager } from './inferenceManager';
 import type { ModelsManager } from '../modelsManager';
 import { LABEL_INFERENCE_SERVER, INFERENCE_SERVER_IMAGE } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { TaskRegistry } from '../../registries/TaskRegistry';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -76,6 +77,12 @@ const telemetryMock = {
   logError: vi.fn(),
 } as unknown as TelemetryLogger;
 
+const taskRegistryMock = {
+  createTask: vi.fn(),
+  updateTask: vi.fn(),
+  getTasksByLabels: vi.fn(),
+} as unknown as TaskRegistry;
+
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
   const manager = new InferenceManager(
     webviewMock,
@@ -83,6 +90,7 @@ const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
     podmanConnectionMock,
     modelsManager,
     telemetryMock,
+    taskRegistryMock,
   );
   manager.init();
   await vi.waitUntil(manager.isInitialize.bind(manager), {
@@ -127,6 +135,7 @@ beforeEach(() => {
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
     id: 'dummyCreatedContainerId',
   });
+  vi.mocked(taskRegistryMock.getTasksByLabels).mockReturnValue([]);
 });
 
 /**
@@ -221,9 +230,12 @@ describe('Create Inference Server', () => {
   test('unknown providerId', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
-        providerId: 'unknown',
-      } as unknown as InferenceServerConfig),
+      inferenceManager.createInferenceServer(
+        {
+          providerId: 'unknown',
+        } as unknown as InferenceServerConfig,
+        'dummyTrackingId',
+      ),
     ).rejects.toThrowError('cannot find any started container provider.');
 
     expect(provider.getContainerConnections).toHaveBeenCalled();
@@ -232,10 +244,13 @@ describe('Create Inference Server', () => {
   test('unknown imageId', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
-        providerId: 'test@providerId',
-        image: 'unknown',
-      } as unknown as InferenceServerConfig),
+      inferenceManager.createInferenceServer(
+        {
+          providerId: 'test@providerId',
+          image: 'unknown',
+        } as unknown as InferenceServerConfig,
+        'dummyTrackingId',
+      ),
     ).rejects.toThrowError('image unknown not found.');
 
     expect(containerEngine.listImages).toHaveBeenCalled();
@@ -244,46 +259,69 @@ describe('Create Inference Server', () => {
   test('empty modelsInfo', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
-        providerId: 'test@providerId',
-        image: INFERENCE_SERVER_IMAGE,
-        modelsInfo: [],
-      } as unknown as InferenceServerConfig),
+      inferenceManager.createInferenceServer(
+        {
+          providerId: 'test@providerId',
+          image: INFERENCE_SERVER_IMAGE,
+          modelsInfo: [],
+        } as unknown as InferenceServerConfig,
+        'dummyTrackingId',
+      ),
     ).rejects.toThrowError('Need at least one model info to start an inference server.');
   });
 
   test('modelInfo without file', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
-        providerId: 'test@providerId',
-        image: INFERENCE_SERVER_IMAGE,
-        modelsInfo: [
-          {
-            id: 'dummyModelId',
-          },
-        ],
-      } as unknown as InferenceServerConfig),
+      inferenceManager.createInferenceServer(
+        {
+          providerId: 'test@providerId',
+          image: INFERENCE_SERVER_IMAGE,
+          modelsInfo: [
+            {
+              id: 'dummyModelId',
+            },
+          ],
+        } as unknown as InferenceServerConfig,
+        'dummyTrackingId',
+      ),
     ).rejects.toThrowError('The model info file provided is undefined');
   });
 
   test('valid InferenceServerConfig', async () => {
     const inferenceManager = await getInitializedInferenceManager();
-    await inferenceManager.createInferenceServer({
-      port: 8888,
-      providerId: 'test@providerId',
-      image: INFERENCE_SERVER_IMAGE,
-      modelsInfo: [
-        {
-          id: 'dummyModelId',
-          file: {
-            file: 'dummyFile',
-            path: 'dummyPath',
+    await inferenceManager.createInferenceServer(
+      {
+        port: 8888,
+        providerId: 'test@providerId',
+        image: INFERENCE_SERVER_IMAGE,
+        modelsInfo: [
+          {
+            id: 'dummyModelId',
+            file: {
+              file: 'dummyFile',
+              path: 'dummyPath',
+            },
           },
-        },
-      ],
-    } as unknown as InferenceServerConfig);
+        ],
+      } as unknown as InferenceServerConfig,
+      'dummyTrackingId',
+    );
 
+    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(
+      1,
+      'Pulling ghcr.io/projectatomic/ai-studio-playground-images/ai-studio-playground-chat:0.1.0.',
+      'loading',
+      {
+        trackingId: 'dummyTrackingId',
+      },
+    );
+    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(2, 'Creating container.', 'loading', {
+      trackingId: 'dummyTrackingId',
+    });
+    expect(taskRegistryMock.updateTask).toHaveBeenLastCalledWith({
+      state: 'success',
+    });
     expect(containerEngine.createContainer).toHaveBeenCalled();
     expect(inferenceManager.getServers()).toStrictEqual([
       {
@@ -426,5 +464,76 @@ describe('Delete Inference Server', () => {
 
     const servers = inferenceManager.getServers();
     expect(servers.length).toBe(0);
+  });
+});
+
+describe('Request Create Inference Server', () => {
+  test('Should return unique string identifier', async () => {
+    const inferenceManager = await getInitializedInferenceManager();
+    const identifier = inferenceManager.requestCreateInferenceServer({
+      port: 8888,
+      providerId: 'test@providerId',
+      image: 'quay.io/bootsy/playground:v0',
+      modelsInfo: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyFile',
+            path: 'dummyPath',
+          },
+        },
+      ],
+    } as unknown as InferenceServerConfig);
+    expect(identifier).toBeDefined();
+    expect(typeof identifier).toBe('string');
+  });
+
+  test('Task registry should have tasks matching unique identifier provided', async () => {
+    const inferenceManager = await getInitializedInferenceManager();
+    const identifier = inferenceManager.requestCreateInferenceServer({
+      port: 8888,
+      providerId: 'test@providerId',
+      image: 'quay.io/bootsy/playground:v0',
+      modelsInfo: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyFile',
+            path: 'dummyPath',
+          },
+        },
+      ],
+    } as unknown as InferenceServerConfig);
+
+    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(1, 'Creating Inference server', 'loading', {
+      trackingId: identifier,
+    });
+  });
+
+  test('Pull image error should be reflected in task registry', async () => {
+    vi.mocked(containerEngine.pullImage).mockRejectedValue(new Error('dummy pull image error'));
+
+    const inferenceManager = await getInitializedInferenceManager();
+    inferenceManager.requestCreateInferenceServer({
+      port: 8888,
+      providerId: 'test@providerId',
+      image: 'quay.io/bootsy/playground:v0',
+      modelsInfo: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyFile',
+            path: 'dummyPath',
+          },
+        },
+      ],
+    } as unknown as InferenceServerConfig);
+
+    await vi.waitFor(() => {
+      expect(taskRegistryMock.updateTask).toHaveBeenLastCalledWith({
+        state: 'error',
+        error: 'Something went wrong while trying to create an inference server Error: dummy pull image error.',
+      });
+    });
   });
 });

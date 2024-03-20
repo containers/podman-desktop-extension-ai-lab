@@ -41,7 +41,6 @@ import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import type { SnippetManager } from './managers/SnippetManager';
 import type { Language } from 'postman-code-generators';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
-import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -60,12 +59,8 @@ export class StudioApiImpl implements StudioAPI {
     private snippetManager: SnippetManager,
   ) {}
 
-  async createPlayground(name: string, model: ModelInfo): Promise<void> {
-    return this.playgroundV2.createPlayground(name, model);
-  }
-
-  async getPlaygroundsV2(): Promise<PlaygroundV2[]> {
-    return this.playgroundV2.getPlaygrounds();
+  async createPlayground(model: ModelInfo, name?: string): Promise<void> {
+    return this.playgroundV2.createConversation(model, name);
   }
 
   submitPlaygroundMessage(containerId: string, userInput: string, options?: ModelOptions): Promise<void> {

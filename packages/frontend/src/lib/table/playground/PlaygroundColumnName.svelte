@@ -1,7 +1,7 @@
 <script lang="ts">
 import { router } from 'tinro';
-import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
-export let object: PlaygroundV2;
+import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
+export let object: Conversation;
 
 function openDetails() {
   router.goto(`/playground/${object.id}`);

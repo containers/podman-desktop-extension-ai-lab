@@ -68,7 +68,7 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo);
+  await manager.createConversation({ id: 'model1' } as ModelInfo, 'playground 1');
 
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
     {
@@ -81,7 +81,9 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
 
-  await expect(manager.submit('0', 'dummyUserInput')).rejects.toThrowError('Inference server is not running.');
+  await expect(manager.submit(manager.getConversations()[0].id, 'dummyUserInput')).rejects.toThrowError(
+    'Inference server is not running.',
+  );
 });
 
 test('submit should throw an error if the server is unhealthy', async () => {
@@ -99,8 +101,8 @@ test('submit should throw an error if the server is unhealthy', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await manager.createPlayground('p1', { id: 'model1' } as ModelInfo);
-  const playgroundId = manager.getPlaygrounds()[0].id;
+  await manager.createConversation({ id: 'model1' } as ModelInfo, 'p1');
+  const playgroundId = manager.getConversations()[0].id;
   await expect(manager.submit(playgroundId, 'dummyUserInput')).rejects.toThrowError(
     'Inference server is not healthy, currently status: unhealthy.',
   );
@@ -125,13 +127,13 @@ test('create playground should create conversation.', async () => {
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
   expect(manager.getConversations().length).toBe(0);
-  await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo);
+  await manager.createConversation({ id: 'model-1' } as ModelInfo, 'playground 1');
 
   const conversations = manager.getConversations();
   expect(conversations.length).toBe(1);
 });
 
-test('valid submit should create IPlaygroundMessage and notify the webview', async () => {
+test('valid submit should create Conversation and notify the webview', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
     {
       status: 'running',
@@ -161,13 +163,12 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
+  await manager.createConversation({ id: 'dummyModelId' } as ModelInfo, 'playground 1');
 
   const date = new Date(2000, 1, 1, 13);
   vi.setSystemTime(date);
 
-  const playgrounds = manager.getPlaygrounds();
-  await manager.submit(playgrounds[0].id, 'dummyUserInput');
+  await manager.submit(manager.getConversations()[0].id, 'dummyUserInput');
 
   // Wait for assistant message to be completed
   await vi.waitFor(() => {
@@ -200,52 +201,17 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   });
 });
 
-test('creating a new playground should send new playground to frontend', async () => {
-  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
-  expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_PLAYGROUNDS_V2_UPDATE,
-    body: [
-      {
-        id: '0',
-        modelId: 'model-1',
-        name: 'a name',
-      },
-    ],
-  });
-});
-
-test('creating a new playground with no name should send new playground to frontend with generated name', async () => {
-  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await manager.createPlayground('', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
-  expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_PLAYGROUNDS_V2_UPDATE,
-    body: [
-      {
-        id: '0',
-        modelId: 'model-1',
-        name: 'playground 1',
-      },
-    ],
-  });
-});
-
 test('creating a new playground with no model served should start an inference server', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createConversation(
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'a name',
+  );
   expect(createInferenceServerMock).toHaveBeenCalledWith(
     {
       image: INFERENCE_SERVER_IMAGE,
@@ -274,10 +240,13 @@ test('creating a new playground with the model already served should not start a
   ] as InferenceServer[]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createConversation(
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'a name',
+  );
   expect(createInferenceServerMock).not.toHaveBeenCalled();
 });
 
@@ -298,10 +267,13 @@ test('creating a new playground with the model server stopped should start the i
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const startInferenceServerMock = vi.mocked(inferenceManagerMock.startInferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createConversation(
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'a name',
+  );
   expect(createInferenceServerMock).not.toHaveBeenCalled();
   expect(startInferenceServerMock).toHaveBeenCalledWith('container-1');
 });

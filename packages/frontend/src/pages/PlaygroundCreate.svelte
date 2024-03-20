@@ -7,15 +7,15 @@ import Fa from 'svelte-fa';
 import Button from '../lib/button/Button.svelte';
 import { studioClient } from '../utils/client';
 import { router } from 'tinro';
-import { playgrounds } from '../stores/playgrounds-v2';
 import type { Unsubscriber } from 'svelte/store';
 import { onDestroy } from 'svelte';
+import { conversations } from '/@/stores/conversations';
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let modelId: string | undefined = undefined;
 let submitting: boolean = false;
-let playgroundName: string;
+let playgroundName: string | undefined = undefined;
 let unsubscribe: Unsubscriber | undefined = undefined;
 
 $: {
@@ -37,15 +37,15 @@ function submit() {
   if (model === undefined) throw new Error('model id not valid.');
   // disable submit button
   submitting = true;
-  const playgroundsIdsBefore = $playgrounds.map(playground => playground.id);
+  const playgroundsIdsBefore = $conversations.map(playground => playground.id);
   studioClient
-    .createPlayground(playgroundName, model)
+    .createPlayground(model, playgroundName)
     .catch(err => {
       console.error('Something wrong while trying to create the playground.', err);
     })
     .finally(() => {
       submitting = false;
-      unsubscribe = playgrounds.subscribe(playgrounds => {
+      unsubscribe = conversations.subscribe(playgrounds => {
         if (playgrounds.length > playgroundsIdsBefore.length) {
           const newId = playgrounds.map(pl => pl.id).find(id => !playgroundsIdsBefore.includes(id));
           if (!!newId) {

@@ -35,5 +35,4 @@ export enum Messages {
   MSG_MONITORING_UPDATE = 'monitoring-update',
   MSG_SUPPORTED_LANGUAGES_UPDATE = 'supported-languages-supported',
   MSG_CONVERSATIONS_UPDATE = 'conversations-update',
-  MSG_PLAYGROUNDS_V2_UPDATE = 'playgrounds-v2-update',
 }

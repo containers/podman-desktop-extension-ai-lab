@@ -10,28 +10,24 @@ import {
   type AssistantChat,
 } from '@shared/src/models/IPlaygroundMessage';
 import NavPage from '../lib/NavPage.svelte';
-import { playgrounds } from '../stores/playgrounds-v2';
 import { catalog } from '../stores/catalog';
 import Button from '../lib/button/Button.svelte';
 import { afterUpdate } from 'svelte';
 
-export let playgroundId: string;
+export let conversationId: string;
 let prompt: string;
 let sendEnabled = false;
 let scrollable: Element;
-let lastIsUserMessage = false;
 let errorMsg = '';
 
-$: conversation = $conversations.find(conversation => conversation.id === playgroundId);
-$: playground = $playgrounds.find(playground => playground.id === playgroundId);
-$: model = $catalog.models.find(model => model.id === playground?.modelId);
+$: conversation = $conversations.find(conversation => conversation.id === conversationId);
+$: model = $catalog.models.find(model => model.id === conversation?.modelId);
 $: {
   if (conversation?.messages.length) {
     const latest = conversation.messages[conversation.messages.length - 1];
     if (isAssistantChat(latest) && !isPendingChat(latest)) {
       sendEnabled = true;
     }
-    lastIsUserMessage = isUserChat(latest);
   } else {
     sendEnabled = true;
   }
@@ -63,7 +59,7 @@ function getMessageParagraphs(message: ChatMessage): string[] {
 function askPlayground() {
   errorMsg = '';
   sendEnabled = false;
-  studioClient.submitPlaygroundMessage(playgroundId, prompt).catch((err: unknown) => {
+  studioClient.submitPlaygroundMessage(conversationId, prompt).catch((err: unknown) => {
     errorMsg = String(err);
     sendEnabled = true;
   });
@@ -96,15 +92,15 @@ function elapsedTime(msg: AssistantChat): string {
 }
 </script>
 
-{#if playground}
-  <NavPage title="{playground?.name}" searchEnabled="{false}">
+{#if conversation}
+  <NavPage title="{conversation.name}" searchEnabled="{false}">
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full">
         <div bind:this="{scrollable}" aria-label="conversation" class="w-full h-full overflow-auto">
-          {#if conversation?.messages}
+          {#if conversation.messages}
             <ul class="p-4">
-              {#each conversation?.messages as message}
+              {#each conversation.messages as message}
                 <li class="m-4">
                   <div class="text-lg" class:text-right="{isAssistantChat(message)}">{roleNames[message.role]}</div>
                   <div

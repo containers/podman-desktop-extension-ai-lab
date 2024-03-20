@@ -43,6 +43,8 @@ export interface UserChat extends ChatMessage {
 export interface Conversation {
   id: string;
   messages: ChatMessage[];
+  name: string;
+  modelId: string;
 }
 
 export interface Choice {

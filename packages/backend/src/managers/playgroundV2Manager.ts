@@ -23,41 +23,31 @@ import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/conversationRegistry';
 import type { Conversation, PendingChat, UserChat } from '@shared/src/models/IPlaygroundMessage';
-import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
-import { Publisher } from '../utils/Publisher';
-import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
 
-export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Disposable {
-  #playgrounds: Map<string, PlaygroundV2>;
+export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;
-  #playgroundCounter = 0;
-  #UIDcounter: number;
+  #counter: number;
 
   constructor(
     webview: Webview,
     private inferenceManager: InferenceManager,
   ) {
-    super(webview, Messages.MSG_PLAYGROUNDS_V2_UPDATE, () => this.getPlaygrounds());
-    this.#playgrounds = new Map();
     this.#conversationRegistry = new ConversationRegistry(webview);
-    this.#UIDcounter = 0;
+    this.#counter = 0;
   }
 
-  async createPlayground(name: string, model: ModelInfo): Promise<void> {
-    const id = `${this.#playgroundCounter++}`;
+  private getUniqueId(): string {
+    return `id-${++this.#counter}`;
+  }
 
+  async createConversation(model: ModelInfo, name?: string): Promise<void> {
     if (!name) {
       name = this.getFreeName();
     }
 
-    this.#conversationRegistry.createConversation(id);
-    this.#playgrounds.set(id, {
-      id,
-      name,
-      modelId: model.id,
-    });
+    const conversationId = this.#conversationRegistry.createConversation(model.id, name);
 
     // create/start inference server if necessary
     const servers = this.inferenceManager.getServers();
@@ -67,33 +57,24 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
         await withDefaultConfiguration({
           modelsInfo: [model],
         }),
-        `playground-tracking-${id}`,
+        `tracking-${conversationId}`,
       );
     } else if (server.status === 'stopped') {
       await this.inferenceManager.startInferenceServer(server.container.containerId);
     }
-    this.notify();
-  }
-
-  getPlaygrounds(): PlaygroundV2[] {
-    return Array.from(this.#playgrounds.values());
-  }
-
-  private getUniqueId(): string {
-    return `playground-${++this.#UIDcounter}`;
   }
 
   /**
-   * @param playgroundId
+   * @param conversationId
    * @param userInput the user input
    * @param options the model configuration
    */
-  async submit(playgroundId: string, userInput: string, options?: ModelOptions): Promise<void> {
-    const playground = this.#playgrounds.get(playgroundId);
-    if (playground === undefined) throw new Error('Playground not found.');
+  async submit(conversationId: string, userInput: string, options?: ModelOptions): Promise<void> {
+    const conversation = this.#conversationRegistry.get(conversationId);
+    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
 
     const servers = this.inferenceManager.getServers();
-    const server = servers.find(s => s.models.map(mi => mi.id).includes(playground.modelId));
+    const server = servers.find(s => s.models.map(mi => mi.id).includes(conversation.modelId));
     if (server === undefined) throw new Error('Inference server not found.');
 
     if (server.status !== 'running') throw new Error('Inference server is not running.');
@@ -101,21 +82,18 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     if (server.health?.Status !== 'healthy')
       throw new Error(`Inference server is not healthy, currently status: ${server.health.Status}.`);
 
-    const modelInfo = server.models.find(model => model.id === playground.modelId);
+    const modelInfo = server.models.find(model => model.id === conversation.modelId);
     if (modelInfo === undefined)
       throw new Error(
-        `modelId '${playground.modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`,
+        `modelId '${conversation.modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`,
       );
-
-    const conversation = this.#conversationRegistry.get(playground.id);
-    if (conversation === undefined) throw new Error(`conversation with id ${playground.id} does not exist.`);
 
     this.#conversationRegistry.submit(conversation.id, {
       content: userInput,
       options: options,
       role: 'user',
-      id: this.getUniqueId(),
       timestamp: Date.now(),
+      id: this.getUniqueId(),
     } as UserChat);
 
     const client = new OpenAI({
@@ -124,13 +102,13 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     });
 
     const response = await client.chat.completions.create({
-      messages: this.getFormattedMessages(playground.id),
+      messages: this.getFormattedMessages(conversation.id),
       stream: true,
       model: modelInfo.file.file,
       ...options,
     });
     // process stream async
-    this.processStream(playground.id, response).catch((err: unknown) => {
+    this.processStream(conversation.id, response).catch((err: unknown) => {
       console.error('Something went wrong while processing stream', err);
     });
   }
@@ -181,12 +159,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     this.#conversationRegistry.dispose();
   }
 
-  getFreeName(): string {
-    let i = 0;
-    let name: string;
-    do {
-      name = `playground ${++i}`;
-    } while (this.getPlaygrounds().find(p => p.name === name));
-    return name;
+  private getFreeName(): string {
+    return `Playground ${this.#conversationRegistry.getAll().length + 1}`;
   }
 }

@@ -14,7 +14,15 @@
       "readme": "# Chat Application\n\nThis model service is intended be used as the basis for a chat application. It is capable of having arbitrarily long conversations\nwith users and retains a history of the conversation until it reaches the maximum context length of the model.\nAt that point, the service will remove the earliest portions of the conversation from its memory.\n\nTo use this model service, please follow the steps below:\n\n* [Download Model](#download-models)\n* [Build Image](#build-the-image)\n* [Run Image](#run-the-image)\n* [Interact with Service](#interact-with-the-app)\n* [Deploy on Openshift](#deploy-on-openshift)\n\n## Build and Deploy Locally\n\n### Download model(s)\n\nThe two models that we have tested and recommend for this example are Llama2 and Mistral. The locations of the GGUF variants\nare listed below:\n\n* Llama2 - https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main\n* Mistral - https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main\n\n_For a full list of supported model variants, please see the \"Supported models\" section of the\n[llama.cpp repository](https://github.com/ggerganov/llama.cpp?tab=readme-ov-file#description)._\n\nThis example assumes that the developer already has a copy of the model that they would like to use downloaded onto their host machine and located in the `/models` directory of this repo. \n\nThis can be accomplished with:\n\n```bash\ncd models\nwget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf\ncd ../\n```\n\n## Deploy from Local Container\n\n### Build the image\n\nBuild the `model-service` image.\n\n```bash\ncd chatbot/model_services\npodman build -t chatbot:service -f base/Containerfile .\n```\n\nAfter the image is created it should be run with the model mounted as volume, as shown below.\nThis prevents large model files from being loaded into the container image which can cause a significant slowdown\nwhen transporting the images. If it is required that a model-service image contains the model,\nthe Containerfiles can be modified to copy the model into the image.\n\nWith the model-service image, in addition to a volume mounted model file, an environment variable, $MODEL_PATH,\nshould be set at runtime. If not set, the default location where the service expects a model is at \n`/locallm/models/llama-2-7b-chat.Q5_K_S.gguf` inside the running container. This file can be downloaded from the URL\n`https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf`.\n\n### Run the image\n\nOnce the model service image is built, it can be run with the following:\nBy assuming that we want to mount the model `llama-2-7b-chat.Q5_K_S.gguf`\n\n```bash\nexport MODEL_FILE=llama-2-7b-chat.Q5_K_S.gguf\npodman run --rm -d -it \\n    -v /local/path/to/$MODEL_FILE:/locallm/models/$MODEL_FILE:Z \\n    --env MODEL_PATH=/locallm/models/$MODEL_FILE \\n    -p 7860:7860 \\n    chatbot:service\n```\n\n### Interact with the app\n\nNow the service can be interacted with by going to `0.0.0.0:7860` in your browser.\n\n![](https://raw.githubusercontent.com/redhat-et/locallm/main/assets/app.png)\n\n\nYou can also use the example [chatbot/ai_applications/ask.py](ask.py) to interact with the model-service in a terminal.\nIf the `--prompt` argument is left blank, it will default to \"Hello\".\n\n```bash\ncd chatbot/ai_applications\n\npython ask.py --prompt <YOUR-PROMPT>\n```\n\nOr, you can build the `ask.py` into a container image and run it alongside the model-service container, like so:\n\n```bash\ncd chatbot/ai_applications\npodman build -t chatbot -f builds/Containerfile .\npodman run --rm -d -it -p 8080:8080 chatbot # then interact with the application at 0.0.0.0:8080 in your browser\n```\n\n## Deploy on Openshift\n\nNow that we've developed an application locally that leverages an LLM, we'll want to share it with a wider audience.\nLet's get it off our machine and run it on OpenShift.\n\n### Rebuild for x86\n\nIf you are on a Mac, you'll need to rebuild the model-service image for the x86 architecture for most use case outside of Mac.\nSince this is an AI workload, you may also want to take advantage of Nvidia GPU's available outside our local machine.\nIf so, build the model-service with a base image that contains CUDA and builds llama.cpp specifically for a CUDA environment.\n\n```bash\ncd chatbot/model_services/cuda\npodman build --platform linux/amd64 -t chatbot:service-cuda -f cuda/Containerfile .\n```\n\nThe CUDA environment significantly increases the size of the container image.\nIf you are not utilizing a GPU to run this application, you can create an image\nwithout the CUDA layers for an x86 architecture machine with the following:\n\n```bash\ncd chatbot/model_services\npodman build --platform linux/amd64 -t chatbot:service-amd64 -f base/Containerfile .\n```\n\n### Push to Quay\n\nOnce you login to [quay.io](quay.io) you can push your own newly built version of this LLM application to your repository\nfor use by others.\n\n```bash\npodman login quay.io\n```\n\n```bash\npodman push localhost/chatbot:service-amd64 quay.io/<YOUR-QUAY_REPO>/<YOUR_IMAGE_NAME:TAG>\n```\n\n### Deploy\n\nNow that your model lives in a remote repository we can deploy it.\nGo to your OpenShift developer dashboard and select \"+Add\" to use the Openshift UI to deploy the application.\n\n![](https://raw.githubusercontent.com/redhat-et/locallm/main/assets/add_image.png)\n\nSelect \"Container images\"\n\n![](https://raw.githubusercontent.com/redhat-et/locallm/main/assets/container_images.png)\n\nThen fill out the form on the Deploy page with your [quay.io](quay.io) image name and make sure to set the \"Target port\" to 7860.\n\n![](https://raw.githubusercontent.com/redhat-et/locallm/main/assets/deploy.png)\n\nHit \"Create\" at the bottom and watch your application start.\n\nOnce the pods are up and the application is working, navigate to the \"Routes\" section and click on the link created for you\nto interact with your app.\n\n![](https://raw.githubusercontent.com/redhat-et/locallm/main/assets/app.png)",
       "models": [
         "hf.TheBloke.llama-2-7b-chat.Q5_K_S",
-        "hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M"
+        "hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M",
+        "hf.NousResearch.Hermes-2-Pro-Mistral-7B.Q4_K_M",
+        "hf.ibm.merlinite-7b-Q4_K_M",
+        "hf.froggeric.Cerebrum-1.0-7b-Q4_KS",
+        "hf.TheBloke.openchat-3.5-0106.Q4_K_M",
+        "hf.TheBloke.mistral-7b-openorca.Q4_K_M",
+        "hf.MaziyarPanahi.phi-2.Q4_K_M",
+        "hf.llmware.dragon-mistral-7b-q4_k_m",
+        "hf.MaziyarPanahi.MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M"
       ]
     },
     {
@@ -31,7 +39,15 @@
       "readme": "# Summarizer\n\nThis model service is intended be be used for text summarization tasks. This service can ingest an arbitrarily long text input. If the input length is less than the models maximum context window it will summarize the input directly. If the input is longer than the maximum context window, the input will be divided into appropriately sized chunks. Each chunk will be summarized and a final \"summary of summaries\" will be the services final output. ",
       "models": [
         "hf.TheBloke.llama-2-7b-chat.Q5_K_S",
-        "hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M"
+        "hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M",
+        "hf.NousResearch.Hermes-2-Pro-Mistral-7B.Q4_K_M",
+        "hf.ibm.merlinite-7b-Q4_K_M",
+        "hf.froggeric.Cerebrum-1.0-7b-Q4_KS",
+        "hf.TheBloke.openchat-3.5-0106.Q4_K_M",
+        "hf.TheBloke.mistral-7b-openorca.Q4_K_M",
+        "hf.MaziyarPanahi.phi-2.Q4_K_M",
+        "hf.llmware.dragon-mistral-7b-q4_k_m",
+        "hf.MaziyarPanahi.MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M"
       ]
     },
     {
@@ -48,7 +64,17 @@
       "readme": "# Code Generation\n\nThis example will deploy a local code-gen application using a llama.cpp model server and a python app built with langchain.  \n\n### Download Model\n\n- **codellama**\n\n  - Download URL: `wget https://huggingface.co/TheBloke/CodeLlama-7B-Instruct-GGUF/resolve/main/codellama-7b-instruct.Q4_K_M.gguf` \n\n```\n\ncd ../models\n\nwget <Download URL>\n\ncd ../\n\n```\n\n### Deploy Model Service\n\nTo start the model service, refer to [the playground model-service document](../playground/README.md). Deploy the LLM server and volumn mount the model of choice.\n\n```\n\npodman run --rm -it -d \\ \n\n        -p 8001:8001 \\ \n\n        -v Local/path/to/locallm/models:/locallm/models:ro,Z \\ \n\n        -e MODEL_PATH=models/<model-filename> \\ \n\n        -e HOST=0.0.0.0 \\ \n\n        -e PORT=8001 \\ \n\n        playground:image\n\n```\n\n### Build Container Image\n\nOnce the model service is deployed, then follow the instruction below to build your container image and run it locally. \n\n- `podman build -t codegen-app code-generation -f code-generation/builds/Containerfile`\n\n- `podman run -it -p 8501:8501 codegen-app -- -m http://10.88.0.1:8001/v1` ",
       "models": [
         "hf.TheBloke.llama-2-7b-chat.Q5_K_S",
-        "hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M"
+        "hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M",
+        "hf.NousResearch.Hermes-2-Pro-Mistral-7B.Q4_K_M",
+        "hf.ibm.merlinite-7b-Q4_K_M",
+        "hf.TheBloke.mistral-7b-codealpaca-lora.Q4_K_M",
+        "hf.TheBloke.mistral-7b-code-16k-qlora.Q4_K_M",
+        "hf.froggeric.Cerebrum-1.0-7b-Q4_KS",
+        "hf.TheBloke.openchat-3.5-0106.Q4_K_M",
+        "hf.TheBloke.mistral-7b-openorca.Q4_K_M",
+        "hf.MaziyarPanahi.phi-2.Q4_K_M",
+        "hf.llmware.dragon-mistral-7b-q4_k_m",
+        "hf.MaziyarPanahi.MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M"
       ]
     }
   ],
@@ -70,6 +96,96 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+    },
+    {
+      "id": "hf.NousResearch.Hermes-2-Pro-Mistral-7B.Q4_K_M",
+      "name": "NousResearch/Hermes-2-Pro-Mistral-7B-GGUF",
+      "description": "This is the GGUF version of the model, made for the llama.cpp inference engine.\n If you are looking for the transformers/fp16 model, it is available here: [https://huggingface.co/NousResearch/Hermes-2-Pro-Mistral-7B](https://huggingface.co/NousResearch/Hermes-2-Pro-Mistral-7B)\n Hermes 2 Pro on Mistral 7B is the new flagship 7B Hermes!\n Hermes 2 Pro is an upgraded, retrained version of Nous Hermes 2, consisting of an updated and cleaned version of the OpenHermes 2.5 Dataset, as well as a newly introduced Function Calling and JSON Mode dataset developed in-house.\n This new version of Hermes maintains its excellent general task and conversation capabilities - but also excels at Function Calling, JSON Structured Outputs, and has improved on several other metrics as well, scoring a 90% on our function calling evaluation built in partnership with Fireworks.AI, and an 81% on our structured JSON Output evaluation.\n Hermes Pro takes advantage of a special system prompt and multi-turn function calling structure with a new chatml role in order to make function calling reliable and easy to parse. Learn more about prompting below.\nThis work was a collaboration between Nous Research, @interstellarninja, and Fireworks.AI\n Learn more about the function calling on our github repo here: [https://github.com/NousResearch/Hermes-Function-Calling/tree/main](https://github.com/NousResearch/Hermes-Function-Calling/tree/main)",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/NousResearch/Hermes-2-Pro-Mistral-7B-GGUF/resolve/main/Hermes-2-Pro-Mistral-7B.Q4_K_M.gguf"
+    },
+    {
+      "id": "hf.ibm.merlinite-7b-Q4_K_M",
+      "name": "ibm/merlinite-7b-GGUF",
+      "description": "## Merlinite 7b - GGUF\n4-bit quantized version of [ibm/merlinite-7b](https://huggingface.co/ibm/merlinite-7b)",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/ibm/merlinite-7b-GGUF/resolve/main/merlinite-7b-Q4_K_M.gguf"
+    },
+    {
+      "id": "hf.TheBloke.mistral-7b-codealpaca-lora.Q4_K_M",
+      "name": "TheBloke/Mistral-7B-codealpaca-lora-GGUF",
+      "description": "## Mistral 7B CodeAlpaca Lora - GGUF\n- Model creator: [Kamil](https://huggingface.co/Nondzu)\n- Original model: [Mistral 7B CodeAlpaca Lora](https://huggingface.co/Nondzu/Mistral-7B-codealpaca-lora)\n### Description\nThis repo contains GGUF format model files for [Kamil's Mistral 7B CodeAlpaca Lora](https://huggingface.co/Nondzu/Mistral-7B-codealpaca-lora).\nThese files were quantised using hardware kindly provided by [Massed Compute](https://massedcompute.com/).",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/TheBloke/Mistral-7B-codealpaca-lora-GGUF/resolve/main/mistral-7b-codealpaca-lora.Q4_K_M.gguf"
+    },
+    {
+      "id": "hf.TheBloke.mistral-7b-code-16k-qlora.Q4_K_M",
+      "name": "TheBloke/Mistral-7B-Code-16K-qlora-GGUF",
+      "description": "## Mistral 7B Code 16K qLoRA - GGUF\n- Model creator: [Kamil](https://huggingface.co/Nondzu)\n- Original model: [Mistral 7B Code 16K qLoRA](https://huggingface.co/Nondzu/Mistral-7B-code-16k-qlora)\n## Description\nThis repo contains GGUF format model files for [Kamil's Mistral 7B Code 16K qLoRA](https://huggingface.co/Nondzu/Mistral-7B-code-16k-qlora).",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/TheBloke/Mistral-7B-Code-16K-qlora-GGUF/resolve/main/mistral-7b-code-16k-qlora.Q4_K_M.gguf"
+    },    
+    {
+      "id": "hf.froggeric.Cerebrum-1.0-7b-Q4_KS",
+      "name": "froggeric/Cerebrum-1.0-7b-GGUF",
+      "description": "GGUF quantisations of [AetherResearch/Cerebrum-1.0-7b](https://huggingface.co/AetherResearch/Cerebrum-1.0-7b)\n## Introduction\nCerebrum 7b is a large language model (LLM) created specifically for reasoning tasks. It is based on the Mistral 7b model, fine-tuned on a small custom dataset of native chain of thought data and further improved with targeted RLHF (tRLHF), a novel technique for sample-efficient LLM alignment. Unlike numerous other recent fine-tuning approaches, our training pipeline includes under 5000 training prompts and even fewer labeled datapoints for tRLHF.\nNative chain of thought approach means that Cerebrum is trained to devise a tactical plan before tackling problems that require thinking. For brainstorming, knowledge intensive, and creative tasks Cerebrum will typically omit unnecessarily verbose considerations.\nZero-shot prompted Cerebrum significantly outperforms few-shot prompted Mistral 7b as well as much larger models (such as Llama 2 70b) on a range of tasks that require reasoning, including ARC Challenge, GSM8k, and Math.\nThis LLM model works a lot better than any other mistral mixtral models for agent data, tested on 14th March 2024.",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/froggeric/Cerebrum-1.0-7b-GGUF/resolve/main/Cerebrum-1.0-7b-Q4_KS.gguf"
+    },
+    {
+      "id": "hf.TheBloke.openchat-3.5-0106.Q4_K_M",
+      "name": "TheBloke/openchat-3.5-0106-GGUF",
+      "description": "## Openchat 3.5 0106 - GGUF\n- Model creator: [OpenChat](https://huggingface.co/openchat)\n- Original model: [Openchat 3.5 0106](https://huggingface.co/openchat/openchat-3.5-0106)\n## DescriptionThis repo contains GGUF format model files for [OpenChat's Openchat 3.5 0106](https://huggingface.co/openchat/openchat-3.5-0106).\nThese files were quantised using hardware kindly provided by [Massed Compute](https://massedcompute.com/).",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/TheBloke/openchat-3.5-0106-GGUF/resolve/main/openchat-3.5-0106.Q4_K_M.gguf"
+    },
+    {
+      "id": "hf.TheBloke.mistral-7b-openorca.Q4_K_M",
+      "name": "TheBloke/Mistral-7B-OpenOrca-GGUF",
+      "description": "## Mistral 7B OpenOrca - GGUF- Model creator: [OpenOrca](https://huggingface.co/Open-Orca)\n- Original model: [Mistral 7B OpenOrca](https://huggingface.co/Open-Orca/Mistral-7B-OpenOrca)\n## Description\nThis repo contains GGUF format model files for [OpenOrca's Mistral 7B OpenOrca](https://huggingface.co/Open-Orca/Mistral-7B-OpenOrca).",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/TheBloke/Mistral-7B-OpenOrca-GGUF/resolve/main/mistral-7b-openorca.Q4_K_M.gguf"
+    },
+    {
+      "id": "hf.MaziyarPanahi.phi-2.Q4_K_M",
+      "name": "MaziyarPanahi/phi-2-GGUF",
+      "description": "## [MaziyarPanahi/phi-2-GGUF](https://huggingface.co/MaziyarPanahi/phi-2-GGUF)\n- Model creator: [microsoft](https://huggingface.co/microsoft)\n- Original model: [microsoft/phi-2](https://huggingface.co/microsoft/phi-2)\n## Description\n[MaziyarPanahi/phi-2-GGUF](https://huggingface.co/MaziyarPanahi/phi-2-GGUF) contains GGUF format model files for [microsoft/phi-2](https://huggingface.co/microsoft/phi-2).",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/MaziyarPanahi/phi-2-GGUF/resolve/main/phi-2.Q4_K_M.gguf"
+    },
+    {
+      "id": "hf.llmware.dragon-mistral-7b-q4_k_m",
+      "name": "llmware/dragon-mistral-7b-v0",
+      "description": "## Model Card for Model ID\ndragon-mistral-7b-v0 part of the dRAGon ('Delivering RAG On ...') model series, RAG-instruct trained on top of a Mistral-7B base model.\nDRAGON models have been fine-tuned with the specific objective of fact-based question-answering over complex business and legal documents with an emphasis on reducing hallucinations and providing short, clear answers for workflow automation.",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/llmware/dragon-mistral-7b-v0/resolve/main/dragon-mistral-7b-q4_k_m.gguf"
+    },
+    {
+      "id": "hf.MaziyarPanahi.MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M",
+      "name": "MaziyarPanahi/MixTAO-7Bx2-MoE-Instruct-v7.0-GGUF",
+      "description": "## [MaziyarPanahi/MixTAO-7Bx2-MoE-Instruct-v7.0-GGUF](https://huggingface.co/MaziyarPanahi/MixTAO-7Bx2-MoE-Instruct-v7.0-GGUF)\n- Model creator: [zhengr](https://huggingface.co/zhengr)\n- Original model: [zhengr/MixTAO-7Bx2-MoE-Instruct-v7.0](https://huggingface.co/zhengr/MixTAO-7Bx2-MoE-Instruct-v7.0)\n## Description\n[MaziyarPanahi/MixTAO-7Bx2-MoE-Instruct-v7.0-GGUF](https://huggingface.co/MaziyarPanahi/MixTAO-7Bx2-MoE-Instruct-v7.0-GGUF) contains GGUF format model files for [zhengr/MixTAO-7Bx2-MoE-Instruct-v7.0](https://huggingface.co/zhengr/MixTAO-7Bx2-MoE-Instruct-v7.0).",
+      "hw": "CPU",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/MaziyarPanahi/MixTAO-7Bx2-MoE-Instruct-v7.0-GGUF/resolve/main/MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M.gguf"
     }
   ],
   "categories": [

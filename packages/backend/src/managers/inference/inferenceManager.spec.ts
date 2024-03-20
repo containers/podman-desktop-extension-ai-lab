@@ -308,7 +308,7 @@ describe('Create Inference Server', () => {
       'dummyTrackingId',
     );
 
-    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(1, 'Pulling quay.io/bootsy/playground:v0.', 'loading', {
+    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(1, 'Pulling ghcr.io/projectatomic/ai-studio-playground-images/ai-studio-playground-chat:0.1.0.', 'loading', {
       trackingId: 'dummyTrackingId',
     });
     expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(2, 'Creating container.', 'loading', {

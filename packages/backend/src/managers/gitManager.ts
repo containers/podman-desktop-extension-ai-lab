@@ -72,7 +72,7 @@ export class GitManager {
         return;
       }
 
-      const error = `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
+      const error = `The repository "${gitCloneInfo.repository}" appears to have already been cloned and does not match the expected configuration: ${result.error}`;
 
       // Ask user
       const selected = await window.showWarningMessage(

@@ -556,33 +556,29 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     };
   }
 
-  async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }) {
+  async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }): Promise<void> {
     // Creating checkout task
     const checkoutTask: Task = this.taskRegistry.createTask('Checking out repository', 'loading', {
       ...labels,
       git: 'checkout',
     });
 
+    const installed = await this.git.isGitInstalled();
+    if (!installed) {
+      checkoutTask.state = 'error';
+      checkoutTask.error = 'Git is not installed or cannot be found.';
+      this.taskRegistry.updateTask(checkoutTask);
+      // propagate error
+      throw new Error(checkoutTask.error);
+    }
+
     try {
-      // We might already have the repository cloned
-      if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
-        // Update checkout state
-        checkoutTask.name = 'Checking out repository (cached).';
-        checkoutTask.state = 'success';
-      } else {
-        // Create folder
-        fs.mkdirSync(gitCloneInfo.targetDirectory, { recursive: true });
-
-        // Clone the repository
-        console.log(`Cloning repository ${gitCloneInfo.repository} in ${gitCloneInfo.targetDirectory}.`);
-        await this.git.cloneRepository(gitCloneInfo);
-
-        // Update checkout state
-        checkoutTask.state = 'success';
-      }
+      await this.git.processCheckout(gitCloneInfo);
+      checkoutTask.state = 'success';
     } catch (err: unknown) {
       checkoutTask.state = 'error';
       checkoutTask.error = String(err);
+      // propagate error
       throw err;
     } finally {
       // Update task registry

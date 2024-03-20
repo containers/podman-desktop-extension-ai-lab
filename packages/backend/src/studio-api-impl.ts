@@ -60,6 +60,10 @@ export class StudioApiImpl implements StudioAPI {
     private snippetManager: SnippetManager,
   ) {}
 
+  async deleteConversation(conversationId: string): Promise<void> {
+    this.playgroundV2.deletePlayground(conversationId);
+  }
+
   async createPlayground(name: string, model: ModelInfo): Promise<void> {
     return this.playgroundV2.createPlayground(name, model);
   }

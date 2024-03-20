@@ -71,6 +71,10 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     this.notify();
   }
 
+  deleteConversation(id: string): void {
+    this.#conversations.delete(id);
+  }
+
   createConversation(id: string): void {
     this.#conversations.set(id, {
       messages: [],

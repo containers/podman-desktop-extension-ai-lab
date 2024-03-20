@@ -8,10 +8,12 @@ import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.s
 import { Row, Column } from '../lib/table/table';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import { playgrounds } from '../stores/playgrounds-v2';
+import ConversationColumnAction from '/@/lib/table/service/ConversationColumnAction.svelte';
 
 const columns: Column<PlaygroundV2>[] = [
   new Column<PlaygroundV2>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
   new Column<PlaygroundV2>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
+  new Column<PlaygroundV2>('Actions', { width: '40px', renderer: ConversationColumnAction }),
 ];
 const row = new Row<PlaygroundV2>({});
 

@@ -19,13 +19,10 @@
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { ApplicationManager } from './managers/applicationManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { PlayGroundManager } from './managers/playground';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import type { QueryState } from '@shared/src/models/IPlaygroundQueryState';
 
 import type { CatalogManager } from './managers/catalogManager';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
-import type { PlaygroundState } from '@shared/src/models/IPlaygroundState';
 import type { ModelsManager } from './managers/modelsManager';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { Task } from '@shared/src/models/ITask';
@@ -53,7 +50,6 @@ interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
 export class StudioApiImpl implements StudioAPI {
   constructor(
     private applicationManager: ApplicationManager,
-    private playgroundManager: PlayGroundManager,
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
     private telemetry: podmanDesktopApi.TelemetryLogger,
@@ -161,32 +157,6 @@ export class StudioApiImpl implements StudioAPI {
 
   async getModelsInfo(): Promise<ModelInfo[]> {
     return this.modelsManager.getModelsInfo();
-  }
-
-  async startPlayground(modelId: string): Promise<void> {
-    const modelPath = this.modelsManager.getLocalModelPath(modelId);
-    this.playgroundManager.startPlayground(modelId, modelPath).catch((err: unknown) => {
-      this.playgroundManager.setPlaygroundError(modelId, `Something went wrong while starting the playground: ${err}`);
-    });
-  }
-
-  async stopPlayground(modelId: string): Promise<void> {
-    this.playgroundManager.stopPlayground(modelId).catch((err: unknown) => {
-      this.playgroundManager.setPlaygroundError(modelId, `Something went wrong while stopping the playground: ${err}`);
-    });
-  }
-
-  async askPlayground(modelId: string, prompt: string): Promise<number> {
-    const modelInfo = this.modelsManager.getModelInfo(modelId);
-    return this.playgroundManager.askPlayground(modelInfo, prompt);
-  }
-
-  async getPlaygroundQueriesState(): Promise<QueryState[]> {
-    return this.playgroundManager.getQueriesState();
-  }
-
-  async getPlaygroundsState(): Promise<PlaygroundState[]> {
-    return this.playgroundManager.getPlaygroundsState();
   }
 
   async getCatalog(): Promise<ApplicationCatalog> {

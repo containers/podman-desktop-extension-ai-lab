@@ -17,9 +17,7 @@
  ***********************************************************************/
 
 import type { ModelInfo } from './models/IModelInfo';
-import type { QueryState } from './models/IPlaygroundQueryState';
 import type { ApplicationCatalog } from './models/IApplicationCatalog';
-import type { PlaygroundState } from './models/IPlaygroundState';
 import type { TelemetryTrustedValue } from '@podman-desktop/api';
 import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
@@ -46,26 +44,7 @@ export abstract class StudioAPI {
    * Delete the folder containing the model from local storage
    */
   abstract requestRemoveLocalModel(modelId: string): Promise<void>;
-  /**
-   * @deprecated
-   */
-  abstract startPlayground(modelId: string): Promise<void>;
-  /**
-   * @deprecated
-   */
-  abstract stopPlayground(modelId: string): Promise<void>;
-  /**
-   * @deprecated
-   */
-  abstract askPlayground(modelId: string, prompt: string): Promise<number>;
-  /**
-   * @deprecated
-   */
-  abstract getPlaygroundQueriesState(): Promise<QueryState[]>;
-  /**
-   * @deprecated
-   */
-  abstract getPlaygroundsState(): Promise<PlaygroundState[]>;
+
   abstract getModelsDirectory(): Promise<string>;
 
   abstract navigateToContainer(containerId: string): Promise<void>;

@@ -26,7 +26,7 @@ import { quarkusLangchain4Jgenerator } from './snippets/quarkus-snippet';
 type Generator = (requestOptions: RequestOptions) => string;
 
 export class SnippetManager extends Publisher<Language[]> implements Disposable {
-  #languages: Language[] = getLanguageList();
+  #languages: Language[];
   #additionalGenerators: Map<string, Generator>;
 
   constructor(webview: Webview) {

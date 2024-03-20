@@ -259,6 +259,64 @@ test.each(['', 'my system prompt'])(
   },
 );
 
+test('submit should send options', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      status: 'running',
+      health: {
+        Status: 'healthy',
+      },
+      models: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyModelFile',
+          },
+        },
+      ],
+      connection: {
+        port: 8888,
+      },
+    } as unknown as InferenceServer,
+  ]);
+  const createMock = vi.fn().mockResolvedValue([]);
+  vi.mocked(OpenAI).mockReturnValue({
+    chat: {
+      completions: {
+        create: createMock,
+      },
+    },
+  } as unknown as OpenAI);
+
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
+
+  const playgrounds = manager.getPlaygrounds();
+  await manager.submit(playgrounds[0].id, 'dummyUserInput', '', { temperature: 0.123, max_tokens: 45, top_p: 0.345 });
+
+  const messages: unknown[] = [
+    {
+      content: 'dummyUserInput',
+      id: expect.any(String),
+      role: 'user',
+      timestamp: expect.any(Number),
+      options: {
+        temperature: 0.123,
+        max_tokens: 45,
+        top_p: 0.345,
+      },
+    },
+  ];
+  expect(createMock).toHaveBeenCalledWith({
+    messages,
+    model: 'dummyModelFile',
+    stream: true,
+    temperature: 0.123,
+    max_tokens: 45,
+    top_p: 0.345,
+  });
+});
+
 test('creating a new playground should send new playground to frontend', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);

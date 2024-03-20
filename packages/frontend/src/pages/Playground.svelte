@@ -15,6 +15,7 @@ import { catalog } from '../stores/catalog';
 import Button from '../lib/button/Button.svelte';
 import { afterUpdate } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
+import RangeInput from '../lib/RangeInput.svelte';
 
 export let playgroundId: string;
 let prompt: string;
@@ -25,6 +26,9 @@ let errorMsg = '';
 
 // settings
 let systemPrompt: string = '';
+let temperature = 0.8;
+let max_tokens = -1;
+let top_p = 0.5;
 
 $: conversation = $conversations.find(conversation => conversation.id === playgroundId);
 $: playground = $playgrounds.find(playground => playground.id === playgroundId);
@@ -67,10 +71,16 @@ function getMessageParagraphs(message: ChatMessage): string[] {
 function askPlayground() {
   errorMsg = '';
   sendEnabled = false;
-  studioClient.submitPlaygroundMessage(playgroundId, prompt, systemPrompt, {}).catch((err: unknown) => {
-    errorMsg = String(err);
-    sendEnabled = true;
-  });
+  studioClient
+    .submitPlaygroundMessage(playgroundId, prompt, systemPrompt, {
+      temperature,
+      max_tokens,
+      top_p,
+    })
+    .catch((err: unknown) => {
+      errorMsg = String(err);
+      sendEnabled = true;
+    });
   prompt = '';
 }
 
@@ -147,10 +157,18 @@ function elapsedTime(msg: AssistantChat): string {
                 <div class="w-full">
                   <textarea
                     bind:value="{systemPrompt}"
-                    class="w-full outline-none bg-charcoal-500 rounded-sm text-gray-700 placeholder-gray-700"
+                    class="p-2 w-full outline-none bg-charcoal-500 rounded-sm text-gray-700 placeholder-gray-700"
                     rows="4"
                     placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
                   ></textarea>
+                </div>
+              </div>
+              <div class="bg-charcoal-600 w-full rounded-md text-xs p-4">
+                <div class="mb-4 flex flex-col">Model Parameters</div>
+                <div class="flex flex-col space-y-4">
+                  <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value="{temperature}" />
+                  <RangeInput name="max tokens" min="-1" max="32000" step="1" bind:value="{max_tokens}" />
+                  <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value="{top_p}" />
                 </div>
               </div>
             </svelte:fragment>

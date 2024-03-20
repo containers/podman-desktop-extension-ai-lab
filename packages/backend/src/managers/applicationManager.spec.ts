@@ -1361,32 +1361,32 @@ describe('pod detection', async () => {
 
 describe('getImageTag', () => {
   const manager = new ApplicationManager(
-      '/path/to/user/dir',
-      {} as GitManager,
-      taskRegistry,
-      {
-        postMessage: mocks.postMessageMock,
-      } as unknown as Webview,
-      {
-        onPodStart: mocks.onPodStartMock,
-        onPodStop: mocks.onPodStopMock,
-        onPodRemove: mocks.onPodRemoveMock,
-        startupSubscribe: mocks.startupSubscribeMock,
-        onMachineStop: mocks.onMachineStopMock,
-      } as unknown as PodmanConnection,
-      {
-        getRecipeById: vi.fn().mockReturnValue({ name: 'MyRecipe' } as Recipe),
-      } as unknown as CatalogManager,
-      {} as ModelsManager,
-      {} as TelemetryLogger,
-      localRepositoryRegistry,
-    );
+    '/path/to/user/dir',
+    {} as GitManager,
+    taskRegistry,
+    {
+      postMessage: mocks.postMessageMock,
+    } as unknown as Webview,
+    {
+      onPodStart: mocks.onPodStartMock,
+      onPodStop: mocks.onPodStopMock,
+      onPodRemove: mocks.onPodRemoveMock,
+      startupSubscribe: mocks.startupSubscribeMock,
+      onMachineStop: mocks.onMachineStopMock,
+    } as unknown as PodmanConnection,
+    {
+      getRecipeById: vi.fn().mockReturnValue({ name: 'MyRecipe' } as Recipe),
+    } as unknown as CatalogManager,
+    {} as ModelsManager,
+    {} as TelemetryLogger,
+    localRepositoryRegistry,
+  );
   test('return recipe-container tag if container image prop is not defined', () => {
     const recipe = {
       id: 'recipe1',
     } as Recipe;
     const container = {
-      name: 'name'
+      name: 'name',
     } as ContainerConfig;
     const imageTag = manager.getImageTag(recipe, container);
     expect(imageTag).equals('recipe1-name:latest');
@@ -1413,4 +1413,4 @@ describe('getImageTag', () => {
     const imageTag = manager.getImageTag(recipe, container);
     expect(imageTag).equals('quay.io/repo/image:latest');
   });
-})
+});

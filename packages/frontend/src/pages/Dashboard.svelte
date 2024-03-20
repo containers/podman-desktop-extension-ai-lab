@@ -6,7 +6,7 @@ import { getDashboardContent } from './dashboard';
 
 <NavPage searchEnabled="{false}" title="Dashboard">
   <div slot="content" class="flex flex-col min-w-full h-fit">
-    <div class="min-w-full flex-1" aria-label="inner-content">
+    <div class="min-w-full flex-1 px-5 pt-5" aria-label="inner-content">
       <MarkdownRenderer source="{getDashboardContent()}" />
     </div>
   </div>

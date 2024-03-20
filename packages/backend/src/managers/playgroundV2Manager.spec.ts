@@ -80,7 +80,7 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
 
-  await expect(manager.submit('0', 'dummyUserInput')).rejects.toThrowError('Inference server is not running.');
+  await expect(manager.submit('0', 'dummyUserInput', '')).rejects.toThrowError('Inference server is not running.');
 });
 
 test('submit should throw an error if the server is unhealthy', async () => {
@@ -100,7 +100,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
   await manager.createPlayground('p1', { id: 'model1' } as ModelInfo);
   const playgroundId = manager.getPlaygrounds()[0].id;
-  await expect(manager.submit(playgroundId, 'dummyUserInput')).rejects.toThrowError(
+  await expect(manager.submit(playgroundId, 'dummyUserInput', '')).rejects.toThrowError(
     'Inference server is not healthy, currently status: unhealthy.',
   );
 });
@@ -166,7 +166,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   vi.setSystemTime(date);
 
   const playgrounds = manager.getPlaygrounds();
-  await manager.submit(playgrounds[0].id, 'dummyUserInput');
+  await manager.submit(playgrounds[0].id, 'dummyUserInput', '');
 
   // Wait for assistant message to be completed
   await vi.waitFor(() => {

@@ -48,6 +48,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
   deletePlayground(conversationId: string): void {
     this.#conversationRegistry.deleteConversation(conversationId);
     this.#playgrounds.delete(conversationId);
+    this.notify();
   }
 
   async createPlayground(name: string, model: ModelInfo): Promise<void> {

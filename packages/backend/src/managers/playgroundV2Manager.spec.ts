@@ -379,4 +379,5 @@ test('delete conversation should delete the conversation', async () => {
   expect(conversations.length).toBe(1);
   manager.deletePlayground(conversations[0].id);
   expect(manager.getConversations().length).toBe(0);
+  expect(webviewMock.postMessage).toHaveBeenCalled();
 });

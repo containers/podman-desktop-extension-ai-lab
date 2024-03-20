@@ -70,7 +70,10 @@ const podmanConnectionMock = {
   onMachineStop: vi.fn(),
 } as unknown as PodmanConnection;
 
-const modelsManager = {} as unknown as ModelsManager;
+const modelsManager = {
+  getLocalModelPath: vi.fn(),
+  uploadModelToPodmanMachine: vi.fn(),
+} as unknown as ModelsManager;
 
 const telemetryMock = {
   logUsage: vi.fn(),
@@ -136,6 +139,8 @@ beforeEach(() => {
     id: 'dummyCreatedContainerId',
   });
   vi.mocked(taskRegistryMock.getTasksByLabels).mockReturnValue([]);
+  vi.mocked(modelsManager.getLocalModelPath).mockReturnValue('/local/model.guff');
+  vi.mocked(modelsManager.uploadModelToPodmanMachine).mockResolvedValue('/mnt/path/model.guff');
 });
 
 /**
@@ -270,24 +275,6 @@ describe('Create Inference Server', () => {
     ).rejects.toThrowError('Need at least one model info to start an inference server.');
   });
 
-  test('modelInfo without file', async () => {
-    const inferenceManager = await getInitializedInferenceManager();
-    await expect(
-      inferenceManager.createInferenceServer(
-        {
-          providerId: 'test@providerId',
-          image: INFERENCE_SERVER_IMAGE,
-          modelsInfo: [
-            {
-              id: 'dummyModelId',
-            },
-          ],
-        } as unknown as InferenceServerConfig,
-        'dummyTrackingId',
-      ),
-    ).rejects.toThrowError('The model info file provided is undefined');
-  });
-
   test('valid InferenceServerConfig', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await inferenceManager.createInferenceServer(
@@ -299,8 +286,8 @@ describe('Create Inference Server', () => {
           {
             id: 'dummyModelId',
             file: {
-              file: 'dummyFile',
-              path: 'dummyPath',
+              file: 'model.guff',
+              path: '/mnt/path',
             },
           },
         ],
@@ -308,6 +295,19 @@ describe('Create Inference Server', () => {
       'dummyTrackingId',
     );
 
+    expect(modelsManager.uploadModelToPodmanMachine).toHaveBeenCalledWith(
+      {
+        id: 'dummyModelId',
+        file: {
+          file: 'model.guff',
+          path: '/mnt/path',
+        },
+      },
+      '/local/model.guff',
+      {
+        trackingId: 'dummyTrackingId',
+      },
+    );
     expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(
       1,
       'Pulling ghcr.io/projectatomic/ai-studio-playground-images/ai-studio-playground-chat:0.1.0.',
@@ -335,8 +335,8 @@ describe('Create Inference Server', () => {
         models: [
           {
             file: {
-              file: 'dummyFile',
-              path: 'dummyPath',
+              file: 'model.guff',
+              path: '/mnt/path',
             },
             id: 'dummyModelId',
           },

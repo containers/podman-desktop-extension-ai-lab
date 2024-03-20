@@ -38,6 +38,8 @@ import type { InferenceServerConfig } from '@shared/src/models/InferenceServerCo
 import type { ModelsManager } from '../modelsManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getRandomString } from '../../utils/randomUtils';
+import { ModelInfo } from '@shared/src/models/IModelInfo';
+import { basename, dirname } from 'node:path';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -178,6 +180,23 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       state: 'success',
       progress: undefined,
     });
+
+    // upload models to podman machine if user system is supported
+    config.modelsInfo = await Promise.all(
+      config.modelsInfo.map(modelInfo =>
+        this.modelsManager
+          .uploadModelToPodmanMachine(modelInfo, this.modelsManager.getLocalModelPath(modelInfo.id), {
+            trackingId: trackingId,
+          })
+          .then(path => ({
+            ...modelInfo,
+            file: {
+              path: dirname(path),
+              file: basename(path),
+            },
+          })),
+      ),
+    );
 
     const containerTask = this.taskRegistry.createTask(`Creating container.`, 'loading', { trackingId: trackingId });
 

@@ -5,7 +5,7 @@
       "description" : "This is a Streamlit chat demo application.",
       "name" : "ChatBot",
       "repository": "https://github.com/redhat-et/locallm",
-      "ref": "b0b2eca",
+      "ref": "6795ba1",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -22,7 +22,7 @@
       "description" : "This is a Streamlit demo application for summarizing text.",
       "name" : "Summarizer",
       "repository": "https://github.com/redhat-et/locallm",
-      "ref": "4ac7950",
+      "ref": "10bc46e",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -39,7 +39,7 @@
       "description" : "This is a code-generation demo application.",
       "name" : "Code Generation",
       "repository": "https://github.com/redhat-et/locallm",
-      "ref": "a1ee3db",
+      "ref": "a5e830d",
       "icon": "generator",
       "categories": [
         "natural-language-processing"

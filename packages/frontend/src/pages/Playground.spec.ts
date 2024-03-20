@@ -62,12 +62,14 @@ test('should display playground and model names in header', async () => {
     recipes: [],
     categories: [],
   });
-  const customConversations = writable<Conversation[]>([{
-    id: 'conversation-1',
-    name: 'Conversation 1',
-    modelId: 'model-1',
-    messages: [],
-  }]);
+  const customConversations = writable<Conversation[]>([
+    {
+      id: 'conversation-1',
+      name: 'Conversation 1',
+      modelId: 'model-1',
+      messages: [],
+    },
+  ]);
   vi.mocked(conversationsStore).conversations = customConversations;
 
   render(Playground, {
@@ -95,12 +97,14 @@ test('send prompt should be enabled initially', async () => {
     recipes: [],
     categories: [],
   });
-  const customConversations = writable<Conversation[]>([    {
-    id: 'conversation-1',
-    name: 'Conversation 1',
-    modelId: 'model-1',
-    messages: [],
-  },]);
+  const customConversations = writable<Conversation[]>([
+    {
+      id: 'conversation-1',
+      name: 'Conversation 1',
+      modelId: 'model-1',
+      messages: [],
+    },
+  ]);
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {
     conversationId: 'conversation-1',
@@ -124,12 +128,14 @@ test('sending prompt should disable the send button', async () => {
     categories: [],
   });
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
-  const customConversations = writable<Conversation[]>([    {
-    id: 'conversation-1',
-    name: 'Conversation 1',
-    modelId: 'model-1',
-    messages: [],
-  },]);
+  const customConversations = writable<Conversation[]>([
+    {
+      id: 'conversation-1',
+      name: 'Conversation 1',
+      modelId: 'model-1',
+      messages: [],
+    },
+  ]);
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {
     conversationId: 'conversation-1',
@@ -160,12 +166,14 @@ test('receiving complete message should enable the send button', async () => {
     categories: [],
   });
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
-  const customConversations = writable<Conversation[]>([{
-    id: 'conversation-1',
-    name: 'Conversation 1',
-    modelId: 'model-1',
-    messages: [],
-  }]);
+  const customConversations = writable<Conversation[]>([
+    {
+      id: 'conversation-1',
+      name: 'Conversation 1',
+      modelId: 'model-1',
+      messages: [],
+    },
+  ]);
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {
     conversationId: 'conversation-1',

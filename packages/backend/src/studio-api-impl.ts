@@ -68,8 +68,13 @@ export class StudioApiImpl implements StudioAPI {
     return this.playgroundV2.getPlaygrounds();
   }
 
-  submitPlaygroundMessage(containerId: string, userInput: string, options?: ModelOptions): Promise<void> {
-    return this.playgroundV2.submit(containerId, userInput, options);
+  submitPlaygroundMessage(
+    containerId: string,
+    userInput: string,
+    systemPrompt: string,
+    options?: ModelOptions,
+  ): Promise<void> {
+    return this.playgroundV2.submit(containerId, userInput, systemPrompt, options);
   }
 
   async getPlaygroundConversations(): Promise<Conversation[]> {

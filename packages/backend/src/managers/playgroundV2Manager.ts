@@ -88,7 +88,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
    * @param userInput the user input
    * @param options the model configuration
    */
-  async submit(playgroundId: string, userInput: string, options?: ModelOptions): Promise<void> {
+  async submit(playgroundId: string, userInput: string, systemPrompt: string, options?: ModelOptions): Promise<void> {
     const playground = this.#playgrounds.get(playgroundId);
     if (playground === undefined) throw new Error('Playground not found.');
 
@@ -123,16 +123,26 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
       apiKey: 'dummy',
     });
 
-    const response = await client.chat.completions.create({
-      messages: this.getFormattedMessages(playground.id),
-      stream: true,
-      model: modelInfo.file.file,
-      ...options,
-    });
-    // process stream async
-    this.processStream(playground.id, response).catch((err: unknown) => {
-      console.error('Something went wrong while processing stream', err);
-    });
+    const messages = this.getFormattedMessages(playground.id);
+    if (systemPrompt) {
+      messages.push({ role: 'system', content: systemPrompt });
+    }
+    client.chat.completions
+      .create({
+        messages,
+        stream: true,
+        model: modelInfo.file.file,
+        ...options,
+      })
+      .then(response => {
+        // process stream async
+        this.processStream(playground.id, response).catch((err: unknown) => {
+          console.error('Something went wrong while processing stream', err);
+        });
+      })
+      .catch((err: unknown) => {
+        console.error('Something went wrong while creating model reponse', err);
+      });
   }
 
   /**

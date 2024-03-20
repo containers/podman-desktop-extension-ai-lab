@@ -14,6 +14,7 @@ import { playgrounds } from '../stores/playgrounds-v2';
 import { catalog } from '../stores/catalog';
 import Button from '../lib/button/Button.svelte';
 import { afterUpdate } from 'svelte';
+import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 
 export let playgroundId: string;
 let prompt: string;
@@ -21,6 +22,9 @@ let sendEnabled = false;
 let scrollable: Element;
 let lastIsUserMessage = false;
 let errorMsg = '';
+
+// settings
+let systemPrompt: string = '';
 
 $: conversation = $conversations.find(conversation => conversation.id === playgroundId);
 $: playground = $playgrounds.find(playground => playground.id === playgroundId);
@@ -63,7 +67,7 @@ function getMessageParagraphs(message: ChatMessage): string[] {
 function askPlayground() {
   errorMsg = '';
   sendEnabled = false;
-  studioClient.submitPlaygroundMessage(playgroundId, prompt).catch((err: unknown) => {
+  studioClient.submitPlaygroundMessage(playgroundId, prompt, systemPrompt, {}).catch((err: unknown) => {
     errorMsg = String(err);
     sendEnabled = true;
   });
@@ -101,30 +105,56 @@ function elapsedTime(msg: AssistantChat): string {
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full">
-        <div bind:this="{scrollable}" aria-label="conversation" class="w-full h-full overflow-auto">
-          {#if conversation?.messages}
-            <ul class="p-4">
-              {#each conversation?.messages as message}
-                <li class="m-4">
-                  <div class="text-lg" class:text-right="{isAssistantChat(message)}">{roleNames[message.role]}</div>
-                  <div
-                    class="p-4 rounded-md"
-                    class:bg-charcoal-400="{isUserChat(message)}"
-                    class:bg-charcoal-900="{isAssistantChat(message)}"
-                    class:ml-8="{isAssistantChat(message)}"
-                    class:mr-8="{isUserChat(message)}">
-                    {#each getMessageParagraphs(message) as paragraph}
-                      <p>{paragraph}</p>
-                    {/each}
-                  </div>
-                  {#if isAssistantChat(message)}
-                    <div class="text-sm text-gray-400 text-right" aria-label="elapsed">{elapsedTime(message)} s</div>
+        <div class="h-full overflow-auto" bind:this="{scrollable}">
+          <ContentDetailsLayout detailsTitle="Settings" detailsLabel="settings">
+            <svelte:fragment slot="content">
+              <div class="flex flex-col w-full h-full">
+                <div aria-label="conversation" class="w-full h-full">
+                  {#if conversation?.messages}
+                    <ul class="p-4">
+                      {#each conversation?.messages as message}
+                        <li class="m-4">
+                          <div class="text-lg" class:text-right="{isAssistantChat(message)}">
+                            {roleNames[message.role]}
+                          </div>
+                          <div
+                            class="p-4 rounded-md"
+                            class:bg-charcoal-400="{isUserChat(message)}"
+                            class:bg-charcoal-900="{isAssistantChat(message)}"
+                            class:ml-8="{isAssistantChat(message)}"
+                            class:mr-8="{isUserChat(message)}">
+                            {#each getMessageParagraphs(message) as paragraph}
+                              <p>{paragraph}</p>
+                            {/each}
+                          </div>
+                          {#if isAssistantChat(message)}
+                            <div class="text-sm text-gray-400 text-right" aria-label="elapsed">
+                              {elapsedTime(message)} s
+                            </div>
+                          {/if}
+                          <div></div>
+                        </li>
+                      {/each}
+                    </ul>
                   {/if}
-                  <div></div>
-                </li>
-              {/each}
-            </ul>
-          {/if}
+                </div>
+              </div>
+            </svelte:fragment>
+            <svelte:fragment slot="details">
+              <div class="text-gray-800 text-xs">Next prompt will use these settings</div>
+              <div class="bg-charcoal-600 w-full rounded-md text-xs p-4">
+                <div class="mb-4">System Prompt</div>
+                <div class="w-full">
+                  <textarea
+                    bind:value="{systemPrompt}"
+                    class="w-full outline-none bg-charcoal-500 rounded-sm text-gray-700 placeholder-gray-700"
+                    rows="4"
+                    placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
+                  ></textarea>
+                </div>
+              </div>
+            </svelte:fragment>
+          </ContentDetailsLayout>
         </div>
         {#if errorMsg}
           <div class="text-red-500 text-sm p-2">{errorMsg}</div>

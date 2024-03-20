@@ -81,7 +81,7 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
 
-  await expect(manager.submit('0', 'dummyUserInput')).rejects.toThrowError('Inference server is not running.');
+  await expect(manager.submit('0', 'dummyUserInput', '')).rejects.toThrowError('Inference server is not running.');
 });
 
 test('submit should throw an error if the server is unhealthy', async () => {
@@ -101,7 +101,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
   await manager.createPlayground('p1', { id: 'model1' } as ModelInfo);
   const playgroundId = manager.getPlaygrounds()[0].id;
-  await expect(manager.submit(playgroundId, 'dummyUserInput')).rejects.toThrowError(
+  await expect(manager.submit(playgroundId, 'dummyUserInput', '')).rejects.toThrowError(
     'Inference server is not healthy, currently status: unhealthy.',
   );
 });
@@ -167,7 +167,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   vi.setSystemTime(date);
 
   const playgrounds = manager.getPlaygrounds();
-  await manager.submit(playgrounds[0].id, 'dummyUserInput');
+  await manager.submit(playgrounds[0].id, 'dummyUserInput', '');
 
   // Wait for assistant message to be completed
   await vi.waitFor(() => {
@@ -183,7 +183,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     id: expect.anything(),
     options: undefined,
     role: 'user',
-    timestamp: date.getTime(),
+    timestamp: expect.any(Number),
   });
   expect(conversations[0].messages[1]).toStrictEqual({
     choices: undefined,
@@ -191,7 +191,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     content: '',
     id: expect.anything(),
     role: 'assistant',
-    timestamp: date.getTime(),
+    timestamp: expect.any(Number),
   });
 
   expect(webviewMock.postMessage).toHaveBeenLastCalledWith({
@@ -199,6 +199,65 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     body: conversations,
   });
 });
+
+test.each(['', 'my system prompt'])(
+  'valid submit should send a message with system prompt if non empty, system prompt is "%s"}',
+  async (systemPrompt: string) => {
+    vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+      {
+        status: 'running',
+        health: {
+          Status: 'healthy',
+        },
+        models: [
+          {
+            id: 'dummyModelId',
+            file: {
+              file: 'dummyModelFile',
+            },
+          },
+        ],
+        connection: {
+          port: 8888,
+        },
+      } as unknown as InferenceServer,
+    ]);
+    const createMock = vi.fn().mockResolvedValue([]);
+    vi.mocked(OpenAI).mockReturnValue({
+      chat: {
+        completions: {
+          create: createMock,
+        },
+      },
+    } as unknown as OpenAI);
+
+    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+    await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
+
+    const playgrounds = manager.getPlaygrounds();
+    await manager.submit(playgrounds[0].id, 'dummyUserInput', systemPrompt);
+
+    const messages: unknown[] = [
+      {
+        content: 'dummyUserInput',
+        id: expect.any(String),
+        role: 'user',
+        timestamp: expect.any(Number),
+      },
+    ];
+    if (systemPrompt) {
+      messages.push({
+        content: 'my system prompt',
+        role: 'system',
+      });
+    }
+    expect(createMock).toHaveBeenCalledWith({
+      messages,
+      model: 'dummyModelFile',
+      stream: true,
+    });
+  },
+);
 
 test('creating a new playground should send new playground to frontend', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);

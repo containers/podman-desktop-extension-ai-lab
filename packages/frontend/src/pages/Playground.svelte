@@ -167,7 +167,7 @@ function elapsedTime(msg: AssistantChat): string {
                 <div class="mb-4 flex flex-col">Model Parameters</div>
                 <div class="flex flex-col space-y-4">
                   <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value="{temperature}" />
-                  <RangeInput name="max tokens" min="-1" max="32000" step="1" bind:value="{max_tokens}" />
+                  <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value="{max_tokens}" />
                   <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value="{top_p}" />
                 </div>
               </div>

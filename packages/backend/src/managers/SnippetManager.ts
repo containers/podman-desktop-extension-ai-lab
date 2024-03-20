@@ -27,11 +27,10 @@ type Generator = (requestOptions: RequestOptions) => string;
 
 export class SnippetManager extends Publisher<Language[]> implements Disposable {
   #languages: Language[] = getLanguageList();
-  #additionalGenerators = new Map<string, Generator>();
+  #additionalGenerators: Map<string, Generator>;
 
   constructor(webview: Webview) {
     super(webview, Messages.MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
-    this.addVariant('java', 'Quarkus Langchain4J', quarkusLangchain4Jgenerator);
   }
 
   addVariant(key: string, variant: string, generator: Generator): void {
@@ -66,6 +65,9 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
   }
 
   init() {
+    this.#languages = getLanguageList();
+    this.#additionalGenerators = new Map<string, Generator>();
+    this.addVariant('java', 'Quarkus Langchain4J', quarkusLangchain4Jgenerator);
     // Notify the publisher
     this.notify();
   }

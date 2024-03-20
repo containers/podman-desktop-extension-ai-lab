@@ -29,6 +29,8 @@ import type { CreationInferenceServerOptions, InferenceServerConfig } from '@sha
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
 import { getFreeRandomPort } from './ports';
 
+export const SECOND: number = 1_000_000_000;
+
 export const LABEL_INFERENCE_SERVER: string = 'ai-studio-inference-server';
 
 export const INFERENCE_SERVER_IMAGE =
@@ -138,8 +140,8 @@ export function generateContainerCreateOptions(
     HealthCheck: {
       // must be the port INSIDE the container not the exposed one
       Test: ['CMD-SHELL', `curl -sSf localhost:8000/docs > /dev/null`],
-      Interval: 1_000_000_000 * 15, // 15s
-      Retries: 4 * 5, // 20 * 15s = 300s = 5 minutes
+      Interval: SECOND * 5,
+      Retries: 4 * 5,
     },
     Labels: {
       ...config.labels,

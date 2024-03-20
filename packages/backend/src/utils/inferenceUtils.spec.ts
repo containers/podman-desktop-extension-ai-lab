@@ -16,7 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { generateContainerCreateOptions, withDefaultConfiguration, INFERENCE_SERVER_IMAGE } from './inferenceUtils';
+import {
+  generateContainerCreateOptions,
+  withDefaultConfiguration,
+  INFERENCE_SERVER_IMAGE,
+  SECONDS,
+} from './inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { ImageInfo } from '@podman-desktop/api';
 import { getFreeRandomPort } from './ports';
@@ -63,7 +68,7 @@ describe('generateContainerCreateOptions', () => {
         '8888': {},
       },
       HealthCheck: {
-        Interval: 5000000000,
+        Interval: SECONDS * 5,
         Retries: 20,
         Test: ['CMD-SHELL', 'curl -sSf localhost:8000/docs > /dev/null'],
       },

@@ -17,9 +17,7 @@
  ***********************************************************************/
 
 import simpleGit, { type PullResult, type RemoteWithRefs, type StatusResult } from 'simple-git';
-import {
-  window,
-} from '@podman-desktop/api';
+import { window } from '@podman-desktop/api';
 import { statSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 
 export interface GitCloneInfo {
@@ -74,32 +72,32 @@ export class GitManager {
         return;
       }
 
-      const error =  `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
+      const error = `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
 
       // Ask user
       const selected = await window.showWarningMessage(
         `${error} By continuing, the AI application may not run as expected. `,
         'Cancel',
         'Continue',
-        result.updatable?'Update':'Reset',
+        result.updatable ? 'Update' : 'Reset',
       );
 
-      if(selected === undefined || selected === 'Cancel') {
+      if (selected === undefined || selected === 'Cancel') {
         throw new Error('Cancelled');
       }
 
-      if(selected === 'Continue') {
+      if (selected === 'Continue') {
         return;
       }
 
-      if(selected === 'Update') {
+      if (selected === 'Update') {
         // Update
         await this.pull(gitCloneInfo.targetDirectory);
         return;
       }
 
-      if(selected === 'Reset') {
-        rmSync(gitCloneInfo.targetDirectory, { recursive: true});
+      if (selected === 'Reset') {
+        rmSync(gitCloneInfo.targetDirectory, { recursive: true });
       }
     }
 
@@ -139,11 +137,11 @@ export class GitManager {
       return { error: 'The local repository has modified files.' };
     }
 
-    if(status.created.length > 0) {
+    if (status.created.length > 0) {
       return { error: 'The local repository has created files.' };
     }
 
-    if(status.deleted.length > 0) {
+    if (status.deleted.length > 0) {
       return { error: 'The local repository has created files.' };
     }
 

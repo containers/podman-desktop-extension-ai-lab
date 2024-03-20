@@ -552,16 +552,15 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     };
   }
 
-
   async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }): Promise<void> {
     // Creating checkout task
-    let checkoutTask: Task = this.taskRegistry.createTask('Checking out repository', 'loading', {
+    const checkoutTask: Task = this.taskRegistry.createTask('Checking out repository', 'loading', {
       ...labels,
       git: 'checkout',
     });
 
     const installed = await this.git.isGitInstalled();
-    if(!installed) {
+    if (!installed) {
       checkoutTask.state = 'error';
       checkoutTask.error = 'Git is not installed or cannot be found.';
       this.taskRegistry.updateTask(checkoutTask);

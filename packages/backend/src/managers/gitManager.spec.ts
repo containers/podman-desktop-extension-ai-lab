@@ -18,9 +18,7 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { GitManager } from './gitManager';
 import { statSync, existsSync, mkdirSync, type Stats, rmSync } from 'node:fs';
-import {
-  window,
-} from '@podman-desktop/api';
+import { window } from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -111,7 +109,7 @@ describe('processCheckout', () => {
 
     const gitmanager = new GitManager();
 
-    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: true});
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: true });
 
     await gitmanager.processCheckout({
       repository: 'repo',
@@ -136,13 +134,15 @@ describe('processCheckout', () => {
 
     const gitmanager = new GitManager();
 
-    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false});
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false });
 
-    await expect(gitmanager.processCheckout({
-      repository: 'repo',
-      targetDirectory: 'target',
-      ref: '000',
-    })).rejects.toThrowError('Cancelled');
+    await expect(
+      gitmanager.processCheckout({
+        repository: 'repo',
+        targetDirectory: 'target',
+        ref: '000',
+      }),
+    ).rejects.toThrowError('Cancelled');
   });
 
   test('existing folder not-updatable and user continue', async () => {
@@ -154,7 +154,7 @@ describe('processCheckout', () => {
 
     const gitmanager = new GitManager();
 
-    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false});
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false });
 
     await gitmanager.processCheckout({
       repository: 'repo',
@@ -176,7 +176,7 @@ describe('processCheckout', () => {
 
     const gitmanager = new GitManager();
 
-    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false});
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false });
 
     await gitmanager.processCheckout({
       repository: 'repo',
@@ -184,8 +184,7 @@ describe('processCheckout', () => {
       ref: '000',
     });
 
-    expect(window.showWarningMessage).toHaveBeenCalledWith(
-      expect.anything(), 'Cancel', 'Continue', 'Reset');
+    expect(window.showWarningMessage).toHaveBeenCalledWith(expect.anything(), 'Cancel', 'Continue', 'Reset');
     expect(rmSync).toHaveBeenCalledWith('target', { recursive: true });
   });
 
@@ -198,7 +197,7 @@ describe('processCheckout', () => {
 
     const gitmanager = new GitManager();
 
-    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: true});
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: true });
     vi.spyOn(gitmanager, 'pull').mockResolvedValue(undefined);
 
     await gitmanager.processCheckout({
@@ -207,8 +206,7 @@ describe('processCheckout', () => {
       ref: '000',
     });
 
-    expect(window.showWarningMessage).toHaveBeenCalledWith(
-      expect.anything(), 'Cancel', 'Continue', 'Update');
+    expect(window.showWarningMessage).toHaveBeenCalledWith(expect.anything(), 'Cancel', 'Continue', 'Update');
     expect(rmSync).not.toHaveBeenCalled();
     expect(gitmanager.pull).toHaveBeenCalled();
   });

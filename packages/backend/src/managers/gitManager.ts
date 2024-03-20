@@ -17,6 +17,10 @@
  ***********************************************************************/
 
 import simpleGit, { type PullResult, type RemoteWithRefs, type StatusResult } from 'simple-git';
+import {
+  window,
+} from '@podman-desktop/api';
+import { statSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 
 export interface GitCloneInfo {
   repository: string;
@@ -45,6 +49,66 @@ export class GitManager {
   async pull(directory: string): Promise<void> {
     const pullResult: PullResult = await simpleGit(directory).pull();
     console.debug(`local git repository updated. ${pullResult.summary.changes} changes applied`);
+  }
+
+  async isGitInstalled(): Promise<boolean> {
+    try {
+      const version = await simpleGit().version();
+      return version.installed;
+    } catch (err: unknown) {
+      console.error(`Something went wrong while trying to access git: ${String(err)}`);
+      return false;
+    }
+  }
+
+  async processCheckout(gitCloneInfo: GitCloneInfo): Promise<void> {
+    // Check for existing cloned repository
+    if (existsSync(gitCloneInfo.targetDirectory) && statSync(gitCloneInfo.targetDirectory).isDirectory()) {
+      const result = await this.isRepositoryUpToDate(
+        gitCloneInfo.targetDirectory,
+        gitCloneInfo.repository,
+        gitCloneInfo.ref,
+      );
+
+      if (result.ok) {
+        return;
+      }
+
+      const error =  `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
+
+      // Ask user
+      const selected = await window.showWarningMessage(
+        `${error} By continuing, the AI application may not run as expected. `,
+        'Cancel',
+        'Continue',
+        result.updatable?'Update':'Reset',
+      );
+
+      if(selected === undefined || selected === 'Cancel') {
+        throw new Error('Cancelled');
+      }
+
+      if(selected === 'Continue') {
+        return;
+      }
+
+      if(selected === 'Update') {
+        // Update
+        await this.pull(gitCloneInfo.targetDirectory);
+        return;
+      }
+
+      if(selected === 'Reset') {
+        rmSync(gitCloneInfo.targetDirectory, { recursive: true});
+      }
+    }
+
+    // Create folder
+    mkdirSync(gitCloneInfo.targetDirectory, { recursive: true });
+
+    // Clone the repository
+    console.log(`Cloning repository ${gitCloneInfo.repository} in ${gitCloneInfo.targetDirectory}.`);
+    await this.cloneRepository(gitCloneInfo);
   }
 
   async isRepositoryUpToDate(

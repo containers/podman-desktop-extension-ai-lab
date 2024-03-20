@@ -17,11 +17,28 @@
  ***********************************************************************/
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { GitManager } from './gitManager';
+import { statSync, existsSync, mkdirSync, type Stats, rmSync } from 'node:fs';
+import {
+  window,
+} from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => {
   return {
     cloneMock: vi.fn(),
     checkoutMock: vi.fn(),
+    versionMock: vi.fn(),
+    getRemotesMock: vi.fn(),
+    statusMock: vi.fn(),
+    pullMock: vi.fn(),
+  };
+});
+
+vi.mock('node:fs', () => {
+  return {
+    existsSync: vi.fn(),
+    statSync: vi.fn(),
+    mkdirSync: vi.fn(),
+    rmSync: vi.fn(),
   };
 });
 
@@ -30,7 +47,19 @@ vi.mock('simple-git', () => {
     default: () => ({
       clone: mocks.cloneMock,
       checkout: mocks.checkoutMock,
+      version: mocks.versionMock,
+      getRemotes: mocks.getRemotesMock,
+      status: mocks.statusMock,
+      pull: mocks.pullMock,
     }),
+  };
+});
+
+vi.mock('@podman-desktop/api', async () => {
+  return {
+    window: {
+      showWarningMessage: vi.fn(),
+    },
   };
 });
 
@@ -56,5 +85,131 @@ describe('cloneRepository', () => {
     });
     expect(mocks.cloneMock).toBeCalledWith('repo', 'target');
     expect(mocks.checkoutMock).not.toBeCalled();
+  });
+});
+
+describe('processCheckout', () => {
+  test('first install no existing folder', async () => {
+    vi.mocked(existsSync).mockReturnValue(false);
+
+    await new GitManager().processCheckout({
+      repository: 'repo',
+      targetDirectory: 'target',
+      ref: '000',
+    });
+
+    expect(existsSync).toHaveBeenCalledWith('target');
+    expect(mkdirSync).toHaveBeenCalledWith('target', { recursive: true });
+    expect(mocks.cloneMock).toHaveBeenCalledWith('repo', 'target');
+  });
+
+  test('existing folder valid', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: true});
+
+    await gitmanager.processCheckout({
+      repository: 'repo',
+      targetDirectory: 'target',
+      ref: '000',
+    });
+
+    expect(gitmanager.isRepositoryUpToDate).toHaveBeenCalled();
+    expect(existsSync).toHaveBeenCalledWith('target');
+    expect(statSync).toHaveBeenCalledWith('target');
+
+    expect(mkdirSync).not.toHaveBeenCalled();
+    expect(mocks.cloneMock).not.toHaveBeenCalled();
+  });
+
+  test('existing folder detached and user cancel', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(window.showWarningMessage).mockResolvedValue('Cancel');
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false});
+
+    await expect(gitmanager.processCheckout({
+      repository: 'repo',
+      targetDirectory: 'target',
+      ref: '000',
+    })).rejects.toThrowError('Cancelled');
+  });
+
+  test('existing folder not-updatable and user continue', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(window.showWarningMessage).mockResolvedValue('Continue');
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false});
+
+    await gitmanager.processCheckout({
+      repository: 'repo',
+      targetDirectory: 'target',
+      ref: '000',
+    });
+
+    expect(rmSync).not.toHaveBeenCalled();
+    expect(mkdirSync).not.toHaveBeenCalled();
+    expect(mocks.cloneMock).not.toHaveBeenCalled();
+  });
+
+  test('existing folder not-updatable and user reset', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(window.showWarningMessage).mockResolvedValue('Reset');
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: false});
+
+    await gitmanager.processCheckout({
+      repository: 'repo',
+      targetDirectory: 'target',
+      ref: '000',
+    });
+
+    expect(window.showWarningMessage).toHaveBeenCalledWith(
+      expect.anything(), 'Cancel', 'Continue', 'Reset');
+    expect(rmSync).toHaveBeenCalledWith('target', { recursive: true });
+  });
+
+  test('existing folder updatable and user update', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(window.showWarningMessage).mockResolvedValue('Update');
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'isRepositoryUpToDate').mockResolvedValue({ ok: false, updatable: true});
+    vi.spyOn(gitmanager, 'pull').mockResolvedValue(undefined);
+
+    await gitmanager.processCheckout({
+      repository: 'repo',
+      targetDirectory: 'target',
+      ref: '000',
+    });
+
+    expect(window.showWarningMessage).toHaveBeenCalledWith(
+      expect.anything(), 'Cancel', 'Continue', 'Update');
+    expect(rmSync).not.toHaveBeenCalled();
+    expect(gitmanager.pull).toHaveBeenCalled();
   });
 });

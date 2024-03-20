@@ -27,9 +27,6 @@ import {
   type PodInfo,
   type Webview,
   type HostConfig,
-  window,
-  env,
-  Uri,
 } from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
@@ -121,10 +118,12 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
         ref: recipe.ref,
         targetDirectory: localFolder,
       };
+      console.log('[applicationManager] before doCheckout');
       await this.doCheckout(gitCloneInfo, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });
+      console.log('[applicationManager] after doCheckout');
 
       this.localRepositories.register({
         path: gitCloneInfo.targetDirectory,
@@ -553,71 +552,30 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     };
   }
 
-  async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }) {
+
+  async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }): Promise<void> {
     // Creating checkout task
-    const checkoutTask: Task = this.taskRegistry.createTask('Checking out repository', 'loading', {
+    let checkoutTask: Task = this.taskRegistry.createTask('Checking out repository', 'loading', {
       ...labels,
       git: 'checkout',
     });
 
+    const installed = await this.git.isGitInstalled();
+    if(!installed) {
+      checkoutTask.state = 'error';
+      checkoutTask.error = 'Git is not installed or cannot be found.';
+      this.taskRegistry.updateTask(checkoutTask);
+      // propagate error
+      throw new Error(checkoutTask.error);
+    }
+
     try {
-      // We might already have the repository cloned
-      if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
-
-        const result = await this.git.isRepositoryUpToDate(
-          gitCloneInfo.targetDirectory,
-          gitCloneInfo.repository,
-          gitCloneInfo.ref,
-        );
-
-        if (result.ok) {
-          checkoutTask.name = 'Checkout repository (cached).';
-          checkoutTask.state = 'success';
-        } else {
-          const error =  `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
-
-          if(result.updatable) {
-            const selected = await window.showWarningMessage(
-              `The repository located at "${gitCloneInfo.targetDirectory}" is not up to date. Do you want to update it ?`,
-              'Cancel',
-              'Open Folder',
-              'Yes',
-            );
-
-            switch (selected) {
-              case 'Open Folder':
-                await env.openExternal(Uri.file(gitCloneInfo.targetDirectory));
-              // eslint-disable-next-line no-fallthrough
-              case undefined:
-              case 'Cancel':
-                checkoutTask.state = 'error';
-                checkoutTask.error = error;
-                throw error;
-              case 'Continue':
-                await this.git.pull(gitCloneInfo.targetDirectory);
-                checkoutTask.state = 'success';
-                return;
-            }
-          }
-
-          checkoutTask.error = error;
-          checkoutTask.state = 'error';
-        }
-
-      } else {
-        // Create folder
-        fs.mkdirSync(gitCloneInfo.targetDirectory, { recursive: true });
-
-        // Clone the repository
-        console.log(`Cloning repository ${gitCloneInfo.repository} in ${gitCloneInfo.targetDirectory}.`);
-        await this.git.cloneRepository(gitCloneInfo);
-
-        // Update checkout state
-        checkoutTask.state = 'success';
-      }
+      await this.git.processCheckout(gitCloneInfo);
+      checkoutTask.state = 'success';
     } catch (err: unknown) {
       checkoutTask.state = 'error';
       checkoutTask.error = String(err);
+      // propagate error
       throw err;
     } finally {
       // Update task registry

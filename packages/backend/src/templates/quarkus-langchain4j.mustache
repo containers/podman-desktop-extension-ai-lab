@@ -1,0 +1,36 @@
+application.properties
+======================
+quarkus.langchain4j.openai.base-url={{{ baseUrl }}}
+quarkus.langchain4j.openai.api-key=sk-dummy
+
+pom.xml
+=======
+<dependency>
+  <groupId>io.quarkiverse.langchain4j</groupId>
+  <artifactId>quarkus-langchain4j-core</artifactId>
+  <version>0.9.1</version>
+</dependency>
+<dependency>
+  <groupId>io.quarkiverse.langchain4j</groupId>
+  <artifactId>quarkus-langchain4j-ollama</artifactId>
+  <version>0.9.1</version>
+</dependency>
+
+AiService.java
+==============
+package io.podman.desktop.quarkus.langchain4j;
+
+import dev.langchain4j.service.UserMessage;
+import io.quarkiverse.langchain4j.RegisterAiService;
+
+@RegisterAiService
+public interface AiService {
+
+@UserMessage("{question}")
+String request(String question);
+}
+
+======
+Inject AIService into REST resource or other CDI resource and use the request method to call the LLM model. That's it
+
+

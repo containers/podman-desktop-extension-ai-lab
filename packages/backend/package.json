@@ -44,6 +44,7 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
+    "mustache": "^4.2.0",
     "openai": "^4.29.2",
     "postman-code-generators": "^1.9.0",
     "postman-collection": "^4.4.0",

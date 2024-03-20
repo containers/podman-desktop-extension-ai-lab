@@ -83,3 +83,16 @@ request(options, function (error, response) {
 });
 `);
 });
+
+test('expect snippet manager to have Quarkus Langchain4J supported.', () => {
+  const manager = new SnippetManager(webviewMock);
+  manager.init();
+
+  const languages = manager.getLanguageList();
+  const java = languages.find(language => language.key === 'java');
+  expect(java).toBeDefined();
+  expect(java.variants.length).toBeGreaterThan(0);
+
+  const quarkus_langchain4j = java.variants.find(variant => variant.key === 'Quarkus Langchain4J');
+  expect(quarkus_langchain4j).toBeDefined();
+});

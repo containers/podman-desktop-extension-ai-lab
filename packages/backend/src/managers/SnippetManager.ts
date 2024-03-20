@@ -21,17 +21,38 @@ import { Request } from 'postman-collection';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import type { RequestOptions } from '@shared/src/models/RequestOptions';
+import { quarkusLangchain4Jgenerator } from './snippets/quarkus-snippet';
+
+type Generator = (requestOptions: RequestOptions) => string;
 
 export class SnippetManager extends Publisher<Language[]> implements Disposable {
+  #languages: Language[] = getLanguageList();
+  #additionalGenerators = new Map<string, Generator>();
+
   constructor(webview: Webview) {
     super(webview, Messages.MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
+    this.addVariant('java', 'Quarkus Langchain4J', quarkusLangchain4Jgenerator);
+  }
+
+  addVariant(key: string, variant: string, generator: Generator): void {
+    const original = this.#languages;
+    const language = original.find((lang: Language) => lang.key === key);
+    if (language) {
+      language.variants.push({ key: variant });
+      this.#additionalGenerators.set(`${key}/${variant}`, generator);
+    }
   }
 
   getLanguageList(): Language[] {
-    return getLanguageList();
+    return this.#languages;
   }
 
-  generate(requestOptions: RequestOptions, language: string, variant: string): Promise<string> {
+  async generate(requestOptions: RequestOptions, language: string, variant: string): Promise<string> {
+    const generator = this.#additionalGenerators.get(`${language}/${variant}`);
+    if (generator) {
+      return generator(requestOptions);
+    }
+
     return new Promise((resolve, reject) => {
       const request = new Request(requestOptions);
       convert(language, variant, request, {}, (error: unknown, snippet: string) => {

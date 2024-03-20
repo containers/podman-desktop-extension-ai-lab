@@ -467,8 +467,12 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     return imageInfoList;
   }
 
-  private getImageTag(recipe: Recipe, container: ContainerConfig) {
-    return `${recipe.id}-${container.name}:latest`;
+  getImageTag(recipe: Recipe, container: ContainerConfig) {
+    let tag = container.image ?? `${recipe.id}-${container.name}`;
+    if (!tag.includes(':')) {
+      tag += ':latest';
+    }
+    return tag;
   }
 
   getConfigAndFilterContainers(

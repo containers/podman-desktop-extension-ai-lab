@@ -71,6 +71,7 @@ The root elements are called ```version``` and ```application```.
 [GOARCH specification](https://go.dev/src/go/build/syslist.go)
 - ```gpu-env```: an optional array of GPU environment for which this image is compatible with. The only accepted value here is cuda.
 - ```ports```: an optional array of ports for which the application listens to.
+- `image`: an optional image name to be used when building the container image.
 
 The container that is running the service (having the ```model-service``` flag equal to ```true```) can use at runtime
 the model managed by AI Studio through an environment variable ```MODEL_PATH``` whose value is the full path name of the
@@ -92,6 +93,7 @@ application:
         - amd64
       ports:
         - 8001
+      image: quay.io/redhat-et/chatbot-model-service:latest
     - name: chatbot-model-servicecuda
       contextdir: model_services
       containerfile: cuda/Containerfile
@@ -102,6 +104,7 @@ application:
         - amd64
       ports:
         - 8501
+      image: quay.io/redhat-et/model_services:latest
 ```
 
 

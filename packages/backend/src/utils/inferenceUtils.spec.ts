@@ -63,7 +63,7 @@ describe('generateContainerCreateOptions', () => {
         '8888': {},
       },
       HealthCheck: {
-        Interval: 15000000000,
+        Interval: 5000000000,
         Retries: 20,
         Test: ['CMD-SHELL', 'curl -sSf localhost:8000/docs > /dev/null'],
       },

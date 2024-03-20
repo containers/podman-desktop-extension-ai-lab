@@ -126,16 +126,22 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     if (systemPrompt) {
       messages.push({ role: 'system', content: systemPrompt });
     }
-    const response = await client.chat.completions.create({
-      messages,
-      stream: true,
-      model: modelInfo.file.file,
-      ...options,
-    });
-    // process stream async
-    this.processStream(playground.id, response).catch((err: unknown) => {
-      console.error('Something went wrong while processing stream', err);
-    });
+    client.chat.completions
+      .create({
+        messages,
+        stream: true,
+        model: modelInfo.file.file,
+        ...options,
+      })
+      .then(response => {
+        // process stream async
+        this.processStream(playground.id, response).catch((err: unknown) => {
+          console.error('Something went wrong while processing stream', err);
+        });
+      })
+      .catch((err: unknown) => {
+        console.error('Something went wrong while creating model reponse', err);
+      });
   }
 
   /**

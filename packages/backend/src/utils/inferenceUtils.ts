@@ -28,7 +28,6 @@ import {
 import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
 import { getFreeRandomPort } from './ports';
-import { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-studio-inference-server';
 

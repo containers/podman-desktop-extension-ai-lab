@@ -38,7 +38,6 @@ import type { InferenceServerConfig } from '@shared/src/models/InferenceServerCo
 import type { ModelsManager } from '../modelsManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getRandomString } from '../../utils/randomUtils';
-import { ModelInfo } from '@shared/src/models/IModelInfo';
 import { basename, dirname } from 'node:path';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {

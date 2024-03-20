@@ -160,12 +160,12 @@ test('receiving complete message should enable the send button', async () => {
     categories: [],
   });
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
-  const customConversations = writable<Conversation[]>([    {
+  const customConversations = writable<Conversation[]>([{
     id: 'conversation-1',
     name: 'Conversation 1',
     modelId: 'model-1',
     messages: [],
-  },]);
+  }]);
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {
     conversationId: 'conversation-1',
@@ -185,7 +185,7 @@ test('receiving complete message should enable the send button', async () => {
 
   customConversations.set([
     {
-      id: 'playground-1',
+      id: 'conversation-1',
       name: '',
       messages: [
         {
@@ -220,7 +220,7 @@ test('sending prompt should display the prompt and the response', async () => {
     recipes: [],
     categories: [],
   });
-  vi.mocked(studioClient.getPlaygroundConversations).mockResolvedValue([
+  const customConversations = writable<Conversation[]>([
     {
       id: 'conversation-1',
       name: 'Conversation 1',
@@ -228,7 +228,6 @@ test('sending prompt should display the prompt and the response', async () => {
       messages: [],
     },
   ]);
-  const customConversations = writable<Conversation[]>([]);
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {
     conversationId: 'conversation-1',
@@ -273,7 +272,7 @@ test('sending prompt should display the prompt and the response', async () => {
 
   customConversations.set([
     {
-      id: 'playground-1',
+      id: 'conversation-1',
       name: '',
       messages: [
         {

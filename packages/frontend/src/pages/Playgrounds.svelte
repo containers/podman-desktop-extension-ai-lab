@@ -25,18 +25,21 @@ function createNewPlayground() {
     <Button on:click="{() => createNewPlayground()}">New Playground</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <div slot="content" class="flex flex-col min-w-full min-h-full">
-      <div class="min-w-full min-h-full flex-1">
-        <div class="mt-4 px-5 space-y-5 h-full">
+    <div slot="content" class="flex flex-col min-w-full">
+      <div class="min-w-full flex-1">
+        <div class="mt-4 px-5 space-y-5">
           {#if $playgrounds.length > 0}
             <Table kind="playground" data="{$playgrounds}" columns="{columns}" row="{row}"></Table>
           {:else}
-            <div role="status">There is no playground environment for now. You can <a
-              href="{'javascript:void(0);'}"
-              class="underline"
-              role="button"
-              title="Create a new Playground environment"
-              on:click="{createNewPlayground}">create one now</a>.</div>
+            <div role="status">
+              There is no playground environment for now. You can <a
+                href="{'javascript:void(0);'}"
+                class="underline"
+                role="button"
+                title="Create a new Playground environment"
+                on:click="{createNewPlayground}">create one now</a
+              >.
+            </div>
           {/if}
         </div>
       </div>

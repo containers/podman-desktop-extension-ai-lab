@@ -365,7 +365,6 @@ test('creating a new playground with the model server stopped should start the i
   expect(startInferenceServerMock).toHaveBeenCalledWith('container-1');
 });
 
-
 test('delete conversation should delete the conversation', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
 

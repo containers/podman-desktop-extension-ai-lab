@@ -99,12 +99,12 @@ describe('invalid user catalog', () => {
   });
 
   test('expect correct model is returned with valid id', () => {
-    const model = catalogManager.getModelById('hf.TheBloke.llama-2-7b-chat.Q5_K_S');
+    const model = catalogManager.getModelById('hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M');
     expect(model).toBeDefined();
-    expect(model.name).toEqual('TheBloke/Llama-2-7B-Chat-GGUF');
+    expect(model.name).toEqual('TheBloke/Mistral-7B-Instruct-v0.1-GGUF');
     expect(model.registry).toEqual('Hugging Face');
     expect(model.url).toEqual(
-      'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+      'https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf',
     );
   });
 
@@ -118,12 +118,12 @@ test('expect correct model is returned from default catalog with valid id when n
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
-  const model = catalogManager.getModelById('hf.TheBloke.llama-2-7b-chat.Q5_K_S');
+  const model = catalogManager.getModelById('hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M');
   expect(model).toBeDefined();
-  expect(model.name).toEqual('TheBloke/Llama-2-7B-Chat-GGUF');
+  expect(model.name).toEqual('TheBloke/Mistral-7B-Instruct-v0.1-GGUF');
   expect(model.registry).toEqual('Hugging Face');
   expect(model.url).toEqual(
-    'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
+    'https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf',
   );
 });
 

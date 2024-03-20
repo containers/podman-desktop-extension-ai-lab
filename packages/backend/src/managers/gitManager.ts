@@ -44,6 +44,10 @@ export class GitManager {
     return simpleGit(directory).status();
   }
 
+  async getCurrentCommit(directory: string): Promise<string> {
+    return simpleGit(directory).revparse('HEAD');
+  }
+
   async pull(directory: string): Promise<void> {
     const pullResult: PullResult = await simpleGit(directory).pull();
     console.debug(`local git repository updated. ${pullResult.summary.changes} changes applied`);
@@ -132,7 +136,13 @@ export class GitManager {
         .map(remote => `${remote.name} ${remote.refs.fetch} (fetch)`)
         .join(',')}`;
     } else if (status.detached) {
-      error = 'The local repository is detached.';
+      // when the repository is detached
+      if (ref === undefined) {
+        error = 'The local repository is detached.';
+      } else {
+        const commit = await this.getCurrentCommit(directory);
+        if (!commit.startsWith(ref)) error = `The local repository is detached. HEAD is ${commit} expected ${ref}.`;
+      }
     } else if (status.modified.length > 0) {
       error = 'The local repository has modified files.';
     } else if (status.created.length > 0) {

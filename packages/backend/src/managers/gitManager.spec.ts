@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => {
     getRemotesMock: vi.fn(),
     statusMock: vi.fn(),
     pullMock: vi.fn(),
+    revparseMock: vi.fn(),
   };
 });
 
@@ -49,6 +50,7 @@ vi.mock('simple-git', () => {
       getRemotes: mocks.getRemotesMock,
       status: mocks.statusMock,
       pull: mocks.pullMock,
+      revparse: mocks.revparseMock,
     }),
   };
 });

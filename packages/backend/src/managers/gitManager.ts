@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import simpleGit from 'simple-git';
+import simpleGit, { type PullResult, type RemoteWithRefs, type StatusResult } from 'simple-git';
 
 export interface GitCloneInfo {
   repository: string;
@@ -31,6 +31,79 @@ export class GitManager {
     // checkout to specific branch/commit if specified
     if (gitCloneInfo.ref) {
       await simpleGit(gitCloneInfo.targetDirectory).checkout([gitCloneInfo.ref]);
+    }
+  }
+
+  async getRepositoryRemotes(directory: string): Promise<RemoteWithRefs[]> {
+    return simpleGit(directory).getRemotes(true);
+  }
+
+  async getRepositoryStatus(directory: string): Promise<StatusResult> {
+    return simpleGit(directory).status();
+  }
+
+  async pull(directory: string): Promise<void> {
+    const pullResult: PullResult = await simpleGit(directory).pull();
+    console.debug(`local git repository updated. ${pullResult.summary.changes} changes applied`);
+  }
+
+  async isRepositoryUpToDate(
+    directory: string,
+    origin: string,
+    ref?: string,
+  ): Promise<{ ok?: boolean; updatable?: boolean; error?: string }> {
+    // fetch updates
+    await simpleGit(directory).fetch();
+
+    const remotes: RemoteWithRefs[] = await this.getRepositoryRemotes(directory);
+
+    if (!remotes.some(remote => remote.refs.fetch === origin)) {
+      return {
+        error: `The local repository does not have remote ${origin} configured. Remotes: ${remotes
+          .map(remote => `${remote.name} ${remote.refs.fetch} (fetch)`)
+          .join(',')}`,
+      };
+    }
+
+    const status: StatusResult = await this.getRepositoryStatus(directory);
+
+    if (status.detached) {
+      return { error: 'The local repository is detached.' };
+    }
+
+    if (status.modified.length > 0) {
+      return { error: 'The local repository has modified files.' };
+    }
+
+    if(status.created.length > 0) {
+      return { error: 'The local repository has created files.' };
+    }
+
+    if(status.deleted.length > 0) {
+      return { error: 'The local repository has created files.' };
+    }
+
+    if (status.ahead !== 0) {
+      return {
+        error: `The local repository has ${status.ahead} commit(s) ahead.`,
+      };
+    }
+
+    // Ensure the branch tracked is the one we want
+    if (ref !== undefined && status.tracking !== ref) {
+      return {
+        error: `The local repository is not tracking the right branch. (tracking ${status.tracking} when expected ${ref})`,
+      };
+    }
+
+    // Ensure working with a clean branch
+    if (!status.isClean()) {
+      return { error: 'The local repository is not clean.' };
+    }
+
+    // If we are not in HEAD
+    if (status.behind !== 0) {
+      return { ok: true, updatable: true };
     }
   }
 }

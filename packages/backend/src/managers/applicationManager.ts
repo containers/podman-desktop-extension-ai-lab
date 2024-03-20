@@ -27,6 +27,9 @@ import {
   type PodInfo,
   type Webview,
   type HostConfig,
+  window,
+  env,
+  Uri,
 } from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
@@ -560,9 +563,47 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     try {
       // We might already have the repository cloned
       if (fs.existsSync(gitCloneInfo.targetDirectory) && fs.statSync(gitCloneInfo.targetDirectory).isDirectory()) {
-        // Update checkout state
-        checkoutTask.name = 'Checking out repository (cached).';
-        checkoutTask.state = 'success';
+
+        const result = await this.git.isRepositoryUpToDate(
+          gitCloneInfo.targetDirectory,
+          gitCloneInfo.repository,
+          gitCloneInfo.ref,
+        );
+
+        if (result.ok) {
+          checkoutTask.name = 'Checkout repository (cached).';
+          checkoutTask.state = 'success';
+        } else {
+          const error =  `The repository "${gitCloneInfo.repository}" seems to already be cloned and is not matching the expected configuration: ${result.error}`;
+
+          if(result.updatable) {
+            const selected = await window.showWarningMessage(
+              `The repository located at "${gitCloneInfo.targetDirectory}" is not up to date. Do you want to update it ?`,
+              'Cancel',
+              'Open Folder',
+              'Yes',
+            );
+
+            switch (selected) {
+              case 'Open Folder':
+                await env.openExternal(Uri.file(gitCloneInfo.targetDirectory));
+              // eslint-disable-next-line no-fallthrough
+              case undefined:
+              case 'Cancel':
+                checkoutTask.state = 'error';
+                checkoutTask.error = error;
+                throw error;
+              case 'Continue':
+                await this.git.pull(gitCloneInfo.targetDirectory);
+                checkoutTask.state = 'success';
+                return;
+            }
+          }
+
+          checkoutTask.error = error;
+          checkoutTask.state = 'error';
+        }
+
       } else {
         // Create folder
         fs.mkdirSync(gitCloneInfo.targetDirectory, { recursive: true });

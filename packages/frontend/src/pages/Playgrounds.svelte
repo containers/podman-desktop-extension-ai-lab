@@ -8,7 +8,7 @@ import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.s
 import { Row, Column } from '../lib/table/table';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import { playgrounds } from '../stores/playgrounds-v2';
-import ConversationColumnAction from '/src/lib/table/playground/ConversationColumnAction.svelte';
+import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
 
 const columns: Column<PlaygroundV2>[] = [
   new Column<PlaygroundV2>('Name', { width: '1fr', renderer: PlaygroundColumnName }),

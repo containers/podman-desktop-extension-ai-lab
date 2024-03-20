@@ -156,7 +156,7 @@ describe('pullApplication', () => {
   interface mockForPullApplicationOptions {
     recipeFolderExists: boolean;
   }
-  const cloneRepositoryMock = vi.fn();
+  const processCheckoutMock = vi.fn();
   let manager: ApplicationManager;
   let modelsManager: ModelsManager;
   vi.spyOn(utils, 'timeout').mockResolvedValue();
@@ -234,7 +234,8 @@ describe('pullApplication', () => {
     manager = new ApplicationManager(
       '/home/user/aistudio',
       {
-        cloneRepository: cloneRepositoryMock,
+        processCheckout: processCheckoutMock,
+        isGitInstalled: () => true,
       } as unknown as GitManager,
       taskRegistry,
       {} as Webview,
@@ -285,10 +286,10 @@ describe('pullApplication', () => {
       targetDirectory: '\\home\\user\\aistudio\\recipe1',
     };
     if (process.platform === 'win32') {
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
+      expect(processCheckoutMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     } else {
       gitCloneOptions.targetDirectory = '/home/user/aistudio/recipe1';
-      expect(cloneRepositoryMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
+      expect(processCheckoutMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     }
     expect(mocks.performDownloadMock).toHaveBeenCalledOnce();
     expect(mocks.buildImageMock).toHaveBeenCalledOnce();
@@ -308,36 +309,6 @@ describe('pullApplication', () => {
       'recipe.name': 'Recipe 1',
       durationSeconds: 99,
     });
-  });
-  test('pullApplication should not clone repository if folder already exists locally', async () => {
-    mockForPullApplication({
-      recipeFolderExists: true,
-    });
-    mocks.listPodsMock.mockResolvedValue([]);
-    vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
-    vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
-    vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
-    mocks.performDownloadMock.mockResolvedValue('path');
-    const recipe: Recipe = {
-      id: 'recipe1',
-      name: 'Recipe 1',
-      categories: [],
-      description: '',
-      ref: '000000',
-      readme: '',
-      repository: 'repo',
-    };
-    const model: ModelInfo = {
-      id: 'model1',
-      description: '',
-      hw: '',
-      license: '',
-      name: 'Model 1',
-      registry: '',
-      url: '',
-    };
-    await manager.pullApplication(recipe, model);
-    expect(cloneRepositoryMock).not.toHaveBeenCalled();
   });
   test('pullApplication should not download model if already on disk', async () => {
     mockForPullApplication({
@@ -366,7 +337,6 @@ describe('pullApplication', () => {
       url: '',
     };
     await manager.pullApplication(recipe, model);
-    expect(cloneRepositoryMock).not.toHaveBeenCalled();
     expect(mocks.performDownloadMock).not.toHaveBeenCalled();
   });
 
@@ -401,125 +371,7 @@ describe('pullApplication', () => {
     });
 
     await expect(manager.pullApplication(recipe, model)).rejects.toThrowError('No containers available.');
-
-    expect(cloneRepositoryMock).not.toHaveBeenCalled();
     expect(mocks.performDownloadMock).not.toHaveBeenCalled();
-  });
-});
-describe('doCheckout', () => {
-  test('clone repo if not present locally', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-    vi.spyOn(fs, 'mkdirSync');
-    const cloneRepositoryMock = vi.fn();
-    const manager = new ApplicationManager(
-      '/home/user/aistudio',
-      {
-        cloneRepository: cloneRepositoryMock,
-      } as unknown as GitManager,
-      taskRegistry,
-      {} as Webview,
-      {} as PodmanConnection,
-      {} as CatalogManager,
-      {} as unknown as ModelsManager,
-      telemetryLogger,
-      localRepositoryRegistry,
-    );
-    const gitCloneOptions = {
-      repository: 'repo',
-      ref: '000000',
-      targetDirectory: 'folder',
-    };
-    await manager.doCheckout(gitCloneOptions);
-
-    expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
-    expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
-      id: expect.any(String),
-      name: 'Checking out repository',
-      state: 'success',
-      labels: {
-        git: 'checkout',
-      },
-    });
-  });
-  test('doCheckout report an error if clone is errored', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-    vi.spyOn(fs, 'mkdirSync');
-    const cloneRepositoryMock = vi.fn().mockRejectedValue(new Error('Unknown Git reference'));
-    const manager = new ApplicationManager(
-      '/home/user/aistudio',
-      {
-        cloneRepository: cloneRepositoryMock,
-      } as unknown as GitManager,
-      taskRegistry,
-      {} as Webview,
-      {} as PodmanConnection,
-      {} as CatalogManager,
-      {} as unknown as ModelsManager,
-      telemetryLogger,
-      localRepositoryRegistry,
-    );
-    const gitCloneOptions = {
-      repository: 'repo',
-      ref: '000000',
-      targetDirectory: 'folder',
-    };
-    let expectedError: unknown;
-
-    try {
-      await manager.doCheckout(gitCloneOptions);
-    } catch (err: unknown) {
-      expectedError = err;
-    }
-
-    expect(cloneRepositoryMock).toBeCalledWith(gitCloneOptions);
-    expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
-      id: expect.any(String),
-      name: 'Checking out repository',
-      state: 'error',
-      labels: {
-        git: 'checkout',
-      },
-      error: 'Error: Unknown Git reference',
-    });
-    expect(expectedError).to.be.a('Error');
-    expect((expectedError as Error).message).equal('Unknown Git reference');
-  });
-  test('do not clone repo if already present locally', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    const stats = {
-      isDirectory: vi.fn().mockReturnValue(true),
-    } as unknown as fs.Stats;
-    vi.spyOn(fs, 'statSync').mockReturnValue(stats);
-    const mkdirSyncMock = vi.spyOn(fs, 'mkdirSync');
-    const cloneRepositoryMock = vi.fn();
-    const manager = new ApplicationManager(
-      '/home/user/aistudio',
-      {
-        cloneRepository: cloneRepositoryMock,
-      } as unknown as GitManager,
-      taskRegistry,
-      {} as Webview,
-      {} as PodmanConnection,
-      {} as CatalogManager,
-      {} as unknown as ModelsManager,
-      telemetryLogger,
-      localRepositoryRegistry,
-    );
-    await manager.doCheckout({
-      repository: 'repo',
-      ref: '000000',
-      targetDirectory: 'folder',
-    });
-    expect(mkdirSyncMock).not.toHaveBeenCalled();
-    expect(cloneRepositoryMock).not.toHaveBeenCalled();
-    expect(mocks.updateTaskMock).toHaveBeenLastCalledWith({
-      id: expect.any(String),
-      name: 'Checking out repository (cached).',
-      state: 'success',
-      labels: {
-        git: 'checkout',
-      },
-    });
   });
 });
 

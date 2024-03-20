@@ -118,12 +118,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
         ref: recipe.ref,
         targetDirectory: localFolder,
       };
-      console.log('[applicationManager] before doCheckout');
       await this.doCheckout(gitCloneInfo, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });
-      console.log('[applicationManager] after doCheckout');
 
       this.localRepositories.register({
         path: gitCloneInfo.targetDirectory,

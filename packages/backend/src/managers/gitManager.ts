@@ -82,22 +82,18 @@ export class GitManager {
         result.updatable ? 'Update' : 'Reset',
       );
 
-      if (!selected || selected === 'Cancel') {
-        throw new Error('Cancelled');
-      }
-
-      if (selected === 'Continue') {
-        return;
-      }
-
-      if (selected === 'Update') {
-        // Update
-        await this.pull(gitCloneInfo.targetDirectory);
-        return;
-      }
-
-      if (selected === 'Reset') {
-        rmSync(gitCloneInfo.targetDirectory, { recursive: true });
+      switch (selected) {
+        case undefined:
+        case 'Cancel':
+          throw new Error('Cancelled');
+        case 'Continue':
+          return;
+        case 'Update':
+          await this.pull(gitCloneInfo.targetDirectory);
+          return;
+        case 'Reset':
+          rmSync(gitCloneInfo.targetDirectory, { recursive: true });
+          break;
       }
     }
 
@@ -129,43 +125,34 @@ export class GitManager {
 
     const status: StatusResult = await this.getRepositoryStatus(directory);
 
-    if (status.detached) {
-      return { error: 'The local repository is detached.' };
-    }
+    let error: string | undefined;
 
-    if (status.modified.length > 0) {
-      return { error: 'The local repository has modified files.' };
-    }
-
-    if (status.created.length > 0) {
-      return { error: 'The local repository has created files.' };
-    }
-
-    if (status.deleted.length > 0) {
-      return { error: 'The local repository has created files.' };
-    }
-
-    if (status.ahead !== 0) {
-      return {
-        error: `The local repository has ${status.ahead} commit(s) ahead.`,
-      };
-    }
-
-    // Ensure the branch tracked is the one we want
-    if (ref !== undefined && status.tracking !== ref) {
-      return {
-        error: `The local repository is not tracking the right branch. (tracking ${status.tracking} when expected ${ref})`,
-      };
-    }
-
-    // Ensure working with a clean branch
-    if (!status.isClean()) {
-      return { error: 'The local repository is not clean.' };
-    }
-
-    // If we are not in HEAD
-    if (status.behind !== 0) {
+    if (!remotes.some(remote => remote.refs.fetch === origin)) {
+      error = `The local repository does not have remote ${origin} configured. Remotes: ${remotes
+        .map(remote => `${remote.name} ${remote.refs.fetch} (fetch)`)
+        .join(',')}`;
+    } else if (status.detached) {
+      error = 'The local repository is detached.';
+    } else if (status.modified.length > 0) {
+      error = 'The local repository has modified files.';
+    } else if (status.created.length > 0) {
+      error = 'The local repository has created files.';
+    } else if (status.deleted.length > 0) {
+      error = 'The local repository has created files.';
+    } else if (status.ahead !== 0) {
+      error = `The local repository has ${status.ahead} commit(s) ahead.`;
+    } else if (ref !== undefined && status.tracking !== ref) {
+      error = `The local repository is not tracking the right branch. (tracking ${status.tracking} when expected ${ref})`;
+    } else if (!status.isClean()) {
+      error = 'The local repository is not clean.';
+    } else if (status.behind !== 0) {
       return { ok: true, updatable: true };
     }
+
+    if (error) {
+      return { error };
+    }
+
+    return { ok: true }; // If none of the error conditions are met
   }
 }

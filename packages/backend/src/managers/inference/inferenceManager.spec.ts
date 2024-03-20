@@ -259,47 +259,52 @@ describe('Create Inference Server', () => {
   test('empty modelsInfo', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
-        providerId: 'test@providerId',
-        image: INFERENCE_SERVER_IMAGE,
-        modelsInfo: [],
-      } as unknown as InferenceServerConfig,
-        'dummyTrackingId',),
+      inferenceManager.createInferenceServer(
+        {
+          providerId: 'test@providerId',
+          image: INFERENCE_SERVER_IMAGE,
+          modelsInfo: [],
+        } as unknown as InferenceServerConfig,
+        'dummyTrackingId',
+      ),
     ).rejects.toThrowError('Need at least one model info to start an inference server.');
   });
 
   test('modelInfo without file', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
-        providerId: 'test@providerId',
-        image: INFERENCE_SERVER_IMAGE,
-        modelsInfo: [
-          {
-            id: 'dummyModelId',
-          },
-        ],
-      } as unknown as InferenceServerConfig,
-        'dummyTrackingId',),
+      inferenceManager.createInferenceServer(
+        {
+          providerId: 'test@providerId',
+          image: INFERENCE_SERVER_IMAGE,
+          modelsInfo: [
+            {
+              id: 'dummyModelId',
+            },
+          ],
+        } as unknown as InferenceServerConfig,
+        'dummyTrackingId',
+      ),
     ).rejects.toThrowError('The model info file provided is undefined');
   });
 
   test('valid InferenceServerConfig', async () => {
     const inferenceManager = await getInitializedInferenceManager();
-    await inferenceManager.createInferenceServer({
-      port: 8888,
-      providerId: 'test@providerId',
-      image: INFERENCE_SERVER_IMAGE,
-      modelsInfo: [
-        {
-          id: 'dummyModelId',
-          file: {
-            file: 'dummyFile',
-            path: 'dummyPath',
+    await inferenceManager.createInferenceServer(
+      {
+        port: 8888,
+        providerId: 'test@providerId',
+        image: INFERENCE_SERVER_IMAGE,
+        modelsInfo: [
+          {
+            id: 'dummyModelId',
+            file: {
+              file: 'dummyFile',
+              path: 'dummyPath',
+            },
           },
-        },
-      ],
-    } as unknown as InferenceServerConfig,
+        ],
+      } as unknown as InferenceServerConfig,
       'dummyTrackingId',
     );
 

@@ -97,3 +97,20 @@ test('expect snippet manager to have Quarkus Langchain4J supported.', () => {
   const quarkus_langchain4j = java.variants.find(variant => variant.key === 'Quarkus Langchain4J');
   expect(quarkus_langchain4j).toBeDefined();
 });
+
+test('expect new variant to replace existing one if same name', () => {
+  const manager = new SnippetManager(webviewMock);
+  manager.init();
+
+  const languages = manager.getLanguageList();
+  const java = languages.find(language => language.key === 'java');
+  expect(java).toBeDefined();
+  expect(java.variants.length).toBeGreaterThan(0);
+
+  const oldVariantsNumber = java.variants.length;
+  manager.addVariant('java', java.variants[0].key, vi.fn());
+  const languages_updated = manager.getLanguageList();
+  const java_updated = languages_updated.find(language => language.key === 'java');
+  expect(java_updated).toBeDefined();
+  expect(java_updated.variants.length).equals(oldVariantsNumber);
+});

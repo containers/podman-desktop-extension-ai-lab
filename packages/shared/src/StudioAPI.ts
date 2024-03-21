@@ -121,7 +121,7 @@ export abstract class StudioAPI {
   abstract submitPlaygroundMessage(
     containerId: string,
     userInput: string,
-    systemPrompt: string,
+    systemPrompt: boolean,
     options?: ModelOptions,
   ): Promise<void>;
 

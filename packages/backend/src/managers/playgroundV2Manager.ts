@@ -140,7 +140,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
    * @param userInput the user input
    * @param options the model configuration
    */
-  async submit(playgroundId: string, userInput: string, systemPrompt: string, options?: ModelOptions): Promise<void> {
+  async submit(playgroundId: string, userInput: string, systemPrompt: boolean, options?: ModelOptions): Promise<void> {
     const playground = this.#playgrounds.get(playgroundId);
     if (playground === undefined) throw new Error('Playground not found.');
 
@@ -165,10 +165,14 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     this.#conversationRegistry.submit(conversation.id, {
       content: userInput,
       options: options,
-      role: 'user',
+      role: systemPrompt ? 'system' : 'user',
       id: this.getUniqueId(),
       timestamp: Date.now(),
     } as UserChat);
+
+    if (systemPrompt) {
+      return;
+    }
 
     const client = new OpenAI({
       baseURL: `http://localhost:${server.connection.port}/v1`,
@@ -176,9 +180,6 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     });
 
     const messages = this.getFormattedMessages(playground.id);
-    if (systemPrompt) {
-      messages.push({ role: 'system', content: systemPrompt });
-    }
     client.chat.completions
       .create({
         messages,

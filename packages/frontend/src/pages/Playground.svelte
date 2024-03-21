@@ -4,16 +4,16 @@ import { studioClient } from '/@/utils/client';
 import {
   isAssistantChat,
   type ChatMessage,
-  type UserChat,
   isPendingChat,
   isUserChat,
   type AssistantChat,
+  isSystemPrompt,
 } from '@shared/src/models/IPlaygroundMessage';
 import NavPage from '../lib/NavPage.svelte';
 import { playgrounds } from '../stores/playgrounds-v2';
 import { catalog } from '../stores/catalog';
 import Button from '../lib/button/Button.svelte';
-import { afterUpdate } from 'svelte';
+import { afterUpdate, onMount } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 import RangeInput from '../lib/RangeInput.svelte';
 
@@ -21,11 +21,12 @@ export let playgroundId: string;
 let prompt: string;
 let sendEnabled = false;
 let scrollable: Element;
-let lastIsUserMessage = false;
 let errorMsg = '';
 
-// settings
+let askSystemPrompt = true;
 let systemPrompt: string = '';
+
+// settings
 let temperature = 0.8;
 let max_tokens = -1;
 let top_p = 0.5;
@@ -35,18 +36,18 @@ $: playground = $playgrounds.find(playground => playground.id === playgroundId);
 $: model = $catalog.models.find(model => model.id === playground?.modelId);
 $: {
   if (conversation?.messages.length) {
+    askSystemPrompt = false;
     const latest = conversation.messages[conversation.messages.length - 1];
-    if (isAssistantChat(latest) && !isPendingChat(latest)) {
+    if (isSystemPrompt(latest) || (isAssistantChat(latest) && !isPendingChat(latest))) {
       sendEnabled = true;
     }
-    lastIsUserMessage = isUserChat(latest);
   } else {
     sendEnabled = true;
   }
 }
 
 const roleNames = {
-  system: 'System',
+  system: 'System prompt',
   user: 'User',
   assistant: 'Assistant',
 };
@@ -61,9 +62,8 @@ function getMessageParagraphs(message: ChatMessage): string[] {
         .join('')
         .split('\n');
     }
-  } else if (isUserChat(message)) {
-    const msg = message as UserChat;
-    return msg.content?.split('\n') ?? [];
+  } else if (isUserChat(message) || isSystemPrompt(message)) {
+    return message.content?.split('\n') ?? [];
   }
   return [];
 }
@@ -72,7 +72,7 @@ function askPlayground() {
   errorMsg = '';
   sendEnabled = false;
   studioClient
-    .submitPlaygroundMessage(playgroundId, prompt, systemPrompt, {
+    .submitPlaygroundMessage(playgroundId, prompt, false, {
       temperature,
       max_tokens,
       top_p,
@@ -108,6 +108,12 @@ function elapsedTime(msg: AssistantChat): string {
     return '';
   }
 }
+
+function setSystemPrompt() {
+  studioClient.submitPlaygroundMessage(playgroundId, systemPrompt, true).catch((err: unknown) => {
+    errorMsg = String(err);
+  });
+}
 </script>
 
 {#if playground}
@@ -120,9 +126,23 @@ function elapsedTime(msg: AssistantChat): string {
             <svelte:fragment slot="content">
               <div class="flex flex-col w-full h-full">
                 <div aria-label="conversation" class="w-full h-full">
-                  {#if conversation?.messages}
-                    <ul class="p-4">
-                      {#each conversation?.messages as message}
+                  <ul class="p-4">
+                    {#if askSystemPrompt}
+                      <li>
+                        <div class="text-lg">Define a system prompt</div>
+                        <div class="rounded-md w-full">
+                          <textarea
+                            bind:value="{systemPrompt}"
+                            class="p-2 w-full outline-none bg-charcoal-500 rounded-md text-gray-700 placeholder-gray-700"
+                            rows="4"
+                            placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
+                          ></textarea
+                          ><Button on:click="{setSystemPrompt}">set</Button>
+                        </div>
+                      </li>
+                    {/if}
+                    {#if conversation?.messages}
+                      {#each conversation.messages as message}
                         <li class="m-4">
                           <div class="text-lg" class:text-right="{isAssistantChat(message)}">
                             {roleNames[message.role]}
@@ -130,6 +150,7 @@ function elapsedTime(msg: AssistantChat): string {
                           <div
                             class="p-4 rounded-md"
                             class:bg-charcoal-400="{isUserChat(message)}"
+                            class:bg-charcoal-800="{isSystemPrompt(message)}"
                             class:bg-charcoal-900="{isAssistantChat(message)}"
                             class:ml-8="{isAssistantChat(message)}"
                             class:mr-8="{isUserChat(message)}">
@@ -145,24 +166,13 @@ function elapsedTime(msg: AssistantChat): string {
                           <div></div>
                         </li>
                       {/each}
-                    </ul>
-                  {/if}
+                    {/if}
+                  </ul>
                 </div>
               </div>
             </svelte:fragment>
             <svelte:fragment slot="details">
               <div class="text-gray-800 text-xs">Next prompt will use these settings</div>
-              <div class="bg-charcoal-600 w-full rounded-md text-xs p-4">
-                <div class="mb-4">System Prompt</div>
-                <div class="w-full">
-                  <textarea
-                    bind:value="{systemPrompt}"
-                    class="p-2 w-full outline-none bg-charcoal-500 rounded-sm text-gray-700 placeholder-gray-700"
-                    rows="4"
-                    placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
-                  ></textarea>
-                </div>
-              </div>
               <div class="bg-charcoal-600 w-full rounded-md text-xs p-4">
                 <div class="mb-4 flex flex-col">Model Parameters</div>
                 <div class="flex flex-col space-y-4">

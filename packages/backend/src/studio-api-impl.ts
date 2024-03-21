@@ -90,7 +90,7 @@ export class StudioApiImpl implements StudioAPI {
   submitPlaygroundMessage(
     containerId: string,
     userInput: string,
-    systemPrompt: string,
+    systemPrompt: boolean,
     options?: ModelOptions,
   ): Promise<void> {
     return this.playgroundV2.submit(containerId, userInput, systemPrompt, options);

@@ -151,5 +151,5 @@ export abstract class StudioAPI {
    * Delete a conversation
    * @param conversationId the conversation identifier that will be deleted
    */
-  abstract deleteConversation(conversationId: string): Promise<void>;
+  abstract requestDeleteConversation(conversationId: string): Promise<void>;
 }

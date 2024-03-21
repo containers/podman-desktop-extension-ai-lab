@@ -60,8 +60,19 @@ export class StudioApiImpl implements StudioAPI {
     private snippetManager: SnippetManager,
   ) {}
 
-  async deleteConversation(conversationId: string): Promise<void> {
-    this.playgroundV2.deletePlayground(conversationId);
+  async requestDeleteConversation(conversationId: string): Promise<void> {
+    // Do not wait on the promise as the api would probably timeout before the user answer.
+    podmanDesktopApi.window
+      .showWarningMessage(`Are you sure you want to delete this conversation ?`, 'Confirm', 'Cancel')
+      .then((result: string) => {
+        if (result === 'Confirm') {
+          this.playgroundV2.deletePlayground(conversationId);
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong with confirmation modals`, err);
+      });
+
   }
 
   async createPlayground(name: string, model: ModelInfo): Promise<void> {

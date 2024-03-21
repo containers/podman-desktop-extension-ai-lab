@@ -23,16 +23,16 @@ import ConversationColumnAction from '/@/lib/table/playground/ConversationColumn
 
 vi.mock('../../../utils/client', async () => ({
   studioClient: {
-    deleteConversation: vi.fn(),
+    requestDeleteConversation: vi.fn(),
   },
 }));
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(studioClient.deleteConversation).mockResolvedValue(undefined);
+  vi.mocked(studioClient.requestDeleteConversation).mockResolvedValue(undefined);
 });
 
-test('should call deleteConversation when click delete', async () => {
+test('should call requestDeleteConversation when click delete', async () => {
   render(ConversationColumnAction, {
     object: {
       id: 'dummyConversationId',
@@ -43,5 +43,5 @@ test('should call deleteConversation when click delete', async () => {
 
   const startBtn = screen.getByTitle('Delete conversation');
   await fireEvent.click(startBtn);
-  expect(studioClient.deleteConversation).toHaveBeenCalledWith('dummyConversationId');
+  expect(studioClient.requestDeleteConversation).toHaveBeenCalledWith('dummyConversationId');
 });

@@ -6,7 +6,7 @@ import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 export let object: PlaygroundV2;
 
 function deleteConversation() {
-  studioClient.deleteConversation(object.id).catch((err: unknown) => {
+  studioClient.requestDeleteConversation(object.id).catch((err: unknown) => {
     console.error('Something went wrong while trying to delete conversation', err);
   });
 }

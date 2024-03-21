@@ -1,11 +1,5 @@
 <script lang="ts">
-import {
-  faExclamationCircle,
-  faInfoCircle,
-  faLocationArrow,
-  faPlus,
-  faPlusCircle,
-} from '@fortawesome/free-solid-svg-icons';
+import { faExclamationCircle, faInfoCircle, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import NavPage from '../lib/NavPage.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { modelsInfo } from '/@/stores/modelsInfo';
@@ -18,6 +12,7 @@ import type { Task } from '@shared/src/models/ITask';
 import TasksProgress from '../lib/progress/TasksProgress.svelte';
 import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
+import type { Unsubscriber } from 'svelte/store';
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
@@ -35,10 +30,6 @@ let trackedTasks: Task[] = [];
 
 let error: boolean = false;
 
-// The playgroundId will be included in the tasks when the creation
-// process will be completed
-let playgroundId: string | undefined = undefined;
-
 $: {
   if (!modelId && localModels.length > 0) {
     modelId = localModels[0].id;
@@ -50,7 +41,7 @@ function openModelsPage() {
 }
 
 // Navigate to the new created playground environment
-const openPlaygroundPage = () => {
+const openPlaygroundPage = (playgroundId: string) => {
   router.goto(`/playground/${playgroundId}`);
 };
 
@@ -89,17 +80,21 @@ const processTasks = (tasks: Task[]) => {
   const task: Task | undefined = trackedTasks.find(task => 'playgroundId' in (task.labels || {}));
   if (task === undefined) return;
 
-  playgroundId = task.labels?.['playgroundId'];
+  const playgroundId = task.labels?.['playgroundId'];
+  if (playgroundId) {
+    openPlaygroundPage(playgroundId);
+  }
 };
 
+let unsubscribeTasks: Unsubscriber;
 onMount(() => {
-  tasks.subscribe(tasks => {
+  unsubscribeTasks = tasks.subscribe(tasks => {
     processTasks(tasks);
   });
 });
 
 onDestroy(() => {
-  //  unsubscribe?.();
+  unsubscribeTasks?.();
 });
 </script>
 
@@ -169,20 +164,14 @@ onDestroy(() => {
         </div>
         <footer>
           <div class="w-full flex flex-col">
-            {#if playgroundId === undefined}
-              <Button
-                title="Create playground"
-                inProgress="{submitted}"
-                on:click="{submit}"
-                disabled="{!modelId}"
-                icon="{faPlusCircle}">
-                Create playground
-              </Button>
-            {:else}
-              <Button title="Open service details" on:click="{openPlaygroundPage}" icon="{faLocationArrow}">
-                Open playground environment
-              </Button>
-            {/if}
+            <Button
+              title="Create playground"
+              inProgress="{submitted}"
+              on:click="{submit}"
+              disabled="{!modelId}"
+              icon="{faPlusCircle}">
+              Create playground
+            </Button>
           </div>
         </footer>
       </div>

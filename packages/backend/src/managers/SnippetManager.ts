@@ -21,17 +21,37 @@ import { Request } from 'postman-collection';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import type { RequestOptions } from '@shared/src/models/RequestOptions';
+import { quarkusLangchain4Jgenerator } from './snippets/quarkus-snippet';
+
+type Generator = (requestOptions: RequestOptions) => Promise<string>;
 
 export class SnippetManager extends Publisher<Language[]> implements Disposable {
+  #languages: Language[];
+  #additionalGenerators: Map<string, Generator>;
+
   constructor(webview: Webview) {
     super(webview, Messages.MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
   }
 
-  getLanguageList(): Language[] {
-    return getLanguageList();
+  addVariant(key: string, variant: string, generator: Generator): void {
+    const original = this.#languages;
+    const language = original.find((lang: Language) => lang.key === key);
+    if (language) {
+      language.variants.push({ key: variant });
+      this.#additionalGenerators.set(`${key}/${variant}`, generator);
+    }
   }
 
-  generate(requestOptions: RequestOptions, language: string, variant: string): Promise<string> {
+  getLanguageList(): Language[] {
+    return this.#languages;
+  }
+
+  async generate(requestOptions: RequestOptions, language: string, variant: string): Promise<string> {
+    const generator = this.#additionalGenerators.get(`${language}/${variant}`);
+    if (generator) {
+      return generator(requestOptions);
+    }
+
     return new Promise((resolve, reject) => {
       const request = new Request(requestOptions);
       convert(language, variant, request, {}, (error: unknown, snippet: string) => {
@@ -45,6 +65,9 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
   }
 
   init() {
+    this.#languages = getLanguageList();
+    this.#additionalGenerators = new Map<string, Generator>();
+    this.addVariant('java', 'Quarkus Langchain4J', quarkusLangchain4Jgenerator);
     // Notify the publisher
     this.notify();
   }

@@ -19,8 +19,10 @@ import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import mustache from 'mustache';
 import template from '../../templates/quarkus-langchain4j.mustache?raw';
 
+const SUFFIX_LENGTH = '/chat/completions'.length;
+
 export function quarkusLangchain4Jgenerator(requestOptions: RequestOptions): string {
   return mustache.render(template, {
-    baseUrl: requestOptions.url.substring(0, requestOptions.url.length - '/chat/completions'.length),
+    baseUrl: requestOptions.url.substring(0, requestOptions.url.length - SUFFIX_LENGTH),
   });
 }

@@ -64,7 +64,7 @@ async function submit() {
 
 // Utility method to filter the tasks properly based on the tracking Id
 const processTasks = (tasks: Task[]) => {
-  if (trackingId === undefined) {
+  if (!trackingId) {
     trackedTasks = [];
     return;
   }
@@ -77,7 +77,7 @@ const processTasks = (tasks: Task[]) => {
   // hint: we do not need to display them as the TasksProgress component will
   error = trackedTasks.find(task => task.error)?.error !== undefined;
 
-  const task: Task | undefined = trackedTasks.find(task => 'playgroundId' in (task.labels || {}));
+  const task: Task | undefined = trackedTasks.find(task => 'playgroundId' in (task.labels ?? {}));
   if (task === undefined) return;
 
   const playgroundId = task.labels?.['playgroundId'];

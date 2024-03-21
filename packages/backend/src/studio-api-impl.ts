@@ -72,7 +72,6 @@ export class StudioApiImpl implements StudioAPI {
       .catch((err: unknown) => {
         console.error(`Something went wrong with confirmation modals`, err);
       });
-
   }
 
   async createPlayground(name: string, model: ModelInfo): Promise<void> {

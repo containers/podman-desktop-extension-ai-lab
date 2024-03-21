@@ -38,26 +38,45 @@ export class Uploader {
     this.#workers = [new WSLUploader()];
   }
 
+  /**
+   * Performing the upload action
+   * @param id tracking id
+   *
+   * @return the path to model after the operation (either on the podman machine or local if not compatible)
+   */
   async perform(id: string): Promise<string> {
-    const workers = this.#workers.filter(w => w.canUpload());
-    let modelPath = this.localModelPath;
+    // Find the uploader for the current operating system
+    const worker: UploadWorker | undefined = this.#workers.find(w => w.canUpload());
+
+    // If none are found, we return the current path
+    if(worker === undefined) {
+      console.warn('There is no workers compatible. Using default local mounting');
+      this.#_onEvent.fire({
+        id,
+        status: 'completed',
+        message: `Use local model`,
+      } as CompletionEvent);
+
+      return this.localModelPath;
+    }
+
     try {
-      if (workers && workers.length > 1) {
-        throw new Error('too many uploaders registered for this system');
-      }
-      const worker = workers?.[0];
-      if (worker) {
-        const startTime = performance.now();
-        modelPath = await worker.upload(this.localModelPath);
-        const durationSeconds = getDurationSecondsSince(startTime);
-        this.#_onEvent.fire({
-          id,
-          status: 'completed',
-          message: `Duration ${durationSeconds}s.`,
-          duration: durationSeconds,
-        } as CompletionEvent);
-        return modelPath;
-      }
+      // measure performance
+      const startTime = performance.now();
+      // get new path
+      const modelPath = await worker.upload(this.localModelPath);
+      // compute full time
+      const durationSeconds = getDurationSecondsSince(startTime);
+      // fire events
+      this.#_onEvent.fire({
+        id,
+        status: 'completed',
+        message: `Duration ${durationSeconds}s.`,
+        duration: durationSeconds,
+      } as CompletionEvent);
+
+      // return the new path on the podman machine
+      return modelPath;
     } catch (err) {
       if (!this.abortSignal?.aborted) {
         this.#_onEvent.fire({
@@ -74,13 +93,5 @@ export class Uploader {
       }
       throw new Error(`Unable to upload model. Error: ${String(err)}`);
     }
-
-    this.#_onEvent.fire({
-      id,
-      status: 'completed',
-      message: `Use local model`,
-    } as CompletionEvent);
-
-    return modelPath;
   }
 }

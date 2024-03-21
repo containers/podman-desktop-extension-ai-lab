@@ -22,6 +22,7 @@ import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import { quarkusLangchain4Jgenerator } from './snippets/quarkus-snippet';
+import { javaOkHttpGenerator } from './snippets/java-okhttp-snippet';
 
 type Generator = (requestOptions: RequestOptions) => Promise<string>;
 
@@ -37,7 +38,9 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
     const original = this.#languages;
     const language = original.find((lang: Language) => lang.key === key);
     if (language) {
-      language.variants.push({ key: variant });
+      if (!language.variants.find(v => v.key === variant)) {
+        language.variants.push({ key: variant });
+      }
       this.#additionalGenerators.set(`${key}/${variant}`, generator);
     }
   }
@@ -68,6 +71,7 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
     this.#languages = getLanguageList();
     this.#additionalGenerators = new Map<string, Generator>();
     this.addVariant('java', 'Quarkus Langchain4J', quarkusLangchain4Jgenerator);
+    this.addVariant('java', 'OkHttp', javaOkHttpGenerator);
     // Notify the publisher
     this.notify();
   }

@@ -28,6 +28,8 @@ const mocks = vi.hoisted(() => {
     getRemotesMock: vi.fn(),
     statusMock: vi.fn(),
     pullMock: vi.fn(),
+    revparseMock: vi.fn(),
+    fetchMock: vi.fn(),
   };
 });
 
@@ -49,6 +51,8 @@ vi.mock('simple-git', () => {
       getRemotes: mocks.getRemotesMock,
       status: mocks.statusMock,
       pull: mocks.pullMock,
+      revparse: mocks.revparseMock,
+      fetch: mocks.fetchMock,
     }),
   };
 });
@@ -63,6 +67,8 @@ vi.mock('@podman-desktop/api', async () => {
 
 beforeEach(() => {
   vi.resetAllMocks();
+
+  mocks.revparseMock.mockResolvedValue('dummyCommit');
 });
 
 describe('cloneRepository', () => {
@@ -209,5 +215,85 @@ describe('processCheckout', () => {
     expect(window.showWarningMessage).toHaveBeenCalledWith(expect.anything(), 'Cancel', 'Continue', 'Update');
     expect(rmSync).not.toHaveBeenCalled();
     expect(gitmanager.pull).toHaveBeenCalled();
+  });
+});
+
+describe('isRepositoryUpToDate', () => {
+  test('detached invalid without ref', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        name: 'origin',
+        refs: {
+          fetch: 'repo',
+          push: 'repo',
+        },
+      },
+    ]);
+    mocks.statusMock.mockResolvedValue({
+      detached: true,
+    });
+
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', undefined);
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository is detached.');
+  });
+
+  test('detached invalid with invalid ref', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        name: 'origin',
+        refs: {
+          fetch: 'repo',
+          push: 'repo',
+        },
+      },
+    ]);
+    mocks.statusMock.mockResolvedValue({
+      detached: true,
+    });
+
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'invalidRef');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository is detached. HEAD is dummyCommit expected invalidRef.');
+  });
+
+  test('detached invalid with expected ref', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        name: 'origin',
+        refs: {
+          fetch: 'repo',
+          push: 'repo',
+        },
+      },
+    ]);
+    mocks.statusMock.mockResolvedValue({
+      detached: true,
+    });
+
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
+    expect(result.ok).toBeTruthy();
+    expect(result.error).toBeUndefined();
   });
 });

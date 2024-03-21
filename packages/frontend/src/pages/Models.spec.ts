@@ -16,13 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, test, expect } from 'vitest';
+import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render, waitFor } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import { router } from 'tinro';
 
 const mocks = vi.hoisted(() => {
   return {
+    statsLocalModelsMock: vi.fn(),
     getCatalogMock: vi.fn(),
     getPullingStatusesMock: vi.fn().mockResolvedValue(new Map()),
     modelsInfoSubscribeMock: vi.fn(),
@@ -48,6 +49,7 @@ vi.mock('/@/utils/client', async () => {
   return {
     studioClient: {
       getModelsInfo: mocks.getModelsInfoMock,
+      statsLocalModels: mocks.statsLocalModelsMock,
       getPullingStatuses: mocks.getPullingStatusesMock,
     },
     rpcBrowser: {
@@ -70,6 +72,10 @@ vi.mock('../stores/tasks', async () => {
   return {
     tasks: mocks.tasksQueriesMock,
   };
+});
+
+beforeEach(() => {
+  mocks.statsLocalModelsMock.mockResolvedValue(undefined);
 });
 
 test('should display There is no model yet', async () => {

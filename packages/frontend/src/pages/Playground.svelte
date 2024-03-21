@@ -126,7 +126,7 @@ function setSystemPrompt() {
             <svelte:fragment slot="content">
               <div class="flex flex-col w-full h-full">
                 <div aria-label="conversation" class="w-full h-full">
-                  <ul class="p-4">
+                  <ul class="space-y-4">
                     {#if askSystemPrompt}
                       <li>
                         <div class="text-lg">Define a system prompt</div>
@@ -137,13 +137,14 @@ function setSystemPrompt() {
                             rows="4"
                             placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
                           ></textarea
-                          ><Button on:click="{setSystemPrompt}">set</Button>
+                          >
+                          <div class="w-full text-right"><Button on:click="{setSystemPrompt}">set</Button></div>
                         </div>
                       </li>
                     {/if}
                     {#if conversation?.messages}
                       {#each conversation.messages as message}
-                        <li class="m-4">
+                        <li>
                           <div class="text-lg" class:text-right="{isAssistantChat(message)}">
                             {roleNames[message.role]}
                           </div>

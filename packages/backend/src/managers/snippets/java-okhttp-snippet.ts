@@ -15,9 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import mustache from 'mustache';
 import javaOkHttpTemplate from '../../templates/java-okhttp.mustache?raw';
 
-export async function javaOkHttpGenerator(): Promise<string> {
-  return mustache.render(javaOkHttpTemplate);
+export async function javaOkHttpGenerator(requestOptions: RequestOptions): Promise<string> {
+  return mustache.render(javaOkHttpTemplate, {
+    endpoint: requestOptions.url,
+  });
 }

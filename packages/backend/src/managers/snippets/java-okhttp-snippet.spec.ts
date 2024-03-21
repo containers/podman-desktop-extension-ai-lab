@@ -18,10 +18,9 @@
 
 import { expect, test } from 'vitest';
 import { javaOkHttpGenerator } from './java-okhttp-snippet';
-import javaOkHttpTemplate from '../../templates/java-okhttp.mustache?raw';
 
 test('expect return generated snippet', async () => {
-  const payload = await javaOkHttpGenerator();
+  const payload = await javaOkHttpGenerator({ url: 'http://localhost:32412' });
   expect(payload).toBeDefined();
-  expect(payload).equal(javaOkHttpTemplate);
+  expect(payload).toContain('.url("http://localhost:32412")');
 });

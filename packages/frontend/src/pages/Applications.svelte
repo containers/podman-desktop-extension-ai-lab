@@ -53,12 +53,12 @@ const openApplicationCatalog = () => {
         {:else}
           <div class="w-full flex items-center justify-center">
             <div role="status">
-              There is no AI App running. Explore the one available in the <a
+              There is no AI App running. You may run a new AI App via the <a
                 href="{'javascript:void(0);'}"
                 class="underline"
                 role="button"
                 title="Open the catalog page"
-                on:click="{openApplicationCatalog}">application catalog</a
+                on:click="{openApplicationCatalog}">Recipes Catalog</a
               >.
             </div>
           </div>

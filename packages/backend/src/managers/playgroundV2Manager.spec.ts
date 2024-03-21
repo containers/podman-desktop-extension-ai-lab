@@ -25,6 +25,7 @@ import type { InferenceManager } from './inference/inferenceManager';
 import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { INFERENCE_SERVER_IMAGE } from '../utils/inferenceUtils';
+import type { TaskRegistry } from '../registries/TaskRegistry';
 
 vi.mock('openai', () => ({
   default: vi.fn(),
@@ -41,6 +42,8 @@ const inferenceManagerMock = {
   startInferenceServer: vi.fn(),
 } as unknown as InferenceManager;
 
+const taskRegistryMock = {} as unknown as TaskRegistry;
+
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(webviewMock.postMessage).mockResolvedValue(undefined);
@@ -52,7 +55,7 @@ afterEach(() => {
 });
 
 test('manager should be properly initialized', () => {
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   expect(manager.getConversations().length).toBe(0);
 });
 
@@ -67,7 +70,7 @@ test('submit should throw an error if the server is stopped', async () => {
       ],
     } as unknown as InferenceServer,
   ]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo);
 
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
@@ -98,7 +101,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
       ],
     } as unknown as InferenceServer,
   ]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('p1', { id: 'model1' } as ModelInfo);
   const playgroundId = manager.getPlaygrounds()[0].id;
   await expect(manager.submit(playgroundId, 'dummyUserInput', '')).rejects.toThrowError(
@@ -123,7 +126,7 @@ test('create playground should create conversation.', async () => {
       ],
     } as unknown as InferenceServer,
   ]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   expect(manager.getConversations().length).toBe(0);
   await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo);
 
@@ -160,7 +163,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     },
   } as unknown as OpenAI);
 
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
 
   const date = new Date(2000, 1, 1, 13);
@@ -231,7 +234,7 @@ test.each(['', 'my system prompt'])(
       },
     } as unknown as OpenAI);
 
-    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
     await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
 
     const playgrounds = manager.getPlaygrounds();
@@ -288,7 +291,7 @@ test('submit should send options', async () => {
     },
   } as unknown as OpenAI);
 
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
 
   const playgrounds = manager.getPlaygrounds();
@@ -319,7 +322,7 @@ test('submit should send options', async () => {
 
 test('creating a new playground should send new playground to frontend', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('a name', {
     id: 'model-1',
     name: 'Model 1',
@@ -338,7 +341,7 @@ test('creating a new playground should send new playground to frontend', async (
 
 test('creating a new playground with no name should send new playground to frontend with generated name', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('', {
     id: 'model-1',
     name: 'Model 1',
@@ -358,7 +361,7 @@ test('creating a new playground with no name should send new playground to front
 test('creating a new playground with no model served should start an inference server', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('a name', {
     id: 'model-1',
     name: 'Model 1',
@@ -390,7 +393,7 @@ test('creating a new playground with the model already served should not start a
     },
   ] as InferenceServer[]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('a name', {
     id: 'model-1',
     name: 'Model 1',
@@ -414,7 +417,7 @@ test('creating a new playground with the model server stopped should start the i
   ] as InferenceServer[]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const startInferenceServerMock = vi.mocked(inferenceManagerMock.startInferenceServer);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('a name', {
     id: 'model-1',
     name: 'Model 1',

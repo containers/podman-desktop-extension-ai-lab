@@ -1,5 +1,11 @@
 <script lang="ts">
-import { faExclamationCircle, faInfoCircle, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import {
+  faExclamationCircle,
+  faInfoCircle,
+  faLocationArrow,
+  faPlus,
+  faPlusCircle,
+} from '@fortawesome/free-solid-svg-icons';
 import NavPage from '../lib/NavPage.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { modelsInfo } from '/@/stores/modelsInfo';
@@ -7,16 +13,31 @@ import Fa from 'svelte-fa';
 import Button from '../lib/button/Button.svelte';
 import { studioClient } from '../utils/client';
 import { router } from 'tinro';
-import { playgrounds } from '../stores/playgrounds-v2';
-import type { Unsubscriber } from 'svelte/store';
-import { onDestroy } from 'svelte';
+import { onDestroy, onMount } from 'svelte';
+import type { Task } from '@shared/src/models/ITask';
+import TasksProgress from '../lib/progress/TasksProgress.svelte';
+import { tasks } from '../stores/tasks';
+import { filterByLabel } from '../utils/taskUtils';
+
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let modelId: string | undefined = undefined;
-let submitting: boolean = false;
+let submitted: boolean = false;
 let playgroundName: string;
-let unsubscribe: Unsubscriber | undefined = undefined;
+
+// The tracking id is a unique identifier provided by the
+// backend when calling requestCreateInferenceServer
+let trackingId: string | undefined = undefined;
+
+// The trackedTasks are the tasks linked to the trackingId
+let trackedTasks: Task[] = [];
+
+let error: boolean = false;
+
+// The playgroundId will be included in the tasks when the creation
+// process will be completed
+let playgroundId: string | undefined = undefined;
 
 $: {
   if (!modelId && localModels.length > 0) {
@@ -28,104 +49,143 @@ function openModelsPage() {
   router.goto(`/models`);
 }
 
+// Navigate to the new created playground environment
+const openPlaygroundPage = () => {
+  router.goto(`/playground/${playgroundId}`);
+};
+
 function onNameInput(event: Event) {
   playgroundName = (event.target as HTMLInputElement).value || '';
 }
 
-function submit() {
+async function submit() {
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
   // disable submit button
-  submitting = true;
-  const playgroundsIdsBefore = $playgrounds.map(playground => playground.id);
-  studioClient
-    .createPlayground(playgroundName, model)
-    .catch(err => {
-      console.error('Something wrong while trying to create the playground.', err);
-    })
-    .finally(() => {
-      submitting = false;
-      unsubscribe = playgrounds.subscribe(playgrounds => {
-        if (playgrounds.length > playgroundsIdsBefore.length) {
-          const newId = playgrounds.map(pl => pl.id).find(id => !playgroundsIdsBefore.includes(id));
-          if (!!newId) {
-            router.goto(`/playground/${newId}`);
-          }
-        }
-      });
-    });
+  submitted = true;
+  try {
+    trackingId = await studioClient.requestCreatePlayground(playgroundName, model);
+  } catch (err: unknown) {
+    trackingId = undefined;
+    console.error('Something wrong while trying to create the playground.', err);
+  }
 }
 
+// Utility method to filter the tasks properly based on the tracking Id
+const processTasks = (tasks: Task[]) => {
+  if (trackingId === undefined) {
+    trackedTasks = [];
+    return;
+  }
+
+  trackedTasks = filterByLabel(tasks, {
+    trackingId: trackingId,
+  });
+
+  // Check for errors
+  // hint: we do not need to display them as the TasksProgress component will
+  error = trackedTasks.find(task => task.error)?.error !== undefined;
+
+  const task: Task | undefined = trackedTasks.find(task => 'playgroundId' in (task.labels || {}));
+  if (task === undefined) return;
+
+  playgroundId = task.labels?.['playgroundId'];
+};
+
+onMount(() => {
+  tasks.subscribe(tasks => {
+    processTasks(tasks);
+  });
+});
+
 onDestroy(() => {
-  unsubscribe?.();
+  //  unsubscribe?.();
 });
 </script>
 
 <NavPage icon="{faPlus}" title="New Playground environment" searchEnabled="{false}">
   <svelte:fragment slot="content">
-    <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg w-full h-fit">
-      <div class="w-full">
-        <!-- playground name input -->
-        <label for="playgroundName" class="block mb-2 text-sm font-bold text-gray-400">Playground name</label>
-        <input
-          id="playgroundName"
-          class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
-          type="text"
-          name="playgroundName"
-          on:input="{onNameInput}"
-          placeholder="Leave blank to generate a name"
-          aria-label="playgroundName" />
-
-        <!-- model input -->
-        <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
-        <select
-          required
-          id="providerChoice"
-          bind:value="{modelId}"
-          class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
-          name="providerChoice">
-          {#each localModels as model}
-            <option class="my-1" value="{model.id}">{model.name}</option>
-          {/each}
-        </select>
-        {#if localModels.length === 0}
-          <div class="text-red-500 p-1 flex flex-row items-center">
-            <Fa size="1.1x" class="cursor-pointer text-red-500" icon="{faExclamationCircle}" />
-            <div role="alert" aria-label="Error Message Content" class="ml-2">
-              You don't have any models downloaded. You can download them in <a
-                href="{'javascript:void(0);'}"
-                class="underline"
-                title="Models page"
-                on:click="{openModelsPage}">models page</a
-              >.
-            </div>
-          </div>
-        {:else if availModels.length > 0}
-          <div class="text-sm p-1 flex flex-row items-center text-gray-500">
-            <Fa size="1.1x" class="cursor-pointer" icon="{faInfoCircle}" />
-            <div role="alert" aria-label="Info Message Content" class="ml-2">
-              Other models are available, but must be downloaded from the <a
-                href="{'javascript:void(0);'}"
-                class="underline"
-                title="Models page"
-                on:click="{openModelsPage}">models page</a
-              >.
-            </div>
-          </div>
-        {/if}
-      </div>
-      <footer>
-        <div class="w-full flex flex-col">
-          <Button
-            title="Create playground"
-            inProgress="{submitting}"
-            on:click="{submit}"
-            disabled="{!modelId}"
-            icon="{faPlusCircle}">
-            Create playground
-          </Button>
+    <div class="flex flex-col w-full">
+      <!-- tasks tracked -->
+      {#if trackedTasks.length > 0}
+        <div class="mx-5 mt-5" role="status">
+          <TasksProgress tasks="{trackedTasks}" />
         </div>
-      </footer>
+      {/if}
+
+      <!-- form -->
+      <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg w-full h-fit">
+        <div class="w-full">
+          <!-- playground name input -->
+          <label for="playgroundName" class="block mb-2 text-sm font-bold text-gray-400">Playground name</label>
+          <input
+            disabled="{submitted}"
+            id="playgroundName"
+            class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
+            type="text"
+            name="playgroundName"
+            on:input="{onNameInput}"
+            placeholder="Leave blank to generate a name"
+            aria-label="playgroundName" />
+
+          <!-- model input -->
+          <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
+          <select
+            required
+            disabled="{submitted}"
+            id="providerChoice"
+            bind:value="{modelId}"
+            class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
+            name="providerChoice">
+            {#each localModels as model}
+              <option class="my-1" value="{model.id}">{model.name}</option>
+            {/each}
+          </select>
+          {#if localModels.length === 0}
+            <div class="text-red-500 p-1 flex flex-row items-center">
+              <Fa size="1.1x" class="cursor-pointer text-red-500" icon="{faExclamationCircle}" />
+              <div role="alert" aria-label="Error Message Content" class="ml-2">
+                You don't have any models downloaded. You can download them in <a
+                  href="{'javascript:void(0);'}"
+                  class="underline"
+                  title="Models page"
+                  on:click="{openModelsPage}">models page</a
+                >.
+              </div>
+            </div>
+          {:else if availModels.length > 0}
+            <div class="text-sm p-1 flex flex-row items-center text-gray-500">
+              <Fa size="1.1x" class="cursor-pointer" icon="{faInfoCircle}" />
+              <div role="alert" aria-label="Info Message Content" class="ml-2">
+                Other models are available, but must be downloaded from the <a
+                  href="{'javascript:void(0);'}"
+                  class="underline"
+                  title="Models page"
+                  on:click="{openModelsPage}">models page</a
+                >.
+              </div>
+            </div>
+          {/if}
+        </div>
+        <footer>
+          <div class="w-full flex flex-col">
+            {#if playgroundId === undefined}
+              <Button
+                title="Create playground"
+                inProgress="{submitted}"
+                on:click="{submit}"
+                disabled="{!modelId}"
+                icon="{faPlusCircle}">
+                Create playground
+              </Button>
+            {:else}
+              <Button title="Open service details" on:click="{openPlaygroundPage}" icon="{faLocationArrow}">
+                Open playground environment
+              </Button>
+            {/if}
+          </div>
+        </footer>
+      </div>
     </div>
   </svelte:fragment>
 </NavPage>

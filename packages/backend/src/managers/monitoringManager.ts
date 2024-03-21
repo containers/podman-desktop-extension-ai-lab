@@ -39,7 +39,10 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
   #containerStats: Map<string, StatsHistory>;
   #disposables: Disposable[];
 
-  constructor(webview: Webview, private modelsManager: ModelsManager) {
+  constructor(
+    webview: Webview,
+    private modelsManager: ModelsManager,
+  ) {
     super(webview, Messages.MSG_MONITORING_UPDATE, () => this.getStats());
     this.#containerStats = new Map<string, StatsHistory>();
     this.#disposables = [];

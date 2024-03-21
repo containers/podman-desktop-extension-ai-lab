@@ -35,23 +35,23 @@ export function getParentDirectory(filePath: string): string {
  * source: https://stackoverflow.com/a/69418940
  */
 export async function dirSize(dir: string): Promise<number> {
-  const files = await readdir( dir, { withFileTypes: true } );
+  const files = await readdir(dir, { withFileTypes: true });
 
-  const paths = files.map( async file => {
-    const path = join( dir, file.name );
+  const paths = files.map(async file => {
+    const path = join(dir, file.name);
 
-    if ( file.isDirectory() ) return await dirSize( path );
+    if (file.isDirectory()) return await dirSize(path);
 
-    if ( file.isFile() ) {
-      const { size } = await stat( path );
+    if (file.isFile()) {
+      const { size } = await stat(path);
 
       return size;
     }
 
     return 0;
-  } );
+  });
 
-  return ( await Promise.all( paths ) ).flat( Infinity ).reduce( ( i, size ) => i + size, 0 );
+  return (await Promise.all(paths)).flat(Infinity).reduce((i, size) => i + size, 0);
 }
 
 /**

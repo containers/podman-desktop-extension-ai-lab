@@ -61,8 +61,7 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundV2: PlaygroundV2Manager,
     private snippetManager: SnippetManager,
     private monitoringManager: MonitoringManager,
-  ) {
-  }
+  ) {}
 
   statsLocalModels(): Promise<IStorageInfo> {
     return this.monitoringManager.statsLocalModels();

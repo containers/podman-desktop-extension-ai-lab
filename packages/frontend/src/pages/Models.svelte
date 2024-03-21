@@ -84,12 +84,15 @@ onMount(() => {
     models = value;
     filterModels();
 
-    if(models.length > 0) {
-      studioClient.statsLocalModels().then((stats) => {
-        modelsStorageInfo = stats;
-      }).catch((err) => {
-        console.error('Something went wrong while trying to stats models.', err);
-      })
+    if (models.length > 0) {
+      studioClient
+        .statsLocalModels()
+        .then(stats => {
+          modelsStorageInfo = stats;
+        })
+        .catch(err => {
+          console.error('Something went wrong while trying to stats models.', err);
+        });
     }
   });
 
@@ -117,7 +120,11 @@ onMount(() => {
               <Card classes="bg-charcoal-800 mt-4">
                 <div slot="content" class="text-base font-normal px-5 py-2 w-full">
                   <div class="text-base mb-2">Storage used {humanizeSize(modelsStorageInfo.used)}</div>
-                  <progress title="{humanizeSize(modelsStorageInfo.available)} available" class="w-full" max={modelsStorageInfo.available + modelsStorageInfo.used} value={modelsStorageInfo.used}/>
+                  <progress
+                    title="{humanizeSize(modelsStorageInfo.available)} available"
+                    class="w-full"
+                    max="{modelsStorageInfo.available + modelsStorageInfo.used}"
+                    value="{modelsStorageInfo.used}"></progress>
                 </div>
               </Card>
             {/if}

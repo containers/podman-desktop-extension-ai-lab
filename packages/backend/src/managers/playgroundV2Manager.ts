@@ -28,6 +28,8 @@ import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
+import { getRandomString } from '../utils/randomUtils';
+import type { TaskRegistry } from '../registries/TaskRegistry';
 
 export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Disposable {
   #playgrounds: Map<string, PlaygroundV2>;
@@ -38,6 +40,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
   constructor(
     webview: Webview,
     private inferenceManager: InferenceManager,
+    private taskRegistry: TaskRegistry,
   ) {
     super(webview, Messages.MSG_PLAYGROUNDS_V2_UPDATE, () => this.getPlaygrounds());
     this.#playgrounds = new Map();
@@ -51,7 +54,47 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     this.notify();
   }
 
-  async createPlayground(name: string, model: ModelInfo): Promise<void> {
+  async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
+    const trackingId: string = getRandomString();
+    const task = this.taskRegistry.createTask('Creating Playground environment', 'loading', {
+      trackingId: trackingId,
+    });
+
+    this.createPlayground(name, model, trackingId)
+      .then((playgroundId: string) => {
+        this.taskRegistry.updateTask({
+          ...task,
+          state: 'success',
+          labels: {
+            ...task.labels,
+            playgroundId,
+          },
+        });
+      })
+      .catch((err: unknown) => {
+        const tasks = this.taskRegistry.getTasksByLabels({
+          trackingId: trackingId,
+        });
+        // Filter the one no in loading state
+        tasks
+          .filter(t => t.state === 'loading' && t.id !== task.id)
+          .forEach(t => {
+            this.taskRegistry.updateTask({
+              ...t,
+              state: 'error',
+            });
+          });
+        // Update the main task
+        this.taskRegistry.updateTask({
+          ...task,
+          state: 'error',
+          error: `Something went wrong while trying to create a playground environment ${String(err)}.`,
+        });
+      });
+    return trackingId;
+  }
+
+  async createPlayground(name: string, model: ModelInfo, trackingId: string): Promise<string> {
     const id = `${this.#playgroundCounter++}`;
 
     if (!name) {
@@ -59,11 +102,6 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     }
 
     this.#conversationRegistry.createConversation(id);
-    this.#playgrounds.set(id, {
-      id,
-      name,
-      modelId: model.id,
-    });
 
     // create/start inference server if necessary
     const servers = this.inferenceManager.getServers();
@@ -73,12 +111,20 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
         await withDefaultConfiguration({
           modelsInfo: [model],
         }),
-        `playground-tracking-${id}`,
+        trackingId,
       );
     } else if (server.status === 'stopped') {
       await this.inferenceManager.startInferenceServer(server.container.containerId);
     }
+
+    this.#playgrounds.set(id, {
+      id,
+      name,
+      modelId: model.id,
+    });
     this.notify();
+
+    return id;
   }
 
   getPlaygrounds(): PlaygroundV2[] {

@@ -74,8 +74,13 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async createPlayground(name: string, model: ModelInfo): Promise<void> {
-    return this.playgroundV2.createPlayground(name, model);
+  async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
+    try {
+      return this.playgroundV2.requestCreatePlayground(name, model);
+    } catch (err: unknown) {
+      console.error('Something went wrong while trying to create playground environment', err);
+      throw err;
+    }
   }
 
   async getPlaygroundsV2(): Promise<PlaygroundV2[]> {

@@ -434,7 +434,7 @@ test('creating a new playground with the model server stopped should start the i
 test('delete conversation should delete the conversation', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
 
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   expect(manager.getConversations().length).toBe(0);
   await manager.createPlayground('a name', {
     id: 'model-1',

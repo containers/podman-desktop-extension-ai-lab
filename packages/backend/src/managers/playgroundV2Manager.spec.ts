@@ -76,7 +76,7 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo);
+  await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo, 'tracking-1');
 
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
     {
@@ -107,7 +107,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('p1', { id: 'model1' } as ModelInfo);
+  await manager.createPlayground('p1', { id: 'model1' } as ModelInfo, 'tracking-1');
   const playgroundId = manager.getPlaygrounds()[0].id;
   await expect(manager.submit(playgroundId, 'dummyUserInput', '')).rejects.toThrowError(
     'Inference server is not healthy, currently status: unhealthy.',
@@ -133,7 +133,7 @@ test('create playground should create conversation.', async () => {
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   expect(manager.getConversations().length).toBe(0);
-  await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo);
+  await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo, 'tracking-1');
 
   const conversations = manager.getConversations();
   expect(conversations.length).toBe(1);
@@ -169,7 +169,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
 
   const date = new Date(2000, 1, 1, 13);
   vi.setSystemTime(date);
@@ -240,7 +240,7 @@ test.each(['', 'my system prompt'])(
     } as unknown as OpenAI);
 
     const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-    await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
+    await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
 
     const playgrounds = manager.getPlaygrounds();
     await manager.submit(playgrounds[0].id, 'dummyUserInput', systemPrompt);
@@ -297,7 +297,7 @@ test('submit should send options', async () => {
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo);
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
 
   const playgrounds = manager.getPlaygrounds();
   await manager.submit(playgrounds[0].id, 'dummyUserInput', '', { temperature: 0.123, max_tokens: 45, top_p: 0.345 });
@@ -328,10 +328,14 @@ test('submit should send options', async () => {
 test('creating a new playground should send new playground to frontend', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createPlayground(
+    'a name',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'tracking-1',
+  );
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
     id: Messages.MSG_PLAYGROUNDS_V2_UPDATE,
     body: [
@@ -347,10 +351,14 @@ test('creating a new playground should send new playground to frontend', async (
 test('creating a new playground with no name should send new playground to frontend with generated name', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createPlayground(
+    '',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'tracking-1',
+  );
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
     id: Messages.MSG_PLAYGROUNDS_V2_UPDATE,
     body: [
@@ -367,10 +375,14 @@ test('creating a new playground with no model served should start an inference s
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createPlayground(
+    'a name',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'tracking-1',
+  );
   expect(createInferenceServerMock).toHaveBeenCalledWith(
     {
       image: INFERENCE_SERVER_IMAGE,
@@ -399,10 +411,14 @@ test('creating a new playground with the model already served should not start a
   ] as InferenceServer[]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createPlayground(
+    'a name',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'tracking-1',
+  );
   expect(createInferenceServerMock).not.toHaveBeenCalled();
 });
 
@@ -423,10 +439,14 @@ test('creating a new playground with the model server stopped should start the i
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const startInferenceServerMock = vi.mocked(inferenceManagerMock.startInferenceServer);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createPlayground(
+    'a name',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'tracking-1',
+  );
   expect(createInferenceServerMock).not.toHaveBeenCalled();
   expect(startInferenceServerMock).toHaveBeenCalledWith('container-1');
 });
@@ -436,10 +456,14 @@ test('delete conversation should delete the conversation', async () => {
 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   expect(manager.getConversations().length).toBe(0);
-  await manager.createPlayground('a name', {
-    id: 'model-1',
-    name: 'Model 1',
-  } as unknown as ModelInfo);
+  await manager.createPlayground(
+    'a name',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    'tracking-1',
+  );
 
   const conversations = manager.getConversations();
   expect(conversations.length).toBe(1);
@@ -462,7 +486,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
 
   const id = await manager.requestCreatePlayground('a name', { id: 'model-1' } as ModelInfo);
 
-  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo);
+  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo, expect.any(String));
   expect(createTaskMock).toHaveBeenCalledWith('Creating Playground environment', 'loading', {
     trackingId: id,
   });
@@ -491,7 +515,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
 
   const id = await manager.requestCreatePlayground('a name', { id: 'model-1' } as ModelInfo);
 
-  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo);
+  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo, expect.any(String));
   expect(createTaskMock).toHaveBeenCalledWith('Creating Playground environment', 'loading', {
     trackingId: id,
   });

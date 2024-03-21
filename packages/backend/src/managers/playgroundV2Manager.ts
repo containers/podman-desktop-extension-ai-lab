@@ -60,7 +60,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
       trackingId: trackingId,
     });
 
-    this.createPlayground(name, model)
+    this.createPlayground(name, model, trackingId)
       .then((playgroundId: string) => {
         this.taskRegistry.updateTask({
           ...task,
@@ -94,7 +94,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     return trackingId;
   }
 
-  async createPlayground(name: string, model: ModelInfo): Promise<string> {
+  async createPlayground(name: string, model: ModelInfo, trackingId: string): Promise<string> {
     const id = `${this.#playgroundCounter++}`;
 
     if (!name) {
@@ -111,7 +111,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
         await withDefaultConfiguration({
           modelsInfo: [model],
         }),
-        `playground-tracking-${id}`,
+        trackingId,
       );
     } else if (server.status === 'stopped') {
       await this.inferenceManager.startInferenceServer(server.container.containerId);

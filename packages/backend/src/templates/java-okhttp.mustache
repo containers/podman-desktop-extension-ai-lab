@@ -18,7 +18,22 @@ import com.squareup.okhttp.Response;
 
 OkHttpClient client = new OkHttpClient();
 MediaType mediaType = MediaType.parse("application/json");
-RequestBody body = RequestBody.create(mediaType, "{\n  \"messages\": [\n    {\n      \"content\": \"You are a helpful assistant.\",\n      \"role\": \"system\"\n    },\n    {\n      \"content\": \"What is the capital of France?\",\n      \"role\": \"user\"\n    }\n  ]\n}");
+String json =
+"""
+    {
+        "messages": [
+          {
+            "content": "You are a helpful assistant.",
+            "role": "system"
+          },
+          {
+            "content": "What is the capital of France?",
+            "role": "user"
+          }
+        ]
+    }
+""";
+RequestBody body = RequestBody.create(mediaType, json);
 Request request = new Request.Builder()
 .url("{{{ endpoint }}}")
 .method("POST", body)

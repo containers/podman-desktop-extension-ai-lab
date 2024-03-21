@@ -63,7 +63,7 @@ export class StudioApiImpl implements StudioAPI {
   async requestDeleteConversation(conversationId: string): Promise<void> {
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
-      .showWarningMessage(`Are you sure you want to delete this conversation ?`, 'Confirm', 'Cancel')
+      .showWarningMessage(`Are you sure you want to delete this playground ?`, 'Confirm', 'Cancel')
       .then((result: string) => {
         if (result === 'Confirm') {
           this.playgroundV2.deletePlayground(conversationId);

@@ -109,7 +109,7 @@ onDestroy(() => {
       {/if}
 
       <!-- form -->
-      <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg w-full h-fit">
+      <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- playground name input -->
           <label for="playgroundName" class="block mb-2 text-sm font-bold text-gray-400">Playground name</label>

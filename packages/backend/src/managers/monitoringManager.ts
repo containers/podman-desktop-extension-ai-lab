@@ -18,6 +18,9 @@
 import { type Disposable, type Webview, containerEngine, type ContainerStatsInfo } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
+import type { ModelsManager } from './modelsManager';
+import { dirSize, getDiskSize } from '../utils/pathUtils';
+import type { IStorageInfo } from '@shared/src/models/IStorageInfo';
 
 export interface StatsInfo {
   timestamp: number;
@@ -36,10 +39,26 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
   #containerStats: Map<string, StatsHistory>;
   #disposables: Disposable[];
 
-  constructor(webview: Webview) {
+  constructor(webview: Webview, private modelsManager: ModelsManager) {
     super(webview, Messages.MSG_MONITORING_UPDATE, () => this.getStats());
     this.#containerStats = new Map<string, StatsHistory>();
     this.#disposables = [];
+  }
+
+  /**
+   * Get storage info for the local models
+   */
+  async statsLocalModels(): Promise<IStorageInfo> {
+    const modelsDir = this.modelsManager.getModelsDirectory();
+    const modelsDirSize = await dirSize(modelsDir);
+    const diskSize = await getDiskSize(modelsDir);
+
+    return {
+      name: 'Local Models',
+      available: diskSize.bavail * diskSize.bsize,
+      used: modelsDirSize,
+      path: modelsDir,
+    };
   }
 
   async monitor(containerId: string, engineId: string): Promise<Disposable> {

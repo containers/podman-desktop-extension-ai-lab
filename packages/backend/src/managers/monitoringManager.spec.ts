@@ -20,6 +20,7 @@ import { beforeEach, expect, afterEach, test, vi } from 'vitest';
 import { MonitoringManager } from './monitoringManager';
 import { containerEngine, type ContainerStatsInfo, type Webview } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
+import type { ModelsManager } from './modelsManager';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -32,6 +33,10 @@ vi.mock('@podman-desktop/api', async () => {
 const webviewMock = {
   postMessage: vi.fn(),
 } as unknown as Webview;
+
+const modelsManagerMock = {
+  getModelsDirectory: vi.fn(),
+} as unknown as ModelsManager;
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -60,28 +65,28 @@ function simplifiedCallback(callback: (arg: ContainerStatsInfo) => void, cpu: nu
 }
 
 test('expect constructor to do nothing', () => {
-  const manager = new MonitoringManager(webviewMock);
+  const manager = new MonitoringManager(webviewMock, modelsManagerMock);
   expect(containerEngine.statsContainer).not.toHaveBeenCalled();
   expect(manager.getStats().length).toBe(0);
   expect(webviewMock.postMessage).not.toHaveBeenCalled();
 });
 
 test('expect monitor method to start stats container', async () => {
-  const manager = new MonitoringManager(webviewMock);
+  const manager = new MonitoringManager(webviewMock, modelsManagerMock);
   await manager.monitor('randomContainerId', 'dummyEngineId');
 
   expect(containerEngine.statsContainer).toHaveBeenCalledWith('dummyEngineId', 'randomContainerId', expect.anything());
 });
 
 test('expect monitor method to start stats container', async () => {
-  const manager = new MonitoringManager(webviewMock);
+  const manager = new MonitoringManager(webviewMock, modelsManagerMock);
   await manager.monitor('randomContainerId', 'dummyEngineId');
 
   expect(containerEngine.statsContainer).toHaveBeenCalledWith('dummyEngineId', 'randomContainerId', expect.anything());
 });
 
 test('expect dispose to dispose stats container', async () => {
-  const manager = new MonitoringManager(webviewMock);
+  const manager = new MonitoringManager(webviewMock, modelsManagerMock);
   const fakeDisposable = vi.fn();
   vi.mocked(containerEngine.statsContainer).mockResolvedValue({
     dispose: fakeDisposable,
@@ -94,7 +99,7 @@ test('expect dispose to dispose stats container', async () => {
 });
 
 test('expect webview to be notified when statsContainer call back', async () => {
-  const manager = new MonitoringManager(webviewMock);
+  const manager = new MonitoringManager(webviewMock, modelsManagerMock);
   let mCallback: (stats: ContainerStatsInfo) => void;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
@@ -129,7 +134,7 @@ test('expect webview to be notified when statsContainer call back', async () => 
 });
 
 test('expect stats to cumulate', async () => {
-  const manager = new MonitoringManager(webviewMock);
+  const manager = new MonitoringManager(webviewMock, modelsManagerMock);
   let mCallback: (stats: ContainerStatsInfo) => void;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
@@ -152,7 +157,7 @@ test('expect stats to cumulate', async () => {
 });
 
 test('expect old stats to be removed', async () => {
-  const manager = new MonitoringManager(webviewMock);
+  const manager = new MonitoringManager(webviewMock, modelsManagerMock);
   let mCallback: (stats: ContainerStatsInfo) => void;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
@@ -180,7 +185,7 @@ test('expect old stats to be removed', async () => {
 });
 
 test('expect stats to be disposed if stats result is an error', async () => {
-  const manager = new MonitoringManager(webviewMock);
+  const manager = new MonitoringManager(webviewMock, modelsManagerMock);
   let mCallback: (stats: ContainerStatsInfo) => void;
   const fakeDisposable = vi.fn();
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {

@@ -29,6 +29,7 @@ import type { CreationInferenceServerOptions } from './models/InferenceServerCon
 import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
 import type { PlaygroundV2 } from './models/IPlaygroundV2';
+import type { IStorageInfo } from './models/IStorageInfo';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -146,4 +147,9 @@ export abstract class StudioAPI {
   abstract createPlayground(name: string, model: ModelInfo): Promise<void>;
 
   abstract getPlaygroundsV2(): Promise<PlaygroundV2[]>;
+
+  /**
+   * Stats local models folder
+   */
+  abstract statsLocalModels(): Promise<IStorageInfo>;
 }

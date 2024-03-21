@@ -18,6 +18,9 @@ import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
+import type { IStorageInfo } from '@shared/src/models/IStorageInfo';
+import { studioClient } from '/@/utils/client';
+import { humanizeSize } from '/@/utils/dimensions';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
@@ -40,6 +43,8 @@ let filteredModels: ModelInfo[] = [];
 
 $: localModels = filteredModels.filter(model => model.file);
 $: remoteModels = filteredModels.filter(model => !model.file);
+
+let modelsStorageInfo: IStorageInfo | undefined = undefined;
 
 function filterModels(): void {
   // Let's collect the models we do not want to show (loading, error).
@@ -78,6 +83,14 @@ onMount(() => {
   const localModelsUnsubscribe = modelsInfo.subscribe(value => {
     models = value;
     filterModels();
+
+    if(models.length > 0) {
+      studioClient.statsLocalModels().then((stats) => {
+        modelsStorageInfo = stats;
+      }).catch((err) => {
+        console.error('Something went wrong while trying to stats models.', err);
+      })
+    }
   });
 
   return () => {
@@ -99,6 +112,16 @@ onMount(() => {
       <div class="min-w-full min-h-full flex-1">
         <div class="mt-4 px-5 space-y-5">
           {#if !loading}
+            <!-- Storage info -->
+            {#if modelsStorageInfo !== undefined}
+              <Card classes="bg-charcoal-800 mt-4">
+                <div slot="content" class="text-base font-normal px-5 py-2 w-full">
+                  <div class="text-base mb-2">Storage used {humanizeSize(modelsStorageInfo.used)}</div>
+                  <progress title="{humanizeSize(modelsStorageInfo.available)} available" class="w-full" max={modelsStorageInfo.available + modelsStorageInfo.used} value={modelsStorageInfo.used}/>
+                </div>
+              </Card>
+            {/if}
+
             {#if pullingTasks.length > 0}
               <Card classes="bg-charcoal-800 mt-4">
                 <div slot="content" class="text-base font-normal p-2">

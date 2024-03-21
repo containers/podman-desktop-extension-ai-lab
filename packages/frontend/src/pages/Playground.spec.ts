@@ -18,12 +18,18 @@
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor, within } from '@testing-library/svelte';
-import { expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import Playground from './Playground.svelte';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { fireEvent } from '@testing-library/dom';
-import type { AssistantChat, Conversation, PendingChat, UserChat } from '@shared/src/models/IPlaygroundMessage';
+import type {
+  AssistantChat,
+  ChatMessage,
+  Conversation,
+  PendingChat,
+  UserChat,
+} from '@shared/src/models/IPlaygroundMessage';
 import * as conversationsStore from '/@/stores/conversations';
 import { writable } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
@@ -49,6 +55,10 @@ vi.mock('/@/stores/conversations', async () => {
   return {
     conversations: vi.fn(),
   };
+});
+
+beforeEach(() => {
+  vi.resetAllMocks();
 });
 
 test('should display playground and model names in header', async () => {
@@ -172,6 +182,7 @@ test('receiving complete message should enable the send button', async () => {
     },
   ]);
   const customConversations = writable<Conversation[]>([]);
+  vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {
     playgroundId: 'playground-1',
@@ -233,6 +244,7 @@ test('sending prompt should display the prompt and the response', async () => {
     },
   ]);
   const customConversations = writable<Conversation[]>([]);
+  vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {
     playgroundId: 'playground-1',
@@ -297,5 +309,111 @@ test('sending prompt should display the prompt and the response', async () => {
     const conversation = screen.getByLabelText('conversation');
     within(conversation).getByText('a question for the assistant');
     within(conversation).getByText('a response from the assistant');
+  });
+});
+
+describe('system prompt', () => {
+  test('system prompt textarea should be displayed before sending the first prompt and hidden after', async () => {
+    vi.mocked(studioClient.getCatalog).mockResolvedValue({
+      models: [
+        {
+          id: 'model-1',
+          name: 'Model 1',
+        },
+      ] as ModelInfo[],
+      recipes: [],
+      categories: [],
+    });
+    vi.mocked(studioClient.getPlaygroundsV2).mockResolvedValue([
+      {
+        id: 'playground-1',
+        name: 'Playground 1',
+        modelId: 'model-1',
+      },
+    ]);
+    const customConversations = writable<Conversation[]>([]);
+    vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
+    vi.mocked(conversationsStore).conversations = customConversations;
+
+    render(Playground, {
+      playgroundId: 'playground-1',
+    });
+
+    const systemPromptTextarea = screen.getByLabelText('system-prompt-textarea');
+    expect(systemPromptTextarea).toBeInTheDocument();
+    await userEvent.type(systemPromptTextarea, 'a system prompt');
+
+    const setSystemPrompt = screen.getByLabelText('set-system-prompt');
+    expect(setSystemPrompt).toBeInTheDocument();
+    fireEvent.click(setSystemPrompt);
+
+    customConversations.set([
+      {
+        id: 'playground-1',
+        messages: [
+          {
+            role: 'system',
+            content: 'a system prompt',
+          } as ChatMessage,
+        ],
+      },
+    ]);
+
+    await waitFor(() => {
+      const textarea = screen.queryByLabelText('system-prompt-textarea');
+      expect(textarea).not.toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      const conversation = screen.getByLabelText('conversation');
+      within(conversation).getByText('a system prompt');
+    });
+  });
+
+  test('system prompt textarea should not be displayed when coming to the page with a started conversation', async () => {
+    vi.mocked(studioClient.getCatalog).mockResolvedValue({
+      models: [
+        {
+          id: 'model-1',
+          name: 'Model 1',
+        },
+      ] as ModelInfo[],
+      recipes: [],
+      categories: [],
+    });
+    vi.mocked(studioClient.getPlaygroundsV2).mockResolvedValue([
+      {
+        id: 'playground-1',
+        name: 'Playground 1',
+        modelId: 'model-1',
+      },
+    ]);
+    const customConversations = writable<Conversation[]>([
+      {
+        id: 'playground-1',
+        messages: [
+          {
+            role: 'system',
+            content: 'a system prompt',
+          } as ChatMessage,
+        ],
+      },
+    ]);
+    vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
+    vi.mocked(conversationsStore).conversations = customConversations;
+
+    render(Playground, {
+      playgroundId: 'playground-1',
+    });
+
+    await waitFor(() => {
+      const textarea = screen.queryByLabelText('system-prompt-textarea');
+      expect(textarea).not.toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      const conversation = screen.getByLabelText('conversation');
+      within(conversation).getByText('a system prompt');
+    });
   });
 });

@@ -132,13 +132,15 @@ function setSystemPrompt() {
                         <div class="text-lg">Define a system prompt</div>
                         <div class="rounded-md w-full">
                           <textarea
+                            aria-label="system-prompt-textarea"
                             bind:value="{systemPrompt}"
                             class="p-2 w-full outline-none bg-charcoal-500 rounded-md text-gray-700 placeholder-gray-700"
                             rows="4"
                             placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
-                          ></textarea
-                          >
-                          <div class="w-full text-right"><Button on:click="{setSystemPrompt}">set</Button></div>
+                          ></textarea>
+                          <div aria-label="set-system-prompt" class="w-full text-right">
+                            <Button on:click="{setSystemPrompt}">set</Button>
+                          </div>
                         </div>
                       </li>
                     {/if}

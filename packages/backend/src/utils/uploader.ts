@@ -49,7 +49,7 @@ export class Uploader {
     const worker: UploadWorker | undefined = this.#workers.find(w => w.canUpload());
 
     // If none are found, we return the current path
-    if(worker === undefined) {
+    if (worker === undefined) {
       console.warn('There is no workers compatible. Using default local mounting');
       this.#_onEvent.fire({
         id,

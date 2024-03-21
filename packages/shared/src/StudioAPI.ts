@@ -146,4 +146,10 @@ export abstract class StudioAPI {
   abstract createPlayground(name: string, model: ModelInfo): Promise<void>;
 
   abstract getPlaygroundsV2(): Promise<PlaygroundV2[]>;
+
+  /**
+   * Delete a conversation
+   * @param conversationId the conversation identifier that will be deleted
+   */
+  abstract requestDeleteConversation(conversationId: string): Promise<void>;
 }

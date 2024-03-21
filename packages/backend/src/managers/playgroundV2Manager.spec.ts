@@ -422,3 +422,20 @@ test('creating a new playground with the model server stopped should start the i
   expect(createInferenceServerMock).not.toHaveBeenCalled();
   expect(startInferenceServerMock).toHaveBeenCalledWith('container-1');
 });
+
+test('delete conversation should delete the conversation', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
+
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock);
+  expect(manager.getConversations().length).toBe(0);
+  await manager.createPlayground('a name', {
+    id: 'model-1',
+    name: 'Model 1',
+  } as unknown as ModelInfo);
+
+  const conversations = manager.getConversations();
+  expect(conversations.length).toBe(1);
+  manager.deletePlayground(conversations[0].id);
+  expect(manager.getConversations().length).toBe(0);
+  expect(webviewMock.postMessage).toHaveBeenCalled();
+});

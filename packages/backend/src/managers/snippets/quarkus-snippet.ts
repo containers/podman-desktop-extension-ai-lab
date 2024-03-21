@@ -18,11 +18,26 @@
 import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import mustache from 'mustache';
 import template from '../../templates/quarkus-langchain4j.mustache?raw';
+import xmljs from 'xml-js';
 
 const SUFFIX_LENGTH = '/chat/completions'.length;
 
-export function quarkusLangchain4Jgenerator(requestOptions: RequestOptions): string {
+const METADATA_URL =
+  'https://repo1.maven.org/maven2/io/quarkiverse/langchain4j/quarkus-langchain4j-core/maven-metadata.xml';
+
+let quarkusLangchain4jVersion: string;
+
+async function getQuarkusLangchain4jVersion(): Promise<string> {
+  if (quarkusLangchain4jVersion) {
+    return quarkusLangchain4jVersion;
+  }
+  const response = await fetch(METADATA_URL, { redirect: 'follow' });
+  const content = JSON.parse(xmljs.xml2json(await response.text(), { compact: true }));
+  return (quarkusLangchain4jVersion = content.metadata.versioning.release._text);
+}
+export async function quarkusLangchain4Jgenerator(requestOptions: RequestOptions): Promise<string> {
   return mustache.render(template, {
     baseUrl: requestOptions.url.substring(0, requestOptions.url.length - SUFFIX_LENGTH),
+    version: await getQuarkusLangchain4jVersion(),
   });
 }

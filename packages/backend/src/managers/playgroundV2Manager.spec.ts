@@ -89,7 +89,7 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
 
-  await expect(manager.submit('0', 'dummyUserInput', '')).rejects.toThrowError('Inference server is not running.');
+  await expect(manager.submit('0', 'dummyUserInput', false)).rejects.toThrowError('Inference server is not running.');
 });
 
 test('submit should throw an error if the server is unhealthy', async () => {
@@ -109,7 +109,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('p1', { id: 'model1' } as ModelInfo, 'tracking-1');
   const playgroundId = manager.getPlaygrounds()[0].id;
-  await expect(manager.submit(playgroundId, 'dummyUserInput', '')).rejects.toThrowError(
+  await expect(manager.submit(playgroundId, 'dummyUserInput', false)).rejects.toThrowError(
     'Inference server is not healthy, currently status: unhealthy.',
   );
 });
@@ -175,7 +175,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   vi.setSystemTime(date);
 
   const playgrounds = manager.getPlaygrounds();
-  await manager.submit(playgrounds[0].id, 'dummyUserInput', '');
+  await manager.submit(playgrounds[0].id, 'dummyUserInput', false);
 
   // Wait for assistant message to be completed
   await vi.waitFor(() => {
@@ -208,9 +208,9 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   });
 });
 
-test.each(['', 'my system prompt'])(
+test.each([true, false])(
   'valid submit should send a message with system prompt if non empty, system prompt is "%s"}',
-  async (systemPrompt: string) => {
+  async (systemPrompt: boolean) => {
     vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
       {
         status: 'running',
@@ -249,21 +249,17 @@ test.each(['', 'my system prompt'])(
       {
         content: 'dummyUserInput',
         id: expect.any(String),
-        role: 'user',
+        role: systemPrompt ? 'system' : 'user',
         timestamp: expect.any(Number),
       },
     ];
-    if (systemPrompt) {
-      messages.push({
-        content: 'my system prompt',
-        role: 'system',
+    if (!systemPrompt) {
+      expect(createMock).toHaveBeenCalledWith({
+        messages,
+        model: 'dummyModelFile',
+        stream: true,
       });
     }
-    expect(createMock).toHaveBeenCalledWith({
-      messages,
-      model: 'dummyModelFile',
-      stream: true,
-    });
   },
 );
 
@@ -300,7 +296,11 @@ test('submit should send options', async () => {
   await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
 
   const playgrounds = manager.getPlaygrounds();
-  await manager.submit(playgrounds[0].id, 'dummyUserInput', '', { temperature: 0.123, max_tokens: 45, top_p: 0.345 });
+  await manager.submit(playgrounds[0].id, 'dummyUserInput', false, {
+    temperature: 0.123,
+    max_tokens: 45,
+    top_p: 0.345,
+  });
 
   const messages: unknown[] = [
     {

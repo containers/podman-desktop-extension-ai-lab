@@ -82,14 +82,14 @@ describe('upload', () => {
     vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
     await wslUploader.upload({
       id: 'dummyId',
-      file: { path: 'localpath', file: 'dummy.guff' },
+      file: { path: 'C:\\Users\\podman\\folder', file: 'dummy.guff' },
     } as unknown as ModelInfo);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-studio/models/dummyId/dummy.guff',
+      '/home/user/ai-studio/models/dummy.guff',
     ]);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
@@ -104,8 +104,8 @@ describe('upload', () => {
       'ssh',
       'machine2',
       'cp',
-      '/mnt/c/Users/podman/folder/file',
-      '/home/user/ai-studio/models/file',
+      '/mnt/c/Users/podman/folder/dummy.guff',
+      '/home/user/ai-studio/models/dummy.guff',
     ]);
     mocks.execMock.mockClear();
   });
@@ -114,14 +114,14 @@ describe('upload', () => {
     vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
     await wslUploader.upload({
       id: 'dummyId',
-      file: { path: 'localpath', file: 'dummy.guff' },
+      file: { path: 'C:\\Users\\podman\\folder', file: 'dummy.guff' },
     } as unknown as ModelInfo);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-studio/models/dummyId/dummy.guff',
+      '/home/user/ai-studio/models/dummy.guff',
     ]);
     expect(mocks.execMock).toBeCalledTimes(1);
     mocks.execMock.mockClear();

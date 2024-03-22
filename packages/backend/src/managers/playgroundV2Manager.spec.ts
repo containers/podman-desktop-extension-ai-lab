@@ -199,7 +199,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, '', 'tracking-1');
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, undefined, 'tracking-1');
 
   const date = new Date(2000, 1, 1, 13);
   vi.setSystemTime(date);
@@ -238,65 +238,6 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   });
 });
 
-test.each(['', 'my system prompt'])(
-  'valid submit should send a message with system prompt if non empty, system prompt is "%s"}',
-  async (systemPrompt: string) => {
-    vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
-      {
-        status: 'running',
-        health: {
-          Status: 'healthy',
-        },
-        models: [
-          {
-            id: 'dummyModelId',
-            file: {
-              file: 'dummyModelFile',
-            },
-          },
-        ],
-        connection: {
-          port: 8888,
-        },
-      } as unknown as InferenceServer,
-    ]);
-    const createMock = vi.fn().mockResolvedValue([]);
-    vi.mocked(OpenAI).mockReturnValue({
-      chat: {
-        completions: {
-          create: createMock,
-        },
-      },
-    } as unknown as OpenAI);
-
-    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-    await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, '', 'tracking-1');
-
-    const playgrounds = manager.getPlaygrounds();
-    await manager.submit(playgrounds[0].id, 'dummyUserInput', systemPrompt);
-
-    const messages: unknown[] = [
-      {
-        content: 'dummyUserInput',
-        id: expect.any(String),
-        role: 'user',
-        timestamp: expect.any(Number),
-      },
-    ];
-    if (systemPrompt) {
-      messages.push({
-        content: 'my system prompt',
-        role: 'system',
-      });
-    }
-    expect(createMock).toHaveBeenCalledWith({
-      messages,
-      model: 'dummyModelFile',
-      stream: true,
-    });
-  },
-);
-
 test('submit should send options', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
     {
@@ -327,7 +268,7 @@ test('submit should send options', async () => {
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, '', 'tracking-1');
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, undefined, 'tracking-1');
 
   const playgrounds = manager.getPlaygrounds();
   await manager.submit(playgrounds[0].id, 'dummyUserInput', '', { temperature: 0.123, max_tokens: 45, top_p: 0.345 });

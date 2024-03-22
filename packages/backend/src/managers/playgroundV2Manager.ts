@@ -54,7 +54,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     this.notify();
   }
 
-  async requestCreatePlayground(name: string, model: ModelInfo, systemPrompt: string): Promise<string> {
+  async requestCreatePlayground(name: string, model: ModelInfo, systemPrompt?: string): Promise<string> {
     const trackingId: string = getRandomString();
     const task = this.taskRegistry.createTask('Creating Playground environment', 'loading', {
       trackingId: trackingId,
@@ -94,7 +94,12 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     return trackingId;
   }
 
-  async createPlayground(name: string, model: ModelInfo, systemPrompt: string, trackingId: string): Promise<string> {
+  async createPlayground(
+    name: string,
+    model: ModelInfo,
+    systemPrompt: string | undefined,
+    trackingId: string,
+  ): Promise<string> {
     const id = `${this.#playgroundCounter++}`;
 
     if (!name) {
@@ -103,7 +108,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
 
     this.#conversationRegistry.createConversation(id);
 
-    if (systemPrompt) {
+    if (systemPrompt !== undefined) {
       this.#conversationRegistry.submit(id, {
         content: systemPrompt,
         role: 'system',

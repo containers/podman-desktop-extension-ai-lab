@@ -143,7 +143,7 @@ export abstract class StudioAPI {
    */
   abstract createSnippet(options: RequestOptions, language: string, variant: string): Promise<string>;
 
-  abstract requestCreatePlayground(name: string, model: ModelInfo, systemPrompt: string): Promise<string>;
+  abstract requestCreatePlayground(name: string, model: ModelInfo, systemPrompt?: string): Promise<string>;
 
   abstract getPlaygroundsV2(): Promise<PlaygroundV2[]>;
 

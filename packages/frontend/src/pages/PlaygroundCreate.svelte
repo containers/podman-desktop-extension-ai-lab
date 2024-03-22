@@ -56,7 +56,8 @@ async function submit() {
   // disable submit button
   submitted = true;
   try {
-    trackingId = await studioClient.requestCreatePlayground(playgroundName, model, systemPrompt ?? '');
+    // Using || and not && as we want to have the empty string systemPrompt passed as undefined
+    trackingId = await studioClient.requestCreatePlayground(playgroundName, model, systemPrompt || undefined);
   } catch (err: unknown) {
     trackingId = undefined;
     console.error('Something wrong while trying to create the playground.', err);

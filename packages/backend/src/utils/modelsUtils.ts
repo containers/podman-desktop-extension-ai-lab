@@ -37,5 +37,5 @@ export function getLocalModelFile(modelInfo: ModelInfo): string {
 export function getRemoteModelFile(modelInfo: ModelInfo): string {
   if (modelInfo.file === undefined) throw new Error('model is not available locally.');
 
-  return posix.join(MACHINE_BASE_FOLDER, modelInfo.id, modelInfo.file.file);
+  return posix.join(MACHINE_BASE_FOLDER, modelInfo.file.file);
 }

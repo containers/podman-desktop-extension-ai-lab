@@ -1,49 +1,15 @@
-# AI studio
+# Welcome to AI Studio
 
-## Installing a released version
+The Podman Desktop AI Studio extension simplifies getting started and develop with AI in a local environment. It provides key open-source technologies to start building on AI. A curated catalog of so-called recipes helps navigate the jungle of AI use cases and AI models. AI Studio further ships playgrounds: environments to experiment with and test AI models, for instance, a chat bot.
 
-If you want to install a specific version of the extension, go to Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
+## Recipes Catalog
 
-The name of the image to use is `ghcr.io/projectatomic/ai-studio:version_to_use`.
+AI Studio ships with a so-called Recipes Catalog that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
 
-You can get released tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
+## AI Models
 
-The released tags follow the major.minor.patch convention.
+AI Studio provides a curated list of open source AI models and LLMs. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
 
-If you want to install the last release version, use the latest tag.
+## Playgrounds
 
-## Installing a development version
-
-You can install this extension from Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
-
-The name of the image to use is `ghcr.io/projectatomic/ai-studio:nightly`.
-
-You can get earlier tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
-
-These images contain development versions of the extension. There is no stable release yet.
-
-## Running in development mode
-
-From the Podman Desktop sources folder:
-
-```
-$ yarn watch --extension-folder path-to-extension-sources-folder/packages/backend
-```
-
-## Providing a custom catalog
-
-The extension provides a default catalog, but you can build your own catalog by creating a file `$HOME/podman-desktop/ai-studio/catalog.json`.
- 
-The catalog provides lists of categories, recipes, and models.
-
-Each recipe can belong to one or several categories. Each model can be used by one or several recipes.
-
-The format of the catalog is not stable nor versioned yet, you can see the current catalog's format [in the sources of the extension](https://github.com/projectatomic/studio-extension/blob/main/packages/backend/src/ai.json).
-
-## Packaging sample applications
-
-Sample applications may be added to the catalog. See [packaging guide](PACKAGING-GUIDE.md) for detailed information.
-
-## Feedback
-
-You can provide your feedback on the extension with [this form](https://forms.gle/tctQ4RtZSiMyQr3R8) or create [an issue on this repository](https://github.com/projectatomic/studio-extension/issues).
+The integrated Playground environments allow for experimenting with available models in a local environment. An intuitive user prompt helps in exploring the capabilities and accuracy of various models and aids in finding the best model for the use case at hand.

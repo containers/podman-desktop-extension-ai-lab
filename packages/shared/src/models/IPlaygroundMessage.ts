@@ -30,6 +30,11 @@ export interface AssistantChat extends ChatMessage {
   completed?: number;
 }
 
+export interface SystemPrompt extends ChatMessage {
+  role: 'system';
+  content: string;
+}
+
 export interface PendingChat extends AssistantChat {
   completed: undefined;
   choices: Choice[];
@@ -59,4 +64,8 @@ export function isUserChat(msg: ChatMessage): msg is UserChat {
 
 export function isPendingChat(msg: ChatMessage): msg is PendingChat {
   return isAssistantChat(msg) && !msg.completed;
+}
+
+export function isSystemPrompt(msg: ChatMessage): msg is SystemPrompt {
+  return msg.role === 'system';
 }

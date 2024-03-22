@@ -18,6 +18,7 @@ let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let modelId: string | undefined = undefined;
+let systemPrompt: string | undefined = undefined;
 let submitted: boolean = false;
 let playgroundName: string;
 
@@ -55,7 +56,7 @@ async function submit() {
   // disable submit button
   submitted = true;
   try {
-    trackingId = await studioClient.requestCreatePlayground(playgroundName, model);
+    trackingId = await studioClient.requestCreatePlayground(playgroundName, model, systemPrompt ?? '');
   } catch (err: unknown) {
     trackingId = undefined;
     console.error('Something wrong while trying to create the playground.', err);
@@ -161,6 +162,15 @@ onDestroy(() => {
               </div>
             </div>
           {/if}
+
+          <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">System prompt</label>
+          <textarea
+            aria-label="system-prompt-textarea"
+            bind:value="{systemPrompt}"
+            class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
+            rows="4"
+            placeholder="Optionally provide system prompt to define general context, instructions or guidelines to be used with each query"
+          ></textarea>
         </div>
         <footer>
           <div class="w-full flex flex-col">

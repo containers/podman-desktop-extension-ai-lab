@@ -19,7 +19,7 @@ export let padding: string = type !== 'tab' ? 'px-4 py-[5px]' : 'px-4 pb-1';
 let iconType: string | undefined = undefined;
 
 onMount(() => {
-  if(['fas', 'fab'].includes(icon?.prefix)) {
+  if (['fas', 'fab'].includes(icon?.prefix)) {
     iconType = 'fa';
   } else {
     iconType = 'unknown';

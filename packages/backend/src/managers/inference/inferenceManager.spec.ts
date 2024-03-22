@@ -303,7 +303,6 @@ describe('Create Inference Server', () => {
           path: '/mnt/path',
         },
       },
-      '/local/model.guff',
       {
         trackingId: 'dummyTrackingId',
       },

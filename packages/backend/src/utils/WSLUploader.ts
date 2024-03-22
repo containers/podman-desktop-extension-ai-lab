@@ -16,27 +16,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import path from 'node:path';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { getFirstRunningMachineName, getPodmanCli } from './podman';
 import type { UploadWorker } from './uploader';
+import { getLocalModelFile, getRemoteModelFile, MACHINE_BASE_FOLDER } from './modelsUtils';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export class WSLUploader implements UploadWorker {
   canUpload(): boolean {
     return podmanDesktopApi.env.isWindows;
   }
 
-  async upload(localPath: string): Promise<string> {
-    if (!localPath) {
-      throw new Error('invalid local path');
-    }
+  async upload(modelInfo: ModelInfo): Promise<string> {
+    const localPath = getLocalModelFile(modelInfo);
 
     const driveLetter = localPath.charAt(0);
     const convertToMntPath = localPath
       .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
       .replace(/\\/g, '/');
-    const remotePath = '/home/user/ai-studio/models/';
-    const remoteFile = `${remotePath}${path.basename(convertToMntPath)}`;
+
+    const remoteFile = getRemoteModelFile(modelInfo);
     const machineName = getFirstRunningMachineName();
 
     if (!machineName) {
@@ -52,7 +51,14 @@ export class WSLUploader implements UploadWorker {
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {
-      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', machineName, 'mkdir', '-p', remotePath]);
+      await podmanDesktopApi.process.exec(getPodmanCli(), [
+        'machine',
+        'ssh',
+        machineName,
+        'mkdir',
+        '-p',
+        MACHINE_BASE_FOLDER,
+      ]);
       await podmanDesktopApi.process.exec(getPodmanCli(), [
         'machine',
         'ssh',

@@ -20,10 +20,12 @@ import { EventEmitter, type Event } from '@podman-desktop/api';
 import { WSLUploader } from './WSLUploader';
 import { getDurationSecondsSince } from './utils';
 import type { CompletionEvent, BaseEvent } from '../models/baseEvent';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { getLocalModelFile } from './modelsUtils';
 
 export interface UploadWorker {
   canUpload: () => boolean;
-  upload: (path: string) => Promise<string>;
+  upload: (modelInfo: ModelInfo) => Promise<string>;
 }
 
 export class Uploader {
@@ -32,7 +34,7 @@ export class Uploader {
   readonly #workers: UploadWorker[] = [];
 
   constructor(
-    private localModelPath: string,
+    private modelInfo: ModelInfo,
     private abortSignal?: AbortSignal,
   ) {
     this.#workers = [new WSLUploader()];
@@ -57,14 +59,14 @@ export class Uploader {
         message: `Use local model`,
       } as CompletionEvent);
 
-      return this.localModelPath;
+      return getLocalModelFile(this.modelInfo);
     }
 
     try {
       // measure performance
       const startTime = performance.now();
       // get new path
-      const modelPath = await worker.upload(this.localModelPath);
+      const remotePath = await worker.upload(this.modelInfo);
       // compute full time
       const durationSeconds = getDurationSecondsSince(startTime);
       // fire events
@@ -76,7 +78,7 @@ export class Uploader {
       } as CompletionEvent);
 
       // return the new path on the podman machine
-      return modelPath;
+      return remotePath;
     } catch (err) {
       if (!this.abortSignal?.aborted) {
         this.#_onEvent.fire({

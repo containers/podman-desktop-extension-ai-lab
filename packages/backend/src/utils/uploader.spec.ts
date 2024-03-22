@@ -21,6 +21,7 @@ import { WSLUploader } from './WSLUploader';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { beforeEach } from 'node:test';
 import { Uploader } from './uploader';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -43,7 +44,13 @@ vi.mock('@podman-desktop/api', async () => {
     }),
   };
 });
-const uploader = new Uploader('localpath');
+const uploader = new Uploader({
+  id: 'dummyModelId',
+  file: {
+    file: 'dummyFile.guff',
+    path: 'localpath',
+  },
+} as unknown as ModelInfo);
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -53,7 +60,7 @@ describe('perform', () => {
   test('should return localModelPath if no workers for current system', async () => {
     vi.mocked(podmanDesktopApi.env).isWindows = false;
     const result = await uploader.perform('id');
-    expect(result).toBe('localpath');
+    expect(result.startsWith('localpath')).toBeTruthy();
   });
   test('should return remote path if there is a worker for current system', async () => {
     vi.spyOn(WSLUploader.prototype, 'upload').mockResolvedValue('remote');

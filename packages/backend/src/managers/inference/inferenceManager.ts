@@ -184,7 +184,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     config.modelsInfo = await Promise.all(
       config.modelsInfo.map(modelInfo =>
         this.modelsManager
-          .uploadModelToPodmanMachine(modelInfo, this.modelsManager.getLocalModelPath(modelInfo.id), {
+          .uploadModelToPodmanMachine(modelInfo, {
             trackingId: trackingId,
           })
           .then(path => ({

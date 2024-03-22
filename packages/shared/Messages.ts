@@ -17,15 +17,6 @@
  ***********************************************************************/
 
 export enum Messages {
-  /**
-   * @deprecated
-   */
-  MSG_PLAYGROUNDS_STATE_UPDATE = 'playgrounds-state-update',
-  /**
-   * @deprecated
-   */
-  MSG_NEW_PLAYGROUND_QUERIES_STATE = 'new-playground-queries-state',
-  MSG_PLAYGROUNDS_MESSAGES_UPDATE = 'playgrounds-messages-update',
   MSG_NEW_CATALOG_STATE = 'new-catalog-state',
   MSG_TASKS_UPDATE = 'tasks-update',
   MSG_NEW_MODELS_STATE = 'new-models-state',

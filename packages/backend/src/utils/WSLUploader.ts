@@ -16,7 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import path from 'node:path';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { getFirstRunningMachineName, getPodmanCli } from './podman';
 import type { UploadWorker } from './uploader';

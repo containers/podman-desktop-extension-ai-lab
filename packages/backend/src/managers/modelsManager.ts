@@ -30,6 +30,7 @@ import type { Task } from '@shared/src/models/ITask';
 import type { BaseEvent } from '../models/baseEvent';
 import { isCompletionEvent, isProgressEvent } from '../models/baseEvent';
 import { Uploader } from '../utils/uploader';
+import { getLocalModelFile } from '../utils/modelsUtils';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string;
@@ -147,8 +148,8 @@ export class ModelsManager implements Disposable {
   }
 
   getLocalModelPath(modelId: string): string {
-    const info = this.getLocalModelInfo(modelId);
-    return path.resolve(this.#modelsDir, modelId, info.file);
+    const modelInfo = this.getModelInfo(modelId);
+    return getLocalModelFile(modelInfo);
   }
 
   getLocalModelFolder(modelId: string): string {
@@ -316,17 +317,13 @@ export class ModelsManager implements Disposable {
     return downloader.getTarget();
   }
 
-  async uploadModelToPodmanMachine(
-    model: ModelInfo,
-    localModelPath: string,
-    labels?: { [key: string]: string },
-  ): Promise<string> {
+  async uploadModelToPodmanMachine(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
     this.taskRegistry.createTask(`Uploading model ${model.name}`, 'loading', {
       ...labels,
       'model-uploading': model.id,
     });
 
-    const uploader = new Uploader(localModelPath);
+    const uploader = new Uploader(model);
     uploader.onEvent(event => this.onDownloadUploadEvent(event, 'upload'), this);
 
     // perform download

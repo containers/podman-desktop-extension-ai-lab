@@ -21,6 +21,7 @@ import { WSLUploader } from './WSLUploader';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import * as utils from './podman';
 import { beforeEach } from 'node:test';
+import { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -70,18 +71,23 @@ describe('upload', () => {
     providerId: 'podman',
   });
   test('throw if localpath is not defined', async () => {
-    await expect(wslUploader.upload('')).rejects.toThrowError('invalid local path');
+    await expect(wslUploader.upload({
+      file: undefined
+    } as unknown as ModelInfo)).rejects.toThrowError('model is not available locally.');
   });
   test('copy model if not exists on podman machine', async () => {
     mocks.execMock.mockRejectedValueOnce('error');
     vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
-    await wslUploader.upload('C:\\Users\\podman\\folder\\file');
+    await wslUploader.upload({
+      id: 'dummyId',
+      file: { path: 'localpath', file: 'dummy.guff' }
+    } as unknown as ModelInfo);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-studio/models/file',
+      '/home/user/ai-studio/models/dummyId/dummy.guff',
     ]);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
@@ -104,13 +110,16 @@ describe('upload', () => {
   test('do not copy model if it exists on podman machine', async () => {
     mocks.execMock.mockResolvedValue('');
     vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
-    await wslUploader.upload('C:\\Users\\podman\\folder\\file');
+    await wslUploader.upload({
+      id: 'dummyId',
+      file: { path: 'localpath', file: 'dummy.guff' }
+    } as unknown as ModelInfo);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-studio/models/file',
+      '/home/user/ai-studio/models/dummyId/dummy.guff',
     ]);
     expect(mocks.execMock).toBeCalledTimes(1);
     mocks.execMock.mockClear();

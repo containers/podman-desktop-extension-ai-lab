@@ -148,8 +148,7 @@ export class ModelsManager implements Disposable {
   }
 
   getLocalModelPath(modelId: string): string {
-    const modelInfo = this.getModelInfo(modelId);
-    return getLocalModelFile(modelInfo);
+    return getLocalModelFile(this.getModelInfo(modelId));
   }
 
   getLocalModelFolder(modelId: string): string {

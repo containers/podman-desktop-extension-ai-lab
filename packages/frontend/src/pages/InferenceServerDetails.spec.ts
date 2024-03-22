@@ -22,6 +22,7 @@ import { screen, render } from '@testing-library/svelte';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
 import type { Language } from 'postman-code-generators';
+import { studioClient } from '/@/utils/client';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -50,7 +51,9 @@ vi.mock('../stores/snippetLanguages', () => ({
 
 vi.mock('../utils/client', () => {
   return {
-    studioClient: {},
+    studioClient: {
+      createSnippet: vi.fn(),
+    },
   };
 });
 
@@ -68,6 +71,16 @@ beforeEach(() => {
         },
         {
           key: 'dummyLanguageVariant2',
+        },
+      ],
+    },
+    {
+      key: 'curl',
+      label: 'cURL',
+      syntax_mode: '?',
+      variants: [
+        {
+          key: 'cURL',
         },
       ],
     },
@@ -103,15 +116,23 @@ test('language select must have the mocked snippet languages', async () => {
 
   const select: HTMLSelectElement = screen.getByLabelText('snippet language selection');
   expect(select).toBeDefined();
-  expect(select.options.length).toBe(1);
+  expect(select.options.length).toBe(2);
   expect(select.options[0].value).toBe('dummyLanguageKey');
 });
 
-test('variant select must be hidden when no language selected', async () => {
+test('default render should show curl', async () => {
   render(InferenceServerDetails, {
     containerId: 'dummyContainerId',
   });
 
-  const variantSelect = screen.queryByLabelText('snippet language variant');
-  expect(variantSelect).toBeNull();
+  const variantSelect: HTMLSelectElement = screen.getByLabelText('snippet language variant');
+  expect(variantSelect.value).toBe('cURL');
+});
+
+test('on mount should call createSnippet', async () => {
+  render(InferenceServerDetails, {
+    containerId: 'dummyContainerId',
+  });
+
+  expect(studioClient.createSnippet).toHaveBeenCalled();
 });

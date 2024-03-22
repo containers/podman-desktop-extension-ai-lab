@@ -9,32 +9,33 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
+import { onMount } from 'svelte';
 
 export let containerId: string | undefined = undefined;
 
 let service: InferenceServer | undefined;
 $: service = $inferenceServers.find(server => server.container.containerId === containerId);
 
-let selectedLanguage: string | undefined = undefined;
+let selectedLanguage: string = 'curl';
 $: selectedLanguage;
 
 let variants: LanguageVariant[] = [];
 $: variants = $snippetLanguages.find(language => language.key === selectedLanguage)?.variants || [];
 
-let selectedVariant: string | undefined = undefined;
+let selectedVariant: string = 'cURL';
 $: selectedVariant;
 
 const onLanguageChange = (): void => {
-  selectedVariant = variants.length > 0 ? variants[0].key : undefined;
-  generate();
+  if (variants.length > 0) {
+    selectedVariant = variants[0].key;
+    generate(selectedLanguage, selectedVariant);
+  }
 };
 
 let snippet: string | undefined = undefined;
 $: snippet;
 
-const generate = async () => {
-  if (selectedVariant === undefined || selectedLanguage === undefined) return;
-
+const generate = async (language: string, variant: string) => {
   snippet = await studioClient.createSnippet(
     {
       url: `http://localhost:${service?.connection.port || '??'}/v1/chat/completions`,
@@ -61,10 +62,14 @@ const generate = async () => {
 }`,
       },
     },
-    selectedLanguage,
-    selectedVariant,
+    language,
+    variant,
   );
 };
+
+onMount(() => {
+  generate('curl', 'cURL');
+});
 </script>
 
 <NavPage title="Service Details" searchEnabled="{false}">
@@ -153,7 +158,7 @@ const generate = async () => {
                     aria-label="snippet language variant"
                     id="variants"
                     bind:value="{selectedVariant}"
-                    on:change="{generate}"
+                    on:change="{() => generate(selectedLanguage, selectedVariant)}"
                     disabled="{variants.length === 1}"
                     class="border ml-1 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-1 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
                     name="variants">

@@ -10,10 +10,6 @@ $: model = $catalog.models.find(m => m.id === modelId);
 </script>
 
 <NavPage title="{model?.name || ''}" searchEnabled="{false}" loading="{model === undefined}">
-  <svelte:fragment slot="tabs">
-    <Tab title="Summary" url="{modelId}" />
-    <Tab title="Playground" url="{modelId}/playground" />
-  </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-row w-full">
       <div class="flex-grow p-5">

@@ -19,7 +19,7 @@
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'fs';
 import * as path from 'node:path';
-import { type Webview, fs as apiFs, type Disposable } from '@podman-desktop/api';
+import { type Webview, fs as apiFs, type Disposable, env } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -30,7 +30,8 @@ import type { Task } from '@shared/src/models/ITask';
 import type { BaseEvent } from '../models/baseEvent';
 import { isCompletionEvent, isProgressEvent } from '../models/baseEvent';
 import { Uploader } from '../utils/uploader';
-import { getLocalModelFile } from '../utils/modelsUtils';
+import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/modelsUtils';
+import { getFirstRunningMachineName } from '../utils/podman';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string;
@@ -152,14 +153,16 @@ export class ModelsManager implements Disposable {
     return path.resolve(this.#modelsDir, modelId);
   }
 
-  async deleteLocalModel(modelId: string): Promise<void> {
+  async deleteModel(modelId: string): Promise<void> {
     const model = this.#models.get(modelId);
     if (model) {
       const modelDir = this.getLocalModelFolder(modelId);
       model.state = 'deleting';
       await this.sendModelsInfo();
       try {
+        await this.deleteRemoteModel(model);
         await fs.promises.rm(modelDir, { recursive: true, force: true, maxRetries: 3 });
+
         this.telemetry.logUsage('model.delete', { 'model.id': modelId });
         model.file = model.state = undefined;
       } catch (err: unknown) {
@@ -177,6 +180,26 @@ export class ModelsManager implements Disposable {
         await this.sendModelsInfo();
       }
     }
+  }
+
+  private async deleteRemoteModel(modelInfo: ModelInfo): Promise<void> {
+    // currently only Window is supported
+    if(!env.isWindows) {
+      return;
+    }
+
+    const machineName = getFirstRunningMachineName();
+    if (!machineName) {
+      console.warn('No podman machine is running');
+      return;
+    }
+
+    // check if model already loaded on the podman machine
+    const existsRemote = await isModelUploaded(machineName, modelInfo);
+    if(!existsRemote)
+      return;
+
+    return deleteRemoteModel(machineName, modelInfo);
   }
 
   /**

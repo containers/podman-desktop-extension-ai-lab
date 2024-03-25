@@ -17,6 +17,8 @@
  ***********************************************************************/
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { join, posix } from 'node:path';
+import { getPodmanCli } from './podman';
+import { process } from '@podman-desktop/api';
 
 export const MACHINE_BASE_FOLDER = '/home/user/ai-studio/models/';
 
@@ -38,4 +40,34 @@ export function getRemoteModelFile(modelInfo: ModelInfo): string {
   if (modelInfo.file === undefined) throw new Error('model is not available locally.');
 
   return posix.join(MACHINE_BASE_FOLDER, modelInfo.file.file);
+}
+
+/**
+ * utility method to determine if a model is already uploaded to the podman machine
+ * @param machine
+ * @param modelInfo
+ */
+export async function isModelUploaded(machine: string, modelInfo: ModelInfo): Promise<boolean> {
+  try {
+    const remotePath = getRemoteModelFile(modelInfo);
+    await process.exec(getPodmanCli(), ['machine', 'ssh', machine, 'stat', remotePath]);
+    return true;
+  } catch (err: unknown) {
+    console.error('Something went wrong while trying to stat remote model path', err);
+    return false;
+  }
+}
+
+/**
+ * Given a machine and a modelInfo, delete the corresponding file on the podman machine
+ * @param machine the machine to target
+ * @param modelInfo the model info
+ */
+export async function deleteRemoteModel(machine: string, modelInfo: ModelInfo): Promise<void> {
+  try {
+    const remotePath = getRemoteModelFile(modelInfo);
+    await process.exec(getPodmanCli(), ['machine', 'ssh', machine, 'rm', '-f', remotePath]);
+  } catch (err: unknown) {
+    console.error('Something went wrong while trying to stat remote model path', err);
+  }
 }

@@ -21,7 +21,7 @@ import os from 'os';
 import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
-import type { TelemetryLogger, Webview } from '@podman-desktop/api';
+import { type TelemetryLogger, type Webview, env, process as coreProcess } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';
@@ -37,11 +37,24 @@ const mocks = vi.hoisted(() => {
     getTargetMock: vi.fn(),
     getDownloaderCompleter: vi.fn(),
     isCompletionEventMock: vi.fn(),
+    getFirstRunningMachineNameMock: vi.fn(),
+    getPodmanCliMock: vi.fn(),
   };
 });
 
+vi.mock('../utils/podman', () => ({
+  getFirstRunningMachineName: mocks.getFirstRunningMachineNameMock,
+  getPodmanCli: mocks.getPodmanCliMock,
+}));
+
 vi.mock('@podman-desktop/api', () => {
   return {
+    env: {
+      isWindows: false,
+    },
+    process: {
+      exec: vi.fn(),
+    },
     fs: {
       createFileSystemWatcher: () => ({
         onDidCreate: vi.fn(),
@@ -347,7 +360,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
   });
 });
 
-test('deleteLocalModel deletes the model folder', async () => {
+test('deleteModel deletes the model folder', async () => {
   let appdir: string;
   if (process.platform === 'win32') {
     appdir = 'C:\\home\\user\\aistudio';
@@ -377,7 +390,7 @@ test('deleteLocalModel deletes the model folder', async () => {
     taskRegistry,
   );
   await manager.loadLocalModels();
-  await manager.deleteLocalModel('model-id-1');
+  await manager.deleteModel('model-id-1');
   // check that the model's folder is removed from disk
   if (process.platform === 'win32') {
     expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', {
@@ -405,70 +418,122 @@ test('deleteLocalModel deletes the model folder', async () => {
   expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.delete', { 'model.id': 'model-id-1' });
 });
 
-test('deleteLocalModel fails to delete the model folder', async () => {
-  let appdir: string;
-  if (process.platform === 'win32') {
-    appdir = 'C:\\home\\user\\aistudio';
-  } else {
-    appdir = '/home/user/aistudio';
-  }
-  const now = new Date();
-  mockFiles(now);
-  const rmSpy = vi.spyOn(fs.promises, 'rm');
-  rmSpy.mockRejectedValue(new Error('failed'));
-  const postMessageMock = vi.fn();
-  const manager = new ModelsManager(
-    appdir,
-    {
-      postMessage: postMessageMock,
-    } as unknown as Webview,
-    {
-      getModels: () => {
-        return [
-          {
-            id: 'model-id-1',
-          },
-        ] as ModelInfo[];
-      },
-    } as CatalogManager,
-    telemetryLogger,
-    taskRegistry,
-  );
-  await manager.loadLocalModels();
-  await manager.deleteLocalModel('model-id-1');
-  // check that the model's folder is removed from disk
-  if (process.platform === 'win32') {
-    expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', {
-      recursive: true,
-      force: true,
-      maxRetries: 3,
-    });
-  } else {
-    expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', {
-      recursive: true,
-      force: true,
-      maxRetries: 3,
-    });
-  }
-  expect(postMessageMock).toHaveBeenCalledTimes(3);
-  // check that a new state is sent with the model non removed
-  expect(postMessageMock).toHaveBeenNthCalledWith(3, {
-    id: 'new-models-state',
-    body: [
+describe('deleting models', () => {
+  test('deleteModel fails to delete the model folder', async () => {
+    let appdir: string;
+    if (process.platform === 'win32') {
+      appdir = 'C:\\home\\user\\aistudio';
+    } else {
+      appdir = '/home/user/aistudio';
+    }
+    const now = new Date();
+    mockFiles(now);
+    const rmSpy = vi.spyOn(fs.promises, 'rm');
+    rmSpy.mockRejectedValue(new Error('failed'));
+    const postMessageMock = vi.fn();
+    const manager = new ModelsManager(
+      appdir,
       {
-        id: 'model-id-1',
-        file: {
-          creation: now,
-          file: 'model-id-1-model',
-          size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name),
+        postMessage: postMessageMock,
+      } as unknown as Webview,
+      {
+        getModels: () => {
+          return [
+            {
+              id: 'model-id-1',
+            },
+          ] as ModelInfo[];
         },
-      },
-    ],
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+    );
+    await manager.loadLocalModels();
+    await manager.deleteModel('model-id-1');
+    // check that the model's folder is removed from disk
+    if (process.platform === 'win32') {
+      expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', {
+        recursive: true,
+        force: true,
+        maxRetries: 3,
+      });
+    } else {
+      expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', {
+        recursive: true,
+        force: true,
+        maxRetries: 3,
+      });
+    }
+    expect(postMessageMock).toHaveBeenCalledTimes(3);
+    // check that a new state is sent with the model non removed
+    expect(postMessageMock).toHaveBeenNthCalledWith(3, {
+      id: 'new-models-state',
+      body: [
+        {
+          id: 'model-id-1',
+          file: {
+            creation: now,
+            file: 'model-id-1-model',
+            size: 32000,
+            path: path.resolve(dirent[0].path, dirent[0].name),
+          },
+        },
+      ],
+    });
+    expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();
+    expect(mocks.logErrorMock).toHaveBeenCalled();
   });
-  expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();
-  expect(mocks.logErrorMock).toHaveBeenCalled();
+
+  test('deleting on windows should check if models is uploaded', async () => {
+    vi.mocked(env).isWindows = true;
+    vi.mocked(coreProcess.exec).mockResolvedValue(undefined);
+    mocks.getFirstRunningMachineNameMock.mockReturnValue('dummyMachine');
+    mocks.getPodmanCliMock.mockReturnValue('dummyCli');
+
+    const rmSpy = vi.spyOn(fs.promises, 'rm');
+    rmSpy.mockResolvedValue(undefined);
+    const manager = new ModelsManager(
+      '/home/user/aistudio',
+      {
+        postMessage: vi.fn().mockResolvedValue(undefined),
+      } as unknown as Webview,
+      {
+        getModels: () => {
+          return [
+            {
+              id: 'model-id-1',
+              file: {
+                file: 'dummyFile',
+                path: 'dummyPath',
+              }
+            },
+          ] as ModelInfo[];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+    );
+
+    await manager.loadLocalModels();
+    await manager.deleteModel('model-id-1');
+    expect(coreProcess.exec).toHaveBeenNthCalledWith(1, 'dummyCli', [
+      'machine',
+      'ssh',
+      'dummyMachine',
+      'stat',
+      '/home/user/ai-studio/models/dummyFile',
+    ]);
+    expect(coreProcess.exec).toHaveBeenNthCalledWith(2, 'dummyCli', [
+      'machine',
+      'ssh',
+      'dummyMachine',
+      'rm',
+      '-f',
+      '/home/user/ai-studio/models/dummyFile',
+    ]);
+  });
 });
+
 
 describe('downloadModel', () => {
   test('download model if not already on disk', async () => {

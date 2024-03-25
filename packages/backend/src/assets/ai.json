@@ -84,7 +84,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf",
-      "memory": 4268032
+      "memory": 4370464768
     },
     {
       "id": "hf.NousResearch.Hermes-2-Pro-Mistral-7B.Q4_K_M",
@@ -94,7 +94,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/NousResearch/Hermes-2-Pro-Mistral-7B-GGUF/resolve/main/Hermes-2-Pro-Mistral-7B.Q4_K_M.gguf",
-      "memory": 4268032
+      "memory": 4370464768
     },
     {
       "id": "hf.ibm.merlinite-7b-Q4_K_M",
@@ -104,7 +104,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ibm/merlinite-7b-GGUF/resolve/main/merlinite-7b-Q4_K_M.gguf",
-      "memory": 4268032
+      "memory": 4370464768
     },
     {
       "id": "hf.TheBloke.mistral-7b-codealpaca-lora.Q4_K_M",
@@ -114,7 +114,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-codealpaca-lora-GGUF/resolve/main/mistral-7b-codealpaca-lora.Q4_K_M.gguf",
-      "memory": 4268032
+      "memory": 4370464768
     },
     {
       "id": "hf.TheBloke.mistral-7b-code-16k-qlora.Q4_K_M",
@@ -124,7 +124,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-Code-16K-qlora-GGUF/resolve/main/mistral-7b-code-16k-qlora.Q4_K_M.gguf",
-      "memory": 4268032
+      "memory": 4370464768
     },    
     {
       "id": "hf.froggeric.Cerebrum-1.0-7b-Q4_KS",
@@ -134,7 +134,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/froggeric/Cerebrum-1.0-7b-GGUF/resolve/main/Cerebrum-1.0-7b-Q4_KS.gguf",
-      "memory": 4047872
+      "memory": 4145020928
     },
     {
       "id": "hf.TheBloke.openchat-3.5-0106.Q4_K_M",
@@ -144,7 +144,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/openchat-3.5-0106-GGUF/resolve/main/openchat-3.5-0106.Q4_K_M.gguf",
-      "memory": 4268032
+      "memory": 4370464768
     },
     {
       "id": "hf.TheBloke.mistral-7b-openorca.Q4_K_M",
@@ -154,7 +154,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-OpenOrca-GGUF/resolve/main/mistral-7b-openorca.Q4_K_M.gguf",
-      "memory": 4268032
+      "memory": 4370464768
     },
     {
       "id": "hf.MaziyarPanahi.phi-2.Q4_K_M",
@@ -164,7 +164,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/MaziyarPanahi/phi-2-GGUF/resolve/main/phi-2.Q4_K_M.gguf",
-      "memory": 1698816
+      "memory": 1739587584
     },
     {
       "id": "hf.llmware.dragon-mistral-7b-q4_k_m",
@@ -174,7 +174,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/llmware/dragon-mistral-7b-v0/resolve/main/dragon-mistral-7b-q4_k_m.gguf",
-      "memory": 4268032
+      "memory": 4370464768
     },
     {
       "id": "hf.MaziyarPanahi.MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M",
@@ -184,7 +184,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/MaziyarPanahi/MixTAO-7Bx2-MoE-Instruct-v7.0-GGUF/resolve/main/MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M.gguf",
-      "memory": 7602176
+      "memory": 7784628224
     }
   ],
   "categories": [

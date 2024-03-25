@@ -23,7 +23,13 @@ import Playground from './Playground.svelte';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { fireEvent } from '@testing-library/dom';
-import type { AssistantChat, Conversation, PendingChat, UserChat } from '@shared/src/models/IPlaygroundMessage';
+import type {
+  AssistantChat,
+  Conversation,
+  PendingChat,
+  SystemPrompt,
+  UserChat,
+} from '@shared/src/models/IPlaygroundMessage';
 import * as conversationsStore from '/@/stores/conversations';
 import { writable } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
@@ -104,6 +110,46 @@ test('send prompt should be enabled initially', async () => {
     },
   ]);
   const customConversations = writable<Conversation[]>([]);
+  vi.mocked(conversationsStore).conversations = customConversations;
+  render(Playground, {
+    playgroundId: 'playground-1',
+  });
+
+  await waitFor(() => {
+    const send = screen.getByRole('button', { name: 'Send prompt' });
+    expect(send).toBeEnabled();
+  });
+});
+
+test('send prompt should be enabled initially, with a system prompt', async () => {
+  vi.mocked(studioClient.getCatalog).mockResolvedValue({
+    models: [
+      {
+        id: 'model-1',
+        name: 'Model 1',
+      },
+    ] as ModelInfo[],
+    recipes: [],
+    categories: [],
+  });
+  vi.mocked(studioClient.getPlaygroundsV2).mockResolvedValue([
+    {
+      id: 'playground-1',
+      name: 'Playground 1',
+      modelId: 'model-1',
+    },
+  ]);
+  const customConversations = writable<Conversation[]>([
+    {
+      id: 'playground-1',
+      messages: [
+        {
+          role: 'system',
+          content: 'a prompt',
+        } as SystemPrompt,
+      ],
+    },
+  ]);
   vi.mocked(conversationsStore).conversations = customConversations;
   render(Playground, {
     playgroundId: 'playground-1',

@@ -59,7 +59,11 @@ Compatible on Windows, macOS & Linux
 
 LLMs AI models are heavy resource consumers both in terms of memory and CPU. Each of the provided models consumes about 4GiB of memory and requires at least 4 CPUs to run.
 
-So we recommend that no more that 3 simultaneous models running concurrently and a minimum of 12Gb of memory and at least 4 CPUs for the Podman machine. Please note that this is not relevant for WSL on Windows as the WSL technology the memory and CPU with the host desktop. 
+So we recommend that a minimum of 12GB of memory and at least 4 CPUs for the Podman machine.
+
+As an additional recommended practice, do nor run more than 3 simultaneous models concurrently.
+
+Please note that this is not relevant for WSL on Windows as the WSL technology the memory and CPU with the host desktop. 
 
 ## Installation
 

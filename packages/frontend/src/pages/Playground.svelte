@@ -121,7 +121,7 @@ function elapsedTime(msg: AssistantChat): string {
               <div class="flex flex-col w-full h-full">
                 <div aria-label="conversation" class="w-full h-full">
                   {#if conversation?.messages}
-                    <ul class="p-4">
+                    <ul>
                       {#each conversation?.messages as message}
                         <li class="m-4">
                           <div class="text-lg" class:text-right="{isAssistantChat(message)}">

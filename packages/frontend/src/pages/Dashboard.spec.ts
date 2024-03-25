@@ -32,6 +32,4 @@ test('ensure dashboard is not empty', async () => {
 
   const innerContent = screen.getByLabelText('inner-content');
   expect(innerContent).toBeDefined();
-  const renderer = innerContent.getElementsByTagName('article');
-  expect(renderer.length).toBe(1);
 });

@@ -204,7 +204,7 @@ test('should display non-default model information when model is not the recomme
   const modelInfo = screen.getByLabelText('model-selected');
   expect(modelInfo.textContent).equal('Model 2');
   const defaultWarning = screen.getByLabelText('model-warning');
-  expect(defaultWarning.textContent).contains('The default model for this recipe is');
+  expect(defaultWarning.textContent).contains('The default model for this recipe is Model 1');
 });
 
 test('button vs code should be visible if local repository is not empty', async () => {

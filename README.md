@@ -81,6 +81,7 @@ You can use `yarn watch --extension-folder` from the Podman Desktop directory to
 git clone https://github.com/containers/podman-desktop
 git clone https://github.com/projectatomic/ai-studio
 cd ai-studio
+yarn install
 yarn build
 cd ../podman-desktop
 yarn watch --extension-folder ../ai-studio/packages/backend

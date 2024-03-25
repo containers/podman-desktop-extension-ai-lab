@@ -18,7 +18,7 @@ The Podman Desktop AI Studio extension simplifies getting started and developing
 ## Technology
 
 The AI Studio extensions uses [Podman](https://podman.io) machines to run inference servers for LLM models and AI applications.
-The AI models can be downloaded, and common formats like [GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md), [Pytorch](https://pytorch.org) or [Tensorflow](https://www.tensorflow.org).
+The AI models can be downloaded, and common formats like [GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md), [Pytorch](https://pytorch.org) or [Tensorflow](https://www.tensorflow.org) are supported.
 
 ## Extension features
 

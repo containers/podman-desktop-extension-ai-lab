@@ -121,8 +121,18 @@ export abstract class StudioAPI {
   abstract submitPlaygroundMessage(
     containerId: string,
     userInput: string,
-    systemPrompt: string,
     options?: ModelOptions,
+  ): Promise<void>;
+
+  /**
+   * Given a conversation, update the system prompt.
+   * If none exists, it will create one, otherwise it will replace the content with the new one
+   * @param conversationId the conversation id to set the system id
+   * @param content the new system prompt to use
+   */
+  abstract setPlaygroundSystemPrompt(
+    conversationId: string,
+    content: string,
   ): Promise<void>;
 
   /**

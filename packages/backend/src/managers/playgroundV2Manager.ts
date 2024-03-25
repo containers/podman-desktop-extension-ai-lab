@@ -22,7 +22,14 @@ import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/conversationRegistry';
-import type { Conversation, PendingChat, SystemPrompt, UserChat } from '@shared/src/models/IPlaygroundMessage';
+import type {
+  Conversation,
+  PendingChat,
+  SystemPrompt,
+  UserChat} from '@shared/src/models/IPlaygroundMessage';
+import {
+  isSystemPrompt,
+} from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
@@ -150,11 +157,38 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
   }
 
   /**
+   * Given a conversation, update the system prompt.
+   * If none exists, it will create one, otherwise it will replace the content with the new one
+   * @param conversationId the conversation id to set the system id
+   * @param content the new system prompt to use
+   */
+  setSystemPrompt(conversationId: string, content: string): void {
+    const conversation = this.#conversationRegistry.get(conversationId);
+    if(conversation === undefined) throw new Error(`Conversation with id ${conversationId} does not exists.`);
+
+    if(conversation.messages.length === 0) {
+      this.#conversationRegistry.submit(conversationId, {
+        role: 'system',
+        content,
+        timestamp: Date.now(),
+        id: this.getUniqueId(),
+      } as SystemPrompt);
+      this.notify();
+    } else if(conversation.messages.length === 1 && isSystemPrompt(conversation.messages[0])) {
+      this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
+        content,
+      });
+    } else {
+      throw new Error('Cannot change system prompt on started conversation.');
+    }
+  }
+
+  /**
    * @param playgroundId
    * @param userInput the user input
    * @param options the model configuration
    */
-  async submit(playgroundId: string, userInput: string, systemPrompt: string, options?: ModelOptions): Promise<void> {
+  async submit(playgroundId: string, userInput: string, options?: ModelOptions): Promise<void> {
     const playground = this.#playgrounds.get(playgroundId);
     if (playground === undefined) throw new Error('Playground not found.');
 
@@ -189,13 +223,9 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
       apiKey: 'dummy',
     });
 
-    const messages = this.getFormattedMessages(playground.id);
-    if (systemPrompt) {
-      messages.push({ role: 'system', content: systemPrompt });
-    }
     client.chat.completions
       .create({
-        messages,
+        messages: this.getFormattedMessages(playground.id),
         stream: true,
         model: modelInfo.file.file,
         ...options,

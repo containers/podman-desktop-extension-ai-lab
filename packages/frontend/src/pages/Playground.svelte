@@ -111,9 +111,7 @@ function elapsedTime(msg: AssistantChat): string {
 </script>
 
 {#if playground}
-  <NavPage title="{playground?.name}"
-           searchEnabled="{false}"
-           contentBackground="bg-charcoal-500">
+  <NavPage title="{playground?.name}" searchEnabled="{false}" contentBackground="bg-charcoal-500">
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full">

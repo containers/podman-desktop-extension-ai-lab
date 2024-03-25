@@ -168,6 +168,7 @@ onDestroy(() => {
           <textarea
             aria-label="system-prompt-textarea"
             bind:value="{systemPrompt}"
+            disabled="{submitted}"
             class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
             rows="4"
             placeholder="Optionally provide system prompt to define general context, instructions or guidelines to be used with each query"

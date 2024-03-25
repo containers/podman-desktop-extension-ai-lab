@@ -21,11 +21,11 @@ import { tasks } from '/@/stores/tasks';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
-  new Column<ModelInfo>('Size', { width: '1fr', renderer: ModelColumnSize }),
-  new Column<ModelInfo>('Creation', { width: '1fr', renderer: ModelColumnCreation }),
-  new Column<ModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),
-  new Column<ModelInfo>('Registry', { width: '2fr', renderer: ModelColumnRegistry }),
-  new Column<ModelInfo>('License', { width: '2fr', renderer: ModelColumnLicense }),
+  new Column<ModelInfo>('Size', { width: '80px', renderer: ModelColumnSize }),
+  new Column<ModelInfo>('Creation', { width: '80px', renderer: ModelColumnCreation }),
+  new Column<ModelInfo>('HW Compat', { width: '80px', renderer: ModelColumnHw }),
+  new Column<ModelInfo>('Registry', { width: '100px', renderer: ModelColumnRegistry }),
+  new Column<ModelInfo>('License', { width: '100px', renderer: ModelColumnLicense }),
   new Column<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});

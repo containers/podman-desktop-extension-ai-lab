@@ -111,7 +111,7 @@ function elapsedTime(msg: AssistantChat): string {
 </script>
 
 {#if playground}
-  <NavPage title="{playground?.name}" searchEnabled="{false}">
+  <NavPage title="{playground?.name}" searchEnabled="{false}" contentBackground="bg-charcoal-500">
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full">
@@ -121,9 +121,9 @@ function elapsedTime(msg: AssistantChat): string {
               <div class="flex flex-col w-full h-full">
                 <div aria-label="conversation" class="w-full h-full">
                   {#if conversation?.messages}
-                    <ul class="p-4">
+                    <ul>
                       {#each conversation?.messages as message}
-                        <li class="m-4">
+                        <li>
                           <div class="text-lg" class:text-right="{isAssistantChat(message)}">
                             {roleNames[message.role]}
                           </div>

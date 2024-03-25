@@ -8,6 +8,7 @@ import {
   isPendingChat,
   isUserChat,
   type AssistantChat,
+  isSystemPrompt,
 } from '@shared/src/models/IPlaygroundMessage';
 import NavPage from '../lib/NavPage.svelte';
 import { playgrounds } from '../stores/playgrounds-v2';
@@ -46,7 +47,7 @@ $: {
 }
 
 const roleNames = {
-  system: 'System',
+  system: 'System prompt',
   user: 'User',
   assistant: 'Assistant',
 };
@@ -61,9 +62,8 @@ function getMessageParagraphs(message: ChatMessage): string[] {
         .join('')
         .split('\n');
     }
-  } else if (isUserChat(message)) {
-    const msg = message as UserChat;
-    return msg.content?.split('\n') ?? [];
+  } else if (isUserChat(message) || isSystemPrompt(message)) {
+    return message.content?.split('\n') ?? [];
   }
   return [];
 }
@@ -130,6 +130,7 @@ function elapsedTime(msg: AssistantChat): string {
                           <div
                             class="p-4 rounded-md"
                             class:bg-charcoal-400="{isUserChat(message)}"
+                            class:bg-charcoal-800="{isSystemPrompt(message)}"
                             class:bg-charcoal-900="{isAssistantChat(message)}"
                             class:ml-8="{isAssistantChat(message)}"
                             class:mr-8="{isUserChat(message)}">
@@ -152,17 +153,6 @@ function elapsedTime(msg: AssistantChat): string {
             </svelte:fragment>
             <svelte:fragment slot="details">
               <div class="text-gray-800 text-xs">Next prompt will use these settings</div>
-              <div class="bg-charcoal-600 w-full rounded-md text-xs p-4">
-                <div class="mb-4">System Prompt</div>
-                <div class="w-full">
-                  <textarea
-                    bind:value="{systemPrompt}"
-                    class="p-2 w-full outline-none bg-charcoal-500 rounded-sm text-gray-700 placeholder-gray-700"
-                    rows="4"
-                    placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
-                  ></textarea>
-                </div>
-              </div>
               <div class="bg-charcoal-600 w-full rounded-md text-xs p-4">
                 <div class="mb-4 flex flex-col">Model Parameters</div>
                 <div class="flex flex-col space-y-4">

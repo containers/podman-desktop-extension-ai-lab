@@ -22,7 +22,7 @@ import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/conversationRegistry';
-import type { Conversation, PendingChat, UserChat } from '@shared/src/models/IPlaygroundMessage';
+import type { Conversation, PendingChat, SystemPrompt, UserChat } from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
@@ -54,13 +54,13 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     this.notify();
   }
 
-  async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
+  async requestCreatePlayground(name: string, model: ModelInfo, systemPrompt?: string): Promise<string> {
     const trackingId: string = getRandomString();
     const task = this.taskRegistry.createTask('Creating Playground environment', 'loading', {
       trackingId: trackingId,
     });
 
-    this.createPlayground(name, model, trackingId)
+    this.createPlayground(name, model, systemPrompt, trackingId)
       .then((playgroundId: string) => {
         this.taskRegistry.updateTask({
           ...task,
@@ -94,7 +94,12 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     return trackingId;
   }
 
-  async createPlayground(name: string, model: ModelInfo, trackingId: string): Promise<string> {
+  async createPlayground(
+    name: string,
+    model: ModelInfo,
+    systemPrompt: string | undefined,
+    trackingId: string,
+  ): Promise<string> {
     const id = `${this.#playgroundCounter++}`;
 
     if (!name) {
@@ -102,6 +107,15 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     }
 
     this.#conversationRegistry.createConversation(id);
+
+    if (systemPrompt) {
+      this.#conversationRegistry.submit(id, {
+        content: systemPrompt,
+        role: 'system',
+        id: this.getUniqueId(),
+        timestamp: Date.now(),
+      } as SystemPrompt);
+    }
 
     // create/start inference server if necessary
     const servers = this.inferenceManager.getServers();

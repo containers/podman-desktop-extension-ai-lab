@@ -76,7 +76,7 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo, 'tracking-1');
+  await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo, '', 'tracking-1');
 
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
     {
@@ -107,7 +107,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('p1', { id: 'model1' } as ModelInfo, 'tracking-1');
+  await manager.createPlayground('p1', { id: 'model1' } as ModelInfo, '', 'tracking-1');
   const playgroundId = manager.getPlaygrounds()[0].id;
   await expect(manager.submit(playgroundId, 'dummyUserInput', '')).rejects.toThrowError(
     'Inference server is not healthy, currently status: unhealthy.',
@@ -133,10 +133,40 @@ test('create playground should create conversation.', async () => {
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   expect(manager.getConversations().length).toBe(0);
-  await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo, 'tracking-1');
+  await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo, '', 'tracking-1');
 
   const conversations = manager.getConversations();
   expect(conversations.length).toBe(1);
+});
+
+test('create playground called with a system prompt should create conversation with a system message.', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      status: 'running',
+      health: {
+        Status: 'healthy',
+      },
+      models: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyModelFile',
+          },
+        },
+      ],
+    } as unknown as InferenceServer,
+  ]);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  expect(manager.getConversations().length).toBe(0);
+  await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo, 'a system prompt', 'tracking-1');
+
+  const conversations = manager.getConversations();
+  expect(conversations.length).toBe(1);
+  const conversation = conversations[0];
+  expect(conversation.messages).toHaveLength(1);
+  const systemMessage = conversation.messages[0];
+  expect(systemMessage.role).toEqual('system');
+  expect(systemMessage.content).toEqual('a system prompt');
 });
 
 test('valid submit should create IPlaygroundMessage and notify the webview', async () => {
@@ -169,7 +199,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, undefined, 'tracking-1');
 
   const date = new Date(2000, 1, 1, 13);
   vi.setSystemTime(date);
@@ -208,65 +238,6 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   });
 });
 
-test.each(['', 'my system prompt'])(
-  'valid submit should send a message with system prompt if non empty, system prompt is "%s"}',
-  async (systemPrompt: string) => {
-    vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
-      {
-        status: 'running',
-        health: {
-          Status: 'healthy',
-        },
-        models: [
-          {
-            id: 'dummyModelId',
-            file: {
-              file: 'dummyModelFile',
-            },
-          },
-        ],
-        connection: {
-          port: 8888,
-        },
-      } as unknown as InferenceServer,
-    ]);
-    const createMock = vi.fn().mockResolvedValue([]);
-    vi.mocked(OpenAI).mockReturnValue({
-      chat: {
-        completions: {
-          create: createMock,
-        },
-      },
-    } as unknown as OpenAI);
-
-    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-    await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
-
-    const playgrounds = manager.getPlaygrounds();
-    await manager.submit(playgrounds[0].id, 'dummyUserInput', systemPrompt);
-
-    const messages: unknown[] = [
-      {
-        content: 'dummyUserInput',
-        id: expect.any(String),
-        role: 'user',
-        timestamp: expect.any(Number),
-      },
-    ];
-    if (systemPrompt) {
-      messages.push({
-        content: 'my system prompt',
-        role: 'system',
-      });
-    }
-    expect(createMock).toHaveBeenCalledWith({
-      messages,
-      model: 'dummyModelFile',
-      stream: true,
-    });
-  },
-);
-
 test('submit should send options', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
     {
@@ -297,7 +268,7 @@ test('submit should send options', async () => {
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
-  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, undefined, 'tracking-1');
 
   const playgrounds = manager.getPlaygrounds();
   await manager.submit(playgrounds[0].id, 'dummyUserInput', '', { temperature: 0.123, max_tokens: 45, top_p: 0.345 });
@@ -334,6 +305,7 @@ test('creating a new playground should send new playground to frontend', async (
       id: 'model-1',
       name: 'Model 1',
     } as unknown as ModelInfo,
+    '',
     'tracking-1',
   );
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
@@ -357,6 +329,7 @@ test('creating a new playground with no name should send new playground to front
       id: 'model-1',
       name: 'Model 1',
     } as unknown as ModelInfo,
+    '',
     'tracking-1',
   );
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
@@ -381,6 +354,7 @@ test('creating a new playground with no model served should start an inference s
       id: 'model-1',
       name: 'Model 1',
     } as unknown as ModelInfo,
+    '',
     'tracking-1',
   );
   expect(createInferenceServerMock).toHaveBeenCalledWith(
@@ -417,6 +391,7 @@ test('creating a new playground with the model already served should not start a
       id: 'model-1',
       name: 'Model 1',
     } as unknown as ModelInfo,
+    '',
     'tracking-1',
   );
   expect(createInferenceServerMock).not.toHaveBeenCalled();
@@ -445,6 +420,7 @@ test('creating a new playground with the model server stopped should start the i
       id: 'model-1',
       name: 'Model 1',
     } as unknown as ModelInfo,
+    '',
     'tracking-1',
   );
   expect(createInferenceServerMock).not.toHaveBeenCalled();
@@ -462,6 +438,7 @@ test('delete conversation should delete the conversation', async () => {
       id: 'model-1',
       name: 'Model 1',
     } as unknown as ModelInfo,
+    '',
     'tracking-1',
   );
 
@@ -484,9 +461,9 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
   });
   const createPlaygroundSpy = vi.spyOn(manager, 'createPlayground').mockResolvedValue('playground-1');
 
-  const id = await manager.requestCreatePlayground('a name', { id: 'model-1' } as ModelInfo);
+  const id = await manager.requestCreatePlayground('a name', { id: 'model-1' } as ModelInfo, '');
 
-  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo, expect.any(String));
+  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo, '', expect.any(String));
   expect(createTaskMock).toHaveBeenCalledWith('Creating Playground environment', 'loading', {
     trackingId: id,
   });
@@ -513,9 +490,9 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
   });
   const createPlaygroundSpy = vi.spyOn(manager, 'createPlayground').mockRejectedValue(new Error('an error'));
 
-  const id = await manager.requestCreatePlayground('a name', { id: 'model-1' } as ModelInfo);
+  const id = await manager.requestCreatePlayground('a name', { id: 'model-1' } as ModelInfo, '');
 
-  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo, expect.any(String));
+  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo, '', expect.any(String));
   expect(createTaskMock).toHaveBeenCalledWith('Creating Playground environment', 'loading', {
     trackingId: id,
   });

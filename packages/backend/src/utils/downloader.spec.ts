@@ -20,6 +20,8 @@ import { vi, test, expect, beforeEach } from 'vitest';
 import { Downloader } from './downloader';
 import { EventEmitter } from '@podman-desktop/api';
 import { createWriteStream, promises, type WriteStream } from 'node:fs';
+import https from 'node:https';
+import type { IncomingMessage, ClientRequest } from 'node:http';
 
 vi.mock('@podman-desktop/api', () => {
   return {
@@ -41,11 +43,14 @@ vi.mock('node:fs', () => {
     existsSync: vi.fn(),
     promises: {
       rename: vi.fn(),
+      rm: vi.fn(),
     },
   };
 });
 
 beforeEach(() => {
+  vi.resetAllMocks();
+
   const listeners: ((value: unknown) => void)[] = [];
 
   vi.mocked(EventEmitter).mockReturnValue({
@@ -56,6 +61,9 @@ beforeEach(() => {
       listeners.forEach(listener => listener(content));
     }),
   } as unknown as EventEmitter<unknown>);
+
+  vi.mocked(promises.rm).mockResolvedValue(undefined);
+  vi.mocked(promises.rename).mockResolvedValue(undefined);
 });
 
 test('Downloader constructor', async () => {
@@ -66,6 +74,12 @@ test('Downloader constructor', async () => {
 test('perform download failed', async () => {
   const downloader = new Downloader('dummyUrl', 'dummyTarget');
 
+  let onResponse: (msg: IncomingMessage) => void;
+  vi.mocked(https.get).mockImplementation((_url, _options, callback) => {
+    onResponse = callback;
+    return {} as unknown as ClientRequest;
+  });
+
   const closeMock = vi.fn();
   const onMock = vi.fn();
   vi.mocked(createWriteStream).mockReturnValue({
@@ -73,29 +87,51 @@ test('perform download failed', async () => {
     on: onMock,
   } as unknown as WriteStream);
 
-  onMock.mockImplementation((event: string, callback: () => void) => {
+  onMock.mockImplementation((event: string, callback: (err: Error) => void) => {
     if (event === 'error') {
-      callback();
+      callback(new Error('dummyError'));
     }
   });
   // capture downloader event(s)
   const listenerMock = vi.fn();
   downloader.onEvent(listenerMock);
 
-  // perform download logic
-  await downloader.perform('followUpId');
+  // perform download logic (do not wait)
+  void downloader.perform('followUpId');
 
-  expect(downloader.completed).toBeTruthy();
+  // wait for listener to be registered
+  await vi.waitFor(() => {
+    expect(onResponse).toBeDefined();
+  });
+
+  if(onResponse === undefined)
+    throw new Error('onResponse undefined');
+
+  onResponse({
+      pipe: vi.fn(),
+      on: vi.fn(),
+      headers: { location: undefined },
+    } as unknown as IncomingMessage);
+
+  await vi.waitFor(() => {
+    expect(downloader.completed).toBeTruthy();
+  });
+
   expect(listenerMock).toHaveBeenCalledWith({
     id: 'followUpId',
-    message: expect.anything(),
+    message: 'Something went wrong: dummyError.',
     status: 'error',
   });
+  expect(promises.rm).toHaveBeenCalledWith('dummyTarget.tmp');
 });
 
 test('perform download successfully', async () => {
   const downloader = new Downloader('dummyUrl', 'dummyTarget');
-  vi.spyOn(promises, 'rename').mockResolvedValue(undefined);
+  let onResponse: (msg: IncomingMessage) => void;
+  vi.mocked(https.get).mockImplementation((_url, _options, callback) => {
+    onResponse = callback;
+    return {} as unknown as ClientRequest;
+  });
 
   const closeMock = vi.fn();
   const onMock = vi.fn();
@@ -115,7 +151,25 @@ test('perform download successfully', async () => {
   downloader.onEvent(listenerMock);
 
   // perform download logic
-  await downloader.perform('followUpId');
+  void downloader.perform('followUpId');
+
+  // wait for listener to be registered
+  await vi.waitFor(() => {
+    expect(onResponse).toBeDefined();
+  });
+
+  if(onResponse === undefined)
+    throw new Error('onResponse undefined');
+
+  onResponse({
+    pipe: vi.fn(),
+    on: vi.fn(),
+    headers: { location: undefined },
+  } as unknown as IncomingMessage);
+
+  await vi.waitFor(() => {
+    expect(downloader.completed).toBeTruthy();
+  });
 
   expect(promises.rename).toHaveBeenCalledWith('dummyTarget.tmp', 'dummyTarget');
   expect(downloader.completed).toBeTruthy();
@@ -125,4 +179,5 @@ test('perform download successfully', async () => {
     message: expect.anything(),
     status: 'completed',
   });
+  expect(promises.rm).not.toHaveBeenCalled();
 });

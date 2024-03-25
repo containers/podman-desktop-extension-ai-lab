@@ -18,8 +18,10 @@ import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
+import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 
 const columns: Column<ModelInfo>[] = [
+  new Column<ModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
   new Column<ModelInfo>('Size', { width: '1fr', renderer: ModelColumnSize }),
   new Column<ModelInfo>('Creation', { width: '1fr', renderer: ModelColumnCreation }),

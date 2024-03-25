@@ -2,7 +2,7 @@
 export let solid: boolean = false;
 </script>
 
-<div class="rounded py-[6px] pl-[7px] pr-[5px]" class:bg-green-400="{solid}">
+<div role="img" class="rounded py-[6px] pl-[7px] pr-[5px]" class:bg-green-400="{solid}">
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g clip-path="url(#clip0_47_118)">
       <g clip-path="url(#clip1_47_118)">

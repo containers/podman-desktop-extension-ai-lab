@@ -28,4 +28,5 @@ export interface ModelInfo {
   url: string;
   file?: LocalModelInfo;
   state?: 'deleting';
+  memory: number;
 }

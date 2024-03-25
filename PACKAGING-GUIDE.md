@@ -38,6 +38,7 @@ A model has the following attributes:
 - ```popularity```: an integer field giving the rating of the model. Can be thought as the number of stars
 - ```license```: the license under which the model is available
 - ```url```: the URL used to download the model
+- ```memory```: the memory footprint of the model in bytes, as computed by the workflow `.github/workflows/compute-model-sizes.yaml`
 
 #### Recipes
 

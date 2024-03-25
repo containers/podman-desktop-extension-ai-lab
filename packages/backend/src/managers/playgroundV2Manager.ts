@@ -22,14 +22,8 @@ import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/conversationRegistry';
-import type {
-  Conversation,
-  PendingChat,
-  SystemPrompt,
-  UserChat} from '@shared/src/models/IPlaygroundMessage';
-import {
-  isSystemPrompt,
-} from '@shared/src/models/IPlaygroundMessage';
+import type { Conversation, PendingChat, SystemPrompt, UserChat } from '@shared/src/models/IPlaygroundMessage';
+import { isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
@@ -164,9 +158,9 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
    */
   setSystemPrompt(conversationId: string, content: string): void {
     const conversation = this.#conversationRegistry.get(conversationId);
-    if(conversation === undefined) throw new Error(`Conversation with id ${conversationId} does not exists.`);
+    if (conversation === undefined) throw new Error(`Conversation with id ${conversationId} does not exists.`);
 
-    if(conversation.messages.length === 0) {
+    if (conversation.messages.length === 0) {
       this.#conversationRegistry.submit(conversationId, {
         role: 'system',
         content,
@@ -174,7 +168,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
         id: this.getUniqueId(),
       } as SystemPrompt);
       this.notify();
-    } else if(conversation.messages.length === 1 && isSystemPrompt(conversation.messages[0])) {
+    } else if (conversation.messages.length === 1 && isSystemPrompt(conversation.messages[0])) {
       this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
         content,
       });

@@ -85,7 +85,7 @@ async function scrollToBottom(element: Element) {
                 <div aria-label="conversation" class="w-full h-full">
                   {#if conversation}
                     <!-- Show a banner for the system prompt -->
-                    <SystemPromptBanner conversation="{conversation}"/>
+                    <SystemPromptBanner conversation="{conversation}" />
                     <!-- show all message except the sytem prompt -->
                     <ul>
                       {#each messages as message}

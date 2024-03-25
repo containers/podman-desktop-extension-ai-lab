@@ -104,14 +104,13 @@ test('perform download failed', async () => {
     expect(onResponse).toBeDefined();
   });
 
-  if(onResponse === undefined)
-    throw new Error('onResponse undefined');
+  if (onResponse === undefined) throw new Error('onResponse undefined');
 
   onResponse({
-      pipe: vi.fn(),
-      on: vi.fn(),
-      headers: { location: undefined },
-    } as unknown as IncomingMessage);
+    pipe: vi.fn(),
+    on: vi.fn(),
+    headers: { location: undefined },
+  } as unknown as IncomingMessage);
 
   await vi.waitFor(() => {
     expect(downloader.completed).toBeTruthy();
@@ -158,8 +157,7 @@ test('perform download successfully', async () => {
     expect(onResponse).toBeDefined();
   });
 
-  if(onResponse === undefined)
-    throw new Error('onResponse undefined');
+  if (onResponse === undefined) throw new Error('onResponse undefined');
 
   onResponse({
     pipe: vi.fn(),

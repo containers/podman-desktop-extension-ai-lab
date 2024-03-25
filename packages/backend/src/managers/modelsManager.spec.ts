@@ -505,7 +505,7 @@ describe('deleting models', () => {
               file: {
                 file: 'dummyFile',
                 path: 'dummyPath',
-              }
+              },
             },
           ] as ModelInfo[];
         },
@@ -551,7 +551,7 @@ describe('deleting models', () => {
               file: {
                 file: 'dummyFile',
                 path: 'dummyPath',
-              }
+              },
             },
           ] as ModelInfo[];
         },
@@ -567,7 +567,6 @@ describe('deleting models', () => {
     expect(mocks.getPodmanCliMock).not.toHaveBeenCalled();
   });
 });
-
 
 describe('downloadModel', () => {
   test('download model if not already on disk', async () => {

@@ -184,7 +184,7 @@ export class ModelsManager implements Disposable {
 
   private async deleteRemoteModel(modelInfo: ModelInfo): Promise<void> {
     // currently only Window is supported
-    if(!env.isWindows) {
+    if (!env.isWindows) {
       return;
     }
 
@@ -196,8 +196,7 @@ export class ModelsManager implements Disposable {
 
     // check if model already loaded on the podman machine
     const existsRemote = await isModelUploaded(machineName, modelInfo);
-    if(!existsRemote)
-      return;
+    if (!existsRemote) return;
 
     return deleteRemoteModel(machineName, modelInfo);
   }

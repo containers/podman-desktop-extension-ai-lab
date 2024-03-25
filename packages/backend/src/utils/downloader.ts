@@ -80,17 +80,11 @@ export class Downloader {
           reject(result.error);
         }
       };
-      this.followRedirects(url, callback).catch((err: unknown) => {
-        console.error('Something went wrong while the follow redirects', err);
-        reject(err);
-      });
+      this.followRedirects(url, callback);
     });
   }
 
-  private async followRedirects(
-    url: string,
-    callback: (message: { ok?: boolean; error?: string }) => void,
-  ): Promise<void> {
+  private followRedirects(url: string, callback: (message: { ok?: boolean; error?: string }) => void): void {
     const tmpFile = `${this.target}.tmp`;
 
     const stream = createWriteStream(tmpFile, {
@@ -136,7 +130,7 @@ export class Downloader {
       resp.pipe(stream);
 
       // Handle error case
-      stream.on('error', async (err: Error) => {
+      stream.on('error', (err: Error) => {
         promises
           .rm(tmpFile)
           .then(() => {
@@ -144,13 +138,13 @@ export class Downloader {
               error: err.message,
             });
           })
-          .catch(err => {
+          .catch((err: unknown) => {
             console.error(`Something went wrong while trying to delete ${tmpFile}`, err);
           });
       });
 
       // On close event
-      stream.on('finish', async () => {
+      stream.on('finish', () => {
         // check if _parent_ is errored
         if (resp.errored) {
           return;

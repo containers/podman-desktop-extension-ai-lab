@@ -28,6 +28,7 @@ const route = createRouteObject({
     params = meta.params;
 
     if (isAppMounted) {
+      console.log('url: ', newMeta.url);
       saveRouterState({ url: newMeta.url });
     }
   },

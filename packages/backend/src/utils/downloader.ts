@@ -80,49 +80,49 @@ export class Downloader {
           reject(result.error);
         }
       };
-      this.followRedirects(url, callback);
+      this.followRedirects(url, callback).catch((err: unknown) => {
+        console.error('Something went wrong while the follow redirects', err);
+        reject(err);
+      });
     });
   }
 
-  private followRedirects(url: string, callback: (message: { ok?: boolean; error?: string }) => void) {
+  private async followRedirects(
+    url: string,
+    callback: (message: { ok?: boolean; error?: string }) => void,
+  ): Promise<void> {
     const tmpFile = `${this.target}.tmp`;
-    const stream = createWriteStream(tmpFile);
 
-    stream.on('finish', () => {
-      stream.close();
-      // Rename from tmp to expected file name.
-      promises
-        .rename(tmpFile, this.target)
-        .then(() => {
-          callback({ ok: true });
-        })
-        .catch((err: unknown) => {
-          callback({ error: `Something went wrong while trying to rename downloaded file: ${String(err)}.` });
-        });
-    });
-    stream.on('error', e => {
-      callback({
-        error: e.message,
-      });
+    const stream = createWriteStream(tmpFile, {
+      signal: this.abortSignal,
     });
 
     let totalFileSize = 0;
     let progress = 0;
+    let previousProgressValue = -1;
+
     https.get(url, { signal: this.abortSignal }, resp => {
+      // Determine the total size
       if (resp.headers.location) {
         this.followRedirects(resp.headers.location, callback);
         return;
-      } else {
-        if (totalFileSize === 0 && resp.headers['content-length']) {
-          totalFileSize = parseFloat(resp.headers['content-length']);
-        }
       }
 
-      let previousProgressValue = -1;
+      if (totalFileSize === 0 && resp.headers['content-length']) {
+        totalFileSize = parseFloat(resp.headers['content-length']);
+      }
+
+      // Capture potential errors
+      resp.on('error', (err: Error) => {
+        stream.destroy(err); // propagate to stream
+      });
+
+      // On data
       resp.on('data', chunk => {
         progress += chunk.length;
         const progressValue = (progress * 100) / totalFileSize;
 
+        // Only fire events for progress greater than 1
         if (progressValue === 100 || progressValue - previousProgressValue > 1) {
           previousProgressValue = progressValue;
           this._onEvent.fire({
@@ -132,7 +132,40 @@ export class Downloader {
           } as ProgressEvent);
         }
       });
+      // Pipe to stream
       resp.pipe(stream);
+
+      // Handle error case
+      stream.on('error', async (err: Error) => {
+        promises
+          .rm(tmpFile)
+          .then(() => {
+            callback({
+              error: err.message,
+            });
+          })
+          .catch(err => {
+            console.error(`Something went wrong while trying to delete ${tmpFile}`, err);
+          });
+      });
+
+      // On close event
+      stream.on('finish', async () => {
+        // check if _parent_ is errored
+        if (resp.errored) {
+          return;
+        }
+
+        // If everything is fine we simply rename the tmp file to the expected one
+        promises
+          .rename(tmpFile, this.target)
+          .then(() => {
+            callback({ ok: true });
+          })
+          .catch((err: unknown) => {
+            callback({ error: `Something went wrong while trying to rename downloaded file: ${String(err)}.` });
+          });
+      });
     });
   }
 }

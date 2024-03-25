@@ -88,7 +88,11 @@ beforeEach(() => {
 
   mocks.getInferenceServersMock.mockReturnValue([
     {
-      health: undefined,
+      health: {
+        Status: 'healthy',
+        Log: [],
+        FailingStreak: 0,
+      },
       models: [],
       connection: { port: 9999 },
       status: 'running',
@@ -135,4 +139,13 @@ test('on mount should call createSnippet', async () => {
   });
 
   expect(studioClient.createSnippet).toHaveBeenCalled();
+});
+
+test('ensure status is visible when running', async () => {
+  render(InferenceServerDetails, {
+    containerId: 'dummyContainerId',
+  });
+
+  const status = screen.getByRole('status');
+  expect(status).toBeDefined();
 });

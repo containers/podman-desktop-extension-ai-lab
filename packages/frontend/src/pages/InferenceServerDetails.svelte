@@ -84,7 +84,9 @@ onMount(() => {
               <span class="text-sm">Container</span>
               <div class="w-full bg-charcoal-600 rounded-md p-2 flex items-center">
                 <div class="grow ml-2 flex flex-row">
-                  <ServiceStatus object="{service}" />
+                  {#key service.health?.Status}
+                    <ServiceStatus object="{service}" />
+                  {/key}
                   <div class="flex flex-col text-xs ml-2">
                     <span>{service.container.containerId}</span>
                   </div>

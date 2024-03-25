@@ -21,7 +21,7 @@ let data: InferenceServer[];
 $: data = $inferenceServers;
 </script>
 
-<NavPage title="Services" searchEnabled="{false}">
+<NavPage title="Model Services" searchEnabled="{false}">
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="min-w-full min-h-full flex-1">

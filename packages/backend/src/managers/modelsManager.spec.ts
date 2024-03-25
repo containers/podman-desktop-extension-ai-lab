@@ -532,6 +532,40 @@ describe('deleting models', () => {
       '/home/user/ai-studio/models/dummyFile',
     ]);
   });
+
+  test('deleting on windows should check if models is uploaded', async () => {
+    vi.mocked(env).isWindows = false;
+
+    const rmSpy = vi.spyOn(fs.promises, 'rm');
+    rmSpy.mockResolvedValue(undefined);
+    const manager = new ModelsManager(
+      '/home/user/aistudio',
+      {
+        postMessage: vi.fn().mockResolvedValue(undefined),
+      } as unknown as Webview,
+      {
+        getModels: () => {
+          return [
+            {
+              id: 'model-id-1',
+              file: {
+                file: 'dummyFile',
+                path: 'dummyPath',
+              }
+            },
+          ] as ModelInfo[];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+    );
+
+    await manager.loadLocalModels();
+    await manager.deleteModel('model-id-1');
+    expect(coreProcess.exec).not.toHaveBeenCalled();
+    expect(mocks.getFirstRunningMachineNameMock).not.toHaveBeenCalled();
+    expect(mocks.getPodmanCliMock).not.toHaveBeenCalled();
+  });
 });
 
 

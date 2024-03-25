@@ -37,7 +37,7 @@ $: model = $catalog.models.find(model => model.id === playground?.modelId);
 $: {
   if (conversation?.messages.length) {
     const latest = conversation.messages[conversation.messages.length - 1];
-    if (isAssistantChat(latest) && !isPendingChat(latest)) {
+    if (isSystemPrompt(latest) || (isAssistantChat(latest) && !isPendingChat(latest))) {
       sendEnabled = true;
     }
     lastIsUserMessage = isUserChat(latest);

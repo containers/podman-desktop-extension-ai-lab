@@ -1,7 +1,7 @@
 <script lang="ts">
 import { conversations } from '../stores/conversations';
 import { studioClient } from '/@/utils/client';
-import { isAssistantChat, isPendingChat, isUserChat } from '@shared/src/models/IPlaygroundMessage';
+import { isAssistantChat, isPendingChat, isUserChat, isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
 import NavPage from '../lib/NavPage.svelte';
 import { playgrounds } from '../stores/playgrounds-v2';
 import { catalog } from '../stores/catalog';

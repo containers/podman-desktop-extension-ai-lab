@@ -40,6 +40,7 @@ test('Expect simple column styling', async () => {
       size: 1000,
       path: 'path',
     },
+    memory: 1000,
   };
   render(ModelColumnCreation, { object });
 

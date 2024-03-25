@@ -42,6 +42,7 @@ const initialCatalog: ApplicationCatalog = {
       registry: '',
       license: '',
       url: '',
+      memory: 1000,
     },
     {
       id: 'model2',
@@ -51,6 +52,7 @@ const initialCatalog: ApplicationCatalog = {
       registry: '',
       license: '',
       url: '',
+      memory: 1000,
     },
   ],
   recipes: [],

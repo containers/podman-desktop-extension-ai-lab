@@ -87,6 +87,7 @@ const initialCatalog: ApplicationCatalog = {
       registry: 'Hugging Face',
       license: '?',
       url: 'https://model1.example.com',
+      memory: 1000,
     },
     {
       id: 'model2',
@@ -96,6 +97,7 @@ const initialCatalog: ApplicationCatalog = {
       registry: 'Civital',
       license: '?',
       url: '',
+      memory: 1000,
     },
   ],
   recipes: [

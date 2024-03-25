@@ -12,7 +12,7 @@ AI Studio provides a curated list of open source AI models and LLMs. Once downlo
 
 ## Model serving
 
-Once a model has been downloaded, users can start an inference server for the model. This allow to test the model using a playground environment or to connect applications as the inference server is exposing a well know chat API.
+Once a model has been downloaded, you can start an inference server for the model. This allows to test the model using a playground environment or to connect applications as the inference server is exposing a well know chat API.
 
 ## Playgrounds
 

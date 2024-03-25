@@ -63,6 +63,7 @@ test('Expect folder and delete button in document', async () => {
       size: 1000,
       path: 'path',
     },
+    memory: 1000,
   };
   render(ModelColumnActions, { object });
 
@@ -89,6 +90,7 @@ test('Expect download button in document', async () => {
     registry: '',
     url: '',
     file: undefined,
+    memory: 1000,
   };
   render(ModelColumnActions, { object });
 
@@ -115,6 +117,7 @@ test('Expect downloadModel to be call on click', async () => {
     registry: '',
     url: '',
     file: undefined,
+    memory: 1000,
   };
   render(ModelColumnActions, { object });
 
@@ -145,6 +148,7 @@ test('Expect router to be called when rocket icon clicked', async () => {
       size: 1000,
       path: 'path',
     },
+    memory: 1000,
   };
   render(ModelColumnActions, { object });
 

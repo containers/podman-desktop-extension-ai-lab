@@ -272,6 +272,7 @@ describe('pullApplication', () => {
       name: 'Model 1',
       registry: '',
       url: '',
+      memory: 1000,
     };
     mocks.inspectContainerMock.mockResolvedValue({
       State: {
@@ -335,6 +336,7 @@ describe('pullApplication', () => {
       name: 'Model 1',
       registry: '',
       url: '',
+      memory: 1000,
     };
     await manager.pullApplication(recipe, model);
     expect(mocks.performDownloadMock).not.toHaveBeenCalled();
@@ -362,6 +364,7 @@ describe('pullApplication', () => {
       name: 'Model 1',
       registry: '',
       url: '',
+      memory: 1000,
     };
 
     mocks.parseYamlFileMock.mockReturnValue({

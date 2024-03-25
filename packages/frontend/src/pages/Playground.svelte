@@ -10,7 +10,7 @@ import { afterUpdate } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 import RangeInput from '../lib/RangeInput.svelte';
 
-import { default as ChatMessageComponent } from '../lib/conversation/ChatMessage.svelte';
+import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 
 export let playgroundId: string;
 let prompt: string;
@@ -85,7 +85,7 @@ async function scrollToBottom(element: Element) {
                     <ul>
                       {#each conversation?.messages as message}
                         <li>
-                          <ChatMessageComponent message="{message}" />
+                          <ChatMessage message="{message}" />
                         </li>
                       {/each}
                     </ul>

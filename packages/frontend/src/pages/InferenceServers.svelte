@@ -27,11 +27,13 @@ $: data = $inferenceServers;
 let selectedItemsNumber: number;
 
 const deleteSelected = () => {
-  studioClient.requestDeleteInferenceServer(
-    ...data.filter(service => service.selected).map((service) => service.container.containerId)
-  ).catch((err: unknown) => {
-    console.error('Something went wrong while trying to delete inference server', err);
-  });
+  studioClient
+    .requestDeleteInferenceServer(
+      ...data.filter(service => service.selected).map(service => service.container.containerId),
+    )
+    .catch((err: unknown) => {
+      console.error('Something went wrong while trying to delete inference server', err);
+    });
 };
 
 function createNewService() {

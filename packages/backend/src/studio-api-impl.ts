@@ -113,11 +113,10 @@ export class StudioApiImpl implements StudioAPI {
 
   async requestDeleteInferenceServer(...containerIds: string[]): Promise<void> {
     // Do not wait on the promise as the api would probably timeout before the user answer.
-    if(containerIds.length === 0)
-      throw new Error('At least one container id should be provided.');
+    if (containerIds.length === 0) throw new Error('At least one container id should be provided.');
 
     let dialogMessage: string;
-    if(containerIds.length === 1) {
+    if (containerIds.length === 1) {
       dialogMessage = `Are you sure you want to delete this service ?`;
     } else {
       dialogMessage = `Are you sure you want to delete those ${containerIds.length} services ?`;
@@ -126,12 +125,13 @@ export class StudioApiImpl implements StudioAPI {
     podmanDesktopApi.window
       .showWarningMessage(dialogMessage, 'Confirm', 'Cancel')
       .then((result: string) => {
-        if (result !== 'Confirm')
-          return;
+        if (result !== 'Confirm') return;
 
-        Promise.all(containerIds.map(containerId => this.inferenceManager.deleteInferenceServer(containerId))).catch((err: unknown) => {
-          console.error('Something went wrong while trying to delete the inference server', err);
-        });
+        Promise.all(containerIds.map(containerId => this.inferenceManager.deleteInferenceServer(containerId))).catch(
+          (err: unknown) => {
+            console.error('Something went wrong while trying to delete the inference server', err);
+          },
+        );
       })
       .catch((err: unknown) => {
         console.error(`Something went wrong with confirmation modals`, err);

@@ -91,7 +91,7 @@ export class StudioApiImpl implements StudioAPI {
     return this.playgroundV2.submit(containerId, userInput, options);
   }
 
-  async setPlaygroundSystemPrompt(conversationId: string, content: string): Promise<void> {
+  async setPlaygroundSystemPrompt(conversationId: string, content: string | undefined): Promise<void> {
     this.playgroundV2.setSystemPrompt(conversationId, content);
   }
 

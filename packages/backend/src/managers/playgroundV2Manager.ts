@@ -156,7 +156,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
    * @param conversationId the conversation id to set the system id
    * @param content the new system prompt to use
    */
-  setSystemPrompt(conversationId: string, content: string): void {
+  setSystemPrompt(conversationId: string, content: string | undefined): void {
     const conversation = this.#conversationRegistry.get(conversationId);
     if (conversation === undefined) throw new Error(`Conversation with id ${conversationId} does not exists.`);
 
@@ -169,9 +169,13 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
       } as SystemPrompt);
       this.notify();
     } else if (conversation.messages.length === 1 && isSystemPrompt(conversation.messages[0])) {
-      this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
-        content,
-      });
+      if(content !== undefined && content.length > 0) {
+        this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
+          content,
+        });
+      } else {
+        this.#conversationRegistry.removeMessage(conversationId, conversation.messages[0].id);
+      }
     } else {
       throw new Error('Cannot change system prompt on started conversation.');
     }

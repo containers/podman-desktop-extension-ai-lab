@@ -126,7 +126,7 @@ export abstract class StudioAPI {
    * @param conversationId the conversation id to set the system id
    * @param content the new system prompt to use
    */
-  abstract setPlaygroundSystemPrompt(conversationId: string, content: string): Promise<void>;
+  abstract setPlaygroundSystemPrompt(conversationId: string, content: string | undefined): Promise<void>;
 
   /**
    * Return the conversations

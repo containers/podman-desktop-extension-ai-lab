@@ -135,6 +135,36 @@ test('clear button should reset editing state', async () => {
   await vi.waitFor(() => {
     expect(textbox).toHaveClass('hidden');
   });
+  expect(studioClient.setPlaygroundSystemPrompt).not.toHaveBeenCalled();
+});
+
+test('clear button should set system prompt undefined if already exist', async () => {
+  render(SystemPromptBanner, {
+    conversation: {
+      id: 'dummyId',
+      messages: [{
+        id: 'random',
+        content: 'existing',
+        role: 'system',
+        timestamp: 0,
+      }],
+    },
+  });
+  const editBtn = screen.getByTitle('Edit system prompt');
+  await fireEvent.click(editBtn);
+
+  const textbox = screen.getByRole('textbox');
+  await vi.waitFor(() => {
+    expect(textbox).not.toHaveClass('hidden');
+  });
+
+  const clearBtn = screen.getByTitle('Clear');
+  await fireEvent.click(clearBtn);
+
+  await vi.waitFor(() => {
+    expect(textbox).toHaveClass('hidden');
+  });
+  expect(studioClient.setPlaygroundSystemPrompt).toHaveBeenCalledWith('dummyId', undefined);
 });
 
 test('error message should be cleared if input change', async () => {

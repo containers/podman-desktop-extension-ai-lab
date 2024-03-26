@@ -1,7 +1,7 @@
 {
   "name": "frontend-app",
   "displayName": "UI for AI Studio",
-  "version": "0.3.0-next",
+  "version": "0.4.0-next",
   "type": "module",
   "scripts": {
     "preview": "vite preview",

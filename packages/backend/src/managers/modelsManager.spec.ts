@@ -380,9 +380,17 @@ test('deleteLocalModel deletes the model folder', async () => {
   await manager.deleteLocalModel('model-id-1');
   // check that the model's folder is removed from disk
   if (process.platform === 'win32') {
-    expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', { recursive: true });
+    expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', {
+      recursive: true,
+      force: true,
+      maxRetries: 3,
+    });
   } else {
-    expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', { recursive: true });
+    expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', {
+      recursive: true,
+      force: true,
+      maxRetries: 3,
+    });
   }
   expect(postMessageMock).toHaveBeenCalledTimes(3);
   // check that a new state is sent with the model removed
@@ -430,9 +438,17 @@ test('deleteLocalModel fails to delete the model folder', async () => {
   await manager.deleteLocalModel('model-id-1');
   // check that the model's folder is removed from disk
   if (process.platform === 'win32') {
-    expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', { recursive: true });
+    expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', {
+      recursive: true,
+      force: true,
+      maxRetries: 3,
+    });
   } else {
-    expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', { recursive: true });
+    expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', {
+      recursive: true,
+      force: true,
+      maxRetries: 3,
+    });
   }
   expect(postMessageMock).toHaveBeenCalledTimes(3);
   // check that a new state is sent with the model non removed

@@ -159,7 +159,7 @@ export class ModelsManager implements Disposable {
       model.state = 'deleting';
       await this.sendModelsInfo();
       try {
-        await fs.promises.rm(modelDir, { recursive: true });
+        await fs.promises.rm(modelDir, { recursive: true, force: true, maxRetries: 3 });
         this.telemetry.logUsage('model.delete', { 'model.id': modelId });
         model.file = model.state = undefined;
       } catch (err: unknown) {

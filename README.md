@@ -36,7 +36,7 @@ The integrated Playground environments allow for experimenting with available mo
 
 ### AI applications
 
-Once an AI model is available through a well know endpoint, it's easy to imaging a new world of applications that will connect and use the AI model. AI Studio support AI applications as a set of containers that are connected together. 
+Once an AI model is available through a well known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. AI Studio support AI applications as a set of containers that are connected together. 
 
 AI Studio ships with a so-called Recipes Catalog that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
 
@@ -74,6 +74,28 @@ The name of the image to use is `ghcr.io/projectatomic/ai-studio`.  You can get 
 To install a development version, use the `:nightly` tag as shown in the recording below.
 
 ![](https://github.com/containers/podman-desktop-media/raw/ai-lab/gifs/installation.gif)
+
+## Usage
+
+1. **Download a model**
+
+Let's select a model from the catalog and download it locally to our workstation.
+
+[![](/docs/img/download-model.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/download-model.mp4)
+
+2. **Start an inference server**
+
+Once a model is available locally, let's start an inference server
+
+[![](/docs/img/start-inference-server.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-inference-server.mp4)
+
+3. **Start a playground to have a chat conversation with model**
+
+[![](/docs/img/playground.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/playground.mp4)
+
+4. **Start a AI application and use it from the browser**
+
+[![](/docs/img/start-ai-app.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-ai-app.mp4)
 
 ## Contributing
 

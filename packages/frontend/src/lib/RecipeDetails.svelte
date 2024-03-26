@@ -18,6 +18,7 @@ import { tasks } from '/@/stores/tasks';
 import { filterByLabel } from '/@/utils/taskUtils';
 import PodIcon from '/@/lib/images/PodIcon.svelte';
 import StatusIcon from '/@/lib/StatusIcon.svelte';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export let recipeId: string;
 export let modelId: string;
@@ -54,6 +55,10 @@ const navigateToPod = () => {
     studioClient.navigateToPod(appState.pod.Id);
   }
 };
+
+function findModel(id: string | undefined): ModelInfo | undefined {
+  return $catalog.models.find(m => m.id === id);
+}
 
 function startApplication() {
   studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {
@@ -134,9 +139,9 @@ function startApplication() {
             href="{`/recipe/${recipeId}/models`}">swap for a different compatible model</a
           >.
         {:else}
-          * The default model for this recipe is {recipe?.models?.[0]}. You can
+          * The default model for this recipe is {findModel(recipe?.models?.[0])?.name}. You can
           <a class="underline" href="{`/recipe/${recipeId}/models`}"
-            >swap for {recipe?.models?.[0]} or a different compatible model</a
+            >swap for {findModel(recipe?.models?.[0])?.name} or a different compatible model</a
           >.
         {/if}
       </div>

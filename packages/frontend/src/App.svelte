@@ -32,31 +32,31 @@ onMount(() => {
 });
 </script>
 
-<Route path="/*" breadcrumb="Home" isAppMounted="{isMounted}" let:meta>
+<Route path="/*" isAppMounted="{isMounted}" let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-charcoal-700">
     <div class="flex flex-row w-full h-full overflow-hidden">
       <Navigation meta="{meta}" />
 
       <!-- Dashboard -->
-      <Route path="/" breadcrumb="IA Studio Dashboard Page">
+      <Route path="/">
         <Dashboard />
       </Route>
 
       <!-- Recipes Catalog -->
-      <Route path="/recipes" breadcrumb="Recipes Catalog">
+      <Route path="/recipes">
         <Recipes />
       </Route>
 
       <!-- Applications -->
-      <Route path="/applications" breadcrumb="AI Apps">
+      <Route path="/applications">
         <Applications />
       </Route>
 
       <!-- Playgrounds -->
-      <Route path="/playgrounds" breadcrumb="Playgrounds environments">
+      <Route path="/playgrounds">
         <Playgrounds />
       </Route>
-      <Route path="/playground/:id/*" breadcrumb="Playground environment" let:meta>
+      <Route path="/playground/:id/*" let:meta>
         {#if meta.params.id === 'create'}
           <PlaygroundCreate />
         {:else}
@@ -65,27 +65,27 @@ onMount(() => {
       </Route>
 
       <!-- Preferences -->
-      <Route path="/preferences" breadcrumb="Preferences">
+      <Route path="/preferences">
         <Preferences />
       </Route>
 
-      <Route path="/recipe/:id/*" breadcrumb="Recipe Details" let:meta>
+      <Route path="/recipe/:id/*" let:meta>
         <Recipe recipeId="{meta.params.id}" />
       </Route>
 
-      <Route path="/models/*" breadcrumb="Models">
+      <Route path="/models/*">
         <Models />
       </Route>
 
-      <Route path="/model/:id/*" breadcrumb="Model Details" let:meta>
+      <Route path="/model/:id/*" let:meta>
         <Model modelId="{meta.params.id}" />
       </Route>
 
-      <Route path="/services/*" breadcrumb="Services">
+      <Route path="/services/*">
         <Services />
       </Route>
 
-      <Route path="/service/:id/*" breadcrumb="Service Details" let:meta>
+      <Route path="/service/:id/*" let:meta>
         {#if meta.params.id === 'create'}
           <CreateService />
         {:else}

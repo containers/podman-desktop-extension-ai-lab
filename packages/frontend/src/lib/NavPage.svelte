@@ -2,6 +2,7 @@
 import Fa from 'svelte-fa';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import LinearProgress from '/@/lib/progress/LinearProgress.svelte';
+import type { TinroBreadcrumb } from 'tinro';
 
 export let title: string;
 export let searchTerm = '';
@@ -9,12 +10,22 @@ export let searchEnabled = true;
 export let loading = false;
 export let icon: IconDefinition | undefined = undefined;
 export let contentBackground = '';
+export let lastPage: TinroBreadcrumb | undefined = undefined;
 </script>
 
 <div class="flex flex-col w-full h-full shadow-pageheader bg-charcoal-600">
   <div class="flex flex-col w-full h-full pt-4" role="region" aria-label="{title}">
     <div class="flex pb-2 px-5" role="region" aria-label="header">
       <div class="flex flex-col w-full">
+        {#if lastPage !== undefined}
+          <div class="flex flew-row items-center text-sm text-gray-700 pb-1">
+            <a
+              class="text-purple-400 hover:bg-white hover:bg-opacity-10 transition-all rounded-[4px] p-0.5 no-underline cursor-pointer"
+              href="{lastPage.path}">{lastPage.name}</a>
+            <div class="mx-2">&gt;</div>
+            <div class="grow font-extralight" aria-label="name">{title}</div>
+          </div>
+        {/if}
         <div class="flex flex-row w-full">
           {#if icon}
             <div class="bg-charcoal-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">

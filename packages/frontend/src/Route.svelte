@@ -7,7 +7,6 @@ export let path = '/*';
 export let fallback = false;
 export let redirect = false;
 export let firstmatch = false;
-export let breadcrumb: string | undefined = undefined;
 
 export let isAppMounted: boolean = false;
 
@@ -37,7 +36,6 @@ $: route.update({
   path,
   redirect,
   firstmatch,
-  breadcrumb,
 });
 </script>
 

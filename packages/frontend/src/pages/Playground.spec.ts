@@ -84,9 +84,9 @@ test('should display playground and model names in header', async () => {
   await waitFor(() => {
     const header = screen.getByRole('region', { name: 'header' });
     expect(header).toBeInTheDocument();
-    const title = within(header).getByText('Playground 1');
+    const title = within(header).getAllByText('Playground 1')[0];
     expect(title).toBeInTheDocument();
-    const subtitle = within(header).getByText('Model 1');
+    const subtitle = within(header).getAllByText('Model 1')[0];
     expect(subtitle).toBeInTheDocument();
   });
 });

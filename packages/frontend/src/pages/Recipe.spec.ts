@@ -183,8 +183,8 @@ test('should display recipe information', async () => {
     recipeId: 'recipe 1',
   });
 
-  screen.getByText('Recipe 1');
-  screen.getByText('readme 1');
+  expect(screen.queryAllByText('Recipe 1').length).greaterThan(0);
+  expect(screen.queryAllByText('readme 1').length).greaterThan(0);
 });
 
 test('should display updated recipe information', async () => {
@@ -196,12 +196,12 @@ test('should display updated recipe information', async () => {
     recipeId: 'recipe 1',
   });
 
-  screen.getByText('Recipe 1');
-  screen.getByText('readme 1');
+  expect(screen.queryAllByText('Recipe 1').length).greaterThan(0);
+  expect(screen.queryAllByText('readme 1').length).greaterThan(0);
 
   customCatalog.set(updatedCatalog);
   await new Promise(resolve => setTimeout(resolve, 10));
-  screen.getByText('New Recipe Name');
+  expect(screen.queryAllByText('New Recipe Name').length).greaterThan(0);
 });
 
 test('should send telemetry data', async () => {

@@ -32,6 +32,7 @@ function setSelectedModel(modelId: string) {
 </script>
 
 <NavPage
+  lastPage="{{ name: 'Recipes', path: '/recipes' }}"
   title="{recipe?.name || ''}"
   icon="{getIcon(recipe?.icon)}"
   searchEnabled="{false}"
@@ -43,10 +44,10 @@ function setSelectedModel(modelId: string) {
   <svelte:fragment slot="content">
     <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">
       <svelte:fragment slot="content">
-        <Route path="/" breadcrumb="Summary">
+        <Route path="/">
           <MarkdownRenderer source="{recipe?.readme}" />
         </Route>
-        <Route path="/models" breadcrumb="History">
+        <Route path="/models">
           <RecipeModels
             modelsIds="{recipe?.models}"
             selectedModelId="{selectedModelId}"

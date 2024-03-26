@@ -111,7 +111,7 @@ onMount(() => {
             {/if}
 
             <!-- All models -->
-            <Route path="/" breadcrumb="All">
+            <Route path="/">
               {#if filteredModels.length > 0}
                 <Table kind="model" data="{filteredModels}" columns="{columns}" row="{row}"></Table>
               {:else}
@@ -120,7 +120,7 @@ onMount(() => {
             </Route>
 
             <!-- Downloaded models -->
-            <Route path="/downloaded" breadcrumb="Downloaded">
+            <Route path="/downloaded">
               {#if localModels.length > 0}
                 <Table kind="model" data="{localModels}" columns="{columns}" row="{row}"></Table>
               {:else}
@@ -129,7 +129,7 @@ onMount(() => {
             </Route>
 
             <!-- Available models (from catalogs)-->
-            <Route path="/available" breadcrumb="Available">
+            <Route path="/available">
               {#if remoteModels.length > 0}
                 <Table kind="model" data="{remoteModels}" columns="{columns}" row="{row}"></Table>
               {:else}

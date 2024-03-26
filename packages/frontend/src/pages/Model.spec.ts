@@ -52,6 +52,6 @@ test('should display model information', async () => {
   });
   await new Promise(resolve => setTimeout(resolve, 200));
 
-  screen.getByText(model!.name);
+  expect(screen.getAllByText(model!.name).length).toBeGreaterThan(0);
   screen.getByText(model!.description);
 });

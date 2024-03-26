@@ -49,6 +49,7 @@ vi.mock('../utils/client', async () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.inferenceServersSubscribeMock.mockReturnValue([]);
+  vi.mocked(studioClient.requestDeleteInferenceServer).mockResolvedValue(undefined);
 });
 
 test('no inference servers should display a status message', async () => {

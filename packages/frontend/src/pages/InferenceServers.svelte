@@ -27,10 +27,8 @@ $: data = $inferenceServers;
 let selectedItemsNumber: number;
 
 const deleteSelected = () => {
-  Promise.all(
-    data
-      .filter(service => service.selected)
-      .map(service => studioClient.requestDeleteInferenceServer(service.container.containerId)),
+  studioClient.requestDeleteInferenceServer(
+    ...data.filter(service => service.selected).map((service) => service.container.containerId)
   ).catch((err: unknown) => {
     console.error('Something went wrong while trying to delete inference server', err);
   });

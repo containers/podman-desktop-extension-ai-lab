@@ -118,12 +118,15 @@ export abstract class StudioAPI {
    * @param userInput the user input, e.g. 'What is the capital of France ?'
    * @param options the options for the model, e.g. temperature
    */
-  abstract submitPlaygroundMessage(
-    containerId: string,
-    userInput: string,
-    systemPrompt: string,
-    options?: ModelOptions,
-  ): Promise<void>;
+  abstract submitPlaygroundMessage(containerId: string, userInput: string, options?: ModelOptions): Promise<void>;
+
+  /**
+   * Given a conversation, update the system prompt.
+   * If none exists, it will create one, otherwise it will replace the content with the new one
+   * @param conversationId the conversation id to set the system id
+   * @param content the new system prompt to use
+   */
+  abstract setPlaygroundSystemPrompt(conversationId: string, content: string | undefined): Promise<void>;
 
   /**
    * Return the conversations

@@ -9,8 +9,10 @@ import Button from '../lib/button/Button.svelte';
 import { afterUpdate } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 import RangeInput from '../lib/RangeInput.svelte';
+import Fa from 'svelte-fa';
 
 import ChatMessage from '../lib/conversation/ChatMessage.svelte';
+import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 
 export let playgroundId: string;
 let prompt: string;
@@ -20,12 +22,12 @@ let lastIsUserMessage = false;
 let errorMsg = '';
 
 // settings
-let systemPrompt: string = '';
 let temperature = 0.8;
 let max_tokens = -1;
 let top_p = 0.5;
 
 $: conversation = $conversations.find(conversation => conversation.id === playgroundId);
+$: messages = conversation?.messages.filter(message => !isSystemPrompt(message)) ?? [];
 $: playground = $playgrounds.find(playground => playground.id === playgroundId);
 $: model = $catalog.models.find(model => model.id === playground?.modelId);
 $: {
@@ -44,7 +46,7 @@ function askPlayground() {
   errorMsg = '';
   sendEnabled = false;
   studioClient
-    .submitPlaygroundMessage(playgroundId, prompt, systemPrompt, {
+    .submitPlaygroundMessage(playgroundId, prompt, {
       temperature,
       max_tokens,
       top_p,
@@ -85,9 +87,14 @@ async function scrollToBottom(element: Element) {
             <svelte:fragment slot="content">
               <div class="flex flex-col w-full h-full">
                 <div aria-label="conversation" class="w-full h-full">
-                  {#if conversation?.messages}
+                  {#if conversation}
+                    <!-- Show a banner for the system prompt -->
+                    {#key conversation.messages.length}
+                      <SystemPromptBanner conversation="{conversation}" />
+                    {/key}
+                    <!-- show all message except the sytem prompt -->
                     <ul>
-                      {#each conversation?.messages as message}
+                      {#each messages as message}
                         <li>
                           <ChatMessage message="{message}" />
                         </li>

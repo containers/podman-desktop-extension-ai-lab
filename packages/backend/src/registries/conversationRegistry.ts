@@ -46,6 +46,22 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
   }
 
   /**
+   * Remove a message from a conversation
+   * @param conversationId
+   * @param messageId
+   */
+  removeMessage(conversationId: string, messageId: string) {
+    const conversation = this.#conversations.get(conversationId);
+
+    if (conversation === undefined) {
+      throw new Error(`conversation with id ${conversationId} does not exist.`);
+    }
+
+    conversation.messages = conversation.messages.filter(message => message.id !== messageId);
+    this.notify();
+  }
+
+  /**
    * Utility method to update a message content in a given conversation
    * @param conversationId
    * @param messageId

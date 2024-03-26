@@ -18,12 +18,13 @@ $: categories = $catalog.categories;
           displayDescription="{false}" />
 
         {#each categories as category}
-          <!-- Natural Language processing -->
-          <RecipesCard
-            category="{category}"
-            primaryBackground=""
-            secondaryBackground="bg-charcoal-700"
-            displayCategory="{false}" />
+          {#if $catalog.recipes.some(r => r.categories.includes(category.id))}
+            <RecipesCard
+              category="{category}"
+              primaryBackground=""
+              secondaryBackground="bg-charcoal-700"
+              displayCategory="{false}" />
+          {/if}
         {/each}
       </div>
     </div>

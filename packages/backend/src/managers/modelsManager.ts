@@ -103,6 +103,12 @@ export class ModelsManager implements Disposable {
       const modelFile = modelEntries[0];
       const fullPath = path.resolve(d.path, d.name, modelFile);
 
+      // Check for corresponding models or tmp file that should be ignored
+      const model = this.#models.get(d.name);
+      if (model === undefined || fullPath.endsWith('.tmp')) {
+        continue;
+      }
+
       let info: { size?: number; mtime?: Date } = { size: undefined, mtime: undefined };
       try {
         info = fs.statSync(fullPath);
@@ -110,21 +116,12 @@ export class ModelsManager implements Disposable {
         console.error('Something went wrong while getting file stats (probably in use).', err);
       }
 
-      const model = this.#models.get(d.name);
-      if (model) {
-        // if the model file ends with .tmp and it is not in downloaders list,
-        // we skip it as it was not probably downloaded completed in a previous session
-        if (fullPath.endsWith('.tmp') && !this.#downloaders.has(model.id)) {
-          continue;
-        }
-
-        model.file = {
-          file: modelFile,
-          path: path.resolve(d.path, d.name),
-          size: info.size,
-          creation: info.mtime,
-        };
-      }
+      model.file = {
+        file: modelFile,
+        path: path.resolve(d.path, d.name),
+        size: info.size,
+        creation: info.mtime,
+      };
     }
   }
 
@@ -264,6 +261,12 @@ export class ModelsManager implements Disposable {
           // telemetry usage
           this.telemetry.logUsage(eventName, { 'model.id': event.id, durationSeconds: event.duration });
         }
+
+        // refresh model lists on event completion
+        this.getLocalModelsFromDisk();
+        this.sendModelsInfo().catch((err: unknown) => {
+          console.error('Something went wrong while sending models info.', err);
+        });
       }
       this.taskRegistry.updateTask(task); // update task
     });

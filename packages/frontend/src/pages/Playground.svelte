@@ -72,7 +72,11 @@ async function scrollToBottom(element: Element) {
 </script>
 
 {#if playground}
-  <NavPage lastPage="{{name: 'Playgrounds', path: '/playgrounds'}}" title="{playground?.name}" searchEnabled="{false}" contentBackground="bg-charcoal-500">
+  <NavPage
+    lastPage="{{ name: 'Playgrounds', path: '/playgrounds' }}"
+    title="{playground?.name}"
+    searchEnabled="{false}"
+    contentBackground="bg-charcoal-500">
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full">

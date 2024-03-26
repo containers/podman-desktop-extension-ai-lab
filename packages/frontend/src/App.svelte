@@ -53,7 +53,7 @@ onMount(() => {
       </Route>
 
       <!-- Playgrounds -->
-      <Route path="/playgrounds" >
+      <Route path="/playgrounds">
         <Playgrounds />
       </Route>
       <Route path="/playground/:id/*" let:meta>

@@ -72,7 +72,7 @@ onMount(() => {
 });
 </script>
 
-<NavPage lastPage="{{name: 'Model Services', path: '/services'}}" title="Service Details" searchEnabled="{false}">
+<NavPage lastPage="{{ name: 'Model Services', path: '/services' }}" title="Service Details" searchEnabled="{false}">
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="min-w-full min-h-full flex-1">

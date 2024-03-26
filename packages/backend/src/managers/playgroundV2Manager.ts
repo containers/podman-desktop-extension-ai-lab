@@ -109,7 +109,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
 
     this.#conversationRegistry.createConversation(id);
 
-    if (systemPrompt) {
+    if (systemPrompt !== undefined && systemPrompt.length > 0) {
       this.#conversationRegistry.submit(id, {
         content: systemPrompt,
         role: 'system',

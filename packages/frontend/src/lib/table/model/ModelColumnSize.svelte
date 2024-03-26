@@ -4,7 +4,7 @@ import { filesize } from 'filesize';
 export let object: ModelInfo;
 </script>
 
-<div class="text-sm text-gray-700 flex-flex-row">
+<div class="text-xs text-gray-700 flex-flex-row">
   {#if object.file?.size}
     <div>disk: {filesize(object.file.size)}</div>
   {/if}

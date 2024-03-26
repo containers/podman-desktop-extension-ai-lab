@@ -127,6 +127,7 @@ test('should display one model', async () => {
     {
       id: 'dummy-id',
       name: 'dummy-name',
+      memory: 1024,
     },
   ]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
@@ -148,6 +149,7 @@ test('should display no model in downloaded tab', async () => {
     {
       id: 'dummy-id',
       name: 'dummy-name',
+      memory: 1024,
     },
   ]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
@@ -171,6 +173,7 @@ test('should display a model in downloaded tab', async () => {
         file: 'dummy',
         path: 'dummy',
       },
+      memory: 1024,
     },
   ]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
@@ -190,6 +193,7 @@ test('should display a model in available tab', async () => {
     {
       id: 'dummy-id',
       name: 'dummy-name',
+      memory: 1024,
     },
   ]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
@@ -213,6 +217,7 @@ test('should display no model in available tab', async () => {
         file: 'dummy',
         path: 'dummy',
       },
+      memory: 1024,
     },
   ]);
   mocks.tasksSubscribeMock.mockReturnValue([]);

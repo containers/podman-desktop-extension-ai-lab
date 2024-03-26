@@ -21,13 +21,11 @@ import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 
 const columns: Column<ModelInfo>[] = [
-  new Column<ModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
+  new Column<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
   new Column<ModelInfo>('Size', { width: '100px', renderer: ModelColumnSize }),
   new Column<ModelInfo>('Creation', { width: '80px', renderer: ModelColumnCreation }),
-  new Column<ModelInfo>('HW Compat', { width: '80px', renderer: ModelColumnHw }),
-  new Column<ModelInfo>('Registry', { width: '100px', renderer: ModelColumnRegistry }),
-  new Column<ModelInfo>('License', { width: '100px', renderer: ModelColumnLicense }),
+  new Column<ModelInfo>('', { width: '220px', align: 'right', renderer: ModelColumnHw }),
   new Column<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});

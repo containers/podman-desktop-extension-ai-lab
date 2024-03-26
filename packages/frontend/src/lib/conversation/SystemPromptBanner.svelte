@@ -1,25 +1,40 @@
 <script lang="ts">
-import { faCheck, faEdit, faTerminal } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faClose, faEdit, faTerminal } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
-import { type Conversation, isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
+import { type Conversation, isSystemPrompt, isUserChat } from '@shared/src/models/IPlaygroundMessage';
 import { onMount } from 'svelte';
 
 export let conversation: Conversation;
 
 let systemPrompt: string | undefined = undefined;
 let editing: boolean = false;
+let error: string | undefined;
+let disabled: boolean = conversation.messages.some(isUserChat);
 
 const onButtonClick = () => {
   if (editing) {
     if (systemPrompt !== undefined && systemPrompt.length > 1) {
-      studioClient.setPlaygroundSystemPrompt(conversation.id, systemPrompt);
+      error = undefined;
+      studioClient.setPlaygroundSystemPrompt(conversation.id, systemPrompt).catch((err: unknown) => {
+        error = `Something went wrong while setting the system prompt: ${String(err)}`;
+      });
     } else {
-      // show error
+      error = 'System prompt is too short.';
+      return; // keep the editing state
     }
   }
-
   editing = !editing;
+};
+
+const onClear = () => {
+  systemPrompt = undefined;
+  editing = false;
+  error = undefined;
+};
+
+const onChange = () => {
+  error = undefined;
 };
 
 onMount(() => {
@@ -31,21 +46,28 @@ onMount(() => {
   <div class="flex items-center gap-x-2">
     <Fa icon="{faTerminal}" />
     <span class="grow">Define a system prompt</span>
+    <button class:hidden="{!editing}" on:click="{onClear}" title="Clear">
+      <Fa icon="{faClose}" />
+    </button>
     <button
-      class:text-gray-800="{conversation.messages.length > 1}"
-      disabled="{conversation.messages.length > 1}"
+      class:text-gray-800="{disabled}"
+      disabled="{disabled}"
       on:click="{onButtonClick}"
-      title="Set system prompt">
+      title="Edit system prompt">
       <Fa icon="{editing ? faCheck : faEdit}" />
     </button>
   </div>
-  <textarea
-    class:hidden="{!editing}"
-    aria-label="system-prompt-textarea"
-    bind:value="{systemPrompt}"
-    class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700 resize-none mt-2"
-    rows="4"
-    placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
-  ></textarea>
+  <div class="text-sm">
+    <textarea
+      class:hidden="{!editing}"
+      on:input="{onChange}"
+      aria-label="system-prompt-textarea"
+      bind:value="{systemPrompt}"
+      class="w-full p-2 mt-2 outline-none bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700 resize-none"
+      rows="3"
+      placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
+    ></textarea>
+    <span role="alert" class="text-red-500 pt-1" class:hidden="{!error}">{error}</span>
+  </div>
   <span class="mt-2 text-gray-800" class:hidden="{editing || !systemPrompt}">{systemPrompt}</span>
 </div>

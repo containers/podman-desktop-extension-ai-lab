@@ -40,6 +40,7 @@ test('Expect green background when model has a file', async () => {
       size: 1000,
       path: 'path',
     },
+    memory: 1000,
   };
   render(ModelColumnIcon, { object });
 
@@ -60,6 +61,7 @@ test('Expect non green background when model has no file', async () => {
     name: '',
     registry: '',
     url: '',
+    memory: 1000,
   };
   render(ModelColumnIcon, { object });
 

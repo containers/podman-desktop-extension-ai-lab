@@ -9,7 +9,7 @@ export let modelId: string;
 $: model = $catalog.models.find(m => m.id === modelId);
 </script>
 
-<NavPage title="{model?.name || ''}" searchEnabled="{false}" loading="{model === undefined}">
+<NavPage lastPage="{{name: 'Models', path: '/models'}}" title="{model?.name || ''}" searchEnabled="{false}" loading="{model === undefined}">
   <svelte:fragment slot="content">
     <div class="flex flex-row w-full">
       <div class="flex-grow p-5">

@@ -108,7 +108,7 @@ onMount(async () => {
 });
 </script>
 
-<NavPage icon="{faPlus}" title="Creating Model service" searchEnabled="{false}" loading="{containerPort === undefined}">
+<NavPage lastPage="{{name: 'Model Services', path: '/services'}}" icon="{faPlus}" title="Creating Model service" searchEnabled="{false}" loading="{containerPort === undefined}">
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
       <!-- tasks tracked -->

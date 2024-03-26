@@ -100,7 +100,7 @@ onDestroy(() => {
 });
 </script>
 
-<NavPage icon="{faPlus}" title="New Playground environment" searchEnabled="{false}">
+<NavPage lastPage="{{name: 'Playgrounds', path: '/playgrounds'}}" icon="{faPlus}" title="New Playground environment" searchEnabled="{false}">
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
       <!-- tasks tracked -->

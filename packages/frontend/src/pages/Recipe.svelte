@@ -32,6 +32,7 @@ function setSelectedModel(modelId: string) {
 </script>
 
 <NavPage
+  lastPage="{{name: 'Recipes', path: '/recipes'}}"
   title="{recipe?.name || ''}"
   icon="{getIcon(recipe?.icon)}"
   searchEnabled="{false}"

@@ -4,8 +4,9 @@ import { filesize } from 'filesize';
 export let object: ModelInfo;
 </script>
 
-<div class="text-sm text-gray-700">
+<div class="text-xs text-gray-700 flex-flex-row">
   {#if object.file?.size}
-    {filesize(object.file.size)}
+    <div>disk: {filesize(object.file.size)}</div>
   {/if}
+  <div>mem: {filesize(object.memory, { base: 2 })}</div>
 </div>

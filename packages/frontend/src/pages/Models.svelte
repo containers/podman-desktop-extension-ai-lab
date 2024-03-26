@@ -23,7 +23,7 @@ import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
-  new Column<ModelInfo>('Size', { width: '80px', renderer: ModelColumnSize }),
+  new Column<ModelInfo>('Size', { width: '100px', renderer: ModelColumnSize }),
   new Column<ModelInfo>('Creation', { width: '80px', renderer: ModelColumnCreation }),
   new Column<ModelInfo>('HW Compat', { width: '80px', renderer: ModelColumnHw }),
   new Column<ModelInfo>('Registry', { width: '100px', renderer: ModelColumnRegistry }),

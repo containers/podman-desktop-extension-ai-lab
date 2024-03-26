@@ -33,7 +33,7 @@ const onClear = () => {
   error = undefined;
 
   // If pressed on clear - deleting the system prompt
-  if(conversation.messages.some(isSystemPrompt)) {
+  if (conversation.messages.some(isSystemPrompt)) {
     studioClient.setPlaygroundSystemPrompt(conversation.id, undefined).catch((err: unknown) => {
       error = `Something went wrong while setting the system prompt: ${String(err)}`;
     });

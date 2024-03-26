@@ -142,12 +142,14 @@ test('clear button should set system prompt undefined if already exist', async (
   render(SystemPromptBanner, {
     conversation: {
       id: 'dummyId',
-      messages: [{
-        id: 'random',
-        content: 'existing',
-        role: 'system',
-        timestamp: 0,
-      }],
+      messages: [
+        {
+          id: 'random',
+          content: 'existing',
+          role: 'system',
+          timestamp: 0,
+        },
+      ],
     },
   });
   const editBtn = screen.getByTitle('Edit system prompt');

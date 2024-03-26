@@ -57,7 +57,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
       throw new Error(`conversation with id ${conversationId} does not exist.`);
     }
 
-    conversation.messages = conversation.messages.filter((message) => message.id !== messageId);
+    conversation.messages = conversation.messages.filter(message => message.id !== messageId);
     this.notify();
   }
 

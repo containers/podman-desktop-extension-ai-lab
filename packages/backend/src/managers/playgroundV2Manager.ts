@@ -169,7 +169,7 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
       } as SystemPrompt);
       this.notify();
     } else if (conversation.messages.length === 1 && isSystemPrompt(conversation.messages[0])) {
-      if(content !== undefined && content.length > 0) {
+      if (content !== undefined && content.length > 0) {
         this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
           content,
         });

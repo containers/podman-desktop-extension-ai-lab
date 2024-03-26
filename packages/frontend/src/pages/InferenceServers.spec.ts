@@ -18,9 +18,10 @@
 
 import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
-import { screen, render } from '@testing-library/svelte';
+import { screen, render, fireEvent } from '@testing-library/svelte';
 import InferenceServers from '/@/pages/InferenceServers.svelte';
 import type { InferenceServer } from '@shared/src/models/IInference';
+import { router } from 'tinro';
 
 const mocks = vi.hoisted(() => ({
   inferenceServersSubscribeMock: vi.fn(),
@@ -72,4 +73,16 @@ test('store with inference server should display the table', async () => {
 
   const table = screen.getByRole('table');
   expect(table).toBeInTheDocument();
+});
+
+test('create service button should redirect to create page', async () => {
+  const gotoSpy = vi.spyOn(router, 'goto');
+  render(InferenceServers);
+  const createBtn = screen.getByTitle('Create a new model service');
+  expect(createBtn).toBeDefined();
+
+  await fireEvent.click(createBtn);
+  await vi.waitFor(() => {
+    expect(gotoSpy).toHaveBeenCalledWith('/service/create');
+  });
 });

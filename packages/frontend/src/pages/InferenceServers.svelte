@@ -8,6 +8,8 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import ServiceColumnModelName from '/@/lib/table/service/ServiceColumnModelName.svelte';
+import Button from '/@/lib/button/Button.svelte';
+import { router } from 'tinro';
 
 const columns: Column<InferenceServer>[] = [
   new Column<InferenceServer>('Status', { width: '50px', renderer: ServiceStatus, align: 'center' }),
@@ -19,9 +21,16 @@ const row = new Row<InferenceServer>({});
 
 let data: InferenceServer[];
 $: data = $inferenceServers;
+
+function createNewService() {
+  router.goto('/service/create');
+}
 </script>
 
 <NavPage title="Model Services" searchEnabled="{false}">
+  <svelte:fragment slot="additional-actions">
+    <Button title="Create a new model service" on:click="{() => createNewService()}">New Model Service</Button>
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="min-w-full min-h-full flex-1">

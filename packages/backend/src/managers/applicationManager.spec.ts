@@ -1083,6 +1083,24 @@ describe('pod detection', async () => {
     expect(sendApplicationStateSpy).not.toHaveBeenCalledOnce();
   });
 
+  test('onPodStart does no update the applications state with the started pod without specific labels', async () => {
+    mocks.listPodsMock.mockResolvedValue([]);
+    mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
+    mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
+      f({
+        engineId: 'engine-1',
+        engineName: 'Engine 1',
+        kind: 'podman',
+        Labels: {
+          label1: 'value1',
+        },
+      } as unknown as PodInfo);
+    });
+    const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
+    manager.adoptRunningApplications();
+    expect(sendApplicationStateSpy).not.toHaveBeenCalledOnce();
+  });
+
   test('onPodStop updates the applications state by removing the stopped pod', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();

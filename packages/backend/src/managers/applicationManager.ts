@@ -636,6 +636,9 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
     const modelId = pod.Labels[LABEL_MODEL_ID];
+    if (!recipeId || !modelId) {
+      return;
+    }
     const appPorts = this.getPortsFromLabel(pod.Labels, LABEL_APP_PORTS);
     const modelPorts = this.getPortsFromLabel(pod.Labels, LABEL_MODEL_PORTS);
     if (this.#applications.has({ recipeId, modelId })) {
@@ -657,6 +660,9 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     }
     const recipeId = pod.Labels[LABEL_RECIPE_ID];
     const modelId = pod.Labels[LABEL_MODEL_ID];
+    if (!recipeId || !modelId) {
+      return;
+    }
     if (!this.#applications.has({ recipeId, modelId })) {
       return;
     }
@@ -684,6 +690,9 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     }
     const recipeId = app.pod.Labels[LABEL_RECIPE_ID];
     const modelId = app.pod.Labels[LABEL_MODEL_ID];
+    if (!recipeId || !modelId) {
+      return;
+    }
     if (!this.#applications.has({ recipeId, modelId })) {
       return;
     }

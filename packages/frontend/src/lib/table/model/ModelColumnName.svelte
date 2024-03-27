@@ -8,8 +8,9 @@ function openDetails() {
 }
 </script>
 
-<button on:click="{() => openDetails()}">
-  <div class="text-sm text-gray-300 overflow-hidden text-ellipsis" title="{object.name}">
+<button class="flex flex-col w-full" title="{object.name}" on:click="{() => openDetails()}">
+  <div class="text-sm text-gray-300 overflow-hidden text-ellipsis w-full">
     {object.name}
   </div>
+  <span class="text-xs text-gray-700">{object.registry} - {object.license}</span>
 </button>

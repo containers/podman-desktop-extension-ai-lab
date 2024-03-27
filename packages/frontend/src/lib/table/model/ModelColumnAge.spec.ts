@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { test, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import ModelColumnCreation from './ModelColumnCreation.svelte';
+import ModelColumnCreation from './ModelColumnAge.svelte';
 
 test('Expect simple column styling', async () => {
   const d = new Date();

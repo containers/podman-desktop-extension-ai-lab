@@ -6,7 +6,6 @@ export let object: ModelInfo;
 
 <div class="text-xs text-gray-700 flex-flex-row">
   {#if object.file?.size}
-    <div>disk: {filesize(object.file.size)}</div>
+    <div>{filesize(object.file.size)}</div>
   {/if}
-  <div>mem: {filesize(object.memory, { base: 2 })}</div>
 </div>

@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { vi, test, expect } from 'vitest';
-import { screen, render, waitFor } from '@testing-library/svelte';
+import { screen, render, waitFor, within } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import { router } from 'tinro';
 
@@ -140,7 +140,7 @@ test('should display one model', async () => {
   const cells = screen.queryAllByRole('cell');
   expect(cells.length > 0).toBeTruthy();
 
-  const name = cells.find(cell => cell.firstElementChild?.textContent === 'dummy-name');
+  const name = within(cells[0]).findByText('dummy-name');
   expect(name).toBeDefined();
 });
 

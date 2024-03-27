@@ -2,9 +2,6 @@
 import Table from '/@/lib/table/Table.svelte';
 import { Column, Row } from '/@/lib/table/table';
 import ModelColumnName from '/@/lib/table/model/ModelColumnName.svelte';
-import ModelColumnRegistry from '/@/lib/table/model/ModelColumnRegistry.svelte';
-import ModelColumnLicense from '/@/lib/table/model/ModelColumnLicense.svelte';
-import ModelColumnHw from '/@/lib/table/model/ModelColumnHW.svelte';
 import { catalog } from '/@/stores/catalog';
 import ModelColumnRecipeSelection from '../lib/table/model/ModelColumnRecipeSelection.svelte';
 import ModelColumnRecipeRecommended from '../lib/table/model/ModelColumnRecipeRecommended.svelte';
@@ -28,9 +25,6 @@ const columns: Column<RecipeModelInfo>[] = [
   new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
   new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeRecommended }),
   new Column<RecipeModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
-  new Column<RecipeModelInfo>('HW Compat', { width: '1fr', renderer: ModelColumnHw }),
-  new Column<RecipeModelInfo>('Registry', { width: '1fr', renderer: ModelColumnRegistry }),
-  new Column<RecipeModelInfo>('License', { width: '1fr', renderer: ModelColumnLicense }),
 ];
 const row = new Row<RecipeModelInfo>({});
 

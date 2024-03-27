@@ -5,15 +5,13 @@ import Table from '../lib/table/Table.svelte';
 import { Column, Row } from '../lib/table/table';
 import { modelsInfo } from '../stores/modelsInfo';
 import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
-import ModelColumnRegistry from '../lib/table/model/ModelColumnRegistry.svelte';
-import ModelColumnLicense from '../lib/table/model/ModelColumnLicense.svelte';
-import ModelColumnHw from '../lib/table/model/ModelColumnHW.svelte';
+import ModelColumnLabels from '../lib/table/model/ModelColumnLabels.svelte';
 import type { Task } from '@shared/src/models/ITask';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Card from '/@/lib/Card.svelte';
 import { onMount } from 'svelte';
 import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
-import ModelColumnCreation from '../lib/table/model/ModelColumnCreation.svelte';
+import ModelColumnAge from '../lib/table/model/ModelColumnAge.svelte';
 import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
@@ -21,13 +19,11 @@ import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 
 const columns: Column<ModelInfo>[] = [
-  new Column<ModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
+  new Column<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
-  new Column<ModelInfo>('Size', { width: '100px', renderer: ModelColumnSize }),
-  new Column<ModelInfo>('Creation', { width: '80px', renderer: ModelColumnCreation }),
-  new Column<ModelInfo>('HW Compat', { width: '80px', renderer: ModelColumnHw }),
-  new Column<ModelInfo>('Registry', { width: '100px', renderer: ModelColumnRegistry }),
-  new Column<ModelInfo>('License', { width: '100px', renderer: ModelColumnLicense }),
+  new Column<ModelInfo>('Size', { width: '50px', renderer: ModelColumnSize }),
+  new Column<ModelInfo>('Age', { width: '50px', renderer: ModelColumnAge }),
+  new Column<ModelInfo>('', { width: '220px', align: 'right', renderer: ModelColumnLabels }),
   new Column<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});

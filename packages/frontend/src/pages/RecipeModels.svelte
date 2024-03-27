@@ -6,7 +6,6 @@ import { catalog } from '/@/stores/catalog';
 import ModelColumnRecipeSelection from '../lib/table/model/ModelColumnRecipeSelection.svelte';
 import ModelColumnRecipeRecommended from '../lib/table/model/ModelColumnRecipeRecommended.svelte';
 import type { RecipeModelInfo } from '../models/RecipeModelInfo';
-import ModelColumnLabels from '/@/lib/table/model/ModelColumnLabels.svelte';
 
 export let modelsIds: string[] | undefined;
 export let selectedModelId: string;

@@ -23,7 +23,6 @@ function createNewPlayground() {
 </script>
 
 <NavPage
-  lastPage="{{ name: 'Playgrounds', path: '/playgrounds' }}"
   title="Playgrounds environments"
   searchEnabled="{false}">
   <svelte:fragment slot="additional-actions">

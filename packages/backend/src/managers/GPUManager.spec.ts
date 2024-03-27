@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { expect, test, vi, beforeEach } from 'vitest';
 import {
-  containerEngine,
+  containerEngine, ContainerInspectInfo,
   type ContainerProviderConnection,
   env,
   type ImageInfo,
@@ -38,6 +38,7 @@ vi.mock('@podman-desktop/api', async () => {
       createContainer: vi.fn(),
       logsContainer: vi.fn(),
       deleteContainer: vi.fn(),
+      inspectContainer: vi.fn(),
     },
     env: {
       isWindows: false,
@@ -88,6 +89,15 @@ beforeEach(() => {
       },
     }),
   } as unknown as XMLParser);
+
+  vi.mocked(containerEngine.inspectContainer).mockImplementation( async(_engineId, _id) => {
+    return {
+      State: {
+        Running: false,
+        ExitCode: 0,
+      }
+    } as unknown as ContainerInspectInfo;
+  });
 });
 
 test('post constructor should have no items', () => {

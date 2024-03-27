@@ -64,6 +64,10 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
       this.getWindowsContainerCreateOptions(imageInfo),
     );
 
+    const exitCode = await this.waitForExit(imageInfo.engineId, result.id);
+    if(exitCode !== 0)
+      throw new Error(`nvidia CUDA Container exited with code ${exitCode}.`);
+
     try {
       const logs = await this.getLogs(imageInfo.engineId, result.id);
       const parsed: {
@@ -119,6 +123,28 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
         '/usr/bin/ln -s /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && nvidia-smi -x -q',
       ],
     };
+  }
+
+  private waitForExit(engineId: string, containerId: string): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      let retry = 0;
+      const interval = setInterval(() => {
+        if(retry === 3) {
+          reject('timeout: container never exited.');
+          return;
+        }
+
+        retry++;
+
+        containerEngine.inspectContainer(engineId, containerId).then((inspectInfo) => {
+          if(inspectInfo.State.Running)
+            return;
+
+          clearInterval(interval);
+          resolve(inspectInfo.State.ExitCode);
+        });
+      }, 2000)
+    });
   }
 
   private getLogs(engineId: string, containerId: string): Promise<string> {

@@ -521,7 +521,7 @@ describe('deleting models', () => {
       'ssh',
       'dummyMachine',
       'stat',
-      '/home/user/ai-studio/models/dummyFile',
+      '/home/user/ai-lab/models/dummyFile',
     ]);
     expect(coreProcess.exec).toHaveBeenNthCalledWith(2, 'dummyCli', [
       'machine',
@@ -529,7 +529,7 @@ describe('deleting models', () => {
       'dummyMachine',
       'rm',
       '-f',
-      '/home/user/ai-studio/models/dummyFile',
+      '/home/user/ai-lab/models/dummyFile',
     ]);
   });
 

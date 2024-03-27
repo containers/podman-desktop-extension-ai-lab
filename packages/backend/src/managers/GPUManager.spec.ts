@@ -83,6 +83,7 @@ beforeEach(() => {
         timestamp: 4,
         gpu: {
           uuid: 'dummyUUID',
+          product_name: 'dummyProductName',
         },
       },
     }),
@@ -103,13 +104,17 @@ test('non-windows host should throw error', async () => {
   }).rejects.toThrowError('Cannot collect GPUs information on this machine.');
 });
 
-test('windows host should start container', async () => {
+test('windows host should start then delete container with proper configuration', async () => {
   vi.mocked(env).isWindows = true;
 
   const manager = new GPUManager(webviewMock);
-  await manager.collectGPUs({
+  const gpus = await manager.collectGPUs({
     providerId: 'dummyProviderId',
   });
+
+  expect(gpus.length).toBe(1);
+  expect(gpus[0].uuid).toBe('dummyUUID');
+  expect(gpus[0].product_name).toBe('dummyProductName');
 
   expect(getProviderContainerConnection).toHaveBeenCalledWith('dummyProviderId');
 

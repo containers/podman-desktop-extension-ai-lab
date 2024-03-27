@@ -19,7 +19,7 @@
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { getFirstRunningMachineName, getPodmanCli } from './podman';
 import type { UploadWorker } from './uploader';
-import { getLocalModelFile, getRemoteModelFile, MACHINE_BASE_FOLDER } from './modelsUtils';
+import { getLocalModelFile, getRemoteModelFile, isModelUploaded, MACHINE_BASE_FOLDER } from './modelsUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export class WSLUploader implements UploadWorker {
@@ -35,19 +35,14 @@ export class WSLUploader implements UploadWorker {
       .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
       .replace(/\\/g, '/');
 
-    const remoteFile = getRemoteModelFile(modelInfo);
     const machineName = getFirstRunningMachineName();
 
     if (!machineName) {
       throw new Error('No podman machine is running');
     }
     // check if model already loaded on the podman machine
-    let existsRemote = true;
-    try {
-      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', machineName, 'stat', remoteFile]);
-    } catch (e) {
-      existsRemote = false;
-    }
+    const existsRemote = await isModelUploaded(machineName, modelInfo);
+    const remoteFile = getRemoteModelFile(modelInfo);
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {

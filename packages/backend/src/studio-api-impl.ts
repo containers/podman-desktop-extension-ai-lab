@@ -198,7 +198,7 @@ export class StudioApiImpl implements StudioAPI {
       )
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.modelsManager.deleteLocalModel(modelId).catch((err: unknown) => {
+          this.modelsManager.deleteModel(modelId).catch((err: unknown) => {
             console.error('Something went wrong while deleting the models', err);
             // Lets reloads the models (could fix the issue)
             this.modelsManager.loadLocalModels().catch((err: unknown) => {

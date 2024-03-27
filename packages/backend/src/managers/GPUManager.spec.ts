@@ -17,9 +17,11 @@
  ***********************************************************************/
 import { expect, test, vi, beforeEach } from 'vitest';
 import {
-  containerEngine, ContainerInspectInfo,
+  containerEngine,
+  env} from '@podman-desktop/api';
+import type {
+  ContainerInspectInfo,
   type ContainerProviderConnection,
-  env,
   type ImageInfo,
   type Webview,
 } from '@podman-desktop/api';
@@ -90,12 +92,12 @@ beforeEach(() => {
     }),
   } as unknown as XMLParser);
 
-  vi.mocked(containerEngine.inspectContainer).mockImplementation( async(_engineId, _id) => {
+  vi.mocked(containerEngine.inspectContainer).mockImplementation(async (_engineId, _id) => {
     return {
       State: {
         Running: false,
         ExitCode: 0,
-      }
+      },
     } as unknown as ContainerInspectInfo;
   });
 });

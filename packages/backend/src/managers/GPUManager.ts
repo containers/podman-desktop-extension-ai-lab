@@ -65,8 +65,7 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
     );
 
     const exitCode = await this.waitForExit(imageInfo.engineId, result.id);
-    if(exitCode !== 0)
-      throw new Error(`nvidia CUDA Container exited with code ${exitCode}.`);
+    if (exitCode !== 0) throw new Error(`nvidia CUDA Container exited with code ${exitCode}.`);
 
     try {
       const logs = await this.getLogs(imageInfo.engineId, result.id);
@@ -129,21 +128,20 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
     return new Promise<number>((resolve, reject) => {
       let retry = 0;
       const interval = setInterval(() => {
-        if(retry === 3) {
-          reject('timeout: container never exited.');
+        if (retry === 3) {
+          reject(new Error('timeout: container never exited.'));
           return;
         }
 
         retry++;
 
-        containerEngine.inspectContainer(engineId, containerId).then((inspectInfo) => {
-          if(inspectInfo.State.Running)
-            return;
+        containerEngine.inspectContainer(engineId, containerId).then(inspectInfo => {
+          if (inspectInfo.State.Running) return;
 
           clearInterval(interval);
           resolve(inspectInfo.State.ExitCode);
         });
-      }, 2000)
+      }, 2000);
     });
   }
 

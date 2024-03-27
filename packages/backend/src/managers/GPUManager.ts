@@ -140,7 +140,11 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
 
           clearInterval(interval);
           resolve(inspectInfo.State.ExitCode);
-        });
+        }).catch((err: unknown) => {
+          console.error('Something went wrong while trying to inspect container', err);
+          clearInterval(interval);
+          reject(new Error(`Failed to inspect container ${containerId}.`));
+        })
       }, 2000);
     });
   }

@@ -1309,10 +1309,10 @@ describe('getImageTag', () => {
         Id: 'pod1',
         engineId: 'engine1',
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
-          'ai-studio-app-ports': '5000,5001',
-          'ai-studio-model-ports': '8000,8001',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
+          'ai-lab-app-ports': '5000,5001',
+          'ai-lab-model-ports': '8000,8001',
         },
         Containers: [
           {

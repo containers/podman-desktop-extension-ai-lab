@@ -22,7 +22,7 @@ import type { IGPUInfo } from '@shared/src/models/IGPUInfo';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
 
-export const CUDA_11_7_IMAGES = 'nvcr.io/nvidia/cuda:11.7.0-base-ubuntu20.04';
+export const CUDA_UBI8_IMAGE = 'nvcr.io/nvidia/cuda:12.3.2-devel-ubi8';
 
 /**
  * @experimental
@@ -45,7 +45,7 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
 
   async collectGPUs(options?: { providerId: string }): Promise<void> {
     const provider = getProviderContainerConnection(options?.providerId);
-    const imageInfo: ImageInfo = await getImageInfo(provider.connection, CUDA_11_7_IMAGES, (_event: PullEvent) => {});
+    const imageInfo: ImageInfo = await getImageInfo(provider.connection, CUDA_UBI8_IMAGE, (_event: PullEvent) => {});
 
     console.log('getGPUs createContainer');
     const result = await containerEngine.createContainer(
@@ -72,7 +72,8 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
             CgroupPermissions: 'r',
           }],
         },
-        Cmd: ['bash', '-c', '/usr/bin/ln -s /usr/lib/wsl/lib/* /usr/lib/x86_64-linux-gnu/ && PATH="${PATH}:/usr/lib/wsl/lib/" && nvidia-smi -x -q'],
+        Entrypoint: '/usr/bin/sh',
+        Cmd: ['-c', '/usr/bin/ln -s /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && nvidia-smi -x -q'],
       },
     );
 

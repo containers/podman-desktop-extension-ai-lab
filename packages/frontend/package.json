@@ -3,6 +3,7 @@
   "displayName": "UI for AI Studio",
   "version": "0.4.0-next",
   "type": "module",
+  "license": "Apache-2.0",
   "scripts": {
     "preview": "vite preview",
     "build": "vite build",

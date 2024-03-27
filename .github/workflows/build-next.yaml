@@ -57,7 +57,7 @@ jobs:
       - name: Publish Image
         id: publish-image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/ai-studio
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-ai-lab
           IMAGE_NIGHTLY=${IMAGE_NAME}:nightly
           IMAGE_SHA=${IMAGE_NAME}:${GITHUB_SHA}
           podman build -t $IMAGE_NIGHTLY .

@@ -27,6 +27,7 @@ import {
   type PodInfo,
   type Webview,
   type HostConfig,
+  Disposable,
 } from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
@@ -46,6 +47,7 @@ import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import { Publisher } from '../utils/Publisher';
 import { isQEMUMachine } from '../utils/podman';
+import { SECOND } from '../utils/inferenceUtils';
 
 export const LABEL_MODEL_ID = 'ai-studio-model-id';
 export const LABEL_MODEL_PORTS = 'ai-studio-model-ports';
@@ -80,9 +82,10 @@ export interface ImageInfo {
   appName: string;
 }
 
-export class ApplicationManager extends Publisher<ApplicationState[]> {
+export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
   #applications: ApplicationRegistry<ApplicationState>;
   protectTasks: Set<string> = new Set();
+  #disposables: Disposable[];
 
   constructor(
     private appUserDirectory: string,
@@ -97,6 +100,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
   ) {
     super(webview, Messages.MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
+    this.#disposables = [];
   }
 
   async pullApplication(recipe: Recipe, model: ModelInfo) {
@@ -273,6 +277,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
       images.map(async image => {
         let hostConfig: HostConfig;
         let envs: string[] = [];
+        let healthcheck: unknown | undefined = undefined;
         // if it's a model service we mount the model as a volume
         if (image.modelService) {
           const modelName = path.basename(modelPath);
@@ -295,6 +300,15 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
             envs = [`MODEL_ENDPOINT=${endPoint}`];
           }
         }
+        if (image.ports.length > 0) {
+          healthcheck = {
+            // must be the port INSIDE the container not the exposed one
+            Test: ['CMD-SHELL', `curl -s localhost:${image.ports[0]} > /dev/null`],
+            Interval: SECOND * 5,
+            Retries: 4 * 5,
+            Timeout: SECOND * 2,
+          };
+        }
 
         const podifiedName = this.getRandomName(`${image.appName}-podified`);
         await containerEngine.createContainer(podInfo.engineId, {
@@ -305,6 +319,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
           Env: envs,
           start: false,
           pod: podInfo.Id,
+          HealthCheck: healthcheck,
         });
         containers.push({
           name: podifiedName,
@@ -628,6 +643,23 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
     this.podmanConnection.onPodRemove((podId: string) => {
       this.forgetPodById(podId);
     });
+
+    const ticker = () => {
+      this.checkPodsHealth()
+        .catch((err: unknown) => {
+          console.error('error getting pods statuses', err);
+        })
+        .finally(() => (timerId = setTimeout(ticker, 10000)));
+    };
+
+    // using a recursive setTimeout instead of setInterval as we don't know how long the operation takes
+    let timerId = setTimeout(ticker, 1000);
+
+    this.#disposables.push(
+      Disposable.create(() => {
+        clearTimeout(timerId);
+      }),
+    );
   }
 
   adoptPod(pod: PodInfo) {
@@ -647,6 +679,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
       pod,
       appPorts,
       modelPorts,
+      healthy: false,
     };
     this.updateApplicationState(recipeId, modelId, state);
   }
@@ -698,6 +731,39 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
       });
     } else {
       this.protectTasks.delete(podId);
+    }
+  }
+
+  async checkPodsHealth() {
+    const pods = await containerEngine
+      .listPods()
+      .then(pods => pods.filter(pod => LABEL_RECIPE_ID in pod.Labels && LABEL_MODEL_ID in pod.Labels));
+    let changes = false;
+    for (const pod of pods) {
+      const containerStates = await Promise.all(
+        pod.Containers.map(container =>
+          containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State),
+        ),
+      );
+      const healthyPod = !containerStates.find(
+        s => s.Status !== 'running' || (s.Health.Status !== '' && s.Health.Status !== 'healthy'),
+      );
+      const recipeId = pod.Labels[LABEL_RECIPE_ID];
+      const modelId = pod.Labels[LABEL_MODEL_ID];
+      if (!this.#applications.has({ recipeId, modelId })) {
+        // a fresh pod could not have been added yet, we will handle it at next iteration
+        continue;
+      }
+      const state = this.#applications.get({ recipeId, modelId });
+      if (state.healthy !== healthyPod) {
+        state.healthy = healthyPod;
+        state.pod = pod;
+        this.#applications.set({ recipeId, modelId }, state);
+        changes = true;
+      }
+    }
+    if (changes) {
+      this.notify();
     }
   }
 
@@ -810,5 +876,13 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
       result.push(port);
     }
     return result;
+  }
+
+  dispose(): void {
+    this.cleanDisposables();
+  }
+
+  private cleanDisposables(): void {
+    this.#disposables.forEach(disposable => disposable.dispose());
   }
 }

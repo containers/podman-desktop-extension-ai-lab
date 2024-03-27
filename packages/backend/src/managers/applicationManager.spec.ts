@@ -118,6 +118,9 @@ vi.mock('@podman-desktop/api', () => ({
     stopPod: mocks.stopPodMock,
     removePod: mocks.removePodMock,
   },
+  Disposable: {
+    create: vi.fn(),
+  },
 }));
 
 const telemetryLogger = {
@@ -934,6 +937,12 @@ describe('createAndAddContainersToPod', () => {
       start: false,
       name: 'name',
       pod: 'id',
+      HealthCheck: {
+        Interval: 5000000000,
+        Retries: 20,
+        Test: ['CMD-SHELL', 'curl -s localhost:8080 > /dev/null'],
+        Timeout: 2000000000,
+      },
     });
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(2, 'engine', {
       Image: 'id2',
@@ -951,6 +960,12 @@ describe('createAndAddContainersToPod', () => {
             Type: 'bind',
           },
         ],
+      },
+      HealthCheck: {
+        Interval: 5000000000,
+        Retries: 20,
+        Test: ['CMD-SHELL', 'curl -s localhost:8085 > /dev/null'],
+        Timeout: 2000000000,
       },
     });
   });
@@ -1023,6 +1038,7 @@ describe('pod detection', async () => {
       modelId: 'model-id-1',
       appPorts: [5000, 5001],
       modelPorts: [8000, 8001],
+      healthy: false,
     });
     const ports = await manager.getApplicationPorts('recipe-id-1', 'model-id-1');
     expect(ports).toStrictEqual([5000, 5001]);
@@ -1267,5 +1283,59 @@ describe('getImageTag', () => {
     } as ContainerConfig;
     const imageTag = manager.getImageTag(recipe, container);
     expect(imageTag).equals('quay.io/repo/image:latest');
+  });
+
+  test('adoptRunningApplications should check pods health', async () => {
+    mocks.listPodsMock.mockResolvedValue([
+      {
+        Id: 'pod1',
+        engineId: 'engine1',
+        Labels: {
+          'ai-studio-recipe-id': 'recipe-id-1',
+          'ai-studio-model-id': 'model-id-1',
+          'ai-studio-app-ports': '5000,5001',
+          'ai-studio-model-ports': '8000,8001',
+        },
+        Containers: [
+          {
+            Id: 'container1',
+          },
+          {
+            Id: 'container2',
+          },
+        ],
+      },
+    ]);
+    mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
+      f();
+    });
+    mocks.inspectContainerMock.mockImplementation(async (_engineId: string, id: string) => {
+      switch (id) {
+        case 'container1':
+          return {
+            State: {
+              Status: 'running',
+              Health: {
+                Status: 'healthy',
+              },
+            },
+          };
+        case 'container2':
+          return {
+            State: {
+              Status: 'running',
+              Health: {
+                Status: '',
+              },
+            },
+          };
+      }
+    });
+    vi.useFakeTimers();
+    manager.adoptRunningApplications();
+    await vi.advanceTimersByTimeAsync(1100);
+    const state = manager.getApplicationsState();
+    expect(state).toHaveLength(1);
+    expect(state[0].healthy).toBeTruthy();
   });
 });

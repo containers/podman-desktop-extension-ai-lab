@@ -24,4 +24,5 @@ export interface ApplicationState {
   pod: PodInfo;
   appPorts: number[];
   modelPorts: number[];
+  healthy: boolean;
 }

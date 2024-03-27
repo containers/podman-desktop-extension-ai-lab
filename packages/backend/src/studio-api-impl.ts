@@ -388,4 +388,25 @@ export class StudioApiImpl implements StudioAPI {
   getHostFreePort(): Promise<number> {
     return getFreeRandomPort('0.0.0.0');
   }
+
+  async requestDeleteLocalRepo(path: string): Promise<void> {
+    // Do not wait on the promise as the api would probably timeout before the user answer.
+    podmanDesktopApi.window
+      .showWarningMessage(`Delete permanently "${path}"?`, 'Confirm', 'Cancel')
+      .then((result: string) => {
+        if (result === 'Confirm') {
+          this.localRepositories.unregister(path).catch((err: unknown) => {
+            console.error(`error deleting path: ${String(err)}`);
+            podmanDesktopApi.window
+              .showErrorMessage(`Error deleting local path "${path}". Error: ${String(err)}`)
+              .catch((err: unknown) => {
+                console.error(`Something went wrong with confirmation modals`, err);
+              });
+          });
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(`Something went wrong with confirmation modals`, err);
+      });
+  }
 }

@@ -155,4 +155,10 @@ export abstract class StudioAPI {
    * @param conversationId the conversation identifier that will be deleted
    */
   abstract requestDeleteConversation(conversationId: string): Promise<void>;
+
+  /**
+   * Delete a local path
+   * @param path path to delete
+   */
+  abstract requestDeleteLocalRepo(path: string): Promise<void>;
 }

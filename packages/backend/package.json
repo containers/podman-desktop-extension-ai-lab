@@ -1,7 +1,7 @@
 {
-  "name": "ai-studio",
-  "displayName": "AI Studio",
-  "description": "Podman Desktop AI Studio",
+  "name": "ai-lab",
+  "displayName": "AI Lab",
+  "description": "Podman Desktop AI Lab",
   "version": "0.4.0-next",
   "icon": "icon.png",
   "publisher": "redhat",
@@ -23,13 +23,13 @@
     "views": {
       "icons/containersList": [
         {
-          "when": "ai-studio-model-id in containerLabelKeys",
+          "when": "ai-lab-model-id in containerLabelKeys",
           "icon": "${brain-icon}"
         }
       ],
       "icons/image": [
         {
-          "when": "ai-studio-recipe-id in imageLabelKeys",
+          "when": "ai-lab-recipe-id in imageLabelKeys",
           "icon": "${brain-icon}"
         }
       ]

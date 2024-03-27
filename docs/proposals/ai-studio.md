@@ -10,7 +10,7 @@ So this is handle by a kind of dirty fix: the containers are all started in para
 will fail because the model service is started (as it take a while), so we are trying to restart the client application
 until the model service is properly started.
 
-The purpose of this change is to propose an update to the ai-studio.yaml so that it is as much generic as it
+The purpose of this change is to propose an update to the ai-lab.yaml so that it is as much generic as it
 could be and inspired from the Compose specification.
 
 ## Proposed changes

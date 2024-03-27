@@ -9,7 +9,7 @@
       "categories": [
         "category1"
       ],
-      "config": "chatbot/ai-studio.yaml",
+      "config": "chatbot/ai-lab.yaml",
       "readme": "Readme for recipe 1",
       "models": [
         "model1",

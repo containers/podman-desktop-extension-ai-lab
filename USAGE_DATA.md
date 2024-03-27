@@ -1,6 +1,6 @@
 # Data Collection
 
-The AI Studio extension uses telemetry to collect anonymous usage data in order to identify issues and improve our user experience. You can read our privacy statement
+The AI Lab extension uses telemetry to collect anonymous usage data in order to identify issues and improve our user experience. You can read our privacy statement
 [here](https://developers.redhat.com/article/tool-data-collection).
 
 Telemetry for the extension is based on the Podman Desktop telemetry.

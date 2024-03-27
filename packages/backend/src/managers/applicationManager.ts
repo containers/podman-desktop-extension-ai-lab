@@ -588,11 +588,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
 
   adoptRunningApplications() {
     this.podmanConnection.startupSubscribe(() => {
-      if (!containerEngine.listPods) {
-        // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
-        // and the extension minimal version is set to 1.8
-        return;
-      }
       containerEngine
         .listPods()
         .then(pods => {
@@ -779,11 +774,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> {
   }
 
   async queryPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {
-    if (!containerEngine.listPods || !containerEngine.stopPod || !containerEngine.removePod) {
-      // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
-      // and the extension minimal version is set to 1.8
-      return;
-    }
     const pods = await containerEngine.listPods();
     return pods.find(
       pod =>

@@ -129,11 +129,6 @@ export class PodmanConnection implements Disposable {
           }
           break;
         case 'start':
-          if (!containerEngine.listPods) {
-            // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
-            // and the extension minimal version is set to 1.8
-            break;
-          }
           containerEngine
             .listPods()
             .then((pods: PodInfo[]) => {
@@ -150,11 +145,6 @@ export class PodmanConnection implements Disposable {
             });
           break;
         case 'stop':
-          if (!containerEngine.listPods) {
-            // TODO(feloy) this check can be safely removed when podman desktop 1.8 is released
-            // and the extension minimal version is set to 1.8
-            break;
-          }
           containerEngine
             .listPods()
             .then((pods: PodInfo[]) => {

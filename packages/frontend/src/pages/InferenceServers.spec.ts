@@ -21,6 +21,7 @@ import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render, fireEvent } from '@testing-library/svelte';
 import InferenceServers from '/@/pages/InferenceServers.svelte';
 import type { InferenceServer } from '@shared/src/models/IInference';
+import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 
 const mocks = vi.hoisted(() => ({
@@ -41,12 +42,14 @@ vi.mock('../stores/inferenceServers', async () => {
 vi.mock('../utils/client', async () => ({
   studioClient: {
     getInferenceServers: vi.fn(),
+    requestDeleteInferenceServer: vi.fn(),
   },
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.inferenceServersSubscribeMock.mockReturnValue([]);
+  vi.mocked(studioClient.requestDeleteInferenceServer).mockResolvedValue(undefined);
 });
 
 test('no inference servers should display a status message', async () => {
@@ -85,4 +88,45 @@ test('create service button should redirect to create page', async () => {
   await vi.waitFor(() => {
     expect(gotoSpy).toHaveBeenCalledWith('/service/create');
   });
+});
+
+test('table should have checkbox', async () => {
+  mocks.inferenceServersSubscribeMock.mockReturnValue([
+    {
+      health: undefined,
+      models: [],
+      connection: { port: 8888 },
+      status: 'running',
+      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+    },
+  ] as InferenceServer[]);
+  render(InferenceServers);
+
+  const checkbox = screen.getByTitle('Toggle service');
+  expect(checkbox).toBeInTheDocument();
+
+  const deleteBtn = screen.queryByTitle('Delete selected items');
+  expect(deleteBtn).toBeNull();
+});
+
+test('delete button should delete selected item', async () => {
+  mocks.inferenceServersSubscribeMock.mockReturnValue([
+    {
+      health: undefined,
+      models: [],
+      connection: { port: 8888 },
+      status: 'running',
+      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+    },
+  ] as InferenceServer[]);
+  render(InferenceServers);
+
+  const checkbox = screen.getByTitle('Toggle service');
+  await fireEvent.click(checkbox);
+
+  const deleteBtn = screen.getByTitle('Delete selected items');
+  expect(deleteBtn).toBeInTheDocument();
+
+  await fireEvent.click(deleteBtn);
+  expect(studioClient.requestDeleteInferenceServer).toHaveBeenCalledWith('dummyContainerId');
 });

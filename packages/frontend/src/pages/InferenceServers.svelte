@@ -9,6 +9,8 @@ import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import ServiceColumnModelName from '/@/lib/table/service/ServiceColumnModelName.svelte';
 import Button from '/@/lib/button/Button.svelte';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 
 const columns: Column<InferenceServer>[] = [
@@ -17,10 +19,22 @@ const columns: Column<InferenceServer>[] = [
   new Column<InferenceServer>('Model', { renderer: ServiceColumnModelName, align: 'left' }),
   new Column<InferenceServer>('Action', { width: '80px', renderer: ServiceAction, align: 'right' }),
 ];
-const row = new Row<InferenceServer>({});
+const row = new Row<InferenceServer>({ selectable: _service => true });
 
-let data: InferenceServer[];
+let data: (InferenceServer & { selected?: boolean })[];
 $: data = $inferenceServers;
+
+let selectedItemsNumber: number;
+
+const deleteSelected = () => {
+  studioClient
+    .requestDeleteInferenceServer(
+      ...data.filter(service => service.selected).map(service => service.container.containerId),
+    )
+    .catch((err: unknown) => {
+      console.error('Something went wrong while trying to delete inference server', err);
+    });
+};
 
 function createNewService() {
   router.goto('/service/create');
@@ -29,6 +43,10 @@ function createNewService() {
 
 <NavPage title="Model Services" searchEnabled="{false}">
   <svelte:fragment slot="additional-actions">
+    {#if selectedItemsNumber > 0}
+      <Button title="Delete selected items" on:click="{deleteSelected}" icon="{faTrash}"
+        >Delete {selectedItemsNumber} selected items</Button>
+    {/if}
     <Button title="Create a new model service" on:click="{() => createNewService()}">New Model Service</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
@@ -36,7 +54,12 @@ function createNewService() {
       <div class="min-w-full min-h-full flex-1">
         <div class="mt-4 px-5 space-y-5">
           {#if data.length > 0}
-            <Table kind="service" data="{data}" columns="{columns}" row="{row}"></Table>
+            <Table
+              kind="service"
+              data="{data}"
+              columns="{columns}"
+              row="{row}"
+              bind:selectedItemsNumber="{selectedItemsNumber}" />
           {:else}
             <div role="status">There is no services running for now.</div>
           {/if}

@@ -740,6 +740,12 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       .then(pods => pods.filter(pod => LABEL_RECIPE_ID in pod.Labels && LABEL_MODEL_ID in pod.Labels));
     let changes = false;
     for (const pod of pods) {
+      const recipeId = pod.Labels[LABEL_RECIPE_ID];
+      const modelId = pod.Labels[LABEL_MODEL_ID];
+      if (!this.#applications.has({ recipeId, modelId })) {
+        // a fresh pod could not have been added yet, we will handle it at next iteration
+        continue;
+      }
       const containerStates = await Promise.all(
         pod.Containers.map(container =>
           containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State),
@@ -748,12 +754,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       const healthyPod = !containerStates.find(
         s => s.Status !== 'running' || (s.Health.Status !== '' && s.Health.Status !== 'healthy'),
       );
-      const recipeId = pod.Labels[LABEL_RECIPE_ID];
-      const modelId = pod.Labels[LABEL_MODEL_ID];
-      if (!this.#applications.has({ recipeId, modelId })) {
-        // a fresh pod could not have been added yet, we will handle it at next iteration
-        continue;
-      }
       const state = this.#applications.get({ recipeId, modelId });
       if (state.healthy !== healthyPod) {
         state.healthy = healthyPod;

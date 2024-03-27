@@ -33,7 +33,13 @@
           "icon": "${brain-icon}"
         }
       ]
-    }
+    },
+    "commands": [
+      {
+        "command": "ai-lab.gpu.collect",
+        "title": "AI-Lab: Collect GPU(s)"
+      }
+    ]
   },
   "scripts": {
     "build": "vite build",

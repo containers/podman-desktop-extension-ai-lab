@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { Uri, window, env } from '@podman-desktop/api';
+import { Uri, window, env, commands } from '@podman-desktop/api';
 import type {
   ExtensionContext,
   TelemetryLogger,
@@ -40,9 +40,12 @@ import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import { InferenceManager } from './managers/inference/inferenceManager';
 import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
+import { GPUManager } from './managers/GPUManager';
 
 // TODO: Need to be configured
 export const AI_LAB_FOLDER = path.join('podman-desktop', 'ai-lab');
+
+export const AI_LAB_COLLECT_GPU_COMMAND = 'ai-lab.gpu.collect';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -121,6 +124,26 @@ export class Studio {
 
     const podmanConnection = new PodmanConnection();
     const taskRegistry = new TaskRegistry(this.#panel.webview);
+
+    const gpuManager = new GPUManager(this.#panel.webview);
+    this.#extensionContext.subscriptions.push(
+      commands.registerCommand(AI_LAB_COLLECT_GPU_COMMAND, () => {
+        gpuManager
+          .collectGPUs()
+          .then(gpus => {
+            if (gpus.length === 0) {
+              return window.showInformationMessage(`No GPU was found on this machine.`);
+            } else {
+              return window.showInformationMessage(
+                `Found ${gpus.length} device(s): ${gpus.map(gpu => gpu.product_name).join(', ')}`,
+              );
+            }
+          })
+          .catch((err: unknown) => {
+            return window.showErrorMessage(`Something went wrong while collecting GPUs: ${String(err)}`);
+          });
+      }),
+    );
 
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);

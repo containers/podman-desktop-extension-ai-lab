@@ -15,7 +15,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { containerEngine, type Disposable, type Webview, type ImageInfo, type PullEvent } from '@podman-desktop/api';
+import {
+  containerEngine,
+  type Disposable,
+  type Webview,
+  type ImageInfo,
+  type PullEvent,
+  type ContainerCreateOptions,
+  env,
+} from '@podman-desktop/api';
 import { getImageInfo, getProviderContainerConnection } from '../utils/inferenceUtils';
 import { XMLParser } from 'fast-xml-parser';
 import type { IGPUInfo } from '@shared/src/models/IGPUInfo';
@@ -43,60 +51,74 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
     return Array.from(this.#gpus.values());
   }
 
-  async collectGPUs(options?: { providerId: string }): Promise<void> {
+  async collectGPUs(options?: { providerId: string }): Promise<IGPUInfo[]> {
+    if (!env.isWindows) {
+      throw new Error('Cannot collect GPUs information on this machine.');
+    }
+
     const provider = getProviderContainerConnection(options?.providerId);
     const imageInfo: ImageInfo = await getImageInfo(provider.connection, CUDA_UBI8_IMAGE, (_event: PullEvent) => {});
 
-    console.log('getGPUs createContainer');
     const result = await containerEngine.createContainer(
       imageInfo.engineId,
-      {
-        Image: imageInfo.Id,
-        Detach: false,
-        HostConfig: {
-          AutoRemove: false,
-          Mounts: [
-            {
-              Target: '/usr/lib/wsl',
-              Source: '/usr/lib/wsl',
-              Type: 'bind',
-            },
-          ],
-          DeviceRequests: [{
-            Capabilities: [['gpu']],
-            Count: -1, // -1: all
-          }],
-          Devices: [{
-            PathOnHost: '/dev/dxg',
-            PathInContainer: '/dev/dxg',
-            CgroupPermissions: 'r',
-          }],
-        },
-        Entrypoint: '/usr/bin/sh',
-        Cmd: ['-c', '/usr/bin/ln -s /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && nvidia-smi -x -q'],
-      },
+      this.getWindowsContainerCreateOptions(imageInfo),
     );
 
     try {
       const logs = await this.getLogs(imageInfo.engineId, result.id);
       const parsed: {
         nvidia_smi_log: {
-          attached_gpus: number,
-          cuda_version: number,
-          driver_version: number,
-          timestamp: string,
-          gpu: IGPUInfo,
-        }
+          attached_gpus: number;
+          cuda_version: number;
+          driver_version: number;
+          timestamp: string;
+          gpu: IGPUInfo;
+        };
       } = new XMLParser().parse(logs);
 
-      if(parsed.nvidia_smi_log.attached_gpus > 1)
-        throw new Error('machine with more than one GPU are not supported.');
+      if (parsed.nvidia_smi_log.attached_gpus > 1) throw new Error('machine with more than one GPU are not supported.');
 
       this.#gpus.set(parsed.nvidia_smi_log.gpu.uuid, parsed.nvidia_smi_log.gpu);
       this.notify();
+      return this.getAll();
     } finally {
       await containerEngine.deleteContainer(imageInfo.engineId, result.id);
     }
+  }
+
+  private getWindowsContainerCreateOptions(imageInfo: ImageInfo): ContainerCreateOptions {
+    return {
+      Image: imageInfo.Id,
+      Detach: false,
+      HostConfig: {
+        AutoRemove: false,
+        Mounts: [
+          {
+            Target: '/usr/lib/wsl',
+            Source: '/usr/lib/wsl',
+            Type: 'bind',
+          },
+        ],
+        DeviceRequests: [
+          {
+            Capabilities: [['gpu']],
+            Count: -1, // -1: all
+          },
+        ],
+        Devices: [
+          {
+            PathOnHost: '/dev/dxg',
+            PathInContainer: '/dev/dxg',
+            CgroupPermissions: 'r',
+          },
+        ],
+      },
+      Entrypoint: '/usr/bin/sh',
+      Cmd: [
+        '-c',
+        '/usr/bin/ln -s /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && nvidia-smi -x -q',
+      ],
+    };
   }
 
   private getLogs(engineId: string, containerId: string): Promise<string> {
@@ -106,14 +128,15 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
       }, 10000);
 
       let logs = '';
-      containerEngine.logsContainer(engineId, containerId, (name, data) => {
-        logs += data;
-        if(data.includes('</nvidia_smi_log>')) {
-          clearTimeout(interval);
-          resolve(logs);
-        }
-      }).catch(reject);
+      containerEngine
+        .logsContainer(engineId, containerId, (name, data) => {
+          logs += data;
+          if (data.includes('</nvidia_smi_log>')) {
+            clearTimeout(interval);
+            resolve(logs);
+          }
+        })
+        .catch(reject);
     });
   }
-
 }

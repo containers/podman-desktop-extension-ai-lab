@@ -71,6 +71,9 @@ vi.mock('@podman-desktop/api', async () => {
       onDidUpdateContainerConnection: vi.fn(),
       getContainerConnections: mocks.getContainerConnections,
     },
+    commands: {
+      registerCommand: vi.fn(),
+    },
     Disposable: {
       create: vi.fn(),
     },

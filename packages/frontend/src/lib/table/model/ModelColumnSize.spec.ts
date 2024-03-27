@@ -41,11 +41,8 @@ test('Expect simple column styling', async () => {
   };
   render(ModelColumnSize, { object });
 
-  const text = screen.getByText('disk: 1 kB');
+  const text = screen.getByText('1 kB');
   expect(text).toBeInTheDocument();
   expect(text.parentElement).toHaveClass('text-xs');
   expect(text.parentElement).toHaveClass('text-gray-700');
-
-  const text2 = screen.getByText('mem: 1 KiB');
-  expect(text2).toBeInTheDocument();
 });

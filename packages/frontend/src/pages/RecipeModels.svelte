@@ -26,7 +26,6 @@ const columns: Column<RecipeModelInfo>[] = [
   new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
   new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeRecommended }),
   new Column<RecipeModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
-  new Column<RecipeModelInfo>('', { align: 'right', width: '220px', renderer: ModelColumnLabels }),
 ];
 const row = new Row<RecipeModelInfo>({});
 

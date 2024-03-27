@@ -20,8 +20,8 @@ const openPlaygroundsPage = () => {
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="mt-4 px-5 space-y-5" aria-label="inner-content">
         <p>
-          The Podman Desktop AI Lab extension simplifies getting started and develop with AI in a local environment.
-          It provides key open-source technologies to start building on AI. A curated catalog of so-called recipes helps
+          The Podman Desktop AI Lab extension simplifies getting started and develop with AI in a local environment. It
+          provides key open-source technologies to start building on AI. A curated catalog of so-called recipes helps
           navigate the jungle of AI use cases and AI models. AI Lab further ships playgrounds: environments to
           experiment with and test AI models, for instance, a chat bot.
         </p>

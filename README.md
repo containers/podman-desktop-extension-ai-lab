@@ -1,6 +1,6 @@
-# AI studio
+# AI Lab
 
-The Podman Desktop AI Studio extension simplifies getting started and developing with AI in a local environment.  It provides key open-source technologies to start building on AI.  A curated catalog of so-called recipes helps navigate the jungle of AI use cases and AI models.  AI Studio further ships playgrounds: environments to experiment with and test AI models, for instance, a chat bot.
+The Podman Desktop AI Lab extension simplifies getting started and developing with AI in a local environment.  It provides key open-source technologies to start building on AI.  A curated catalog of so-called recipes helps navigate the jungle of AI use cases and AI models. AI Lab further ships playgrounds: environments to experiment with and test AI models, for instance, a chat bot.
 
 
 
@@ -17,14 +17,14 @@ The Podman Desktop AI Studio extension simplifies getting started and developing
 
 ## Technology
 
-The AI Studio extensions uses [Podman](https://podman.io) machines to run inference servers for LLM models and AI applications.
+The AI Lab extensions uses [Podman](https://podman.io) machines to run inference servers for LLM models and AI applications.
 The AI models can be downloaded, and common formats like [GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md), [Pytorch](https://pytorch.org) or [Tensorflow](https://www.tensorflow.org) are supported.
 
 ## Extension features
 
 ### AI Models
 
-AI Studio provides a curated list of open source AI models and LLMs. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
+AI Lab provides a curated list of open source AI models and LLMs. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
 
 #### Model services
 
@@ -36,9 +36,9 @@ The integrated Playground environments allow for experimenting with available mo
 
 ### AI applications
 
-Once an AI model is available through a well known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. AI Studio support AI applications as a set of containers that are connected together. 
+Once an AI model is available through a well known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. AI Lab support AI applications as a set of containers that are connected together. 
 
-AI Studio ships with a so-called Recipes Catalog that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
+AI Lab ships with a so-called Recipes Catalog that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
 
 ## Requirements
 
@@ -69,7 +69,7 @@ Please note that this is not relevant for WSL on Windows as the WSL technology t
 
 To install the extension, go to the Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
 
-The name of the image to use is `ghcr.io/projectatomic/ai-studio`.  You can get released tags for the image at https://github.com/projectatomic/studio-extension/pkgs/container/ai-studio.
+The name of the image to use is `ghcr.io/containers/podman-desktop-extension-ai-lab`.  You can get released tags for the image at https://github.com/containers/podman-desktop-extension-ai-lab/pkgs/container/podman-desktop-extension-ai-lab.
 
 To install a development version, use the `:nightly` tag as shown in the recording below.
 
@@ -99,18 +99,18 @@ Once a model is available locally, let's start an inference server
 
 ## Contributing
 
-Want to help develop and contribute to the AI Studio extension?
+Want to help develop and contribute to the AI Lab extension?
 
-You can use `yarn watch --extension-folder` from the Podman Desktop directory to automatically rebuild and test the AI Studio extension:
+You can use `yarn watch --extension-folder` from the Podman Desktop directory to automatically rebuild and test the AI Lab extension:
 
 ```sh
 git clone https://github.com/containers/podman-desktop
-git clone https://github.com/projectatomic/ai-studio
-cd ai-studio
+git clone https://github.com/containers/podman-desktop-extension-ai-lab
+cd podman-desktop-extension-ai-lab
 yarn install
 yarn build
 cd ../podman-desktop
-yarn watch --extension-folder ../ai-studio/packages/backend
+yarn watch --extension-folder ../podman-desktop-extension-ai-lab/packages/backend
 ```
 
 If you are live editing the frontend package, from packages/frontend folder:
@@ -121,23 +121,23 @@ $ yarn watch
 
 ### Cleaning up resources 
 
-We'll be adding a way in AI Lab to let a user cleanup the environment: see issue https://github.com/projectatomic/ai-studio/issues/469.
+We'll be adding a way in AI Lab to let a user cleanup the environment: see issue https://github.com/containers/podman-desktop-extension-ai-lab/issues/469.
 For the time being, please consider the following actions:
 1. Remove the extension from Podman Desktop, from the Settings > Extensions
 2. Remove the running playground environments from the list of Pods
 3. Remove the images built by the recipes
 4. Remove the containers related to AI
-5. Cleanup your local clone of the recipes: `$HOME/podman-desktop/ai-studio`
+5. Cleanup your local clone of the recipes: `$HOME/podman-desktop/ai-lab`
 
 ### Providing a custom catalog
 
-The extension provides a default catalog, but you can build your own catalog by creating a file `$HOME/podman-desktop/ai-studio/catalog.json`.
+The extension provides a default catalog, but you can build your own catalog by creating a file `$HOME/podman-desktop/ai-lab/catalog.json`.
 
 The catalog provides lists of categories, recipes, and models.
 
 Each recipe can belong to one or several categories. Each model can be used by one or several recipes.
 
-The format of the catalog is not stable nor versioned yet, you can see the current catalog's format [in the sources of the extension](https://github.com/projectatomic/studio-extension/blob/main/packages/backend/src/ai.json).
+The format of the catalog is not stable nor versioned yet, you can see the current catalog's format [in the sources of the extension](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json).
 
 ### Packaging sample applications
 
@@ -146,4 +146,4 @@ Sample applications may be added to the catalog. See [packaging guide](PACKAGING
 
 ## Feedback
 
-You can provide your feedback on the extension with [this form](https://forms.gle/tctQ4RtZSiMyQr3R8) or create [an issue on this repository](https://github.com/projectatomic/studio-extension/issues).
+You can provide your feedback on the extension with [this form](https://forms.gle/tctQ4RtZSiMyQr3R8) or create [an issue on this repository](https://github.com/containers/podman-desktop-extension-ai-lab/issues).

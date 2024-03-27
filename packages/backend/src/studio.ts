@@ -42,7 +42,7 @@ import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
 
 // TODO: Need to be configured
-export const AI_STUDIO_FOLDER = path.join('podman-desktop', 'ai-studio');
+export const AI_LAB_FOLDER = path.join('podman-desktop', 'ai-lab');
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -62,7 +62,7 @@ export class Studio {
   }
 
   public async activate(): Promise<void> {
-    console.log('starting studio extension');
+    console.log('starting AI Lab extension');
 
     this.telemetry = env.createTelemetryLogger();
     this.telemetry.logUsage('start');
@@ -70,7 +70,7 @@ export class Studio {
     const extensionUri = this.#extensionContext.extensionUri;
 
     // register webview
-    this.#panel = window.createWebviewPanel('studio', 'AI Studio', this.getWebviewOptions(extensionUri));
+    this.#panel = window.createWebviewPanel('studio', 'AI Lab', this.getWebviewOptions(extensionUri));
     this.#extensionContext.subscriptions.push(this.#panel);
 
     // update html
@@ -114,7 +114,7 @@ export class Studio {
     this.#extensionContext.subscriptions.push(containerRegistry.init());
 
     // Let's create the api that the front will be able to call
-    const appUserDirectory = path.join(os.homedir(), AI_STUDIO_FOLDER);
+    const appUserDirectory = path.join(os.homedir(), AI_LAB_FOLDER);
 
     this.rpcExtension = new RpcExtension(this.#panel.webview);
     const gitManager = new GitManager();
@@ -195,7 +195,7 @@ export class Studio {
   }
 
   public async deactivate(): Promise<void> {
-    console.log('stopping studio extension');
+    console.log('stopping AI Lab extension');
     this.telemetry.logUsage('stop');
   }
 

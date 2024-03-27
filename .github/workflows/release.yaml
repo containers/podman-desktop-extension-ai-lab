@@ -145,10 +145,10 @@ jobs:
       - name: Build Image
         id: build-image
         run: |
-          podman build -t ghcr.io/${{ github.repository_owner }}/ai-studio:${{ needs.tag.outputs.extVersion }} .
-          podman push ghcr.io/${{ github.repository_owner }}/ai-studio:${{ needs.tag.outputs.extVersion }}
-          podman tag ghcr.io/${{ github.repository_owner }}/ai-studio:${{ needs.tag.outputs.extVersion }} ghcr.io/${{ github.repository_owner }}/ai-studio:latest
-          podman push ghcr.io/${{ github.repository_owner }}/ai-studio:latest
+          podman build -t ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-ai-lab:${{ needs.tag.outputs.extVersion }} .
+          podman push ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-ai-lab:${{ needs.tag.outputs.extVersion }}
+          podman tag ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-ai-lab:${{ needs.tag.outputs.extVersion }} ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-ai-lab:latest
+          podman push ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-ai-lab:latest
 
   release:
     needs: [tag, build]

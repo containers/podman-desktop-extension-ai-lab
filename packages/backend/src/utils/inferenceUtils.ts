@@ -31,10 +31,10 @@ import { getFreeRandomPort } from './ports';
 
 export const SECOND: number = 1_000_000_000;
 
-export const LABEL_INFERENCE_SERVER: string = 'ai-studio-inference-server';
+export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
 
 export const INFERENCE_SERVER_IMAGE =
-  'ghcr.io/projectatomic/ai-studio-playground-images/ai-studio-playground-chat:0.1.0';
+  'ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.2.0';
 
 /**
  * Return container connection provider

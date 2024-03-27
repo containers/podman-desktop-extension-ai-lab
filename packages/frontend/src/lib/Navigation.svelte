@@ -13,7 +13,7 @@ export let meta: TinroRouteMeta;
   <div class="flex items-center">
     <a href="/" title="Navigate to dashboard" class="pt-4 px-5 mb-10 flex items-center">
       <Fa size="1.5x" class="text-purple-500 cursor-pointer mr-4" icon="{faBrain}" />
-      <p class="text-xl first-letter:uppercase">AI Studio</p>
+      <p class="text-xl first-letter:uppercase">AI Lab</p>
     </a>
   </div>
   <div class="h-full overflow-hidden hover:overflow-y-auto" style="margin-bottom:auto">

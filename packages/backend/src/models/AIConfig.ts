@@ -52,8 +52,8 @@ export function assertString(value: unknown): string {
 export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
   const raw: string = fs.readFileSync(filepath, 'utf-8');
 
-  const aiStudioConfig = jsYaml.load(raw);
-  const application = aiStudioConfig?.['application'];
+  const aiLabConfig = jsYaml.load(raw);
+  const application = aiLabConfig?.['application'];
   if (!application) throw new Error('AIConfig has bad formatting.');
 
   const containers: unknown[] = application['containers'] ?? [];

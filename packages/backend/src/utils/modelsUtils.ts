@@ -20,7 +20,7 @@ import { join, posix } from 'node:path';
 import { getPodmanCli } from './podman';
 import { process } from '@podman-desktop/api';
 
-export const MACHINE_BASE_FOLDER = '/home/user/ai-studio/models/';
+export const MACHINE_BASE_FOLDER = '/home/user/ai-lab/models/';
 
 /**
  * Given a model info object return the path where is it located locally

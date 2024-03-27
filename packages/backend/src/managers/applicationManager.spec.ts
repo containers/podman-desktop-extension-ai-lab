@@ -169,7 +169,7 @@ describe('pullApplication', () => {
     vi.spyOn(fs, 'existsSync').mockImplementation((path: string) => {
       if (path.endsWith('recipe1')) {
         return options.recipeFolderExists;
-      } else if (path.endsWith('ai-studio.yaml')) {
+      } else if (path.endsWith('ai-lab.yaml')) {
         return true;
       } else if (path.endsWith('contextdir1')) {
         return true;
@@ -181,7 +181,7 @@ describe('pullApplication', () => {
         const stat = new fs.Stats();
         stat.isDirectory = () => true;
         return stat;
-      } else if (path.endsWith('ai-studio.yaml')) {
+      } else if (path.endsWith('ai-lab.yaml')) {
         const stat = new fs.Stats();
         stat.isDirectory = () => false;
         return stat;
@@ -751,10 +751,10 @@ describe('createPod', async () => {
         },
       ],
       labels: {
-        'ai-studio-recipe-id': 'recipe-id',
-        'ai-studio-app-ports': '9002,9001',
-        'ai-studio-model-id': 'model-id',
-        'ai-studio-model-ports': '9000',
+        'ai-lab-recipe-id': 'recipe-id',
+        'ai-lab-app-ports': '9002,9001',
+        'ai-lab-model-id': 'model-id',
+        'ai-lab-model-ports': '9000',
       },
     });
   });
@@ -1012,10 +1012,10 @@ describe('pod detection', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
-          'ai-studio-app-ports': '5000,5001',
-          'ai-studio-model-ports': '8000,8001',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
+          'ai-lab-app-ports': '5000,5001',
+          'ai-lab-model-ports': '8000,8001',
         },
       },
     ]);
@@ -1028,10 +1028,10 @@ describe('pod detection', async () => {
     expect(updateApplicationStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'model-id-1', {
       pod: {
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
-          'ai-studio-app-ports': '5000,5001',
-          'ai-studio-model-ports': '8000,8001',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
+          'ai-lab-app-ports': '5000,5001',
+          'ai-lab-model-ports': '8000,8001',
         },
       },
       recipeId: 'recipe-id-1',
@@ -1074,8 +1074,8 @@ describe('pod detection', async () => {
         engineName: 'Engine 1',
         kind: 'podman',
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
         },
       } as unknown as PodInfo);
     });
@@ -1124,8 +1124,8 @@ describe('pod detection', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
         },
       },
     ]);
@@ -1137,8 +1137,8 @@ describe('pod detection', async () => {
           engineName: 'Engine 1',
           kind: 'podman',
           Labels: {
-            'ai-studio-recipe-id': 'recipe-id-1',
-            'ai-studio-model-id': 'model-id-1',
+            'ai-lab-recipe-id': 'recipe-id-1',
+            'ai-lab-model-id': 'model-id-1',
           },
         } as unknown as PodInfo);
       }, 1);
@@ -1157,8 +1157,8 @@ describe('pod detection', async () => {
       {
         Id: 'pod-id-1',
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
         },
       },
     ]);
@@ -1178,22 +1178,22 @@ describe('pod detection', async () => {
     mocks.listPodsMock.mockResolvedValue([
       {
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
         },
       },
       {
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-2',
-          'ai-studio-model-id': 'model-id-2',
+          'ai-lab-recipe-id': 'recipe-id-2',
+          'ai-lab-model-id': 'model-id-2',
         },
       },
     ]);
     const result = await manager.getApplicationPod('recipe-id-1', 'model-id-1');
     expect(result).toEqual({
       Labels: {
-        'ai-studio-recipe-id': 'recipe-id-1',
-        'ai-studio-model-id': 'model-id-1',
+        'ai-lab-recipe-id': 'recipe-id-1',
+        'ai-lab-model-id': 'model-id-1',
       },
     });
   });
@@ -1204,16 +1204,16 @@ describe('pod detection', async () => {
         engineId: 'engine-1',
         Id: 'pod-1',
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
         },
       },
       {
         engineId: 'engine-2',
         Id: 'pod-2',
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-2',
-          'ai-studio-model-id': 'model-id-2',
+          'ai-lab-recipe-id': 'recipe-id-2',
+          'ai-lab-model-id': 'model-id-2',
         },
       },
     ]);
@@ -1228,16 +1228,16 @@ describe('pod detection', async () => {
         engineId: 'engine-1',
         Id: 'pod-1',
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
         },
       },
       {
         engineId: 'engine-2',
         Id: 'pod-2',
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-2',
-          'ai-studio-model-id': 'model-id-2',
+          'ai-lab-recipe-id': 'recipe-id-2',
+          'ai-lab-model-id': 'model-id-2',
         },
       },
     ]);
@@ -1309,10 +1309,10 @@ describe('getImageTag', () => {
         Id: 'pod1',
         engineId: 'engine1',
         Labels: {
-          'ai-studio-recipe-id': 'recipe-id-1',
-          'ai-studio-model-id': 'model-id-1',
-          'ai-studio-app-ports': '5000,5001',
-          'ai-studio-model-ports': '8000,8001',
+          'ai-lab-recipe-id': 'recipe-id-1',
+          'ai-lab-model-id': 'model-id-1',
+          'ai-lab-app-ports': '5000,5001',
+          'ai-lab-model-ports': '8000,8001',
         },
         Containers: [
           {

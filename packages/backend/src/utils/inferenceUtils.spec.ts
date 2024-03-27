@@ -92,7 +92,7 @@ describe('generateContainerCreateOptions', () => {
       },
       Image: 'dummyImageId',
       Labels: {
-        'ai-studio-inference-server': '["dummyModelId"]',
+        'ai-lab-inference-server': '["dummyModelId"]',
       },
     });
   });

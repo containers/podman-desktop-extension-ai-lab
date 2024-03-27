@@ -49,13 +49,13 @@ import { Publisher } from '../utils/Publisher';
 import { isQEMUMachine } from '../utils/podman';
 import { SECOND } from '../utils/inferenceUtils';
 
-export const LABEL_MODEL_ID = 'ai-studio-model-id';
-export const LABEL_MODEL_PORTS = 'ai-studio-model-ports';
+export const LABEL_MODEL_ID = 'ai-lab-model-id';
+export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';
 
-export const LABEL_RECIPE_ID = 'ai-studio-recipe-id';
-export const LABEL_APP_PORTS = 'ai-studio-app-ports';
+export const LABEL_RECIPE_ID = 'ai-lab-recipe-id';
+export const LABEL_APP_PORTS = 'ai-lab-app-ports';
 
-export const CONFIG_FILENAME = 'ai-studio.yaml';
+export const CONFIG_FILENAME = 'ai-lab.yaml';
 
 interface AIContainers {
   aiConfigFile: AIConfigFile;
@@ -545,10 +545,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       throw new Error(`The file located at ${configFile} does not exist.`);
     }
 
-    // If the user configured the config as a directory we check for "ai-studio.yaml" inside.
+    // If the user configured the config as a directory we check for "ai-lab.yaml" inside.
     if (fs.statSync(configFile).isDirectory()) {
       const tmpPath = path.join(configFile, CONFIG_FILENAME);
-      // If it has the ai-studio.yaml we use it.
+      // If it has the ai-lab.yaml we use it.
       if (fs.existsSync(tmpPath)) {
         configFile = tmpPath;
       }

@@ -1,7 +1,7 @@
 {
-  "name": "ai-studio-monorepo",
-  "displayName": "ai-studio-monorepo",
-  "description": "ai-studio-monorepo",
+  "name": "ai-lab-monorepo",
+  "displayName": "ai-lab-monorepo",
+  "description": "ai-lab-monorepo",
   "publisher": "redhat",
   "version": "0.4.0-next",
   "license": "Apache-2.0",

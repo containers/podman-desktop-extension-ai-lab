@@ -89,7 +89,7 @@ describe('upload', () => {
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-studio/models/dummy.guff',
+      '/home/user/ai-lab/models/dummy.guff',
     ]);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
@@ -97,7 +97,7 @@ describe('upload', () => {
       'machine2',
       'mkdir',
       '-p',
-      '/home/user/ai-studio/models/',
+      '/home/user/ai-lab/models/',
     ]);
     expect(mocks.execMock).toBeCalledWith('podman', [
       'machine',
@@ -105,7 +105,7 @@ describe('upload', () => {
       'machine2',
       'cp',
       '/mnt/c/Users/podman/folder/dummy.guff',
-      '/home/user/ai-studio/models/dummy.guff',
+      '/home/user/ai-lab/models/dummy.guff',
     ]);
     mocks.execMock.mockClear();
   });
@@ -121,7 +121,7 @@ describe('upload', () => {
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-studio/models/dummy.guff',
+      '/home/user/ai-lab/models/dummy.guff',
     ]);
     expect(mocks.execMock).toBeCalledTimes(1);
     mocks.execMock.mockClear();

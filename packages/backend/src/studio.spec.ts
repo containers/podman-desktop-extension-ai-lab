@@ -106,12 +106,12 @@ test('check activate ', async () => {
   await studio.activate();
 
   // expect the activate method to be called on the studio class
-  expect(consoleLogMock).toBeCalledWith('starting studio extension');
+  expect(consoleLogMock).toBeCalledWith('starting AI Lab extension');
 });
 
 test('check deactivate ', async () => {
   await studio.deactivate();
 
   // expect the deactivate method to be called on the studio class
-  expect(consoleLogMock).toBeCalledWith('stopping studio extension');
+  expect(consoleLogMock).toBeCalledWith('stopping AI Lab extension');
 });

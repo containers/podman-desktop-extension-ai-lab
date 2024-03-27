@@ -15,20 +15,20 @@ const openPlaygroundsPage = () => {
 };
 </script>
 
-<NavPage title="Welcome to AI Studio" searchEnabled="{false}">
+<NavPage title="Welcome to AI Lab" searchEnabled="{false}">
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="mt-4 px-5 space-y-5" aria-label="inner-content">
         <p>
-          The Podman Desktop AI Studio extension simplifies getting started and develop with AI in a local environment.
-          It provides key open-source technologies to start building on AI. A curated catalog of so-called recipes helps
-          navigate the jungle of AI use cases and AI models. AI Studio further ships playgrounds: environments to
+          The Podman Desktop AI Lab extension simplifies getting started and develop with AI in a local environment. It
+          provides key open-source technologies to start building on AI. A curated catalog of so-called recipes helps
+          navigate the jungle of AI use cases and AI models. AI Lab further ships playgrounds: environments to
           experiment with and test AI models, for instance, a chat bot.
         </p>
 
         <h1 class="text-xl first-letter:uppercase underline">Recipes Catalog</h1>
         <p>
-          AI Studio ships with a so-called
+          AI Lab ships with a so-called
           <a
             href="{'javascript:void(0);'}"
             class="underline"
@@ -42,7 +42,7 @@ const openPlaygroundsPage = () => {
 
         <h1 class="text-xl first-letter:uppercase underline">AI Models</h1>
         <p>
-          AI Studio provides a curated list of open source
+          AI Lab provides a curated list of open source
           <a
             href="{'javascript:void(0);'}"
             class="underline"

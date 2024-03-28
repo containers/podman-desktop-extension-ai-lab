@@ -18,7 +18,7 @@
 
 import type { PodInfo } from '@podman-desktop/api';
 
-export type PodHealth = '' | 'starting' | 'healthy' | 'unhealthy';
+export type PodHealth = 'none' | 'starting' | 'healthy' | 'unhealthy';
 
 export interface ApplicationState {
   recipeId: string;

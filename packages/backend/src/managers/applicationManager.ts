@@ -677,7 +677,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       pod,
       appPorts,
       modelPorts,
-      health: '',
+      health: 'none',
     };
     this.updateApplicationState(recipeId, modelId, state);
   }
@@ -772,7 +772,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   getPodHealth(infos: string[]): PodHealth {
     const checked = infos.filter(info => info !== 'none' && info !== '');
     if (!checked.length) {
-      return '';
+      return 'none';
     }
     if (infos.some(info => info === 'unhealthy')) {
       return 'unhealthy';

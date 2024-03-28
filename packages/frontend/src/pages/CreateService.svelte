@@ -167,7 +167,7 @@ onMount(async () => {
             name="containerPort"
             required />
         </div>
-        {#if errorMsg}
+        {#if errorMsg !== undefined}
           <ErrorMessage error="{errorMsg}" />
         {/if}
         <footer>

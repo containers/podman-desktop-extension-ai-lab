@@ -50,7 +50,7 @@ const onContainerPortInput = (event: Event): void => {
 
 // Submit method when the form is valid
 const submit = async () => {
-  errorMsg = '';
+  errorMsg = undefined;
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
   if (containerPort === undefined) throw new Error('invalid container port');

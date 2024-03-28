@@ -22,7 +22,7 @@ let modelId: string | undefined = undefined;
 let systemPrompt: string | undefined = undefined;
 let submitted: boolean = false;
 let playgroundName: string;
-let errorMsg = '';
+let errorMsg: string | undefined = undefined;
 
 // The tracking id is a unique identifier provided by the
 // backend when calling requestCreateInferenceServer

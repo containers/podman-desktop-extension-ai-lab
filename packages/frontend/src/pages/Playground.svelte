@@ -13,6 +13,7 @@ import Fa from 'svelte-fa';
 
 import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
+import { inferenceServers } from '/@/stores/inferenceServers';
 
 export let playgroundId: string;
 let prompt: string;
@@ -41,7 +42,7 @@ $: {
     sendEnabled = true;
   }
 }
-
+$: server = $inferenceServers.find(is => playground && is.models.map(mi => mi.id).includes(playground?.modelId));
 function askPlayground() {
   errorMsg = '';
   sendEnabled = false;
@@ -71,6 +72,37 @@ afterUpdate(() => {
 async function scrollToBottom(element: Element) {
   element.scroll?.({ top: element.scrollHeight, behavior: 'smooth' });
 }
+
+function isHealthy(status?: string, health?: string): boolean {
+  return status === 'running' && (!health || health === 'healthy');
+}
+
+function getStatusColor(status?: string, health?: string): string {
+  return isHealthy(status, health) ? 'bg-green-600' : 'bg-gray-900';
+}
+
+function getStatusText(status?: string, health?: string): string {
+  switch (status) {
+    case 'running':
+      switch (health) {
+        case 'healthy':
+          return 'Model Service healthy';
+        default:
+          return 'Model Service not healthy';
+      }
+    default:
+      return 'Model Service not running';
+  }
+}
+
+function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: string): string | undefined {
+  if (!isHealthy(status, health)) {
+    return getStatusText(status, health);
+  } else if (!sendEnabled) {
+    return 'Please wait, assistant is replying';
+  }
+  return undefined;
+}
 </script>
 
 {#if playground}
@@ -80,6 +112,14 @@ async function scrollToBottom(element: Element) {
     searchEnabled="{false}"
     contentBackground="bg-charcoal-500">
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
+    <svelte:fragment slot="additional-actions">
+      <div role="status" class="flex items-center bg-charcoal-500 p-1 rounded-md">
+        <div class="w-2 h-2 {getStatusColor(server?.status, server?.health?.Status)} rounded-full mx-1"></div>
+        <span class="text-xs capitalize mr-1">
+          {getStatusText(server?.status, server?.health?.Status)}
+        </span>
+      </div>
+    </svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full">
         <div class="h-full overflow-auto" bind:this="{scrollable}">
@@ -131,8 +171,9 @@ async function scrollToBottom(element: Element) {
           <div class="flex-none text-right m-4">
             <Button
               inProgress="{!sendEnabled}"
+              disabled="{!isHealthy(server?.status, server?.health?.Status)}"
               on:click="{() => askPlayground()}"
-              title="{!sendEnabled ? 'Please wait, assistant is replying' : ''}">Send prompt</Button>
+              title="{getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}">Send prompt</Button>
           </div>
         </div>
       </div>

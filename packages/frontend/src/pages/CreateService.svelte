@@ -23,7 +23,7 @@ let containerPort: number | undefined = undefined;
 // The modelId is the bind value to form input
 let modelId: string | undefined = undefined;
 // If the creation of a new inference service fail
-let errorMsg = '';
+let errorMsg: string | undefined = undefined;
 
 // The tracking id is a unique identifier provided by the
 // backend when calling requestCreateInferenceServer

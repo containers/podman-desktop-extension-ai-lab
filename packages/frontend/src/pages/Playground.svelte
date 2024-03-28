@@ -86,9 +86,11 @@ function getStatusText(status?: string, health?: string): string {
     case 'running':
       switch (health) {
         case 'healthy':
-          return 'Model Service healthy';
+          return 'Model Service running';
+        case 'starting':
+          return 'Model Service starting';
         default:
-          return 'Model Service not healthy';
+          return 'Model Service not running';
       }
     default:
       return 'Model Service not running';

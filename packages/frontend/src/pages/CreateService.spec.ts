@@ -16,11 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import '@testing-library/jest-dom/vitest';
 import { vi, beforeEach, test, expect } from 'vitest';
 import { studioClient } from '/@/utils/client';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
 import type { Task } from '@shared/src/models/ITask';
+import userEvent from '@testing-library/user-event';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -170,4 +172,35 @@ test('tasks should be displayed after requestCreateInferenceServer', async () =>
     const status = screen.getByRole('status');
     expect(status).toBeDefined();
   });
+});
+
+test('should display error message if createService fails', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
+
+  let listener: ((tasks: Task[]) => void) | undefined;
+  vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
+    listener = f;
+    listener([]);
+    return () => {};
+  });
+
+  vi.mocked(studioClient.requestCreateInferenceServer).mockRejectedValue('error creating service');
+  render(CreateService);
+
+  let createBtn: HTMLElement | undefined = undefined;
+  await vi.waitFor(() => {
+    createBtn = screen.getByTitle('Create service');
+    expect(createBtn).toBeDefined();
+  });
+
+  if (createBtn === undefined) throw new Error('createBtn undefined');
+
+  const errorMessage = screen.queryByLabelText('Error Message Content');
+  expect(errorMessage).not.toBeInTheDocument();
+
+  await userEvent.click(createBtn);
+
+  const errorMessageAfterSubmit = screen.getByLabelText('Error Message Content');
+  expect(errorMessageAfterSubmit).toBeInTheDocument();
+  expect(errorMessageAfterSubmit?.textContent).equal('error creating service');
 });

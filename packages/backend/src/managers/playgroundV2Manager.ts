@@ -22,14 +22,14 @@ import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/conversationRegistry';
-import {
+import type {
   Conversation,
-  isAssistantChat,
   PendingChat,
   SystemPrompt,
-  UserChat,
-} from '@shared/src/models/IPlaygroundMessage';
-import { isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
+  UserChat} from '@shared/src/models/IPlaygroundMessage';
+import {
+  isAssistantChat
+ isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
@@ -37,7 +37,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
 import { getRandomString } from '../utils/randomUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
-import { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/src/models/IInference';
 
 export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Disposable {
   #playgrounds: Map<string, PlaygroundV2>;
@@ -196,11 +196,9 @@ export class PlaygroundV2Manager extends Publisher<PlaygroundV2[]> implements Di
     if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
 
     const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
-    if(messageIndex === -1)
-      throw new Error(`Cannot find a message with id ${messageId} to regenerate.`);
+    if (messageIndex === -1) throw new Error(`Cannot find a message with id ${messageId} to regenerate.`);
 
-    if(!isAssistantChat(conversation.messages[messageIndex]))
-      throw new Error('Only assistant chat can be replayed.');
+    if (!isAssistantChat(conversation.messages[messageIndex])) throw new Error('Only assistant chat can be replayed.');
 
     this.#conversationRegistry.removeMessages(
       conversationId,

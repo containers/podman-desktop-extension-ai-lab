@@ -125,7 +125,11 @@ export abstract class StudioAPI {
    * @param messageId the id of the message
    * @param options the new options to apply
    */
-  abstract requestRegeneratePlaygroundMessage(conversationId: string, messageId: string, options?: ModelOptions): Promise<void>;
+  abstract requestRegeneratePlaygroundMessage(
+    conversationId: string,
+    messageId: string,
+    options?: ModelOptions,
+  ): Promise<void>;
 
   /**
    * Given a conversation, update the system prompt.

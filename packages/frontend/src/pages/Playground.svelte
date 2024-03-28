@@ -76,11 +76,12 @@ async function scrollToBottom(element: Element) {
 function onRegenerate(messageId: string): void {
   errorMsg = '';
   sendEnabled = false;
-  studioClient.requestRegeneratePlaygroundMessage(playgroundId, messageId, {
-    temperature,
-    max_tokens,
-    top_p,
-  })
+  studioClient
+    .requestRegeneratePlaygroundMessage(playgroundId, messageId, {
+      temperature,
+      max_tokens,
+      top_p,
+    })
     .catch((err: unknown) => {
       errorMsg = String(err);
       sendEnabled = true;
@@ -152,7 +153,7 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
                     <ul>
                       {#each messages as message}
                         <li>
-                          <ChatMessage onRegenerate="{onRegenerate}" message="{message}" />
+                          <ChatMessage disabled="{!sendEnabled}" onRegenerate="{onRegenerate}" message="{message}" />
                         </li>
                       {/each}
                     </ul>

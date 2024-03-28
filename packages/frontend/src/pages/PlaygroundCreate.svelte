@@ -53,7 +53,7 @@ function onNameInput(event: Event) {
 }
 
 async function submit() {
-  errorMsg = '';
+  errorMsg = undefined;
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
   // disable submit button

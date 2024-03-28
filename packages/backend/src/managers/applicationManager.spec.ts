@@ -1038,7 +1038,7 @@ describe('pod detection', async () => {
       modelId: 'model-id-1',
       appPorts: [5000, 5001],
       modelPorts: [8000, 8001],
-      healthy: false,
+      health: 'none',
     });
     const ports = await manager.getApplicationPorts('recipe-id-1', 'model-id-1');
     expect(ports).toStrictEqual([5000, 5001]);
@@ -1354,6 +1354,6 @@ describe('getImageTag', () => {
     await vi.advanceTimersByTimeAsync(1100);
     const state = manager.getApplicationsState();
     expect(state).toHaveLength(1);
-    expect(state[0].healthy).toBeTruthy();
+    expect(state[0].health).toEqual('healthy');
   });
 });

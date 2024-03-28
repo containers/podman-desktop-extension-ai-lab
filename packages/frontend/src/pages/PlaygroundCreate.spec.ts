@@ -74,13 +74,13 @@ test('should display error message if createPlayground fails', async () => {
 
   render(PlaygroundCreate);
 
-  const errorMessage = screen.queryByLabelText('Error message');
+  const errorMessage = screen.queryByLabelText('Error Message Content');
   expect(errorMessage).not.toBeInTheDocument();
 
   const createButton = screen.getByTitle('Create playground');
   await userEvent.click(createButton);
 
-  const errorMessageAfterSubmit = screen.queryByLabelText('Error message');
+  const errorMessageAfterSubmit = screen.queryByLabelText('Error Message Content');
   expect(errorMessageAfterSubmit).toBeInTheDocument();
   expect(errorMessageAfterSubmit?.textContent).equal('error creating playground');
 });

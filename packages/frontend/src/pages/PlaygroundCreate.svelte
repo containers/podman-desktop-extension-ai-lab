@@ -13,6 +13,7 @@ import TasksProgress from '../lib/progress/TasksProgress.svelte';
 import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
+import ErrorMessage from '../lib/ErrorMessage.svelte';
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
@@ -183,7 +184,7 @@ onDestroy(() => {
           ></textarea>
         </div>
         {#if errorMsg}
-          <div aria-label="Error message" class="text-red-500 text-sm">{errorMsg}</div>
+          <ErrorMessage error="{errorMsg}" />
         {/if}
         <footer>
           <div class="w-full flex flex-col">

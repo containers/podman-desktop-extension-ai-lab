@@ -183,7 +183,7 @@ onDestroy(() => {
             placeholder="Optionally provide system prompt to define general context, instructions or guidelines to be used with each query"
           ></textarea>
         </div>
-        {#if errorMsg}
+        {#if errorMsg !== undefined}
           <ErrorMessage error="{errorMsg}" />
         {/if}
         <footer>

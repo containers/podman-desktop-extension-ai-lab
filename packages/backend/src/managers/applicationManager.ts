@@ -39,7 +39,7 @@ import { getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, timeout } from '../utils/utils';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState, PodHealth } from '@shared/src/models/IApplicationState';
 import type { PodmanConnection } from './podmanConnection';
 import { Messages } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
@@ -677,7 +677,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       pod,
       appPorts,
       modelPorts,
-      healthy: false,
+      health: '',
     };
     this.updateApplicationState(recipeId, modelId, state);
   }
@@ -752,15 +752,13 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       }
       const containerStates = await Promise.all(
         pod.Containers.map(container =>
-          containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State),
+          containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State.Health.Status),
         ),
       );
-      const healthyPod = !containerStates.find(
-        s => s.Status !== 'running' || (s.Health.Status !== '' && s.Health.Status !== 'healthy'),
-      );
+      const podHealth = this.getPodHealth(containerStates);
       const state = this.#applications.get({ recipeId, modelId });
-      if (state.healthy !== healthyPod) {
-        state.healthy = healthyPod;
+      if (state.health !== podHealth) {
+        state.health = podHealth;
         state.pod = pod;
         this.#applications.set({ recipeId, modelId }, state);
         changes = true;
@@ -769,6 +767,20 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     if (changes) {
       this.notify();
     }
+  }
+
+  getPodHealth(infos: string[]): PodHealth {
+    const checked = infos.filter(info => info !== 'none' && info !== '');
+    if (!checked.length) {
+      return '';
+    }
+    if (infos.some(info => info === 'unhealthy')) {
+      return 'unhealthy';
+    }
+    if (infos.some(info => info === 'starting')) {
+      return 'starting';
+    }
+    return 'healthy';
   }
 
   updateApplicationState(recipeId: string, modelId: string, state: ApplicationState): void {

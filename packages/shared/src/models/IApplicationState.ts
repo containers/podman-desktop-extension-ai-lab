@@ -18,11 +18,13 @@
 
 import type { PodInfo } from '@podman-desktop/api';
 
+export type PodHealth = '' | 'starting' | 'healthy' | 'unhealthy';
+
 export interface ApplicationState {
   recipeId: string;
   modelId: string;
   pod: PodInfo;
   appPorts: number[];
   modelPorts: number[];
-  healthy: boolean;
+  health: PodHealth;
 }

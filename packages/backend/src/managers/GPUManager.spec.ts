@@ -17,12 +17,7 @@
  ***********************************************************************/
 import { expect, test, vi, beforeEach } from 'vitest';
 import { containerEngine, env } from '@podman-desktop/api';
-import type {
-  ContainerInspectInfo,
-  ContainerProviderConnection,
-  ImageInfo,
-  Webview,
-} from '@podman-desktop/api';
+import type { ContainerInspectInfo, ContainerProviderConnection, ImageInfo, Webview } from '@podman-desktop/api';
 import { GPUManager } from './GPUManager';
 import { getImageInfo, getProviderContainerConnection } from '../utils/inferenceUtils';
 import { XMLParser } from 'fast-xml-parser';

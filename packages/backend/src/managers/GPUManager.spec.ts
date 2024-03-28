@@ -16,9 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { expect, test, vi, beforeEach } from 'vitest';
-import {
-  containerEngine,
-  env} from '@podman-desktop/api';
+import { containerEngine, env } from '@podman-desktop/api';
 import type {
   ContainerInspectInfo,
   type ContainerProviderConnection,

@@ -59,9 +59,11 @@ jobs:
           sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.extVersion }}\",#g" package.json
           sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.extVersion }}\",#g" packages/backend/package.json
           sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.extVersion }}\",#g" packages/frontend/package.json
+          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.extVersion }}\",#g" tests/playwright/package.json
           git add package.json
           git add packages/backend/package.json
           git add packages/frontend/package.json
+          git add tests/playwright/package.json
 
           # commit the changes
           git commit -m "chore: 🥁 tagging ${{ steps.TAG_UTIL.outputs.githubTag }} 🥳"

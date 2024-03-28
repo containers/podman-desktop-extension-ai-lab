@@ -40,7 +40,7 @@ let extensionsPage: SettingsExtensionsPage;
 beforeAll(async () => {
   pdRunner = new PodmanDesktopRunner();
   page = await pdRunner.start();
-  pdRunner.setVideoAndTraceName('podman-desktop-ai-lab-extension-installation');
+  pdRunner.setVideoAndTraceName('podman-desktop-extension-ai-lab-installation');
 
   await new WelcomePage(page).handleWelcomePage(true);
   navigationBar = new NavigationBar(page);

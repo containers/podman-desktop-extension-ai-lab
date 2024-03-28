@@ -20,7 +20,7 @@
     "sourceType": "module",
     "project": [
       "packages/*/tsconfig.json",
-      "tests/playwright/tsconfig.json"
+      "tests/*/tsconfig.json"
     ]
   },
   "settings": {

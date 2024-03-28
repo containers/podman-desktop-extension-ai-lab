@@ -21,6 +21,7 @@ let modelId: string | undefined = undefined;
 let systemPrompt: string | undefined = undefined;
 let submitted: boolean = false;
 let playgroundName: string;
+let errorMsg = '';
 
 // The tracking id is a unique identifier provided by the
 // backend when calling requestCreateInferenceServer
@@ -51,6 +52,7 @@ function onNameInput(event: Event) {
 }
 
 async function submit() {
+  errorMsg = '';
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
   // disable submit button
@@ -61,6 +63,8 @@ async function submit() {
   } catch (err: unknown) {
     trackingId = undefined;
     console.error('Something wrong while trying to create the playground.', err);
+    errorMsg = String(err);
+    submitted = false;
   }
 }
 
@@ -178,6 +182,9 @@ onDestroy(() => {
             placeholder="Optionally provide system prompt to define general context, instructions or guidelines to be used with each query"
           ></textarea>
         </div>
+        {#if errorMsg}
+          <div aria-label="Error message" class="text-red-500 text-sm">{errorMsg}</div>
+        {/if}
         <footer>
           <div class="w-full flex flex-col">
             <Button

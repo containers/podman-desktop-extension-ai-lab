@@ -370,7 +370,7 @@ export class StudioApiImpl implements StudioAPI {
     const unixPath: string = path.normalize(directory).replace(/[\\/]+/g, '/');
 
     podmanDesktopApi.env
-      .openExternal(podmanDesktopApi.Uri.parse(unixPath).with({ scheme: 'vscode', authority: 'file' }))
+      .openExternal(podmanDesktopApi.Uri.file(unixPath).with({ scheme: 'vscode', authority: 'file' }))
       .catch((err: unknown) => {
         console.error('Something went wrong while trying to open VSCode', err);
       });

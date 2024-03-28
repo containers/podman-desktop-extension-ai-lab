@@ -13,6 +13,7 @@ import TasksProgress from '../lib/progress/TasksProgress.svelte';
 import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
+import ErrorMessage from '../lib/ErrorMessage.svelte';
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
@@ -21,6 +22,7 @@ let modelId: string | undefined = undefined;
 let systemPrompt: string | undefined = undefined;
 let submitted: boolean = false;
 let playgroundName: string;
+let errorMsg: string | undefined = undefined;
 
 // The tracking id is a unique identifier provided by the
 // backend when calling requestCreateInferenceServer
@@ -51,6 +53,7 @@ function onNameInput(event: Event) {
 }
 
 async function submit() {
+  errorMsg = undefined;
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
   // disable submit button
@@ -61,6 +64,8 @@ async function submit() {
   } catch (err: unknown) {
     trackingId = undefined;
     console.error('Something wrong while trying to create the playground.', err);
+    errorMsg = String(err);
+    submitted = false;
   }
 }
 
@@ -178,6 +183,9 @@ onDestroy(() => {
             placeholder="Optionally provide system prompt to define general context, instructions or guidelines to be used with each query"
           ></textarea>
         </div>
+        {#if errorMsg !== undefined}
+          <ErrorMessage error="{errorMsg}" />
+        {/if}
         <footer>
           <div class="w-full flex flex-col">
             <Button

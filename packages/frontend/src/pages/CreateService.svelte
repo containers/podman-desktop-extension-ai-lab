@@ -12,6 +12,7 @@ import { tasks } from '/@/stores/tasks';
 import type { Task } from '@shared/src/models/ITask';
 import { filterByLabel } from '/@/utils/taskUtils';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
+import ErrorMessage from '../lib/ErrorMessage.svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];
@@ -21,6 +22,8 @@ $: localModels = $modelsInfo.filter(model => model.file);
 let containerPort: number | undefined = undefined;
 // The modelId is the bind value to form input
 let modelId: string | undefined = undefined;
+// If the creation of a new inference service fail
+let errorMsg: string | undefined = undefined;
 
 // The tracking id is a unique identifier provided by the
 // backend when calling requestCreateInferenceServer
@@ -47,6 +50,7 @@ const onContainerPortInput = (event: Event): void => {
 
 // Submit method when the form is valid
 const submit = async () => {
+  errorMsg = undefined;
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
   if (containerPort === undefined) throw new Error('invalid container port');
@@ -60,6 +64,7 @@ const submit = async () => {
   } catch (err: unknown) {
     trackingId = undefined;
     console.error('Something wrong while trying to create the inference server.', err);
+    errorMsg = String(err);
   }
 };
 
@@ -162,6 +167,9 @@ onMount(async () => {
             name="containerPort"
             required />
         </div>
+        {#if errorMsg !== undefined}
+          <ErrorMessage error="{errorMsg}" />
+        {/if}
         <footer>
           <div class="w-full flex flex-col">
             {#if containerId === undefined}

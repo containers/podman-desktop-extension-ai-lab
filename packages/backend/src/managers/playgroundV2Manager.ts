@@ -22,14 +22,8 @@ import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/conversationRegistry';
-import type {
-  Conversation,
-  PendingChat,
-  SystemPrompt,
-  UserChat} from '@shared/src/models/IPlaygroundMessage';
-import {
-  isAssistantChat
- isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
+import type { Conversation, PendingChat, SystemPrompt, UserChat } from '@shared/src/models/IPlaygroundMessage';
+import { isAssistantChat, isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';

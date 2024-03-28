@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { expect, test, vi, beforeEach } from 'vitest';
 import { containerEngine, env } from '@podman-desktop/api';
-import type {
+import {
   ContainerInspectInfo,
   type ContainerProviderConnection,
   type ImageInfo,

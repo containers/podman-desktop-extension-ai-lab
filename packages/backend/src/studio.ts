@@ -134,7 +134,7 @@ export class Studio {
       taskRegistry,
     );
     const localRepositoryRegistry = new LocalRepositoryRegistry(this.#panel.webview, appUserDirectory);
-    localRepositoryRegistry.loadLocalRecipeRepositories(this.catalogManager.getRecipes());
+    localRepositoryRegistry.init(this.catalogManager.getRecipes());
     const applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,

@@ -74,7 +74,7 @@ const openLocalClone = () => {
 
 const deleteLocalClone = () => {
   if (localPath) {
-    studioClient.requestDeleteLocalRepo(localPath.path);
+    studioClient.requestDeleteLocalRepository(localPath.path);
   }
 };
 </script>

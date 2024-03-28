@@ -84,7 +84,7 @@ test('should notify webview when unregister', async () => {
   );
   vi.spyOn(fs.promises, 'rm').mockResolvedValue();
   localRepositories.register({ path: 'random', labels: { 'recipe-id': 'random' } });
-  await localRepositories.unregister('random');
+  await localRepositories.deleteLocalRepository('random');
 
   expect(mocks.postMessageMock).toHaveBeenLastCalledWith({
     id: Messages.MSG_LOCAL_REPOSITORY_UPDATE,
@@ -101,7 +101,7 @@ test('should register localRepo if it find the folder of the recipe', () => {
     '/appUserDirectory',
   );
   const registerMock = vi.spyOn(localRepositories, 'register');
-  localRepositories.loadLocalRecipeRepositories([
+  localRepositories.init([
     {
       id: 'recipe',
     } as unknown as Recipe,
@@ -122,7 +122,7 @@ test('should NOT register localRepo if it does not find the folder of the recipe
     '/appUserDirectory',
   );
   const registerMock = vi.spyOn(localRepositories, 'register');
-  localRepositories.loadLocalRecipeRepositories([
+  localRepositories.init([
     {
       id: 'recipe',
     } as unknown as Recipe,

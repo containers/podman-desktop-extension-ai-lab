@@ -37,30 +37,35 @@ export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> {
     super(webview, Messages.MSG_LOCAL_REPOSITORY_UPDATE, () => this.getLocalRepositories());
   }
 
+  init(recipes: Recipe[]): void {
+    this.loadLocalRecipeRepositories(recipes);
+  }
+
   register(localRepository: LocalRepository): Disposable {
     this.repositories.set(localRepository.path, localRepository);
     this.notify();
 
     return Disposable.create(() => {
-      this.unregister(localRepository.path).catch((reason: unknown) => console.log(String(reason)));
+      this.unregister(localRepository.path);
     });
   }
 
-  async unregister(path: string): Promise<void> {
-    await this.deleteLocalRepository(path);
+  unregister(path: string): void {
     this.repositories.delete(path);
     this.notify();
   }
 
   async deleteLocalRepository(path: string): Promise<void> {
-    return fs.promises.rm(path, { recursive: true, force: true, maxRetries: 3 });
+    await fs.promises.rm(path, { recursive: true, force: true, maxRetries: 3 });
+    // once it has been removed, it also update the localRepo list
+    this.unregister(path);
   }
 
   getLocalRepositories(): LocalRepository[] {
     return Array.from(this.repositories.values());
   }
 
-  loadLocalRecipeRepositories(recipes: Recipe[]): void {
+  private loadLocalRecipeRepositories(recipes: Recipe[]): void {
     recipes.forEach(recipe => {
       const recipeFolder = path.join(this.appUserDirectory, recipe.id);
       if (fs.existsSync(recipeFolder)) {

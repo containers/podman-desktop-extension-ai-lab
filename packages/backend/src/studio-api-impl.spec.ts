@@ -155,20 +155,22 @@ test('requestRemoveApplication should ask confirmation', async () => {
   expect(mocks.deleteApplicationMock).toHaveBeenCalled();
 });
 
-test('requestDeleteLocalRepo should ask confirmation', async () => {
+test('requestDeleteLocalRepository should ask confirmation', async () => {
   mocks.showWarningMessageMock.mockResolvedValue('Confirm');
-  const unregisterMock = vi.spyOn(localRepositoryRegistry, 'unregister').mockResolvedValue();
-  await studioApiImpl.requestDeleteLocalRepo('path');
+  const deleteLocalRepositoryMock = vi.spyOn(localRepositoryRegistry, 'deleteLocalRepository').mockResolvedValue();
+  await studioApiImpl.requestDeleteLocalRepository('path');
   await timeout(0);
-  expect(unregisterMock).toHaveBeenCalled();
+  expect(deleteLocalRepositoryMock).toHaveBeenCalled();
 });
 
-test('if requestDeleteLocalRepo fails an errorMessage should show up', async () => {
+test('if requestDeleteLocalRepository fails an errorMessage should show up', async () => {
   mocks.showWarningMessageMock.mockResolvedValue('Confirm');
-  const unregisterMock = vi.spyOn(localRepositoryRegistry, 'unregister').mockRejectedValue('error deleting');
+  const deleteLocalRepositoryMock = vi
+    .spyOn(localRepositoryRegistry, 'deleteLocalRepository')
+    .mockRejectedValue('error deleting');
   const errorMessageMock = vi.spyOn(window, 'showErrorMessage').mockResolvedValue('');
-  await studioApiImpl.requestDeleteLocalRepo('path');
+  await studioApiImpl.requestDeleteLocalRepository('path');
   await timeout(0);
-  expect(unregisterMock).toHaveBeenCalled();
+  expect(deleteLocalRepositoryMock).toHaveBeenCalled();
   expect(errorMessageMock).toBeCalledWith('Error deleting local path "path". Error: error deleting');
 });

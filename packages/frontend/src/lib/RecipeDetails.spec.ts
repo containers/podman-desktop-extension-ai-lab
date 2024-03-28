@@ -34,7 +34,7 @@ const mocks = vi.hoisted(() => {
     getLocalRepositoriesMock: vi.fn(),
     getTasksMock: vi.fn(),
     openFileMock: vi.fn(),
-    requestDeleteLocalRepoMock: vi.fn(),
+    requestDeleteLocalRepositoryMock: vi.fn(),
   };
 });
 
@@ -44,7 +44,7 @@ vi.mock('../utils/client', async () => {
       pullApplication: mocks.pullApplicationMock,
       getApplicationsState: mocks.getApplicationsStateMock,
       openFile: mocks.openFileMock,
-      requestDeleteLocalRepo: mocks.requestDeleteLocalRepoMock,
+      requestDeleteLocalRepository: mocks.requestDeleteLocalRepositoryMock,
     },
     rpcBrowser: {
       subscribe: () => {
@@ -279,5 +279,5 @@ test('local clone and delete local clone buttons should be visible if local repo
   expect(buttonDeleteClone).toBeInTheDocument();
   await userEvent.click(buttonDeleteClone);
 
-  expect(mocks.requestDeleteLocalRepoMock).toBeCalled();
+  expect(mocks.requestDeleteLocalRepositoryMock).toBeCalled();
 });

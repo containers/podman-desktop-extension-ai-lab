@@ -160,5 +160,5 @@ export abstract class StudioAPI {
    * Delete a local path
    * @param path path to delete
    */
-  abstract requestDeleteLocalRepo(path: string): Promise<void>;
+  abstract requestDeleteLocalRepository(path: string): Promise<void>;
 }

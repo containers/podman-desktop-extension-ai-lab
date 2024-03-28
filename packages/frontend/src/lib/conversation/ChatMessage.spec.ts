@@ -17,24 +17,16 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { expect, test, vi, beforeEach, afterEach } from 'vitest';
+import { expect, test, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import ChatMessage from '/@/lib/conversation/ChatMessage.svelte';
 import type { AssistantChat } from '@shared/src/models/IPlaygroundMessage';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.useFakeTimers();
-});
-
-afterEach(() => {
-  vi.useRealTimers();
 });
 
 test('assistant message should show elapsed time', () => {
-  const date = new Date(2000, 0, 0, 0);
-  vi.setSystemTime(date);
-
   render(ChatMessage, {
     disabled: false,
     onRegenerate: vi.fn(),
@@ -42,14 +34,15 @@ test('assistant message should show elapsed time', () => {
       id: 'dummyId',
       content: 'dummyContent',
       role: 'assistant',
-      timestamp: 0,
+      timestamp: 5000,
       choices: [],
+      completed: 10000,
     } as AssistantChat,
   });
 
   const elapsed = screen.getByLabelText('elapsed');
   expect(elapsed).toBeInTheDocument();
-  expect(elapsed.textContent).toBe('946594800.0 s');
+  expect(elapsed.textContent).toBe('5.0 s');
 });
 
 test('clicking on regenerate should call onRegenerate', async () => {

@@ -44,6 +44,8 @@ import { SnippetManager } from './managers/SnippetManager';
 // TODO: Need to be configured
 export const AI_LAB_FOLDER = path.join('podman-desktop', 'ai-lab');
 
+export const AI_LAB_COLLECT_GPU_COMMAND = 'ai-lab.gpu.collect';
+
 export class Studio {
   readonly #extensionContext: ExtensionContext;
 

@@ -16,16 +16,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export enum Messages {
-  MSG_NEW_CATALOG_STATE = 'new-catalog-state',
-  MSG_TASKS_UPDATE = 'tasks-update',
-  MSG_NEW_MODELS_STATE = 'new-models-state',
-  MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update',
-  MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update',
-  MSG_INFERENCE_SERVERS_UPDATE = 'inference-servers-update',
-  MSG_MONITORING_UPDATE = 'monitoring-update',
-  MSG_SUPPORTED_LANGUAGES_UPDATE = 'supported-languages-supported',
-  MSG_CONVERSATIONS_UPDATE = 'conversations-update',
-  MSG_PLAYGROUNDS_V2_UPDATE = 'playgrounds-v2-update',
-  MSG_GPUS_UPDATE = 'gpus-update',
+export interface IGPUInfo {
+  uuid: string;
+  product_name: string;
+  product_brand: string;
+  product_architecture: string;
+  fb_memory_usage: {
+    total: string;
+    used: string;
+    free: string;
+  };
+  temperature: {
+    gpu_temp: string;
+    gpu_temp_max_threshold: string;
+    gpu_temp_slow_threshold: string;
+  };
 }

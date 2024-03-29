@@ -82,7 +82,7 @@ vi.mock('../utils/downloader', () => ({
 }));
 
 const cancellationTokenRegistryMock = {
-    createCancellationTokenSource: vi.fn(),
+  createCancellationTokenSource: vi.fn(),
 } as unknown as CancellationTokenRegistry;
 
 let taskRegistry: TaskRegistry;

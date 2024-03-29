@@ -229,7 +229,7 @@ export class ModelsManager implements Disposable {
     }
 
     // Propagate cancellation token from existing task to the new one
-    task.cancellationToken = this.taskRegistry.findTaskByLabels({'model-pulling': model.id})?.cancellationToken;
+    task.cancellationToken = this.taskRegistry.findTaskByLabels({ 'model-pulling': model.id })?.cancellationToken;
     this.taskRegistry.updateTask(task);
 
     // If we have an existing downloader running we subscribe on its events

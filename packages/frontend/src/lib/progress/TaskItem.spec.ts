@@ -18,7 +18,7 @@
 
 import '@testing-library/jest-dom/vitest';
 import { test, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import TaskItem from '/@/lib/progress/TaskItem.svelte';
 import { studioClient } from '/@/utils/client';
 
@@ -33,16 +33,16 @@ vi.mock('../../utils/client', async () => {
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(studioClient.requestCancelToken).mockResolvedValue(undefined);
-})
+});
 
 test('Task item should no show cancel button if no cancellation token provided', async () => {
   // render the component
   render(TaskItem, {
     task: {
-    name: 'dummyName',
+      name: 'dummyName',
       state: 'loading',
       id: 'dummyId',
-    }
+    },
   });
 
   const cancelBtn = screen.queryByTitle('Cancel');
@@ -57,7 +57,7 @@ test('Task item should no show cancel button if state not loading', async () => 
       state: 'success',
       id: 'dummyId',
       cancellationToken: 1,
-    }
+    },
   });
 
   const cancelBtn = screen.queryByTitle('Cancel');
@@ -72,7 +72,7 @@ test('Task item should show cancel button if state loading and cancellation toke
       state: 'loading',
       id: 'dummyId',
       cancellationToken: 1,
-    }
+    },
   });
 
   const cancelBtn = screen.getByTitle('Cancel');

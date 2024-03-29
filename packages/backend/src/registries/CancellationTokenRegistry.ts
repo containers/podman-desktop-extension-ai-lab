@@ -35,7 +35,7 @@ export class CancellationTokenRegistry implements Disposable {
     this.#callbackId++;
 
     const token = new CancellationTokenSource();
-    if(func !== undefined) {
+    if (func !== undefined) {
       token.token.onCancellationRequested(func);
     }
 

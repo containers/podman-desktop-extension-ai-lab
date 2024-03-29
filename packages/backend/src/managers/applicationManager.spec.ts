@@ -42,6 +42,7 @@ import type {
   startupHandle,
 } from './podmanConnection';
 import { TaskRegistry } from '../registries/TaskRegistry';
+import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -233,6 +234,9 @@ describe('pullApplication', () => {
       } as CatalogManager,
       telemetryLogger,
       new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview),
+      {
+        createCancellationTokenSource: vi.fn(),
+      } as unknown as CancellationTokenRegistry,
     );
     manager = new ApplicationManager(
       '/home/user/aistudio',

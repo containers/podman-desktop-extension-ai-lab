@@ -7,12 +7,12 @@ import { studioClient } from '/@/utils/client';
 export let task: Task;
 
 const cancel = () => {
-  if(task.cancellationToken !== undefined) {
+  if (task.cancellationToken !== undefined) {
     studioClient.requestCancelToken(task.cancellationToken).catch((err: unknown) => {
       console.error('Something went wrong while trying to cancel token', err);
-    })
+    });
   }
-}
+};
 </script>
 
 <div class="flex flex-row items-center">
@@ -61,7 +61,7 @@ const cancel = () => {
   </span>
   <div class="flex flex-grow justify-end">
     {#if task.state === 'loading' && task.cancellationToken !== undefined}
-      <button on:click={cancel} title="Cancel"><Fa icon="{faClose}"/></button>
+      <button on:click="{cancel}" title="Cancel"><Fa icon="{faClose}" /></button>
     {/if}
   </div>
 </div>

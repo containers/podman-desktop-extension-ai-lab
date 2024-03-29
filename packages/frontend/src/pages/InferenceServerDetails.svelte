@@ -76,7 +76,7 @@ $: {
 onMount(() => {
   return inferenceServers.subscribe(servers => {
     service = servers.find(server => server.container.containerId === containerId);
-    if (service === undefined) {
+    if (!service) {
       router.goto('/services');
     }
   });

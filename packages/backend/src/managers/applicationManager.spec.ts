@@ -1321,6 +1321,9 @@ describe('getImageTag', () => {
           {
             Id: 'container2',
           },
+          {
+            Id: 'container3',
+          },
         ],
       },
     ]);
@@ -1345,6 +1348,12 @@ describe('getImageTag', () => {
               Health: {
                 Status: '',
               },
+            },
+          };
+        case 'container3':
+          return {
+            State: {
+              Status: 'running',
             },
           };
       }

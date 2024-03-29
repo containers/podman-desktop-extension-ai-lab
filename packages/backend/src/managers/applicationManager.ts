@@ -752,7 +752,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       }
       const containerStates = await Promise.all(
         pod.Containers.map(container =>
-          containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State.Health.Status),
+          containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State.Health?.Status),
         ),
       );
       const podHealth = this.getPodHealth(containerStates);
@@ -770,7 +770,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   getPodHealth(infos: string[]): PodHealth {
-    const checked = infos.filter(info => info !== 'none' && info !== '');
+    const checked = infos.filter(info => !!info && info !== 'none' && info !== '');
     if (!checked.length) {
       return 'none';
     }

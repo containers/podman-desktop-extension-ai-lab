@@ -46,7 +46,7 @@
   "dependencies": {
     "fast-xml-parser": "^4.3.6",
     "mustache": "^4.2.0",
-    "openai": "^4.29.2",
+    "openai": "^4.30.0",
     "postman-code-generators": "^1.9.0",
     "postman-collection": "^4.4.0",
     "simple-git": "^3.24.0",

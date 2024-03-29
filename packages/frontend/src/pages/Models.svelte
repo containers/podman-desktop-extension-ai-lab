@@ -22,8 +22,8 @@ const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
   new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
   new Column<ModelInfo>('Size', { width: '50px', renderer: ModelColumnSize }),
-  new Column<ModelInfo>('Age', { width: '50px', renderer: ModelColumnAge }),
-  new Column<ModelInfo>('', { width: '220px', align: 'right', renderer: ModelColumnLabels }),
+  new Column<ModelInfo>('Age', { width: '60px', renderer: ModelColumnAge }),
+  new Column<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
   new Column<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});

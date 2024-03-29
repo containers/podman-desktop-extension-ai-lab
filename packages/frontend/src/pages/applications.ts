@@ -17,13 +17,38 @@
  ***********************************************************************/
 
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
-import type { Task } from '@shared/src/models/ITask';
 
-export interface ApplicationCell {
-  tasks?: Task[];
-  appState: ApplicationState;
-  recipeId: string;
-  modelId: string;
-  appPorts: number[];
-  modelPorts: number[];
+/* returns the status of the AI application, to be used by <IconStatus> */
+export function getApplicationStatus(
+  appState: ApplicationState,
+): 'RUNNING' | 'DEGRADED' | 'STARTING' | 'USED' | 'DELETING' | '' {
+  const podStatus = appState.pod.Status.toUpperCase();
+  if (['DEGRADED', 'STARTING', 'USED', 'DELETING'].includes(podStatus)) {
+    return podStatus as 'DEGRADED' | 'STARTING' | 'USED' | 'DELETING';
+  }
+  if (podStatus !== 'RUNNING') {
+    return '';
+  }
+  switch (appState.health) {
+    case 'none':
+    case 'healthy':
+      return 'RUNNING';
+    case 'starting':
+      return 'STARTING';
+    case 'unhealthy':
+      return 'DEGRADED';
+  }
+}
+
+/* returns the status of the AI application in plain text */
+export function getApplicationStatusText(appState: ApplicationState): string {
+  if (appState.pod.Status === 'Running') {
+    if (appState.health === 'starting') {
+      return 'Starting';
+    }
+    if (appState.health === 'unhealthy') {
+      return 'Degraded';
+    }
+  }
+  return appState.pod.Status;
 }

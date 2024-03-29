@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { ApplicationCell } from '../../../pages/applications';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 
-export let object: ApplicationCell;
+export let object: ApplicationState;
 </script>
 
 <div class="text-sm text-gray-700 overflow-hidden text-ellipsis">
-  {object.appState.pod.Name}
+  {object.pod.Name}
 </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 import ApplicationActions from '../../ApplicationActions.svelte';
-import type { ApplicationCell } from '../../../pages/applications';
-export let object: ApplicationCell;
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
+export let object: ApplicationState;
 </script>
 
-<ApplicationActions recipeId="{object.recipeId}" modelId="{object.modelId}" object="{object.appState}" />
+<ApplicationActions recipeId="{object.recipeId}" modelId="{object.modelId}" object="{object}" />

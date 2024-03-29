@@ -1,12 +1,11 @@
 <script lang="ts">
 import moment from 'moment';
-import type { ApplicationCell } from '../../../pages/applications';
-import { catalog } from '/@/stores/catalog';
 import { humanizeAge } from '/@/utils/dimensions';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 
-export let object: ApplicationCell;
+export let object: ApplicationState;
 </script>
 
 <div class="text-sm text-gray-700 overflow-hidden text-ellipsis">
-  {humanizeAge(moment(object.appState.pod.Created).unix())}
+  {humanizeAge(moment(object.pod.Created).unix())}
 </div>

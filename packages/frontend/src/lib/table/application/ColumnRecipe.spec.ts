@@ -22,8 +22,8 @@ import { render, screen } from '@testing-library/svelte';
 import * as catalogStore from '/@/stores/catalog';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import { readable } from 'svelte/store';
-import type { ApplicationCell } from '../../../pages/applications';
 import ColumnRecipe from './ColumnRecipe.svelte';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -76,7 +76,7 @@ beforeEach(() => {
 test('display recipe name', async () => {
   const obj = {
     recipeId: 'recipe 1',
-  } as unknown as ApplicationCell;
+  } as unknown as ApplicationState;
   vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnRecipe, { object: obj });
 
@@ -88,7 +88,7 @@ test('display recipe port', async () => {
   const obj = {
     recipeId: 'recipe 1',
     appPorts: [3000],
-  } as unknown as ApplicationCell;
+  } as unknown as ApplicationState;
   vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnRecipe, { object: obj });
 
@@ -102,7 +102,7 @@ test('display multiple recipe ports', async () => {
   const obj = {
     recipeId: 'recipe 1',
     appPorts: [3000, 5000],
-  } as unknown as ApplicationCell;
+  } as unknown as ApplicationState;
   vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
   render(ColumnRecipe, { object: obj });
 

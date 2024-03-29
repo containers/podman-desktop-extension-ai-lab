@@ -1038,7 +1038,7 @@ describe('pod detection', async () => {
       modelId: 'model-id-1',
       appPorts: [5000, 5001],
       modelPorts: [8000, 8001],
-      health: 'none',
+      health: 'starting',
     });
     const ports = await manager.getApplicationPorts('recipe-id-1', 'model-id-1');
     expect(ports).toStrictEqual([5000, 5001]);

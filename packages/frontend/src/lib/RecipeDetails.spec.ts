@@ -301,7 +301,7 @@ test('should display app state for default model when model is the recommended',
 
   await new Promise(resolve => setTimeout(resolve, 0));
   const appStatus = screen.getByLabelText('app-status');
-  expect(appStatus.textContent).toContain('RUNNING');
+  expect(appStatus.textContent).toContain('Running');
   expect(appStatus.textContent).toContain('pod1');
 });
 

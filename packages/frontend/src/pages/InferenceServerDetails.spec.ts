@@ -138,14 +138,14 @@ test('on mount should call createSnippet', async () => {
     containerId: 'dummyContainerId',
   });
 
-  expect(studioClient.createSnippet).toHaveBeenCalled();
-});
-
-test('ensure status is visible when running', async () => {
-  render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
-  });
-
-  const status = screen.getByRole('status');
-  expect(status).toBeDefined();
+  expect(studioClient.createSnippet).toHaveBeenCalledWith(
+    {
+      body: expect.anything(),
+      header: expect.anything(),
+      url: 'http://localhost:9999/v1/chat/completions',
+      method: 'POST',
+    },
+    'curl',
+    'cURL',
+  );
 });

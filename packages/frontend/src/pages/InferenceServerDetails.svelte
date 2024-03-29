@@ -9,7 +9,6 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
-import { onMount } from 'svelte';
 
 export let containerId: string | undefined = undefined;
 
@@ -67,9 +66,11 @@ const generate = async (language: string, variant: string) => {
   );
 };
 
-onMount(() => {
-  generate('curl', 'cURL');
-});
+$: {
+  if (!snippet && service) {
+    generate('curl', 'cURL');
+  }
+}
 </script>
 
 <NavPage lastPage="{{ name: 'Model Services', path: '/services' }}" title="Service Details" searchEnabled="{false}">

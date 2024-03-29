@@ -18,7 +18,10 @@
     ],
     "paths": {
       "@shared/*": ["../shared/*"]
-    }
+    },
+    "strictBindCallApply": true,
+    "alwaysStrict": true,
+    "noImplicitThis": true
   },
   "include": [
     "src",

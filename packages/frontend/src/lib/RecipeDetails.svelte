@@ -25,7 +25,7 @@ import Spinner from './button/Spinner.svelte';
 export let recipeId: string;
 export let modelId: string;
 
-$: appState = $applicationStates.find((app: ApplicationState) => app.recipeId === recipeId);
+$: appState = $applicationStates.find((app: ApplicationState) => app.recipeId === recipeId && app.modelId === modelId);
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 
 $: filteredTasks = filterByLabel($tasks, {
@@ -84,7 +84,7 @@ const deleteLocalClone = () => {
 <div class="w-full bg-charcoal-600 rounded-md p-4">
   <div class="flex flex-row items-center">
     {#if appState && appState.pod}
-      <div class="grow flex overflow-hidden whitespace-nowrap items-center">
+      <div class="grow flex overflow-hidden whitespace-nowrap items-center" aria-label="app-status">
         <a title="Navigate to Pod details" href="{'javascript:void(0);'}" on:click="{navigateToPod}">
           {#if getApplicationStatus(appState) === 'STARTING'}
             <Spinner />

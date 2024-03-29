@@ -281,3 +281,50 @@ test('local clone and delete local clone buttons should be visible if local repo
 
   expect(mocks.requestDeleteLocalRepositoryMock).toBeCalled();
 });
+
+test('should display app state for default model when model is the recommended', async () => {
+  mocks.getApplicationsStateMock.mockResolvedValue([
+    {
+      recipeId: 'recipe 1',
+      modelId: 'model1',
+      pod: {
+        Name: 'pod1',
+        Status: 'Running',
+      },
+    },
+  ]);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
+  render(RecipeDetails, {
+    recipeId: 'recipe 1',
+    modelId: 'model1',
+  });
+
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const appStatus = screen.getByLabelText('app-status');
+  expect(appStatus.textContent).toContain('RUNNING');
+  expect(appStatus.textContent).toContain('pod1');
+});
+
+test('should display app state for other model when model is not the recommended', async () => {
+  mocks.getApplicationsStateMock.mockResolvedValue([
+    {
+      recipeId: 'recipe 1',
+      modelId: 'model1',
+      pod: {
+        Name: 'pod1',
+        Status: 'Running',
+      },
+    },
+  ]);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
+  render(RecipeDetails, {
+    recipeId: 'recipe 1',
+    modelId: 'model2',
+  });
+
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const appStatus = screen.queryByLabelText('app-status');
+  expect(appStatus).not.toBeInTheDocument();
+  const btnRunApplication = screen.getByText('Start AI App');
+  expect(btnRunApplication).toBeInTheDocument();
+});

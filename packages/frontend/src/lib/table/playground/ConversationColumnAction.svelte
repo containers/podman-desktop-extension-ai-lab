@@ -2,8 +2,8 @@
 import { studioClient } from '/@/utils/client';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
-import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
-export let object: PlaygroundV2;
+import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
+export let object: Conversation;
 
 function deleteConversation() {
   studioClient.requestDeleteConversation(object.id).catch((err: unknown) => {

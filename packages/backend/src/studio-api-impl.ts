@@ -41,7 +41,6 @@ import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import type { SnippetManager } from './managers/SnippetManager';
 import type { Language } from 'postman-code-generators';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
-import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
@@ -68,7 +67,7 @@ export class StudioApiImpl implements StudioAPI {
       .showWarningMessage(`Are you sure you want to delete this playground ?`, 'Confirm', 'Cancel')
       .then((result: string) => {
         if (result === 'Confirm') {
-          this.playgroundV2.deletePlayground(conversationId);
+          this.playgroundV2.deleteConversation(conversationId);
         }
       })
       .catch((err: unknown) => {
@@ -83,10 +82,6 @@ export class StudioApiImpl implements StudioAPI {
       console.error('Something went wrong while trying to create playground environment', err);
       throw err;
     }
-  }
-
-  async getPlaygroundsV2(): Promise<PlaygroundV2[]> {
-    return this.playgroundV2.getPlaygrounds();
   }
 
   submitPlaygroundMessage(containerId: string, userInput: string, options?: ModelOptions): Promise<void> {

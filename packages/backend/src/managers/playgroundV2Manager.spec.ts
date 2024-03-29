@@ -89,7 +89,9 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
 
-  await expect(manager.submit('0', 'dummyUserInput')).rejects.toThrowError('Inference server is not running.');
+  await expect(manager.submit(manager.getConversations()[0].id, 'dummyUserInput')).rejects.toThrowError(
+    'Inference server is not running.',
+  );
 });
 
 test('submit should throw an error if the server is unhealthy', async () => {
@@ -108,7 +110,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
   ]);
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('p1', { id: 'model1' } as ModelInfo, '', 'tracking-1');
-  const playgroundId = manager.getPlaygrounds()[0].id;
+  const playgroundId = manager.getConversations()[0].id;
   await expect(manager.submit(playgroundId, 'dummyUserInput')).rejects.toThrowError(
     'Inference server is not healthy, currently status: unhealthy.',
   );
@@ -174,7 +176,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   const date = new Date(2000, 1, 1, 13);
   vi.setSystemTime(date);
 
-  const playgrounds = manager.getPlaygrounds();
+  const playgrounds = manager.getConversations();
   await manager.submit(playgrounds[0].id, 'dummyUserInput');
 
   // Wait for assistant message to be completed
@@ -240,7 +242,7 @@ test('submit should send options', async () => {
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
   await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, undefined, 'tracking-1');
 
-  const playgrounds = manager.getPlaygrounds();
+  const playgrounds = manager.getConversations();
   await manager.submit(playgrounds[0].id, 'dummyUserInput', { temperature: 0.123, max_tokens: 45, top_p: 0.345 });
 
   const messages: unknown[] = [
@@ -279,12 +281,13 @@ test('creating a new playground should send new playground to frontend', async (
     'tracking-1',
   );
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_PLAYGROUNDS_V2_UPDATE,
+    id: Messages.MSG_CONVERSATIONS_UPDATE,
     body: [
       {
-        id: '0',
+        id: expect.anything(),
         modelId: 'model-1',
         name: 'a name',
+        messages: [],
       },
     ],
   });
@@ -303,12 +306,13 @@ test('creating a new playground with no name should send new playground to front
     'tracking-1',
   );
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_PLAYGROUNDS_V2_UPDATE,
+    id: Messages.MSG_CONVERSATIONS_UPDATE,
     body: [
       {
-        id: '0',
+        id: expect.anything(),
         modelId: 'model-1',
         name: 'playground 1',
+        messages: [],
       },
     ],
   });
@@ -414,7 +418,7 @@ test('delete conversation should delete the conversation', async () => {
 
   const conversations = manager.getConversations();
   expect(conversations.length).toBe(1);
-  manager.deletePlayground(conversations[0].id);
+  manager.deleteConversation(conversations[0].id);
   expect(manager.getConversations().length).toBe(0);
   expect(webviewMock.postMessage).toHaveBeenCalled();
 });
@@ -579,8 +583,8 @@ describe('system prompt', () => {
     const date = new Date(2000, 1, 1, 13);
     vi.setSystemTime(date);
 
-    const playgrounds = manager.getPlaygrounds();
-    await manager.submit(playgrounds[0].id, 'dummyUserInput');
+    const conversations = manager.getConversations();
+    await manager.submit(conversations[0].id, 'dummyUserInput');
 
     // Wait for assistant message to be completed
     await vi.waitFor(() => {

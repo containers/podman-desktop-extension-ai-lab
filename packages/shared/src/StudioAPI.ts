@@ -28,7 +28,6 @@ import type { Language } from 'postman-code-generators';
 import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
 import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
-import type { PlaygroundV2 } from './models/IPlaygroundV2';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -147,8 +146,6 @@ export abstract class StudioAPI {
   abstract createSnippet(options: RequestOptions, language: string, variant: string): Promise<string>;
 
   abstract requestCreatePlayground(name: string, model: ModelInfo, systemPrompt?: string): Promise<string>;
-
-  abstract getPlaygroundsV2(): Promise<PlaygroundV2[]>;
 
   /**
    * Delete a conversation

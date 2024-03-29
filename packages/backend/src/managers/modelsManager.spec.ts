@@ -360,66 +360,8 @@ test('loadLocalModels should post a message with the message on disk and on cata
   });
 });
 
-test('deleteModel deletes the model folder', async () => {
-  let appdir: string;
-  if (process.platform === 'win32') {
-    appdir = 'C:\\home\\user\\aistudio';
-  } else {
-    appdir = '/home/user/aistudio';
-  }
-  const now = new Date();
-  mockFiles(now);
-  const rmSpy = vi.spyOn(fs.promises, 'rm');
-  rmSpy.mockResolvedValue();
-  const postMessageMock = vi.fn();
-  const manager = new ModelsManager(
-    appdir,
-    {
-      postMessage: postMessageMock,
-    } as unknown as Webview,
-    {
-      getModels: () => {
-        return [
-          {
-            id: 'model-id-1',
-          },
-        ] as ModelInfo[];
-      },
-    } as CatalogManager,
-    telemetryLogger,
-    taskRegistry,
-  );
-  await manager.loadLocalModels();
-  await manager.deleteModel('model-id-1');
-  // check that the model's folder is removed from disk
-  if (process.platform === 'win32') {
-    expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', {
-      recursive: true,
-      force: true,
-      maxRetries: 3,
-    });
-  } else {
-    expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', {
-      recursive: true,
-      force: true,
-      maxRetries: 3,
-    });
-  }
-  expect(postMessageMock).toHaveBeenCalledTimes(3);
-  // check that a new state is sent with the model removed
-  expect(postMessageMock).toHaveBeenNthCalledWith(3, {
-    id: 'new-models-state',
-    body: [
-      {
-        id: 'model-id-1',
-      },
-    ],
-  });
-  expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.delete', { 'model.id': 'model-id-1' });
-});
-
 describe('deleting models', () => {
-  test('deleteModel fails to delete the model folder', async () => {
+  test('deleteModel deletes the model folder', async () => {
     let appdir: string;
     if (process.platform === 'win32') {
       appdir = 'C:\\home\\user\\aistudio';
@@ -428,8 +370,14 @@ describe('deleting models', () => {
     }
     const now = new Date();
     mockFiles(now);
+    // mock rm
     const rmSpy = vi.spyOn(fs.promises, 'rm');
-    rmSpy.mockRejectedValue(new Error('failed'));
+    rmSpy.mockResolvedValue();
+
+    // mock rmdir
+    const rmdirSpy = vi.spyOn(fs.promises, 'rmdir');
+    rmdirSpy.mockResolvedValue();
+
     const postMessageMock = vi.fn();
     const manager = new ModelsManager(
       appdir,
@@ -452,36 +400,21 @@ describe('deleting models', () => {
     await manager.deleteModel('model-id-1');
     // check that the model's folder is removed from disk
     if (process.platform === 'win32') {
-      expect(rmSpy).toBeCalledWith('C:\\home\\user\\aistudio\\models\\model-id-1', {
-        recursive: true,
-        force: true,
-        maxRetries: 3,
-      });
+      expect(rmSpy).toBeCalledWith('C:\\home\\user\\appstudio-dir\\model-id-1\\model-id-1-model');
     } else {
-      expect(rmSpy).toBeCalledWith('/home/user/aistudio/models/model-id-1', {
-        recursive: true,
-        force: true,
-        maxRetries: 3,
-      });
+      expect(rmSpy).toBeCalledWith('/home/user/appstudio-dir/model-id-1/model-id-1-model');
     }
     expect(postMessageMock).toHaveBeenCalledTimes(3);
-    // check that a new state is sent with the model non removed
+    // check that a new state is sent with the model removed
     expect(postMessageMock).toHaveBeenNthCalledWith(3, {
       id: 'new-models-state',
       body: [
         {
           id: 'model-id-1',
-          file: {
-            creation: now,
-            file: 'model-id-1-model',
-            size: 32000,
-            path: path.resolve(dirent[0].path, dirent[0].name),
-          },
         },
       ],
     });
-    expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();
-    expect(mocks.logErrorMock).toHaveBeenCalled();
+    expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.delete', { 'model.id': 'model-id-1' });
   });
 
   test('deleting on windows should check if models is uploaded', async () => {

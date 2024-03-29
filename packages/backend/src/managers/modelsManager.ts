@@ -53,7 +53,7 @@ export class ModelsManager implements Disposable {
 
   dispose(): void {
     this.#models.clear();
-    this.#watcher.dispose();
+    this.#watcher?.dispose();
   }
 
   async loadLocalModels() {
@@ -96,17 +96,25 @@ export class ModelsManager implements Disposable {
     const entries = fs.readdirSync(this.#modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {
+      // Check for corresponding models or tmp file that should be ignored
+      const model = this.#models.get(d.name);
+      if (model === undefined) {
+        continue;
+      }
+
       const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
+
+      // we support models with one file only for now
       if (modelEntries.length !== 1) {
-        // we support models with one file only for now
+        console.warn(`Directory ${d.path} contains ${modelEntries} file(s).`);
+        model.file = undefined;
         continue;
       }
       const modelFile = modelEntries[0];
-      const fullPath = path.resolve(d.path, d.name, modelFile);
 
-      // Check for corresponding models or tmp file that should be ignored
-      const model = this.#models.get(d.name);
-      if (model === undefined || fullPath.endsWith('.tmp')) {
+      // check full path
+      const fullPath = path.resolve(d.path, d.name, modelFile);
+      if (fullPath.endsWith('.tmp')) {
         continue;
       }
 
@@ -155,30 +163,41 @@ export class ModelsManager implements Disposable {
 
   async deleteModel(modelId: string): Promise<void> {
     const model = this.#models.get(modelId);
-    if (model) {
-      const modelDir = this.getLocalModelFolder(modelId);
-      model.state = 'deleting';
+    if(model === undefined) throw new Error('Model with id does not exist.');
+
+    // set state deleting
+    model.state = 'deleting';
+    await this.sendModelsInfo();
+
+    try {
+      // delete remote model
+      await this.deleteRemoteModel(model);
+      console.debug('model deleted remotely');
+
+      // deleting model file
+      await fs.promises.rm(this.getLocalModelPath(modelId));
+      model.file = model.state = undefined;
+      console.debug('model file deleted remotely');
+
+      // deleting model folder
+      await fs.promises.rmdir(this.getLocalModelFolder(modelId));
+      console.debug('model folder deleted remotely');
+
+      // upon success
+      this.telemetry.logUsage('model.delete', { 'model.id': modelId });
+    } catch (err: unknown) {
+      this.telemetry.logError('model.delete', {
+        'model.id': modelId,
+        message: 'error deleting model from disk',
+        error: err,
+      });
+      await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
+
+      // Let's reload the models manually to avoid any issue
+      model.state = undefined;
+      this.getLocalModelsFromDisk();
+    } finally {
       await this.sendModelsInfo();
-      try {
-        await this.deleteRemoteModel(model);
-        await fs.promises.rm(modelDir, { recursive: true, force: true, maxRetries: 3 });
-
-        this.telemetry.logUsage('model.delete', { 'model.id': modelId });
-        model.file = model.state = undefined;
-      } catch (err: unknown) {
-        this.telemetry.logError('model.delete', {
-          'model.id': modelId,
-          message: 'error deleting model from disk',
-          error: err,
-        });
-        await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
-
-        // Let's reload the models manually to avoid any issue
-        model.state = undefined;
-        this.getLocalModelsFromDisk();
-      } finally {
-        await this.sendModelsInfo();
-      }
     }
   }
 

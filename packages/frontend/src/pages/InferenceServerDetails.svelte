@@ -9,11 +9,12 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
+import { onMount } from 'svelte';
+import { router } from 'tinro';
 
 export let containerId: string | undefined = undefined;
 
-let service: InferenceServer | undefined;
-$: service = $inferenceServers.find(server => server.container.containerId === containerId);
+let service: InferenceServer | undefined = undefined;
 
 let selectedLanguage: string = 'curl';
 $: selectedLanguage;
@@ -71,6 +72,15 @@ $: {
     generate('curl', 'cURL');
   }
 }
+
+onMount(() => {
+  return inferenceServers.subscribe(servers => {
+    service = servers.find(server => server.container.containerId === containerId);
+    if (service === undefined) {
+      router.goto('/services');
+    }
+  });
+});
 </script>
 
 <NavPage lastPage="{{ name: 'Model Services', path: '/services' }}" title="Service Details" searchEnabled="{false}">

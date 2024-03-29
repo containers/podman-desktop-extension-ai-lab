@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { ApplicationCell } from '../../../pages/applications';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import { catalog } from '/@/stores/catalog';
 import { displayPorts } from '/@/utils/printers';
 
-export let object: ApplicationCell;
+export let object: ApplicationState;
 
 $: name = $catalog.models.find(r => r.id === object.modelId)?.name;
 </script>

@@ -1,12 +1,12 @@
 <script lang="ts">
-import type { ApplicationCell } from '../../../pages/applications';
 import { catalog } from '/@/stores/catalog';
 import { displayPorts } from '/@/utils/printers';
 import { faSquareArrowUpRight } from '@fortawesome/free-solid-svg-icons';
 import { studioClient } from '/@/utils/client';
 import Fa from 'svelte-fa';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 
-export let object: ApplicationCell;
+export let object: ApplicationState;
 
 $: name = $catalog.recipes.find(r => r.id === object.recipeId)?.name;
 

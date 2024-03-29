@@ -677,7 +677,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       pod,
       appPorts,
       modelPorts,
-      health: 'none',
+      health: 'starting',
     };
     this.updateApplicationState(recipeId, modelId, state);
   }
@@ -761,6 +761,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         state.health = podHealth;
         state.pod = pod;
         this.#applications.set({ recipeId, modelId }, state);
+        changes = true;
+      }
+      if (pod.Status !== state.pod.Status) {
+        state.pod = pod;
         changes = true;
       }
     }

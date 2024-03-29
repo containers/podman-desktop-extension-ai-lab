@@ -104,7 +104,7 @@ export class PlaygroundV2Manager implements Disposable {
       this.#conversationRegistry.submit(conversationId, {
         content: systemPrompt,
         role: 'system',
-        id: this.getUniqueId(),
+        id: this.#conversationRegistry.getUniqueId(),
         timestamp: Date.now(),
       } as SystemPrompt);
     }
@@ -187,7 +187,7 @@ export class PlaygroundV2Manager implements Disposable {
       content: userInput,
       options: options,
       role: 'user',
-      id: this.getUniqueId(),
+      id: this.#conversationRegistry.getUniqueId(),
       timestamp: Date.now(),
     } as UserChat);
 
@@ -220,7 +220,7 @@ export class PlaygroundV2Manager implements Disposable {
    * @param stream
    */
   private async processStream(conversationId: string, stream: Stream<ChatCompletionChunk>): Promise<void> {
-    const messageId = this.getUniqueId();
+    const messageId = this.#conversationRegistry.getUniqueId();
     this.#conversationRegistry.submit(conversationId, {
       role: 'assistant',
       choices: [],

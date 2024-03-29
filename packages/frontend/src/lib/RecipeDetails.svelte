@@ -23,7 +23,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 export let recipeId: string;
 export let modelId: string;
 
-$: appState = $applicationStates.find((app: ApplicationState) => app.recipeId === recipeId);
+$: appState = $applicationStates.find((app: ApplicationState) => app.recipeId === recipeId && app.modelId === modelId);
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 
 $: filteredTasks = filterByLabel($tasks, {

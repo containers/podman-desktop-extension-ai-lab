@@ -13,6 +13,7 @@ import type { Task } from '@shared/src/models/ITask';
 import { filterByLabel } from '/@/utils/taskUtils';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import ErrorMessage from '../lib/ErrorMessage.svelte';
+import { inferenceServers } from '/@/stores/inferenceServers';
 
 // List of the models available locally
 let localModels: ModelInfo[];
@@ -37,6 +38,7 @@ let error: boolean = false;
 // The containerId will be included in the tasks when the creation
 // process will be completed
 let containerId: string | undefined = undefined;
+$: available = containerId && $inferenceServers.some(server => server.container.containerId);
 
 const onContainerPortInput = (event: Event): void => {
   const raw = (event.target as HTMLInputElement).value;
@@ -182,7 +184,11 @@ onMount(async () => {
                 Create service
               </Button>
             {:else}
-              <Button title="Open service details" on:click="{openServiceDetails}" icon="{faLocationArrow}">
+              <Button
+                inProgress="{!available}"
+                title="Open service details"
+                on:click="{openServiceDetails}"
+                icon="{faLocationArrow}">
                 Open service details
               </Button>
             {/if}

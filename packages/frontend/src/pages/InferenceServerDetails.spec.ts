@@ -23,6 +23,7 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
 import type { Language } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
+import { router } from 'tinro';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -148,4 +149,13 @@ test('on mount should call createSnippet', async () => {
     'curl',
     'cURL',
   );
+});
+
+test('invalid container id should redirect to services page', async () => {
+  const gotoSpy = vi.spyOn(router, 'goto');
+  render(InferenceServerDetails, {
+    containerId: 'fakeContainerId',
+  });
+
+  expect(gotoSpy).toHaveBeenCalledWith('/services');
 });

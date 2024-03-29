@@ -23,6 +23,7 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
 import type { Task } from '@shared/src/models/ITask';
 import userEvent from '@testing-library/user-event';
+import type { InferenceServer } from '@shared/src/models/IInference';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -34,6 +35,8 @@ const mocks = vi.hoisted(() => {
         return () => {};
       },
     },
+    // server store
+    getInferenceServersMock: vi.fn(),
     // tasks store
     tasksSubscribeMock: vi.fn(),
     tasksQueriesMock: {
@@ -44,6 +47,15 @@ const mocks = vi.hoisted(() => {
     },
   };
 });
+
+vi.mock('../stores/inferenceServers', () => ({
+  inferenceServers: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getInferenceServersMock());
+      return () => {};
+    },
+  },
+}));
 
 vi.mock('../stores/modelsInfo', async () => {
   return {
@@ -71,6 +83,9 @@ beforeEach(() => {
 
   vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
+  mocks.getInferenceServersMock.mockReturnValue([
+    { container: { containerId: 'dummyContainerId' } } as InferenceServer,
+  ]);
 });
 
 test('create button should be disabled when no model id provided', async () => {

@@ -67,7 +67,7 @@ const generate = async (language: string, variant: string) => {
 };
 
 $: {
-  if (snippet === undefined && service !== undefined) {
+  if (!snippet && service) {
     generate('curl', 'cURL');
   }
 }

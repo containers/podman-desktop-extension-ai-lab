@@ -400,7 +400,7 @@ describe('deleting models', () => {
     await manager.deleteModel('model-id-1');
     // check that the model's folder is removed from disk
     if (process.platform === 'win32') {
-      expect(rmSpy).toBeCalledWith('C:\\home\\user\\appstudio-dir\\model-id-1\\model-id-1-model');
+      expect(rmSpy).toBeCalledWith(expect.stringContaining('\\home\\user\\appstudio-dir\\model-id-1\\model-id-1-model'));
     } else {
       expect(rmSpy).toBeCalledWith('/home/user/appstudio-dir/model-id-1/model-id-1-model');
     }

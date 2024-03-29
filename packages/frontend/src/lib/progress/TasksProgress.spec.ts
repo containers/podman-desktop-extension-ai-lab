@@ -17,9 +17,17 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { test, expect, describe } from 'vitest';
+import { test, expect, describe, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
+
+vi.mock('../../utils/client', async () => {
+  return {
+    studioClient: {
+      requestCancelToken: vi.fn(),
+    },
+  };
+});
 
 test('TasksProgress should not renderer any tasks', async () => {
   // render the component

@@ -163,7 +163,7 @@ export class ModelsManager implements Disposable {
 
   async deleteModel(modelId: string): Promise<void> {
     const model = this.#models.get(modelId);
-    if(model === undefined) throw new Error('Model with id does not exist.');
+    if (model === undefined) throw new Error('Model with id does not exist.');
 
     // set state deleting
     model.state = 'deleting';

@@ -99,7 +99,7 @@ onMount(() => {
           {#if !loading}
             {#if pullingTasks.length > 0}
               <Card classes="bg-charcoal-800 mt-4">
-                <div slot="content" class="text-base font-normal p-2">
+                <div slot="content" class="text-base font-normal p-2 w-full">
                   <div class="text-base mb-2">Downloading models</div>
                   <TasksProgress tasks="{pullingTasks}" />
                 </div>

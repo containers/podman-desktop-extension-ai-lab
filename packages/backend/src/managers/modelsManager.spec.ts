@@ -26,6 +26,7 @@ import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';
 import { TaskRegistry } from '../registries/TaskRegistry';
+import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -79,6 +80,10 @@ vi.mock('../utils/downloader', () => ({
     getTarget = mocks.getTargetMock;
   },
 }));
+
+const cancellationTokenRegistryMock = {
+    createCancellationTokenSource: vi.fn(),
+} as unknown as CancellationTokenRegistry;
 
 let taskRegistry: TaskRegistry;
 
@@ -166,6 +171,7 @@ test('getModelsInfo should get models in local directory', async () => {
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
+    cancellationTokenRegistryMock,
   );
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -212,6 +218,7 @@ test('getModelsInfo should return an empty array if the models folder does not e
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
+    cancellationTokenRegistryMock,
   );
   manager.getLocalModelsFromDisk();
   expect(manager.getModelsInfo()).toEqual([]);
@@ -249,6 +256,7 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
+    cancellationTokenRegistryMock,
   );
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -305,6 +313,7 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
+    cancellationTokenRegistryMock,
   );
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -342,6 +351,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
+    cancellationTokenRegistryMock,
   );
   await manager.loadLocalModels();
   expect(postMessageMock).toHaveBeenNthCalledWith(1, {
@@ -388,6 +398,7 @@ test('deleteModel deletes the model folder', async () => {
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
+    cancellationTokenRegistryMock,
   );
   await manager.loadLocalModels();
   await manager.deleteModel('model-id-1');
@@ -447,6 +458,7 @@ describe('deleting models', () => {
       } as CatalogManager,
       telemetryLogger,
       taskRegistry,
+      cancellationTokenRegistryMock,
     );
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
@@ -512,6 +524,7 @@ describe('deleting models', () => {
       } as CatalogManager,
       telemetryLogger,
       taskRegistry,
+      cancellationTokenRegistryMock,
     );
 
     await manager.loadLocalModels();
@@ -558,6 +571,7 @@ describe('deleting models', () => {
       } as CatalogManager,
       telemetryLogger,
       taskRegistry,
+      cancellationTokenRegistryMock,
     );
 
     await manager.loadLocalModels();
@@ -570,6 +584,7 @@ describe('deleting models', () => {
 
 describe('downloadModel', () => {
   test('download model if not already on disk', async () => {
+    vi.mocked(cancellationTokenRegistryMock.createCancellationTokenSource).mockReturnValue(99);
     const manager = new ModelsManager(
       'appdir',
       {} as Webview,
@@ -580,6 +595,7 @@ describe('downloadModel', () => {
       } as CatalogManager,
       telemetryLogger,
       taskRegistry,
+      cancellationTokenRegistryMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
@@ -590,6 +606,8 @@ describe('downloadModel', () => {
       url: 'url',
       name: 'name',
     } as ModelInfo);
+
+    expect(cancellationTokenRegistryMock.createCancellationTokenSource).toHaveBeenCalled();
     expect(updateTaskMock).toHaveBeenLastCalledWith({
       id: expect.any(String),
       name: 'Downloading model name',
@@ -597,6 +615,7 @@ describe('downloadModel', () => {
         'model-pulling': 'id',
       },
       state: 'loading',
+      cancellationToken: 99,
     });
   });
   test('retrieve model path if already on disk', async () => {
@@ -610,6 +629,7 @@ describe('downloadModel', () => {
       } as CatalogManager,
       telemetryLogger,
       taskRegistry,
+      cancellationTokenRegistryMock,
     );
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -642,6 +662,7 @@ describe('downloadModel', () => {
       } as CatalogManager,
       telemetryLogger,
       taskRegistry,
+      cancellationTokenRegistryMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
@@ -677,6 +698,7 @@ describe('downloadModel', () => {
       } as CatalogManager,
       telemetryLogger,
       taskRegistry,
+      cancellationTokenRegistryMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);

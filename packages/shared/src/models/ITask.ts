@@ -25,4 +25,5 @@ export interface Task {
   state: TaskState;
   progress?: number;
   labels?: { [id: string]: string };
+  cancellationToken?: number;
 }

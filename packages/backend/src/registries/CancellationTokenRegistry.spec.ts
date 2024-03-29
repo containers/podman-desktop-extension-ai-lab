@@ -85,3 +85,11 @@ test('disposing registry should dispose with cancel all tokens', () => {
   expect(source.cancel).toHaveBeenCalled();
   expect(source.dispose).toHaveBeenCalled();
 });
+
+test('creating cancellation token with function should register it', () => {
+  const registry = new CancellationTokenRegistry();
+  const func = vi.fn();
+  const source = registry.getCancellationTokenSource(registry.createCancellationTokenSource(func));
+
+  expect(source.token.onCancellationRequested).toHaveBeenCalledWith(func);
+});

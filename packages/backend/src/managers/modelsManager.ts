@@ -32,6 +32,7 @@ import { isCompletionEvent, isProgressEvent } from '../models/baseEvent';
 import { Uploader } from '../utils/uploader';
 import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/modelsUtils';
 import { getFirstRunningMachineName } from '../utils/podman';
+import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string;
@@ -46,6 +47,7 @@ export class ModelsManager implements Disposable {
     private catalogManager: CatalogManager,
     private telemetry: podmanDesktopApi.TelemetryLogger,
     private taskRegistry: TaskRegistry,
+    private cancellationTokenRegistry: CancellationTokenRegistry,
   ) {
     this.#modelsDir = path.join(this.appUserDirectory, 'models');
     this.#models = new Map();
@@ -226,6 +228,10 @@ export class ModelsManager implements Disposable {
       return existingDownloader.getTarget();
     }
 
+    // Propagate cancellation token from existing task to the new one
+    task.cancellationToken = this.taskRegistry.findTaskByLabels({'model-pulling': model.id})?.cancellationToken;
+    this.taskRegistry.updateTask(task);
+
     // If we have an existing downloader running we subscribe on its events
     return new Promise((resolve, reject) => {
       const disposable = existingDownloader.onEvent(event => {
@@ -294,7 +300,7 @@ export class ModelsManager implements Disposable {
     });
   }
 
-  private createDownloader(model: ModelInfo): Downloader {
+  private createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader {
     // Ensure path to model directory exist
     const destDir = path.join(this.appUserDirectory, 'models', model.id);
     if (!fs.existsSync(destDir)) {
@@ -303,7 +309,7 @@ export class ModelsManager implements Disposable {
 
     const target = path.resolve(destDir, path.basename(model.url));
     // Create a downloader
-    const downloader = new Downloader(model.url, target);
+    const downloader = new Downloader(model.url, target, abortSignal);
 
     this.#downloaders.set(model.id, downloader);
 
@@ -328,10 +334,15 @@ export class ModelsManager implements Disposable {
       return this.getLocalModelPath(model.id);
     }
 
+    const abortController = new AbortController();
+    task.cancellationToken = this.cancellationTokenRegistry.createCancellationTokenSource(() => {
+      abortController.abort('Cancel');
+    });
+
     // update task to loading state
     this.taskRegistry.updateTask(task);
 
-    const downloader = this.createDownloader(model);
+    const downloader = this.createDownloader(model, abortController.signal);
 
     // Capture downloader events
     downloader.onEvent(event => this.onDownloadUploadEvent(event, 'download'), this);

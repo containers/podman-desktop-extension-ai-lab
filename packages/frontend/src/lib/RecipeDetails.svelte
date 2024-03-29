@@ -82,7 +82,7 @@ const deleteLocalClone = () => {
 <div class="w-full bg-charcoal-600 rounded-md p-4">
   <div class="flex flex-row items-center">
     {#if appState && appState.pod}
-      <div class="grow flex overflow-hidden whitespace-nowrap items-center">
+      <div class="grow flex overflow-hidden whitespace-nowrap items-center" aria-label="app-status">
         <a title="Navigate to Pod details" href="{'javascript:void(0);'}" on:click="{navigateToPod}">
           <StatusIcon size="{22}" status="{appState.pod.Status.toUpperCase()}" icon="{PodIcon}" />
         </a>

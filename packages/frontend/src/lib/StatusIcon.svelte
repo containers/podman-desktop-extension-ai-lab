@@ -1,9 +1,10 @@
 <script lang="ts">
+import type { KnownStatus } from './StatusIcon';
 // status: one of RUNNING, STARTING, USED, CREATED, DELETING, or DEGRADED
 // any other status will result in a standard outlined box
 import Spinner from '/@/lib/button/Spinner.svelte';
 
-export let status = '';
+export let status: KnownStatus | string = '';
 export let icon: any = undefined;
 export let size = 20;
 

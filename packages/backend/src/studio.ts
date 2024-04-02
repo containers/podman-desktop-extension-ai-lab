@@ -80,7 +80,6 @@ export class Studio {
       throw new Error(`Extension is not compatible with Podman Desktop version below ${min.version}.`);
     }
 
-    this.telemetry = env.createTelemetryLogger();
     this.telemetry.logUsage('start');
 
     const extensionUri = this.#extensionContext.extensionUri;

@@ -17,21 +17,17 @@
  ***********************************************************************/
 
 import { EventEmitter, type Event } from '@podman-desktop/api';
-import { WSLUploader } from './WSLUploader';
+import { WSLUploader } from '../workers/uploader/WSLUploader';
 import { getDurationSecondsSince } from './utils';
 import type { CompletionEvent, BaseEvent } from '../models/baseEvent';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getLocalModelFile } from './modelsUtils';
-
-export interface UploadWorker {
-  canUpload: () => boolean;
-  upload: (modelInfo: ModelInfo) => Promise<string>;
-}
+import type { IWorker } from '../workers/IWorker';
 
 export class Uploader {
   readonly #_onEvent = new EventEmitter<BaseEvent>();
   readonly onEvent: Event<BaseEvent> = this.#_onEvent.event;
-  readonly #workers: UploadWorker[] = [];
+  readonly #workers: IWorker<ModelInfo, string>[] = [];
 
   constructor(
     private modelInfo: ModelInfo,
@@ -48,7 +44,7 @@ export class Uploader {
    */
   async perform(id: string): Promise<string> {
     // Find the uploader for the current operating system
-    const worker: UploadWorker | undefined = this.#workers.find(w => w.canUpload());
+    const worker: IWorker<ModelInfo, string> | undefined = this.#workers.find(w => w.enabled());
 
     // If none are found, we return the current path
     if (worker === undefined) {
@@ -66,7 +62,7 @@ export class Uploader {
       // measure performance
       const startTime = performance.now();
       // get new path
-      const remotePath = await worker.upload(this.modelInfo);
+      const remotePath = await worker.perform(this.modelInfo);
       // compute full time
       const durationSeconds = getDurationSecondsSince(startTime);
       // fire events

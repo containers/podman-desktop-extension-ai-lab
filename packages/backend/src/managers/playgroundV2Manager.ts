@@ -252,12 +252,13 @@ export class PlaygroundV2Manager implements Disposable {
     return this.#conversationRegistry.getAll();
   }
 
-  getFreeName(): string {
+  private getFreeName(): string {
+    const names = new Set(this.getConversations().map(c => c.name));
     let i = 0;
     let name: string;
     do {
       name = `playground ${++i}`;
-    } while (this.getConversations().find(p => p.name === name));
+    } while (names.has(name));
     return name;
   }
 

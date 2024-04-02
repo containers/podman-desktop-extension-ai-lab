@@ -63,7 +63,7 @@ describe('generateContainerCreateOptions', () => {
     expect(result).toStrictEqual({
       Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
       Detach: true,
-      Env: ['MODEL_PATH=/models/dummyFile'],
+      Env: ['MODEL_PATH=/models/dummyFile', 'HOST=0.0.0.0', 'PORT=8000'],
       ExposedPorts: {
         '8888': {},
       },

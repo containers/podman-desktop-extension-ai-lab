@@ -295,6 +295,9 @@ export class ModelsManager implements Disposable {
         this.sendModelsInfo().catch((err: unknown) => {
           console.error('Something went wrong while sending models info.', err);
         });
+
+        // cleanup downloader
+        this.#downloaders.delete(event.id);
       }
       this.taskRegistry.updateTask(task); // update task
     });

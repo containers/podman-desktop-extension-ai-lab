@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { Uri, window, env, version } from '@podman-desktop/api';
-import { satisfies } from 'semver';
+import { satisfies, minVersion } from 'semver';
 import type {
   ExtensionContext,
   TelemetryLogger,
@@ -72,11 +72,12 @@ export class Studio {
 
     // Ensure version is above minimum podman desktop version supported
     if (!version || !satisfies(version, engines['podman-desktop'])) {
+      const min = minVersion(engines['podman-desktop']);
       this.telemetry.logError('start.incompatible', {
         version: version,
-        message: 'error activating extension on version below 1.8.0',
+        message: `error activating extension on version below ${min.version}`,
       });
-      throw new Error('Extension is not compatible with Podman Desktop version below 1.8.');
+      throw new Error(`Extension is not compatible with Podman Desktop version below ${min.version}.`);
     }
 
     this.telemetry = env.createTelemetryLogger();

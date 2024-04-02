@@ -39,6 +39,12 @@ const mocks = vi.hoisted(() => ({
   logErrorMock: vi.fn(),
 }));
 
+vi.mock('../package.json', () => ({
+  engines: {
+    'podman-desktop': '>=1.0.0',
+  },
+}));
+
 vi.mock('@podman-desktop/api', async () => {
   return {
     version: '1.8.0',
@@ -117,15 +123,15 @@ test('check activate', async () => {
 });
 
 test('check activate incompatible', async () => {
-  (version as string) = '1.7.0';
+  (version as string) = '0.7.0';
   await expect(async () => {
     await studio.activate();
-  }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.8.');
+  }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0.');
 
   // expect the activate method to be called on the studio class
   expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
-    version: '1.7.0',
-    message: 'error activating extension on version below 1.8.0',
+    version: '0.7.0',
+    message: 'error activating extension on version below 1.0.0',
   });
 });
 

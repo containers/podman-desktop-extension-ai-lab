@@ -23,9 +23,9 @@ export interface ModelInfo {
   name: string;
   description: string;
   hw: string;
-  registry: string;
-  license: string;
-  url: string;
+  registry?: string;
+  license?: string;
+  url?: string;
   file?: LocalModelInfo;
   state?: 'deleting';
   memory: number;

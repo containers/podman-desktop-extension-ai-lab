@@ -16,7 +16,10 @@ import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
+import { catalog } from '../stores/catalog';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
+import Button from '../lib/button/Button.svelte';
+import { router } from 'tinro';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
@@ -83,6 +86,10 @@ onMount(() => {
     localModelsUnsubscribe();
   };
 });
+
+async function importModel() {
+  router.goto('/models/import');
+}
 </script>
 
 <NavPage title="Models" searchEnabled="{false}" loading="{loading}">
@@ -91,7 +98,9 @@ onMount(() => {
     <Tab title="Downloaded" url="models/downloaded" />
     <Tab title="Available" url="models/available" />
   </svelte:fragment>
-
+  <svelte:fragment slot="additional-actions">
+    <Button on:click="{importModel}">Import</Button>
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="min-w-full min-h-full flex-1">

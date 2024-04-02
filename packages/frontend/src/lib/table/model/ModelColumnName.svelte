@@ -12,5 +12,10 @@ function openDetails() {
   <div class="text-sm text-gray-300 overflow-hidden text-ellipsis w-full">
     {object.name}
   </div>
-  <span class="text-xs text-gray-700">{object.registry} - {object.license}</span>
+  {#if object.registry || object.license}
+    <span class="text-xs text-gray-700">{object.registry} - {object.license}</span>
+  {/if}
+  {#if !object.registry && !object.url}
+    <span class="text-xs text-gray-700">Imported by User</span>
+  {/if}
 </button>

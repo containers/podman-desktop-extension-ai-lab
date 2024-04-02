@@ -19,6 +19,7 @@ import ServiceDetails from '/@/pages/InferenceServerDetails.svelte';
 import Playgrounds from './pages/Playgrounds.svelte';
 import Playground from './pages/Playground.svelte';
 import PlaygroundCreate from './pages/PlaygroundCreate.svelte';
+import ImportModels from './pages/ImportModels.svelte';
 
 router.mode.hash();
 
@@ -73,8 +74,13 @@ onMount(() => {
         <Recipe recipeId="{meta.params.id}" />
       </Route>
 
-      <Route path="/models/*">
-        <Models />
+      <Route path="/models/*" firstmatch>
+        <Route path="/import">
+          <ImportModels />
+        </Route>
+        <Route path="/*">
+          <Models />
+        </Route>
       </Route>
 
       <Route path="/model/:id/*" let:meta>

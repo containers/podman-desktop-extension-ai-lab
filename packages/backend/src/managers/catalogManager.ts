@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import fs from 'node:fs';
 import path from 'node:path';
 import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
@@ -25,9 +26,13 @@ import { Messages } from '@shared/Messages';
 import { type Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
+import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+
+export type catalogUpdateHandle = () => void;
 
 export class CatalogManager extends Publisher<ApplicationCatalog> implements Disposable {
   private catalog: ApplicationCatalog;
+  #catalogUpdateListeners: catalogUpdateHandle[];
   #disposables: Disposable[];
 
   constructor(
@@ -42,6 +47,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       recipes: [],
     };
 
+    this.#catalogUpdateListeners = [];
     this.#disposables = [];
   }
 
@@ -59,7 +65,12 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
 
   private onCatalogUpdated(content: ApplicationCatalog): void {
     this.catalog = content;
+    this.#catalogUpdateListeners.forEach(listener => listener());
     this.notify();
+  }
+
+  onCatalogUpdate(listener: catalogUpdateHandle): void {
+    this.#catalogUpdateListeners.push(listener);
   }
 
   dispose(): void {
@@ -92,5 +103,39 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       throw new Error(`No recipe found having id ${recipeId}`);
     }
     return recipe;
+  }
+
+  async addLocalModelsToCatalog(models: LocalModelImportInfo[]): Promise<void> {
+    // we copy the current catalog in another object and update it with the model
+    // then write it to the custom catalog path. If it exists it will be overwritten by default
+    const tmpCatalog: ApplicationCatalog = Object.assign({}, this.catalog);
+
+    for (const model of models) {
+      const statFile = await fs.promises.stat(model.path);
+      tmpCatalog.models.push({
+        id: model.path,
+        name: model.name,
+        description: `Model imported from ${model.path}`,
+        hw: 'CPU',
+        file: {
+          path: path.dirname(model.path),
+          file: path.basename(model.path),
+        },
+        memory: statFile.size,
+      });
+    }
+
+    const customCatalog = path.resolve(this.appUserDirectory, 'catalog.json');
+    return fs.promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
+  }
+
+  async removeLocalModelFromCatalog(modelId: string): Promise<void> {
+    // we copy the current catalog in another object and remove from it the model with modelId
+    // then write it to the custom catalog path.
+    const tmpCatalog: ApplicationCatalog = Object.assign({}, this.catalog);
+    tmpCatalog.models = tmpCatalog.models.filter(m => m.url !== '' && m.id !== modelId);
+
+    const customCatalog = path.resolve(this.appUserDirectory, 'catalog.json');
+    return fs.promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
   }
 }

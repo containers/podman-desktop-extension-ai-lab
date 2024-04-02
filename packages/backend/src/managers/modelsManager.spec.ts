@@ -705,14 +705,19 @@ describe('downloadModel', () => {
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
 
     mocks.onEventDownloadMock.mockImplementation(listener => {
-      listener({
-        id: 'id',
-        status: 'completed',
-        duration: 1000,
-      });
+      setTimeout(() => {
+        listener({
+          id: 'id',
+          status: 'completed',
+          duration: 1000,
+        });
+      }, 1000);
+      return {
+        dispose: vi.fn(),
+      };
     });
 
-    await manager.requestDownloadModel({
+    void manager.requestDownloadModel({
       id: 'id',
       url: 'url',
       name: 'name',

@@ -23,7 +23,6 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { WindowsWorker } from '../WindowsWorker';
 
 export class WSLUploader extends WindowsWorker<ModelInfo, string> {
-
   async perform(modelInfo: ModelInfo): Promise<string> {
     const localPath = getLocalModelFile(modelInfo);
 

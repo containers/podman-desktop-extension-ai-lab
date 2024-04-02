@@ -125,7 +125,7 @@ test('check activate incompatible', async () => {
   // expect the activate method to be called on the studio class
   expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
     version: '1.7.0',
-    message: 'error activating extension on version bellow 1.8.0',
+    message: 'error activating extension on version below 1.8.0',
   });
 });
 

@@ -1,6 +1,8 @@
 <script lang="ts">
 // Full duplicates
 import type { TinroRouteMeta } from 'tinro';
+import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
+import Fa from 'svelte-fa';
 
 export let title: string;
 export let href: string;
@@ -8,6 +10,7 @@ export let meta: TinroRouteMeta;
 export let section = false;
 export let expanded = false;
 export let child = false;
+export let icon: IconDefinition | undefined = undefined;
 
 let selected: boolean;
 $: selected = meta.url === href;
@@ -27,7 +30,7 @@ function rotate(node: unknown, { clockwise = true }) {
 
 <a class="no-underline" href="{href}" aria-label="{title}" on:click="{() => (expanded = !expanded)}">
   <div
-    class="flex w-full pr-1 py-2 justify-between items-center cursor-pointer border-l-[4px] border-charcoal-600"
+    class="flex w-full pr-1 py-2 justify-between items-center cursor-pointer border-l-[4px] border-charcoal-800"
     class:text-white="{selected}"
     class:pl-3="{!child}"
     class:pl-4="{child}"
@@ -41,7 +44,12 @@ function rotate(node: unknown, { clockwise = true }) {
     class:hover:text-gray-300="{!selected}"
     class:hover:bg-charcoal-500="{!selected}"
     class:hover:border-charcoal-500="{!selected}">
-    <span class="block group-hover:block" class:capitalize="{!child}">{title}</span>
+    <span class="group-hover:block flex flex-row items-center" class:capitalize="{!child}">
+      {#if icon}
+        <Fa class="mr-4" icon="{icon}" />
+      {/if}
+      {title}
+    </span>
     {#if section}
       <div class="px-2 relative w-4 h-4">
         {#if expanded}

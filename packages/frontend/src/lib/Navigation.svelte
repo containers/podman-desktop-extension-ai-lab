@@ -2,7 +2,7 @@
 import SettingsNavItem from '/@/lib/SettingsNavItem.svelte';
 import type { TinroRouteMeta } from 'tinro';
 import Fa from 'svelte-fa';
-import { faBrain } from '@fortawesome/free-solid-svg-icons';
+import { faBookOpen, faBrain, faMessage, faRocket, faServer } from '@fortawesome/free-solid-svg-icons';
 
 export let meta: TinroRouteMeta;
 </script>
@@ -17,16 +17,17 @@ export let meta: TinroRouteMeta;
     </a>
   </div>
   <div class="h-full overflow-hidden hover:overflow-y-auto" style="margin-bottom:auto">
-    <SettingsNavItem title="Recipe Catalog" href="/recipes" bind:meta="{meta}" />
+    <!-- AI Apps -->
+    <span class="pl-3 text-sm text-gray-700">AI APPS</span>
+    <SettingsNavItem icon="{faBookOpen}" title="Recipes Catalog" href="/recipes" bind:meta="{meta}" />
+    <SettingsNavItem icon="{faServer}" title="Running" href="/applications" bind:meta="{meta}" />
 
-    <SettingsNavItem title="AI Apps" href="/applications" bind:meta="{meta}" />
-
-    <SettingsNavItem title="Models" href="/models" bind:meta="{meta}" />
-
-    <SettingsNavItem title="Playgrounds" href="/playgrounds" bind:meta="{meta}" />
-
-    <SettingsNavItem title="Model Services" href="/services" bind:meta="{meta}" />
-
-    <SettingsNavItem title="Preferences" href="/preferences" bind:meta="{meta}" />
+    <!-- Models -->
+    <div class="pl-3 mt-2">
+      <span class="text-sm text-gray-700">MODELS</span>
+    </div>
+    <SettingsNavItem icon="{faBookOpen}" title="Catalog" href="/models" bind:meta="{meta}" />
+    <SettingsNavItem icon="{faRocket}" title="Services" href="/services" bind:meta="{meta}" />
+    <SettingsNavItem icon="{faMessage}" title="Playgrounds" href="/playgrounds" bind:meta="{meta}" />
   </div>
 </nav>

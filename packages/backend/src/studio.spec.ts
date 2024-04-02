@@ -49,7 +49,11 @@ vi.mock('@podman-desktop/api', async () => {
   return {
     version: '1.8.0',
     fs: {
-      createFileSystemWatcher: vi.fn(),
+      createFileSystemWatcher: () => ({
+        onDidCreate: vi.fn(),
+        onDidDelete: vi.fn(),
+        onDidChange: vi.fn(),
+      }),
     },
     EventEmitter: vi.fn(),
     Uri: class {
@@ -133,6 +137,13 @@ test('check activate incompatible', async () => {
     version: '0.7.0',
     message: 'error activating extension on version below 1.0.0',
   });
+});
+
+test('check activate next value', async () => {
+  (version as string) = '1.0.1-next';
+  await studio.activate();
+
+  expect(mocks.logErrorMock).not.toHaveBeenCalled();
 });
 
 test('check deactivate ', async () => {

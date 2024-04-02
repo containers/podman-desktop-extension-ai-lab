@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { Uri, window, env, version } from '@podman-desktop/api';
-import { satisfies, minVersion } from 'semver';
+import { satisfies, minVersion, coerce } from 'semver';
 import type {
   ExtensionContext,
   TelemetryLogger,
@@ -71,7 +71,7 @@ export class Studio {
     this.telemetry = env.createTelemetryLogger();
 
     // Ensure version is above minimum podman desktop version supported
-    if (!version || !satisfies(version, engines['podman-desktop'])) {
+    if (!version || !satisfies(coerce(version), engines['podman-desktop'])) {
       const min = minVersion(engines['podman-desktop']);
       this.telemetry.logError('start.incompatible', {
         version: version,

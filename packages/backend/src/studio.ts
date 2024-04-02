@@ -139,6 +139,7 @@ export class Studio {
       this.catalogManager,
       this.telemetry,
       taskRegistry,
+      cancellationTokenRegistry,
     );
     const localRepositoryRegistry = new LocalRepositoryRegistry(this.#panel.webview, appUserDirectory);
     localRepositoryRegistry.init(this.catalogManager.getRecipes());

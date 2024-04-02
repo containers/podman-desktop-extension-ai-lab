@@ -1,7 +1,18 @@
 <script lang="ts">
 import type { Task } from '@shared/src/models/ITask';
+import Fa from 'svelte-fa';
+import { faClose } from '@fortawesome/free-solid-svg-icons';
+import { studioClient } from '/@/utils/client';
 
 export let task: Task;
+
+const cancel = () => {
+  if (task.cancellationToken !== undefined) {
+    studioClient.requestCancelToken(task.cancellationToken).catch((err: unknown) => {
+      console.error('Something went wrong while trying to cancel token', err);
+    });
+  }
+};
 </script>
 
 <div class="flex flex-row items-center">
@@ -48,4 +59,9 @@ export let task: Task;
     {task.name}
     {#if task.progress}({Math.floor(task.progress)}%){/if}
   </span>
+  <div class="flex flex-grow justify-end">
+    {#if task.state === 'loading' && task.cancellationToken !== undefined}
+      <button on:click="{cancel}" title="Cancel"><Fa icon="{faClose}" /></button>
+    {/if}
+  </div>
 </div>

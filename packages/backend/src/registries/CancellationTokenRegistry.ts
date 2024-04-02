@@ -26,11 +26,18 @@ export class CancellationTokenRegistry implements Disposable {
     this.#callbacksCancellableToken = new Map<number, CancellationTokenSource>();
   }
 
-  createCancellationTokenSource(): number {
+  /**
+   * Creating a cancellation token.
+   * @param func an optional function that will be called when the cancel action will be triggered
+   */
+  createCancellationTokenSource(func?: () => void): number {
     // keep track of this request
     this.#callbackId++;
 
     const token = new CancellationTokenSource();
+    if (func !== undefined) {
+      token.token.onCancellationRequested(func);
+    }
 
     // store the callback that will resolve the promise
     this.#callbacksCancellableToken.set(this.#callbackId, token);

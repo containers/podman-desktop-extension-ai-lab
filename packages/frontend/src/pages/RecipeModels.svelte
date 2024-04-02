@@ -6,6 +6,7 @@ import { catalog } from '/@/stores/catalog';
 import ModelColumnRecipeSelection from '../lib/table/model/ModelColumnRecipeSelection.svelte';
 import ModelColumnRecipeRecommended from '../lib/table/model/ModelColumnRecipeRecommended.svelte';
 import type { RecipeModelInfo } from '../models/RecipeModelInfo';
+import ModelColumnIcon from '/@/lib/table/model/ModelColumnIcon.svelte';
 
 export let modelsIds: string[] | undefined;
 export let selectedModelId: string;
@@ -24,6 +25,7 @@ $: models = $catalog.models
 const columns: Column<RecipeModelInfo>[] = [
   new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
   new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeRecommended }),
+  new Column<RecipeModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
   new Column<RecipeModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
 ];
 const row = new Row<RecipeModelInfo>({});

@@ -77,7 +77,7 @@ export class Studio {
         version: version,
         message: `error activating extension on version below ${min.version}`,
       });
-      throw new Error(`Extension is not compatible with Podman Desktop version below ${min.version}. Currently ${version}`);
+      throw new Error(`Extension is not compatible with Podman Desktop version below ${min.version}.`);
     }
 
     this.telemetry = env.createTelemetryLogger();

@@ -120,7 +120,7 @@ test('check activate incompatible', async () => {
   (version as string) = '1.7.0';
   await expect(async () => {
     await studio.activate();
-  }).rejects.toThrowError('Extension is not compatible with PodmanDesktop version bellow 1.8.');
+  }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.8.');
 
   // expect the activate method to be called on the studio class
   expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {

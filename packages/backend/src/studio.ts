@@ -73,9 +73,9 @@ export class Studio {
     if (!version || lt(version, '1.8.0')) {
       this.telemetry.logError('start.incompatible', {
         version: version,
-        message: 'error activating extension on version bellow 1.8.0',
+        message: 'error activating extension on version below 1.8.0',
       });
-      throw new Error('Extension is not compatible with PodmanDesktop version bellow 1.8.');
+      throw new Error('Extension is not compatible with Podman Desktop version below 1.8.');
     }
 
     this.telemetry = env.createTelemetryLogger();

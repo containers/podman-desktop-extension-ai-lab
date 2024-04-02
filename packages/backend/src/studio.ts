@@ -16,7 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { Uri, window, env } from '@podman-desktop/api';
+import { Uri, window, env, version } from '@podman-desktop/api';
+import { satisfies, minVersion } from 'semver';
 import type {
   ExtensionContext,
   TelemetryLogger,
@@ -41,6 +42,7 @@ import { InferenceManager } from './managers/inference/inferenceManager';
 import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
+import { engines } from '../package.json';
 
 // TODO: Need to be configured
 export const AI_LAB_FOLDER = path.join('podman-desktop', 'ai-lab');
@@ -66,6 +68,17 @@ export class Studio {
 
   public async activate(): Promise<void> {
     console.log('starting AI Lab extension');
+    this.telemetry = env.createTelemetryLogger();
+
+    // Ensure version is above minimum podman desktop version supported
+    if (!version || !satisfies(version, engines['podman-desktop'])) {
+      const min = minVersion(engines['podman-desktop']);
+      this.telemetry.logError('start.incompatible', {
+        version: version,
+        message: `error activating extension on version below ${min.version}`,
+      });
+      throw new Error(`Extension is not compatible with Podman Desktop version below ${min.version}.`);
+    }
 
     this.telemetry = env.createTelemetryLogger();
     this.telemetry.logUsage('start');

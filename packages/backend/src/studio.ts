@@ -16,7 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { Uri, window, env } from '@podman-desktop/api';
+import { Uri, window, env, version } from '@podman-desktop/api';
+import { lt } from 'semver';
 import type {
   ExtensionContext,
   TelemetryLogger,
@@ -66,6 +67,16 @@ export class Studio {
 
   public async activate(): Promise<void> {
     console.log('starting AI Lab extension');
+    this.telemetry = env.createTelemetryLogger();
+
+    // Ensure version is above 1.8.0
+    if (!version || lt(version, '1.8.0')) {
+      this.telemetry.logError('start.incompatible', {
+        version: version,
+        message: 'error activating extension on version bellow 1.8.0',
+      });
+      throw new Error('Extension is not compatible with PodmanDesktop version bellow 1.8.');
+    }
 
     this.telemetry = env.createTelemetryLogger();
     this.telemetry.logUsage('start');

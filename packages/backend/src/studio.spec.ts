@@ -20,7 +20,7 @@
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { Studio } from './studio';
-import { type ExtensionContext, EventEmitter } from '@podman-desktop/api';
+import { type ExtensionContext, EventEmitter, version } from '@podman-desktop/api';
 
 import * as fs from 'node:fs';
 
@@ -36,10 +36,12 @@ const mocks = vi.hoisted(() => ({
   listContainers: vi.fn(),
   getContainerConnections: vi.fn(),
   postMessage: vi.fn(),
+  logErrorMock: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
   return {
+    version: '1.8.0',
     fs: {
       createFileSystemWatcher: vi.fn(),
     },
@@ -60,6 +62,7 @@ vi.mock('@podman-desktop/api', async () => {
     env: {
       createTelemetryLogger: () => ({
         logUsage: vi.fn(),
+        logError: mocks.logErrorMock,
       }),
     },
     containerEngine: {
@@ -100,7 +103,8 @@ afterEach(() => {
   console.log = originalConsoleLog;
 });
 
-test('check activate ', async () => {
+test('check activate', async () => {
+  expect(version).toBe('1.8.0');
   mocks.listContainers.mockReturnValue([]);
   mocks.getContainerConnections.mockReturnValue([]);
   vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
@@ -110,6 +114,19 @@ test('check activate ', async () => {
 
   // expect the activate method to be called on the studio class
   expect(consoleLogMock).toBeCalledWith('starting AI Lab extension');
+});
+
+test('check activate incompatible', async () => {
+  (version as string) = '1.7.0';
+  await expect(async () => {
+    await studio.activate();
+  }).rejects.toThrowError('Extension is not compatible with PodmanDesktop version bellow 1.8.');
+
+  // expect the activate method to be called on the studio class
+  expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
+    version: '1.7.0',
+    message: 'error activating extension on version bellow 1.8.0',
+  });
 });
 
 test('check deactivate ', async () => {

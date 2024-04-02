@@ -37,7 +37,6 @@ const mocks = vi.hoisted(() => ({
   getContainerConnections: vi.fn(),
   postMessage: vi.fn(),
   logErrorMock: vi.fn(),
-  createFileSystemWatcherMock: vi.fn(),
 }));
 
 vi.mock('../package.json', () => ({

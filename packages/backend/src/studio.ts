@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { Uri, window, env, version } from '@podman-desktop/api';
-import { lt } from 'semver';
+import { satisfies } from 'semver';
 import type {
   ExtensionContext,
   TelemetryLogger,
@@ -42,6 +42,7 @@ import { InferenceManager } from './managers/inference/inferenceManager';
 import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
+import { engines } from '../package.json';
 
 // TODO: Need to be configured
 export const AI_LAB_FOLDER = path.join('podman-desktop', 'ai-lab');
@@ -69,8 +70,8 @@ export class Studio {
     console.log('starting AI Lab extension');
     this.telemetry = env.createTelemetryLogger();
 
-    // Ensure version is above 1.8.0
-    if (!version || lt(version, '1.8.0')) {
+    // Ensure version is above minimum podman desktop version supported
+    if (!version || !satisfies(version, engines['podman-desktop'])) {
       this.telemetry.logError('start.incompatible', {
         version: version,
         message: 'error activating extension on version below 1.8.0',

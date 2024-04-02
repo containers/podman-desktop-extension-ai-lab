@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { vi, test, expect, beforeEach } from 'vitest';
+import { test, expect } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import SettingsNavItem from '/@/lib/SettingsNavItem.svelte';
 import type { TinroRouteMeta } from 'tinro';

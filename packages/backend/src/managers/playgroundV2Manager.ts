@@ -93,7 +93,7 @@ export class PlaygroundV2Manager implements Disposable {
     trackingId: string,
   ): Promise<string> {
     if (!name) {
-      name = `playground ${this.getUniqueId()}`;
+      name = this.getFreeName();
     }
 
     // Create conversation
@@ -124,10 +124,6 @@ export class PlaygroundV2Manager implements Disposable {
     }
 
     return conversationId;
-  }
-
-  private getUniqueId(): string {
-    return `${++this.#counter}`;
   }
 
   /**
@@ -254,6 +250,15 @@ export class PlaygroundV2Manager implements Disposable {
 
   getConversations(): Conversation[] {
     return this.#conversationRegistry.getAll();
+  }
+
+  getFreeName(): string {
+    let i = 0;
+    let name: string;
+    do {
+      name = `playground ${++i}`;
+    } while (this.getConversations().find(p => p.name === name));
+    return name;
   }
 
   dispose(): void {

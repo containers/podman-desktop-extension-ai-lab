@@ -23,7 +23,7 @@ import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Messages } from '@shared/Messages';
-import { type Disposable, type Webview } from '@podman-desktop/api';
+import { Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
@@ -69,8 +69,11 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     this.notify();
   }
 
-  onCatalogUpdate(listener: catalogUpdateHandle): void {
+  onCatalogUpdate(listener: catalogUpdateHandle): Disposable {
     this.#catalogUpdateListeners.push(listener);
+    return Disposable.create(() => {
+      this.#catalogUpdateListeners.splice(this.#catalogUpdateListeners.indexOf(listener), 1);
+    });
   }
 
   dispose(): void {

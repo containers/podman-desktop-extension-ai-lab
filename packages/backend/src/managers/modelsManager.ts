@@ -38,6 +38,7 @@ export class ModelsManager implements Disposable {
   #modelsDir: string;
   #models: Map<string, ModelInfo>;
   #watcher?: podmanDesktopApi.FileSystemWatcher;
+  #disposables: Disposable[];
 
   #downloaders: Map<string, Downloader> = new Map<string, Downloader>();
 
@@ -51,19 +52,22 @@ export class ModelsManager implements Disposable {
   ) {
     this.#modelsDir = path.join(this.appUserDirectory, 'models');
     this.#models = new Map();
+    this.#disposables = [];
   }
 
   init() {
-    this.catalogManager.onCatalogUpdate(() => {
+    const disposable = this.catalogManager.onCatalogUpdate(() => {
       this.loadLocalModels().catch((err: unknown) => {
         console.error(`Something went wrong when loading local models`, err);
       });
     });
+    this.#disposables.push(disposable);
   }
 
   dispose(): void {
     this.#models.clear();
     this.#watcher.dispose();
+    this.#disposables.forEach(d => d.dispose());
   }
 
   async loadLocalModels() {

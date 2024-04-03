@@ -16,9 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import simpleGit, { type PullResult, type RemoteWithRefs, type StatusResult } from 'simple-git';
 import { window } from '@podman-desktop/api';
-import { statSync, existsSync, mkdirSync, rmSync } from 'node:fs';
+import fs, { statSync, existsSync, mkdirSync, rmSync } from 'node:fs';
+import git from 'isomorphic-git';
+import http from 'isomorphic-git/http/node';
 
 export interface GitCloneInfo {
   repository: string;
@@ -29,38 +30,91 @@ export interface GitCloneInfo {
 export class GitManager {
   async cloneRepository(gitCloneInfo: GitCloneInfo) {
     // clone repo
-    await simpleGit().clone(gitCloneInfo.repository, gitCloneInfo.targetDirectory);
-    // checkout to specific branch/commit if specified
-    if (gitCloneInfo.ref) {
-      await simpleGit(gitCloneInfo.targetDirectory).checkout([gitCloneInfo.ref]);
-    }
+    await git.clone({
+      fs,
+      http,
+      dir: gitCloneInfo.targetDirectory,
+      url: gitCloneInfo.repository,
+      ref: gitCloneInfo.ref,
+      singleBranch: true,
+      depth: 1,
+    });
   }
 
-  async getRepositoryRemotes(directory: string): Promise<RemoteWithRefs[]> {
-    return simpleGit(directory).getRemotes(true);
+  async getRepositoryRemotes(directory: string): Promise<
+    {
+      remote: string;
+      url: string;
+    }[]
+  > {
+    return git.listRemotes({ fs, dir: directory });
   }
 
-  async getRepositoryStatus(directory: string): Promise<StatusResult> {
-    return simpleGit(directory).status();
+  /* see https://isomorphic-git.org/docs/en/statusMatrix
+   *
+   * - The HEAD status is either absent (0) or present (1).
+   * - The WORKDIR status is either absent (0), identical to HEAD (1), or different from HEAD (2).
+   * - The STAGE status is either absent (0), identical to HEAD (1), identical to WORKDIR (2), or different from WORKDIR (3).
+   *
+   * // example StatusMatrix
+   * [
+   *   ["a.txt", 0, 2, 0], // new, untracked
+   *   ["b.txt", 0, 2, 2], // added, staged
+   *   ["c.txt", 0, 2, 3], // added, staged, with unstaged changes
+   *   ["d.txt", 1, 1, 1], // unmodified
+   *   ["e.txt", 1, 2, 1], // modified, unstaged
+   *   ["f.txt", 1, 2, 2], // modified, staged
+   *   ["g.txt", 1, 2, 3], // modified, staged, with unstaged changes
+   *   ["h.txt", 1, 0, 1], // deleted, unstaged
+   *   ["i.txt", 1, 0, 0], // deleted, staged
+   *   ["j.txt", 1, 2, 0], // deleted, staged, with unstaged-modified changes (new file of the same name)
+   *   ["k.txt", 1, 1, 0], // deleted, staged, with unstaged changes (new file of the same name)
+   * ]
+   */
+  async getRepositoryStatus(directory: string): Promise<{
+    modified: string[];
+    created: string[];
+    deleted: string[];
+    clean: boolean;
+  }> {
+    const status = await git.statusMatrix({
+      fs,
+      dir: directory,
+    });
+
+    const FILE = 0,
+      HEAD = 1,
+      WORKDIR = 2,
+      STAGE = 3;
+
+    const created = status.filter(row => row[HEAD] === 0 && row[WORKDIR] === 2).map(row => row[FILE]);
+
+    const deleted = status
+      .filter(row => row[HEAD] === 1 && (row[WORKDIR] === 0 || row[STAGE] === 0))
+      .map(row => row[FILE]);
+
+    const modified = status.filter(row => row[HEAD] === 1 && row[WORKDIR] === 2).map(row => row[FILE]);
+
+    const notClean = status.filter(row => row[HEAD] !== 1 || row[WORKDIR] !== 1 || row[STAGE] !== 1);
+
+    return {
+      modified,
+      created,
+      deleted,
+      clean: notClean.length === 0,
+    };
   }
 
   async getCurrentCommit(directory: string): Promise<string> {
-    return simpleGit(directory).revparse('HEAD');
+    return git.resolveRef({ fs, dir: directory, ref: 'HEAD' });
   }
 
   async pull(directory: string): Promise<void> {
-    const pullResult: PullResult = await simpleGit(directory).pull();
-    console.debug(`local git repository updated. ${pullResult.summary.changes} changes applied`);
-  }
-
-  async isGitInstalled(): Promise<boolean> {
-    try {
-      const version = await simpleGit().version();
-      return version.installed;
-    } catch (err: unknown) {
-      console.error(`Something went wrong while trying to access git: ${String(err)}`);
-      return false;
-    }
+    return git.pull({
+      fs,
+      http,
+      dir: directory,
+    });
   }
 
   async processCheckout(gitCloneInfo: GitCloneInfo): Promise<void> {
@@ -115,60 +169,124 @@ export class GitManager {
     ref?: string,
   ): Promise<{ ok?: boolean; updatable?: boolean; error?: string }> {
     // fetch updates
-    await simpleGit(directory).fetch();
+    await git.fetch({
+      fs,
+      http,
+      dir: directory,
+    });
 
-    const remotes: RemoteWithRefs[] = await this.getRepositoryRemotes(directory);
+    const remotes = await this.getRepositoryRemotes(directory);
 
-    if (!remotes.some(remote => remote.refs.fetch === origin)) {
+    if (!remotes.some(remote => remote.url === origin)) {
       return {
         error: `The local repository does not have remote ${origin} configured. Remotes: ${remotes
-          .map(remote => `${remote.name} ${remote.refs.fetch} (fetch)`)
+          .map(remote => `${remote.remote} ${remote.url} (fetch)`)
           .join(',')}`,
       };
     }
 
-    const status: StatusResult = await this.getRepositoryStatus(directory);
+    const branch = await git.currentBranch({
+      fs,
+      dir: directory,
+    });
 
-    let error: string | undefined;
-
-    if (!remotes.some(remote => remote.refs.fetch === origin)) {
-      error = `The local repository does not have remote ${origin} configured. Remotes: ${remotes
-        .map(remote => `${remote.name} ${remote.refs.fetch} (fetch)`)
-        .join(',')}`;
-    } else if (status.detached) {
+    if (!branch) {
       // when the repository is detached
       if (ref === undefined) {
-        error = 'The local repository is detached.';
+        return { error: 'The local repository is detached.' };
       } else {
         const commit = await this.getCurrentCommit(directory);
-        if (!commit.startsWith(ref)) error = `The local repository is detached. HEAD is ${commit} expected ${ref}.`;
+        if (!commit.startsWith(ref)) {
+          return { error: `The local repository is detached. HEAD is ${commit} expected ${ref}.` };
+        }
       }
-    } else if (status.ahead !== 0) {
-      error = `The local repository has ${status.ahead} commit(s) ahead.`;
-    } else if (ref !== undefined && status.tracking !== ref) {
-      error = `The local repository is not tracking the right branch. (tracking ${status.tracking} when expected ${ref})`;
-    } else if (!status.isClean()) {
-      error = 'The local repository is not clean.';
-    } else if (status.behind !== 0) {
-      return { ok: true, updatable: true };
     }
 
-    if (error) {
-      return { error };
+    if (branch) {
+      const tracking = await this.getTrackingBranch(directory, branch);
+      if (ref !== undefined && tracking !== `origin/${ref}`) {
+        return {
+          error: `The local repository is not tracking the right branch. (tracking ${tracking} when expected ${ref})`,
+        };
+      }
+
+      const { behind, ahead } = await this.getBehindAhead(directory, branch);
+
+      if (ahead !== 0) {
+        return { error: `The local repository has ${ahead} commit(s) ahead.` };
+      }
+      if (behind !== 0) {
+        return { ok: true, updatable: true };
+      }
     }
 
+    const status = await this.getRepositoryStatus(directory);
     if (status.modified.length > 0) {
-      error = 'The local repository has modified files.';
+      return { error: 'The local repository has modified files.' };
     } else if (status.created.length > 0) {
-      error = 'The local repository has created files.';
+      return { error: 'The local repository has created files.' };
     } else if (status.deleted.length > 0) {
-      error = 'The local repository has deleted files.';
-    }
-
-    if (error) {
-      return { error };
+      return { error: 'The local repository has deleted files.' };
     }
 
     return { ok: true }; // If none of the error conditions are met
+  }
+
+  async getTrackingBranch(directory: string, branch: string): Promise<string | undefined> {
+    const mergeRef = await git.getConfig({
+      fs,
+      dir: directory,
+      path: `branch.${branch}.merge`,
+    });
+    const remote = await git.getConfig({
+      fs,
+      dir: directory,
+      path: `branch.${branch}.remote`,
+    });
+    return mergeRef && remote ? `${remote}/${mergeRef.replace(/^refs\/heads\//, '')}` : undefined;
+  }
+
+  async getBehindAhead(dir: string, localBranch: string): Promise<{ behind: number; ahead: number }> {
+    const remoteBranch = await this.getTrackingBranch(dir, localBranch);
+
+    const remoteCommits = (
+      await git.log({
+        fs,
+        dir,
+        ref: remoteBranch,
+      })
+    )
+      .map(c => c.oid)
+      .sort();
+    const localCommits = (
+      await git.log({
+        fs,
+        dir,
+        ref: localBranch,
+      })
+    )
+      .map(c => c.oid)
+      .sort();
+
+    let behind = 0;
+    let ahead = 0;
+    while (remoteCommits.length && localCommits.length) {
+      const remote = remoteCommits.pop();
+      const local = localCommits.pop();
+      if (remote === local) {
+        continue;
+      }
+      if (remote > local) {
+        behind++;
+        localCommits.push(local);
+      } else {
+        ahead++;
+        remoteCommits.push(remote);
+      }
+    }
+    return {
+      behind: behind + remoteCommits.length,
+      ahead: ahead + localCommits.length,
+    };
   }
 }

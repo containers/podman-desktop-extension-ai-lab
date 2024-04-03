@@ -424,4 +424,24 @@ export class StudioApiImpl implements StudioAPI {
   async importModels(models: LocalModelImportInfo[]): Promise<void> {
     return this.catalogManager.addLocalModelsToCatalog(models);
   }
+
+  async checkInvalidModels(models: string[]): Promise<string[]> {
+    console.log(models);
+    const invalidPaths = [];
+    const catalogModels = await this.getModelsInfo();
+    for (const model of models) {
+      const modelPath = path.resolve(model);
+      for (const catalogModel of catalogModels) {
+        if (!catalogModel.file) {
+          continue;
+        }
+        const catalogModelPath = path.resolve(path.join(catalogModel.file.path, catalogModel.file.file));
+        if (modelPath === catalogModelPath) {
+          invalidPaths.push(model);
+          break;
+        }
+      }
+    }
+    return invalidPaths;
+  }
 }

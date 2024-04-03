@@ -172,4 +172,11 @@ export abstract class StudioAPI {
    * @param models list of local models to import
    */
   abstract importModels(models: LocalModelImportInfo[]): Promise<void>;
+
+  /**
+   * Check if there is some invalid model from the list of paths
+   * @param models list of local models path to import
+   * @returns the list of invalid models
+   */
+  abstract checkInvalidModels(models: string[]): Promise<string[]>;
 }

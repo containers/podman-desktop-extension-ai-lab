@@ -34,6 +34,7 @@ vi.mock('../utils/client', async () => {
     studioClient: {
       openDialog: vi.fn(),
       importModels: vi.fn(),
+      checkInvalidModels: vi.fn(),
     },
   };
 });
@@ -55,6 +56,7 @@ test('Expect importModels button to be enabled when atleast one model is selecte
       path: 'path/file.gguf',
     } as Uri,
   ]);
+  vi.mocked(studioClient.checkInvalidModels).mockResolvedValue([]);
   render(ImportModels);
   const btnAddModels = screen.getByRole('button', { name: 'Add models' });
   expect(btnAddModels).toBeInTheDocument();
@@ -71,6 +73,7 @@ test('Expect import button calls importModels func', async () => {
       path: 'path/file.gguf',
     } as Uri,
   ]);
+  vi.mocked(studioClient.checkInvalidModels).mockResolvedValue([]);
   vi.mocked(studioClient.importModels).mockResolvedValue();
   const goToMock = vi.spyOn(router, 'goto');
   render(ImportModels);
@@ -98,6 +101,7 @@ test('Expect error shown if importModels function fails', async () => {
       path: 'path/file.gguf',
     } as Uri,
   ]);
+  vi.mocked(studioClient.checkInvalidModels).mockResolvedValue([]);
   vi.mocked(studioClient.importModels).mockRejectedValue('import failed');
   render(ImportModels);
   const btnAddModels = screen.getByRole('button', { name: 'Add models' });

@@ -18,15 +18,15 @@ const openPlaygroundsPage = () => {
 };
 
 const openGithub = () => {
-  -studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab');
+  studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab');
 };
 
 const openIssuesPage = () => {
-  -studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab/issues');
+  studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab/issues');
 };
 
 const openDiscussionsPage = () => {
-  -studioClient.openURL('https://github.com/containers/podman-desktop/discussions');
+  studioClient.openURL('https://github.com/containers/podman-desktop/discussions');
 };
 </script>
 

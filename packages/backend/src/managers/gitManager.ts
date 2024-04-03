@@ -143,12 +143,6 @@ export class GitManager {
         const commit = await this.getCurrentCommit(directory);
         if (!commit.startsWith(ref)) error = `The local repository is detached. HEAD is ${commit} expected ${ref}.`;
       }
-    } else if (status.modified.length > 0) {
-      error = 'The local repository has modified files.';
-    } else if (status.created.length > 0) {
-      error = 'The local repository has created files.';
-    } else if (status.deleted.length > 0) {
-      error = 'The local repository has created files.';
     } else if (status.ahead !== 0) {
       error = `The local repository has ${status.ahead} commit(s) ahead.`;
     } else if (ref !== undefined && status.tracking !== ref) {
@@ -157,6 +151,18 @@ export class GitManager {
       error = 'The local repository is not clean.';
     } else if (status.behind !== 0) {
       return { ok: true, updatable: true };
+    }
+
+    if (error) {
+      return { error };
+    }
+
+    if (status.modified.length > 0) {
+      error = 'The local repository has modified files.';
+    } else if (status.created.length > 0) {
+      error = 'The local repository has created files.';
+    } else if (status.deleted.length > 0) {
+      error = 'The local repository has deleted files.';
     }
 
     if (error) {

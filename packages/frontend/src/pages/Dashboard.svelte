@@ -1,6 +1,9 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
 import { router } from 'tinro';
+import Button from '/@/lib/button/Button.svelte';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { studioClient } from '/@/utils/client';
 
 const openRecipesCatalog = () => {
   router.goto('/recipes');
@@ -13,9 +16,24 @@ const openModelsPage = () => {
 const openPlaygroundsPage = () => {
   router.goto('/playgrounds');
 };
+
+const openGithub = () => {
+  -studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab');
+};
+
+const openIssuesPage = () => {
+  -studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab/issues');
+};
+
+const openDiscussionsPage = () => {
+  -studioClient.openURL('https://github.com/containers/podman-desktop/discussions');
+};
 </script>
 
 <NavPage title="Welcome to AI Lab" searchEnabled="{false}">
+  <svelte:fragment slot="additional-actions">
+    <Button type="secondary" title="Open GitHub repository" on:click="{openGithub}" icon="{faGithub}">Github</Button>
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="mt-4 px-5 space-y-5" aria-label="inner-content">
@@ -70,6 +88,26 @@ const openPlaygroundsPage = () => {
             on:click="{openPlaygroundsPage}">Playground environments</a>
           allow for experimenting with available models in a local environment. An intuitive user prompt helps in exploring
           the capabilities and accuracy of various models and aids in finding the best model for the use case at hand.
+        </p>
+
+        <h1 class="text-xl first-letter:uppercase underline">Feedback</h1>
+        <p>
+          If you discover an issue or want to request a new feature, you can open an issue
+          <a
+            href="{'javascript:void(0);'}"
+            class="underline"
+            role="button"
+            title="Open the issues page"
+            on:click="{openIssuesPage}">here</a>
+        </p>
+        <p>
+          If you want to get more information about this project or exchange with the team, you can start a discussion
+          <a
+            href="{'javascript:void(0);'}"
+            class="underline"
+            role="button"
+            title="Open the discussions page"
+            on:click="{openDiscussionsPage}">here</a>
         </p>
       </div>
     </div>

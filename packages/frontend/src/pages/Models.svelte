@@ -99,7 +99,7 @@ async function importModel() {
     <Tab title="Available" url="models/available" />
   </svelte:fragment>
   <svelte:fragment slot="additional-actions">
-    <Button on:click="{importModel}">Import</Button>
+    <Button on:click="{importModel}" aria-label="Import Models">Import</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">

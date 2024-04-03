@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
-import fs from 'node:fs';
+import { promises } from 'node:fs';
 import path from 'node:path';
 import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
@@ -111,7 +111,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     const tmpCatalog: ApplicationCatalog = Object.assign({}, this.catalog);
 
     for (const model of models) {
-      const statFile = await fs.promises.stat(model.path);
+      const statFile = await promises.stat(model.path);
       tmpCatalog.models.push({
         id: model.path,
         name: model.name,
@@ -126,7 +126,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     }
 
     const customCatalog = path.resolve(this.appUserDirectory, 'catalog.json');
-    return fs.promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
+    return promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
   }
 
   async removeLocalModelFromCatalog(modelId: string): Promise<void> {
@@ -136,6 +136,6 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     tmpCatalog.models = tmpCatalog.models.filter(m => m.url !== '' && m.id !== modelId);
 
     const customCatalog = path.resolve(this.appUserDirectory, 'catalog.json');
-    return fs.promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
+    return promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
   }
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { faMinusCircle, faPlay, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faMinusCircle, faPlusCircle, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { router } from 'tinro';
 import { studioClient } from '../utils/client';
 import { Uri } from '@shared/src/uri/Uri';
@@ -78,7 +78,8 @@ async function importModels() {
   <svelte:fragment slot="content">
     <div class="p-5 min-w-full h-fit">
       <div class="bg-charcoal-600 px-6 py-4 space-y-2 lg:px-8 sm:pb-6 xl:pb-8">
-        <Button on:click="{addModelsToImport}" icon="{faPlusCircle}" type="link">Add .GGUF Models</Button>
+        <Button on:click="{addModelsToImport}" icon="{faPlusCircle}" type="link" aria-label="Add models"
+          >Add .GGUF Models</Button>
         <!-- Display the list of existing containersToImport -->
         {#if modelsToImport.length > 0}
           <div class="flex flex-row justify-center w-full py-1 text-sm font-medium text-gray-400">
@@ -108,7 +109,7 @@ async function importModels() {
           on:click="{() => importModels()}"
           inProgress="{inProgress}"
           class="w-full"
-          icon="{faPlay}"
+          icon="{faUpload}"
           aria-label="Import models"
           bind:disabled="{importDisabled}">
           Import Models

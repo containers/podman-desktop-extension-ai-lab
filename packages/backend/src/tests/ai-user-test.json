@@ -25,7 +25,8 @@
       "hw": "CPU",
       "registry": "Hugging Face",
       "license": "?",
-      "url": "https://model1.example.com"
+      "url": "https://model1.example.com",
+      "memory": 0
     },
     {
       "id": "model2",
@@ -34,7 +35,8 @@
       "hw": "CPU",
       "registry": "Civital",
       "license": "?",
-      "url": ""
+      "url": "https://model2.example.com",
+      "memory": 0
     }
   ],
   "categories": [

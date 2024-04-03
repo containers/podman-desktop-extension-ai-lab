@@ -24,7 +24,10 @@ import userContent from '../tests/ai-user-test.json';
 import { type Webview, EventEmitter } from '@podman-desktop/api';
 import { CatalogManager } from './catalogManager';
 
-import * as fs from 'node:fs';
+import type { Stats } from 'node:fs';
+import { promises, existsSync } from 'node:fs';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import path from 'node:path';
 
 vi.mock('./ai.json', () => {
   return {
@@ -37,6 +40,8 @@ vi.mock('node:fs', () => {
     existsSync: vi.fn(),
     promises: {
       readFile: vi.fn(),
+      stat: vi.fn(),
+      writeFile: vi.fn(),
     },
   };
 });
@@ -94,7 +99,7 @@ beforeEach(async () => {
 
 describe('invalid user catalog', () => {
   beforeEach(async () => {
-    vi.spyOn(fs.promises, 'readFile').mockResolvedValue('invalid json');
+    vi.spyOn(promises, 'readFile').mockResolvedValue('invalid json');
     catalogManager.init();
   });
 
@@ -114,7 +119,7 @@ describe('invalid user catalog', () => {
 });
 
 test('expect correct model is returned from default catalog with valid id when no user catalog exists', async () => {
-  vi.spyOn(fs, 'existsSync').mockReturnValue(false);
+  vi.mocked(existsSync).mockReturnValue(false);
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
@@ -128,8 +133,8 @@ test('expect correct model is returned from default catalog with valid id when n
 });
 
 test('expect correct model is returned with valid id when the user catalog is valid', async () => {
-  vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-  vi.spyOn(fs.promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
 
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
@@ -139,4 +144,58 @@ test('expect correct model is returned with valid id when the user catalog is va
   expect(model.name).toEqual('Model 1');
   expect(model.registry).toEqual('Hugging Face');
   expect(model.url).toEqual('https://model1.example.com');
+});
+
+test('expect to call writeFile in addLocalModelsToCatalog with catalog updated', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
+
+  vi.spyOn(promises, 'stat').mockResolvedValue({
+    size: 1,
+  } as Stats);
+  vi.spyOn(path, 'resolve').mockReturnValue('path');
+
+  const updatedCatalog: ApplicationCatalog = Object.assign({}, userContent);
+  updatedCatalog.models.push({
+    id: '/root/path/file.gguf',
+    name: 'custom-model',
+    description: `Model imported from /root/path/file.gguf`,
+    hw: 'CPU',
+    file: {
+      path: '/root/path',
+      file: 'file.gguf',
+    },
+    memory: 1,
+  });
+  const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
+
+  await catalogManager.addLocalModelsToCatalog([
+    {
+      name: 'custom-model',
+      path: '/root/path/file.gguf',
+    },
+  ]);
+
+  expect(writeFileMock).toBeCalledWith('path', JSON.stringify(updatedCatalog, undefined, 2), 'utf-8');
+});
+
+test('expect to call writeFile in removeLocalModelFromCatalog with catalog updated', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+  vi.spyOn(path, 'resolve').mockReturnValue('path');
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
+
+  const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
+
+  const updatedCatalog: ApplicationCatalog = Object.assign({}, userContent);
+  updatedCatalog.models = updatedCatalog.models.filter(m => m.id !== 'model1');
+
+  await catalogManager.removeLocalModelFromCatalog('model1');
+
+  expect(writeFileMock).toBeCalledWith('path', JSON.stringify(updatedCatalog, undefined, 2), 'utf-8');
 });

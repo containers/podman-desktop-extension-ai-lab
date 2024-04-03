@@ -35,6 +35,7 @@ import type { SnippetManager } from './managers/SnippetManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import path from 'node:path';
+import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 
 vi.mock('./ai.json', () => {
   return {
@@ -66,6 +67,7 @@ vi.mock('@podman-desktop/api', async () => {
       withProgress: mocks.withProgressMock,
       showWarningMessage: mocks.showWarningMessageMock,
       showErrorMessage: vi.fn(),
+      showOpenDialog: vi.fn(),
     },
     ProgressLocation: {
       TASK_WIDGET: 'TASK_WIDGET',
@@ -99,6 +101,7 @@ beforeEach(async () => {
   catalogManager = new CatalogManager(
     {
       postMessage: vi.fn().mockResolvedValue(undefined),
+      addLocalModelsToCatalog: vi.fn(),
     } as unknown as Webview,
     appUserDirectory,
   );
@@ -212,4 +215,32 @@ describe.each([{ os: 'windows' }, { os: 'linux' }, { os: 'macos' }])('verify ope
       expect.objectContaining({ path: expect.stringMatching(/^\//), authority: 'file', scheme: 'vscode' }),
     );
   });
+});
+
+test('openDialog should call podmanDesktopAPi showOpenDialog', async () => {
+  const openDialogMock = vi.spyOn(window, 'showOpenDialog');
+  await studioApiImpl.openDialog({
+    title: 'title',
+  });
+  expect(openDialogMock).toBeCalledWith({
+    title: 'title',
+  });
+});
+
+test('importModels should call catalogManager', async () => {
+  const addLocalModelsMock = vi
+    .spyOn(catalogManager, 'addLocalModelsToCatalog')
+    .mockImplementation((_models: LocalModelImportInfo[]) => Promise.resolve());
+  const models: LocalModelImportInfo[] = [
+    {
+      name: 'name',
+      path: 'path',
+    },
+    {
+      name: 'name1',
+      path: 'path1',
+    },
+  ];
+  await studioApiImpl.importModels(models);
+  expect(addLocalModelsMock).toBeCalledWith(models);
 });

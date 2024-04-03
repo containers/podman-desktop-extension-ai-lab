@@ -20,6 +20,7 @@ import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor, within } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import { router } from 'tinro';
+import userEvent from '@testing-library/user-event';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -230,4 +231,15 @@ test('should display no model in available tab', async () => {
     const status = screen.getByRole('status');
     expect(status).toBeDefined();
   });
+});
+
+test('Import button should redirect to import page', async () => {
+  const routerMock = vi.spyOn(router, 'goto');
+
+  render(Models);
+
+  const importButton = screen.getByRole('button', { name: 'Import Models' });
+  await userEvent.click(importButton);
+
+  expect(routerMock).toBeCalledWith('/models/import');
 });

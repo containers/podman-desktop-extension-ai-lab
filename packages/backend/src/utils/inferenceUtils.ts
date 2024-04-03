@@ -147,7 +147,7 @@ export function generateContainerCreateOptions(
       ...config.labels,
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     },
-    Env: [`MODEL_PATH=/models/${modelInfo.file.file}`],
+    Env: [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'],
     Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
   };
 }

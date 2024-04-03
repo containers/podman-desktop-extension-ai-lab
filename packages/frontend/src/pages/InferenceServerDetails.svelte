@@ -98,7 +98,7 @@ onMount(() => {
                   {#key service.health?.Status}
                     <ServiceStatus object="{service}" />
                   {/key}
-                  <div class="flex flex-col text-xs ml-2 items-center">
+                  <div class="flex flex-col text-xs ml-2 items-center justify-center">
                     <span>{service.container.containerId}</span>
                   </div>
                 </div>
@@ -110,7 +110,7 @@ onMount(() => {
                 <span class="text-sm">Models</span>
                 <div class="w-full bg-charcoal-600 rounded-md p-2 flex flex-col gap-y-4">
                   {#each service.models as model}
-                    <div class="flex flex-row gap-2 items-center">
+                    <div class="flex flex-row gap-2">
                       <div class="grow text-sm">{model.name}</div>
                       <div>
                         <div

@@ -408,10 +408,10 @@
   resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-0.0.202403281426-8a6379d.tgz#eb4838c58d74e69d0b106eee90a560551ef618f6"
   integrity sha512-td3MdAeaZu5VTfOaHPUNuQZhjHVU86TwXqYFEWakSBAZGMWe26D3zeoRfCZpNtwYzmS+8jP1Zj8vUPYiX3OhWw==
 
-"@podman-desktop/tests-playwright@^0.0.202403240905-ade2a13":
-  version "0.0.202403240905-ade2a13"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-0.0.202403240905-ade2a13.tgz#392c5e3679ca2cbd45f09e135a7c4ded4f11932e"
-  integrity sha512-CZWwNUw3Op6NtFfPc9xqLrqLcCS9oz8FD92/q2ZpAmT5ilaUown0h/OYdPd9uG0W2ArL3EfZ8MkzgV4HAC5uxQ==
+"@podman-desktop/tests-playwright@^1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.9.0.tgz#6cf9b2da3b9800618f572bd2f745b2aeabe61acb"
+  integrity sha512-RLwQr4kvVy7RbYsZrPxLfx0E5j5KDQ4B2dKm9IkRa4TN373krCs6ivFi7W8C0VuEOl3vfo/ymJiUp4C+khu3ZA==
 
 "@rollup/rollup-android-arm-eabi@4.13.0":
   version "4.13.0"

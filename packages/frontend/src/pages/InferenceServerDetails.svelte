@@ -98,7 +98,7 @@ onMount(() => {
                   {#key service.health?.Status}
                     <ServiceStatus object="{service}" />
                   {/key}
-                  <div class="flex flex-col text-xs ml-2">
+                  <div class="flex flex-col text-xs ml-2 items-center">
                     <span>{service.container.containerId}</span>
                   </div>
                 </div>

@@ -11,7 +11,7 @@ export let meta: TinroRouteMeta;
   class="z-1 w-leftsidebar min-w-leftsidebar shadow flex-col justify-between flex transition-all duration-500 ease-in-out bg-charcoal-800"
   aria-label="PreferencesNavigation">
   <div class="flex items-center">
-    <a href="/" title="Navigate to dashboard" class="pt-6 pl-3 px-5 mb-10 flex items-center ml-[4px]">
+    <a href="/" title="Navigate to dashboard" class="pt-4 pl-3 px-5 mb-10 flex items-center ml-[4px]">
       <Fa size="1.5x" class="text-purple-500 cursor-pointer mr-4" icon="{faBrain}" />
       <p class="text-xl first-letter:uppercase">AI Lab</p>
     </a>

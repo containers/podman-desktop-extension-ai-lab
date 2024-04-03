@@ -39,6 +39,7 @@ import type { ModelsManager } from '../modelsManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getRandomString } from '../../utils/randomUtils';
 import { basename, dirname } from 'node:path';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -363,16 +364,24 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
 
     // clean existing disposables
     this.cleanDisposables();
-    this.#servers = new Map<string, InferenceServer>(
-      filtered.map(containerInfo => {
-        let modelsId: string[] = [];
-        try {
-          modelsId = JSON.parse(containerInfo.Labels[LABEL_INFERENCE_SERVER]);
-        } catch (err: unknown) {
-          console.error('Something went wrong while getting the models ids from the label.', err);
+    const serversList: [string, InferenceServer][] = filtered.flatMap(containerInfo => {
+      let modelsId: string[] = [];
+      const models: ModelInfo[] = [];
+      try {
+        modelsId = JSON.parse(containerInfo.Labels[LABEL_INFERENCE_SERVER]);
+        // we retrieve all models Info. As the user may have started an inference server with a custom model and have deleted it in the meantime
+        // getModelInfo could fail bc the model does not exist anymore
+        for (const id of modelsId) {
+          const model = this.modelsManager.getModelInfo(id);
+          models.push(model);
         }
+      } catch (err: unknown) {
+        console.error('Something went wrong while getting the models ids from the label.', err);
+        return [];
+      }
 
-        return [
+      return [
+        [
           containerInfo.Id,
           {
             container: {
@@ -383,11 +392,12 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
               port: !!containerInfo.Ports && containerInfo.Ports.length > 0 ? containerInfo.Ports[0].PublicPort : -1,
             },
             status: containerInfo.Status === 'running' ? 'running' : 'stopped',
-            models: modelsId.map(id => this.modelsManager.getModelInfo(id)),
+            models: models,
           },
-        ];
-      }),
-    );
+        ],
+      ];
+    });
+    this.#servers = new Map<string, InferenceServer>(serversList);
 
     // (re-)create container watchers
     this.#servers.forEach(server => this.watchContainerStatus(server.container.engineId, server.container.containerId));

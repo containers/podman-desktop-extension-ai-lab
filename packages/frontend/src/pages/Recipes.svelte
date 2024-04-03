@@ -11,12 +11,6 @@ $: categories = $catalog.categories;
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="px-5 space-y-5">
-        <!-- Recent recipes -->
-        <RecipesCard
-          category="{{ id: RECENT_CATEGORY_ID, name: 'Recently-viewed recipes' }}"
-          class="p-6"
-          displayDescription="{false}" />
-
         {#each categories as category}
           {#if $catalog.recipes.some(r => r.categories.includes(category.id))}
             <RecipesCard

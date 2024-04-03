@@ -290,10 +290,100 @@ describe('isRepositoryUpToDate', () => {
     ]);
     mocks.statusMock.mockResolvedValue({
       detached: true,
+      modified: [],
+      deleted: [],
+      created: [],
     });
 
     const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
     expect(result.ok).toBeTruthy();
     expect(result.error).toBeUndefined();
+  });
+
+  test('detached with expected ref and modified files', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        name: 'origin',
+        refs: {
+          fetch: 'repo',
+          push: 'repo',
+        },
+      },
+    ]);
+    mocks.statusMock.mockResolvedValue({
+      detached: true,
+      modified: ['a_file.txt'],
+      deleted: [],
+      created: [],
+    });
+
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository has modified files.');
+  });
+
+  test('detached with expected ref and deleted files', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        name: 'origin',
+        refs: {
+          fetch: 'repo',
+          push: 'repo',
+        },
+      },
+    ]);
+    mocks.statusMock.mockResolvedValue({
+      detached: true,
+      deleted: ['a_file.txt'],
+      modified: [],
+      created: [],
+    });
+
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository has deleted files.');
+  });
+
+  test('detached with expected ref and created files', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        name: 'origin',
+        refs: {
+          fetch: 'repo',
+          push: 'repo',
+        },
+      },
+    ]);
+    mocks.statusMock.mockResolvedValue({
+      detached: true,
+      created: ['a_file.txt'],
+      deleted: [],
+      modified: [],
+    });
+
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository has created files.');
   });
 });

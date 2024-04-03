@@ -67,12 +67,12 @@ export class Studio {
   }
 
   private checkVersion(): boolean {
-    if(!version) return false;
+    if (!version) return false;
 
     const current = coerce(version);
-    if(!current) return false;
+    if (!current) return false;
 
-    if(current.major === 0 && current.minor === 0) {
+    if (current.major === 0 && current.minor === 0) {
       console.warn('nighties version are not subject to version verification.');
       return true;
     }
@@ -84,14 +84,16 @@ export class Studio {
     console.log('starting AI Lab extension');
     this.telemetry = env.createTelemetryLogger();
 
-    if(!this.checkVersion()) {
+    if (!this.checkVersion()) {
       const min = minVersion(engines['podman-desktop']);
       const current = version ?? 'unknown';
       this.telemetry.logError('start.incompatible', {
         version: current,
         message: `error activating extension on version below ${min.version}`,
       });
-      throw new Error(`Extension is not compatible with Podman Desktop version below ${min.version}. Current ${current}`);
+      throw new Error(
+        `Extension is not compatible with Podman Desktop version below ${min.version}. Current ${current}`,
+      );
     }
 
     this.telemetry.logUsage('start');

@@ -131,11 +131,39 @@ test('check activate', async () => {
 describe('version checker', () => {
   test('check activate incompatible', async () => {
     (version as string) = '0.7.0';
-    await expect(studio.activate()).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0. Current 0.7.0');
+    await expect(studio.activate()).rejects.toThrowError(
+      'Extension is not compatible with Podman Desktop version below 1.0.0. Current 0.7.0',
+    );
 
     // expect the activate method to be called on the studio class
     expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
       version: '0.7.0',
+      message: 'error activating extension on version below 1.0.0',
+    });
+  });
+
+  test('version null', async () => {
+    (version as string) = null;
+    await expect(studio.activate()).rejects.toThrowError(
+      'Extension is not compatible with Podman Desktop version below 1.0.0. Current unknown',
+    );
+
+    // expect the activate method to be called on the studio class
+    expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
+      version: 'unknown',
+      message: 'error activating extension on version below 1.0.0',
+    });
+  });
+
+  test('version undefined', async () => {
+    (version as string) = null;
+    await expect(studio.activate()).rejects.toThrowError(
+      'Extension is not compatible with Podman Desktop version below 1.0.0. Current unknown',
+    );
+
+    // expect the activate method to be called on the studio class
+    expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
+      version: 'unknown',
       message: 'error activating extension on version below 1.0.0',
     });
   });
@@ -154,7 +182,6 @@ describe('version checker', () => {
     expect(mocks.logErrorMock).not.toHaveBeenCalled();
     expect(mocks.consoleWarnMock).toHaveBeenCalledWith('nighties version are not subject to version verification.');
   });
-
 });
 
 test('check deactivate ', async () => {

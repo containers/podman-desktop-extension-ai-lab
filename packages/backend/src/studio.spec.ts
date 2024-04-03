@@ -18,7 +18,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi, describe } from 'vitest';
 import { Studio } from './studio';
 import { type ExtensionContext, EventEmitter, version } from '@podman-desktop/api';
 
@@ -37,6 +37,8 @@ const mocks = vi.hoisted(() => ({
   getContainerConnections: vi.fn(),
   postMessage: vi.fn(),
   logErrorMock: vi.fn(),
+  consoleWarnMock: vi.fn(),
+  consoleLogMock: vi.fn(),
 }));
 
 vi.mock('../package.json', () => ({
@@ -95,11 +97,11 @@ vi.mock('@podman-desktop/api', async () => {
 
 /// mock console.log
 const originalConsoleLog = console.log;
-const consoleLogMock = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
-  console.log = consoleLogMock;
+  console.log = mocks.consoleLogMock;
+  console.warn = mocks.consoleWarnMock;
 
   vi.mocked(EventEmitter).mockReturnValue({
     event: vi.fn(),
@@ -123,32 +125,41 @@ test('check activate', async () => {
   await studio.activate();
 
   // expect the activate method to be called on the studio class
-  expect(consoleLogMock).toBeCalledWith('starting AI Lab extension');
+  expect(mocks.consoleLogMock).toBeCalledWith('starting AI Lab extension');
 });
 
-test('check activate incompatible', async () => {
-  (version as string) = '0.7.0';
-  await expect(async () => {
-    await studio.activate();
-  }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0.');
+describe('version checker', () => {
+  test('check activate incompatible', async () => {
+    (version as string) = '0.7.0';
+    await expect(studio.activate()).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0. Current 0.7.0');
 
-  // expect the activate method to be called on the studio class
-  expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
-    version: '0.7.0',
-    message: 'error activating extension on version below 1.0.0',
+    // expect the activate method to be called on the studio class
+    expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
+      version: '0.7.0',
+      message: 'error activating extension on version below 1.0.0',
+    });
   });
-});
 
-test('check activate next value', async () => {
-  (version as string) = '1.0.1-next';
-  await studio.activate();
+  test('check activate next value', async () => {
+    (version as string) = '1.0.1-next';
+    await studio.activate();
 
-  expect(mocks.logErrorMock).not.toHaveBeenCalled();
+    expect(mocks.logErrorMock).not.toHaveBeenCalled();
+  });
+
+  test('check activate nighties value', async () => {
+    (version as string) = 'v0.0.202404030805-3cb4544';
+    await studio.activate();
+
+    expect(mocks.logErrorMock).not.toHaveBeenCalled();
+    expect(mocks.consoleWarnMock).toHaveBeenCalledWith('nighties version are not subject to version verification.');
+  });
+
 });
 
 test('check deactivate ', async () => {
   await studio.deactivate();
 
   // expect the deactivate method to be called on the studio class
-  expect(consoleLogMock).toBeCalledWith('stopping AI Lab extension');
+  expect(mocks.consoleLogMock).toBeCalledWith('stopping AI Lab extension');
 });

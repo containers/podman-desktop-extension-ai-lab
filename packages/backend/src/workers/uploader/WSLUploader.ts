@@ -17,17 +17,13 @@
  ***********************************************************************/
 
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { getFirstRunningMachineName, getPodmanCli } from './podman';
-import type { UploadWorker } from './uploader';
-import { getLocalModelFile, getRemoteModelFile, isModelUploaded, MACHINE_BASE_FOLDER } from './modelsUtils';
+import { getFirstRunningMachineName, getPodmanCli } from '../../utils/podman';
+import { getLocalModelFile, getRemoteModelFile, isModelUploaded, MACHINE_BASE_FOLDER } from '../../utils/modelsUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { WindowsWorker } from '../WindowsWorker';
 
-export class WSLUploader implements UploadWorker {
-  canUpload(): boolean {
-    return podmanDesktopApi.env.isWindows;
-  }
-
-  async upload(modelInfo: ModelInfo): Promise<string> {
+export class WSLUploader extends WindowsWorker<ModelInfo, string> {
+  async perform(modelInfo: ModelInfo): Promise<string> {
     const localPath = getLocalModelFile(modelInfo);
 
     const driveLetter = localPath.charAt(0);

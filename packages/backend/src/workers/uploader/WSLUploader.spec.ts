@@ -19,7 +19,7 @@
 import { expect, test, describe, vi } from 'vitest';
 import { WSLUploader } from './WSLUploader';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import * as utils from './podman';
+import * as utils from '../../utils/podman';
 import { beforeEach } from 'node:test';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
@@ -47,12 +47,12 @@ beforeEach(() => {
 describe('canUpload', () => {
   test('should return false if system is not windows', () => {
     vi.mocked(podmanDesktopApi.env).isWindows = false;
-    const result = wslUploader.canUpload();
+    const result = wslUploader.enabled();
     expect(result).toBeFalsy();
   });
   test('should return true if system is windows', () => {
     vi.mocked(podmanDesktopApi.env).isWindows = true;
-    const result = wslUploader.canUpload();
+    const result = wslUploader.enabled();
     expect(result).toBeTruthy();
   });
 });
@@ -72,7 +72,7 @@ describe('upload', () => {
   });
   test('throw if localpath is not defined', async () => {
     await expect(
-      wslUploader.upload({
+      wslUploader.perform({
         file: undefined,
       } as unknown as ModelInfo),
     ).rejects.toThrowError('model is not available locally.');
@@ -80,7 +80,7 @@ describe('upload', () => {
   test('copy model if not exists on podman machine', async () => {
     mocks.execMock.mockRejectedValueOnce('error');
     vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
-    await wslUploader.upload({
+    await wslUploader.perform({
       id: 'dummyId',
       file: { path: 'C:\\Users\\podman\\folder', file: 'dummy.guff' },
     } as unknown as ModelInfo);
@@ -112,7 +112,7 @@ describe('upload', () => {
   test('do not copy model if it exists on podman machine', async () => {
     mocks.execMock.mockResolvedValue('');
     vi.spyOn(utils, 'getFirstRunningMachineName').mockReturnValue('machine2');
-    await wslUploader.upload({
+    await wslUploader.perform({
       id: 'dummyId',
       file: { path: 'C:\\Users\\podman\\folder', file: 'dummy.guff' },
     } as unknown as ModelInfo);

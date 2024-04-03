@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { expect, test, describe, vi } from 'vitest';
-import { WSLUploader } from './WSLUploader';
+import { WSLUploader } from '../workers/uploader/WSLUploader';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { beforeEach } from 'node:test';
 import { Uploader } from './uploader';
@@ -63,7 +63,7 @@ describe('perform', () => {
     expect(result.startsWith('localpath')).toBeTruthy();
   });
   test('should return remote path if there is a worker for current system', async () => {
-    vi.spyOn(WSLUploader.prototype, 'upload').mockResolvedValue('remote');
+    vi.spyOn(WSLUploader.prototype, 'perform').mockResolvedValue('remote');
     vi.mocked(podmanDesktopApi.env).isWindows = true;
     const result = await uploader.perform('id');
     expect(result).toBe('remote');

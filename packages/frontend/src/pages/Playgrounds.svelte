@@ -7,8 +7,8 @@ import PlaygroundColumnModel from '../lib/table/playground/PlaygroundColumnModel
 import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.svelte';
 import { Row, Column } from '../lib/table/table';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
-import { playgrounds } from '../stores/playgrounds-v2';
 import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
+import { conversations } from '/@/stores/conversations';
 
 const columns: Column<PlaygroundV2>[] = [
   new Column<PlaygroundV2>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
@@ -30,8 +30,8 @@ function createNewPlayground() {
     <div slot="content" class="flex flex-col min-w-full">
       <div class="min-w-full flex-1">
         <div class="mt-4 px-5 space-y-5">
-          {#if $playgrounds.length > 0}
-            <Table kind="playground" data="{$playgrounds}" columns="{columns}" row="{row}"></Table>
+          {#if $conversations.length > 0}
+            <Table kind="playground" data="{$conversations}" columns="{columns}" row="{row}"></Table>
           {:else}
             <div role="status">
               There is no playground environment. You can <a

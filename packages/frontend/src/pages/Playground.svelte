@@ -3,7 +3,6 @@ import { conversations } from '../stores/conversations';
 import { studioClient } from '/@/utils/client';
 import { isAssistantChat, isPendingChat, isUserChat, isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
 import NavPage from '../lib/NavPage.svelte';
-import { playgrounds } from '../stores/playgrounds-v2';
 import { catalog } from '../stores/catalog';
 import Button from '../lib/button/Button.svelte';
 import { afterUpdate } from 'svelte';
@@ -29,8 +28,7 @@ let top_p = 0.5;
 
 $: conversation = $conversations.find(conversation => conversation.id === playgroundId);
 $: messages = conversation?.messages.filter(message => !isSystemPrompt(message)) ?? [];
-$: playground = $playgrounds.find(playground => playground.id === playgroundId);
-$: model = $catalog.models.find(model => model.id === playground?.modelId);
+$: model = $catalog.models.find(model => model.id === conversation?.modelId);
 $: {
   if (conversation?.messages.length) {
     const latest = conversation.messages[conversation.messages.length - 1];
@@ -42,7 +40,7 @@ $: {
     sendEnabled = true;
   }
 }
-$: server = $inferenceServers.find(is => playground && is.models.map(mi => mi.id).includes(playground?.modelId));
+$: server = $inferenceServers.find(is => conversation && is.models.map(mi => mi.id).includes(conversation?.modelId));
 function askPlayground() {
   errorMsg = '';
   sendEnabled = false;
@@ -107,10 +105,10 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
 }
 </script>
 
-{#if playground}
+{#if conversation}
   <NavPage
     lastPage="{{ name: 'Playgrounds', path: '/playgrounds' }}"
-    title="{playground?.name}"
+    title="{conversation?.name}"
     searchEnabled="{false}"
     contentBackground="bg-charcoal-500">
     <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>

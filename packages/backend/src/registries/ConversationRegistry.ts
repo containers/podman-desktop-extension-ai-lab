@@ -37,12 +37,8 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     this.#counter = 0;
   }
 
-  init(): void {
-    // TODO: load from file
-  }
-
-  private getUniqueId(): string {
-    return `conversation-${++this.#counter}`;
+  getUniqueId(): string {
+    return `${++this.#counter}`;
   }
 
   /**
@@ -92,12 +88,16 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     this.notify();
   }
 
-  createConversation(id: string): void {
-    this.#conversations.set(id, {
+  createConversation(name: string, modelId: string): string {
+    const conversationId = this.getUniqueId();
+    this.#conversations.set(conversationId, {
+      name: name,
+      modelId: modelId,
       messages: [],
-      id,
+      id: conversationId,
     });
     this.notify();
+    return conversationId;
   }
 
   /**

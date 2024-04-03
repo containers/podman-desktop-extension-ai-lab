@@ -167,7 +167,7 @@ describe('version checker', () => {
     await studio.activate();
 
     expect(mocks.logErrorMock).not.toHaveBeenCalled();
-    expect(mocks.consoleWarnMock).toHaveBeenCalledWith('nighties version are not subject to version verification.');
+    expect(mocks.consoleWarnMock).toHaveBeenCalledWith('nightlies version are not subject to version verification.');
   });
 });
 

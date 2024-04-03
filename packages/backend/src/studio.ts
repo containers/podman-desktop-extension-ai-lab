@@ -73,7 +73,7 @@ export class Studio {
     if (!current) return false;
 
     if (current.major === 0 && current.minor === 0) {
-      console.warn('nighties version are not subject to version verification.');
+      console.warn('nightlies version are not subject to version verification.');
       return true;
     }
 

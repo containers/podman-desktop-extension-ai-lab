@@ -91,7 +91,7 @@ async function importModels() {
 <NavPage lastPage="{{ name: 'Models', path: '/models' }}" title="Import Models" searchEnabled="{false}">
   <svelte:fragment slot="content">
     <div class="p-5 min-w-full h-fit">
-      <div class="bg-charcoal-600 px-6 py-4 space-y-2 lg:px-8 sm:pb-6 xl:pb-8">
+      <div class="bg-charcoal-800 rounded-lg px-6 py-4 space-y-2">
         <Button on:click="{addModelsToImport}" icon="{faPlusCircle}" type="link" aria-label="Add models"
           >Add .GGUF Models</Button>
         <div aria-label="importError">

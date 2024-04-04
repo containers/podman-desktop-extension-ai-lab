@@ -18,6 +18,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { Webview } from '@podman-desktop/api';
+import { noTimeoutChannels } from './NoTimeoutChannels';
 
 export interface IMessage {
   id: number;
@@ -125,7 +126,6 @@ export class RpcBrowser {
   counter: number = 0;
   promises: Map<number, { resolve: (value: unknown) => unknown; reject: (value: unknown) => void }> = new Map();
   subscribers: Map<string, (msg: any) => void> = new Map();
-  noTimeoutChannels: string[] = ['openDialog'];
 
   getUniqueId(): number {
     return ++this.counter;
@@ -199,7 +199,7 @@ export class RpcBrowser {
     } as IMessageRequest);
 
     // Add some timeout
-    if (!this.noTimeoutChannels.includes(channel)) {
+    if (!noTimeoutChannels.includes(channel)) {
       setTimeout(() => {
         const { reject } = this.promises.get(requestId) || {};
         if (!reject) return;

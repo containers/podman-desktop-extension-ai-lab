@@ -8,11 +8,13 @@ export let object: ModelInfo;
 
 <div class="text-sm text-gray-700">
   <div class="flex gap-x-2">
-    <div
-      class="bg-charcoal-600 rounded-md px-2 py-1 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
-      <Fa class="mr-2" icon="{faMemory}" />
-      RAM usage: {filesize(object.memory, { base: 2 })}
-    </div>
+    {#if object.memory}
+      <div
+        class="bg-charcoal-600 rounded-md px-2 py-1 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
+        <Fa class="mr-2" icon="{faMemory}" />
+        RAM usage: {filesize(object.memory, { base: 2 })}
+      </div>
+    {/if}
     <div
       class="bg-charcoal-600 rounded-md px-2 py-1 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
       <Fa class="mr-2" icon="{faMicrochip}" />

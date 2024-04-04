@@ -47,12 +47,8 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">Recipes Catalog</h1>
         <p>
           AI Lab ships with a so-called
-          <a
-            href="{'javascript:void(0);'}"
-            class="underline"
-            role="button"
-            title="Open the Recipes Catalog page"
-            on:click="{openRecipesCatalog}">Recipes Catalog</a>
+          <button class="underline" title="Open the Recipes Catalog page" on:click="{openRecipesCatalog}"
+            >Recipes Catalog</button>
           that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and
           Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various
           large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
@@ -61,12 +57,7 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">AI Models</h1>
         <p>
           AI Lab provides a curated list of open source
-          <a
-            href="{'javascript:void(0);'}"
-            class="underline"
-            role="button"
-            title="Open the Models page"
-            on:click="{openModelsPage}">AI Models and LLMs</a
+          <button class="underline" title="Open the Models page" on:click="{openModelsPage}">AI Models and LLMs</button
           >. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
         </p>
 
@@ -80,12 +71,8 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">Playgrounds</h1>
         <p>
           The integrated
-          <a
-            href="{'javascript:void(0);'}"
-            class="underline"
-            role="button"
-            title="Open the Playgrounds page"
-            on:click="{openPlaygroundsPage}">Playground environments</a>
+          <button class="underline" title="Open the Playgrounds page" on:click="{openPlaygroundsPage}"
+            >Playground environments</button>
           allow for experimenting with available models in a local environment. An intuitive user prompt helps in exploring
           the capabilities and accuracy of various models and aids in finding the best model for the use case at hand.
         </p>
@@ -93,21 +80,11 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">Feedback</h1>
         <p>
           If you discover an issue or want to request a new feature, you can open an issue
-          <a
-            href="{'javascript:void(0);'}"
-            class="underline"
-            role="button"
-            title="Open the issues page"
-            on:click="{openIssuesPage}">here</a>
+          <button class="underline" title="Open the issues page" on:click="{openIssuesPage}">here</button>
         </p>
         <p>
           If you want to get more information about this project or exchange with the team, you can start a discussion
-          <a
-            href="{'javascript:void(0);'}"
-            class="underline"
-            role="button"
-            title="Open the discussions page"
-            on:click="{openDiscussionsPage}">here</a>
+          <button class="underline" title="Open the discussions page" on:click="{openDiscussionsPage}">here</button>
         </p>
       </div>
     </div>

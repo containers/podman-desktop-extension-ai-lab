@@ -204,7 +204,7 @@ export class GitManager {
 
     if (branch) {
       const tracking = await this.getTrackingBranch(directory, branch);
-      if (ref !== undefined && tracking !== `origin/${ref}`) {
+      if (ref && tracking !== `origin/${ref}`) {
         return {
           error: `The local repository is not tracking the right branch. (tracking ${tracking} when expected ${ref})`,
         };

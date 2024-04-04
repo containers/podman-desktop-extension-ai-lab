@@ -426,7 +426,6 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async checkInvalidModels(models: string[]): Promise<string[]> {
-    console.log(models);
     const invalidPaths = [];
     const catalogModels = await this.getModelsInfo();
     for (const model of models) {

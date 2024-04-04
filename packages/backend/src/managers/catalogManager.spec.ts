@@ -153,8 +153,10 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
+  const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
   vi.spyOn(promises, 'stat').mockResolvedValue({
     size: 1,
+    mtime: mtimeDate,
   } as Stats);
   vi.spyOn(path, 'resolve').mockReturnValue('path');
 
@@ -167,6 +169,8 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
     file: {
       path: '/root/path',
       file: 'file.gguf',
+      size: 1,
+      creation: mtimeDate,
     },
     memory: 1,
   });

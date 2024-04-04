@@ -244,3 +244,52 @@ test('importModels should call catalogManager', async () => {
   await studioApiImpl.importModels(models);
   expect(addLocalModelsMock).toBeCalledWith(models);
 });
+
+test('Expect checkInvalidModels to returns an empty array if all paths are valid', async () => {
+  vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
+    {
+      id: 'model',
+      file: {
+        path: 'path1',
+        file: 'file.gguf',
+      },
+    } as unknown as ModelInfo,
+  ]);
+  const result = await studioApiImpl.checkInvalidModels(['path/file.gguf']);
+  expect(result).toStrictEqual([]);
+});
+
+test('Expect checkInvalidModels to returns an array with the invalid value', async () => {
+  vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
+    {
+      id: 'model',
+      file: {
+        path: 'path1',
+        file: 'file.gguf',
+      },
+    } as unknown as ModelInfo,
+  ]);
+  const result = await studioApiImpl.checkInvalidModels(['path/file.gguf', 'path1/file.gguf']);
+  expect(result).toStrictEqual(['path1/file.gguf']);
+});
+
+test('Expect checkInvalidModels to returns an array with the invalid values', async () => {
+  vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
+    {
+      id: 'model',
+      file: {
+        path: 'path',
+        file: 'file.gguf',
+      },
+    } as unknown as ModelInfo,
+    {
+      id: 'model',
+      file: {
+        path: 'path2',
+        file: 'file.gguf',
+      },
+    } as unknown as ModelInfo,
+  ]);
+  const result = await studioApiImpl.checkInvalidModels(['path/file.gguf', 'path1/file.gguf', 'path2/file.gguf']);
+  expect(result).toStrictEqual(['path/file.gguf', 'path2/file.gguf']);
+});

@@ -67,6 +67,37 @@ test('Expect importModels button to be enabled when atleast one model is selecte
   expect(btnImportModels).toBeEnabled();
 });
 
+test('Expect an error is displayed if adding a new model fails', async () => {
+  vi.mocked(studioClient.openDialog).mockRejectedValue('Unknown error');
+  render(ImportModels);
+  const btnAddModels = screen.getByRole('button', { name: 'Add models' });
+  expect(btnAddModels).toBeInTheDocument();
+  await userEvent.click(btnAddModels);
+
+  const errorDiv = screen.getByLabelText('Error Message Content');
+  expect(errorDiv).toBeInTheDocument();
+  expect((errorDiv as HTMLDivElement).innerHTML).toContain('Unknown error');
+});
+
+test('Expect an error is displayed if user select a model already present in the catalog when adding a new model', async () => {
+  vi.mocked(studioClient.openDialog).mockResolvedValue([
+    {
+      path: 'path/file.gguf',
+    } as Uri,
+  ]);
+  vi.mocked(studioClient.checkInvalidModels).mockResolvedValue(['path/file.gguf']);
+  render(ImportModels);
+  const btnAddModels = screen.getByRole('button', { name: 'Add models' });
+  expect(btnAddModels).toBeInTheDocument();
+  await userEvent.click(btnAddModels);
+
+  const errorDiv = screen.getByLabelText('Error Message Content');
+  expect(errorDiv).toBeInTheDocument();
+  expect((errorDiv as HTMLDivElement).innerHTML).toContain(
+    'the following model is already in the catalog and cannot be imported',
+  );
+});
+
 test('Expect import button calls importModels func', async () => {
   vi.mocked(studioClient.openDialog).mockResolvedValue([
     {

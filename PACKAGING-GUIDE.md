@@ -50,7 +50,7 @@ A recipe has the following attributes:
 - ```description```: a detailed description about the recipe
 - ```repository```: the URL where the recipe code can be retrieved
 - ```categories```: an array of category id to be associated by this recipe
-- ```config```: an optional path of the configuration file within the repository. If not provided, the file is assumed to be located at the root the repository and called ai-lab.yaml
+- ```basedir```: an optional path within the repository where the ai-lab.yaml file is located. If not provided, the ai-lab.yaml is assumed to be located at the root the repository
 - ```readme```: a markdown description of the recipe
 - ```models```: an array of model id to be associated with this recipe
 

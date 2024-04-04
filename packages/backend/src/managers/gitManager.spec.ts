@@ -18,23 +18,25 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { GitManager } from './gitManager';
 import { statSync, existsSync, mkdirSync, type Stats, rmSync } from 'node:fs';
+import type fs from 'node:fs';
 import { window } from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => {
   return {
     cloneMock: vi.fn(),
-    checkoutMock: vi.fn(),
-    versionMock: vi.fn(),
-    getRemotesMock: vi.fn(),
-    statusMock: vi.fn(),
-    pullMock: vi.fn(),
-    revparseMock: vi.fn(),
+    statusMatrixMock: vi.fn(),
     fetchMock: vi.fn(),
+    currentBranchMock: vi.fn(),
+    logMock: vi.fn(),
+    resolveRefMock: vi.fn(),
+    getConfigMock: vi.fn(),
   };
 });
 
-vi.mock('node:fs', () => {
+vi.mock('node:fs', async importOriginal => {
+  const actual = await importOriginal<typeof fs>();
   return {
+    ...actual,
     existsSync: vi.fn(),
     statSync: vi.fn(),
     mkdirSync: vi.fn(),
@@ -42,18 +44,17 @@ vi.mock('node:fs', () => {
   };
 });
 
-vi.mock('simple-git', () => {
+vi.mock('isomorphic-git', () => {
   return {
-    default: () => ({
+    default: {
       clone: mocks.cloneMock,
-      checkout: mocks.checkoutMock,
-      version: mocks.versionMock,
-      getRemotes: mocks.getRemotesMock,
-      status: mocks.statusMock,
-      pull: mocks.pullMock,
-      revparse: mocks.revparseMock,
+      currentBranch: mocks.currentBranchMock,
+      log: mocks.logMock,
+      resolveRef: mocks.resolveRefMock,
       fetch: mocks.fetchMock,
-    }),
+      getConfig: mocks.getConfigMock,
+      statusMatrix: mocks.statusMatrixMock,
+    },
   };
 });
 
@@ -67,8 +68,7 @@ vi.mock('@podman-desktop/api', async () => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-
-  mocks.revparseMock.mockResolvedValue('dummyCommit');
+  mocks.resolveRefMock.mockResolvedValue('dummyCommit');
 });
 
 describe('cloneRepository', () => {
@@ -79,16 +79,30 @@ describe('cloneRepository', () => {
       targetDirectory: 'target',
       ref: '000',
     });
-    expect(mocks.cloneMock).toBeCalledWith('repo', 'target');
-    expect(mocks.checkoutMock).toBeCalledWith(['000']);
+    expect(mocks.cloneMock).toBeCalledWith({
+      fs: expect.anything(),
+      http: expect.anything(),
+      url: 'repo',
+      dir: 'target',
+      ref: '000',
+      singleBranch: true,
+      depth: 1,
+    });
   });
   test('clone and checkout if ref is NOT specified', async () => {
     await gitmanager.cloneRepository({
       repository: 'repo',
       targetDirectory: 'target',
     });
-    expect(mocks.cloneMock).toBeCalledWith('repo', 'target');
-    expect(mocks.checkoutMock).not.toBeCalled();
+    expect(mocks.cloneMock).toBeCalledWith({
+      fs: expect.anything(),
+      http: expect.anything(),
+      url: 'repo',
+      dir: 'target',
+      ref: undefined,
+      singleBranch: true,
+      depth: 1,
+    });
   });
 });
 
@@ -104,7 +118,15 @@ describe('processCheckout', () => {
 
     expect(existsSync).toHaveBeenCalledWith('target');
     expect(mkdirSync).toHaveBeenCalledWith('target', { recursive: true });
-    expect(mocks.cloneMock).toHaveBeenCalledWith('repo', 'target');
+    expect(mocks.cloneMock).toBeCalledWith({
+      fs: expect.anything(),
+      http: expect.anything(),
+      url: 'repo',
+      dir: 'target',
+      ref: '000',
+      singleBranch: true,
+      depth: 1,
+    });
   });
 
   test('existing folder valid', async () => {
@@ -219,6 +241,21 @@ describe('processCheckout', () => {
 });
 
 describe('isRepositoryUpToDate', () => {
+  test('no remote defined', async () => {
+    const gitmanager = new GitManager();
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'other-repo',
+      },
+    ]);
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', undefined);
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe(
+      'The local repository does not have remote repo configured. Remotes: origin other-repo (fetch)',
+    );
+  });
+
   test('detached invalid without ref', async () => {
     vi.mocked(existsSync).mockReturnValue(true);
     vi.mocked(statSync).mockReturnValue({
@@ -229,16 +266,11 @@ describe('isRepositoryUpToDate', () => {
 
     vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
       {
-        name: 'origin',
-        refs: {
-          fetch: 'repo',
-          push: 'repo',
-        },
+        remote: 'origin',
+        url: 'repo',
       },
     ]);
-    mocks.statusMock.mockResolvedValue({
-      detached: true,
-    });
+    mocks.currentBranchMock.mockResolvedValue(undefined);
 
     const result = await gitmanager.isRepositoryUpToDate('target', 'repo', undefined);
     expect(result.ok).toBeFalsy();
@@ -255,16 +287,11 @@ describe('isRepositoryUpToDate', () => {
 
     vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
       {
-        name: 'origin',
-        refs: {
-          fetch: 'repo',
-          push: 'repo',
-        },
+        remote: 'origin',
+        url: 'repo',
       },
     ]);
-    mocks.statusMock.mockResolvedValue({
-      detached: true,
-    });
+    mocks.currentBranchMock.mockResolvedValue(undefined);
 
     const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'invalidRef');
     expect(result.ok).toBeFalsy();
@@ -281,19 +308,12 @@ describe('isRepositoryUpToDate', () => {
 
     vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
       {
-        name: 'origin',
-        refs: {
-          fetch: 'repo',
-          push: 'repo',
-        },
+        remote: 'origin',
+        url: 'repo',
       },
     ]);
-    mocks.statusMock.mockResolvedValue({
-      detached: true,
-      modified: [],
-      deleted: [],
-      created: [],
-    });
+    mocks.statusMatrixMock.mockResolvedValue([['a', 1, 1, 1]]);
+    mocks.currentBranchMock.mockResolvedValue(undefined);
 
     const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
     expect(result.ok).toBeTruthy();
@@ -310,19 +330,14 @@ describe('isRepositoryUpToDate', () => {
 
     vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
       {
-        name: 'origin',
-        refs: {
-          fetch: 'repo',
-          push: 'repo',
-        },
+        remote: 'origin',
+        url: 'repo',
       },
     ]);
-    mocks.statusMock.mockResolvedValue({
-      detached: true,
-      modified: ['a_file.txt'],
-      deleted: [],
-      created: [],
-    });
+    mocks.statusMatrixMock.mockResolvedValue([
+      ['a', 1, 1, 1],
+      ['a_file', 1, 2, 1],
+    ]);
 
     const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
     expect(result.ok).toBeFalsy();
@@ -339,19 +354,14 @@ describe('isRepositoryUpToDate', () => {
 
     vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
       {
-        name: 'origin',
-        refs: {
-          fetch: 'repo',
-          push: 'repo',
-        },
+        remote: 'origin',
+        url: 'repo',
       },
     ]);
-    mocks.statusMock.mockResolvedValue({
-      detached: true,
-      deleted: ['a_file.txt'],
-      modified: [],
-      created: [],
-    });
+    mocks.statusMatrixMock.mockResolvedValue([
+      ['a', 1, 1, 1],
+      ['a_file', 1, 0, 1],
+    ]);
 
     const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
     expect(result.ok).toBeFalsy();
@@ -368,22 +378,282 @@ describe('isRepositoryUpToDate', () => {
 
     vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
       {
-        name: 'origin',
-        refs: {
-          fetch: 'repo',
-          push: 'repo',
-        },
+        remote: 'origin',
+        url: 'repo',
       },
     ]);
-    mocks.statusMock.mockResolvedValue({
-      detached: true,
-      created: ['a_file.txt'],
-      deleted: [],
-      modified: [],
-    });
+    mocks.statusMatrixMock.mockResolvedValue([
+      ['a', 1, 1, 1],
+      ['a_file', 0, 2, 2],
+    ]);
 
     const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
     expect(result.ok).toBeFalsy();
     expect(result.error).toBe('The local repository has created files.');
   });
+
+  test('detached with expected ref and repository is not clean', async () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as unknown as Stats);
+
+    const gitmanager = new GitManager();
+
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: [],
+      created: [],
+      deleted: [],
+      clean: false,
+    });
+
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'dummyCommit');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository is not clean.');
+  });
+
+  test('using main branch and no local change', async () => {
+    const gitmanager = new GitManager();
+    mocks.currentBranchMock.mockResolvedValue('main');
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/main');
+    vi.spyOn(gitmanager, 'getBehindAhead').mockResolvedValue({ behind: 0, ahead: 0 });
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: [],
+      created: [],
+      deleted: [],
+      clean: true,
+    });
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'main');
+    expect(result.ok).toBeTruthy();
+  });
+
+  test('using main branch and tracking wrong branch', async () => {
+    const gitmanager = new GitManager();
+    mocks.currentBranchMock.mockResolvedValue('main');
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/other-branch');
+    vi.spyOn(gitmanager, 'getBehindAhead').mockResolvedValue({ behind: 0, ahead: 0 });
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: [],
+      created: [],
+      deleted: [],
+      clean: true,
+    });
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'main');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe(
+      'The local repository is not tracking the right branch. (tracking origin/other-branch when expected main)',
+    );
+  });
+
+  test('using main branch and ahead', async () => {
+    const gitmanager = new GitManager();
+    mocks.currentBranchMock.mockResolvedValue('main');
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/main');
+    vi.spyOn(gitmanager, 'getBehindAhead').mockResolvedValue({ behind: 1, ahead: 2 });
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: [],
+      created: [],
+      deleted: [],
+      clean: true,
+    });
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'main');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository has 2 commit(s) ahead.');
+  });
+
+  test('using main branch and behind', async () => {
+    const gitmanager = new GitManager();
+    mocks.currentBranchMock.mockResolvedValue('main');
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/main');
+    vi.spyOn(gitmanager, 'getBehindAhead').mockResolvedValue({ behind: 1, ahead: 0 });
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: [],
+      created: [],
+      deleted: [],
+      clean: true,
+    });
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'main');
+    expect(result.ok).toBeTruthy();
+    expect(result.updatable).toBeTruthy();
+  });
+
+  test('using main branch and modified files', async () => {
+    const gitmanager = new GitManager();
+    mocks.currentBranchMock.mockResolvedValue('main');
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/main');
+    vi.spyOn(gitmanager, 'getBehindAhead').mockResolvedValue({ behind: 0, ahead: 0 });
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: ['a_modified_file.txt'],
+      created: [],
+      deleted: [],
+      clean: true,
+    });
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'main');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository has modified files.');
+  });
+
+  test('using main branch and deleted files', async () => {
+    const gitmanager = new GitManager();
+    mocks.currentBranchMock.mockResolvedValue('main');
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/main');
+    vi.spyOn(gitmanager, 'getBehindAhead').mockResolvedValue({ behind: 0, ahead: 0 });
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: [],
+      created: [],
+      deleted: ['a_deleted_file.txt'],
+      clean: true,
+    });
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'main');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository has deleted files.');
+  });
+
+  test('using main branch and created files', async () => {
+    const gitmanager = new GitManager();
+    mocks.currentBranchMock.mockResolvedValue('main');
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/main');
+    vi.spyOn(gitmanager, 'getBehindAhead').mockResolvedValue({ behind: 0, ahead: 0 });
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: [],
+      created: ['a_created_file.txt'],
+      deleted: [],
+      clean: true,
+    });
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'main');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository has created files.');
+  });
+
+  test('using main branch and repository is not clean', async () => {
+    const gitmanager = new GitManager();
+    mocks.currentBranchMock.mockResolvedValue('main');
+    vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+      {
+        remote: 'origin',
+        url: 'repo',
+      },
+    ]);
+    vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/main');
+    vi.spyOn(gitmanager, 'getBehindAhead').mockResolvedValue({ behind: 0, ahead: 0 });
+    vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+      modified: [],
+      created: [],
+      deleted: [],
+      clean: false,
+    });
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'main');
+    expect(result.ok).toBeFalsy();
+    expect(result.error).toBe('The local repository is not clean.');
+  });
+});
+
+test('getBehindAhead', async () => {
+  const gitmanager = new GitManager();
+
+  mocks.logMock.mockImplementation(async ({ ref }: { ref: string }) => {
+    return new Promise(resolve => {
+      if (ref === 'main') {
+        resolve([
+          {
+            oid: 1,
+          },
+          {
+            oid: 6,
+          },
+          {
+            oid: 2,
+          },
+          {
+            oid: 3,
+          },
+        ]);
+      } else if (ref === 'origin/main') {
+        resolve([
+          {
+            oid: 1,
+          },
+          {
+            oid: 4,
+          },
+          {
+            oid: 2,
+          },
+          {
+            oid: 5,
+          },
+          {
+            oid: 3,
+          },
+        ]);
+      } else {
+        resolve([]);
+      }
+    });
+  });
+  vi.spyOn(gitmanager, 'getTrackingBranch').mockResolvedValue('origin/main');
+  const { behind, ahead } = await gitmanager.getBehindAhead('path/to/repo', 'main');
+  expect(behind).toEqual(2);
+  expect(ahead).toEqual(1);
+});
+
+test('getTrackingBranch', async () => {
+  const gitmanager = new GitManager();
+  mocks.getConfigMock.mockImplementation(async ({ path }: { path: string }) => {
+    if (path === 'branch.my-branch.remote') {
+      return 'origin';
+    } else if (path === 'branch.my-branch.merge') {
+      return 'refs/heads/my-remote-branch';
+    }
+  });
+  const result = await gitmanager.getTrackingBranch('path/to/repository', 'my-branch');
+  expect(result).toEqual('origin/my-remote-branch');
 });

@@ -5,7 +5,7 @@
       "description" : "This is a Streamlit chat demo application.",
       "name" : "ChatBot",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "d68116b",
+      "ref": "d68116b344cb9e5bd50267aad153f968c91a0466",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -29,7 +29,7 @@
       "description" : "This is a Streamlit demo application for summarizing text.",
       "name" : "Summarizer",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "d68116b",
+      "ref": "d68116b344cb9e5bd50267aad153f968c91a0466",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -53,7 +53,7 @@
       "description" : "This is a code-generation demo application.",
       "name" : "Code Generation",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "d68116b",
+      "ref": "d68116b344cb9e5bd50267aad153f968c91a0466",
       "icon": "generator",
       "categories": [
         "natural-language-processing"

@@ -578,15 +578,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       git: 'checkout',
     });
 
-    const installed = await this.git.isGitInstalled();
-    if (!installed) {
-      checkoutTask.state = 'error';
-      checkoutTask.error = 'Git is not installed or cannot be found.';
-      this.taskRegistry.updateTask(checkoutTask);
-      // propagate error
-      throw new Error(checkoutTask.error);
-    }
-
     try {
       await this.git.processCheckout(gitCloneInfo);
       checkoutTask.state = 'success';

@@ -49,6 +49,7 @@ A recipe has the following attributes:
 - ```name```: the recipe name
 - ```description```: a detailed description about the recipe
 - ```repository```: the URL where the recipe code can be retrieved
+- ```ref```: an optional ref in the repository to checkout (a branch name, tag name, or commit full id - short commit id won't be recognized). If not defined, the default branch will be used
 - ```categories```: an array of category id to be associated by this recipe
 - ```config```: an optional path of the configuration file within the repository. If not provided, the file is assumed to be located at the root the repository and called ai-lab.yaml
 - ```readme```: a markdown description of the recipe

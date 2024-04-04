@@ -73,7 +73,7 @@ export class Downloader {
 
   private download(url: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const callback = (result: { ok: boolean; error?: string }) => {
+      const callback = (result: { ok?: boolean; error?: string }) => {
         if (result.ok) {
           resolve();
         } else {

@@ -120,7 +120,7 @@ const dirent = [
 function mockFiles(now: Date) {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const existsSyncSpy = vi.spyOn(fs, 'existsSync');
-  existsSyncSpy.mockImplementation((path: string) => {
+  existsSyncSpy.mockImplementation((path: PathLike) => {
     if (process.platform === 'win32') {
       expect(path).toBe('C:\\home\\user\\aistudio\\models');
     } else {

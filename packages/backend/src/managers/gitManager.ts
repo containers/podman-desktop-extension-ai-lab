@@ -227,6 +227,8 @@ export class GitManager {
       return { error: 'The local repository has created files.' };
     } else if (status.deleted.length > 0) {
       return { error: 'The local repository has deleted files.' };
+    } else if (!status.clean) {
+      return { error: 'The local repository is not clean.' };
     }
 
     return { ok: true }; // If none of the error conditions are met

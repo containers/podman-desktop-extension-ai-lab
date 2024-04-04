@@ -21,6 +21,7 @@
     },
     "strictBindCallApply": true,
     "alwaysStrict": true,
+    "strictFunctionTypes": true,
     "noImplicitThis": true
   },
   "include": [

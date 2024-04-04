@@ -184,7 +184,7 @@ onMount(() => {
 
               {#if snippet !== undefined}
                 <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2">
-                  <code class="whitespace-break-spaces">
+                  <code class="whitespace-break-spaces text-sm">
                     {snippet}
                   </code>
                 </div>

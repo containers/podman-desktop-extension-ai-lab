@@ -92,7 +92,7 @@ async function importModels() {
   <svelte:fragment slot="content">
     <div class="p-5 min-w-full h-fit">
       <div class="bg-charcoal-800 rounded-lg px-6 py-6 space-y-2">
-              <span class="block mb-2 text-sm font-medium text-gray-400">Models to import:</span>
+        <span class="block mb-2 text-sm font-medium text-gray-400">Models to import:</span>
         <Button on:click="{addModelsToImport}" icon="{faPlusCircle}" type="link" aria-label="Add models"
           >Add .GGUF Models</Button>
         <div aria-label="importError">

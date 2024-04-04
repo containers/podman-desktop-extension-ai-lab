@@ -26,7 +26,7 @@ import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { INFERENCE_SERVER_IMAGE } from '../utils/inferenceUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task, TaskState } from '@shared/src/models/ITask';
 
 vi.mock('openai', () => ({
   default: vi.fn(),
@@ -56,7 +56,7 @@ const telemetryMock = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(undefined);
+  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
   vi.useFakeTimers();
 });
 
@@ -433,7 +433,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   const createTaskMock = vi.mocked(taskRegistryMock).createTask;
   const updateTaskMock = vi.mocked(taskRegistryMock).updateTask;
-  createTaskMock.mockImplementation((_name: string, _state: string, labels: { [id: string]: string }) => {
+  createTaskMock.mockImplementation((_name: string, _state: TaskState, labels?: { [id: string]: string }) => {
     return {
       labels,
     } as Task;
@@ -462,7 +462,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
   const createTaskMock = vi.mocked(taskRegistryMock).createTask;
   const updateTaskMock = vi.mocked(taskRegistryMock).updateTask;
   const getTasksByLabelsMock = vi.mocked(taskRegistryMock).getTasksByLabels;
-  createTaskMock.mockImplementation((_name: string, _state: string, labels: { [id: string]: string }) => {
+  createTaskMock.mockImplementation((_name: string, _state: TaskState, labels?: { [id: string]: string }) => {
     return {
       labels,
     } as Task;

@@ -111,7 +111,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   // Default listContainers is empty
   mockListContainers([]);
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(undefined);
+  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
   vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
     State: {
       Status: 'running',

@@ -211,7 +211,7 @@ describe('getFirstRunningPodmanConnection', () => {
       },
     ]);
     const result = utils.getFirstRunningPodmanConnection();
-    expect(result.connection.name).equal('machine2');
+    expect(result?.connection.name).equal('machine2');
   });
 });
 

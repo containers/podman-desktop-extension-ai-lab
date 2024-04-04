@@ -74,7 +74,7 @@ test('Downloader constructor', async () => {
 test('perform download failed', async () => {
   const downloader = new Downloader('dummyUrl', 'dummyTarget');
 
-  let onResponse: (msg: IncomingMessage) => void;
+  let onResponse: ((msg: IncomingMessage) => void) | undefined;
   vi.mocked(https.get).mockImplementation((_url, _options, callback) => {
     onResponse = callback;
     return {} as unknown as ClientRequest;
@@ -126,7 +126,7 @@ test('perform download failed', async () => {
 
 test('perform download successfully', async () => {
   const downloader = new Downloader('dummyUrl', 'dummyTarget');
-  let onResponse: (msg: IncomingMessage) => void;
+  let onResponse: ((msg: IncomingMessage) => void) | undefined;
   vi.mocked(https.get).mockImplementation((_url, _options, callback) => {
     onResponse = callback;
     return {} as unknown as ClientRequest;

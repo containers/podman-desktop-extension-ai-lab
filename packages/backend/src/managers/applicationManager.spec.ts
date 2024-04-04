@@ -278,6 +278,7 @@ describe('pullApplication', () => {
       ref: '000000',
       readme: '',
       repository: 'repo',
+      config: 'fakePath',
     };
     const model: ModelInfo = {
       id: 'model1',
@@ -342,6 +343,7 @@ describe('pullApplication', () => {
       description: '',
       readme: '',
       repository: 'repo',
+      config: 'fakePath',
     };
     const model: ModelInfo = {
       id: 'model1',
@@ -370,6 +372,7 @@ describe('pullApplication', () => {
       ref: '000000',
       readme: '',
       repository: 'repo',
+      config: 'fakePath',
     };
     const model: ModelInfo = {
       id: 'model1',

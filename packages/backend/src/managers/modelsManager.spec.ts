@@ -21,7 +21,8 @@ import os from 'os';
 import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
-import { type TelemetryLogger, type Webview, env, process as coreProcess } from '@podman-desktop/api';
+import { env, process as coreProcess } from '@podman-desktop/api';
+import type { RunResult , type TelemetryLogger, type Webview } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';
@@ -536,7 +537,7 @@ describe('deleting models', () => {
 
   test('deleting on windows should check if models is uploaded', async () => {
     vi.mocked(env).isWindows = true;
-    vi.mocked(coreProcess.exec).mockResolvedValue(undefined);
+    vi.mocked(coreProcess.exec).mockResolvedValue({} as unknown as RunResult);
     mocks.getFirstRunningMachineNameMock.mockReturnValue('dummyMachine');
     mocks.getPodmanCliMock.mockReturnValue('dummyCli');
 

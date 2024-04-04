@@ -51,7 +51,7 @@ const webviewMock = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(undefined);
+  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
 
   vi.mocked(getProviderContainerConnection).mockReturnValue({
     providerId: 'dummyProviderId',

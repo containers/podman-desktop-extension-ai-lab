@@ -66,7 +66,7 @@ export class ModelsManager implements Disposable {
 
   dispose(): void {
     this.#models.clear();
-    this.#watcher.dispose();
+    this.#watcher?.dispose();
     this.#disposables.forEach(d => d.dispose());
   }
 
@@ -141,15 +141,16 @@ export class ModelsManager implements Disposable {
     }
   }
 
-  isModelOnDisk(modelId: string) {
+  isModelOnDisk(modelId: string): boolean {
     return this.#models.get(modelId)?.file !== undefined;
   }
 
   getLocalModelInfo(modelId: string): LocalModelInfo {
-    if (!this.isModelOnDisk(modelId)) {
+    const model = this.#models.get(modelId);
+    if (!model?.file) {
       throw new Error('model is not on disk');
     }
-    return this.#models.get(modelId).file;
+    return model.file;
   }
 
   getModelInfo(modelId: string): ModelInfo {
@@ -237,11 +238,11 @@ export class ModelsManager implements Disposable {
     const task: Task = this.createDownloadTask(model, labels);
 
     // Check there is no existing downloader running
-    if (!this.#downloaders.has(model.id)) {
+    const existingDownloader = this.#downloaders.get(model.id);
+    if (!existingDownloader) {
       return this.downloadModel(model, task);
     }
 
-    const existingDownloader = this.#downloaders.get(model.id);
     if (existingDownloader.completed) {
       task.state = 'success';
       this.taskRegistry.updateTask(task);

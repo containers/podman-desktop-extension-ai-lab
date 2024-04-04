@@ -80,7 +80,7 @@ export class Studio {
     this.telemetry = env.createTelemetryLogger();
 
     if (!this.checkVersion()) {
-      const min = minVersion(engines['podman-desktop']);
+      const min = minVersion(engines['podman-desktop']) ?? { version: 'unknown' };
       const current = version ?? 'unknown';
       this.telemetry.logError('start.incompatible', {
         version: current,
@@ -114,6 +114,7 @@ export class Studio {
         const src = link.match(/src="(.*?)"/);
         if (src) {
           const webviewSrc = this.#panel?.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', src[1]));
+          if (!webviewSrc) throw new Error('undefined webviewSrc');
           indexHtml = indexHtml.replace(src[1], webviewSrc.toString());
         }
       });
@@ -126,6 +127,7 @@ export class Studio {
         const href = link.match(/href="(.*?)"/);
         if (href) {
           const webviewHref = this.#panel?.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', href[1]));
+          if (!webviewHref) throw new Error('undefined webviewHref');
           indexHtml = indexHtml.replace(href[1], webviewHref.toString());
         }
       });

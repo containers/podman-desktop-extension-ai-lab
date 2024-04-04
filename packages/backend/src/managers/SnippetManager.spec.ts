@@ -32,7 +32,7 @@ const telemetryMock = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(undefined);
+  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
 });
 
 test('expect init to notify webview', () => {
@@ -59,9 +59,9 @@ test('expect postman-code-generators to have nodejs supported.', () => {
   const languages = manager.getLanguageList();
   const nodejs = languages.find(language => language.key === 'nodejs');
   expect(nodejs).toBeDefined();
-  expect(nodejs.variants.length).toBeGreaterThan(0);
+  expect(nodejs?.variants.length).toBeGreaterThan(0);
 
-  const native = nodejs.variants.find(variant => variant.key === 'Request');
+  const native = nodejs?.variants.find(variant => variant.key === 'Request');
   expect(native).toBeDefined();
 });
 
@@ -97,9 +97,9 @@ test('expect snippet manager to have Quarkus Langchain4J supported.', () => {
   const languages = manager.getLanguageList();
   const java = languages.find(language => language.key === 'java');
   expect(java).toBeDefined();
-  expect(java.variants.length).toBeGreaterThan(0);
+  expect(java?.variants.length).toBeGreaterThan(0);
 
-  const quarkus_langchain4j = java.variants.find(variant => variant.key === 'Quarkus Langchain4J');
+  const quarkus_langchain4j = java?.variants.find(variant => variant.key === 'Quarkus Langchain4J');
   expect(quarkus_langchain4j).toBeDefined();
 });
 
@@ -110,12 +110,14 @@ test('expect new variant to replace existing one if same name', () => {
   const languages = manager.getLanguageList();
   const java = languages.find(language => language.key === 'java');
   expect(java).toBeDefined();
-  expect(java.variants.length).toBeGreaterThan(0);
+  expect(java?.variants.length).toBeGreaterThan(0);
+
+  if (!java) throw new Error('undefined java');
 
   const oldVariantsNumber = java.variants.length;
   manager.addVariant('java', java.variants[0].key, vi.fn());
   const languages_updated = manager.getLanguageList();
   const java_updated = languages_updated.find(language => language.key === 'java');
   expect(java_updated).toBeDefined();
-  expect(java_updated.variants.length).equals(oldVariantsNumber);
+  expect(java_updated?.variants.length).equals(oldVariantsNumber);
 });

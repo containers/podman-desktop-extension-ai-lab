@@ -62,6 +62,7 @@ export function getFirstRunningMachineName(): string | undefined {
   // {name} -> {name}
   try {
     const runningConnection = getFirstRunningPodmanConnection();
+    if (!runningConnection) return undefined;
     const runningConnectionName = runningConnection.connection.name;
     if (runningConnectionName.startsWith('Podman Machine')) {
       const machineName = runningConnectionName.replace(/Podman Machine\s*/, 'podman-machine-');
@@ -80,7 +81,7 @@ export function getFirstRunningMachineName(): string | undefined {
 }
 
 export function getFirstRunningPodmanConnection(): ProviderContainerConnection | undefined {
-  let engine: ProviderContainerConnection;
+  let engine: ProviderContainerConnection | undefined = undefined;
   try {
     engine = provider
       .getContainerConnections()

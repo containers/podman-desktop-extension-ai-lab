@@ -75,7 +75,7 @@ export async function getImageInfo(
   image: string,
   callback: (event: PullEvent) => void,
 ): Promise<ImageInfo> {
-  let imageInfo: ImageInfo;
+  let imageInfo: ImageInfo | undefined;
   try {
     // Pull image
     await containerEngine.pullImage(connection, image, callback);

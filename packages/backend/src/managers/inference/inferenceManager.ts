@@ -417,10 +417,10 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
    * @param containerId the id of the container running the Inference Server
    */
   async deleteInferenceServer(containerId: string): Promise<void> {
-    if (!this.#servers.has(containerId)) {
+    const server = this.#servers.get(containerId);
+    if (!server) {
       throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
     }
-    const server = this.#servers.get(containerId);
 
     try {
       // If the server is running we need to stop it.
@@ -469,7 +469,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
    * Stop an inference server from the container id
    * @param containerId the identifier of the container to stop
    */
-  async stopInferenceServer(containerId?: string): Promise<void> {
+  async stopInferenceServer(containerId: string): Promise<void> {
     if (!this.isInitialize()) throw new Error('Cannot stop the inference server.');
 
     const server = this.#servers.get(containerId);

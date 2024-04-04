@@ -63,7 +63,7 @@ test('created token should not be cancelled', () => {
   const registry = new CancellationTokenRegistry();
   const source = registry.getCancellationTokenSource(registry.createCancellationTokenSource());
   expect(source).toBeDefined();
-  expect(source.token.isCancellationRequested).toBeFalsy();
+  expect(source?.token.isCancellationRequested).toBeFalsy();
 });
 
 test('cancel token should be removed from registry', () => {
@@ -82,8 +82,8 @@ test('disposing registry should dispose with cancel all tokens', () => {
   const source = registry.getCancellationTokenSource(registry.createCancellationTokenSource());
 
   registry.dispose();
-  expect(source.cancel).toHaveBeenCalled();
-  expect(source.dispose).toHaveBeenCalled();
+  expect(source?.cancel).toHaveBeenCalled();
+  expect(source?.dispose).toHaveBeenCalled();
 });
 
 test('creating cancellation token with function should register it', () => {
@@ -91,5 +91,5 @@ test('creating cancellation token with function should register it', () => {
   const func = vi.fn();
   const source = registry.getCancellationTokenSource(registry.createCancellationTokenSource(func));
 
-  expect(source.token.onCancellationRequested).toHaveBeenCalledWith(func);
+  expect(source?.token.onCancellationRequested).toHaveBeenCalledWith(func);
 });

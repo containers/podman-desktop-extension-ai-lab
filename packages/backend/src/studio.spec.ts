@@ -144,7 +144,7 @@ describe('version checker', () => {
   });
 
   test('version undefined', async () => {
-    (version as string) = undefined;
+    (version as string | undefined) = undefined;
     await expect(studio.activate()).rejects.toThrowError(
       'Extension is not compatible with Podman Desktop version below 1.0.0. Current unknown',
     );

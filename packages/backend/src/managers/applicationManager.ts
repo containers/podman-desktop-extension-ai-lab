@@ -21,13 +21,16 @@ import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
 import {
-  type PodCreatePortOptions,
   containerEngine,
+  Disposable} from '@podman-desktop/api';
+import type {
+  BuildImageOptions,
+  type PodCreatePortOptions,
   type TelemetryLogger,
   type PodInfo,
   type Webview,
   type HostConfig,
-  Disposable,
+  type HealthConfig,
 } from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
@@ -240,7 +243,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     let podInfo: ApplicationPodInfo;
     try {
       podInfo = await this.createPod(recipe, model, images);
-      task.labels['pod-id'] = podInfo.Id;
+      task.labels = {
+        ...task.labels,
+        'pod-id': podInfo.Id,
+      };
     } catch (e) {
       console.error('error when creating pod', e);
       task.state = 'error';
@@ -278,9 +284,9 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     const isQEMUVM = await isQEMUMachine();
     await Promise.all(
       images.map(async image => {
-        let hostConfig: HostConfig;
+        let hostConfig: HostConfig | undefined = undefined;
         let envs: string[] = [];
-        let healthcheck: unknown | undefined = undefined;
+        let healthcheck: HealthConfig | undefined = undefined;
         // if it's a model service we mount the model as a volume
         if (image.modelService) {
           const modelName = path.basename(modelPath);
@@ -348,13 +354,15 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     for (const image of images) {
       for (const exposed of image.ports) {
         const localPorts = await getPortsInfo(exposed);
-        portmappings.push({
-          container_port: parseInt(exposed),
-          host_port: parseInt(localPorts),
-          host_ip: '',
-          protocol: '',
-          range: 1,
-        });
+        if (localPorts) {
+          portmappings.push({
+            container_port: parseInt(exposed),
+            host_port: parseInt(localPorts),
+            host_ip: '',
+            protocol: '',
+            range: 1,
+          });
+        }
       }
     }
 
@@ -425,11 +433,11 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         }
 
         const imageTag = this.getImageTag(recipe, container);
-        const buildOptions = {
+        const buildOptions: BuildImageOptions = {
           containerFile: container.containerfile,
           tag: imageTag,
           labels: {
-            [LABEL_RECIPE_ID]: labels !== undefined && 'recipe-id' in labels ? labels['recipe-id'] : undefined,
+            [LABEL_RECIPE_ID]: labels !== undefined && 'recipe-id' in labels ? labels['recipe-id'] : '',
           },
         };
 
@@ -745,7 +753,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         // a fresh pod could not have been added yet, we will handle it at next iteration
         continue;
       }
-      const containerStates = await Promise.all(
+      const containerStates: (string | undefined)[] = await Promise.all(
         pod.Containers.map(container =>
           containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State.Health?.Status),
         ),
@@ -768,7 +776,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
-  getPodHealth(infos: string[]): PodHealth {
+  getPodHealth(infos: (string | undefined)[]): PodHealth {
     const checked = infos.filter(info => !!info && info !== 'none' && info !== '');
     if (!checked.length) {
       return 'none';

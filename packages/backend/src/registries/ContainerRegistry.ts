@@ -42,7 +42,7 @@ export class ContainerRegistry {
       }
 
       if (this.subscribers.has(event.id)) {
-        this.subscribers.get(event.id).forEach(subscriber => subscriber.callback(event.status));
+        this.subscribers.get(event.id)?.forEach(subscriber => subscriber.callback(event.status));
 
         // If the event type is remove, we dispose all subscribers for the specific containers
         if (event.status === 'remove') {
@@ -53,22 +53,22 @@ export class ContainerRegistry {
   }
 
   subscribe(containerId: string, callback: (status: string) => void): podmanDesktopApi.Disposable {
-    const existing: Subscriber[] = this.subscribers.has(containerId) ? this.subscribers.get(containerId) : [];
     const subscriberId = ++this.count;
-    this.subscribers.set(containerId, [
+    const nSubs: Subscriber[] = [
+      ...(this.subscribers.get(containerId) ?? []),
       {
         id: subscriberId,
         callback: callback,
       },
-      ...existing,
-    ]);
+    ];
 
+    this.subscribers.set(containerId, nSubs);
     return podmanDesktopApi.Disposable.create(() => {
       if (!this.subscribers.has(containerId)) return;
 
       this.subscribers.set(
         containerId,
-        this.subscribers.get(containerId).filter(subscriber => subscriber.id !== subscriberId),
+        nSubs.filter(subscriber => subscriber.id !== subscriberId),
       );
     });
   }

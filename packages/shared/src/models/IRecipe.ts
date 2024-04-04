@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 export interface Recipe {
-  id?: string;
+  id: string;
   name: string;
   categories: string[];
   description: string;

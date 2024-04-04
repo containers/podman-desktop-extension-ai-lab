@@ -125,6 +125,7 @@ export class RpcBrowser {
   counter: number = 0;
   promises: Map<number, { resolve: (value: unknown) => unknown; reject: (value: unknown) => void }> = new Map();
   subscribers: Map<string, (msg: any) => void> = new Map();
+  noTimeoutChannels: string[] = ['openDialog'];
 
   getUniqueId(): number {
     return ++this.counter;
@@ -198,12 +199,14 @@ export class RpcBrowser {
     } as IMessageRequest);
 
     // Add some timeout
-    setTimeout(() => {
-      const { reject } = this.promises.get(requestId) || {};
-      if (!reject) return;
-      reject(new Error('Timeout'));
-      this.promises.delete(requestId);
-    }, 5000);
+    if (!this.noTimeoutChannels.includes(channel)) {
+      setTimeout(() => {
+        const { reject } = this.promises.get(requestId) || {};
+        if (!reject) return;
+        reject(new Error('Timeout'));
+        this.promises.delete(requestId);
+      }, 5000);
+    }
 
     // Create a Promise
     return promise;

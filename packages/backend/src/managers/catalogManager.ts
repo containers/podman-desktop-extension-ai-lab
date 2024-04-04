@@ -64,7 +64,16 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   }
 
   private onCatalogUpdated(content: ApplicationCatalog): void {
+    // when reading the content on the catalog, the creation is just a string and we need to convert it back to a Date object
+    content.models
+      .filter(m => m.file?.creation)
+      .forEach(m => {
+        if (m.file?.creation) {
+          m.file.creation = new Date(m.file.creation);
+        }
+      });
     this.catalog = content;
+
     this.#catalogUpdateListeners.forEach(listener => listener());
     this.notify();
   }
@@ -123,6 +132,8 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
         file: {
           path: path.dirname(model.path),
           file: path.basename(model.path),
+          size: statFile.size,
+          creation: statFile.mtime,
         },
         memory: statFile.size,
       });

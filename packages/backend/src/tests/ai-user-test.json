@@ -9,7 +9,7 @@
       "categories": [
         "category1"
       ],
-      "config": "chatbot/ai-lab.yaml",
+      "basedir": "chatbot",
       "readme": "Readme for recipe 1",
       "models": [
         "model1",

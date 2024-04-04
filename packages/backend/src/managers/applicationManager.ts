@@ -138,7 +138,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
       // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
       // and backend (that define which model supports)
-      const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.config, localFolder);
+      const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.basedir, localFolder);
 
       // get model by downloading it or retrieving locally
       let modelPath = await this.modelsManager.requestDownloadModel(model, {
@@ -491,7 +491,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   getConfigAndFilterContainers(
-    recipeConfig: string,
+    recipeBaseDir: string,
     localFolder: string,
     labels?: { [key: string]: string },
   ): AIContainers {
@@ -501,7 +501,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     let aiConfigFile: AIConfigFile;
     try {
       // load and parse the recipe configuration file
-      aiConfigFile = this.getConfiguration(recipeConfig, localFolder);
+      aiConfigFile = this.getConfiguration(recipeBaseDir, localFolder);
     } catch (e) {
       task.error = `Something went wrong while loading configuration: ${String(e)}.`;
       this.taskRegistry.updateTask(task);
@@ -533,10 +533,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     );
   }
 
-  getConfiguration(recipeConfig: string, localFolder: string): AIConfigFile {
+  getConfiguration(recipeBaseDir: string, localFolder: string): AIConfigFile {
     let configFile: string;
-    if (recipeConfig !== undefined) {
-      configFile = path.join(localFolder, recipeConfig);
+    if (recipeBaseDir !== undefined) {
+      configFile = path.join(localFolder, recipeBaseDir, CONFIG_FILENAME);
     } else {
       configFile = path.join(localFolder, CONFIG_FILENAME);
     }

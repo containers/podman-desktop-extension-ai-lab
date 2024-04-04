@@ -16,8 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import type { ContainerAttachedInfo, ImageInfo, ApplicationPodInfo } from './applicationManager';
-import { LABEL_RECIPE_ID, ApplicationManager } from './applicationManager';
+import {
+  type ContainerAttachedInfo,
+  type ImageInfo,
+  type ApplicationPodInfo,
+  ApplicationManager,
+  LABEL_RECIPE_ID,
+  CONFIG_FILENAME,
+} from './applicationManager';
 import type { GitManager } from './gitManager';
 import os from 'os';
 import fs, { type PathLike } from 'node:fs';
@@ -402,7 +408,7 @@ describe('getConfiguration', () => {
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     expect(() => manager.getConfiguration('config', 'local')).toThrowError(
-      `The file located at ${path.join('local', 'config')} does not exist.`,
+      `The file located at ${path.join('local', 'config', CONFIG_FILENAME)} does not exist.`,
     );
   });
 
@@ -438,7 +444,7 @@ describe('getConfiguration', () => {
     mocks.parseYamlFileMock.mockReturnValue(aiConfig);
 
     const result = manager.getConfiguration('config', 'local');
-    expect(result.path).toEqual(path.join('local', 'config'));
+    expect(result.path).toEqual(path.join('local', 'config', CONFIG_FILENAME));
     expect(result.aiConfig).toEqual(aiConfig);
   });
 });

@@ -20,17 +20,15 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import {
-  containerEngine,
-  Disposable} from '@podman-desktop/api';
+import { containerEngine, Disposable } from '@podman-desktop/api';
 import type {
   BuildImageOptions,
-  type PodCreatePortOptions,
-  type TelemetryLogger,
-  type PodInfo,
-  type Webview,
-  type HostConfig,
-  type HealthConfig,
+  PodCreatePortOptions,
+  TelemetryLogger,
+  PodInfo,
+  Webview,
+  HostConfig,
+  HealthConfig,
 } from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';

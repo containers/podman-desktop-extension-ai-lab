@@ -22,7 +22,7 @@ import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
 import { env, process as coreProcess } from '@podman-desktop/api';
-import type { RunResult , type TelemetryLogger, type Webview } from '@podman-desktop/api';
+import type { RunResult, TelemetryLogger, Webview } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';

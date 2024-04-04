@@ -13,7 +13,7 @@ function openDetails() {
   title="{object.name}"
   on:click="{() => openDetails()}"
   aria-label="Open Model Details">
-  <div class="text-sm text-gray-300 overflow-hidden text-ellipsis w-full" aria-label="Model Name">
+  <div class="text-sm text-gray-300 overflow-hidden text-ellipsis w-full text-left" aria-label="Model Name">
     {object.name}
   </div>
   {#if object.registry || object.license}

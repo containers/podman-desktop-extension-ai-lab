@@ -18,13 +18,15 @@
 
 import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
-import { screen, render } from '@testing-library/svelte';
+import { screen, render, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import * as catalogStore from '/@/stores/catalog';
-import { readable } from 'svelte/store';
+import { readable, writable } from 'svelte/store';
 import RecipeDetails from './RecipeDetails.svelte';
 import { router } from 'tinro';
+import * as tasksStore from '../stores/tasks';
+import type { Task } from '@shared/src/models/ITask';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -56,14 +58,11 @@ vi.mock('../utils/client', async () => {
   };
 });
 
-vi.mock('../stores/tasks', () => ({
-  tasks: {
-    subscribe: (f: (msg: any) => void) => {
-      f(mocks.getTasksMock());
-      return () => {};
-    },
-  },
-}));
+vi.mock('/@/stores/tasks', async () => {
+  return {
+    tasks: vi.fn(),
+  };
+});
 
 vi.mock('/@/stores/catalog', async () => {
   return {
@@ -128,7 +127,8 @@ const initialCatalog: ApplicationCatalog = {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.getLocalRepositoriesMock.mockReturnValue([]);
-  mocks.getTasksMock.mockReturnValue([]);
+  const tasksList = writable<Task[]>([]);
+  vi.mocked(tasksStore).tasks = tasksList;
 });
 
 test('should call runApplication execution when run application button is clicked', async () => {
@@ -280,6 +280,47 @@ test('local clone and delete local clone buttons should be visible if local repo
   await userEvent.click(buttonDeleteClone);
 
   expect(mocks.requestDeleteLocalRepositoryMock).toBeCalled();
+});
+
+test('delete local clone button to be disabled if running task is active', async () => {
+  const tasksList = writable<Task[]>([]);
+  vi.mocked(tasksStore).tasks = tasksList;
+  mocks.getApplicationsStateMock.mockResolvedValue([]);
+  mocks.getLocalRepositoriesMock.mockReturnValue([
+    {
+      path: 'random-path',
+      labels: {
+        'recipe-id': 'recipe 1',
+      },
+    },
+  ]);
+  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
+
+  render(RecipeDetails, {
+    recipeId: 'recipe 1',
+    modelId: 'model2',
+  });
+
+  const buttonDeleteClone = screen.getByTitle('Delete local clone');
+  expect(buttonDeleteClone).toBeDefined();
+  expect(buttonDeleteClone).toBeInTheDocument();
+  expect(buttonDeleteClone).toBeEnabled();
+
+  tasksList.set([
+    {
+      id: 'id',
+      name: 'task',
+      labels: {
+        'recipe-id': 'recipe 1',
+        'model-id': 'model2',
+      },
+      state: 'loading',
+    },
+  ]);
+
+  await waitFor(() => {
+    expect(buttonDeleteClone).toBeDisabled();
+  });
 });
 
 test('should display app state for default model when model is the recommended', async () => {

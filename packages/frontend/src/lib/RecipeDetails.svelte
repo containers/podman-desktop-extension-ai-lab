@@ -182,7 +182,11 @@ const deleteLocalClone = () => {
               <span>Local clone</span>
             </div>
           </button>
-          <Button title="Delete local clone" on:click="{deleteLocalClone}" icon="{faTrash}" />
+          <Button
+            title="Delete local clone"
+            on:click="{deleteLocalClone}"
+            icon="{faTrash}"
+            disabled="{runningTask !== undefined}" />
         </div>
       {/if}
     </div>

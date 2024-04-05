@@ -13,7 +13,7 @@ import { conversations } from '/@/stores/conversations';
 const columns: Column<PlaygroundV2>[] = [
   new Column<PlaygroundV2>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
   new Column<PlaygroundV2>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
-  new Column<PlaygroundV2>('Actions', { width: '40px', renderer: ConversationColumnAction }),
+  new Column<PlaygroundV2>('Actions', { width: '40px', renderer: ConversationColumnAction, align: 'center' }),
 ];
 const row = new Row<PlaygroundV2>({});
 

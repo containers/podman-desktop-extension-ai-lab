@@ -1,5 +1,5 @@
 <script lang="ts">
-import { faRotateForward, faStop, faArrowUpRightFromSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faRotateForward, faArrowUpRightFromSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';

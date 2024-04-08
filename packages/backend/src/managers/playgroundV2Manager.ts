@@ -197,13 +197,6 @@ export class PlaygroundV2Manager implements Disposable {
         `modelId '${conversation.modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`,
       );
 
-    this.telemetry.logUsage('playground.submit', {
-      conversationId: conversationId,
-      ...options,
-      promptLength: userInput.length,
-      modelId: modelInfo.id,
-    });
-
     this.#conversationRegistry.submit(conversation.id, {
       content: userInput,
       options: options,
@@ -217,6 +210,12 @@ export class PlaygroundV2Manager implements Disposable {
       apiKey: 'dummy',
     });
 
+    const telemetry = {
+      conversationId: conversationId,
+      ...options,
+      promptLength: userInput.length,
+      modelId: modelInfo.id,
+    };
     client.chat.completions
       .create({
         messages: this.getFormattedMessages(conversation.id),
@@ -231,11 +230,11 @@ export class PlaygroundV2Manager implements Disposable {
         });
       })
       .catch((err: unknown) => {
+        telemetry['error'] = `${String(err)}`;
         console.error('Something went wrong while creating model response', err);
-        this.telemetry.logError('playground.error', {
-          modelId: modelInfo.id,
-          error: `${String(err)}`,
-        });
+      })
+      .finally(() => {
+        this.telemetry.logUsage('playground.submit', telemetry);
       });
   }
 
@@ -246,12 +245,13 @@ export class PlaygroundV2Manager implements Disposable {
    */
   private async processStream(conversationId: string, stream: Stream<ChatCompletionChunk>): Promise<void> {
     const messageId = this.#conversationRegistry.getUniqueId();
+    const start = Date.now();
     this.#conversationRegistry.submit(conversationId, {
       role: 'assistant',
       choices: [],
       completed: undefined,
       id: messageId,
-      timestamp: Date.now(),
+      timestamp: start,
     } as PendingChat);
 
     for await (const chunk of stream) {
@@ -261,6 +261,9 @@ export class PlaygroundV2Manager implements Disposable {
     }
 
     this.#conversationRegistry.completeMessage(conversationId, messageId);
+    this.telemetry.logUsage('playground.message.complete', {
+      duration: Date.now() - start,
+    });
   }
 
   /**

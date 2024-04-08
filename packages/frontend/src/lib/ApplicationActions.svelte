@@ -9,7 +9,7 @@ export let modelId: string;
 
 function deleteApplication() {
   studioClient.requestRemoveApplication(recipeId, modelId).catch(err => {
-    console.error(`Something went wrong while trying to stop AI App: ${String(err)}.`);
+    console.error(`Something went wrong while trying to delete AI App: ${String(err)}.`);
   });
 }
 

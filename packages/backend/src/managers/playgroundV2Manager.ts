@@ -42,10 +42,14 @@ export class PlaygroundV2Manager implements Disposable {
   }
 
   deleteConversation(conversationId: string): void {
-    this.telemetry.logUsage('playground.delete', {
-      totalMessages: this.#conversationRegistry.get(conversationId)?.messages.length,
-    });
-    this.#conversationRegistry.deleteConversation(conversationId);
+    const conversation = this.#conversationRegistry.get(conversationId);
+    if (conversation !== undefined) {
+      this.telemetry.logUsage('playground.delete', {
+        totalMessages: conversation.messages.length,
+        modelId: conversation.modelId,
+      });
+      this.#conversationRegistry.deleteConversation(conversationId);
+    }
   }
 
   async requestCreatePlayground(name: string, model: ModelInfo, systemPrompt?: string): Promise<string> {
@@ -247,6 +251,9 @@ export class PlaygroundV2Manager implements Disposable {
    * @param stream
    */
   private async processStream(conversationId: string, stream: Stream<ChatCompletionChunk>): Promise<void> {
+    const conversation = this.#conversationRegistry.get(conversationId);
+    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} not found.`);
+
     const messageId = this.#conversationRegistry.getUniqueId();
     const start = Date.now();
     this.#conversationRegistry.submit(conversationId, {
@@ -266,6 +273,7 @@ export class PlaygroundV2Manager implements Disposable {
     this.#conversationRegistry.completeMessage(conversationId, messageId);
     this.telemetry.logUsage('playground.message.complete', {
       duration: Date.now() - start,
+      modelId: conversation.modelId,
     });
   }
 

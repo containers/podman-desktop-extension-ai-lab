@@ -113,15 +113,7 @@ export class PlaygroundV2Manager implements Disposable {
 
     // If system prompt let's add it to the conversation
     if (systemPrompt !== undefined && systemPrompt.length > 0) {
-      this.#conversationRegistry.submit(conversationId, {
-        content: systemPrompt,
-        role: 'system',
-        id: this.#conversationRegistry.getUniqueId(),
-        timestamp: Date.now(),
-      } as SystemPrompt);
-      this.telemetry.logUsage('playground.system-prompt.create', {
-        onCreation: true,
-      });
+      this.submitSystemPrompt(conversationId, systemPrompt);
     }
 
     // create/start inference server if necessary
@@ -142,6 +134,21 @@ export class PlaygroundV2Manager implements Disposable {
   }
 
   /**
+   * Add a system prompt to an existing conversation.
+   * @param conversationId the conversation to append the system prompt to.
+   * @param content the content of the system prompt
+   */
+  private submitSystemPrompt(conversationId: string, content: string): void {
+    this.#conversationRegistry.submit(conversationId, {
+      content: content,
+      role: 'system',
+      id: this.#conversationRegistry.getUniqueId(),
+      timestamp: Date.now(),
+    } as SystemPrompt);
+    this.telemetry.logUsage('playground.system-prompt.create');
+  }
+
+  /**
    * Given a conversation, update the system prompt.
    * If none exists, it will create one, otherwise it will replace the content with the new one
    * @param conversationId the conversation id to set the system id
@@ -151,25 +158,19 @@ export class PlaygroundV2Manager implements Disposable {
     const conversation = this.#conversationRegistry.get(conversationId);
     if (conversation === undefined) throw new Error(`Conversation with id ${conversationId} does not exists.`);
 
+    if (content === undefined || content.length === 0) {
+      this.#conversationRegistry.removeMessage(conversationId, conversation.messages[0].id);
+      this.telemetry.logUsage('playground.system-prompt.delete');
+      return;
+    }
+
     if (conversation.messages.length === 0) {
-      this.#conversationRegistry.submit(conversationId, {
-        role: 'system',
-        content,
-        timestamp: Date.now(),
-      } as SystemPrompt);
-      this.telemetry.logUsage('playground.system-prompt.create', {
-        onCreation: false,
-      });
+      this.submitSystemPrompt(conversationId, content);
     } else if (conversation.messages.length === 1 && isSystemPrompt(conversation.messages[0])) {
-      if (content !== undefined && content.length > 0) {
-        this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
-          content,
-        });
-        this.telemetry.logUsage('playground.system-prompt.update');
-      } else {
-        this.#conversationRegistry.removeMessage(conversationId, conversation.messages[0].id);
-        this.telemetry.logUsage('playground.system-prompt.delete');
-      }
+      this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
+        content,
+      });
+      this.telemetry.logUsage('playground.system-prompt.update');
     } else {
       throw new Error('Cannot change system prompt on started conversation.');
     }

@@ -71,7 +71,7 @@ export class PlaygroundV2Manager implements Disposable {
         });
       })
       .catch((err: unknown) => {
-        telemetry['error'] = `${String(err)}`;
+        telemetry['errorMessage'] = `${String(err)}`;
 
         const tasks = this.taskRegistry.getTasksByLabels({
           trackingId: trackingId,
@@ -233,7 +233,7 @@ export class PlaygroundV2Manager implements Disposable {
         });
       })
       .catch((err: unknown) => {
-        telemetry['error'] = `${String(err)}`;
+        telemetry['errorMessage'] = `${String(err)}`;
         console.error('Something went wrong while creating model response', err);
       })
       .finally(() => {

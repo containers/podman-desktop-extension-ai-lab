@@ -244,7 +244,7 @@ export class StudioApiImpl implements StudioAPI {
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
       .showWarningMessage(
-        `Stop the AI App "${recipe.name}"? This will delete the containers running the application and model.`,
+        `Delete the AI App "${recipe.name}"? This will delete the containers running the application and model.`,
         'Confirm',
         'Cancel',
       )

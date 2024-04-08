@@ -202,7 +202,12 @@ export class Studio {
       this.telemetry.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
     });
 
-    const playgroundV2 = new PlaygroundV2Manager(this.#panel.webview, this.#inferenceManager, taskRegistry);
+    const playgroundV2 = new PlaygroundV2Manager(
+      this.#panel.webview,
+      this.#inferenceManager,
+      taskRegistry,
+      this.telemetry,
+    );
 
     const snippetManager = new SnippetManager(this.#panel.webview);
     snippetManager.init();

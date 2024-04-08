@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Disposable, Webview } from '@podman-desktop/api';
+import type { Disposable, TelemetryLogger, Webview } from '@podman-desktop/api';
 import type { InferenceManager } from './inference/inferenceManager';
 import OpenAI from 'openai';
 import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src/resources/chat/completions';
@@ -37,12 +37,16 @@ export class PlaygroundV2Manager implements Disposable {
     webview: Webview,
     private inferenceManager: InferenceManager,
     private taskRegistry: TaskRegistry,
+    private telemetry: TelemetryLogger,
   ) {
     this.#conversationRegistry = new ConversationRegistry(webview);
     this.#counter = 0;
   }
 
   deleteConversation(conversationId: string): void {
+    this.telemetry.logUsage('playground.delete', {
+      totalMessages: this.#conversationRegistry.get(conversationId)?.messages.length,
+    });
     this.#conversationRegistry.deleteConversation(conversationId);
   }
 
@@ -92,6 +96,12 @@ export class PlaygroundV2Manager implements Disposable {
     systemPrompt: string | undefined,
     trackingId: string,
   ): Promise<string> {
+    this.telemetry.logUsage('playground.create', {
+      hasName: !!name,
+      hasSystemPrompt: !!systemPrompt,
+      modelId: model.id,
+    });
+
     if (!name) {
       name = this.getFreeName();
     }
@@ -101,6 +111,9 @@ export class PlaygroundV2Manager implements Disposable {
 
     // If system prompt let's add it to the conversation
     if (systemPrompt !== undefined && systemPrompt.length > 0) {
+      this.telemetry.logUsage('playground.system-prompt.create', {
+        onCreation: true,
+      });
       this.#conversationRegistry.submit(conversationId, {
         content: systemPrompt,
         role: 'system',
@@ -137,6 +150,9 @@ export class PlaygroundV2Manager implements Disposable {
     if (conversation === undefined) throw new Error(`Conversation with id ${conversationId} does not exists.`);
 
     if (conversation.messages.length === 0) {
+      this.telemetry.logUsage('playground.system-prompt.create', {
+        onCreation: false,
+      });
       this.#conversationRegistry.submit(conversationId, {
         role: 'system',
         content,
@@ -144,10 +160,12 @@ export class PlaygroundV2Manager implements Disposable {
       } as SystemPrompt);
     } else if (conversation.messages.length === 1 && isSystemPrompt(conversation.messages[0])) {
       if (content !== undefined && content.length > 0) {
+        this.telemetry.logUsage('playground.system-prompt.update');
         this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
           content,
         });
       } else {
+        this.telemetry.logUsage('playground.system-prompt.delete');
         this.#conversationRegistry.removeMessage(conversationId, conversation.messages[0].id);
       }
     } else {
@@ -179,6 +197,13 @@ export class PlaygroundV2Manager implements Disposable {
         `modelId '${conversation.modelId}' is not available on the inference server, valid model ids are: ${server.models.map(model => model.id).join(', ')}.`,
       );
 
+    this.telemetry.logUsage('playground.submit', {
+      conversationId: conversationId,
+      ...options,
+      promptLength: userInput.length,
+      modelId: modelInfo.id,
+    });
+
     this.#conversationRegistry.submit(conversation.id, {
       content: userInput,
       options: options,
@@ -206,7 +231,11 @@ export class PlaygroundV2Manager implements Disposable {
         });
       })
       .catch((err: unknown) => {
-        console.error('Something went wrong while creating model reponse', err);
+        console.error('Something went wrong while creating model response', err);
+        this.telemetry.logError('playground.error', {
+          modelId: modelInfo.id,
+          error: `${String(err)}`,
+        });
       });
   }
 

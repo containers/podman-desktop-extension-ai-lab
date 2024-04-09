@@ -18,12 +18,17 @@
 
 import { beforeEach, expect, test, vi } from 'vitest';
 import { SnippetManager } from './SnippetManager';
-import type { Webview } from '@podman-desktop/api';
+import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
 
 const webviewMock = {
   postMessage: vi.fn(),
 } as unknown as Webview;
+
+const telemetryMock = {
+  logUsage: vi.fn(),
+  logError: vi.fn(),
+} as unknown as TelemetryLogger;
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -31,7 +36,7 @@ beforeEach(() => {
 });
 
 test('expect init to notify webview', () => {
-  const manager = new SnippetManager(webviewMock);
+  const manager = new SnippetManager(webviewMock, telemetryMock);
   manager.init();
 
   expect(webviewMock.postMessage).toHaveBeenCalledWith({
@@ -41,14 +46,14 @@ test('expect init to notify webview', () => {
 });
 
 test('expect postman-code-generators to have many languages available.', () => {
-  const manager = new SnippetManager(webviewMock);
+  const manager = new SnippetManager(webviewMock, telemetryMock);
   manager.init();
 
   expect(manager.getLanguageList().length).toBeGreaterThan(0);
 });
 
 test('expect postman-code-generators to have nodejs supported.', () => {
-  const manager = new SnippetManager(webviewMock);
+  const manager = new SnippetManager(webviewMock, telemetryMock);
   manager.init();
 
   const languages = manager.getLanguageList();
@@ -61,7 +66,7 @@ test('expect postman-code-generators to have nodejs supported.', () => {
 });
 
 test('expect postman-code-generators to generate proper nodejs native code', async () => {
-  const manager = new SnippetManager(webviewMock);
+  const manager = new SnippetManager(webviewMock, telemetryMock);
   manager.init();
 
   const snippet = await manager.generate(
@@ -86,7 +91,7 @@ request(options, function (error, response) {
 });
 
 test('expect snippet manager to have Quarkus Langchain4J supported.', () => {
-  const manager = new SnippetManager(webviewMock);
+  const manager = new SnippetManager(webviewMock, telemetryMock);
   manager.init();
 
   const languages = manager.getLanguageList();
@@ -99,7 +104,7 @@ test('expect snippet manager to have Quarkus Langchain4J supported.', () => {
 });
 
 test('expect new variant to replace existing one if same name', () => {
-  const manager = new SnippetManager(webviewMock);
+  const manager = new SnippetManager(webviewMock, telemetryMock);
   manager.init();
 
   const languages = manager.getLanguageList();

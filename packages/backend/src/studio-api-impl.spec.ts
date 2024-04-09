@@ -23,8 +23,7 @@ import content from './tests/ai-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { InferenceManager } from './managers/inference/inferenceManager';
-import type { TelemetryLogger, Webview } from '@podman-desktop/api';
-import { window, EventEmitter } from '@podman-desktop/api';
+import { type TelemetryLogger, type Webview, window, EventEmitter } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
 import { timeout } from './utils/utils';
@@ -35,6 +34,7 @@ import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import type { SnippetManager } from './managers/SnippetManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
+import path from 'node:path';
 
 vi.mock('./ai.json', () => {
   return {
@@ -55,6 +55,8 @@ const mocks = vi.hoisted(() => ({
   withProgressMock: vi.fn(),
   showWarningMessageMock: vi.fn(),
   deleteApplicationMock: vi.fn(),
+  uriFileMock: vi.fn(),
+  openExternalMock: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -74,6 +76,12 @@ vi.mock('@podman-desktop/api', async () => {
         onDidDelete: vi.fn(),
         onDidChange: vi.fn(),
       }),
+    },
+    Uri: {
+      file: mocks.uriFileMock,
+    },
+    env: {
+      openExternal: mocks.openExternalMock,
     },
   };
 });
@@ -175,4 +183,26 @@ test('if requestDeleteLocalRepository fails an errorMessage should show up', asy
   await timeout(0);
   expect(deleteLocalRepositoryMock).toHaveBeenCalled();
   expect(errorMessageMock).toBeCalledWith('Error deleting local path "path". Error: error deleting');
+});
+
+test('check openVSCode generates the correct URL', async () => {
+  const folder = path.resolve('.');
+
+  mocks.uriFileMock.mockImplementation((path: string) => {
+    return {
+      path: path,
+      with: (change?: { scheme?: string; authority?: string; path?: string; query?: string; fragment?: string }) => {
+        return {
+          path: path,
+          ...change,
+        };
+      },
+    };
+  });
+
+  mocks.openExternalMock.mockResolvedValue(true);
+  await studioApiImpl.openVSCode(folder);
+  expect(mocks.openExternalMock).toHaveBeenCalledWith(
+    expect.objectContaining({ path: expect.stringMatching(/^\//), authority: 'file', scheme: 'vscode' }),
+  );
 });

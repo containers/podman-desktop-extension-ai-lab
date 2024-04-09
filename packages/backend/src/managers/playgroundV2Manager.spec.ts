@@ -19,7 +19,7 @@
 import { expect, test, vi, beforeEach, afterEach, describe } from 'vitest';
 import OpenAI from 'openai';
 import { PlaygroundV2Manager } from './playgroundV2Manager';
-import type { Webview } from '@podman-desktop/api';
+import type { TelemetryLogger, Webview } from '@podman-desktop/api';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import type { InferenceManager } from './inference/inferenceManager';
 import { Messages } from '@shared/Messages';
@@ -49,6 +49,11 @@ const taskRegistryMock = {
   updateTask: vi.fn(),
 } as unknown as TaskRegistry;
 
+const telemetryMock = {
+  logUsage: vi.fn(),
+  logError: vi.fn(),
+} as unknown as TelemetryLogger;
+
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(webviewMock.postMessage).mockResolvedValue(undefined);
@@ -60,7 +65,7 @@ afterEach(() => {
 });
 
 test('manager should be properly initialized', () => {
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   expect(manager.getConversations().length).toBe(0);
 });
 
@@ -75,7 +80,7 @@ test('submit should throw an error if the server is stopped', async () => {
       ],
     } as unknown as InferenceServer,
   ]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo, '', 'tracking-1');
 
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
@@ -108,7 +113,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
       ],
     } as unknown as InferenceServer,
   ]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground('p1', { id: 'model1' } as ModelInfo, '', 'tracking-1');
   const playgroundId = manager.getConversations()[0].id;
   await expect(manager.submit(playgroundId, 'dummyUserInput')).rejects.toThrowError(
@@ -133,7 +138,7 @@ test('create playground should create conversation.', async () => {
       ],
     } as unknown as InferenceServer,
   ]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   expect(manager.getConversations().length).toBe(0);
   await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo, '', 'tracking-1');
 
@@ -170,7 +175,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     },
   } as unknown as OpenAI);
 
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, undefined, 'tracking-1');
 
   const date = new Date(2000, 1, 1, 13);
@@ -239,7 +244,7 @@ test('submit should send options', async () => {
     },
   } as unknown as OpenAI);
 
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, undefined, 'tracking-1');
 
   const playgrounds = manager.getConversations();
@@ -270,7 +275,7 @@ test('submit should send options', async () => {
 
 test('creating a new playground should send new playground to frontend', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground(
     'a name',
     {
@@ -295,7 +300,7 @@ test('creating a new playground should send new playground to frontend', async (
 
 test('creating a new playground with no name should send new playground to frontend with generated name', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground(
     '',
     {
@@ -321,7 +326,7 @@ test('creating a new playground with no name should send new playground to front
 test('creating a new playground with no model served should start an inference server', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground(
     'a name',
     {
@@ -358,7 +363,7 @@ test('creating a new playground with the model already served should not start a
     },
   ] as InferenceServer[]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground(
     'a name',
     {
@@ -387,7 +392,7 @@ test('creating a new playground with the model server stopped should start the i
   ] as InferenceServer[]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const startInferenceServerMock = vi.mocked(inferenceManagerMock.startInferenceServer);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   await manager.createPlayground(
     'a name',
     {
@@ -404,7 +409,7 @@ test('creating a new playground with the model server stopped should start the i
 test('delete conversation should delete the conversation', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
 
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   expect(manager.getConversations().length).toBe(0);
   await manager.createPlayground(
     'a name',
@@ -425,7 +430,7 @@ test('delete conversation should delete the conversation', async () => {
 
 test('requestCreatePlayground should call createPlayground and createTask, then updateTask', async () => {
   vi.useRealTimers();
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   const createTaskMock = vi.mocked(taskRegistryMock).createTask;
   const updateTaskMock = vi.mocked(taskRegistryMock).updateTask;
   createTaskMock.mockImplementation((_name: string, _state: string, labels: { [id: string]: string }) => {
@@ -453,7 +458,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
 
 test('requestCreatePlayground should call createPlayground and createTask, then updateTask when createPlayground fails', async () => {
   vi.useRealTimers();
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
   const createTaskMock = vi.mocked(taskRegistryMock).createTask;
   const updateTaskMock = vi.mocked(taskRegistryMock).updateTask;
   const getTasksByLabelsMock = vi.mocked(taskRegistryMock).getTasksByLabels;
@@ -501,7 +506,7 @@ describe('system prompt', () => {
         ],
       } as unknown as InferenceServer,
     ]);
-    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
     await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo, 'dummySystemPrompt', 'tracking-1');
 
     const conversations = manager.getConversations();
@@ -522,11 +527,11 @@ describe('system prompt', () => {
         ],
       } as unknown as InferenceServer,
     ]);
-    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
 
     expect(() => {
       manager.setSystemPrompt('invalid', 'content');
-    }).toThrowError('Conversation with id invalid does not exists.');
+    }).toThrowError('conversation with id invalid does not exist.');
   });
 
   test('set system prompt should overwrite existing system prompt', async () => {
@@ -540,7 +545,7 @@ describe('system prompt', () => {
         ],
       } as unknown as InferenceServer,
     ]);
-    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
     await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo, 'dummySystemPrompt', 'tracking-1');
 
     const conversations = manager.getConversations();
@@ -577,7 +582,7 @@ describe('system prompt', () => {
       },
     } as unknown as OpenAI);
 
-    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock);
+    const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
     await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, undefined, 'tracking-1');
 
     const date = new Date(2000, 1, 1, 13);

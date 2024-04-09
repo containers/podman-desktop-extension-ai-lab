@@ -47,11 +47,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    * @param messageId
    */
   removeMessage(conversationId: string, messageId: string) {
-    const conversation = this.#conversations.get(conversationId);
-
-    if (conversation === undefined) {
-      throw new Error(`conversation with id ${conversationId} does not exist.`);
-    }
+    const conversation: Conversation = this.get(conversationId);
 
     conversation.messages = conversation.messages.filter(message => message.id !== messageId);
     this.notify();
@@ -64,11 +60,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    * @param message
    */
   update(conversationId: string, messageId: string, message: Partial<ChatMessage>) {
-    const conversation = this.#conversations.get(conversationId);
-
-    if (conversation === undefined) {
-      throw new Error(`conversation with id ${conversationId} does not exist.`);
-    }
+    const conversation: Conversation = this.get(conversationId);
 
     const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
     if (messageIndex === -1)
@@ -106,8 +98,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    * @param messageId
    */
   completeMessage(conversationId: string, messageId: string): void {
-    const conversation = this.#conversations.get(conversationId);
-    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
+    const conversation: Conversation = this.get(conversationId);
 
     const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
     if (messageIndex === -1)
@@ -133,8 +124,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    * @param choice
    */
   appendChoice(conversationId: string, messageId: string, choice: Choice): void {
-    const conversation = this.#conversations.get(conversationId);
-    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
+    const conversation: Conversation = this.get(conversationId);
 
     const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
     if (messageIndex === -1)
@@ -166,8 +156,10 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     this.#conversations.clear();
   }
 
-  get(conversationId: string): Conversation | undefined {
-    return this.#conversations.get(conversationId);
+  get(conversationId: string): Conversation {
+    const conversation: Conversation | undefined = this.#conversations.get(conversationId);
+    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
+    return conversation;
   }
 
   getAll(): Conversation[] {

@@ -42,7 +42,7 @@ import { InferenceManager } from './managers/inference/inferenceManager';
 import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
-import { engines } from '../package.json';
+import { engines, version as extensionVersion } from '../package.json';
 
 // TODO: Need to be configured
 export const AI_LAB_FOLDER = path.join('podman-desktop', 'ai-lab');
@@ -96,7 +96,13 @@ export class Studio {
       );
     }
 
-    this.telemetry.logUsage('start');
+    this.telemetry.logUsage('start', {
+      podmanDesktopVersion: version,
+      extensionVersion: extensionVersion,
+      isMac: env.isMac,
+      isWindows: env.isWindows,
+      isLinux: env.isLinux,
+    });
 
     const extensionUri = this.#extensionContext.extensionUri;
 

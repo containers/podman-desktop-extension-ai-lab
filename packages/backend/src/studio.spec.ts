@@ -45,6 +45,7 @@ vi.mock('../package.json', () => ({
   engines: {
     'podman-desktop': '>=1.0.0',
   },
+  version: '0.0.1-test',
 }));
 
 vi.mock('@podman-desktop/api', async () => {

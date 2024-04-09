@@ -44,9 +44,6 @@ import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import { engines } from '../package.json';
 
-// TODO: Need to be configured
-export const AI_LAB_FOLDER = path.join('podman-desktop', 'ai-lab');
-
 export const AI_LAB_COLLECT_GPU_COMMAND = 'ai-lab.gpu.collect';
 
 export class Studio {
@@ -148,8 +145,7 @@ export class Studio {
     const containerRegistry = new ContainerRegistry();
     this.#extensionContext.subscriptions.push(containerRegistry.init());
 
-    // Let's create the api that the front will be able to call
-    const appUserDirectory = path.join(os.homedir(), AI_LAB_FOLDER);
+    const appUserDirectory = this.extensionContext.storagePath;
 
     this.rpcExtension = new RpcExtension(this.#panel.webview);
     const gitManager = new GitManager();

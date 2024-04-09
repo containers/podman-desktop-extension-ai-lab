@@ -1,5 +1,5 @@
 export interface LocalRepository {
   path: string;
-  sourcepath: string;
+  sourcePath: string;
   labels: { [id: string]: string };
 }

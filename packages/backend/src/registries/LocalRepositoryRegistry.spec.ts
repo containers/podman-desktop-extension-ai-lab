@@ -68,10 +68,10 @@ test('should notify webview when register', () => {
     } as unknown as Webview,
     '/appUserDirectory',
   );
-  localRepositories.register({ path: 'random', sourcepath: 'random', labels: { 'recipe-id': 'random' } });
+  localRepositories.register({ path: 'random', sourcePath: 'random', labels: { 'recipe-id': 'random' } });
   expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1, {
     id: Messages.MSG_LOCAL_REPOSITORY_UPDATE,
-    body: [{ path: 'random', sourcepath: 'random', labels: { 'recipe-id': 'random' } }],
+    body: [{ path: 'random', sourcePath: 'random', labels: { 'recipe-id': 'random' } }],
   });
 });
 
@@ -83,7 +83,7 @@ test('should notify webview when unregister', async () => {
     '/appUserDirectory',
   );
   vi.spyOn(fs.promises, 'rm').mockResolvedValue();
-  localRepositories.register({ path: 'random', sourcepath: 'random', labels: { 'recipe-id': 'random' } });
+  localRepositories.register({ path: 'random', sourcePath: 'random', labels: { 'recipe-id': 'random' } });
   await localRepositories.deleteLocalRepository('random');
 
   expect(mocks.postMessageMock).toHaveBeenLastCalledWith({
@@ -110,7 +110,7 @@ test('should register localRepo if it find the folder of the recipe', () => {
   const folder = path.join('/appUserDirectory', 'recipe');
   expect(registerMock).toHaveBeenCalledWith({
     path: folder,
-    sourcepath: folder,
+    sourcePath: folder,
     labels: { 'recipe-id': 'recipe' },
   });
 });

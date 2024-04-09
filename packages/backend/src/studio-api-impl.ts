@@ -364,7 +364,10 @@ export class StudioApiImpl implements StudioAPI {
       throw new Error('Do not support relative directory.');
     }
 
-    const unixPath: string = path.normalize(directory).replace(/[\\/]+/g, '/');
+    let unixPath: string = path.normalize(directory).replace(/[\\/]+/g, '/');
+    if (!unixPath.startsWith('/')) {
+      unixPath = `/${unixPath}`;
+    }
 
     podmanDesktopApi.env
       .openExternal(podmanDesktopApi.Uri.file(unixPath).with({ scheme: 'vscode', authority: 'file' }))

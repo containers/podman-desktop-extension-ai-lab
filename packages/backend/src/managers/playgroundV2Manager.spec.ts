@@ -531,7 +531,7 @@ describe('system prompt', () => {
 
     expect(() => {
       manager.setSystemPrompt('invalid', 'content');
-    }).toThrowError('Conversation with id invalid does not exists.');
+    }).toThrowError('conversation with id invalid does not exist.');
   });
 
   test('set system prompt should overwrite existing system prompt', async () => {

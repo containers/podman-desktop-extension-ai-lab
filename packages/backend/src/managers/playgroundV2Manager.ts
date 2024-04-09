@@ -43,13 +43,11 @@ export class PlaygroundV2Manager implements Disposable {
 
   deleteConversation(conversationId: string): void {
     const conversation = this.#conversationRegistry.get(conversationId);
-    if (conversation !== undefined) {
-      this.telemetry.logUsage('playground.delete', {
-        totalMessages: conversation.messages.length,
-        modelId: conversation.modelId,
-      });
-      this.#conversationRegistry.deleteConversation(conversationId);
-    }
+    this.telemetry.logUsage('playground.delete', {
+      totalMessages: conversation.messages.length,
+      modelId: conversation.modelId,
+    });
+    this.#conversationRegistry.deleteConversation(conversationId);
   }
 
   async requestCreatePlayground(name: string, model: ModelInfo, systemPrompt?: string): Promise<string> {
@@ -149,7 +147,9 @@ export class PlaygroundV2Manager implements Disposable {
       id: this.#conversationRegistry.getUniqueId(),
       timestamp: Date.now(),
     } as SystemPrompt);
-    this.telemetry.logUsage('playground.system-prompt.create');
+    this.telemetry.logUsage('playground.system-prompt.create', {
+      modelId: this.#conversationRegistry.get(conversationId).modelId,
+    });
   }
 
   /**
@@ -160,11 +160,12 @@ export class PlaygroundV2Manager implements Disposable {
    */
   setSystemPrompt(conversationId: string, content: string | undefined): void {
     const conversation = this.#conversationRegistry.get(conversationId);
-    if (conversation === undefined) throw new Error(`Conversation with id ${conversationId} does not exists.`);
 
     if (content === undefined || content.length === 0) {
       this.#conversationRegistry.removeMessage(conversationId, conversation.messages[0].id);
-      this.telemetry.logUsage('playground.system-prompt.delete');
+      this.telemetry.logUsage('playground.system-prompt.delete', {
+        modelId: conversation.modelId,
+      });
       return;
     }
 
@@ -174,7 +175,9 @@ export class PlaygroundV2Manager implements Disposable {
       this.#conversationRegistry.update(conversationId, conversation.messages[0].id, {
         content,
       });
-      this.telemetry.logUsage('playground.system-prompt.update');
+      this.telemetry.logUsage('playground.system-prompt.update', {
+        modelId: conversation.modelId,
+      });
     } else {
       throw new Error('Cannot change system prompt on started conversation.');
     }
@@ -187,7 +190,6 @@ export class PlaygroundV2Manager implements Disposable {
    */
   async submit(conversationId: string, userInput: string, options?: ModelOptions): Promise<void> {
     const conversation = this.#conversationRegistry.get(conversationId);
-    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
 
     const servers = this.inferenceManager.getServers();
     const server = servers.find(s => s.models.map(mi => mi.id).includes(conversation.modelId));
@@ -252,7 +254,6 @@ export class PlaygroundV2Manager implements Disposable {
    */
   private async processStream(conversationId: string, stream: Stream<ChatCompletionChunk>): Promise<void> {
     const conversation = this.#conversationRegistry.get(conversationId);
-    if (conversation === undefined) throw new Error(`conversation with id ${conversationId} not found.`);
 
     const messageId = this.#conversationRegistry.getUniqueId();
     const start = Date.now();

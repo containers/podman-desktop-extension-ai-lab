@@ -23,12 +23,12 @@ const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('Name', {
     width: '3fr',
     renderer: ModelColumnName,
-    comparator: (a, b) => (a.file?.size ?? Number.MAX_SAFE_INTEGER) - (b.name.localeCompare(a.name)),
+    comparator: (a, b) => b.name.localeCompare(a.name),
   }),
   new Column<ModelInfo>('Size', {
     width: '50px',
     renderer: ModelColumnSize,
-    comparator: (a, b) => (a.file?.size ?? Number.MAX_SAFE_INTEGER) - (b.file?.size ?? Number.MAX_SAFE_INTEGER),
+    comparator: (a, b) => (a.file?.size ?? 0) - (b.file?.size ?? 0),
   }),
   new Column<ModelInfo>('Age', {
     width: '70px',

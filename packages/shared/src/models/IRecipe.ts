@@ -25,6 +25,6 @@ export interface Recipe {
   repository: string;
   ref?: string;
   readme: string;
-  config?: string;
+  basedir?: string;
   models?: string[];
 }

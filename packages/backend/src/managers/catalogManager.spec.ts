@@ -172,6 +172,7 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
       size: 1,
       creation: mtimeDate,
     },
+    memory: 1,
   });
   const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
 

@@ -135,6 +135,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
           size: statFile.size,
           creation: statFile.mtime,
         },
+        memory: statFile.size,
       });
     }
 

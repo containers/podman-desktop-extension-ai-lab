@@ -131,6 +131,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
       this.localRepositories.register({
         path: gitCloneInfo.targetDirectory,
+        sourcePath: path.join(gitCloneInfo.targetDirectory, recipe.basedir ?? ''),
         labels: {
           'recipe-id': recipe.id,
         },

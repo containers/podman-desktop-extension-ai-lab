@@ -71,6 +71,7 @@ export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> {
       if (fs.existsSync(recipeFolder)) {
         this.register({
           path: recipeFolder,
+          sourcePath: path.join(recipeFolder, recipe.basedir ?? ''),
           labels: {
             'recipe-id': recipe.id,
           },

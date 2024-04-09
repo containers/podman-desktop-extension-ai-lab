@@ -28,6 +28,7 @@ vi.mock('./managers/modelsManager');
 
 const mockedExtensionContext = {
   subscriptions: [],
+  storagePath: 'dummy-storage-path',
 } as unknown as ExtensionContext;
 
 const studio = new Studio(mockedExtensionContext);

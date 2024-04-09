@@ -48,7 +48,7 @@ const onClickRepository = () => {
 
 const openVSCode = () => {
   if (localPath) {
-    studioClient.openVSCode(localPath.path);
+    studioClient.openVSCode(localPath.sourcepath);
   }
 };
 

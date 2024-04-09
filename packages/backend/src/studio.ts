@@ -32,8 +32,6 @@ import { GitManager } from './managers/gitManager';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { CatalogManager } from './managers/catalogManager';
 import { ModelsManager } from './managers/modelsManager';
-import path from 'node:path';
-import os from 'os';
 import fs from 'node:fs';
 import { ContainerRegistry } from './registries/ContainerRegistry';
 import { PodmanConnection } from './managers/podmanConnection';

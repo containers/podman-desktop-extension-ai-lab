@@ -18,7 +18,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi, describe } from 'vitest';
 import content from './tests/ai-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
@@ -185,24 +185,31 @@ test('if requestDeleteLocalRepository fails an errorMessage should show up', asy
   expect(errorMessageMock).toBeCalledWith('Error deleting local path "path". Error: error deleting');
 });
 
-test('check openVSCode generates the correct URL', async () => {
-  const folder = path.resolve('.');
+describe.each([{ os: 'windows' }, { os: 'linux' }, { os: 'macos' }])('verify openVSCode', ({ os }) => {
+  test(`check openVSCode generates the correct URL on ${os}`, async () => {
+    vi.mock('node:path');
+    vi.spyOn(path, 'isAbsolute').mockReturnValue(true);
+    vi.spyOn(path, 'normalize').mockImplementation((path: string) => {
+      return path;
+    });
+    const folder = os === 'windows' ? 'C:\\\\Users\\\\podman-desktop\\\\work' : '/home/podman-desktop/work';
 
-  mocks.uriFileMock.mockImplementation((path: string) => {
-    return {
-      path: path,
-      with: (change?: { scheme?: string; authority?: string; path?: string; query?: string; fragment?: string }) => {
-        return {
-          path: path,
-          ...change,
-        };
-      },
-    };
+    mocks.uriFileMock.mockImplementation((path: string) => {
+      return {
+        path: path,
+        with: (change?: { scheme?: string; authority?: string; path?: string; query?: string; fragment?: string }) => {
+          return {
+            path: path,
+            ...change,
+          };
+        },
+      };
+    });
+
+    mocks.openExternalMock.mockResolvedValue(true);
+    await studioApiImpl.openVSCode(folder);
+    expect(mocks.openExternalMock).toHaveBeenCalledWith(
+      expect.objectContaining({ path: expect.stringMatching(/^\//), authority: 'file', scheme: 'vscode' }),
+    );
   });
-
-  mocks.openExternalMock.mockResolvedValue(true);
-  await studioApiImpl.openVSCode(folder);
-  expect(mocks.openExternalMock).toHaveBeenCalledWith(
-    expect.objectContaining({ path: expect.stringMatching(/^\//), authority: 'file', scheme: 'vscode' }),
-  );
 });

@@ -116,7 +116,7 @@ export function generateContainerCreateOptions(
   }
 
   const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
-  if(modelInfo.chatformat) {
+  if (modelInfo.chatformat) {
     envs.push(`CHAT_FORMAT=${modelInfo.chatformat}`);
   }
 

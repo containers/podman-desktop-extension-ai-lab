@@ -96,6 +96,33 @@ describe('generateContainerCreateOptions', () => {
       },
     });
   });
+
+  test('model info with chatformat', () => {
+    const result = generateContainerCreateOptions(
+      {
+        port: 8888,
+        providerId: 'test@providerId',
+        image: INFERENCE_SERVER_IMAGE,
+        modelsInfo: [
+          {
+            id: 'dummyModelId',
+            file: {
+              file: 'dummyFile',
+              path: 'dummyPath',
+            },
+            chatformat: 'dummyChatFormat',
+          },
+        ],
+      } as unknown as InferenceServerConfig,
+      {
+        Id: 'dummyImageId',
+        engineId: 'dummyEngineId',
+        RepoTags: [INFERENCE_SERVER_IMAGE],
+      } as unknown as ImageInfo,
+    );
+
+    expect(result.Env).toContain('CHAT_FORMAT=dummyChatFormat');
+  });
 });
 
 describe('withDefaultConfiguration', () => {

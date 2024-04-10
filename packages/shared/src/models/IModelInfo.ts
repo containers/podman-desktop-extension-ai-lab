@@ -33,5 +33,5 @@ export interface ModelInfo {
    * the chat format to use
    * @example llama-2
    */
-  chatformat?: 'openchat' | 'llama-2' | string
+  chatformat?: 'openchat' | 'llama-2' | string;
 }

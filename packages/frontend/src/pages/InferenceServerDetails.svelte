@@ -11,6 +11,7 @@ import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
+import CodeHighlight from '/@/lib/code/CodeHighlight.svelte';
 
 export let containerId: string | undefined = undefined;
 
@@ -184,9 +185,7 @@ onMount(() => {
 
               {#if snippet !== undefined}
                 <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2">
-                  <code class="whitespace-break-spaces text-sm">
-                    {snippet}
-                  </code>
+                  <CodeHighlight code="{snippet}" />
                 </div>
               {/if}
             </div>

@@ -23,6 +23,7 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import { studioClient } from '../utils/client';
 import ApplicationActions from '/@/lib/ApplicationActions.svelte';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import { router } from 'tinro';
 
 vi.mock('../utils/client', async () => ({
   studioClient: {
@@ -85,4 +86,35 @@ test('restart action should call requestRestartApplication', async () => {
 
   await fireEvent.click(restartBtn);
   expect(studioClient.requestRestartApplication).toHaveBeenCalledWith('dummy-recipe-id', 'dummy-model-id');
+});
+
+test('open recipe action should redirect to recipe page', async () => {
+  const routerSpy = vi.spyOn(router, 'goto');
+  render(ApplicationActions, {
+    object: {
+      pod: {},
+    } as unknown as ApplicationState,
+    recipeId: 'dummy-recipe-id',
+    modelId: 'dummy-model-id',
+    enableGoToRecipeAction: true,
+  });
+
+  const openRecipeBtn = screen.getByTitle('Open Recipe');
+  expect(openRecipeBtn).toBeVisible();
+
+  await fireEvent.click(openRecipeBtn);
+  expect(routerSpy).toHaveBeenCalledWith('/recipe/dummy-recipe-id');
+});
+
+test('open recipe action should not be visible by default', async () => {
+  render(ApplicationActions, {
+    object: {
+      pod: {},
+    } as unknown as ApplicationState,
+    recipeId: 'dummy-recipe-id',
+    modelId: 'dummy-model-id',
+  });
+
+  const openRecipeBtn = screen.getByTitle('Open Recipe');
+  expect(openRecipeBtn).toHaveClass('hidden');
 });

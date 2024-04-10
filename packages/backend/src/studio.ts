@@ -203,7 +203,7 @@ export class Studio {
       this.telemetry,
     );
 
-    const snippetManager = new SnippetManager(this.#panel.webview);
+    const snippetManager = new SnippetManager(this.#panel.webview, this.telemetry);
     snippetManager.init();
 
     // Creating StudioApiImpl

@@ -25,6 +25,8 @@ $: variants = $snippetLanguages.find(language => language.key === selectedLangua
 let selectedVariant: string = 'cURL';
 $: selectedVariant;
 
+let code: HTMLElement;
+
 const onLanguageChange = (): void => {
   if (variants.length > 0) {
     selectedVariant = variants[0].key;
@@ -70,6 +72,14 @@ const generate = async (language: string, variant: string) => {
 $: {
   if (!snippet && service) {
     generate('curl', 'cURL');
+  }
+}
+
+$: {
+  if (code) {
+    code.addEventListener('copy', event => {
+      studioClient.telemetryLogUsage('snippet.copy', { language: selectedLanguage, variant: selectedVariant });
+    });
   }
 }
 
@@ -184,7 +194,7 @@ onMount(() => {
 
               {#if snippet !== undefined}
                 <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2">
-                  <code class="whitespace-break-spaces text-sm">
+                  <code class="whitespace-break-spaces text-sm" bind:this="{code}">
                     {snippet}
                   </code>
                 </div>

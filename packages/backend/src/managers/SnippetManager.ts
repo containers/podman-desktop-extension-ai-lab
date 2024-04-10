@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Disposable, Webview } from '@podman-desktop/api';
+import type { Disposable, TelemetryLogger, Webview } from '@podman-desktop/api';
 import { getLanguageList, convert, type Language } from 'postman-code-generators';
 import { Request } from 'postman-collection';
 import { Publisher } from '../utils/Publisher';
@@ -31,7 +31,10 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
   #languages: Language[];
   #additionalGenerators: Map<string, Generator>;
 
-  constructor(webview: Webview) {
+  constructor(
+    webview: Webview,
+    private telemetry: TelemetryLogger,
+  ) {
     super(webview, Messages.MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
   }
 
@@ -51,6 +54,7 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
   }
 
   async generate(requestOptions: RequestOptions, language: string, variant: string): Promise<string> {
+    this.telemetry.logUsage('snippet.generate', { language: language, variant: variant });
     const generator = this.#additionalGenerators.get(`${language}/${variant}`);
     if (generator) {
       return generator(requestOptions);

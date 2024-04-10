@@ -119,7 +119,7 @@ beforeEach(async () => {
       deleteApplication: mocks.deleteApplicationMock,
     } as unknown as ApplicationManager,
     catalogManager,
-    {} as unknown as ModelsManager,
+    {} as ModelsManager,
     {} as TelemetryLogger,
     localRepositoryRegistry,
     {} as unknown as TaskRegistry,
@@ -246,6 +246,11 @@ test('importModels should call catalogManager', async () => {
 });
 
 test('Expect checkInvalidModels to returns an empty array if all paths are valid', async () => {
+  vi.mock('node:path');
+  vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
+    return path;
+  });
+  vi.spyOn(path, 'join').mockImplementation((path1: string, path2: string) => `${path1}/${path2}`);
   vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
     {
       id: 'model',
@@ -260,6 +265,11 @@ test('Expect checkInvalidModels to returns an empty array if all paths are valid
 });
 
 test('Expect checkInvalidModels to returns an array with the invalid value', async () => {
+  vi.mock('node:path');
+  vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
+    return path;
+  });
+  vi.spyOn(path, 'join').mockImplementation((path1: string, path2: string) => `${path1}/${path2}`);
   vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
     {
       id: 'model',
@@ -274,6 +284,11 @@ test('Expect checkInvalidModels to returns an array with the invalid value', asy
 });
 
 test('Expect checkInvalidModels to returns an array with the invalid values', async () => {
+  vi.mock('node:path');
+  vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
+    return path;
+  });
+  vi.spyOn(path, 'join').mockImplementation((path1: string, path2: string) => `${path1}/${path2}`);
   vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
     {
       id: 'model',

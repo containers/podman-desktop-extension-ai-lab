@@ -19,11 +19,11 @@ function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
   if (connectionInfo.status === 'no-machine') {
     title = 'No Podman machine is running';
     description = 'Please start a Podman Machine before proceeding further.';
-    actionName = 'Start now';
+    actionName = connectionInfo.canRedirect ? 'Start now' : undefined;
     return;
   }
 
-  if (connectionInfo.status === 'not-enough-resources') {
+  if (connectionInfo.status === 'low-resources') {
     title = 'Upgrade your Podman machine for best AI performance';
 
     const hasEnoughCPU = connectionInfo.cpus >= connectionInfo.cpusExpected;
@@ -44,11 +44,11 @@ function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
     }
 
     const machineName = `${connectionInfo.name.includes('Podman Machine') ? connectionInfo.name : `Podman Machine ${connectionInfo.name}`}`;
-    description = `Your ${machineName} has ${machineCurrentStateDescription}.`;
+    description = `Your ${machineName} has ${machineCurrentStateDescription}. `;
 
     if (connectionInfo?.canEdit) {
       description += `We recommend upgrading your Podman machine with at least ${machinePreferredStateDescription} for better AI performance.`;
-      actionName = 'Upgrade now';
+      actionName = connectionInfo.canRedirect ? 'Upgrade now' : undefined;
     } else {
       description += `We recommend freeing some resources on your Podman machine to have at least ${machinePreferredStateDescription} for better AI performance.`;
     }
@@ -61,12 +61,14 @@ function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
 }
 
 function executeCommand() {
-  if (connectionInfo.status === 'not-enough-resources' && connectionInfo.canEdit) {
-    studioClient.navigateToEditConnectionProvider(connectionInfo.name);
-    return;
-  }
-  if (connectionInfo.status == 'no-machine') {
-    studioClient.navigateToResources();
+  if (connectionInfo.canRedirect) {
+    if (connectionInfo.status === 'low-resources' && connectionInfo.canEdit) {
+      studioClient.navigateToEditConnectionProvider(connectionInfo.name);
+      return;
+    }
+    if (connectionInfo.status == 'no-machine') {
+      studioClient.navigateToResources();
+    }
   }
 }
 </script>

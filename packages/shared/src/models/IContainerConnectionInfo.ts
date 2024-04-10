@@ -18,26 +18,29 @@
 
 export type ContainerConnectionInfo =
   | RunningContainerConnection
-  | NotEnoughResourcesContainerConnection
+  | LowResourcesContainerConnection
   | NoContainerConnection;
 
-export type ContainerConnectionInfoStatus = 'running' | 'no-machine' | 'not-enough-resources';
+export type ContainerConnectionInfoStatus = 'running' | 'no-machine' | 'low-resources';
 
 export interface RunningContainerConnection {
   name: string;
   status: 'running';
+  canRedirect: boolean;
 }
 
-export interface NotEnoughResourcesContainerConnection {
+export interface LowResourcesContainerConnection {
   name: string;
   cpus: number;
   memoryIdle: number;
   cpusExpected: number;
   memoryExpected: number;
-  status: 'not-enough-resources';
+  status: 'low-resources';
   canEdit: boolean;
+  canRedirect: boolean;
 }
 
 export interface NoContainerConnection {
   status: 'no-machine';
+  canRedirect: boolean;
 }

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ProviderContainerConnection } from '@podman-desktop/api';
-import { configuration, containerEngine, env, process, provider } from '@podman-desktop/api';
+import { configuration, containerEngine, env, navigation, process, provider } from '@podman-desktop/api';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 
 export const MIN_CPUS_VALUE = 10;
@@ -143,9 +143,13 @@ export async function checkContainerConnectionStatusAndResources(
     console.log(String(e));
   }
 
+  // starting from podman desktop 1.10 we have the navigate functions
+  const hasNavigateFunction = !!navigation.navigateToResources;
+
   if (!connection) {
     return {
       status: 'no-machine',
+      canRedirect: hasNavigateFunction,
     };
   }
 
@@ -153,6 +157,7 @@ export async function checkContainerConnectionStatusAndResources(
   if (!engineInfo) {
     return {
       status: 'no-machine',
+      canRedirect: hasNavigateFunction,
     };
   }
 
@@ -167,13 +172,15 @@ export async function checkContainerConnectionStatusAndResources(
       memoryIdle: engineInfo.memory - engineInfo.memoryUsed,
       cpusExpected: MIN_CPUS_VALUE,
       memoryExpected: memoryNeeded,
-      status: 'not-enough-resources',
+      status: 'low-resources',
       canEdit: !!connection.connection.lifecycle?.edit,
+      canRedirect: hasNavigateFunction,
     };
   }
 
   return {
     name: engineInfo.engineName,
     status: 'running',
+    canRedirect: hasNavigateFunction,
   };
 }

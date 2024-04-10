@@ -161,9 +161,11 @@ export async function checkContainerConnectionStatusAndResources(
     };
   }
 
-  const hasCpus = engineInfo.cpus && engineInfo.cpus >= MIN_CPUS_VALUE;
+  const hasCpus = engineInfo.cpus !== undefined && engineInfo.cpus >= MIN_CPUS_VALUE;
   const hasMemory =
-    engineInfo.memory && engineInfo.memoryUsed && engineInfo.memory - engineInfo.memoryUsed >= memoryNeeded;
+    engineInfo.memory !== undefined &&
+    engineInfo.memoryUsed !== undefined &&
+    engineInfo.memory - engineInfo.memoryUsed >= memoryNeeded;
 
   if (!hasCpus || !hasMemory) {
     return {
@@ -179,7 +181,7 @@ export async function checkContainerConnectionStatusAndResources(
   }
 
   return {
-    name: engineInfo.engineName,
+    name: connection.connection.name,
     status: 'running',
     canRedirect: hasNavigateFunction,
   };

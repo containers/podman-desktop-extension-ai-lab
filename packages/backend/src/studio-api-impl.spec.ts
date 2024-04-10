@@ -23,7 +23,8 @@ import content from './tests/ai-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { InferenceManager } from './managers/inference/inferenceManager';
-import { type TelemetryLogger, type Webview, window, EventEmitter } from '@podman-desktop/api';
+import type { ProviderContainerConnection, TelemetryLogger, Webview } from '@podman-desktop/api';
+import { window, EventEmitter, navigation } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
 import { timeout } from './utils/utils';
@@ -36,6 +37,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import path from 'node:path';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+import * as podman from './utils/podman';
 
 vi.mock('./ai.json', () => {
   return {
@@ -84,6 +86,10 @@ vi.mock('@podman-desktop/api', async () => {
     },
     env: {
       openExternal: mocks.openExternalMock,
+    },
+    navigation: {
+      navigateToResources: vi.fn(),
+      navigateToEditProviderContainerConnection: vi.fn(),
     },
   };
 });
@@ -312,4 +318,37 @@ test('Expect checkInvalidModels to returns an array with the invalid values', as
   ]);
   const result = await studioApiImpl.checkInvalidModels(['path/file.gguf', 'path1/file.gguf', 'path2/file.gguf']);
   expect(result).toStrictEqual(['path/file.gguf', 'path2/file.gguf']);
+});
+
+test('navigateToResources should call navigation.navigateToResources', async () => {
+  const navigationSpy = vi.spyOn(navigation, 'navigateToResources');
+  await studioApiImpl.navigateToResources();
+  await timeout(0);
+  expect(navigationSpy).toHaveBeenCalled();
+});
+
+test('navigateToEditConnectionProvider should call navigation.navigateToEditProviderContainerConnection', async () => {
+  const connection: ProviderContainerConnection = {
+    providerId: 'id',
+    connection: {
+      endpoint: {
+        socketPath: '/path',
+      },
+      name: 'name',
+      type: 'podman',
+      status: vi.fn(),
+    },
+  };
+  vi.spyOn(podman, 'getPodmanConnection').mockReturnValue(connection);
+  const navigationSpy = vi.spyOn(navigation, 'navigateToEditProviderContainerConnection');
+  await studioApiImpl.navigateToEditConnectionProvider('connection');
+  await timeout(0);
+  expect(navigationSpy).toHaveBeenCalledWith(connection);
+});
+
+test('checkContainerConnectionStatusAndResources should call podman.checkContainerConnectionStatusAndResources', async () => {
+  const checkContainerSpy = vi.spyOn(podman, 'checkContainerConnectionStatusAndResources');
+  await studioApiImpl.checkContainerConnectionStatusAndResources(1000);
+  await timeout(0);
+  expect(checkContainerSpy).toHaveBeenCalledWith(1000);
 });

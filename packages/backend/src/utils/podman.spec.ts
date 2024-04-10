@@ -41,6 +41,12 @@ vi.mock('@podman-desktop/api', () => {
     configuration: {
       getConfiguration: () => config,
     },
+    containerEngine: {
+      info: vi.fn(),
+    },
+    navigation: {
+      navigateToResources: vi.fn(),
+    },
     provider: {
       getContainerConnections: mocks.getContainerConnectionsMock,
     },
@@ -276,5 +282,165 @@ describe('isQEMUMachine', () => {
     } as podmanDesktopApi.RunResult);
     const isQEMU = await utils.isQEMUMachine();
     expect(isQEMU).toBeFalsy();
+  });
+});
+
+describe('getPodmanConnection', () => {
+  test('throw error if there is no podman connection with name', () => {
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'Podman Machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    expect(() => utils.getPodmanConnection('sample')).toThrowError('no podman connection found with name sample');
+  });
+  test('return connection with specified name', () => {
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'Podman Machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    const engine = utils.getPodmanConnection('Podman Machine');
+    expect(engine).toBeDefined();
+    expect(engine.providerId).equals('podman');
+    expect(engine.connection.name).equals('Podman Machine');
+  });
+});
+
+describe('checkContainerConnectionStatusAndResources', () => {
+  const engineInfo: podmanDesktopApi.ContainerEngineInfo = {
+    engineId: 'engineId',
+    engineName: 'enginerName',
+    engineType: 'podman',
+  };
+  test('return noMachineInfo if there is no running podman connection', async () => {
+    vi.spyOn(utils, 'getFirstRunningPodmanConnection').mockReturnValue(undefined);
+    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    expect(result).toStrictEqual({
+      status: 'no-machine',
+      canRedirect: true,
+    });
+  });
+  test('return noMachineInfo if we are not able to retrieve any info about the podman connection', async () => {
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'Podman Machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    vi.mocked(podmanDesktopApi.containerEngine.info).mockResolvedValue(undefined);
+    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    expect(result).toStrictEqual({
+      status: 'no-machine',
+      canRedirect: true,
+    });
+  });
+  test('return lowResourceMachineInfo if the podman connection has not enough cpus', async () => {
+    engineInfo.cpus = 4;
+    engineInfo.memory = 20;
+    engineInfo.memoryUsed = 0;
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'Podman Machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    vi.mocked(podmanDesktopApi.containerEngine.info).mockResolvedValue(engineInfo);
+    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    expect(result).toStrictEqual({
+      name: 'Podman Machine',
+      cpus: 4,
+      memoryIdle: 20,
+      cpusExpected: 10,
+      memoryExpected: 10,
+      status: 'low-resources',
+      canEdit: false,
+      canRedirect: true,
+    });
+  });
+  test('return lowResourceMachineInfo if the podman connection has not enough memory', async () => {
+    engineInfo.cpus = 12;
+    engineInfo.memory = 20;
+    engineInfo.memoryUsed = 15;
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'Podman Machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    vi.mocked(podmanDesktopApi.containerEngine.info).mockResolvedValue(engineInfo);
+    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    expect(result).toStrictEqual({
+      name: 'Podman Machine',
+      cpus: 12,
+      memoryIdle: 5,
+      cpusExpected: 10,
+      memoryExpected: 10,
+      status: 'low-resources',
+      canEdit: false,
+      canRedirect: true,
+    });
+  });
+  test('return runningMachineInfo if the podman connection has enough resources', async () => {
+    engineInfo.cpus = 12;
+    engineInfo.memory = 20;
+    engineInfo.memoryUsed = 0;
+    mocks.getContainerConnectionsMock.mockReturnValue([
+      {
+        connection: {
+          name: 'Podman Machine',
+          status: () => 'started',
+          endpoint: {
+            socketPath: '/endpoint.sock',
+          },
+          type: 'podman',
+        },
+        providerId: 'podman',
+      },
+    ]);
+    vi.spyOn(podmanDesktopApi.containerEngine, 'info').mockResolvedValue(engineInfo);
+    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    expect(result).toStrictEqual({
+      name: 'Podman Machine',
+      status: 'running',
+      canRedirect: true,
+    });
   });
 });

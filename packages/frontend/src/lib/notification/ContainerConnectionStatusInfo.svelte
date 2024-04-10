@@ -31,7 +31,7 @@ function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
 
     let machineCurrentStateDescription = '';
     let machinePreferredStateDescription = '';
-    if (hasEnoughCPU) {
+    if (!hasEnoughCPU) {
       machineCurrentStateDescription += `${connectionInfo.cpus} vCPUs`;
       machinePreferredStateDescription += `${connectionInfo.cpusExpected} vCPUs`;
       if (!hasEnoughMemory) {
@@ -77,18 +77,19 @@ function executeCommand() {
   <div
     class="w-full {background === 'light'
       ? 'bg-charcoal-500'
-      : 'bg-charcoal-800'} border-t-[3px] border-red-700 p-4 mt-5 shadow-inner">
+      : 'bg-charcoal-800'} border-t-[3px] border-red-700 p-4 mt-5 shadow-inner"
+    aria-label="Container connection info banner">
     <div class="flex flex-row space-x-3">
       <div class="flex">
         <Fa icon="{faCircleExclamation}" class="text-red-600" />
       </div>
       <div class="flex flex-col grow">
-        <span class="font-medium text-sm">{title}</span>
-        <span class="text-sm">{description}</span>
+        <span class="font-medium text-sm" aria-label="title">{title}</span>
+        <span class="text-sm" aria-label="description">{description}</span>
       </div>
       {#if actionName}
         <div class="flex items-center">
-          <Button class="grow text-gray-500" on:click="{executeCommand}">{actionName}</Button>
+          <Button class="grow text-gray-500" on:click="{executeCommand}" aria-label="{actionName}">{actionName}</Button>
         </div>
       {/if}
     </div>

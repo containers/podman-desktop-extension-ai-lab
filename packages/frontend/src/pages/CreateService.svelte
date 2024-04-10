@@ -141,7 +141,7 @@ onMount(async () => {
       {/if}
 
       <!-- tasks tracked -->
-      {#if trackedTasks.length > 0}
+      {#if trackedTasks?.length > 0}
         <div class="mx-5 mt-5" role="status">
           <TasksProgress tasks="{trackedTasks}" />
         </div>

@@ -253,12 +253,18 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async navigateToResources(): Promise<void> {
-    return podmanDesktopApi.navigation.navigateToResources();
+    // navigateToResources is only vailable from desktop 1.10
+    if (podmanDesktopApi.navigation.navigateToResources) {
+      return podmanDesktopApi.navigation.navigateToResources();
+    }
   }
 
   async navigateToEditConnectionProvider(connectionName: string): Promise<void> {
-    const connection = getPodmanConnection(connectionName);
-    return podmanDesktopApi.navigation.navigateToEditProviderContainerConnection(connection);
+    // navigateToEditProviderContainerConnection is only vailable from desktop 1.10
+    if (podmanDesktopApi.navigation.navigateToEditProviderContainerConnection) {
+      const connection = getPodmanConnection(connectionName);
+      return podmanDesktopApi.navigation.navigateToEditProviderContainerConnection(connection);
+    }
   }
 
   async getApplicationsState(): Promise<ApplicationState[]> {

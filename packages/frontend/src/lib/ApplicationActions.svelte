@@ -4,7 +4,7 @@ import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import { router } from 'tinro';
-import DropDownMenu from './DropdownMenu.svelte';
+import DropDownMenu from './DropDownMenu.svelte';
 import FlatMenu from './FlatMenu.svelte';
 export let object: ApplicationState | undefined;
 export let recipeId: string;

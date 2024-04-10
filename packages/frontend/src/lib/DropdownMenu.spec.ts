@@ -21,11 +21,11 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { expect, test, vi } from 'vitest';
 
-import DropdownMenu from './DropdownMenu.svelte';
+import DropDownMenu from './DropDownMenu.svelte';
 
 test('Expect the onBeforeToggle function to be called when the menu is clicked', async () => {
   const onBeforeToggleMock = vi.fn();
-  render(DropdownMenu, {
+  render(DropDownMenu, {
     onBeforeToggle: onBeforeToggleMock,
   });
 

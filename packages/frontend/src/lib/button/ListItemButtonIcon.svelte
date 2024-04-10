@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
+import DropDownMenuItem from '../DropDownMenuItem.svelte';
 
 export let title: string;
 export let icon: IconDefinition;
@@ -9,6 +10,7 @@ export let enabled: boolean = true;
 export let onClick: () => void = () => {
   console.log('==> 0');
 };
+export let menu = false;
 export let detailed = false;
 export let inProgress = false;
 export let iconOffset = '';
@@ -42,17 +44,22 @@ $: styleClass = detailed
     : buttonDisabledClass;
 </script>
 
-<button
-  title="{title}"
-  aria-label="{title}"
-  on:click="{handleClick}"
-  class="{styleClass} relative"
-  class:disabled="{inProgress}"
-  class:hidden="{hidden}">
-  <Fa class="h-4 w-4 {iconOffset}" icon="{icon}" />
-  <div
-    aria-label="spinner"
-    class="w-6 h-6 rounded-full animate-spin border border-solid border-violet-500 border-t-transparent absolute {positionTopClass} {positionLeftClass}"
-    class:hidden="{!inProgress}">
-  </div>
-</button>
+{#if menu}
+  <!-- enabled menu -->
+  <DropDownMenuItem title="{title}" icon="{icon}" enabled="{enabled}" hidden="{hidden}" onClick="{handleClick}" />
+{:else}
+  <button
+    title="{title}"
+    aria-label="{title}"
+    on:click="{handleClick}"
+    class="{styleClass} relative"
+    class:disabled="{inProgress}"
+    class:hidden="{hidden}">
+    <Fa class="h-4 w-4 {iconOffset}" icon="{icon}" />
+    <div
+      aria-label="spinner"
+      class="w-6 h-6 rounded-full animate-spin border border-solid border-violet-500 border-t-transparent absolute {positionTopClass} {positionLeftClass}"
+      class:hidden="{!inProgress}">
+    </div>
+  </button>
+{/if}

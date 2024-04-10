@@ -18,7 +18,7 @@ const columns: Column<ApplicationState>[] = [
   new Column<ApplicationState>('Recipe', { width: '2fr', renderer: ColumnRecipe }),
   new Column<ApplicationState>('Pod', { width: '3fr', renderer: ColumnPod }),
   new Column<ApplicationState>('Age', { width: '2fr', renderer: ColumnAge }),
-  new Column<ApplicationState>('Actions', { align: 'right', width: '120px', renderer: ColumnActions }),
+  new Column<ApplicationState>('Actions', { align: 'right', width: '120px', renderer: ColumnActions, overflow: true }),
 ];
 const row = new Row<ApplicationState>({});
 

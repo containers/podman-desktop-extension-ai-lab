@@ -115,6 +115,11 @@ export function generateContainerCreateOptions(
     throw new Error('The model info file provided is undefined');
   }
 
+  const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
+  if(modelInfo.chatformat) {
+    envs.push(`CHAT_FORMAT=${modelInfo.chatformat}`);
+  }
+
   return {
     Image: imageInfo.Id,
     Detach: true,
@@ -147,7 +152,7 @@ export function generateContainerCreateOptions(
       ...config.labels,
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     },
-    Env: [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'],
+    Env: envs,
     Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
   };
 }

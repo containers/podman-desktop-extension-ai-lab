@@ -20,9 +20,21 @@ import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
-  new Column<ModelInfo>('Name', { width: '3fr', renderer: ModelColumnName }),
-  new Column<ModelInfo>('Size', { width: '50px', renderer: ModelColumnSize }),
-  new Column<ModelInfo>('Age', { width: '60px', renderer: ModelColumnAge }),
+  new Column<ModelInfo>('Name', {
+    width: '3fr',
+    renderer: ModelColumnName,
+    comparator: (a, b) => b.name.localeCompare(a.name),
+  }),
+  new Column<ModelInfo>('Size', {
+    width: '50px',
+    renderer: ModelColumnSize,
+    comparator: (a, b) => (a.file?.size ?? 0) - (b.file?.size ?? 0),
+  }),
+  new Column<ModelInfo>('Age', {
+    width: '70px',
+    renderer: ModelColumnAge,
+    comparator: (a, b) => (a.file?.creation?.getTime() ?? 0) - (b.file?.creation?.getTime() ?? 0),
+  }),
   new Column<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
   new Column<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
 ];

@@ -35,8 +35,9 @@ export abstract class StudioAPI {
   abstract getCatalog(): Promise<ApplicationCatalog>;
   abstract pullApplication(recipeId: string, modelId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
-  abstract openFile(file: string): Promise<boolean>;
+  abstract openFile(file: string, recipeId?: string): Promise<boolean>;
   abstract openDialog(options?: OpenDialogOptions): Promise<Uri[]>;
+  
   /**
    * Get the information of models saved locally into the user's directory
    */
@@ -67,7 +68,7 @@ export abstract class StudioAPI {
    * Open the VSCode editor
    * @param directory the directory to open the editor from
    */
-  abstract openVSCode(directory: string): Promise<void>;
+  abstract openVSCode(directory: string, recipeId?: string): Promise<void>;
 
   /**
    * Download a model from the catalog

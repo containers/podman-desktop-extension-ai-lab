@@ -162,8 +162,18 @@ export class StudioApiImpl implements StudioAPI {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(url));
   }
 
-  async openFile(file: string): Promise<boolean> {
-    return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
+  async openFile(file: string, recipeId?: string): Promise<boolean> {
+    const telemetry = {
+      'recipe.id': recipeId,
+    };
+    try {
+      return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
+    } catch (err) {
+      telemetry['errorMessage'] = String(err);
+      throw err;
+    } finally {
+      this.telemetry.logUsage('studio.open-file', telemetry);
+    }
   }
 
   async openDialog(options?: podmanDesktopApi.OpenDialogOptions): Promise<podmanDesktopApi.Uri[]> {
@@ -364,8 +374,13 @@ export class StudioApiImpl implements StudioAPI {
     return this.taskRegistry.getTasks();
   }
 
-  async openVSCode(directory: string): Promise<void> {
+  async openVSCode(directory: string, recipeId?: string): Promise<void> {
+    const telemetry = {
+      'recipe.id': recipeId,
+    };
     if (!path.isAbsolute(directory)) {
+      telemetry['errorMessage'] = 'Do not support relative directory.';
+      this.telemetry.logUsage('studio.open-vscode', telemetry);
       throw new Error('Do not support relative directory.');
     }
 
@@ -374,11 +389,16 @@ export class StudioApiImpl implements StudioAPI {
       unixPath = `/${unixPath}`;
     }
 
-    podmanDesktopApi.env
-      .openExternal(podmanDesktopApi.Uri.file(unixPath).with({ scheme: 'vscode', authority: 'file' }))
-      .catch((err: unknown) => {
-        console.error('Something went wrong while trying to open VSCode', err);
-      });
+    try {
+      await podmanDesktopApi.env.openExternal(
+        podmanDesktopApi.Uri.file(unixPath).with({ scheme: 'vscode', authority: 'file' }),
+      );
+    } catch (err) {
+      telemetry['errorMessage'] = String(err);
+      console.error('Something went wrong while trying to open VSCode', err);
+    } finally {
+      this.telemetry.logUsage('studio.open-vscode', telemetry);
+    }
   }
 
   async downloadModel(modelId: string): Promise<void> {

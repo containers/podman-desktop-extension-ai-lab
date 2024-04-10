@@ -4,13 +4,14 @@ import NavPage from '/@/lib/NavPage.svelte';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
-import { faBuildingColumns, faMicrochip, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
+import { faBuildingColumns, faCheck, faCopy, faMicrochip, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
+import Button from '/@/lib/button/Button.svelte';
 
 export let containerId: string | undefined = undefined;
 
@@ -38,6 +39,7 @@ let snippet: string | undefined = undefined;
 $: snippet;
 
 const generate = async (language: string, variant: string) => {
+  copied = false;
   snippet = await studioClient.createSnippet(
     {
       url: `http://localhost:${service?.connection.port || '??'}/v1/chat/completions`,
@@ -81,6 +83,21 @@ $: {
       studioClient.telemetryLogUsage('snippet.copy', { language: selectedLanguage, variant: selectedVariant });
     });
   }
+}
+
+let copied: boolean = false;
+function copySnippet(): void {
+  if (!snippet) return;
+
+  studioClient
+    .copyToClipboard(snippet)
+    .then(() => {
+      copied = true;
+      studioClient.telemetryLogUsage('snippet.copy', { language: selectedLanguage, variant: selectedVariant });
+    })
+    .catch((err: unknown) => {
+      console.error('Something went wrong while trying to copy language snippet.', err);
+    });
 }
 
 onMount(() => {
@@ -193,10 +210,13 @@ onMount(() => {
               </div>
 
               {#if snippet !== undefined}
-                <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2">
+                <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2 relative">
                   <code class="whitespace-break-spaces text-sm" bind:this="{code}">
                     {snippet}
                   </code>
+                  <div class="absolute right-4 top-4 z-10">
+                    <Button icon="{copied ? faCheck : faCopy}" type="secondary" title="Copy" on:click="{copySnippet}" />
+                  </div>
                 </div>
               {/if}
             </div>

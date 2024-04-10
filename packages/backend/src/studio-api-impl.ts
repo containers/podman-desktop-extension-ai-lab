@@ -463,4 +463,8 @@ export class StudioApiImpl implements StudioAPI {
     }
     return invalidPaths;
   }
+
+  copyToClipboard(content: string): Promise<void> {
+    return podmanDesktopApi.env.clipboard.writeText(content);
+  }
 }

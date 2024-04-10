@@ -180,4 +180,10 @@ export abstract class StudioAPI {
    * @returns the list of invalid models
    */
   abstract checkInvalidModels(models: string[]): Promise<string[]>;
+
+  /**
+   * Copy the provided content to the user clipboard
+   * @param content
+   */
+  abstract copyToClipboard(content: string): Promise<void>;
 }

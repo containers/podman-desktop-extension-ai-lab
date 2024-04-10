@@ -14,6 +14,9 @@ import { filterByLabel } from '/@/utils/taskUtils';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import ErrorMessage from '../lib/ErrorMessage.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
+import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
+import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import { checkContainerConnectionStatus } from '../utils/connectionUtils';
 
 // List of the models available locally
 let localModels: ModelInfo[];
@@ -39,6 +42,13 @@ let error: boolean = false;
 // process will be completed
 let containerId: string | undefined = undefined;
 $: available = containerId && $inferenceServers.some(server => server.container.containerId);
+
+let connectionInfo: ContainerConnectionInfo | undefined;
+$: if (localModels && modelId) {
+  checkContainerConnectionStatus(localModels, modelId)
+    .then(value => (connectionInfo = value))
+    .catch((e: unknown) => console.log(String(e)));
+}
 
 const onContainerPortInput = (event: Event): void => {
   const raw = (event.target as HTMLInputElement).value;
@@ -123,6 +133,13 @@ onMount(async () => {
   loading="{containerPort === undefined}">
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
+      <!-- warning machine resources -->
+      {#if connectionInfo}
+        <div class="mx-5">
+          <ContainerConnectionStatusInfo connectionInfo="{connectionInfo}" />
+        </div>
+      {/if}
+
       <!-- tasks tracked -->
       {#if trackedTasks.length > 0}
         <div class="mx-5 mt-5" role="status">

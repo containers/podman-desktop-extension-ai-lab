@@ -29,6 +29,7 @@ import type { CreationInferenceServerOptions } from './models/InferenceServerCon
 import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
 import type { LocalModelImportInfo } from './models/ILocalModelInfo';
+import type { ContainerConnectionInfo } from './models/IContainerConnectionInfo';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -51,6 +52,8 @@ export abstract class StudioAPI {
 
   abstract navigateToContainer(containerId: string): Promise<void>;
   abstract navigateToPod(podId: string): Promise<void>;
+  abstract navigateToResources(): Promise<void>;
+  abstract navigateToEditConnectionProvider(connectionName: string): Promise<void>;
 
   abstract getApplicationsState(): Promise<ApplicationState[]>;
   abstract requestRemoveApplication(recipeId: string, modelId: string): Promise<void>;
@@ -186,4 +189,10 @@ export abstract class StudioAPI {
    * @param content
    */
   abstract copyToClipboard(content: string): Promise<void>;
+  
+  /**
+   * Check if the running podman machine is running and has enough resources to execute task
+   * @param memory amount of memory that must be idle
+   */
+  abstract checkContainerConnectionStatusAndResources(memory: number): Promise<ContainerConnectionInfo>;
 }

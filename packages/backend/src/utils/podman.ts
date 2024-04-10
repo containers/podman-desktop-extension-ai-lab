@@ -16,7 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ProviderContainerConnection } from '@podman-desktop/api';
-import { configuration, env, process, provider } from '@podman-desktop/api';
+import { configuration, containerEngine, env, process, provider } from '@podman-desktop/api';
+import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+
+export const MIN_CPUS_VALUE = 10;
 
 export type MachineJSON = {
   Name: string;
@@ -88,6 +91,17 @@ export function getFirstRunningPodmanConnection(): ProviderContainerConnection |
   return engine;
 }
 
+export function getPodmanConnection(connectionName: string): ProviderContainerConnection {
+  const engine = provider
+    .getContainerConnections()
+    .filter(connection => connection.connection.type === 'podman')
+    .find(connection => connection.connection.name === connectionName);
+  if (!engine) {
+    throw new Error(`no podman connection found with name ${connectionName}`);
+  }
+  return engine;
+}
+
 async function getJSONMachineList(): Promise<string> {
   const { stdout } = await process.exec(getPodmanCli(), ['machine', 'list', '--format', 'json']);
   return stdout;
@@ -117,4 +131,49 @@ export async function isQEMUMachine(): Promise<boolean> {
   }
 
   return false;
+}
+
+export async function checkContainerConnectionStatusAndResources(
+  memoryNeeded: number,
+): Promise<ContainerConnectionInfo> {
+  let connection: ProviderContainerConnection;
+  try {
+    connection = getFirstRunningPodmanConnection();
+  } catch (e) {
+    console.log(String(e));
+  }
+
+  if (!connection) {
+    return {
+      status: 'no-machine',
+    };
+  }
+
+  const engineInfo = await containerEngine.info(`${connection.providerId}.${connection.connection.name}`);
+  if (!engineInfo) {
+    return {
+      status: 'no-machine',
+    };
+  }
+
+  const hasCpus = engineInfo.cpus && engineInfo.cpus >= MIN_CPUS_VALUE;
+  const hasMemory =
+    engineInfo.memory && engineInfo.memoryUsed && engineInfo.memory - engineInfo.memoryUsed >= memoryNeeded;
+
+  if (!hasCpus || !hasMemory) {
+    return {
+      name: connection.connection.name,
+      cpus: engineInfo.cpus ?? 0,
+      memoryIdle: engineInfo.memory - engineInfo.memoryUsed,
+      cpusExpected: MIN_CPUS_VALUE,
+      memoryExpected: memoryNeeded,
+      status: 'not-enough-resources',
+      canEdit: !!connection.connection.lifecycle?.edit,
+    };
+  }
+
+  return {
+    name: engineInfo.engineName,
+    status: 'running',
+  };
 }

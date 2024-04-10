@@ -7,7 +7,7 @@ The Podman Desktop AI Lab extension simplifies getting started and developing wi
 ## Topics
 - [Technology](#technology)
 - [Extension features](#extension-features)
-- [Requirements](#requiremements)
+- [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)

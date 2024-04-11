@@ -113,6 +113,11 @@ beforeEach(async () => {
     appUserDirectory,
   );
 
+  const telemetryMock = {
+    logUsage: vi.fn(),
+    logError: vi.fn(),
+  } as unknown as TelemetryLogger;
+
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
     {
@@ -120,7 +125,7 @@ beforeEach(async () => {
     } as unknown as ApplicationManager,
     catalogManager,
     {} as ModelsManager,
-    {} as TelemetryLogger,
+    telemetryMock,
     localRepositoryRegistry,
     {} as unknown as TaskRegistry,
     {} as unknown as InferenceManager,

@@ -28,6 +28,7 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
 
 function setSelectedModel(modelId: string) {
   selectedModelId = modelId;
+  studioClient.telemetryLogUsage('recipe.select-model', { 'recipe.id': recipe?.id, 'model.id': modelId });
 }
 </script>
 

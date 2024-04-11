@@ -162,8 +162,18 @@ export class StudioApiImpl implements StudioAPI {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(url));
   }
 
-  async openFile(file: string): Promise<boolean> {
-    return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
+  async openFile(file: string, recipeId?: string): Promise<boolean> {
+    const telemetry = {
+      'recipe.id': recipeId,
+    };
+    try {
+      return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
+    } catch (err) {
+      telemetry['errorMessage'] = String(err);
+      throw err;
+    } finally {
+      this.telemetry.logUsage('studio.open-file', telemetry);
+    }
   }
 
   async openDialog(options?: podmanDesktopApi.OpenDialogOptions): Promise<podmanDesktopApi.Uri[]> {
@@ -364,21 +374,31 @@ export class StudioApiImpl implements StudioAPI {
     return this.taskRegistry.getTasks();
   }
 
-  async openVSCode(directory: string): Promise<void> {
-    if (!path.isAbsolute(directory)) {
-      throw new Error('Do not support relative directory.');
-    }
+  async openVSCode(directory: string, recipeId?: string): Promise<void> {
+    const telemetry = {
+      'recipe.id': recipeId,
+    };
 
-    let unixPath: string = path.normalize(directory).replace(/[\\/]+/g, '/');
-    if (!unixPath.startsWith('/')) {
-      unixPath = `/${unixPath}`;
-    }
+    try {
+      if (!path.isAbsolute(directory)) {
+        throw new Error('Do not support relative directory.');
+      }
 
-    podmanDesktopApi.env
-      .openExternal(podmanDesktopApi.Uri.file(unixPath).with({ scheme: 'vscode', authority: 'file' }))
-      .catch((err: unknown) => {
-        console.error('Something went wrong while trying to open VSCode', err);
-      });
+      let unixPath: string = path.normalize(directory).replace(/[\\/]+/g, '/');
+      if (!unixPath.startsWith('/')) {
+        unixPath = `/${unixPath}`;
+      }
+
+      await podmanDesktopApi.env.openExternal(
+        podmanDesktopApi.Uri.file(unixPath).with({ scheme: 'vscode', authority: 'file' }),
+      );
+    } catch (err) {
+      telemetry['errorMessage'] = String(err);
+      console.error('Something went wrong while trying to open VSCode', err);
+      throw err;
+    } finally {
+      this.telemetry.logUsage('studio.open-vscode', telemetry);
+    }
   }
 
   async downloadModel(modelId: string): Promise<void> {

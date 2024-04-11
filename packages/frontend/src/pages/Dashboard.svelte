@@ -17,6 +17,10 @@ const openPlaygroundsPage = () => {
   router.goto('/playgrounds');
 };
 
+const openServicesPage = () => {
+  router.goto('/services');
+};
+
 const openGithub = () => {
   studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab');
 };
@@ -75,6 +79,14 @@ const openDiscussionsPage = () => {
             >Playground environments</button>
           allow for experimenting with available models in a local environment. An intuitive user prompt helps in exploring
           the capabilities and accuracy of various models and aids in finding the best model for the use case at hand.
+        </p>
+        <p>
+          Once started, each playground ships with a generic chat client to interact with the model service. The <button
+            class="underline"
+            title="Open the Services page"
+            on:click="{openServicesPage}">Services</button>
+          page allows for accessing running model services and provides further details and code snippets to interact with
+          them.
         </p>
 
         <h1 class="text-xl first-letter:uppercase underline">Feedback</h1>

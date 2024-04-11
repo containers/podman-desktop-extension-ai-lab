@@ -97,7 +97,7 @@ describe('generateContainerCreateOptions', () => {
     });
   });
 
-  test('model info with chatformat', () => {
+  test('model info with chat_format properties', () => {
     const result = generateContainerCreateOptions(
       {
         port: 8888,
@@ -110,7 +110,9 @@ describe('generateContainerCreateOptions', () => {
               file: 'dummyFile',
               path: 'dummyPath',
             },
-            chatformat: 'dummyChatFormat',
+            properties: {
+              chat_format: 'dummyChatFormat',
+            },
           },
         ],
       } as unknown as InferenceServerConfig,

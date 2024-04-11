@@ -29,9 +29,7 @@ export interface ModelInfo {
   file?: LocalModelInfo;
   state?: 'deleting';
   memory?: number;
-  /**
-   * the chat format to use
-   * @example llama-2
-   */
-  chatformat?: 'openchat' | 'llama-2' | string;
+  properties?: {
+    [key: string]: string;
+  };
 }

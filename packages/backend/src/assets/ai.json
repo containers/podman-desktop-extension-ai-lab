@@ -105,7 +105,9 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ibm/merlinite-7b-GGUF/resolve/main/merlinite-7b-Q4_K_M.gguf",
       "memory": 4370129224,
-      "chatformat": "openchat"
+      "properties": {
+        "chat_format": "openchat"
+      }
     },
     {
       "id": "hf.TheBloke.mistral-7b-codealpaca-lora.Q4_K_M",
@@ -136,7 +138,9 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/froggeric/Cerebrum-1.0-7b-GGUF/resolve/main/Cerebrum-1.0-7b-Q4_KS.gguf",
       "memory": 4144643441,
-      "chatformat": "openchat"
+      "properties": {
+        "chat_format": "openchat"
+      }
     },
     {
       "id": "hf.TheBloke.openchat-3.5-0106.Q4_K_M",
@@ -177,7 +181,9 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/llmware/dragon-mistral-7b-v0/resolve/main/dragon-mistral-7b-q4_k_m.gguf",
       "memory": 4370129224,
-      "chatformat": "openchat"
+      "properties": {
+        "chat_format": "openchat"
+      }
     },
     {
       "id": "hf.MaziyarPanahi.MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M",

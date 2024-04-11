@@ -116,8 +116,10 @@ export function generateContainerCreateOptions(
   }
 
   const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
-  if (modelInfo.chatformat) {
-    envs.push(`CHAT_FORMAT=${modelInfo.chatformat}`);
+  if (modelInfo.properties) {
+    Object.entries(modelInfo.properties).forEach(([key, value]) => {
+      envs.push(`${key.toUpperCase()}=${value}`);
+    });
   }
 
   return {

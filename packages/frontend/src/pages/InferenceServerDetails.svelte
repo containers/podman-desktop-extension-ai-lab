@@ -75,6 +75,20 @@ $: {
   }
 }
 
+let code: HTMLElement;
+
+$: {
+  if (code) {
+    code.addEventListener('copy', event => {
+      studioClient.telemetryLogUsage('snippet.copy', {
+        cpyButton: false,
+        language: selectedLanguage,
+        variant: selectedVariant,
+      });
+    });
+  }
+}
+
 let copied: boolean = false;
 function copySnippet(): void {
   if (!snippet) return;
@@ -83,7 +97,11 @@ function copySnippet(): void {
     .copyToClipboard(snippet)
     .then(() => {
       copied = true;
-      studioClient.telemetryLogUsage('snippet.copy', { language: selectedLanguage, variant: selectedVariant });
+      studioClient.telemetryLogUsage('snippet.copy', {
+        cpyButton: true,
+        language: selectedLanguage,
+        variant: selectedVariant,
+      });
     })
     .catch((err: unknown) => {
       console.error('Something went wrong while trying to copy language snippet.', err);
@@ -201,7 +219,7 @@ onMount(() => {
 
               {#if snippet !== undefined}
                 <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2 relative">
-                  <code class="whitespace-break-spaces text-sm">
+                  <code class="whitespace-break-spaces text-sm" bind:this="{code}">
                     {snippet}
                   </code>
                   <div class="absolute right-4 top-4 z-10">

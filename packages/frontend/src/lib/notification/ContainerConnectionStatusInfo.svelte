@@ -1,6 +1,6 @@
 <script lang="ts">
 import Fa from 'svelte-fa';
-import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import Button from '../button/Button.svelte';
 import { filesize } from 'filesize';
 import { studioClient } from '/@/utils/client';
@@ -77,11 +77,11 @@ function executeCommand() {
   <div
     class="w-full {background === 'light'
       ? 'bg-charcoal-500'
-      : 'bg-charcoal-800'} border-t-[3px] border-red-700 p-4 mt-5 shadow-inner"
+      : 'bg-charcoal-800'} border-t-[3px] border-amber-500 p-4 mt-5 shadow-inner"
     aria-label="Container connection info banner">
     <div class="flex flex-row space-x-3">
       <div class="flex">
-        <Fa icon="{faCircleExclamation}" class="text-red-600" />
+        <Fa icon="{faTriangleExclamation}" class="text-amber-400" />
       </div>
       <div class="flex flex-col grow">
         <span class="font-medium text-sm" aria-label="title">{title}</span>

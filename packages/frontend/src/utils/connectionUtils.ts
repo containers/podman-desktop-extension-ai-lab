@@ -16,19 +16,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelCheckerContext, ModelInfo } from '@shared/src/models/IModelInfo';
 import { studioClient } from './client';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 
 export async function checkContainerConnectionStatus(
   localModels: ModelInfo[],
   modelId: string,
+  context: ModelCheckerContext,
 ): Promise<ContainerConnectionInfo | undefined> {
   const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   let connection: ContainerConnectionInfo | undefined;
-  if (model) {
+  if (model?.memory) {
     try {
-      connection = await studioClient.checkContainerConnectionStatusAndResources(model.memory);
+      connection = await studioClient.checkContainerConnectionStatusAndResources({
+        memoryNeeded: model.memory,
+        context,
+      });
     } catch (e) {
       console.log(e);
     }

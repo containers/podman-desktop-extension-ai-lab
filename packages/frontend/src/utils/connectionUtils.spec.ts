@@ -34,17 +34,17 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-const localModels = [{ id: 'model-id' } as ModelInfo, { id: 'model-id-2' } as ModelInfo];
+const localModels = [{ id: 'model-id', memory: 10 } as ModelInfo, { id: 'model-id-2', memory: 10 } as ModelInfo];
 
 test('checkContainerConnectionStatus should return undefined if checkContainerConnectionStatusAndResources fails', async () => {
   vi.spyOn(studioClient, 'checkContainerConnectionStatusAndResources').mockRejectedValue('');
-  const result = await checkContainerConnectionStatus(localModels, 'model-id');
+  const result = await checkContainerConnectionStatus(localModels, 'model-id', 'inference');
   expect(result).toBeUndefined();
 });
 
 test('checkContainerConnectionStatus should return undefined if model is not in localModels', async () => {
   vi.spyOn(studioClient, 'checkContainerConnectionStatusAndResources').mockRejectedValue('');
-  const result = await checkContainerConnectionStatus(localModels, 'unknown-model');
+  const result = await checkContainerConnectionStatus(localModels, 'unknown-model', 'inference');
   expect(result).toBeUndefined();
 });
 
@@ -54,6 +54,6 @@ test('checkContainerConnectionStatus should return checkContainerConnectionStatu
     canRedirect: true,
   };
   vi.spyOn(studioClient, 'checkContainerConnectionStatusAndResources').mockResolvedValue(connectionInfo);
-  const result = await checkContainerConnectionStatus(localModels, 'model-id');
+  const result = await checkContainerConnectionStatus(localModels, 'model-id', 'inference');
   expect(result).toStrictEqual(connectionInfo);
 });

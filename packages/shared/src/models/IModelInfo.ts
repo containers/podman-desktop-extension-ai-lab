@@ -30,3 +30,10 @@ export interface ModelInfo {
   state?: 'deleting';
   memory?: number;
 }
+
+export type ModelCheckerContext = 'inference' | 'recipe';
+
+export interface ModelCheckerInfo {
+  memoryNeeded: number;
+  context: ModelCheckerContext;
+}

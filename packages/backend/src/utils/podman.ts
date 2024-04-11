@@ -18,8 +18,9 @@
 import type { ProviderContainerConnection } from '@podman-desktop/api';
 import { configuration, containerEngine, env, navigation, process, provider } from '@podman-desktop/api';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ModelCheckerInfo } from '@shared/src/models/IModelInfo';
 
-export const MIN_CPUS_VALUE = 10;
+export const MIN_CPUS_VALUE = 4;
 
 export type MachineJSON = {
   Name: string;
@@ -134,7 +135,7 @@ export async function isQEMUMachine(): Promise<boolean> {
 }
 
 export async function checkContainerConnectionStatusAndResources(
-  memoryNeeded: number,
+  modelInfo: ModelCheckerInfo,
 ): Promise<ContainerConnectionInfo> {
   let connection: ProviderContainerConnection;
   try {
@@ -162,10 +163,9 @@ export async function checkContainerConnectionStatusAndResources(
   }
 
   const hasCpus = engineInfo.cpus !== undefined && engineInfo.cpus >= MIN_CPUS_VALUE;
-  const hasMemory =
-    engineInfo.memory !== undefined &&
-    engineInfo.memoryUsed !== undefined &&
-    engineInfo.memory - engineInfo.memoryUsed >= memoryNeeded;
+  const multiplier = modelInfo.context === 'recipe' ? 1.25 : 1.1;
+  const memoryExpected = modelInfo.memoryNeeded * multiplier;
+  const hasMemory = engineInfo.memory - engineInfo.memoryUsed >= memoryExpected;
 
   if (!hasCpus || !hasMemory) {
     return {
@@ -173,7 +173,7 @@ export async function checkContainerConnectionStatusAndResources(
       cpus: engineInfo.cpus ?? 0,
       memoryIdle: engineInfo.memory - engineInfo.memoryUsed,
       cpusExpected: MIN_CPUS_VALUE,
-      memoryExpected: memoryNeeded,
+      memoryExpected: memoryExpected,
       status: 'low-resources',
       canEdit: !!connection.connection.lifecycle?.edit,
       canRedirect: hasNavigateFunction,

@@ -33,7 +33,7 @@ import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import type { SnippetManager } from './managers/SnippetManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelCheckerInfo, ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import path from 'node:path';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
@@ -348,7 +348,11 @@ test('navigateToEditConnectionProvider should call navigation.navigateToEditProv
 
 test('checkContainerConnectionStatusAndResources should call podman.checkContainerConnectionStatusAndResources', async () => {
   const checkContainerSpy = vi.spyOn(podman, 'checkContainerConnectionStatusAndResources');
-  await studioApiImpl.checkContainerConnectionStatusAndResources(1000);
+  const modelInfo: ModelCheckerInfo = {
+    memoryNeeded: 1000,
+    context: 'inference',
+  };
+  await studioApiImpl.checkContainerConnectionStatusAndResources(modelInfo);
   await timeout(0);
-  expect(checkContainerSpy).toHaveBeenCalledWith(1000);
+  expect(checkContainerSpy).toHaveBeenCalledWith(modelInfo);
 });

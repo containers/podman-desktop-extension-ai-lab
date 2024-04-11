@@ -18,7 +18,7 @@
 
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { ApplicationManager } from './managers/applicationManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelCheckerInfo, ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
 
 import type { CatalogManager } from './managers/catalogManager';
@@ -485,7 +485,7 @@ export class StudioApiImpl implements StudioAPI {
     return podmanDesktopApi.env.clipboard.writeText(content);
   }
   
-  async checkContainerConnectionStatusAndResources(memory: number): Promise<ContainerConnectionInfo> {
-    return checkContainerConnectionStatusAndResources(memory);
+  async checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo> {
+    return checkContainerConnectionStatusAndResources(modelInfo);
   }
 }

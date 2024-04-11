@@ -63,7 +63,7 @@ test('should show no running machine banner if there is no running machine', asy
   expect(banner).toBeInTheDocument();
   const titleDiv = screen.getByLabelText('title');
   expect(titleDiv).toBeInTheDocument();
-  expect(titleDiv.textContent).equals('No Podman machine is running');
+  expect(titleDiv.textContent).equals('No Podman Machine is running');
   const descriptionDiv = screen.getByLabelText('description');
   expect(descriptionDiv).toBeInTheDocument();
   expect(descriptionDiv.textContent).equals('Please start a Podman Machine before proceeding further.');
@@ -88,7 +88,7 @@ test('should show no running machine banner if there is no running machine and n
   expect(banner).toBeInTheDocument();
   const titleDiv = screen.getByLabelText('title');
   expect(titleDiv).toBeInTheDocument();
-  expect(titleDiv.textContent).equals('No Podman machine is running');
+  expect(titleDiv.textContent).equals('No Podman Machine is running');
   const descriptionDiv = screen.getByLabelText('description');
   expect(descriptionDiv).toBeInTheDocument();
   expect(descriptionDiv.textContent).equals('Please start a Podman Machine before proceeding further.');
@@ -116,17 +116,17 @@ test('should show lowResourcesMachine banner if the running machine has not enou
   expect(banner).toBeInTheDocument();
   const titleDiv = screen.getByLabelText('title');
   expect(titleDiv).toBeInTheDocument();
-  expect(titleDiv.textContent).equals('Upgrade your Podman machine for best AI performance');
+  expect(titleDiv.textContent).equals('Update your Podman Machine to improve performance');
   const descriptionDiv = screen.getByLabelText('description');
   expect(descriptionDiv).toBeInTheDocument();
   expect(descriptionDiv.textContent).equals(
-    `Your Podman Machine has ${connectionInfo.cpus} vCPUs and ${filesize(connectionInfo.memoryIdle, { base: 2 })} of memory available. We recommend upgrading your Podman machine with at least ${connectionInfo.cpusExpected} vCPUs and ${filesize(connectionInfo.memoryExpected, { base: 2 })} of memory for better AI performance.`,
+    `Your Podman Machine has ${connectionInfo.cpus} vCPUs and ${filesize(connectionInfo.memoryIdle, { base: 2 })} of memory available. We recommend updating your Podman Machine to at least ${connectionInfo.cpusExpected} vCPUs and ${filesize(connectionInfo.memoryExpected, { base: 2 })} of memory for better AI performance.`,
   );
 
-  const btnUpgrade = screen.getByRole('button', { name: 'Upgrade now' });
-  expect(btnUpgrade).toBeInTheDocument();
+  const btnUpdate = screen.getByRole('button', { name: 'Update now' });
+  expect(btnUpdate).toBeInTheDocument();
 
-  await userEvent.click(btnUpgrade);
+  await userEvent.click(btnUpdate);
 
   expect(navigateMock).toBeCalledWith('Podman Machine');
 });
@@ -150,17 +150,17 @@ test('should show lowResourcesMachine banner if the running machine has not enou
   expect(banner).toBeInTheDocument();
   const titleDiv = screen.getByLabelText('title');
   expect(titleDiv).toBeInTheDocument();
-  expect(titleDiv.textContent).equals('Upgrade your Podman machine for best AI performance');
+  expect(titleDiv.textContent).equals('Update your Podman Machine to improve performance');
   const descriptionDiv = screen.getByLabelText('description');
   expect(descriptionDiv).toBeInTheDocument();
   expect(descriptionDiv.textContent).equals(
-    `Your Podman Machine has ${connectionInfo.cpus} vCPUs. We recommend upgrading your Podman machine with at least ${connectionInfo.cpusExpected} vCPUs for better AI performance.`,
+    `Your Podman Machine has ${connectionInfo.cpus} vCPUs. We recommend updating your Podman Machine to at least ${connectionInfo.cpusExpected} vCPUs for better AI performance.`,
   );
 
-  const btnUpgrade = screen.getByRole('button', { name: 'Upgrade now' });
-  expect(btnUpgrade).toBeInTheDocument();
+  const btnUpdate = screen.getByRole('button', { name: 'Update now' });
+  expect(btnUpdate).toBeInTheDocument();
 
-  await userEvent.click(btnUpgrade);
+  await userEvent.click(btnUpdate);
 
   expect(navigateMock).toBeCalledWith('Podman Machine');
 });
@@ -184,17 +184,17 @@ test('should show lowResourcesMachine banner if the running machine has not enou
   expect(banner).toBeInTheDocument();
   const titleDiv = screen.getByLabelText('title');
   expect(titleDiv).toBeInTheDocument();
-  expect(titleDiv.textContent).equals('Upgrade your Podman machine for best AI performance');
+  expect(titleDiv.textContent).equals('Update your Podman Machine to improve performance');
   const descriptionDiv = screen.getByLabelText('description');
   expect(descriptionDiv).toBeInTheDocument();
   expect(descriptionDiv.textContent).equals(
-    `Your Podman Machine has ${filesize(connectionInfo.memoryIdle, { base: 2 })} of memory available. We recommend upgrading your Podman machine with at least ${filesize(connectionInfo.memoryExpected, { base: 2 })} of memory for better AI performance.`,
+    `Your Podman Machine has ${filesize(connectionInfo.memoryIdle, { base: 2 })} of memory available. We recommend updating your Podman Machine to at least ${filesize(connectionInfo.memoryExpected, { base: 2 })} of memory for better AI performance.`,
   );
 
-  const btnUpgrade = screen.getByRole('button', { name: 'Upgrade now' });
-  expect(btnUpgrade).toBeInTheDocument();
+  const btnUpdate = screen.getByRole('button', { name: 'Update now' });
+  expect(btnUpdate).toBeInTheDocument();
 
-  await userEvent.click(btnUpgrade);
+  await userEvent.click(btnUpdate);
 
   expect(navigateMock).toBeCalledWith('Podman Machine');
 });
@@ -217,15 +217,15 @@ test('should show lowResourcesMachine banner without action if the running machi
   expect(banner).toBeInTheDocument();
   const titleDiv = screen.getByLabelText('title');
   expect(titleDiv).toBeInTheDocument();
-  expect(titleDiv.textContent).equals('Upgrade your Podman machine for best AI performance');
+  expect(titleDiv.textContent).equals('Update your Podman Machine to improve performance');
   const descriptionDiv = screen.getByLabelText('description');
   expect(descriptionDiv).toBeInTheDocument();
   expect(descriptionDiv.textContent).equals(
-    `Your Podman Machine has ${connectionInfo.cpus} vCPUs and ${filesize(connectionInfo.memoryIdle, { base: 2 })} of memory available. We recommend freeing some resources on your Podman machine to have at least ${connectionInfo.cpusExpected} vCPUs and ${filesize(connectionInfo.memoryExpected, { base: 2 })} of memory for better AI performance.`,
+    `Your Podman Machine has ${connectionInfo.cpus} vCPUs and ${filesize(connectionInfo.memoryIdle, { base: 2 })} of memory available. We recommend freeing some resources on your Podman Machine to have at least ${connectionInfo.cpusExpected} vCPUs and ${filesize(connectionInfo.memoryExpected, { base: 2 })} of memory for better AI performance.`,
   );
 
-  const btnUpgrade = screen.queryByRole('button', { name: 'Upgrade now' });
-  expect(btnUpgrade).not.toBeInTheDocument();
+  const btnUpdate = screen.queryByRole('button', { name: 'Update now' });
+  expect(btnUpdate).not.toBeInTheDocument();
 });
 
 test('should show lowResourcesMachine banner without action if the running machine has not enough resources but canRedirect is false', async () => {
@@ -246,13 +246,13 @@ test('should show lowResourcesMachine banner without action if the running machi
   expect(banner).toBeInTheDocument();
   const titleDiv = screen.getByLabelText('title');
   expect(titleDiv).toBeInTheDocument();
-  expect(titleDiv.textContent).equals('Upgrade your Podman machine for best AI performance');
+  expect(titleDiv.textContent).equals('Update your Podman Machine to improve performance');
   const descriptionDiv = screen.getByLabelText('description');
   expect(descriptionDiv).toBeInTheDocument();
   expect(descriptionDiv.textContent).equals(
-    `Your Podman Machine has ${connectionInfo.cpus} vCPUs and ${filesize(connectionInfo.memoryIdle, { base: 2 })} of memory available. We recommend upgrading your Podman machine with at least ${connectionInfo.cpusExpected} vCPUs and ${filesize(connectionInfo.memoryExpected, { base: 2 })} of memory for better AI performance.`,
+    `Your Podman Machine has ${connectionInfo.cpus} vCPUs and ${filesize(connectionInfo.memoryIdle, { base: 2 })} of memory available. We recommend updating your Podman Machine to at least ${connectionInfo.cpusExpected} vCPUs and ${filesize(connectionInfo.memoryExpected, { base: 2 })} of memory for better AI performance.`,
   );
 
-  const btnUpgrade = screen.queryByRole('button', { name: 'Upgrade now' });
-  expect(btnUpgrade).not.toBeInTheDocument();
+  const btnUpdate = screen.queryByRole('button', { name: 'Update now' });
+  expect(btnUpdate).not.toBeInTheDocument();
 });

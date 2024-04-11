@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ModelInfo } from './models/IModelInfo';
+import type { ModelCheckerInfo, ModelInfo } from './models/IModelInfo';
 import type { ApplicationCatalog } from './models/IApplicationCatalog';
 import type { OpenDialogOptions, TelemetryTrustedValue, Uri } from '@podman-desktop/api';
 import type { ApplicationState } from './models/IApplicationState';
@@ -192,7 +192,7 @@ export abstract class StudioAPI {
   
   /**
    * Check if the running podman machine is running and has enough resources to execute task
-   * @param memory amount of memory that must be idle
+   * @param modelInfo object containing info about the model to check
    */
-  abstract checkContainerConnectionStatusAndResources(memory: number): Promise<ContainerConnectionInfo>;
+  abstract checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo>;
 }

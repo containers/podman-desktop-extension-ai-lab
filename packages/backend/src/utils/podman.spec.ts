@@ -331,7 +331,10 @@ describe('checkContainerConnectionStatusAndResources', () => {
   };
   test('return noMachineInfo if there is no running podman connection', async () => {
     vi.spyOn(utils, 'getFirstRunningPodmanConnection').mockReturnValue(undefined);
-    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    const result = await utils.checkContainerConnectionStatusAndResources({
+      memoryNeeded: 10,
+      context: 'inference',
+    });
     expect(result).toStrictEqual({
       status: 'no-machine',
       canRedirect: true,
@@ -352,14 +355,17 @@ describe('checkContainerConnectionStatusAndResources', () => {
       },
     ]);
     vi.mocked(podmanDesktopApi.containerEngine.info).mockResolvedValue(undefined);
-    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    const result = await utils.checkContainerConnectionStatusAndResources({
+      memoryNeeded: 10,
+      context: 'inference',
+    });
     expect(result).toStrictEqual({
       status: 'no-machine',
       canRedirect: true,
     });
   });
   test('return lowResourceMachineInfo if the podman connection has not enough cpus', async () => {
-    engineInfo.cpus = 4;
+    engineInfo.cpus = 3;
     engineInfo.memory = 20;
     engineInfo.memoryUsed = 0;
     mocks.getContainerConnectionsMock.mockReturnValue([
@@ -376,13 +382,16 @@ describe('checkContainerConnectionStatusAndResources', () => {
       },
     ]);
     vi.mocked(podmanDesktopApi.containerEngine.info).mockResolvedValue(engineInfo);
-    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    const result = await utils.checkContainerConnectionStatusAndResources({
+      memoryNeeded: 10,
+      context: 'inference',
+    });
     expect(result).toStrictEqual({
       name: 'Podman Machine',
-      cpus: 4,
+      cpus: 3,
       memoryIdle: 20,
-      cpusExpected: 10,
-      memoryExpected: 10,
+      cpusExpected: 4,
+      memoryExpected: 11,
       status: 'low-resources',
       canEdit: false,
       canRedirect: true,
@@ -406,13 +415,16 @@ describe('checkContainerConnectionStatusAndResources', () => {
       },
     ]);
     vi.mocked(podmanDesktopApi.containerEngine.info).mockResolvedValue(engineInfo);
-    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    const result = await utils.checkContainerConnectionStatusAndResources({
+      memoryNeeded: 10,
+      context: 'inference',
+    });
     expect(result).toStrictEqual({
       name: 'Podman Machine',
       cpus: 12,
       memoryIdle: 5,
-      cpusExpected: 10,
-      memoryExpected: 10,
+      cpusExpected: 4,
+      memoryExpected: 11,
       status: 'low-resources',
       canEdit: false,
       canRedirect: true,
@@ -436,7 +448,10 @@ describe('checkContainerConnectionStatusAndResources', () => {
       },
     ]);
     vi.spyOn(podmanDesktopApi.containerEngine, 'info').mockResolvedValue(engineInfo);
-    const result = await utils.checkContainerConnectionStatusAndResources(10);
+    const result = await utils.checkContainerConnectionStatusAndResources({
+      memoryNeeded: 10,
+      context: 'inference',
+    });
     expect(result).toStrictEqual({
       name: 'Podman Machine',
       status: 'running',

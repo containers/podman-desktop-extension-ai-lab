@@ -45,7 +45,7 @@ $: available = containerId && $inferenceServers.some(server => server.container.
 
 let connectionInfo: ContainerConnectionInfo | undefined;
 $: if (localModels && modelId) {
-  checkContainerConnectionStatus(localModels, modelId)
+  checkContainerConnectionStatus(localModels, modelId, 'inference')
     .then(value => (connectionInfo = value))
     .catch((e: unknown) => console.log(String(e)));
 }

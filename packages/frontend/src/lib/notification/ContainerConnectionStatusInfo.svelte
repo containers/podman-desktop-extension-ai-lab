@@ -17,14 +17,14 @@ $: updateTitleDescription(connectionInfo);
 
 function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
   if (connectionInfo.status === 'no-machine') {
-    title = 'No Podman machine is running';
+    title = 'No Podman Machine is running';
     description = 'Please start a Podman Machine before proceeding further.';
     actionName = connectionInfo.canRedirect ? 'Start now' : undefined;
     return;
   }
 
   if (connectionInfo.status === 'low-resources') {
-    title = 'Upgrade your Podman machine for best AI performance';
+    title = 'Update your Podman Machine to improve performance';
 
     const hasEnoughCPU = connectionInfo.cpus >= connectionInfo.cpusExpected;
     const hasEnoughMemory = connectionInfo.memoryIdle > connectionInfo.memoryExpected;
@@ -47,10 +47,10 @@ function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
     description = `Your ${machineName} has ${machineCurrentStateDescription}. `;
 
     if (connectionInfo?.canEdit) {
-      description += `We recommend upgrading your Podman machine with at least ${machinePreferredStateDescription} for better AI performance.`;
-      actionName = connectionInfo.canRedirect ? 'Upgrade now' : undefined;
+      description += `We recommend updating your Podman Machine to at least ${machinePreferredStateDescription} for better AI performance.`;
+      actionName = connectionInfo.canRedirect ? 'Update now' : undefined;
     } else {
-      description += `We recommend freeing some resources on your Podman machine to have at least ${machinePreferredStateDescription} for better AI performance.`;
+      description += `We recommend freeing some resources on your Podman Machine to have at least ${machinePreferredStateDescription} for better AI performance.`;
     }
     return;
   }

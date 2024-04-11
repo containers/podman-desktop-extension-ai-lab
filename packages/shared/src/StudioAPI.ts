@@ -18,7 +18,7 @@
 
 import type { ModelInfo } from './models/IModelInfo';
 import type { ApplicationCatalog } from './models/IApplicationCatalog';
-import type { TelemetryTrustedValue } from '@podman-desktop/api';
+import type { OpenDialogOptions, TelemetryTrustedValue, Uri } from '@podman-desktop/api';
 import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
@@ -28,6 +28,7 @@ import type { Language } from 'postman-code-generators';
 import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
 import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
+import type { LocalModelImportInfo } from './models/ILocalModelInfo';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -35,6 +36,7 @@ export abstract class StudioAPI {
   abstract pullApplication(recipeId: string, modelId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
   abstract openFile(file: string): Promise<boolean>;
+  abstract openDialog(options?: OpenDialogOptions): Promise<Uri[]>;
   /**
    * Get the information of models saved locally into the user's directory
    */
@@ -164,4 +166,17 @@ export abstract class StudioAPI {
    * @param tokenId the id of the CancellationToken to cancel
    */
   abstract requestCancelToken(tokenId: number): Promise<void>;
+
+  /**
+   * Import local models selected by user
+   * @param models list of local models to import
+   */
+  abstract importModels(models: LocalModelImportInfo[]): Promise<void>;
+
+  /**
+   * Check if there is some invalid model from the list of paths
+   * @param models list of local models path to import
+   * @returns the list of invalid models
+   */
+  abstract checkInvalidModels(models: string[]): Promise<string[]>;
 }

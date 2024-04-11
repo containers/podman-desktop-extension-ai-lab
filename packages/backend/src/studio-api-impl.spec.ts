@@ -35,6 +35,7 @@ import type { SnippetManager } from './managers/SnippetManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import path from 'node:path';
+import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 
 vi.mock('./ai.json', () => {
   return {
@@ -66,6 +67,7 @@ vi.mock('@podman-desktop/api', async () => {
       withProgress: mocks.withProgressMock,
       showWarningMessage: mocks.showWarningMessageMock,
       showErrorMessage: vi.fn(),
+      showOpenDialog: vi.fn(),
     },
     ProgressLocation: {
       TASK_WIDGET: 'TASK_WIDGET',
@@ -99,6 +101,7 @@ beforeEach(async () => {
   catalogManager = new CatalogManager(
     {
       postMessage: vi.fn().mockResolvedValue(undefined),
+      addLocalModelsToCatalog: vi.fn(),
     } as unknown as Webview,
     appUserDirectory,
   );
@@ -116,7 +119,7 @@ beforeEach(async () => {
       deleteApplication: mocks.deleteApplicationMock,
     } as unknown as ApplicationManager,
     catalogManager,
-    {} as unknown as ModelsManager,
+    {} as ModelsManager,
     {} as TelemetryLogger,
     localRepositoryRegistry,
     {} as unknown as TaskRegistry,
@@ -212,4 +215,96 @@ describe.each([{ os: 'windows' }, { os: 'linux' }, { os: 'macos' }])('verify ope
       expect.objectContaining({ path: expect.stringMatching(/^\//), authority: 'file', scheme: 'vscode' }),
     );
   });
+});
+
+test('openDialog should call podmanDesktopAPi showOpenDialog', async () => {
+  const openDialogMock = vi.spyOn(window, 'showOpenDialog');
+  await studioApiImpl.openDialog({
+    title: 'title',
+  });
+  expect(openDialogMock).toBeCalledWith({
+    title: 'title',
+  });
+});
+
+test('importModels should call catalogManager', async () => {
+  const addLocalModelsMock = vi
+    .spyOn(catalogManager, 'addLocalModelsToCatalog')
+    .mockImplementation((_models: LocalModelImportInfo[]) => Promise.resolve());
+  const models: LocalModelImportInfo[] = [
+    {
+      name: 'name',
+      path: 'path',
+    },
+    {
+      name: 'name1',
+      path: 'path1',
+    },
+  ];
+  await studioApiImpl.importModels(models);
+  expect(addLocalModelsMock).toBeCalledWith(models);
+});
+
+test('Expect checkInvalidModels to returns an empty array if all paths are valid', async () => {
+  vi.mock('node:path');
+  vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
+    return path;
+  });
+  vi.spyOn(path, 'join').mockImplementation((path1: string, path2: string) => `${path1}/${path2}`);
+  vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
+    {
+      id: 'model',
+      file: {
+        path: 'path1',
+        file: 'file.gguf',
+      },
+    } as unknown as ModelInfo,
+  ]);
+  const result = await studioApiImpl.checkInvalidModels(['path/file.gguf']);
+  expect(result).toStrictEqual([]);
+});
+
+test('Expect checkInvalidModels to returns an array with the invalid value', async () => {
+  vi.mock('node:path');
+  vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
+    return path;
+  });
+  vi.spyOn(path, 'join').mockImplementation((path1: string, path2: string) => `${path1}/${path2}`);
+  vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
+    {
+      id: 'model',
+      file: {
+        path: 'path1',
+        file: 'file.gguf',
+      },
+    } as unknown as ModelInfo,
+  ]);
+  const result = await studioApiImpl.checkInvalidModels(['path/file.gguf', 'path1/file.gguf']);
+  expect(result).toStrictEqual(['path1/file.gguf']);
+});
+
+test('Expect checkInvalidModels to returns an array with the invalid values', async () => {
+  vi.mock('node:path');
+  vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
+    return path;
+  });
+  vi.spyOn(path, 'join').mockImplementation((path1: string, path2: string) => `${path1}/${path2}`);
+  vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
+    {
+      id: 'model',
+      file: {
+        path: 'path',
+        file: 'file.gguf',
+      },
+    } as unknown as ModelInfo,
+    {
+      id: 'model',
+      file: {
+        path: 'path2',
+        file: 'file.gguf',
+      },
+    } as unknown as ModelInfo,
+  ]);
+  const result = await studioApiImpl.checkInvalidModels(['path/file.gguf', 'path1/file.gguf', 'path2/file.gguf']);
+  expect(result).toStrictEqual(['path/file.gguf', 'path2/file.gguf']);
 });

@@ -16,17 +16,4 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { LocalModelInfo } from './ILocalModelInfo';
-
-export interface ModelInfo {
-  id: string;
-  name: string;
-  description: string;
-  hw: string;
-  registry?: string;
-  license?: string;
-  url?: string;
-  file?: LocalModelInfo;
-  state?: 'deleting';
-  memory?: number;
-}
+export const noTimeoutChannels: string[] = ['openDialog'];

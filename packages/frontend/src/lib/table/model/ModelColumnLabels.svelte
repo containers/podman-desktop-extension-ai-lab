@@ -11,7 +11,7 @@ export let object: ModelInfo;
     <div
       class="bg-charcoal-600 rounded-md px-2 py-1 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
       <Fa class="mr-2" icon="{faMemory}" />
-      RAM usage: {filesize(object.memory, { base: 2 })}
+      RAM usage: {object.memory ? filesize(object.memory, { base: 2 }) : 'N/A'}
     </div>
     <div
       class="bg-charcoal-600 rounded-md px-2 py-1 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">

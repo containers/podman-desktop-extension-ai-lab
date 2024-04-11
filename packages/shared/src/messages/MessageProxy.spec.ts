@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { test, expect, beforeAll } from 'vitest';
+import { test, expect, beforeAll, vi } from 'vitest';
 import { RpcBrowser, RpcExtension } from './MessageProxy';
 import type { Webview } from '@podman-desktop/api';
 
@@ -42,6 +42,7 @@ beforeAll(() => {
       expect(channel).toBe('message');
       windowListener = listener;
     },
+    setTimeout: vi.fn(),
   } as unknown as Window;
 
   api = {
@@ -109,4 +110,17 @@ test('Test raising exception', async () => {
   });
 
   await expect(rpcBrowser.invoke('raiseError')).rejects.toThrow('big error');
+});
+
+test('A noTimeoutChannel should not call the setTimeout', async () => {
+  const rpcExtension = new RpcExtension(webview);
+  const rpcBrowser = new RpcBrowser(window, api);
+
+  rpcExtension.register('openDialog', () => {
+    return Promise.resolve();
+  });
+  const setTimeoutMock = vi.spyOn(window, 'setTimeout');
+
+  await rpcBrowser.invoke('openDialog');
+  expect(setTimeoutMock).not.toHaveBeenCalled();
 });

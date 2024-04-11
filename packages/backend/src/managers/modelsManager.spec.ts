@@ -392,6 +392,7 @@ test('deleteModel deletes the model folder', async () => {
         return [
           {
             id: 'model-id-1',
+            url: 'model-url',
           },
         ] as ModelInfo[];
       },
@@ -423,6 +424,7 @@ test('deleteModel deletes the model folder', async () => {
     body: [
       {
         id: 'model-id-1',
+        url: 'model-url',
       },
     ],
   });
@@ -452,6 +454,7 @@ describe('deleting models', () => {
           return [
             {
               id: 'model-id-1',
+              url: 'model-url',
             },
           ] as ModelInfo[];
         },
@@ -483,6 +486,7 @@ describe('deleting models', () => {
       body: [
         {
           id: 'model-id-1',
+          url: 'model-url',
           file: {
             creation: now,
             file: 'model-id-1-model',
@@ -494,6 +498,40 @@ describe('deleting models', () => {
     });
     expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();
     expect(mocks.logErrorMock).toHaveBeenCalled();
+  });
+
+  test('delete local model should call catalogManager', async () => {
+    vi.mocked(env).isWindows = false;
+    const postMessageMock = vi.fn();
+    const removeLocalModelFromCatalogMock = vi.fn();
+    const manager = new ModelsManager(
+      'appdir',
+      {
+        postMessage: postMessageMock,
+      } as unknown as Webview,
+      {
+        getModels: () => {
+          return [
+            {
+              id: 'model-id-1',
+              file: {
+                file: 'model-id-1-model',
+                size: 32000,
+                path: path.resolve(dirent[0].path, dirent[0].name),
+              },
+            },
+          ] as ModelInfo[];
+        },
+        removeLocalModelFromCatalog: removeLocalModelFromCatalogMock,
+      } as unknown as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+      cancellationTokenRegistryMock,
+    );
+    await manager.loadLocalModels();
+    await manager.deleteModel('model-id-1');
+
+    expect(removeLocalModelFromCatalogMock).toBeCalledWith('model-id-1');
   });
 
   test('deleting on windows should check if models is uploaded', async () => {
@@ -514,6 +552,7 @@ describe('deleting models', () => {
           return [
             {
               id: 'model-id-1',
+              url: 'model-url',
               file: {
                 file: 'dummyFile',
                 path: 'dummyPath',
@@ -561,6 +600,7 @@ describe('deleting models', () => {
           return [
             {
               id: 'model-id-1',
+              url: 'model-url',
               file: {
                 file: 'dummyFile',
                 path: 'dummyPath',

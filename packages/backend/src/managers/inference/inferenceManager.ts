@@ -383,7 +383,9 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
               port: !!containerInfo.Ports && containerInfo.Ports.length > 0 ? containerInfo.Ports[0].PublicPort : -1,
             },
             status: containerInfo.Status === 'running' ? 'running' : 'stopped',
-            models: modelsId.map(id => this.modelsManager.getModelInfo(id)),
+            models: modelsId
+              .filter(id => this.modelsManager.isModelOnDisk(id))
+              .map(id => this.modelsManager.getModelInfo(id)),
           },
         ];
       }),

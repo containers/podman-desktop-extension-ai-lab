@@ -163,6 +163,7 @@ export class Studio {
       taskRegistry,
       cancellationTokenRegistry,
     );
+    this.modelsManager.init();
     const localRepositoryRegistry = new LocalRepositoryRegistry(this.#panel.webview, appUserDirectory);
     localRepositoryRegistry.init(this.catalogManager.getRecipes());
     const applicationManager = new ApplicationManager(

@@ -16,17 +16,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { LocalModelInfo } from './ILocalModelInfo';
+import type { Uri as APIUri } from '@podman-desktop/api';
+import { afterEach, expect, test, vi } from 'vitest';
 
-export interface ModelInfo {
-  id: string;
-  name: string;
-  description: string;
-  hw: string;
-  registry?: string;
-  license?: string;
-  url?: string;
-  file?: LocalModelInfo;
-  state?: 'deleting';
-  memory?: number;
-}
+import { Uri } from './Uri';
+
+afterEach(() => {
+  vi.resetAllMocks();
+  vi.clearAllMocks();
+});
+
+test('Expect revive to return revived Uri object', () => {
+  const uriSerialized = {
+    _scheme: 'scheme',
+    _authority: 'authority',
+    _path: 'path',
+    _query: 'query',
+    _fragment: 'fragment',
+  } as unknown as APIUri;
+
+  const revived = Uri.revive(uriSerialized);
+  expect(revived.authority).equals('authority');
+  expect(revived.scheme).equals('scheme');
+  expect(revived.path).equals('path');
+  expect(revived.fsPath).equals('path');
+  expect(revived.query).equals('query');
+  expect(revived.fragment).equals('fragment');
+});

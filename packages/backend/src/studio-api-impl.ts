@@ -42,6 +42,7 @@ import type { SnippetManager } from './managers/SnippetManager';
 import type { Language } from 'postman-code-generators';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
+import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -163,6 +164,10 @@ export class StudioApiImpl implements StudioAPI {
 
   async openFile(file: string): Promise<boolean> {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(file));
+  }
+
+  async openDialog(options?: podmanDesktopApi.OpenDialogOptions): Promise<podmanDesktopApi.Uri[]> {
+    return await podmanDesktopApi.window.showOpenDialog(options);
   }
 
   async pullApplication(recipeId: string, modelId: string): Promise<void> {
@@ -414,5 +419,28 @@ export class StudioApiImpl implements StudioAPI {
     if (!this.cancellationTokenRegistry.hasCancellationTokenSource(tokenId))
       throw new Error(`Cancellation token with id ${tokenId} does not exist.`);
     this.cancellationTokenRegistry.getCancellationTokenSource(tokenId).cancel();
+  }
+
+  async importModels(models: LocalModelImportInfo[]): Promise<void> {
+    return this.catalogManager.addLocalModelsToCatalog(models);
+  }
+
+  async checkInvalidModels(models: string[]): Promise<string[]> {
+    const invalidPaths = [];
+    const catalogModels = await this.getModelsInfo();
+    for (const model of models) {
+      const modelPath = path.resolve(model);
+      for (const catalogModel of catalogModels) {
+        if (!catalogModel.file) {
+          continue;
+        }
+        const catalogModelPath = path.resolve(path.join(catalogModel.file.path, catalogModel.file.file));
+        if (modelPath === catalogModelPath) {
+          invalidPaths.push(model);
+          break;
+        }
+      }
+    }
+    return invalidPaths;
   }
 }

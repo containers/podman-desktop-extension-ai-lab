@@ -17,17 +17,22 @@
  ***********************************************************************/
 
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import { promises } from 'node:fs';
 import path from 'node:path';
 import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Messages } from '@shared/Messages';
-import { type Disposable, type Webview } from '@podman-desktop/api';
+import { Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
+import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+
+export type catalogUpdateHandle = () => void;
 
 export class CatalogManager extends Publisher<ApplicationCatalog> implements Disposable {
   private catalog: ApplicationCatalog;
+  #catalogUpdateListeners: catalogUpdateHandle[];
   #disposables: Disposable[];
 
   constructor(
@@ -42,6 +47,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       recipes: [],
     };
 
+    this.#catalogUpdateListeners = [];
     this.#disposables = [];
   }
 
@@ -58,8 +64,25 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   }
 
   private onCatalogUpdated(content: ApplicationCatalog): void {
+    // when reading the content on the catalog, the creation is just a string and we need to convert it back to a Date object
+    content.models
+      .filter(m => m.file?.creation)
+      .forEach(m => {
+        if (m.file?.creation) {
+          m.file.creation = new Date(m.file.creation);
+        }
+      });
     this.catalog = content;
+
+    this.#catalogUpdateListeners.forEach(listener => listener());
     this.notify();
+  }
+
+  onCatalogUpdate(listener: catalogUpdateHandle): Disposable {
+    this.#catalogUpdateListeners.push(listener);
+    return Disposable.create(() => {
+      this.#catalogUpdateListeners.splice(this.#catalogUpdateListeners.indexOf(listener), 1);
+    });
   }
 
   dispose(): void {
@@ -92,5 +115,41 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       throw new Error(`No recipe found having id ${recipeId}`);
     }
     return recipe;
+  }
+
+  async addLocalModelsToCatalog(models: LocalModelImportInfo[]): Promise<void> {
+    // we copy the current catalog in another object and update it with the model
+    // then write it to the custom catalog path. If it exists it will be overwritten by default
+    const tmpCatalog: ApplicationCatalog = Object.assign({}, this.catalog);
+
+    for (const model of models) {
+      const statFile = await promises.stat(model.path);
+      tmpCatalog.models.push({
+        id: model.path,
+        name: model.name,
+        description: `Model imported from ${model.path}`,
+        hw: 'CPU',
+        file: {
+          path: path.dirname(model.path),
+          file: path.basename(model.path),
+          size: statFile.size,
+          creation: statFile.mtime,
+        },
+        memory: statFile.size,
+      });
+    }
+
+    const customCatalog = path.resolve(this.appUserDirectory, 'catalog.json');
+    return promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
+  }
+
+  async removeLocalModelFromCatalog(modelId: string): Promise<void> {
+    // we copy the current catalog in another object and remove from it the model with modelId
+    // then write it to the custom catalog path.
+    const tmpCatalog: ApplicationCatalog = Object.assign({}, this.catalog);
+    tmpCatalog.models = tmpCatalog.models.filter(m => m.url !== '' && m.id !== modelId);
+
+    const customCatalog = path.resolve(this.appUserDirectory, 'catalog.json');
+    return promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
   }
 }

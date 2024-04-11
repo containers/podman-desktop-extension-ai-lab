@@ -38,6 +38,7 @@ export class ModelsManager implements Disposable {
   #modelsDir: string;
   #models: Map<string, ModelInfo>;
   #watcher?: podmanDesktopApi.FileSystemWatcher;
+  #disposables: Disposable[];
 
   #downloaders: Map<string, Downloader> = new Map<string, Downloader>();
 
@@ -51,14 +52,26 @@ export class ModelsManager implements Disposable {
   ) {
     this.#modelsDir = path.join(this.appUserDirectory, 'models');
     this.#models = new Map();
+    this.#disposables = [];
+  }
+
+  init() {
+    const disposable = this.catalogManager.onCatalogUpdate(() => {
+      this.loadLocalModels().catch((err: unknown) => {
+        console.error(`Something went wrong when loading local models`, err);
+      });
+    });
+    this.#disposables.push(disposable);
   }
 
   dispose(): void {
     this.#models.clear();
     this.#watcher.dispose();
+    this.#disposables.forEach(d => d.dispose());
   }
 
   async loadLocalModels() {
+    this.#models.clear();
     this.catalogManager.getModels().forEach(m => this.#models.set(m.id, m));
     const reloadLocalModels = async () => {
       this.getLocalModelsFromDisk();
@@ -158,12 +171,20 @@ export class ModelsManager implements Disposable {
   async deleteModel(modelId: string): Promise<void> {
     const model = this.#models.get(modelId);
     if (model) {
-      const modelDir = this.getLocalModelFolder(modelId);
       model.state = 'deleting';
       await this.sendModelsInfo();
       try {
         await this.deleteRemoteModel(model);
-        await fs.promises.rm(modelDir, { recursive: true, force: true, maxRetries: 3 });
+        let modelPath;
+        // if model does not have any url, it has been imported locally by the user
+        if (!model.url) {
+          modelPath = path.join(model.file.path, model.file.file);
+          // remove it from the catalog as it cannot be downloaded anymore
+          await this.catalogManager.removeLocalModelFromCatalog(modelId);
+        } else {
+          modelPath = this.getLocalModelFolder(modelId);
+        }
+        await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
 
         this.telemetry.logUsage('model.delete', { 'model.id': modelId });
         model.file = model.state = undefined;

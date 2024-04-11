@@ -22,3 +22,8 @@ export interface LocalModelInfo {
   size?: number;
   creation?: Date;
 }
+
+export interface LocalModelImportInfo {
+  path: string;
+  name: string;
+}

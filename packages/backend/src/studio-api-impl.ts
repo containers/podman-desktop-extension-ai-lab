@@ -378,24 +378,24 @@ export class StudioApiImpl implements StudioAPI {
     const telemetry = {
       'recipe.id': recipeId,
     };
-    if (!path.isAbsolute(directory)) {
-      telemetry['errorMessage'] = 'Do not support relative directory.';
-      this.telemetry.logUsage('studio.open-vscode', telemetry);
-      throw new Error('Do not support relative directory.');
-    }
-
-    let unixPath: string = path.normalize(directory).replace(/[\\/]+/g, '/');
-    if (!unixPath.startsWith('/')) {
-      unixPath = `/${unixPath}`;
-    }
 
     try {
+      if (!path.isAbsolute(directory)) {
+        throw new Error('Do not support relative directory.');
+      }
+
+      let unixPath: string = path.normalize(directory).replace(/[\\/]+/g, '/');
+      if (!unixPath.startsWith('/')) {
+        unixPath = `/${unixPath}`;
+      }
+
       await podmanDesktopApi.env.openExternal(
         podmanDesktopApi.Uri.file(unixPath).with({ scheme: 'vscode', authority: 'file' }),
       );
     } catch (err) {
       telemetry['errorMessage'] = String(err);
       console.error('Something went wrong while trying to open VSCode', err);
+      throw err;
     } finally {
       this.telemetry.logUsage('studio.open-vscode', telemetry);
     }

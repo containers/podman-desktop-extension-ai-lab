@@ -117,10 +117,10 @@ export function generateContainerCreateOptions(
 
   const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
   if (modelInfo.properties) {
-    Object.entries(modelInfo.properties).forEach(([key, value]) => {
-      const formatedKey = key.replace(/[A-Z]/g, m => `_${m}`);
-      envs.push(`${formatedKey}=${value}`);
-    });
+    envs.push(...Object.entries(modelInfo.properties).map(([key, value]) => {
+      const formattedKey = key.replace(/[A-Z]/g, m => `_${m}`).toUpperCase();
+      return `MODEL_${formattedKey}=${value}`;
+    }));
   }
 
   return {

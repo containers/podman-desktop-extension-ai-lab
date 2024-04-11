@@ -45,13 +45,13 @@ if (dropdownMenu) {
 {#if object?.pod !== undefined}
   <ListItemButtonIcon icon="{faTrash}" onClick="{() => deleteApplication()}" title="Delete AI App" />
 
-  <ListItemButtonIcon icon="{faRotateForward}" onClick="{() => restartApplication()}" title="Restart AI App" />
+  <ListItemButtonIcon icon="{faArrowUpRightFromSquare}" onClick="{() => openApplication()}" title="Open AI App" />
 
   <svelte:component this="{actionsStyle}">
     <ListItemButtonIcon
-      icon="{faArrowUpRightFromSquare}"
-      onClick="{() => openApplication()}"
-      title="Open AI App"
+      icon="{faRotateForward}"
+      onClick="{() => restartApplication()}"
+      title="Restart AI App"
       menu="{dropdownMenu}" />
 
     <ListItemButtonIcon

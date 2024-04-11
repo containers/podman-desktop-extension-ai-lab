@@ -111,7 +111,7 @@ describe('generateContainerCreateOptions', () => {
               path: 'dummyPath',
             },
             properties: {
-              chat_format: 'dummyChatFormat',
+              chatFormat: 'dummyChatFormat',
             },
           },
         ],

@@ -18,7 +18,7 @@
 
 import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
-import { screen, render } from '@testing-library/svelte';
+import { screen, render, fireEvent } from '@testing-library/svelte';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
 import type { Language } from 'postman-code-generators';
@@ -54,12 +54,17 @@ vi.mock('../utils/client', () => {
   return {
     studioClient: {
       createSnippet: vi.fn(),
+      copyToClipboard: vi.fn(),
+      telemetryLogUsage: vi.fn(),
     },
   };
 });
 
 beforeEach(() => {
   vi.resetAllMocks();
+
+  vi.mocked(studioClient.copyToClipboard).mockResolvedValue(undefined);
+  vi.mocked(studioClient.telemetryLogUsage).mockResolvedValue(undefined);
 
   mocks.getSnippetLanguagesMock.mockReturnValue([
     {
@@ -158,4 +163,21 @@ test('invalid container id should redirect to services page', async () => {
   });
 
   expect(gotoSpy).toHaveBeenCalledWith('/services');
+});
+
+test('copy snippet should call copyToClipboard', async () => {
+  vi.mocked(studioClient.createSnippet).mockResolvedValue('dummy generated snippet');
+  render(InferenceServerDetails, {
+    containerId: 'dummyContainerId',
+  });
+
+  await vi.waitFor(() => {
+    const copyBtn = screen.getByTitle('Copy');
+    expect(copyBtn).toBeDefined();
+    fireEvent.click(copyBtn);
+  });
+
+  await vi.waitFor(() => {
+    expect(studioClient.copyToClipboard).toHaveBeenCalledWith('dummy generated snippet');
+  });
 });

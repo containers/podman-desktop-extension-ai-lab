@@ -80,11 +80,11 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">Feedback</h1>
         <p>
           If you discover an issue or want to request a new feature, you can open an issue
-          <button class="underline" title="Open the issues page" on:click="{openIssuesPage}">here</button>
+          <button class="underline" title="Open the issues page" on:click="{openIssuesPage}">here</button>.
         </p>
         <p>
           If you want to get more information about this project or exchange with the team, you can start a discussion
-          <button class="underline" title="Open the discussions page" on:click="{openDiscussionsPage}">here</button>
+          <button class="underline" title="Open the discussions page" on:click="{openDiscussionsPage}">here</button>.
         </p>
       </div>
     </div>

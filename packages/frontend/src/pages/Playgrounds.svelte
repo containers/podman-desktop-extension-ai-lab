@@ -20,6 +20,10 @@ const row = new Row<PlaygroundV2>({});
 function createNewPlayground() {
   router.goto('/playground/create');
 }
+
+const openServicesPage = () => {
+  router.goto('/services');
+};
 </script>
 
 <NavPage title="Playground Environments" searchEnabled="{false}">
@@ -42,6 +46,19 @@ function createNewPlayground() {
                 on:click="{createNewPlayground}">create one now</a
               >.
             </div>
+            <p>
+              Playground environments allow for experimenting with available models in a local environment. An intuitive
+              user prompt helps in exploring the capabilities and accuracy of various models and aids in finding the
+              best model for the use case at hand.
+            </p>
+            <p>
+              Once started, each playground ships with a generic chat client to interact with the model service. The <button
+                class="underline"
+                title="Open the Services page"
+                on:click="{openServicesPage}">Services</button>
+              page allows for accessing running model services and provides further details and code snippets to interact
+              with them.
+            </p>
           {/if}
         </div>
       </div>

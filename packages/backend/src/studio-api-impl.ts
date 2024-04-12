@@ -18,7 +18,7 @@
 
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { ApplicationManager } from './managers/applicationManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelCheckerInfo, ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
 
 import type { CatalogManager } from './managers/catalogManager';
@@ -43,6 +43,8 @@ import type { Language } from 'postman-code-generators';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+import { checkContainerConnectionStatusAndResources, getPodmanConnection } from './utils/podman';
+import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -248,6 +250,21 @@ export class StudioApiImpl implements StudioAPI {
     const pod = pods.find(pod => pod.Id === podId);
     if (pod === undefined) throw new Error(`Pod with id ${podId} not found.`);
     return podmanDesktopApi.navigation.navigateToPod(pod.kind, pod.Name, pod.engineId);
+  }
+
+  async navigateToResources(): Promise<void> {
+    // navigateToResources is only vailable from desktop 1.10
+    if (podmanDesktopApi.navigation.navigateToResources) {
+      return podmanDesktopApi.navigation.navigateToResources();
+    }
+  }
+
+  async navigateToEditConnectionProvider(connectionName: string): Promise<void> {
+    // navigateToEditProviderContainerConnection is only vailable from desktop 1.10
+    if (podmanDesktopApi.navigation.navigateToEditProviderContainerConnection) {
+      const connection = getPodmanConnection(connectionName);
+      return podmanDesktopApi.navigation.navigateToEditProviderContainerConnection(connection);
+    }
   }
 
   async getApplicationsState(): Promise<ApplicationState[]> {
@@ -466,5 +483,9 @@ export class StudioApiImpl implements StudioAPI {
 
   copyToClipboard(content: string): Promise<void> {
     return podmanDesktopApi.env.clipboard.writeText(content);
+  }
+
+  async checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo> {
+    return checkContainerConnectionStatusAndResources(modelInfo);
   }
 }

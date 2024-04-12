@@ -16,7 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ProviderContainerConnection } from '@podman-desktop/api';
-import { configuration, env, process, provider } from '@podman-desktop/api';
+import { configuration, containerEngine, env, navigation, process, provider } from '@podman-desktop/api';
+import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ModelCheckerInfo } from '@shared/src/models/IModelInfo';
+
+export const MIN_CPUS_VALUE = 4;
 
 export type MachineJSON = {
   Name: string;
@@ -88,6 +92,17 @@ export function getFirstRunningPodmanConnection(): ProviderContainerConnection |
   return engine;
 }
 
+export function getPodmanConnection(connectionName: string): ProviderContainerConnection {
+  const engine = provider
+    .getContainerConnections()
+    .filter(connection => connection.connection.type === 'podman')
+    .find(connection => connection.connection.name === connectionName);
+  if (!engine) {
+    throw new Error(`no podman connection found with name ${connectionName}`);
+  }
+  return engine;
+}
+
 async function getJSONMachineList(): Promise<string> {
   const { stdout } = await process.exec(getPodmanCli(), ['machine', 'list', '--format', 'json']);
   return stdout;
@@ -117,4 +132,57 @@ export async function isQEMUMachine(): Promise<boolean> {
   }
 
   return false;
+}
+
+export async function checkContainerConnectionStatusAndResources(
+  modelInfo: ModelCheckerInfo,
+): Promise<ContainerConnectionInfo> {
+  let connection: ProviderContainerConnection;
+  try {
+    connection = getFirstRunningPodmanConnection();
+  } catch (e) {
+    console.log(String(e));
+  }
+
+  // starting from podman desktop 1.10 we have the navigate functions
+  const hasNavigateFunction = !!navigation.navigateToResources;
+
+  if (!connection) {
+    return {
+      status: 'no-machine',
+      canRedirect: hasNavigateFunction,
+    };
+  }
+
+  const engineInfo = await containerEngine.info(`${connection.providerId}.${connection.connection.name}`);
+  if (!engineInfo) {
+    return {
+      status: 'no-machine',
+      canRedirect: hasNavigateFunction,
+    };
+  }
+
+  const hasCpus = engineInfo.cpus !== undefined && engineInfo.cpus >= MIN_CPUS_VALUE;
+  const multiplier = modelInfo.context === 'recipe' ? 1.25 : 1.1;
+  const memoryExpected = modelInfo.memoryNeeded * multiplier;
+  const hasMemory = engineInfo.memory - engineInfo.memoryUsed >= memoryExpected;
+
+  if (!hasCpus || !hasMemory) {
+    return {
+      name: connection.connection.name,
+      cpus: engineInfo.cpus ?? 0,
+      memoryIdle: engineInfo.memory - engineInfo.memoryUsed,
+      cpusExpected: MIN_CPUS_VALUE,
+      memoryExpected: memoryExpected,
+      status: 'low-resources',
+      canEdit: !!connection.connection.lifecycle?.edit,
+      canRedirect: hasNavigateFunction,
+    };
+  }
+
+  return {
+    name: connection.connection.name,
+    status: 'running',
+    canRedirect: hasNavigateFunction,
+  };
 }

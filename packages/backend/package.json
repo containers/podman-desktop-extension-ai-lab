@@ -54,7 +54,7 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
-    "@podman-desktop/api": "^1.9.0",
+    "@podman-desktop/api": "0.0.202404101645-5d46ba5",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20",
     "@types/postman-collection": "^3.5.10",

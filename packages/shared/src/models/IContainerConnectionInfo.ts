@@ -16,24 +16,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { LocalModelInfo } from './ILocalModelInfo';
+export type ContainerConnectionInfo =
+  | RunningContainerConnection
+  | LowResourcesContainerConnection
+  | NoContainerConnection;
 
-export interface ModelInfo {
-  id: string;
+export type ContainerConnectionInfoStatus = 'running' | 'no-machine' | 'low-resources';
+
+export interface RunningContainerConnection {
   name: string;
-  description: string;
-  hw: string;
-  registry?: string;
-  license?: string;
-  url?: string;
-  file?: LocalModelInfo;
-  state?: 'deleting';
-  memory?: number;
+  status: 'running';
+  canRedirect: boolean;
 }
 
-export type ModelCheckerContext = 'inference' | 'recipe';
+export interface LowResourcesContainerConnection {
+  name: string;
+  cpus: number;
+  memoryIdle: number;
+  cpusExpected: number;
+  memoryExpected: number;
+  status: 'low-resources';
+  canEdit: boolean;
+  canRedirect: boolean;
+}
 
-export interface ModelCheckerInfo {
-  memoryNeeded: number;
-  context: ModelCheckerContext;
+export interface NoContainerConnection {
+  status: 'no-machine';
+  canRedirect: boolean;
 }

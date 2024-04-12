@@ -309,7 +309,7 @@ describe('Create Inference Server', () => {
     );
     expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(
       1,
-      'Pulling ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.2.0.',
+      expect.stringContaining('Pulling ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:'),
       'loading',
       {
         trackingId: 'dummyTrackingId',

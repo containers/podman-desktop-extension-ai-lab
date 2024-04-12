@@ -536,3 +536,88 @@ describe('Request Create Inference Server', () => {
     });
   });
 });
+
+describe('containerRegistry events', () => {
+  test('container die event', async () => {
+    mockListContainers([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+        },
+      },
+    ]);
+    const disposableMock = vi.fn();
+    const deferred = new Promise<(status: string) => void>((resolve, reject) => {
+      vi.mocked(containerRegistryMock.subscribe).mockImplementation((containerId, listener) => {
+        if (containerId !== 'dummyId') reject(new Error('invalid container id'));
+        else resolve(listener);
+        return {
+          dispose: disposableMock,
+        };
+      });
+    });
+
+    const inferenceManager = await getInitializedInferenceManager();
+    const listener = await deferred;
+
+    const server = inferenceManager.get('dummyId');
+    expect(server.status).toBe('running');
+    expect(containerEngine.inspectContainer).toHaveBeenCalledOnce();
+
+    vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
+      State: {
+        Status: 'stopped',
+        Health: undefined,
+      },
+    } as unknown as ContainerInspectInfo);
+
+    listener('die');
+
+    await vi.waitFor(() => {
+      expect(inferenceManager.get('dummyId').status).toBe('stopped');
+      expect(containerEngine.inspectContainer).toHaveBeenCalledTimes(2);
+    });
+
+    // we should not have disposed the subscriber, as the container is only stopped, not removed
+    expect(disposableMock).not.toHaveBeenCalled();
+  });
+
+  test('container remove event', async () => {
+    mockListContainers([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+        },
+      },
+    ]);
+    const disposableMock = vi.fn();
+    const deferred = new Promise<(status: string) => void>((resolve, reject) => {
+      vi.mocked(containerRegistryMock.subscribe).mockImplementation((containerId, listener) => {
+        if (containerId !== 'dummyId') reject(new Error('invalid container id'));
+        else resolve(listener);
+        return {
+          dispose: disposableMock,
+        };
+      });
+    });
+
+    const inferenceManager = await getInitializedInferenceManager();
+    const listener = await deferred;
+
+    const server = inferenceManager.get('dummyId');
+    expect(server.status).toBe('running');
+
+    listener('remove');
+
+    await vi.waitFor(() => {
+      expect(inferenceManager.get('dummyId')).toBeUndefined();
+    });
+
+    // we should have disposed the subscriber, as the container is removed
+    expect(disposableMock).toHaveBeenCalled();
+  });
+});

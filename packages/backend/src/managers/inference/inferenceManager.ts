@@ -287,6 +287,10 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     // Subscribe to container status update
     const disposable = this.containerRegistry.subscribe(containerId, (status: string) => {
       switch (status) {
+        case 'die':
+          this.updateServerStatus(engineId, containerId);
+          clearInterval(intervalId);
+          break;
         case 'remove':
           // Update the list of servers
           this.removeInferenceServer(containerId);

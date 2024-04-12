@@ -244,7 +244,7 @@
       "hw": "CPU",
       "registry": "Hugging Face",
       "license": "Apache-2.0",
-      "url": "https://huggingface.co/facebook/detr-resnet-101/resolve/main/pytorch_model.bin",
+      "url": "https://huggingface.co/facebook/detr-resnet-101/resolve/no_timm/pytorch_model.bin",
       "memory": 1073741824
     }
   ],

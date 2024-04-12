@@ -58,6 +58,6 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20",
     "@types/postman-collection": "^3.5.10",
-    "vitest": "^1.4.0"
+    "vitest": "^1.5.0"
   }
 }

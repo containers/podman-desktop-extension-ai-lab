@@ -189,7 +189,7 @@ export abstract class StudioAPI {
    * @param content
    */
   abstract copyToClipboard(content: string): Promise<void>;
-  
+
   /**
    * Check if the running podman machine is running and has enough resources to execute task
    * @param modelInfo object containing info about the model to check

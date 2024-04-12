@@ -484,7 +484,7 @@ export class StudioApiImpl implements StudioAPI {
   copyToClipboard(content: string): Promise<void> {
     return podmanDesktopApi.env.clipboard.writeText(content);
   }
-  
+
   async checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo> {
     return checkContainerConnectionStatusAndResources(modelInfo);
   }

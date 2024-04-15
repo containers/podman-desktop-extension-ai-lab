@@ -377,7 +377,7 @@ export class ModelsManager implements Disposable {
   }
 
   async uploadModelToPodmanMachine(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
-    this.taskRegistry.createTask(`Uploading model ${model.name}`, 'loading', {
+    this.taskRegistry.createTask(`Copying model ${model.name} to Podman Machine`, 'loading', {
       ...labels,
       'model-uploading': model.id,
     });

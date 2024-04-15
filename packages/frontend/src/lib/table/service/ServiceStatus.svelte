@@ -10,6 +10,13 @@ function navigateToContainer() {
   studioClient.navigateToContainer(object.container.containerId);
 }
 
+let status: string;
+let loading: boolean;
+$: {
+  status = getStatus();
+  loading = object.health === undefined && object.status !== 'stopped';
+}
+
 function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
   if (object.status === 'stopped') {
     return '';
@@ -28,12 +35,10 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
 }
 </script>
 
-{#key object.status}
-  {#if object.health === undefined && object.status !== 'stopped'}
-    <Spinner />
-  {:else}
-    <button on:click="{navigateToContainer}">
-      <StatusIcon status="{getStatus()}" icon="{ContainerIcon}" />
-    </button>
-  {/if}
-{/key}
+{#if loading}
+  <Spinner />
+{:else}
+  <button on:click="{navigateToContainer}">
+    <StatusIcon status="{status}" icon="{ContainerIcon}" />
+  </button>
+{/if}

@@ -67,7 +67,21 @@ function createNewService() {
               row="{row}"
               bind:selectedItemsNumber="{selectedItemsNumber}" />
           {:else}
-            <div role="status">There is no services running for now.</div>
+            <div role="status">
+              There is no model service. You can <a
+                href="{'javascript:void(0);'}"
+                class="underline"
+                role="button"
+                title="Create a new Model Service"
+                on:click="{createNewService}">create one now</a
+              >.
+            </div>
+            <p>
+              A model service offers a configurable endpoint via an OpenAI-compatible web server, facilitating a
+              seamless integration of AI capabilities into existing applications. Upon initialization, effortlessly
+              access detailed service information and generate code snippets in multiple programming languages to ease
+              application integration.
+            </p>
           {/if}
         </div>
       </div>

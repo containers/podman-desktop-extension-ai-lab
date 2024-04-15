@@ -56,7 +56,7 @@ test('no inference servers should display a status message', async () => {
   render(InferenceServers);
   const status = screen.getByRole('status');
   expect(status).toBeInTheDocument();
-  expect(status.textContent).toBe('There is no services running for now.');
+  expect(status.textContent).toContain('There is no model service. ');
 
   const table = screen.queryByRole('table');
   expect(table).toBeNull();

@@ -96,6 +96,68 @@ describe('generateContainerCreateOptions', () => {
       },
     });
   });
+
+  test('model info with chat_format properties', () => {
+    const result = generateContainerCreateOptions(
+      {
+        port: 8888,
+        providerId: 'test@providerId',
+        image: INFERENCE_SERVER_IMAGE,
+        modelsInfo: [
+          {
+            id: 'dummyModelId',
+            file: {
+              file: 'dummyFile',
+              path: 'dummyPath',
+            },
+            properties: {
+              chatFormat: 'dummyChatFormat',
+            },
+          },
+        ],
+      } as unknown as InferenceServerConfig,
+      {
+        Id: 'dummyImageId',
+        engineId: 'dummyEngineId',
+        RepoTags: [INFERENCE_SERVER_IMAGE],
+      } as unknown as ImageInfo,
+    );
+
+    expect(result.Env).toContain('MODEL_CHAT_FORMAT=dummyChatFormat');
+  });
+
+  test('model info with multiple properties', () => {
+    const result = generateContainerCreateOptions(
+      {
+        port: 8888,
+        providerId: 'test@providerId',
+        image: INFERENCE_SERVER_IMAGE,
+        modelsInfo: [
+          {
+            id: 'dummyModelId',
+            file: {
+              file: 'dummyFile',
+              path: 'dummyPath',
+            },
+            properties: {
+              basicProp: 'basicProp',
+              lotOfCamelCases: 'lotOfCamelCases',
+              lowercase: 'lowercase',
+            },
+          },
+        ],
+      } as unknown as InferenceServerConfig,
+      {
+        Id: 'dummyImageId',
+        engineId: 'dummyEngineId',
+        RepoTags: [INFERENCE_SERVER_IMAGE],
+      } as unknown as ImageInfo,
+    );
+
+    expect(result.Env).toContain('MODEL_BASIC_PROP=basicProp');
+    expect(result.Env).toContain('MODEL_LOT_OF_CAMEL_CASES=lotOfCamelCases');
+    expect(result.Env).toContain('MODEL_LOWERCASE=lowercase');
+  });
 });
 
 describe('withDefaultConfiguration', () => {

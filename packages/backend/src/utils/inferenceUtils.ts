@@ -34,7 +34,7 @@ export const SECOND: number = 1_000_000_000;
 export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
 
 export const INFERENCE_SERVER_IMAGE =
-  'ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.2.0';
+  'ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.3.0';
 
 /**
  * Return container connection provider
@@ -115,6 +115,16 @@ export function generateContainerCreateOptions(
     throw new Error('The model info file provided is undefined');
   }
 
+  const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
+  if (modelInfo.properties) {
+    envs.push(
+      ...Object.entries(modelInfo.properties).map(([key, value]) => {
+        const formattedKey = key.replace(/[A-Z]/g, m => `_${m}`).toUpperCase();
+        return `MODEL_${formattedKey}=${value}`;
+      }),
+    );
+  }
+
   return {
     Image: imageInfo.Id,
     Detach: true,
@@ -147,7 +157,7 @@ export function generateContainerCreateOptions(
       ...config.labels,
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     },
-    Env: [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'],
+    Env: envs,
     Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
   };
 }

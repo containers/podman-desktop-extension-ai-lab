@@ -29,6 +29,9 @@ export interface ModelInfo {
   file?: LocalModelInfo;
   state?: 'deleting';
   memory?: number;
+  properties?: {
+    [key: string]: string;
+  };
 }
 
 export type ModelCheckerContext = 'inference' | 'recipe';

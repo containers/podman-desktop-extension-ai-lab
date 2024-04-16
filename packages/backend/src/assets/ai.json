@@ -5,7 +5,7 @@
       "description" : "This is a Streamlit chat demo application.",
       "name" : "ChatBot",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "9c174679573e944fedd859f951829cdf77ad09d5",
+      "ref": "901677832328b323af83972e2243b7ce90dc133e",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -29,7 +29,7 @@
       "description" : "This is a Streamlit demo application for summarizing text.",
       "name" : "Summarizer",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "9c174679573e944fedd859f951829cdf77ad09d5",
+      "ref": "901677832328b323af83972e2243b7ce90dc133e",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -53,7 +53,7 @@
       "description" : "This is a code-generation demo application.",
       "name" : "Code Generation",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "9c174679573e944fedd859f951829cdf77ad09d5",
+      "ref": "901677832328b323af83972e2243b7ce90dc133e",
       "icon": "generator",
       "categories": [
         "natural-language-processing"
@@ -79,7 +79,7 @@
       "description" : "This is an audio to text demo application.",
       "name" : "Audio to Text",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "9c174679573e944fedd859f951829cdf77ad09d5",
+      "ref": "901677832328b323af83972e2243b7ce90dc133e",
       "icon": "generator",
       "categories": [
         "audio"
@@ -95,7 +95,7 @@
       "description" : "This is an object detection demo application.",
       "name" : "Object Detection",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "9c174679573e944fedd859f951829cdf77ad09d5",
+      "ref": "901677832328b323af83972e2243b7ce90dc133e",
       "icon": "generator",
       "categories": [
         "computer-vision"
@@ -235,7 +235,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin",
-      "memory": 1073741824
+      "memory": 487010000
     },
     {
       "id": "hf.facebook.detr-resnet-101",
@@ -245,7 +245,10 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/facebook/detr-resnet-101/resolve/no_timm/pytorch_model.bin",
-      "memory": 1073741824
+      "memory": 242980000,
+      "properties": {
+        "modelName": "facebook/detr-resnet-101"
+      }
     }
   ],
   "categories": [

@@ -72,7 +72,8 @@ export async function deleteRemoteModel(machine: string, modelInfo: ModelInfo): 
   }
 }
 
-export function addModelPropertiesToEnvironment(modelInfo: ModelInfo, envs: string[]) {
+export function getModelPropertiesForEnvironment(modelInfo: ModelInfo): string[] {
+  const envs: string[] = [];
   if (modelInfo.properties) {
     envs.push(
       ...Object.entries(modelInfo.properties).map(([key, value]) => {
@@ -81,4 +82,5 @@ export function addModelPropertiesToEnvironment(modelInfo: ModelInfo, envs: stri
       }),
     );
   }
+  return envs;
 }

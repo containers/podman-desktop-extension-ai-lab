@@ -28,7 +28,7 @@ import {
 import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
 import { getFreeRandomPort } from './ports';
-import { addModelPropertiesToEnvironment } from './modelsUtils';
+import { getModelPropertiesForEnvironment } from './modelsUtils';
 
 export const SECOND: number = 1_000_000_000;
 
@@ -117,7 +117,7 @@ export function generateContainerCreateOptions(
   }
 
   const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
-  addModelPropertiesToEnvironment(modelInfo, envs);
+  envs.push(...getModelPropertiesForEnvironment(modelInfo));
 
   return {
     Image: imageInfo.Id,

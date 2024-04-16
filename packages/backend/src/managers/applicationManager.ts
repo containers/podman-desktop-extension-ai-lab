@@ -48,7 +48,7 @@ import type { TaskRegistry } from '../registries/TaskRegistry';
 import { Publisher } from '../utils/Publisher';
 import { isQEMUMachine } from '../utils/podman';
 import { SECOND } from '../utils/inferenceUtils';
-import { addModelPropertiesToEnvironment } from '../utils/modelsUtils';
+import { getModelPropertiesForEnvironment } from '../utils/modelsUtils';
 
 export const LABEL_MODEL_ID = 'ai-lab-model-id';
 export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';
@@ -301,7 +301,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
           if (modelService && modelService.ports.length > 0) {
             const endPoint = `http://localhost:${modelService.ports[0]}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
-            addModelPropertiesToEnvironment(modelInfo, envs);
+            envs.push(...getModelPropertiesForEnvironment(modelInfo));
           }
         }
         if (image.ports.length > 0) {

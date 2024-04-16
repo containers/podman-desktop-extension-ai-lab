@@ -4,6 +4,7 @@ import { router } from 'tinro';
 import Button from '/@/lib/button/Button.svelte';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { studioClient } from '/@/utils/client';
+import aiLabBanner from '/@/assets/ai-lab-illustration-dashboard.png';
 
 const openRecipesCatalog = () => {
   router.goto('/recipes');
@@ -41,6 +42,7 @@ const openDiscussionsPage = () => {
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="mt-4 px-5 space-y-5" aria-label="inner-content">
+        <img class="rounded-md my-2" src="{aiLabBanner}" alt="ai-lab illustration banner"/>
         <p>
           The Podman Desktop AI Lab extension simplifies getting started and develop with AI in a local environment. It
           provides key open-source technologies to start building on AI. A curated catalog of so-called recipes helps

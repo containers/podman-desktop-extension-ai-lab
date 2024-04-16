@@ -87,10 +87,6 @@ export class Downloader {
   private followRedirects(url: string, callback: (message: { ok?: boolean; error?: string }) => void): void {
     const tmpFile = `${this.target}.tmp`;
 
-    const stream = createWriteStream(tmpFile, {
-      signal: this.abortSignal,
-    });
-
     let totalFileSize = 0;
     let progress = 0;
     let previousProgressValue = -1;
@@ -105,6 +101,10 @@ export class Downloader {
       if (totalFileSize === 0 && resp.headers['content-length']) {
         totalFileSize = parseFloat(resp.headers['content-length']);
       }
+
+      const stream = createWriteStream(tmpFile, {
+        signal: this.abortSignal,
+      });
 
       // Capture potential errors
       resp.on('error', (err: Error) => {

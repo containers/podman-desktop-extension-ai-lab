@@ -10,6 +10,10 @@ import RecipeModels from './RecipeModels.svelte';
 import { catalog } from '/@/stores/catalog';
 import RecipeDetails from '/@/lib/RecipeDetails.svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
+import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
+import { modelsInfo } from '../stores/modelsInfo';
+import { checkContainerConnectionStatus } from '../utils/connectionUtils';
 
 export let recipeId: string;
 
@@ -18,6 +22,12 @@ $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: categories = $catalog.categories;
 let selectedModelId: string;
 $: selectedModelId = recipe?.models?.[0] ?? '';
+let connectionInfo: ContainerConnectionInfo | undefined;
+$: if ($modelsInfo && selectedModelId) {
+  checkContainerConnectionStatus($modelsInfo, selectedModelId, 'recipe')
+    .then(value => (connectionInfo = value))
+    .catch((e: unknown) => console.log(String(e)));
+}
 
 // Send recipe info to telemetry
 let recipeTelemetry: string | undefined = undefined;
@@ -44,6 +54,13 @@ function setSelectedModel(modelId: string) {
   </svelte:fragment>
   <svelte:fragment slot="content">
     <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">
+      <svelte:fragment slot="header">
+        {#if connectionInfo}
+          <div class="mx-5">
+            <ContainerConnectionStatusInfo connectionInfo="{connectionInfo}" background="dark" />
+          </div>
+        {/if}
+      </svelte:fragment>
       <svelte:fragment slot="content">
         <Route path="/">
           <MarkdownRenderer source="{recipe?.readme}" />

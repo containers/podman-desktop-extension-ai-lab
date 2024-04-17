@@ -459,7 +459,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async importModels(models: LocalModelImportInfo[]): Promise<void> {
-    return this.catalogManager.addLocalModelsToCatalog(models);
+    return this.catalogManager.importUserModels(models);
   }
 
   async checkInvalidModels(models: string[]): Promise<string[]> {

@@ -137,7 +137,7 @@ test('expect correct model is returned with valid id when the user catalog is va
   vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
 
   catalogManager.init();
-  await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
+  await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
 
   const model = catalogManager.getModelById('model1');
   expect(model).toBeDefined();
@@ -176,7 +176,7 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
   });
   const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
 
-  await catalogManager.addLocalModelsToCatalog([
+  await catalogManager.importUserModels([
     {
       name: 'custom-model',
       path: '/root/path/file.gguf',
@@ -199,7 +199,7 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
   const updatedCatalog: ApplicationCatalog = Object.assign({}, userContent);
   updatedCatalog.models = updatedCatalog.models.filter(m => m.id !== 'model1');
 
-  await catalogManager.removeLocalModelFromCatalog('model1');
+  await catalogManager.removeUserModel('model1');
 
   expect(writeFileMock).toBeCalledWith('path', JSON.stringify(updatedCatalog, undefined, 2), 'utf-8');
 });

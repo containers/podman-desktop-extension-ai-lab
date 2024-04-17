@@ -27,7 +27,7 @@ import {
   PodmanDesktopRunner,
 } from '@podman-desktop/tests-playwright';
 
-const AI_LAB_EXTENSION_OCI_IMAGE: string = 'ghcr.io/projectatomic/ai-studio:nightly';
+const AI_LAB_EXTENSION_OCI_IMAGE: string = 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;
@@ -67,21 +67,23 @@ describe(`AI Lab extension installation and verification`, async () => {
     });
     test(`Install AI Lab extension`, async () => {
       await extensionsPage.installExtensionFromOCIImage(AI_LAB_EXTENSION_OCI_IMAGE);
-      const aiStudioExtension: Locator = extensionsPage.installedExtensions.getByLabel('ai-studio');
+    });
+    test(`Verify AI Lab extension in extension list`, async () => {
+      const aiStudioExtension: Locator = extensionsPage.installedExtensions.getByLabel('ai-lab');
       await playExpect(aiStudioExtension).toBeVisible({ timeout: 60_000 });
-      await playExpect(aiStudioExtension.getByLabel('Connection Status Label')).toHaveText('RUNNING', {
+      await playExpect(aiStudioExtension.getByLabel('Extension Status Label')).toHaveText('ACTIVE', {
         timeout: 10_000,
       });
     });
   });
   describe(`AI Lab extension verification`, async () => {
     test(`Verify AI Lab is present in notification bar and open it`, async () => {
-      const aiLabNavBarItem: Locator = navigationBar.navigationLocator.getByLabel('AI Studio');
+      const aiLabNavBarItem: Locator = navigationBar.navigationLocator.getByLabel('AI Lab');
       await playExpect(aiLabNavBarItem).toBeVisible();
       await aiLabNavBarItem.click();
     });
     test(`Verify AI Lab is running`, async () => {
-      const aiLabWebview: Locator = page.getByLabel('Webview AI Studio');
+      const aiLabWebview: Locator = page.getByLabel('Webview AI Lab');
       await playExpect(aiLabWebview).toBeVisible();
     });
   });

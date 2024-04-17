@@ -1,17 +1,17 @@
 <div role="img" class="rounded py-[6px] pl-[7px] pr-[5px]">
   <svg
-    width="32"
-    height="32"
-    viewBox="0 0 32 32"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
     version="1.1"
     id="svg3"
     xml:space="preserve"
     xmlns="http://www.w3.org/2000/svg"
     ><path
-      style="color:#000000;fill:#3c8d47;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;-inkscape-stroke:none"
-      d="m 4.1835937,0.16601562 c -2.1987005,0 -3.99999995,1.80129948 -3.99999995,3.99999998 V 28.0625 c 0,2.198701 1.80129945,4 3.99999995,4 H 28.080078 c 2.198701,0 4,-1.801299 4,-4 V 4.1660156 c 0,-2.1987005 -1.801299,-3.99999998 -4,-3.99999998 z"
+      style="color:#000000;fill:#3c8d47;fill-opacity:1;stroke-width:0.752434;stroke-linecap:round;stroke-linejoin:round;-inkscape-stroke:none"
+      d="M 3.0097361,0 C 1.3553589,0 0,1.355359 0,3.0097361 V 20.990264 C 0,22.644641 1.3553589,24 3.0097361,24 H 20.990264 C 22.644641,24 24,22.644641 24,20.990264 V 3.0097361 C 24,1.355359 22.644641,0 20.990264,0 Z"
       id="rect5"></path
-    ><g id="g5" transform="matrix(1.2520517,0,0,1.2520517,-7.2772448,-15.859465)" style="fill:#ffffff"
+    ><g id="g5" transform="matrix(0.9420863,0,0,0.9420863,-5.6137888,-12.058117)" style="fill:#ffffff"
       ><circle
         cx="16.541031"
         cy="23.271023"

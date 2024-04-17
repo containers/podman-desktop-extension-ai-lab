@@ -16,18 +16,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import {
-  containerEngine,
-  provider,
   type ContainerCreateOptions,
+  containerEngine,
   type ContainerProviderConnection,
-  type PullEvent,
-  type ProviderContainerConnection,
   type ImageInfo,
   type ListImagesOptions,
+  provider,
+  type ProviderContainerConnection,
+  type PullEvent,
 } from '@podman-desktop/api';
 import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
 import { getFreeRandomPort } from './ports';
+import { getModelPropertiesForEnvironment } from './modelsUtils';
 
 export const SECOND: number = 1_000_000_000;
 
@@ -116,14 +117,7 @@ export function generateContainerCreateOptions(
   }
 
   const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
-  if (modelInfo.properties) {
-    envs.push(
-      ...Object.entries(modelInfo.properties).map(([key, value]) => {
-        const formattedKey = key.replace(/[A-Z]/g, m => `_${m}`).toUpperCase();
-        return `MODEL_${formattedKey}=${value}`;
-      }),
-    );
-  }
+  envs.push(...getModelPropertiesForEnvironment(modelInfo));
 
   return {
     Image: imageInfo.Id,

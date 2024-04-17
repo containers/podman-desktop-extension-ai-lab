@@ -819,9 +819,11 @@ describe('createApplicationPod', () => {
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
     const createAndAddContainersToPodMock = vi
       .spyOn(manager, 'createAndAddContainersToPod')
-      .mockImplementation((_pod: ApplicationPodInfo, _images: ImageInfo[], _modelPath: string) => Promise.resolve([]));
+      .mockImplementation((_pod: ApplicationPodInfo, _images: ImageInfo[], _modelInfo: ModelInfo, _modelPath: string) =>
+        Promise.resolve([]),
+      );
     await manager.createApplicationPod({ id: 'recipe-id' } as Recipe, { id: 'model-id' } as ModelInfo, images, 'path');
-    expect(createAndAddContainersToPodMock).toBeCalledWith(pod, images, 'path');
+    expect(createAndAddContainersToPodMock).toBeCalledWith(pod, images, { id: 'model-id' }, 'path');
     expect(mocks.updateTaskMock).toBeCalledWith({
       id: expect.any(String),
       state: 'success',
@@ -935,17 +937,17 @@ describe('createAndAddContainersToPod', () => {
     modelService: true,
     ports: ['8085'],
   };
-  test('check that containers are correctly created', async () => {
+  async function checkContainers(modelInfo: ModelInfo, extraEnvs: string[]) {
     mocks.createContainerMock.mockResolvedValue({
       id: 'container-1',
     });
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
-    await manager.createAndAddContainersToPod(pod, [imageInfo1, imageInfo2], 'path');
+    await manager.createAndAddContainersToPod(pod, [imageInfo1, imageInfo2], modelInfo, 'path');
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {
       Image: 'id',
       Detach: true,
-      Env: ['MODEL_ENDPOINT=http://localhost:8085'],
+      Env: ['MODEL_ENDPOINT=http://localhost:8085', ...extraEnvs],
       start: false,
       name: 'name',
       pod: 'id',
@@ -980,6 +982,21 @@ describe('createAndAddContainersToPod', () => {
         Timeout: 2000000000,
       },
     });
+  }
+
+  test('check that containers are correctly created with no model properties', async () => {
+    await checkContainers({} as ModelInfo, []);
+  });
+
+  test('check that containers are correctly created with model properties', async () => {
+    await checkContainers(
+      {
+        properties: {
+          modelName: 'myModel',
+        },
+      } as unknown as ModelInfo,
+      ['MODEL_MODEL_NAME=myModel'],
+    );
   });
 });
 

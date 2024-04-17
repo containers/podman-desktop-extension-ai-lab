@@ -48,6 +48,7 @@ import type { TaskRegistry } from '../registries/TaskRegistry';
 import { Publisher } from '../utils/Publisher';
 import { isQEMUMachine } from '../utils/podman';
 import { SECOND } from '../utils/inferenceUtils';
+import { getModelPropertiesForEnvironment } from '../utils/modelsUtils';
 
 export const LABEL_MODEL_ID = 'ai-lab-model-id';
 export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';
@@ -251,7 +252,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
     let attachedContainers: ContainerAttachedInfo[];
     try {
-      attachedContainers = await this.createAndAddContainersToPod(podInfo, images, modelPath);
+      attachedContainers = await this.createAndAddContainersToPod(podInfo, images, model, modelPath);
       task.state = 'success';
     } catch (e) {
       console.error(`error when creating pod ${podInfo.Id}`, e);
@@ -269,6 +270,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   async createAndAddContainersToPod(
     podInfo: ApplicationPodInfo,
     images: ImageInfo[],
+    modelInfo: ModelInfo,
     modelPath: string,
   ): Promise<ContainerAttachedInfo[]> {
     const containers: ContainerAttachedInfo[] = [];
@@ -299,6 +301,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
           if (modelService && modelService.ports.length > 0) {
             const endPoint = `http://localhost:${modelService.ports[0]}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
+            envs.push(...getModelPropertiesForEnvironment(modelInfo));
           }
         }
         if (image.ports.length > 0) {

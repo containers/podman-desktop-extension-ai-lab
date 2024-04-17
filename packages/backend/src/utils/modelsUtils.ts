@@ -71,3 +71,16 @@ export async function deleteRemoteModel(machine: string, modelInfo: ModelInfo): 
     console.error('Something went wrong while trying to stat remote model path', err);
   }
 }
+
+export function getModelPropertiesForEnvironment(modelInfo: ModelInfo): string[] {
+  const envs: string[] = [];
+  if (modelInfo.properties) {
+    envs.push(
+      ...Object.entries(modelInfo.properties).map(([key, value]) => {
+        const formattedKey = key.replace(/[A-Z]/g, m => `_${m}`).toUpperCase();
+        return `MODEL_${formattedKey}=${value}`;
+      }),
+    );
+  }
+  return envs;
+}

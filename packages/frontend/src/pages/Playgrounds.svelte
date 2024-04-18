@@ -9,8 +9,10 @@ import { Row, Column } from '../lib/table/table';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
 import { conversations } from '/@/stores/conversations';
+import PlaygroundColumnIcon from '/@/lib/table/playground/PlaygroundColumnIcon.svelte';
 
 const columns: Column<PlaygroundV2>[] = [
+  new Column<PlaygroundV2>('', { width: '40px', renderer: PlaygroundColumnIcon }),
   new Column<PlaygroundV2>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
   new Column<PlaygroundV2>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
   new Column<PlaygroundV2>('Actions', { width: '40px', renderer: ConversationColumnAction, align: 'center' }),

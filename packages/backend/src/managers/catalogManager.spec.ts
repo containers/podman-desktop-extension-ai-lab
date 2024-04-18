@@ -29,7 +29,7 @@ import { promises, existsSync } from 'node:fs';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import path from 'node:path';
 
-vi.mock('./ai.json', () => {
+vi.mock('../assets/ai.json', () => {
   return {
     default: content,
   };
@@ -104,12 +104,12 @@ describe('invalid user catalog', () => {
   });
 
   test('expect correct model is returned with valid id', () => {
-    const model = catalogManager.getModelById('hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M');
+    const model = catalogManager.getModelById('llama-2-7b-chat.Q5_K_S');
     expect(model).toBeDefined();
-    expect(model.name).toEqual('TheBloke/Mistral-7B-Instruct-v0.1-GGUF');
+    expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
     expect(model.registry).toEqual('Hugging Face');
     expect(model.url).toEqual(
-      'https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf',
+      'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
     );
   });
 
@@ -123,12 +123,12 @@ test('expect correct model is returned from default catalog with valid id when n
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
-  const model = catalogManager.getModelById('hf.TheBloke.mistral-7b-instruct-v0.1.Q4_K_M');
+  const model = catalogManager.getModelById('llama-2-7b-chat.Q5_K_S');
   expect(model).toBeDefined();
-  expect(model.name).toEqual('TheBloke/Mistral-7B-Instruct-v0.1-GGUF');
+  expect(model.name).toEqual('Llama-2-7B-Chat-GGUF');
   expect(model.registry).toEqual('Hugging Face');
   expect(model.url).toEqual(
-    'https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf',
+    'https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q5_K_S.gguf',
   );
 });
 
@@ -202,4 +202,62 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
   await catalogManager.removeUserModel('model1');
 
   expect(writeFileMock).toBeCalledWith('path', JSON.stringify(updatedCatalog, undefined, 2), 'utf-8');
+});
+
+test('catalog should be the combination of user catalog and default catalog', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getModels().length > userContent.models.length);
+
+  const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
+  vi.spyOn(promises, 'stat').mockResolvedValue({
+    size: 1,
+    mtime: mtimeDate,
+  } as Stats);
+  vi.spyOn(path, 'resolve').mockReturnValue('path');
+
+  const catalog = catalogManager.getCatalog();
+
+  expect(catalog).toEqual({
+    recipes: [...content.recipes, ...userContent.recipes],
+    models: [...content.models, ...userContent.models],
+    categories: [...content.categories, ...userContent.categories],
+  });
+});
+
+test('catalog should use user items in favour of default', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+
+  const overwriteFullCatalog: ApplicationCatalog = {
+    recipes: content.recipes.map(recipe => ({
+      ...recipe,
+      name: 'user-recipe-overwrite',
+    })),
+    models: content.models.map(model => ({
+      ...model,
+      name: 'user-model-overwrite',
+    })),
+    categories: content.categories.map(category => ({
+      ...category,
+      name: 'user-model-overwrite',
+    })),
+  };
+
+  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(overwriteFullCatalog));
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getModels().length > userContent.models.length);
+
+  const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
+  vi.spyOn(promises, 'stat').mockResolvedValue({
+    size: 1,
+    mtime: mtimeDate,
+  } as Stats);
+  vi.spyOn(path, 'resolve').mockReturnValue('path');
+
+  const catalog = catalogManager.getCatalog();
+
+  expect(catalog).toEqual(overwriteFullCatalog);
 });

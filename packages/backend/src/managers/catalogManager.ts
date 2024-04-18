@@ -82,9 +82,12 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
 
     const sanitize = this.sanitize(content);
     this.catalog = {
-      models: [...defaultCatalog.models, ...sanitize.models],
-      recipes: [...defaultCatalog.recipes, ...sanitize.recipes],
-      categories: [...defaultCatalog.categories, ...sanitize.categories],
+      models: [...defaultCatalog.models.filter(a => !sanitize.models.some(b => a.id === b.id)), ...sanitize.models],
+      recipes: [...defaultCatalog.recipes.filter(a => !sanitize.recipes.some(b => a.id === b.id)), ...sanitize.recipes],
+      categories: [
+        ...defaultCatalog.categories.filter(a => !sanitize.categories.some(b => a.id === b.id)),
+        ...sanitize.categories,
+      ],
     };
 
     this.notify();

@@ -180,7 +180,7 @@ export class ModelsManager implements Disposable {
         if (!model.url) {
           modelPath = path.join(model.file.path, model.file.file);
           // remove it from the catalog as it cannot be downloaded anymore
-          await this.catalogManager.removeLocalModelFromCatalog(modelId);
+          await this.catalogManager.removeUserModel(modelId);
         } else {
           modelPath = this.getLocalModelFolder(modelId);
         }

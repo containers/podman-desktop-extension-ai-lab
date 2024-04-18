@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
-import { promises } from 'node:fs';
+import fs, { promises } from 'node:fs';
 import path from 'node:path';
 import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
@@ -29,6 +29,8 @@ import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 
 export type catalogUpdateHandle = () => void;
+
+export const USER_CATALOG = 'user-catalog.json';
 
 export class CatalogManager extends Publisher<ApplicationCatalog> implements Disposable {
   private catalog: ApplicationCatalog;
@@ -51,31 +53,91 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     this.#disposables = [];
   }
 
+  /**
+   * The init method will start a watcher on the user catalog.json
+   */
   init(): void {
     // Creating a json watcher
-    const jsonWatcher: JsonWatcher<ApplicationCatalog> = new JsonWatcher(
-      path.resolve(this.appUserDirectory, 'catalog.json'),
-      defaultCatalog,
-    );
+    const jsonWatcher: JsonWatcher<ApplicationCatalog> = new JsonWatcher(this.getUserCatalogPath(), {
+      recipes: [],
+      models: [],
+      categories: [],
+    });
     jsonWatcher.onContentUpdated(content => this.onCatalogUpdated(content));
     jsonWatcher.init();
 
     this.#disposables.push(jsonWatcher);
   }
 
-  private onCatalogUpdated(content: ApplicationCatalog): void {
-    // when reading the content on the catalog, the creation is just a string and we need to convert it back to a Date object
-    content.models
-      .filter(m => m.file?.creation)
-      .forEach(m => {
-        if (m.file?.creation) {
-          m.file.creation = new Date(m.file.creation);
-        }
-      });
-    this.catalog = content;
-
-    this.#catalogUpdateListeners.forEach(listener => listener());
+  private loadDefaultCatalog(): void {
+    this.catalog = defaultCatalog;
     this.notify();
+  }
+
+  private onCatalogUpdated(content: ApplicationCatalog): void {
+    if (typeof content !== 'object' || !('models' in content) || typeof content.models !== 'object') {
+      this.loadDefaultCatalog();
+      return;
+    }
+
+    const sanitize = this.sanitize(content);
+    this.catalog = {
+      models: [...defaultCatalog.models.filter(a => !sanitize.models.some(b => a.id === b.id)), ...sanitize.models],
+      recipes: [...defaultCatalog.recipes.filter(a => !sanitize.recipes.some(b => a.id === b.id)), ...sanitize.recipes],
+      categories: [
+        ...defaultCatalog.categories.filter(a => !sanitize.categories.some(b => a.id === b.id)),
+        ...sanitize.categories,
+      ],
+    };
+
+    this.notify();
+  }
+
+  private sanitize(content: unknown): ApplicationCatalog {
+    const output: ApplicationCatalog = {
+      recipes: [],
+      models: [],
+      categories: [],
+    };
+
+    if (!content || typeof content !== 'object') {
+      console.warn('malformed application catalog content');
+      return output;
+    }
+
+    // ensure user's models are properly formatted
+    if ('models' in content && typeof content.models === 'object' && Array.isArray(content.models)) {
+      output.models = content.models.map(model => {
+        // parse the creation date properly
+        if (model.file?.creation) {
+          return {
+            ...model,
+            file: {
+              ...model.file,
+              creation: new Date(model.file.creation),
+            },
+          };
+        }
+        return model;
+      });
+    }
+
+    // ensure user's recipes are properly formatted
+    if ('recipes' in content && typeof content.recipes === 'object' && Array.isArray(content.recipes)) {
+      output.recipes = content.recipes;
+    }
+
+    // ensure user's categories are properly formatted
+    if ('categories' in content && typeof content.categories === 'object' && Array.isArray(content.categories)) {
+      output.categories = content.categories;
+    }
+
+    return output;
+  }
+
+  override notify() {
+    super.notify();
+    this.#catalogUpdateListeners.forEach(listener => listener());
   }
 
   onCatalogUpdate(listener: catalogUpdateHandle): Disposable {
@@ -117,39 +179,85 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     return recipe;
   }
 
-  async addLocalModelsToCatalog(models: LocalModelImportInfo[]): Promise<void> {
-    // we copy the current catalog in another object and update it with the model
-    // then write it to the custom catalog path. If it exists it will be overwritten by default
-    const tmpCatalog: ApplicationCatalog = Object.assign({}, this.catalog);
+  /**
+   * This method is used to imports user's local models.
+   * @param localModels the models to imports
+   */
+  async importUserModels(localModels: LocalModelImportInfo[]): Promise<void> {
+    const userCatalogPath = this.getUserCatalogPath();
+    let content: ApplicationCatalog;
 
-    for (const model of models) {
-      const statFile = await promises.stat(model.path);
-      tmpCatalog.models.push({
-        id: model.path,
-        name: model.name,
-        description: `Model imported from ${model.path}`,
-        hw: 'CPU',
-        file: {
-          path: path.dirname(model.path),
-          file: path.basename(model.path),
-          size: statFile.size,
-          creation: statFile.mtime,
-        },
-        memory: statFile.size,
-      });
+    // check if we already have an existing user's catalog
+    if (fs.existsSync(userCatalogPath)) {
+      const raw = await promises.readFile(userCatalogPath, 'utf-8');
+      content = this.sanitize(JSON.parse(raw));
+    } else {
+      content = {
+        recipes: [],
+        models: [],
+        categories: [],
+      };
     }
 
-    const customCatalog = path.resolve(this.appUserDirectory, 'catalog.json');
-    return promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
+    // Transform local models into ModelInfo
+    const models: ModelInfo[] = await Promise.all(
+      localModels.map(async local => {
+        const statFile = await promises.stat(local.path);
+        return {
+          id: local.path,
+          name: local.name,
+          description: `Model imported from ${local.path}`,
+          hw: 'CPU',
+          file: {
+            path: path.dirname(local.path),
+            file: path.basename(local.path),
+            size: statFile.size,
+            creation: statFile.mtime,
+          },
+          memory: statFile.size,
+        };
+      }),
+    );
+
+    // Add all our models infos to the user's models catalog
+    content.models.push(...models);
+
+    // overwrite the existing catalog
+    return promises.writeFile(userCatalogPath, JSON.stringify(content, undefined, 2), 'utf-8');
   }
 
-  async removeLocalModelFromCatalog(modelId: string): Promise<void> {
-    // we copy the current catalog in another object and remove from it the model with modelId
-    // then write it to the custom catalog path.
-    const tmpCatalog: ApplicationCatalog = Object.assign({}, this.catalog);
-    tmpCatalog.models = tmpCatalog.models.filter(m => m.url !== '' && m.id !== modelId);
+  /**
+   * Remove a model from the user's catalog.
+   * @param modelId
+   */
+  async removeUserModel(modelId: string): Promise<void> {
+    const userCatalogPath = this.getUserCatalogPath();
+    if (!fs.existsSync(userCatalogPath)) {
+      throw new Error('User catalog does not exist.');
+    }
 
-    const customCatalog = path.resolve(this.appUserDirectory, 'catalog.json');
-    return promises.writeFile(customCatalog, JSON.stringify(tmpCatalog, undefined, 2), 'utf-8');
+    const raw = await promises.readFile(userCatalogPath, 'utf-8');
+    const content = this.sanitize(JSON.parse(raw));
+
+    return promises.writeFile(
+      userCatalogPath,
+      JSON.stringify(
+        {
+          recipes: content.recipes,
+          models: content.models.filter(model => model.id !== modelId),
+          categories: content.categories,
+        },
+        undefined,
+        2,
+      ),
+      'utf-8',
+    );
+  }
+
+  /**
+   * Return the path to the user catalog
+   */
+  private getUserCatalogPath(): string {
+    return path.resolve(this.appUserDirectory, USER_CATALOG);
   }
 }

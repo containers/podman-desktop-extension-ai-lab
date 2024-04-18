@@ -503,7 +503,7 @@ describe('deleting models', () => {
   test('delete local model should call catalogManager', async () => {
     vi.mocked(env).isWindows = false;
     const postMessageMock = vi.fn();
-    const removeLocalModelFromCatalogMock = vi.fn();
+    const removeUserModelMock = vi.fn();
     const manager = new ModelsManager(
       'appdir',
       {
@@ -522,7 +522,7 @@ describe('deleting models', () => {
             },
           ] as ModelInfo[];
         },
-        removeLocalModelFromCatalog: removeLocalModelFromCatalogMock,
+        removeUserModel: removeUserModelMock,
       } as unknown as CatalogManager,
       telemetryLogger,
       taskRegistry,
@@ -531,7 +531,7 @@ describe('deleting models', () => {
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
 
-    expect(removeLocalModelFromCatalogMock).toBeCalledWith('model-id-1');
+    expect(removeUserModelMock).toBeCalledWith('model-id-1');
   });
 
   test('deleting on windows should check if models is uploaded', async () => {

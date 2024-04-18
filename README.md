@@ -129,15 +129,17 @@ For the time being, please consider the following actions:
 4. Remove the containers related to AI
 5. Cleanup your local clone of the recipes: `$HOME/podman-desktop/ai-lab`
 
-### Providing a custom catalog
+### 📖 Providing a custom catalog
 
-The extension provides a default catalog, but you can build your own catalog by creating a file `$HOME/podman-desktop/ai-lab/catalog.json`.
+The extension provides by default a curated list of recipes, models and categories. However, this system is extensible and you can define your own.
 
-The catalog provides lists of categories, recipes, and models.
+To enhance the existing catalog, you can create a file located in the extension storage folder `$HOME/.local/share/containers/podman-desktop/extensions-storage/redhat.ai-lab/user-catalog.json`.
 
-Each recipe can belong to one or several categories. Each model can be used by one or several recipes.
+It must follow the same format as the default catalog [in the sources of the extension](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json). 
 
-The format of the catalog is not stable nor versioned yet, you can see the current catalog's format [in the sources of the extension](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json).
+> :information_source: The default behaviour is to append the items of the user's catalog to the default one.
+
+> :warning: Each item (recipes, models or categories) has a unique id, when conflict between the default catalog and the user one are found, the user's items overwrite the defaults.
 
 ### Packaging sample applications
 

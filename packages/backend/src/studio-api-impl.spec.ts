@@ -240,7 +240,7 @@ test('openDialog should call podmanDesktopAPi showOpenDialog', async () => {
 
 test('importModels should call catalogManager', async () => {
   const addLocalModelsMock = vi
-    .spyOn(catalogManager, 'addLocalModelsToCatalog')
+    .spyOn(catalogManager, 'importUserModels')
     .mockImplementation((_models: LocalModelImportInfo[]) => Promise.resolve());
   const models: LocalModelImportInfo[] = [
     {

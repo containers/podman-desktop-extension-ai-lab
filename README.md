@@ -135,7 +135,7 @@ The extension provides by default a curated list of recipes, models and categori
 
 To enhance the existing catalog, you can create a file located in the extension storage folder `$HOME/.local/share/containers/podman-desktop/extensions-storage/redhat.ai-lab/user-catalog.json` in the extension storage folder.
 
-It must follow the same format that the default catalog [in the sources of the extension](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json). 
+It must follow the same format as the default catalog [in the sources of the extension](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json). 
 
 > :information_source: The default behaviour is to append the items of the user's catalog to the default one.
 

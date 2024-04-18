@@ -947,7 +947,7 @@ describe('createAndAddContainersToPod', () => {
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {
       Image: 'id',
       Detach: true,
-      Env: ['MODEL_ENDPOINT=http://localhost:8085', ...extraEnvs],
+      Env: ['MODEL_ENDPOINT=http://localhost:8085'],
       start: false,
       name: 'name',
       pod: 'id',
@@ -961,7 +961,7 @@ describe('createAndAddContainersToPod', () => {
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(2, 'engine', {
       Image: 'id2',
       Detach: true,
-      Env: ['MODEL_PATH=/path'],
+      Env: ['MODEL_PATH=/path', ...extraEnvs],
       start: false,
       name: 'name',
       pod: 'id',

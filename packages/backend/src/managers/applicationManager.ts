@@ -295,13 +295,13 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
             ],
           };
           envs = [`MODEL_PATH=/${modelName}`];
+          envs.push(...getModelPropertiesForEnvironment(modelInfo));
         } else {
           // TODO: remove static port
           const modelService = images.find(image => image.modelService);
           if (modelService && modelService.ports.length > 0) {
             const endPoint = `http://localhost:${modelService.ports[0]}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
-            envs.push(...getModelPropertiesForEnvironment(modelInfo));
           }
         }
         if (image.ports.length > 0) {

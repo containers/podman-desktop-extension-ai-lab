@@ -248,7 +248,7 @@ test('catalog should use user items in favour of default', async () => {
   vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(overwriteFullCatalog));
 
   catalogManager.init();
-  await vi.waitUntil(() => catalogManager.getModels().length > userContent.models.length);
+  await vi.waitUntil(() => catalogManager.getModels().length > 0);
 
   const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
   vi.spyOn(promises, 'stat').mockResolvedValue({

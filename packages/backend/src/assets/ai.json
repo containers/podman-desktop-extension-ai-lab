@@ -247,7 +247,7 @@
       "url": "https://huggingface.co/facebook/detr-resnet-101/resolve/no_timm/pytorch_model.bin",
       "memory": 242980000,
       "properties": {
-        "modelName": "facebook/detr-resnet-101"
+        "name": "facebook/detr-resnet-101"
       }
     }
   ],

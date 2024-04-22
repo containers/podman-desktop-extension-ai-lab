@@ -43,6 +43,8 @@ let error: boolean = false;
 let containerId: string | undefined = undefined;
 $: available = containerId && $inferenceServers.some(server => server.container.containerId);
 
+$: loading = trackingId !== undefined && !error;
+
 let connectionInfo: ContainerConnectionInfo | undefined;
 $: if (localModels && modelId) {
   checkContainerConnectionStatus(localModels, modelId, 'inference')
@@ -155,9 +157,11 @@ onMount(async () => {
           <select
             required
             bind:value="{modelId}"
-            id="providerChoice"
+            disabled="{loading}"
+            aria-label="Model select"
+            id="model-select"
             class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
-            name="providerChoice">
+            name="Model select">
             {#each localModels as model}
               <option class="my-1" value="{model.id}">{model.name}</option>
             {/each}
@@ -184,6 +188,8 @@ onMount(async () => {
             class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
             placeholder="8888"
             name="containerPort"
+            aria-label="Port input"
+            disabled="{loading}"
             required />
         </div>
         {#if errorMsg !== undefined}
@@ -194,7 +200,7 @@ onMount(async () => {
             {#if containerId === undefined}
               <Button
                 title="Create service"
-                inProgress="{trackingId !== undefined && !error}"
+                inProgress="{loading}"
                 on:click="{submit}"
                 disabled="{!modelId}"
                 icon="{faPlusCircle}">

@@ -13,7 +13,7 @@ import Fa from 'svelte-fa';
 import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
-import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Tooltip from '/@/lib/Tooltip.svelte';
 
 export let playgroundId: string;
@@ -193,14 +193,14 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
         {#if errorMsg}
           <div class="text-red-500 text-sm p-2">{errorMsg}</div>
         {/if}
-        <div class="flex flex-row flex-none w-full">
+        <div class="flex flex-row flex-none w-full px-4 py-2 bg-charcoal-800">
           <textarea
             aria-label="prompt"
             bind:value="{prompt}"
             use:requestFocus
             on:keydown="{handleKeydown}"
             rows="2"
-            class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"
+            class="w-full p-2 outline-none text-sm rounded-sm bg-charcoal-800 text-gray-700 placeholder-gray-700"
             placeholder="Type your prompt here"></textarea>
 
           <div class="flex-none text-right m-4">
@@ -208,7 +208,9 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
               inProgress="{!sendEnabled}"
               disabled="{!isHealthy(server?.status, server?.health?.Status)}"
               on:click="{() => askPlayground()}"
-              title="{getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}">Send prompt</Button>
+              icon="{faPaperPlane}"
+              title="{getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}"
+              aria-label="Send prompt"></Button>
           </div>
         </div>
       </div>

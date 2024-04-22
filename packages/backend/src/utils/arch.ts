@@ -25,7 +25,7 @@ const nodeArch2GoArch = new Map<string, string>([
 export function goarch(): string {
   let localArch = arch();
   if (nodeArch2GoArch.has(localArch)) {
-    localArch = nodeArch2GoArch.get(localArch);
+    localArch = nodeArch2GoArch.get(localArch) ?? localArch;
   }
   return localArch;
 }

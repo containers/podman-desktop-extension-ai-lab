@@ -66,7 +66,7 @@ export class ModelsManager implements Disposable {
 
   dispose(): void {
     this.#models.clear();
-    this.#watcher.dispose();
+    this.#watcher?.dispose();
     this.#disposables.forEach(d => d.dispose());
   }
 
@@ -141,15 +141,16 @@ export class ModelsManager implements Disposable {
     }
   }
 
-  isModelOnDisk(modelId: string) {
+  isModelOnDisk(modelId: string): boolean {
     return this.#models.get(modelId)?.file !== undefined;
   }
 
   getLocalModelInfo(modelId: string): LocalModelInfo {
-    if (!this.isModelOnDisk(modelId)) {
+    const model = this.#models.get(modelId);
+    if (!model?.file) {
       throw new Error('model is not on disk');
     }
-    return this.#models.get(modelId).file;
+    return model.file;
   }
 
   getModelInfo(modelId: string): ModelInfo {
@@ -170,38 +171,40 @@ export class ModelsManager implements Disposable {
 
   async deleteModel(modelId: string): Promise<void> {
     const model = this.#models.get(modelId);
-    if (model) {
-      model.state = 'deleting';
-      await this.sendModelsInfo();
-      try {
-        await this.deleteRemoteModel(model);
-        let modelPath;
-        // if model does not have any url, it has been imported locally by the user
-        if (!model.url) {
-          modelPath = path.join(model.file.path, model.file.file);
-          // remove it from the catalog as it cannot be downloaded anymore
-          await this.catalogManager.removeUserModel(modelId);
-        } else {
-          modelPath = this.getLocalModelFolder(modelId);
-        }
-        await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
+    if (!model?.file) {
+      throw new Error('model cannot be found.');
+    }
 
-        this.telemetry.logUsage('model.delete', { 'model.id': modelId });
-        model.file = model.state = undefined;
-      } catch (err: unknown) {
-        this.telemetry.logError('model.delete', {
-          'model.id': modelId,
-          message: 'error deleting model from disk',
-          error: err,
-        });
-        await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
-
-        // Let's reload the models manually to avoid any issue
-        model.state = undefined;
-        this.getLocalModelsFromDisk();
-      } finally {
-        await this.sendModelsInfo();
+    model.state = 'deleting';
+    await this.sendModelsInfo();
+    try {
+      await this.deleteRemoteModel(model);
+      let modelPath;
+      // if model does not have any url, it has been imported locally by the user
+      if (!model.url) {
+        modelPath = path.join(model.file.path, model.file.file);
+        // remove it from the catalog as it cannot be downloaded anymore
+        await this.catalogManager.removeUserModel(modelId);
+      } else {
+        modelPath = this.getLocalModelFolder(modelId);
       }
+      await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
+
+      this.telemetry.logUsage('model.delete', { 'model.id': modelId });
+      model.file = model.state = undefined;
+    } catch (err: unknown) {
+      this.telemetry.logError('model.delete', {
+        'model.id': modelId,
+        message: 'error deleting model from disk',
+        error: err,
+      });
+      await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
+
+      // Let's reload the models manually to avoid any issue
+      model.state = undefined;
+      this.getLocalModelsFromDisk();
+    } finally {
+      await this.sendModelsInfo();
     }
   }
 
@@ -237,11 +240,11 @@ export class ModelsManager implements Disposable {
     const task: Task = this.createDownloadTask(model, labels);
 
     // Check there is no existing downloader running
-    if (!this.#downloaders.has(model.id)) {
+    const existingDownloader = this.#downloaders.get(model.id);
+    if (!existingDownloader) {
       return this.downloadModel(model, task);
     }
 
-    const existingDownloader = this.#downloaders.get(model.id);
     if (existingDownloader.completed) {
       task.state = 'success';
       this.taskRegistry.updateTask(task);
@@ -325,6 +328,10 @@ export class ModelsManager implements Disposable {
   }
 
   private createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader {
+    if (!model.url) {
+      throw new Error(`model ${model.id} does not have url defined.`);
+    }
+
     // Ensure path to model directory exist
     const destDir = path.join(this.appUserDirectory, 'models', model.id);
     if (!fs.existsSync(destDir)) {

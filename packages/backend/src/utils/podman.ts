@@ -62,6 +62,7 @@ export function getFirstRunningMachineName(): string | undefined {
   // {name} -> {name}
   try {
     const runningConnection = getFirstRunningPodmanConnection();
+    if (!runningConnection) return undefined;
     const runningConnectionName = runningConnection.connection.name;
     if (runningConnectionName.startsWith('Podman Machine')) {
       const machineName = runningConnectionName.replace(/Podman Machine\s*/, 'podman-machine-');
@@ -80,7 +81,7 @@ export function getFirstRunningMachineName(): string | undefined {
 }
 
 export function getFirstRunningPodmanConnection(): ProviderContainerConnection | undefined {
-  let engine: ProviderContainerConnection;
+  let engine: ProviderContainerConnection | undefined = undefined;
   try {
     engine = provider
       .getContainerConnections()
@@ -137,7 +138,7 @@ export async function isQEMUMachine(): Promise<boolean> {
 export async function checkContainerConnectionStatusAndResources(
   modelInfo: ModelCheckerInfo,
 ): Promise<ContainerConnectionInfo> {
-  let connection: ProviderContainerConnection;
+  let connection: ProviderContainerConnection | undefined = undefined;
   try {
     connection = getFirstRunningPodmanConnection();
   } catch (e) {
@@ -165,13 +166,22 @@ export async function checkContainerConnectionStatusAndResources(
   const hasCpus = engineInfo.cpus !== undefined && engineInfo.cpus >= MIN_CPUS_VALUE;
   const multiplier = modelInfo.context === 'recipe' ? 1.25 : 1.1;
   const memoryExpected = modelInfo.memoryNeeded * multiplier;
-  const hasMemory = engineInfo.memory - engineInfo.memoryUsed >= memoryExpected;
+
+  let hasMemory: boolean = true;
+  if (engineInfo.memory !== undefined && engineInfo.memoryUsed !== undefined) {
+    hasMemory = engineInfo.memory - engineInfo.memoryUsed >= memoryExpected;
+  }
+
+  let memoryIdle: number = 0;
+  if (engineInfo.memory !== undefined && engineInfo.memoryUsed !== undefined) {
+    memoryIdle = engineInfo.memory - engineInfo.memoryUsed;
+  }
 
   if (!hasCpus || !hasMemory) {
     return {
       name: connection.connection.name,
       cpus: engineInfo.cpus ?? 0,
-      memoryIdle: engineInfo.memory - engineInfo.memoryUsed,
+      memoryIdle: memoryIdle,
       cpusExpected: MIN_CPUS_VALUE,
       memoryExpected: memoryExpected,
       status: 'low-resources',

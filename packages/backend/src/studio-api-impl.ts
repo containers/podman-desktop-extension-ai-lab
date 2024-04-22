@@ -68,7 +68,7 @@ export class StudioApiImpl implements StudioAPI {
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
       .showWarningMessage(`Are you sure you want to delete this playground ?`, 'Confirm', 'Cancel')
-      .then((result: string) => {
+      .then((result: string | undefined) => {
         if (result === 'Confirm') {
           this.playgroundV2.deleteConversation(conversationId);
         }
@@ -124,7 +124,7 @@ export class StudioApiImpl implements StudioAPI {
 
     podmanDesktopApi.window
       .showWarningMessage(dialogMessage, 'Confirm', 'Cancel')
-      .then((result: string) => {
+      .then((result: string | undefined) => {
         if (result !== 'Confirm') return;
 
         Promise.all(containerIds.map(containerId => this.inferenceManager.deleteInferenceServer(containerId))).catch(
@@ -178,7 +178,7 @@ export class StudioApiImpl implements StudioAPI {
     }
   }
 
-  async openDialog(options?: podmanDesktopApi.OpenDialogOptions): Promise<podmanDesktopApi.Uri[]> {
+  async openDialog(options?: podmanDesktopApi.OpenDialogOptions): Promise<podmanDesktopApi.Uri[] | undefined> {
     return await podmanDesktopApi.window.showOpenDialog(options);
   }
 
@@ -221,7 +221,7 @@ export class StudioApiImpl implements StudioAPI {
         'Confirm',
         'Cancel',
       )
-      .then((result: string) => {
+      .then((result: string | undefined) => {
         if (result === 'Confirm') {
           this.modelsManager.deleteModel(modelId).catch((err: unknown) => {
             console.error('Something went wrong while deleting the models', err);
@@ -280,7 +280,7 @@ export class StudioApiImpl implements StudioAPI {
         'Confirm',
         'Cancel',
       )
-      .then((result: string) => {
+      .then((result: string | undefined) => {
         if (result === 'Confirm') {
           this.applicationManager.deleteApplication(recipeId, modelId).catch((err: unknown) => {
             console.error(`error deleting AI App's pod: ${String(err)}`);
@@ -308,7 +308,7 @@ export class StudioApiImpl implements StudioAPI {
         'Confirm',
         'Cancel',
       )
-      .then((result: string) => {
+      .then((result: string | undefined) => {
         if (result === 'Confirm') {
           this.applicationManager.restartApplication(recipeId, modelId).catch((err: unknown) => {
             console.error(`error restarting AI App: ${String(err)}`);
@@ -350,7 +350,8 @@ export class StudioApiImpl implements StudioAPI {
               }),
               { placeHolder: 'Select the port to open' },
             )
-            .then((selectedPort: PortQuickPickItem) => {
+            .then((selectedPort: PortQuickPickItem | undefined) => {
+              if (!selectedPort) return;
               const uri = `http://localhost:${selectedPort.port}`;
               podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(uri)).catch((err: unknown) => {
                 console.error(`Something went wrong while opening ${uri}`, err);
@@ -435,7 +436,7 @@ export class StudioApiImpl implements StudioAPI {
     // Do not wait on the promise as the api would probably timeout before the user answer.
     podmanDesktopApi.window
       .showWarningMessage(`Delete permanently "${path}"?`, 'Confirm', 'Cancel')
-      .then((result: string) => {
+      .then((result: string | undefined) => {
         if (result === 'Confirm') {
           this.localRepositories.deleteLocalRepository(path).catch((err: unknown) => {
             console.error(`error deleting path: ${String(err)}`);
@@ -455,7 +456,7 @@ export class StudioApiImpl implements StudioAPI {
   async requestCancelToken(tokenId: number): Promise<void> {
     if (!this.cancellationTokenRegistry.hasCancellationTokenSource(tokenId))
       throw new Error(`Cancellation token with id ${tokenId} does not exist.`);
-    this.cancellationTokenRegistry.getCancellationTokenSource(tokenId).cancel();
+    this.cancellationTokenRegistry.getCancellationTokenSource(tokenId)?.cancel();
   }
 
   async importModels(models: LocalModelImportInfo[]): Promise<void> {
@@ -463,7 +464,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async checkInvalidModels(models: string[]): Promise<string[]> {
-    const invalidPaths = [];
+    const invalidPaths: string[] = [];
     const catalogModels = await this.getModelsInfo();
     for (const model of models) {
       const modelPath = path.resolve(model);

@@ -61,7 +61,7 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
   return {
     application: {
       containers: containers.map(container => {
-        if (typeof container !== 'object') throw new Error('containers array malformed');
+        if (!container || typeof container !== 'object') throw new Error('containers array malformed');
 
         let contextdir: string;
         if ('contextdir' in container) {

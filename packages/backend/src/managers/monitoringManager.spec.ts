@@ -18,7 +18,7 @@
 
 import { beforeEach, expect, afterEach, test, vi } from 'vitest';
 import { MonitoringManager } from './monitoringManager';
-import { containerEngine, type ContainerStatsInfo, type Webview } from '@podman-desktop/api';
+import { containerEngine, type ContainerStatsInfo, type Webview, type Disposable } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
 
 vi.mock('@podman-desktop/api', async () => {
@@ -36,8 +36,8 @@ const webviewMock = {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(undefined);
-  vi.mocked(containerEngine.statsContainer).mockResolvedValue(undefined);
+  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
+  vi.mocked(containerEngine.statsContainer).mockResolvedValue({} as unknown as Disposable);
 
   vi.useFakeTimers();
 });
@@ -95,7 +95,7 @@ test('expect dispose to dispose stats container', async () => {
 
 test('expect webview to be notified when statsContainer call back', async () => {
   const manager = new MonitoringManager(webviewMock);
-  let mCallback: (stats: ContainerStatsInfo) => void;
+  let mCallback: ((stats: ContainerStatsInfo) => void) | undefined;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
     return { dispose: () => {} };
@@ -105,6 +105,8 @@ test('expect webview to be notified when statsContainer call back', async () => 
   await vi.waitFor(() => {
     expect(mCallback).toBeDefined();
   });
+
+  if (!mCallback) throw new Error('undefined mCallback');
 
   const date = new Date(2000, 1, 1, 13);
   vi.setSystemTime(date);
@@ -130,7 +132,7 @@ test('expect webview to be notified when statsContainer call back', async () => 
 
 test('expect stats to cumulate', async () => {
   const manager = new MonitoringManager(webviewMock);
-  let mCallback: (stats: ContainerStatsInfo) => void;
+  let mCallback: ((stats: ContainerStatsInfo) => void) | undefined;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
     return { dispose: () => {} };
@@ -140,6 +142,8 @@ test('expect stats to cumulate', async () => {
   await vi.waitFor(() => {
     expect(mCallback).toBeDefined();
   });
+
+  if (!mCallback) throw new Error('undefined mCallback');
 
   simplifiedCallback(mCallback, 0, 0);
   simplifiedCallback(mCallback, 1, 1);
@@ -153,7 +157,7 @@ test('expect stats to cumulate', async () => {
 
 test('expect old stats to be removed', async () => {
   const manager = new MonitoringManager(webviewMock);
-  let mCallback: (stats: ContainerStatsInfo) => void;
+  let mCallback: ((stats: ContainerStatsInfo) => void) | undefined;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
     return { dispose: () => {} };
@@ -163,6 +167,8 @@ test('expect old stats to be removed', async () => {
   await vi.waitFor(() => {
     expect(mCallback).toBeDefined();
   });
+
+  if (!mCallback) throw new Error('undefined mCallback');
 
   vi.setSystemTime(new Date(2000, 1, 1, 13));
 
@@ -181,7 +187,7 @@ test('expect old stats to be removed', async () => {
 
 test('expect stats to be disposed if stats result is an error', async () => {
   const manager = new MonitoringManager(webviewMock);
-  let mCallback: (stats: ContainerStatsInfo) => void;
+  let mCallback: ((stats: ContainerStatsInfo) => void) | undefined;
   const fakeDisposable = vi.fn();
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
@@ -192,6 +198,8 @@ test('expect stats to be disposed if stats result is an error', async () => {
   await vi.waitFor(() => {
     expect(mCallback).toBeDefined();
   });
+
+  if (!mCallback) throw new Error('undefined mCallback');
 
   mCallback({ cause: 'container is stopped' } as unknown as ContainerStatsInfo);
 

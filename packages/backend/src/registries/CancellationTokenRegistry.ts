@@ -59,7 +59,7 @@ export class CancellationTokenRegistry implements Disposable {
   cancel(tokenId: number): void {
     if (!this.hasCancellationTokenSource(tokenId))
       throw new Error(`Cancellation token with id ${tokenId} does not exist.`);
-    this.getCancellationTokenSource(tokenId).cancel();
+    this.getCancellationTokenSource(tokenId)?.cancel();
     this.#callbacksCancellableToken.delete(tokenId);
   }
 

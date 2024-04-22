@@ -19,6 +19,7 @@
 import { beforeEach, expect, test, describe, vi } from 'vitest';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import * as utils from '../utils/podman';
+import type { ContainerEngineInfo } from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -211,7 +212,7 @@ describe('getFirstRunningPodmanConnection', () => {
       },
     ]);
     const result = utils.getFirstRunningPodmanConnection();
-    expect(result.connection.name).equal('machine2');
+    expect(result?.connection.name).equal('machine2');
   });
 });
 
@@ -354,7 +355,7 @@ describe('checkContainerConnectionStatusAndResources', () => {
         providerId: 'podman',
       },
     ]);
-    vi.mocked(podmanDesktopApi.containerEngine.info).mockResolvedValue(undefined);
+    vi.mocked(podmanDesktopApi.containerEngine.info).mockResolvedValue(undefined as unknown as ContainerEngineInfo);
     const result = await utils.checkContainerConnectionStatusAndResources({
       memoryNeeded: 10,
       context: 'inference',

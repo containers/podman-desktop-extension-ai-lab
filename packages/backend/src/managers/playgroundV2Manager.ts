@@ -198,7 +198,7 @@ export class PlaygroundV2Manager implements Disposable {
     if (server.status !== 'running') throw new Error('Inference server is not running.');
 
     if (server.health?.Status !== 'healthy')
-      throw new Error(`Inference server is not healthy, currently status: ${server.health.Status}.`);
+      throw new Error(`Inference server is not healthy, currently status: ${server.health?.Status ?? 'unknown'}.`);
 
     const modelInfo = server.models.find(model => model.id === conversation.modelId);
     if (modelInfo === undefined)
@@ -219,12 +219,15 @@ export class PlaygroundV2Manager implements Disposable {
       apiKey: 'dummy',
     });
 
+    if (!modelInfo.file?.file) throw new Error('model info has undefined file.');
+
     const telemetry = {
       conversationId: conversationId,
       ...options,
       promptLength: userInput.length,
       modelId: modelInfo.id,
     };
+
     client.chat.completions
       .create({
         messages: this.getFormattedMessages(conversation.id),
@@ -283,7 +286,10 @@ export class PlaygroundV2Manager implements Disposable {
    * @private
    */
   private getFormattedMessages(conversationId: string): ChatCompletionMessageParam[] {
-    return this.#conversationRegistry.get(conversationId).messages.map(
+    const conversation = this.#conversationRegistry.get(conversationId);
+    if (!conversation) throw new Error(`conversation with id ${conversationId} does not exist.`);
+
+    return conversation.messages.map(
       message =>
         ({
           name: undefined,

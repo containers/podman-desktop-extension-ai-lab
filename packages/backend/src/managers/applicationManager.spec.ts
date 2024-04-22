@@ -286,7 +286,7 @@ describe('pullApplication', () => {
       license: '',
       name: 'Model 1',
       registry: '',
-      url: '',
+      url: 'dummy-url',
       memory: 1000,
     };
     mocks.inspectContainerMock.mockResolvedValue({

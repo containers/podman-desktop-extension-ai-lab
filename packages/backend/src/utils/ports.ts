@@ -28,11 +28,13 @@ export async function getFreeRandomPort(address: string): Promise<number> {
         if (typeof addr === 'string') {
           // this should not happen, as it is only for pipes and unix domain sockets
           server.close(() => reject(new Error('error getting allocated port')));
-        } else {
+        } else if (addr) {
           // not sure what the call to close will do on the addr value
           // => the port value is saved before to call close
           const allocatedPort = addr.port;
           server.close(() => resolve(allocatedPort));
+        } else {
+          reject(new Error('invalid server address'));
         }
       })
       .listen(0, address),

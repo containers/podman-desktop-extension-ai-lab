@@ -38,7 +38,9 @@ export class ApplicationRegistry<T extends RecipeModelIndex> {
   }
 
   get(recipeModel: RecipeModelIndex): T {
-    return this.#applications.get(this.hash(recipeModel));
+    const application = this.#applications.get(this.hash(recipeModel));
+    if (!application) throw new Error('application not found.');
+    return application;
   }
 
   set(recipeModel: RecipeModelIndex, value: T): void {

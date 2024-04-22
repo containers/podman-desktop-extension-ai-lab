@@ -62,10 +62,12 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
 
     return new Promise((resolve, reject) => {
       const request = new Request(requestOptions);
-      convert(language, variant, request, {}, (error: unknown, snippet: string) => {
+      convert(language, variant, request, {}, (error: unknown, snippet: string | undefined) => {
         if (error) {
           reject(error);
           return;
+        } else if (snippet === undefined) {
+          throw new Error('undefined snippet');
         }
         resolve(snippet);
       });

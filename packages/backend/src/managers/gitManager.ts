@@ -275,6 +275,9 @@ export class GitManager {
     while (remoteCommits.length && localCommits.length) {
       const remote = remoteCommits.pop();
       const local = localCommits.pop();
+      if (!remote || !local) {
+        break;
+      }
       if (remote === local) {
         continue;
       }

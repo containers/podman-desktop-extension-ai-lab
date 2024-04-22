@@ -59,7 +59,7 @@ test('ContainerRegistry init', () => {
 
 test('ContainerRegistry subscribe', () => {
   // Get the callback created by the ContainerRegistry
-  let callback: (event: ContainerJSONEvent) => void;
+  let callback: ((event: ContainerJSONEvent) => void) | undefined;
   mocks.onEventMock.mockImplementation((method: (event: ContainerJSONEvent) => void) => {
     callback = method;
   });
@@ -74,6 +74,8 @@ test('ContainerRegistry subscribe', () => {
     subscribedStatus = status;
   });
 
+  if (!callback) throw new Error('undefined callback');
+
   // Generate a fake event
   callback({
     status: 'die',
@@ -87,7 +89,7 @@ test('ContainerRegistry subscribe', () => {
 
 test('ContainerRegistry unsubscribe all if container remove', () => {
   // Get the callback created by the ContainerRegistry
-  let callback: (event: ContainerJSONEvent) => void;
+  let callback: ((event: ContainerJSONEvent) => void) | undefined;
   mocks.onEventMock.mockImplementation((method: (event: ContainerJSONEvent) => void) => {
     callback = method;
   });
@@ -99,6 +101,8 @@ test('ContainerRegistry unsubscribe all if container remove', () => {
   // Let's create a dummy subscriber
   const subscribeMock = vi.fn();
   registry.subscribe('random', subscribeMock);
+
+  if (!callback) throw new Error('undefined callback');
 
   // Generate a remove event
   callback({ status: 'remove', id: 'random', type: 'container' });
@@ -112,7 +116,7 @@ test('ContainerRegistry unsubscribe all if container remove', () => {
 
 test('ContainerRegistry subscriber disposed should not be called', () => {
   // Get the callback created by the ContainerRegistry
-  let callback: (event: ContainerJSONEvent) => void;
+  let callback: ((event: ContainerJSONEvent) => void) | undefined;
   mocks.onEventMock.mockImplementation((method: (event: ContainerJSONEvent) => void) => {
     callback = method;
   });
@@ -130,6 +134,8 @@ test('ContainerRegistry subscriber disposed should not be called', () => {
   const disposable = registry.subscribe('random', subscribeMock);
   disposable.dispose();
 
+  if (!callback) throw new Error('undefined callback');
+
   // Generate a random event
   callback({ status: 'die', id: 'random', type: 'container' });
 
@@ -139,7 +145,7 @@ test('ContainerRegistry subscriber disposed should not be called', () => {
 
 test('ContainerRegistry should fire ContainerStart when container start', () => {
   // Get the callback created by the ContainerRegistry
-  let callback: (event: ContainerJSONEvent) => void;
+  let callback: ((event: ContainerJSONEvent) => void) | undefined;
   mocks.onEventMock.mockImplementation((method: (event: ContainerJSONEvent) => void) => {
     callback = method;
   });
@@ -150,6 +156,8 @@ test('ContainerRegistry should fire ContainerStart when container start', () => 
 
   const startListenerMock = vi.fn();
   registry.onStartContainerEvent(startListenerMock);
+
+  if (!callback) throw new Error('undefined callback');
 
   // Generate a remove event
   callback({ status: 'remove', id: 'random', type: 'container' });

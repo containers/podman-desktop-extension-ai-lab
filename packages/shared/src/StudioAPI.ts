@@ -37,7 +37,7 @@ export abstract class StudioAPI {
   abstract pullApplication(recipeId: string, modelId: string): Promise<void>;
   abstract openURL(url: string): Promise<boolean>;
   abstract openFile(file: string, recipeId?: string): Promise<boolean>;
-  abstract openDialog(options?: OpenDialogOptions): Promise<Uri[]>;
+  abstract openDialog(options?: OpenDialogOptions): Promise<Uri[] | undefined>;
 
   /**
    * Get the information of models saved locally into the user's directory

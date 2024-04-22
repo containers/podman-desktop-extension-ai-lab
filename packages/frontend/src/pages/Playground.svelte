@@ -13,6 +13,8 @@ import Fa from 'svelte-fa';
 import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import Tooltip from '/@/lib/Tooltip.svelte';
 
 export let playgroundId: string;
 let prompt: string;
@@ -148,10 +150,31 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
               <div class="text-gray-800 text-xs">Next prompt will use these settings</div>
               <div class="bg-charcoal-600 w-full rounded-md text-xs p-4">
                 <div class="mb-4 flex flex-col">Model Parameters</div>
-                <div class="flex flex-col space-y-4">
-                  <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value="{temperature}" />
-                  <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value="{max_tokens}" />
-                  <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value="{top_p}" />
+                <div class="flex flex-col space-y-4" aria-label="parameters">
+                  <div class="flex flex-row">
+                    <div class="w-full">
+                      <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value="{temperature}" />
+                    </div>
+                    <Tooltip
+                      tip="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+                      left="{true}"><Fa icon="{faCircleInfo}" /></Tooltip>
+                  </div>
+                  <div class="flex flex-row">
+                    <div class="w-full">
+                      <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value="{max_tokens}" />
+                    </div>
+                    <Tooltip
+                      tip="The maximum number of tokens that can be generated in the chat completion."
+                      left="{true}"><Fa icon="{faCircleInfo}" /></Tooltip>
+                  </div>
+                  <div class="flex flex-row">
+                    <div class="w-full">
+                      <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value="{top_p}" />
+                    </div>
+                    <Tooltip
+                      tip="An alternative to sampling with temperature, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered."
+                      left="{true}"><Fa icon="{faCircleInfo}" /></Tooltip>
+                  </div>
                 </div>
               </div>
             </svelte:fragment>

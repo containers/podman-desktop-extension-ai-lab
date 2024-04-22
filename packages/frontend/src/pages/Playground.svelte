@@ -69,6 +69,16 @@ afterUpdate(() => {
   }
 });
 
+function requestFocus(element: HTMLElement) {
+  element.focus();
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter') {
+    askPlayground();
+  }
+}
+
 async function scrollToBottom(element: Element) {
   element.scroll?.({ top: element.scrollHeight, behavior: 'smooth' });
 }
@@ -187,6 +197,8 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
           <textarea
             aria-label="prompt"
             bind:value="{prompt}"
+            use:requestFocus
+            on:keydown="{handleKeydown}"
             rows="2"
             class="w-full p-2 outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700"
             placeholder="Type your prompt here"></textarea>

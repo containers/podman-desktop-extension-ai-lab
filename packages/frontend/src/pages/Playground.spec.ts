@@ -348,6 +348,51 @@ test('sending prompt should disable the send button', async () => {
   });
 });
 
+test('sending prompt not using button should disable the send button', async () => {
+  vi.mocked(studioClient.getCatalog).mockResolvedValue({
+    models: [
+      {
+        id: 'model-1',
+        name: 'Model 1',
+      },
+    ] as ModelInfo[],
+    recipes: [],
+    categories: [],
+  });
+  vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
+  const customConversations = writable<Conversation[]>([
+    {
+      id: 'playground-1',
+      name: 'Playground 1',
+      modelId: 'model-1',
+      messages: [],
+    },
+  ]);
+  vi.mocked(conversationsStore).conversations = customConversations;
+  vi.mocked(inferenceServersStore).inferenceServers = readable([
+    {
+      models: [{ id: 'model-1' }],
+      status: 'running',
+    } as unknown as InferenceServer,
+  ]);
+  render(Playground, {
+    playgroundId: 'playground-1',
+  });
+
+  let prompt: HTMLElement;
+  await waitFor(() => {
+    prompt = screen.getByLabelText('prompt');
+    expect(prompt).toBeInTheDocument();
+  });
+  fireEvent.change(prompt!, { target: { value: 'prompt' } });
+  fireEvent.keyDown(prompt!, { key: 'Enter' });
+
+  await waitFor(() => {
+    prompt = screen.getByRole('button', { name: 'Send prompt' });
+    expect(prompt).toBeDisabled();
+  });
+});
+
 test('receiving complete message should enable the send button', async () => {
   vi.mocked(studioClient.getCatalog).mockResolvedValue({
     models: [

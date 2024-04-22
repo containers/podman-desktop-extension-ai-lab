@@ -342,7 +342,6 @@ describe('pullApplication', () => {
       description: '',
       readme: '',
       repository: 'repo',
-      basedir: 'ai-lab.yaml',
     };
     const model: ModelInfo = {
       id: 'model1',
@@ -371,7 +370,6 @@ describe('pullApplication', () => {
       ref: '000000',
       readme: '',
       repository: 'repo',
-      basedir: 'ai-lab.yaml',
     };
     const model: ModelInfo = {
       id: 'model1',

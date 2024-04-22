@@ -127,7 +127,7 @@ export class Studio {
         const href = link.match(/href="(.*?)"/);
         if (href) {
           const webviewHref = this.#panel?.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', href[1]));
-          if (!webviewHref) throw new Error('undefined webviewHref');
+          if (!webviewHref) throw new Error('Something went wrong while replacing links with webView Uri links: undefined webviewHref');
           indexHtml = indexHtml.replace(href[1], webviewHref.toString());
         }
       });

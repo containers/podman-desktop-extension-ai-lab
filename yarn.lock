@@ -3467,10 +3467,10 @@ onetime@^6.0.0:
   dependencies:
     mimic-fn "^4.0.0"
 
-openai@^4.38.1:
-  version "4.38.1"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-4.38.1.tgz#375ba1e2ff9fcd6434114bfeffa7a0ef35d74b78"
-  integrity sha512-nmSKE9O2piuoh9+AgDqwGHojIFSxToQ2jJqwaxjbzz2ebdD5LYY9s+bMe25b18t4QEgvtgW70JfK8BU3xf5dRw==
+openai@^4.38.3:
+  version "4.38.3"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.38.3.tgz#0e560541d9c31b0d4faaa6f660ade60dd5ee8052"
+  integrity sha512-mIL9WtrFNOanpx98mJ+X/wkoepcxdqqu0noWFoNQHl/yODQ47YM7NEYda7qp8JfjqpLFVxY9mQhshoS/Fqac0A==
   dependencies:
     "@types/node" "^18.11.18"
     "@types/node-fetch" "^2.6.4"

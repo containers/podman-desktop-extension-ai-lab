@@ -195,6 +195,57 @@ test('tasks should be displayed after requestCreateInferenceServer', async () =>
   });
 });
 
+test('form should be disabled when loading', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
+
+  let listener: ((tasks: Task[]) => void) | undefined;
+  vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
+    listener = f;
+    listener([]);
+    return () => {};
+  });
+
+  render(CreateService);
+
+  // wait for listener to be defined
+  await vi.waitFor(() => {
+    expect(listener).toBeDefined();
+  });
+
+  let createBtn: HTMLElement | undefined = undefined;
+  await vi.waitFor(() => {
+    createBtn = screen.getByTitle('Create service');
+    expect(createBtn).toBeDefined();
+  });
+
+  if (createBtn === undefined || listener === undefined) throw new Error('properties undefined');
+
+  await fireEvent.click(createBtn);
+
+  await vi.waitFor(() => {
+    expect(studioClient.requestCreateInferenceServer).toHaveBeenCalled();
+  });
+
+  listener([
+    {
+      id: 'dummyTaskId',
+      labels: {
+        trackingId: 'dummyTrackingId',
+      },
+      name: 'Dummy Task name',
+      state: 'loading',
+    },
+  ]);
+
+  await vi.waitFor(() => {
+    const select = screen.getByRole('combobox', { name: 'Model select' });
+    expect(select).toBeDisabled();
+
+    const input = screen.getByRole('spinbutton', { name: 'Port input' });
+    expect(input).toBeDisabled();
+  });
+});
+
 test('should display error message if createService fails', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
 

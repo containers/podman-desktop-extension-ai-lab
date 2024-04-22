@@ -178,7 +178,7 @@ export class StudioApiImpl implements StudioAPI {
     }
   }
 
-  async openDialog(options?: podmanDesktopApi.OpenDialogOptions): Promise<podmanDesktopApi.Uri[]> {
+  async openDialog(options?: podmanDesktopApi.OpenDialogOptions): Promise<podmanDesktopApi.Uri[] | undefined> {
     return await podmanDesktopApi.window.showOpenDialog(options);
   }
 
@@ -464,7 +464,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async checkInvalidModels(models: string[]): Promise<string[]> {
-    const invalidPaths = [];
+    const invalidPaths: string[] = [];
     const catalogModels = await this.getModelsInfo();
     for (const model of models) {
       const modelPath = path.resolve(model);

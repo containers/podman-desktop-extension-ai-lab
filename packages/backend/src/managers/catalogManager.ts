@@ -70,7 +70,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   }
 
   private loadDefaultCatalog(): void {
-    this.catalog = defaultCatalog;
+    this.catalog = defaultCatalog as ApplicationCatalog;
     this.notify();
   }
 
@@ -82,7 +82,10 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
 
     const sanitize = this.sanitize(content);
     this.catalog = {
-      models: [...defaultCatalog.models.filter(a => !sanitize.models.some(b => a.id === b.id)), ...sanitize.models],
+      models: [
+        ...defaultCatalog.models.filter(a => !sanitize.models.some(b => a.id === b.id)),
+        ...sanitize.models,
+      ] as ModelInfo[],
       recipes: [...defaultCatalog.recipes.filter(a => !sanitize.recipes.some(b => a.id === b.id)), ...sanitize.recipes],
       categories: [
         ...defaultCatalog.categories.filter(a => !sanitize.categories.some(b => a.id === b.id)),

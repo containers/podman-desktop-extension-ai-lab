@@ -278,7 +278,6 @@ describe('pullApplication', () => {
       ref: '000000',
       readme: '',
       repository: 'repo',
-      config: 'ai-lab.yaml',
     };
     const model: ModelInfo = {
       id: 'model1',
@@ -287,7 +286,7 @@ describe('pullApplication', () => {
       license: '',
       name: 'Model 1',
       registry: '',
-      url: '',
+      url: 'dummy-url',
       memory: 1000,
     };
     mocks.inspectContainerMock.mockResolvedValue({
@@ -343,7 +342,7 @@ describe('pullApplication', () => {
       description: '',
       readme: '',
       repository: 'repo',
-      config: 'ai-lab.yaml',
+      basedir: 'ai-lab.yaml',
     };
     const model: ModelInfo = {
       id: 'model1',
@@ -372,7 +371,7 @@ describe('pullApplication', () => {
       ref: '000000',
       readme: '',
       repository: 'repo',
-      config: 'ai-lab.yaml',
+      basedir: 'ai-lab.yaml',
     };
     const model: ModelInfo = {
       id: 'model1',

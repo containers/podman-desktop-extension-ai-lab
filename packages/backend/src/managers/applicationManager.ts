@@ -501,7 +501,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   getConfigAndFilterContainers(
-    recipeBaseDir: string,
+    recipeBaseDir: string | undefined,
     localFolder: string,
     labels?: { [key: string]: string },
   ): AIContainers {
@@ -543,7 +543,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     );
   }
 
-  getConfiguration(recipeBaseDir: string, localFolder: string): AIConfigFile {
+  getConfiguration(recipeBaseDir: string | undefined, localFolder: string): AIConfigFile {
     let configFile: string;
     if (recipeBaseDir !== undefined) {
       configFile = path.join(localFolder, recipeBaseDir, CONFIG_FILENAME);

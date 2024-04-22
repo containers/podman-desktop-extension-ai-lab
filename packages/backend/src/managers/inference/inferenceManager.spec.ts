@@ -565,7 +565,7 @@ describe('containerRegistry events', () => {
     const listener = await deferred;
 
     const server = inferenceManager.get('dummyId');
-    expect(server.status).toBe('running');
+    expect(server?.status).toBe('running');
     expect(containerEngine.inspectContainer).toHaveBeenCalledOnce();
 
     vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
@@ -578,7 +578,7 @@ describe('containerRegistry events', () => {
     listener('die');
 
     await vi.waitFor(() => {
-      expect(inferenceManager.get('dummyId').status).toBe('stopped');
+      expect(inferenceManager.get('dummyId')?.status).toBe('stopped');
       expect(containerEngine.inspectContainer).toHaveBeenCalledTimes(2);
     });
 
@@ -611,7 +611,7 @@ describe('containerRegistry events', () => {
     const listener = await deferred;
 
     const server = inferenceManager.get('dummyId');
-    expect(server.status).toBe('running');
+    expect(server?.status).toBe('running');
 
     listener('remove');
 

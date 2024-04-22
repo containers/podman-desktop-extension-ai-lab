@@ -171,38 +171,40 @@ export class ModelsManager implements Disposable {
 
   async deleteModel(modelId: string): Promise<void> {
     const model = this.#models.get(modelId);
-    if (model) {
-      model.state = 'deleting';
-      await this.sendModelsInfo();
-      try {
-        await this.deleteRemoteModel(model);
-        let modelPath;
-        // if model does not have any url, it has been imported locally by the user
-        if (!model.url) {
-          modelPath = path.join(model.file.path, model.file.file);
-          // remove it from the catalog as it cannot be downloaded anymore
-          await this.catalogManager.removeUserModel(modelId);
-        } else {
-          modelPath = this.getLocalModelFolder(modelId);
-        }
-        await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
+    if (!model?.file) {
+      throw new Error('model cannot be found.');
+    }
 
-        this.telemetry.logUsage('model.delete', { 'model.id': modelId });
-        model.file = model.state = undefined;
-      } catch (err: unknown) {
-        this.telemetry.logError('model.delete', {
-          'model.id': modelId,
-          message: 'error deleting model from disk',
-          error: err,
-        });
-        await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
-
-        // Let's reload the models manually to avoid any issue
-        model.state = undefined;
-        this.getLocalModelsFromDisk();
-      } finally {
-        await this.sendModelsInfo();
+    model.state = 'deleting';
+    await this.sendModelsInfo();
+    try {
+      await this.deleteRemoteModel(model);
+      let modelPath;
+      // if model does not have any url, it has been imported locally by the user
+      if (!model.url) {
+        modelPath = path.join(model.file.path, model.file.file);
+        // remove it from the catalog as it cannot be downloaded anymore
+        await this.catalogManager.removeUserModel(modelId);
+      } else {
+        modelPath = this.getLocalModelFolder(modelId);
       }
+      await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
+
+      this.telemetry.logUsage('model.delete', { 'model.id': modelId });
+      model.file = model.state = undefined;
+    } catch (err: unknown) {
+      this.telemetry.logError('model.delete', {
+        'model.id': modelId,
+        message: 'error deleting model from disk',
+        error: err,
+      });
+      await podmanDesktopApi.window.showErrorMessage(`Error deleting model ${modelId}. ${String(err)}`);
+
+      // Let's reload the models manually to avoid any issue
+      model.state = undefined;
+      this.getLocalModelsFromDisk();
+    } finally {
+      await this.sendModelsInfo();
     }
   }
 
@@ -326,6 +328,10 @@ export class ModelsManager implements Disposable {
   }
 
   private createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader {
+    if (!model.url) {
+      throw new Error(`model ${model.id} does not have url defined.`);
+    }
+
     // Ensure path to model directory exist
     const destDir = path.join(this.appUserDirectory, 'models', model.id);
     if (!fs.existsSync(destDir)) {

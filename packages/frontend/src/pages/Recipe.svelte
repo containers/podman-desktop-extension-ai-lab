@@ -56,7 +56,7 @@ function setSelectedModel(modelId: string) {
     <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">
       <svelte:fragment slot="header">
         {#if connectionInfo}
-          <div class="mx-5">
+          <div class="px-4">
             <ContainerConnectionStatusInfo connectionInfo="{connectionInfo}" background="dark" />
           </div>
         {/if}

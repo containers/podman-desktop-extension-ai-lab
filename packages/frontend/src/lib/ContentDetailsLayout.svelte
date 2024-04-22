@@ -9,9 +9,7 @@ const toggle = () => {
 </script>
 
 <div class="flex flex-col w-full overflow-y-auto">
-  <div class="p-5">
-    <slot name="header" />
-  </div>
+  <slot name="header" />
   <div class="grid w-full lg:grid-cols-[1fr_auto] max-lg:grid-cols-[auto]">
     <div class="p-5 inline-grid">
       <slot name="content" />

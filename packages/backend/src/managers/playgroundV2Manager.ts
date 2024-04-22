@@ -56,7 +56,7 @@ export class PlaygroundV2Manager implements Disposable {
       trackingId: trackingId,
     });
 
-    const telemetry = {
+    const telemetry: Record<string, unknown> = {
       hasName: !!name,
       hasSystemPrompt: !!systemPrompt,
       modelId: model.id,
@@ -221,7 +221,7 @@ export class PlaygroundV2Manager implements Disposable {
 
     if (!modelInfo.file?.file) throw new Error('model info has undefined file.');
 
-    const telemetry = {
+    const telemetry: Record<string, unknown> = {
       conversationId: conversationId,
       ...options,
       promptLength: userInput.length,

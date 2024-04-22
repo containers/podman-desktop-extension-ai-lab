@@ -97,7 +97,8 @@ const openDiscussionsPage = () => {
           <button class="underline" title="Open the issues page" on:click="{openIssuesPage}">here</button>.
         </p>
         <p>
-          If you want to get more information about this project or exchange with the team, you can start a discussion
+          If you want to get more information about this project or exchange with the community, you can start a
+          discussion
           <button class="underline" title="Open the discussions page" on:click="{openDiscussionsPage}">here</button>.
         </p>
       </div>

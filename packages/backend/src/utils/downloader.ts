@@ -25,9 +25,9 @@ import type { CompletionEvent, ProgressEvent, BaseEvent } from '../models/baseEv
 export class Downloader {
   private readonly _onEvent = new EventEmitter<BaseEvent>();
   readonly onEvent: Event<BaseEvent> = this._onEvent.event;
-  private requestedIdentifier: string;
+  private requestedIdentifier: string | undefined;
 
-  completed: boolean;
+  completed: boolean = false;
 
   constructor(
     private url: string,

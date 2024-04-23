@@ -415,50 +415,64 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     const imageInfoList: ImageInfo[] = [];
 
     // Promise all the build images
-    await Promise.all(
-      containers.map(container => {
-        const task = containerTasks[container.name];
+    const abortController = new AbortController();
+    try {
+      await Promise.all(
+        containers.map(container => {
+          const task = containerTasks[container.name];
 
-        // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
-        const context = path.join(getParentDirectory(configPath), container.contextdir);
-        console.log(`Application Manager using context ${context} for container ${container.name}`);
+          // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
+          const context = path.join(getParentDirectory(configPath), container.contextdir);
+          console.log(`Application Manager using context ${context} for container ${container.name}`);
 
-        // Ensure the context provided exist otherwise throw an Error
-        if (!fs.existsSync(context)) {
-          task.error = 'The context provided does not exist.';
-          this.taskRegistry.updateTask(task);
-          throw new Error('Context configured does not exist.');
-        }
-
-        const imageTag = this.getImageTag(recipe, container);
-        const buildOptions: BuildImageOptions = {
-          containerFile: container.containerfile,
-          tag: imageTag,
-          labels: {
-            [LABEL_RECIPE_ID]: labels !== undefined && 'recipe-id' in labels ? labels['recipe-id'] : '',
-          },
-        };
-
-        return containerEngine
-          .buildImage(
-            context,
-            (event, data) => {
-              // todo: do something with the event
-              if (event === 'error' || (event === 'finish' && data !== '')) {
-                console.error('Something went wrong while building the image: ', data);
-                task.error = `Something went wrong while building the image: ${data}`;
-                this.taskRegistry.updateTask(task);
-              }
-            },
-            buildOptions,
-          )
-          .catch((err: unknown) => {
-            task.error = `Something went wrong while building the image: ${String(err)}`;
+          // Ensure the context provided exist otherwise throw an Error
+          if (!fs.existsSync(context)) {
+            task.error = 'The context provided does not exist.';
             this.taskRegistry.updateTask(task);
-            throw new Error(`Something went wrong while building the image: ${String(err)}`);
-          });
-      }),
-    );
+            throw new Error('Context configured does not exist.');
+          }
+
+          const imageTag = this.getImageTag(recipe, container);
+          const buildOptions: BuildImageOptions = {
+            containerFile: container.containerfile,
+            tag: imageTag,
+            labels: {
+              [LABEL_RECIPE_ID]: labels !== undefined && 'recipe-id' in labels ? labels['recipe-id'] : '',
+            },
+            abortController: abortController,
+          };
+
+          let error = false;
+          return containerEngine
+            .buildImage(
+              context,
+              (event, data) => {
+                // todo: do something with the event
+                if (event === 'error' || (event === 'finish' && data !== '')) {
+                  console.error('Something went wrong while building the image: ', data);
+                  task.error = `Something went wrong while building the image: ${data}`;
+                  this.taskRegistry.updateTask(task);
+                  error = true;
+                }
+              },
+              buildOptions,
+            )
+            .catch((err: unknown) => {
+              task.error = `Something went wrong while building the image: ${String(err)}`;
+              this.taskRegistry.updateTask(task);
+              throw new Error(`Something went wrong while building the image: ${String(err)}`);
+            })
+            .then(() => {
+              if (error) {
+                throw new Error(`Something went wrong while building the image: ${imageTag}`);
+              }
+            });
+        }),
+      );
+    } catch (err: unknown) {
+      abortController.abort();
+      throw err;
+    }
 
     // after image are built we return their data
     const images = await containerEngine.listImages();

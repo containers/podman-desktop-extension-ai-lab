@@ -318,6 +318,7 @@ describe('pullApplication', () => {
         labels: {
           [LABEL_RECIPE_ID]: 'recipe1',
         },
+        abortController: expect.anything(),
       },
     );
     expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'recipe.pull', {
@@ -325,6 +326,84 @@ describe('pullApplication', () => {
       'recipe.name': 'Recipe 1',
       durationSeconds: 99,
     });
+  });
+  test('pullApplication should clone repository and call downloadModelMain and fail on buildImage', async () => {
+    mockForPullApplication({
+      recipeFolderExists: false,
+    });
+    mocks.buildImageMock.mockRejectedValue(new Error('Build failed'));
+    mocks.listPodsMock.mockResolvedValue([]);
+    vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
+    vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
+    vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
+    mocks.performDownloadMock.mockResolvedValue('path');
+    const recipe: Recipe = {
+      id: 'recipe1',
+      name: 'Recipe 1',
+      categories: [],
+      description: '',
+      ref: '000000',
+      readme: '',
+      repository: 'repo',
+    };
+    const model: ModelInfo = {
+      id: 'model1',
+      description: '',
+      hw: '',
+      license: '',
+      name: 'Model 1',
+      registry: '',
+      url: 'dummy-url',
+      memory: 1000,
+    };
+    mocks.inspectContainerMock.mockResolvedValue({
+      State: {
+        Running: true,
+      },
+    });
+    vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
+    let error: unknown = undefined;
+    try {
+      await manager.pullApplication(recipe, model);
+    } catch (err: unknown) {
+      error = err;
+    }
+    expect(error).toBeDefined();
+    const gitCloneOptions = {
+      repository: 'repo',
+      ref: '000000',
+      targetDirectory: '\\home\\user\\aistudio\\recipe1',
+    };
+    if (process.platform === 'win32') {
+      expect(processCheckoutMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
+    } else {
+      gitCloneOptions.targetDirectory = '/home/user/aistudio/recipe1';
+      expect(processCheckoutMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
+    }
+    expect(mocks.performDownloadMock).toHaveBeenCalledOnce();
+    expect(mocks.buildImageMock).toHaveBeenCalledOnce();
+    expect(mocks.buildImageMock).toHaveBeenCalledWith(
+      `${gitCloneOptions.targetDirectory}${path.sep}contextdir1`,
+      expect.anything(),
+      {
+        containerFile: 'Containerfile',
+        tag: 'recipe1-container1:latest',
+        labels: {
+          [LABEL_RECIPE_ID]: 'recipe1',
+        },
+        abortController: expect.anything(),
+      },
+    );
+    expect(mocks.logErrorMock).toHaveBeenNthCalledWith(
+      1,
+      'recipe.pull',
+      expect.objectContaining({
+        'recipe.id': 'recipe1',
+        'recipe.name': 'Recipe 1',
+        durationSeconds: 99,
+        message: 'error pulling application',
+      }),
+    );
   });
   test('pullApplication should not download model if already on disk', async () => {
     mockForPullApplication({

@@ -95,9 +95,9 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
           throw new Error('malformed arch property');
         }
 
-        let contanerfile: string | undefined = undefined;
+        let containerfile: string | undefined = undefined;
         if ('containerfile' in container && isString(container['containerfile'])) {
-          contanerfile = container['containerfile'];
+          containerfile = container['containerfile'];
         }
 
         if (!('name' in container) || typeof container['name'] !== 'string') {
@@ -107,11 +107,14 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
         return {
           arch: architectures,
           modelService: 'model-service' in container && container['model-service'] === true,
-          containerfile: contanerfile,
+          containerfile: containerfile,
           contextdir: contextdir,
           name: container['name'],
           gpu_env: 'gpu-env' in container && Array.isArray(container['gpu-env']) ? container['gpu-env'] : [],
-          ports: 'ports' in container && Array.isArray(container['ports']) ? container['ports'] : [],
+          ports:
+            'ports' in container && Array.isArray(container['ports'])
+              ? container['ports'].map(port => parseInt(port))
+              : [],
           image: 'image' in container && isString(container['image']) ? container['image'] : undefined,
         };
       }),

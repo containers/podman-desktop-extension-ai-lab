@@ -36,6 +36,9 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
     private telemetry: TelemetryLogger,
   ) {
     super(webview, Messages.MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
+
+    this.#languages = [];
+    this.#additionalGenerators = new Map<string, Generator>();
   }
 
   addVariant(key: string, variant: string, generator: Generator): void {
@@ -76,7 +79,6 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
 
   init() {
     this.#languages = getLanguageList();
-    this.#additionalGenerators = new Map<string, Generator>();
     this.addVariant('java', 'Quarkus Langchain4J', quarkusLangchain4Jgenerator);
     this.addVariant('java', 'OkHttp', javaOkHttpGenerator);
     this.addVariant('python', 'Python LangChain', pythonLangChainGenerator);

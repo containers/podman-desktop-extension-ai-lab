@@ -49,13 +49,13 @@ export class Studio {
 
   #panel: WebviewPanel | undefined;
 
-  rpcExtension: RpcExtension;
-  studioApi: StudioApiImpl;
-  catalogManager: CatalogManager;
-  modelsManager: ModelsManager;
-  telemetry: TelemetryLogger;
+  rpcExtension: RpcExtension | undefined;
+  studioApi: StudioApiImpl | undefined;
+  catalogManager: CatalogManager | undefined;
+  modelsManager: ModelsManager | undefined;
+  telemetry: TelemetryLogger | undefined;
 
-  #inferenceManager: InferenceManager;
+  #inferenceManager: InferenceManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -192,12 +192,12 @@ export class Studio {
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
       // Lazily init inference manager
-      if (!this.#inferenceManager.isInitialize()) {
+      if (this.#inferenceManager && !this.#inferenceManager.isInitialize()) {
         this.#inferenceManager.init();
         this.#extensionContext.subscriptions.push(this.#inferenceManager);
       }
 
-      this.telemetry.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
+      this.telemetry?.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
     });
 
     const playgroundV2 = new PlaygroundV2Manager(
@@ -238,7 +238,7 @@ export class Studio {
 
   public async deactivate(): Promise<void> {
     console.log('stopping AI Lab extension');
-    this.telemetry.logUsage('stop');
+    this.telemetry?.logUsage('stop');
   }
 
   getWebviewOptions(extensionUri: Uri): WebviewOptions {

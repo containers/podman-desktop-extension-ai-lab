@@ -24,7 +24,8 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "strictPropertyInitialization": true
   },
   "include": [
     "src",

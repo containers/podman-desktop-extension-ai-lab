@@ -52,11 +52,25 @@ export function assertString(value: unknown): string {
 export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
   const raw: string = fs.readFileSync(filepath, 'utf-8');
 
-  const aiLabConfig = jsYaml.load(raw);
-  const application = aiLabConfig?.['application'];
-  if (!application) throw new Error('AIConfig has bad formatting.');
+  const aiLabConfig: unknown = jsYaml.load(raw);
+  if (!aiLabConfig || typeof aiLabConfig !== 'object') {
+    throw new Error('malformed configuration file.');
+  }
 
-  const containers: unknown[] = application['containers'] ?? [];
+  if (!('application' in aiLabConfig)) {
+    throw new Error('AIConfig has bad formatting: missing application property');
+  }
+
+  const application: unknown = aiLabConfig['application'];
+  if (!application || typeof application !== 'object' || !('containers' in application)) {
+    throw new Error('AIConfig has bad formatting: application does not have valid container property');
+  }
+
+  if (!Array.isArray(application['containers'])) {
+    throw new Error('AIConfig has bad formatting: containers property must be an array.');
+  }
+
+  const containers: unknown[] = application['containers'];
 
   return {
     application: {
@@ -70,15 +84,38 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
           contextdir = '.';
         }
 
+        const architectures: string[] = [];
+        if (!('arch' in container)) {
+          architectures.push(defaultArch);
+        } else if (Array.isArray(container['arch']) && container['arch'].every(arch => typeof arch === 'string')) {
+          architectures.push(...container['arch']);
+        } else if (typeof container['arch'] === 'string') {
+          architectures.push(container['arch']);
+        } else {
+          throw new Error('malformed arch property');
+        }
+
+        let containerfile: string | undefined = undefined;
+        if ('containerfile' in container && isString(container['containerfile'])) {
+          containerfile = container['containerfile'];
+        }
+
+        if (!('name' in container) || typeof container['name'] !== 'string') {
+          throw new Error('invalid name property: must be string');
+        }
+
         return {
-          arch: Array.isArray(container['arch']) ? container['arch'] : [defaultArch],
-          modelService: container['model-service'] === true,
-          containerfile: isString(container['containerfile']) ? container['containerfile'] : undefined,
+          arch: architectures,
+          modelService: 'model-service' in container && container['model-service'] === true,
+          containerfile,
           contextdir: contextdir,
-          name: assertString(container['name']),
-          gpu_env: Array.isArray(container['gpu-env']) ? container['gpu-env'] : [],
-          ports: Array.isArray(container['ports']) ? container['ports'] : [],
-          image: isString(container['image']) ? container['image'] : undefined,
+          name: container['name'],
+          gpu_env: 'gpu-env' in container && Array.isArray(container['gpu-env']) ? container['gpu-env'] : [],
+          ports:
+            'ports' in container && Array.isArray(container['ports'])
+              ? container['ports'].map(port => parseInt(port))
+              : [],
+          image: 'image' in container && isString(container['image']) ? container['image'] : undefined,
         };
       }),
     },

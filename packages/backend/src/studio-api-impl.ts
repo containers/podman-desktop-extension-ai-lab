@@ -165,7 +165,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async openFile(file: string, recipeId?: string): Promise<boolean> {
-    const telemetry = {
+    const telemetry: Record<string, unknown> = {
       'recipe.id': recipeId,
     };
     try {
@@ -393,7 +393,7 @@ export class StudioApiImpl implements StudioAPI {
   }
 
   async openVSCode(directory: string, recipeId?: string): Promise<void> {
-    const telemetry = {
+    const telemetry: Record<string, unknown> = {
       'recipe.id': recipeId,
     };
 

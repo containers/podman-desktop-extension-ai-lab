@@ -22,7 +22,205 @@ import { type AIConfig, parseYamlFile } from './AIConfig';
 
 // Define mock file paths and contents
 const mockYamlPath = '/path/to/mock.yml';
-const mockYamlContent = `
+const defaultArch = 'x64';
+
+const readFileSync = vi.spyOn(fs, 'readFileSync');
+
+describe('parseYaml', () => {
+  test('malformed configuration', () => {
+    readFileSync.mockReturnValue(``);
+    expect(() => {
+      parseYamlFile(mockYamlPath, defaultArch);
+    }).toThrowError('malformed configuration file.');
+  });
+
+  test('missing application property', () => {
+    readFileSync.mockReturnValue(`
+wrong:
+`);
+    expect(() => {
+      parseYamlFile(mockYamlPath, defaultArch);
+    }).toThrowError('AIConfig has bad formatting: missing application property');
+  });
+
+  test('application primitive', () => {
+    readFileSync.mockReturnValue(`
+application: true
+`);
+    expect(() => {
+      parseYamlFile(mockYamlPath, defaultArch);
+    }).toThrowError('AIConfig has bad formatting: application does not have valid container property');
+  });
+
+  test('containers not an array', () => {
+    readFileSync.mockReturnValue(`
+application:
+  containers:
+    name: container1
+    contextdir: /path/to/dir1
+    arch: ["x86"]
+    model-service: true
+    gpu-env: ["env1", "env2"]
+    ports: [ 8080 ]
+`);
+    expect(() => {
+      parseYamlFile(mockYamlPath, defaultArch);
+    }).toThrowError('AIConfig has bad formatting: containers property must be an array.');
+  });
+
+  test('containers object', () => {
+    readFileSync.mockReturnValue(`
+application:
+  containers: true
+`);
+    expect(() => {
+      parseYamlFile(mockYamlPath, defaultArch);
+    }).toThrowError('AIConfig has bad formatting: containers property must be an array.');
+  });
+
+  test('should use architecture as string', () => {
+    readFileSync.mockReturnValue(`
+application:
+  containers:
+    - name: container1
+      contextdir: /path/to/dir1
+      arch: x86
+      ports: [ 8080 ]
+`);
+
+    const expectedConfig: AIConfig = {
+      application: {
+        containers: [
+          {
+            name: 'container1',
+            contextdir: '/path/to/dir1',
+            arch: ['x86'],
+            gpu_env: [],
+            modelService: false,
+            ports: [8080],
+          },
+        ],
+      },
+    };
+
+    expect(parseYamlFile(mockYamlPath, defaultArch)).toEqual(expectedConfig);
+  });
+
+  test('should use all architectures', () => {
+    readFileSync.mockReturnValue(`
+application:
+  containers:
+    - name: container1
+      contextdir: /path/to/dir1
+      arch: ['arch1', 'arch2']
+      ports: [ 8080 ]
+`);
+
+    const expectedConfig: AIConfig = {
+      application: {
+        containers: [
+          {
+            name: 'container1',
+            contextdir: '/path/to/dir1',
+            arch: ['arch1', 'arch2'],
+            gpu_env: [],
+            modelService: false,
+            ports: [8080],
+          },
+        ],
+      },
+    };
+
+    expect(parseYamlFile(mockYamlPath, defaultArch)).toEqual(expectedConfig);
+  });
+
+  test('should put the default architecture', () => {
+    readFileSync.mockReturnValue(`
+application:
+  containers:
+    - name: container1
+      contextdir: /path/to/dir1
+      ports: [ 8080 ]
+`);
+
+    const expectedConfig: AIConfig = {
+      application: {
+        containers: [
+          {
+            name: 'container1',
+            contextdir: '/path/to/dir1',
+            arch: [defaultArch],
+            gpu_env: [],
+            modelService: false,
+            ports: [8080],
+          },
+        ],
+      },
+    };
+
+    expect(parseYamlFile(mockYamlPath, defaultArch)).toEqual(expectedConfig);
+  });
+
+  test('should use the image provided in the config', () => {
+    readFileSync.mockReturnValue(`
+application:
+  containers:
+    - name: container1
+      contextdir: /path/to/dir1
+      ports: [ 8080 ]
+      image: dummy-image
+`);
+
+    const expectedConfig: AIConfig = {
+      application: {
+        containers: [
+          {
+            name: 'container1',
+            contextdir: '/path/to/dir1',
+            arch: [defaultArch],
+            gpu_env: [],
+            modelService: false,
+            ports: [8080],
+            image: 'dummy-image',
+          },
+        ],
+      },
+    };
+
+    expect(parseYamlFile(mockYamlPath, defaultArch)).toEqual(expectedConfig);
+  });
+
+  test('ports should always be a final number', () => {
+    readFileSync.mockReturnValue(`
+application:
+  containers:
+    - name: container1
+      contextdir: /path/to/dir1
+      ports: [ '8080', 8888 ]
+      image: dummy-image
+`);
+
+    const expectedConfig: AIConfig = {
+      application: {
+        containers: [
+          {
+            name: 'container1',
+            contextdir: '/path/to/dir1',
+            arch: [defaultArch],
+            gpu_env: [],
+            modelService: false,
+            ports: [8080, 8888],
+            image: 'dummy-image',
+          },
+        ],
+      },
+    };
+
+    expect(parseYamlFile(mockYamlPath, defaultArch)).toEqual(expectedConfig);
+  });
+
+  test('should use gpu env', () => {
+    readFileSync.mockReturnValue(`
 application:
   containers:
     - name: container1
@@ -34,15 +232,8 @@ application:
     - name: container2
       arch: ["arm"]
       ports: [ 8001 ]
-`;
+`);
 
-const readFileSync = vi.spyOn(fs, 'readFileSync');
-
-describe('parseYaml', () => {
-  test('should parse valid YAML file', () => {
-    readFileSync.mockReturnValue(mockYamlContent);
-
-    const defaultArch = 'x64';
     const expectedConfig: AIConfig = {
       application: {
         containers: [

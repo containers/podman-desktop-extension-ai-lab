@@ -365,7 +365,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
 
     // create new pod
-    const labels = {
+    const labels: Record<string, string> = {
       [LABEL_RECIPE_ID]: recipe.id,
       [LABEL_MODEL_ID]: model.id,
     };

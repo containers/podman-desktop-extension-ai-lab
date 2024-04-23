@@ -107,7 +107,7 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
         return {
           arch: architectures,
           modelService: 'model-service' in container && container['model-service'] === true,
-          containerfile: containerfile,
+          containerfile,
           contextdir: contextdir,
           name: container['name'],
           gpu_env: 'gpu-env' in container && Array.isArray(container['gpu-env']) ? container['gpu-env'] : [],

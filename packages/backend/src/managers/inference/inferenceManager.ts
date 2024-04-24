@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
 import type { PodmanConnection } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import {
@@ -30,6 +30,7 @@ import {
   generateContainerCreateOptions,
   getImageInfo,
   getProviderContainerConnection,
+  isTransitioning,
   LABEL_INFERENCE_SERVER,
 } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
@@ -250,6 +251,9 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
         if (server === undefined)
           throw new Error('Something went wrong while trying to get container status got undefined Inference Server.');
 
+        // we should not update the server while we are in a transition state.
+        if (isTransitioning(server)) return;
+
         // Update server
         this.#servers.set(containerId, {
           ...server,
@@ -423,10 +427,14 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     }
 
     try {
+      // Set status a deleting
+      this.setInferenceServerStatus(server.container.containerId, 'deleting');
+
       // If the server is running we need to stop it.
       if (server.status === 'running') {
         await containerEngine.stopContainer(server.container.engineId, server.container.containerId);
       }
+
       // Delete the container
       await containerEngine.deleteContainer(server.container.engineId, server.container.containerId);
 
@@ -434,6 +442,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       this.removeInferenceServer(containerId);
     } catch (err: unknown) {
       console.error('Something went wrong while trying to delete the inference server.', err);
+      this.setInferenceServerStatus(server.container.containerId, 'error');
       this.retryableRefresh(2);
     }
   }
@@ -449,19 +458,19 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
 
     try {
+      // set status to starting
+      this.setInferenceServerStatus(server.container.containerId, 'starting');
       await containerEngine.startContainer(server.container.engineId, server.container.containerId);
-      this.#servers.set(server.container.containerId, {
-        ...server,
-        status: 'running',
-        health: undefined, // remove existing health checks
-      });
-      this.notify();
+      // start watch container status
+      this.watchContainerStatus(server.container.engineId, server.container.containerId);
     } catch (error: unknown) {
       console.error(error);
       this.telemetry.logError('inference.start', {
         message: 'error starting inference',
         error: error,
       });
+      this.setInferenceServerStatus(server.container.containerId, 'error');
+      this.retryableRefresh(1);
     }
   }
 
@@ -475,20 +484,41 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     const server = this.#servers.get(containerId);
     if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
 
+    if (isTransitioning(server)) throw new Error(`cannot stop a transitioning server.`);
+
     try {
+      // set server to stopping
+      this.setInferenceServerStatus(server.container.containerId, 'stopping');
+
       await containerEngine.stopContainer(server.container.engineId, server.container.containerId);
-      this.#servers.set(server.container.containerId, {
-        ...server,
-        status: 'stopped',
-        health: undefined, // remove existing health checks
-      });
-      this.notify();
+      // once stopped update the status
+      this.setInferenceServerStatus(server.container.containerId, 'stopped');
     } catch (error: unknown) {
       console.error(error);
       this.telemetry.logError('inference.stop', {
         message: 'error stopping inference',
         error: error,
       });
+
+      this.setInferenceServerStatus(server.container.containerId, 'error');
+      this.retryableRefresh(1);
     }
+  }
+
+  /**
+   * Given an containerId, set the status of the corresponding inference server
+   * @param containerId
+   * @param status
+   */
+  private setInferenceServerStatus(containerId: string, status: InferenceServerStatus): void {
+    const server = this.#servers.get(containerId);
+    if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
+
+    this.#servers.set(server.container.containerId, {
+      ...server,
+      status: status,
+      health: undefined, // always reset health history when changing status
+    });
+    this.notify();
   }
 }

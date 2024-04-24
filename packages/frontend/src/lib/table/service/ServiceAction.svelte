@@ -22,11 +22,16 @@ function deleteInferenceServer() {
     console.error('Something went wrong while trying to delete inference server', err);
   });
 }
+
+let loading: boolean;
+$: {
+  loading = ['deleting', 'stopping', 'starting'].includes(object.status);
+}
 </script>
 
 {#if object.status === 'running'}
   <ListItemButtonIcon icon="{faStop}" onClick="{stopInferenceServer}" title="Stop service" />
 {:else}
-  <ListItemButtonIcon icon="{faPlay}" onClick="{startInferenceServer}" title="Start service" />
+  <ListItemButtonIcon enabled="{!loading}" icon="{faPlay}" onClick="{startInferenceServer}" title="Start service" />
 {/if}
-<ListItemButtonIcon icon="{faTrash}" onClick="{deleteInferenceServer}" title="Delete service" />
+<ListItemButtonIcon enabled="{!loading}" icon="{faTrash}" onClick="{deleteInferenceServer}" title="Delete service" />

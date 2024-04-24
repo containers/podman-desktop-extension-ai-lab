@@ -29,6 +29,7 @@ import type { CreationInferenceServerOptions, InferenceServerConfig } from '@sha
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
 import { getFreeRandomPort } from './ports';
 import { getModelPropertiesForEnvironment } from './modelsUtils';
+import type { InferenceServer } from '@shared/src/models/IInference';
 
 export const SECOND: number = 1_000_000_000;
 
@@ -168,4 +169,17 @@ export async function withDefaultConfiguration(
     modelsInfo: options.modelsInfo,
     providerId: options.providerId,
   };
+}
+
+export function isTransitioning(server: InferenceServer): boolean {
+  switch (server.status) {
+    case 'deleting':
+    case 'stopping':
+    case 'starting':
+      return true;
+    default:
+      break;
+  }
+
+  return false;
 }

@@ -113,3 +113,21 @@ test('should call deleteInferenceServer when click delete', async () => {
   await fireEvent.click(startBtn);
   expect(studioClient.requestDeleteInferenceServer).toHaveBeenCalledWith('dummyContainerId');
 });
+
+test('should be disabled on transition', async () => {
+  render(ServiceAction, {
+    object: {
+      health: undefined,
+      models: [],
+      connection: { port: 8888 },
+      status: 'stopping',
+      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+    },
+  });
+
+  const startBtn = screen.getByTitle('Start service');
+  expect(startBtn.classList).toContain('text-gray-900');
+
+  const deleteBtn = screen.getByTitle('Delete service');
+  expect(deleteBtn.classList).toContain('text-gray-900');
+});

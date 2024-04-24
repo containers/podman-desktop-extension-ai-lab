@@ -16,10 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { expect, test, vi } from 'vitest';
+import { expect, test, vi, describe } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import ServiceStatus from './ServiceStatus.svelte';
 import { studioClient } from '/@/utils/client';
+import type { InferenceServerStatus } from '@shared/src/models/IInference';
 
 vi.mock('../../../utils/client', async () => ({
   studioClient: {
@@ -27,22 +28,50 @@ vi.mock('../../../utils/client', async () => ({
   },
 }));
 
-test('undefined health should display a spinner', async () => {
-  render(ServiceStatus, {
-    object: {
-      health: undefined,
-      models: [],
-      connection: { port: 8888 },
-      status: 'running',
-      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+describe('transition statuses', () => {
+  test.each(['starting', 'stopping', 'deleting'] as InferenceServerStatus[])(
+    'status %s should display a spinner',
+    status => {
+      render(ServiceStatus, {
+        object: {
+          health: undefined,
+          models: [],
+          connection: { port: 8888 },
+          status: status,
+          container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+        },
+      });
+
+      const img = screen.getByRole('img');
+      expect(img).toBeDefined();
+
+      const button = screen.queryByRole('button');
+      expect(button).toBeNull();
     },
-  });
+  );
+});
 
-  const img = screen.getByRole('img');
-  expect(img).toBeDefined();
+describe('stable statuses', () => {
+  test.each(['running', 'stopped', 'error'] as InferenceServerStatus[])(
+    'status %s should not display a spinner',
+    status => {
+      render(ServiceStatus, {
+        object: {
+          health: undefined,
+          models: [],
+          connection: { port: 8888 },
+          status: status,
+          container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+        },
+      });
 
-  const button = screen.queryByRole('button');
-  expect(button).toBeNull();
+      const img = screen.queryByRole('img');
+      expect(img).toBeNull();
+
+      const button = screen.getByRole('button');
+      expect(button).toBeDefined();
+    },
+  );
 });
 
 test('defined health should not display a spinner', async () => {

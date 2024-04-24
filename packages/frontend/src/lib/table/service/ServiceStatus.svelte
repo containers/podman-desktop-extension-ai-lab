@@ -14,7 +14,7 @@ let status: string;
 let loading: boolean;
 $: {
   status = getStatus();
-  loading = object.health === undefined && object.status !== 'stopped';
+  loading = ['deleting', 'stopping', 'starting'].includes(object.status);
 }
 
 function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
@@ -26,6 +26,7 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
     case 'healthy':
       return 'RUNNING';
     case 'unhealthy':
+    case 'error':
       return 'DEGRADED';
     case 'starting':
       return 'STARTING';

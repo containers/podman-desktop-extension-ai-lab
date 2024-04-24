@@ -133,7 +133,7 @@
       "registry": "Hugging Face",
       "license": "Apache-2.0",
       "url": "https://huggingface.co/instructlab/merlinite-7b-lab-GGUF/resolve/main/merlinite-7b-lab-Q4_K_M.gguf",
-      "memory": 4080218931,
+      "memory": 4370129224,
       "properties": {
         "chatFormat": "openchat"
       }

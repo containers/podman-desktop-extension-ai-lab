@@ -27,7 +27,7 @@ import type { InferenceServerConfig } from '@shared/src/models/InferenceServerCo
 import type { ImageInfo } from '@podman-desktop/api';
 import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { InferenceServer, type InferenceServerStatus } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
 
 vi.mock('./ports', () => ({
   getFreeRandomPort: vi.fn(),

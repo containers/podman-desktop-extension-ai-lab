@@ -1,7 +1,7 @@
 {
   "name": "ai-lab",
   "displayName": "Podman AI Lab",
-  "description": "Podman AI Lab",
+  "description": "Podman AI Lab lets you work with LLMs locally, exploring AI fundamentals, experimenting with models and prompts, and serving models while maintaining data security and privacy.",
   "version": "1.1.0-next",
   "icon": "icon.png",
   "publisher": "redhat",

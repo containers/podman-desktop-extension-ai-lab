@@ -729,6 +729,7 @@ describe('transition statuses', () => {
     const inferenceManager = await getInitializedInferenceManager();
     await inferenceManager.startInferenceServer('dummyId');
 
+    // first status must be set to starting
     expect(webviewMock.postMessage).toHaveBeenCalledWith({
       id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
       body: [
@@ -738,6 +739,20 @@ describe('transition statuses', () => {
           models: expect.anything(),
           health: undefined,
           status: 'starting',
+        },
+      ],
+    });
+
+    // on success it should have been set to running
+    expect(webviewMock.postMessage).toHaveBeenCalledWith({
+      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
+      body: [
+        {
+          connection: expect.anything(),
+          container: expect.anything(),
+          models: expect.anything(),
+          health: undefined,
+          status: 'running',
         },
       ],
     });

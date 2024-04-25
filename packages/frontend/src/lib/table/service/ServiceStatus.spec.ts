@@ -118,3 +118,31 @@ test('click on status icon should redirect to container', async () => {
     expect(studioClient.navigateToContainer).toHaveBeenCalledWith('dummyContainerId');
   });
 });
+
+test('error status should show degraded', async () => {
+  render(ServiceStatus, {
+    object: {
+      models: [],
+      connection: { port: 8888 },
+      status: 'error',
+      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+    },
+  });
+  // Get button and click on it
+  const status = screen.getByRole('status');
+  expect(status.title).toBe('DEGRADED');
+});
+
+test('running status with no healthcheck should show starting', async () => {
+  render(ServiceStatus, {
+    object: {
+      models: [],
+      connection: { port: 8888 },
+      status: 'running',
+      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+    },
+  });
+  // Get button and click on it
+  const status = screen.getByRole('status');
+  expect(status.title).toBe('STARTING');
+});

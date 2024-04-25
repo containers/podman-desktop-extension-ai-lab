@@ -461,8 +461,10 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       // set status to starting
       this.setInferenceServerStatus(server.container.containerId, 'starting');
       await containerEngine.startContainer(server.container.engineId, server.container.containerId);
-      // start watch container status
+
       this.setInferenceServerStatus(server.container.containerId, 'running');
+      // start watch for container status update
+      this.watchContainerStatus(server.container.engineId, server.container.containerId);
     } catch (error: unknown) {
       console.error(error);
       this.telemetry.logError('inference.start', {

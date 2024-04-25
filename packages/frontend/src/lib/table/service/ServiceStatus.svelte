@@ -18,8 +18,19 @@ $: {
 }
 
 function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
-  if (object.status === 'stopped') {
-    return '';
+  switch (object.status) {
+    case 'stopped':
+      return '';
+    case 'error':
+      return 'DEGRADED';
+    default:
+      break;
+  }
+
+  // Special case: when the health check is undefined, and the container is running
+  // it is not ready, so still showing starting
+  if (object.health === undefined && object.status === 'running') {
+    return 'STARTING';
   }
 
   switch (object.health?.Status) {

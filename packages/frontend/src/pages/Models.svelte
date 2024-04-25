@@ -152,7 +152,7 @@ async function importModel() {
               {#if importedModels.length > 0}
                 <Table kind="model" data="{importedModels}" columns="{columns}" row="{row}"></Table>
               {:else}
-                <div role="status">There is no model yet</div>
+                <div role="status">There are no models yet</div>
               {/if}
             </Route>
 

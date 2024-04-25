@@ -14,7 +14,7 @@ body:
     attributes:
       label: Epic domain
       description: A clear and concise description of the feature area or domain that this epic will address.
-      placeholder: Podman Desktop should support [...]
+      placeholder: AI-Lab should support [...]
     validations:
       required: true
 

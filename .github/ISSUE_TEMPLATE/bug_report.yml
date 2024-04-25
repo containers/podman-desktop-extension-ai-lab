@@ -33,7 +33,7 @@ body:
     id: install
     attributes:
       label: Installation Method
-      description: "How did you install AI-Lab ?"
+      description: "How did you install AI Lab ?"
       options:
         - "from `ghcr.io/containers/podman-desktop-extension-ai-lab` container image"
         - "from Podman-Desktop extension page"

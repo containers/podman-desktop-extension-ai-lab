@@ -85,21 +85,21 @@ The name of the image to use is `ghcr.io/containers/podman-desktop-extension-ai-
 
 Let's select a model from the catalog and download it locally to our workstation.
 
-[![](/docs/img/download-model.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/download-model.mp4)
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/download-model.gif)
 
 2. **Start an inference server**
 
 Once a model is available locally, let's start an inference server
 
-[![](/docs/img/start-inference-server.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-inference-server.mp4)
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-inference-server.gif)
 
 3. **Start a playground to have a chat conversation with model**
 
-[![](/docs/img/playground.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/playground.mp4)
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/playground.gif)
 
 4. **Start a AI application and use it from the browser**
 
-[![](/docs/img/start-ai-app.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-ai-app.mp4)
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-ai-app.gif)
 
 ## Contributing
 

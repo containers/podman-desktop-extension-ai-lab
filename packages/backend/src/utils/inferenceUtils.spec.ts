@@ -21,11 +21,13 @@ import {
   withDefaultConfiguration,
   INFERENCE_SERVER_IMAGE,
   SECOND,
+  isTransitioning,
 } from './inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { ImageInfo } from '@podman-desktop/api';
 import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
 
 vi.mock('./ports', () => ({
   getFreeRandomPort: vi.fn(),
@@ -194,4 +196,23 @@ describe('withDefaultConfiguration', () => {
     expect(result.labels).toStrictEqual({ hello: 'world' });
     expect(result.providerId).toBe('dummyProviderId');
   });
+});
+
+test.each(['stopping', 'deleting', 'starting'] as InferenceServerStatus[])(
+  '%s should be a transitioning state',
+  status => {
+    expect(
+      isTransitioning({
+        status: status,
+      } as unknown as InferenceServer),
+    ).toBeTruthy();
+  },
+);
+
+test.each(['running', 'stopped', 'error'] as InferenceServerStatus[])('%s should be a stable state', status => {
+  expect(
+    isTransitioning({
+      status: status,
+    } as unknown as InferenceServer),
+  ).toBeFalsy();
 });

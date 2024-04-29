@@ -33,6 +33,7 @@ import type { ModelsManager } from '../modelsManager';
 import { LABEL_INFERENCE_SERVER, INFERENCE_SERVER_IMAGE } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
+import { Messages } from '@shared/Messages';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -621,5 +622,139 @@ describe('containerRegistry events', () => {
 
     // we should have disposed the subscriber, as the container is removed
     expect(disposableMock).toHaveBeenCalled();
+  });
+});
+
+describe('transition statuses', () => {
+  test('stopping an inference server should first set status to stopping', async () => {
+    mockListContainers([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+        },
+      },
+    ]);
+    vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
+      State: {
+        Status: 'running',
+        Health: undefined,
+      },
+    } as unknown as ContainerInspectInfo);
+
+    const inferenceManager = await getInitializedInferenceManager();
+    await inferenceManager.stopInferenceServer('dummyId');
+
+    // first called with stopping status
+    expect(webviewMock.postMessage).toHaveBeenCalledWith({
+      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
+      body: [
+        {
+          connection: expect.anything(),
+          container: expect.anything(),
+          models: expect.anything(),
+          health: undefined,
+          status: 'stopping',
+        },
+      ],
+    });
+
+    // finally have been called with status stopped
+    expect(webviewMock.postMessage).toHaveBeenCalledWith({
+      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
+      body: [
+        {
+          connection: expect.anything(),
+          container: expect.anything(),
+          models: expect.anything(),
+          health: undefined,
+          status: 'stopped',
+        },
+      ],
+    });
+  });
+
+  test('deleting an inference server should first set status to stopping', async () => {
+    mockListContainers([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+        },
+      },
+    ]);
+    vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
+      State: {
+        Status: 'running',
+        Health: undefined,
+      },
+    } as unknown as ContainerInspectInfo);
+
+    const inferenceManager = await getInitializedInferenceManager();
+    await inferenceManager.deleteInferenceServer('dummyId');
+
+    expect(webviewMock.postMessage).toHaveBeenCalledWith({
+      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
+      body: [
+        {
+          connection: expect.anything(),
+          container: expect.anything(),
+          models: expect.anything(),
+          health: undefined,
+          status: 'deleting',
+        },
+      ],
+    });
+  });
+
+  test('starting an inference server should first set status to stopping', async () => {
+    mockListContainers([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+        },
+      },
+    ]);
+    vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
+      State: {
+        Status: 'stopped',
+        Health: undefined,
+      },
+    } as unknown as ContainerInspectInfo);
+
+    const inferenceManager = await getInitializedInferenceManager();
+    await inferenceManager.startInferenceServer('dummyId');
+
+    // first status must be set to starting
+    expect(webviewMock.postMessage).toHaveBeenCalledWith({
+      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
+      body: [
+        {
+          connection: expect.anything(),
+          container: expect.anything(),
+          models: expect.anything(),
+          health: undefined,
+          status: 'starting',
+        },
+      ],
+    });
+
+    // on success it should have been set to running
+    expect(webviewMock.postMessage).toHaveBeenCalledWith({
+      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
+      body: [
+        {
+          connection: expect.anything(),
+          container: expect.anything(),
+          models: expect.anything(),
+          health: undefined,
+          status: 'running',
+        },
+      ],
+    });
   });
 });

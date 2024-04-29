@@ -316,8 +316,7 @@ export class PlaygroundV2Manager implements Disposable {
   }
 
   private isFreeName(name: string): boolean {
-    const names = new Set(this.getConversations().map(c => c.name));
-    return !names.has(name);
+    return !this.getConversations().some(c => c.name === name)
   }
 
   dispose(): void {

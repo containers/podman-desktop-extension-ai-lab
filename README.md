@@ -147,7 +147,7 @@ It must follow the same format as the default catalog [in the sources of the ext
 
 ### Packaging sample applications
 
-Sample applications may be added to the catalog. See [packaging guide](PACKAGING-GUIDE.md) for detailed information.
+Sample applications may be added to the catalog. See [packaging guide](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/PACKAGING-GUIDE.md) for detailed information.
 
 
 ## Feedback

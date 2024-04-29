@@ -109,7 +109,7 @@ export class PlaygroundV2Manager implements Disposable {
     if (!name) {
       name = this.getFreeName();
     }
-    if (!this.isFreeName(name)) {
+    if (!this.isNameFree(name)) {
       throw new Error(`a playground with the name ${name} already exists`);
     }
 
@@ -315,8 +315,8 @@ export class PlaygroundV2Manager implements Disposable {
     return name;
   }
 
-  private isFreeName(name: string): boolean {
-    return !this.getConversations().some(c => c.name === name)
+  private isNameFree(name: string): boolean {
+    return !this.getConversations().some(c => c.name === name);
   }
 
   dispose(): void {

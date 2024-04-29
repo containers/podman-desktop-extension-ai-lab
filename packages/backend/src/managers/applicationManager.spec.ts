@@ -269,7 +269,7 @@ describe('pullApplication', () => {
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
-    mocks.performDownloadMock.mockResolvedValue('path');
+    mocks.performDownloadMock.mockResolvedValue(false);
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',
@@ -336,7 +336,7 @@ describe('pullApplication', () => {
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
-    mocks.performDownloadMock.mockResolvedValue('path');
+    mocks.performDownloadMock.mockResolvedValue(false);
     const recipe: Recipe = {
       id: 'recipe1',
       name: 'Recipe 1',

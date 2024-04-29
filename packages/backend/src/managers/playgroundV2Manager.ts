@@ -109,6 +109,9 @@ export class PlaygroundV2Manager implements Disposable {
     if (!name) {
       name = this.getFreeName();
     }
+    if (!this.isFreeName(name)) {
+      throw new Error(`a playground with the name ${name} already exists`);
+    }
 
     // Create conversation
     const conversationId = this.#conversationRegistry.createConversation(name, model.id);
@@ -310,6 +313,11 @@ export class PlaygroundV2Manager implements Disposable {
       name = `playground ${++i}`;
     } while (names.has(name));
     return name;
+  }
+
+  private isFreeName(name: string): boolean {
+    const names = new Set(this.getConversations().map(c => c.name));
+    return !names.has(name);
   }
 
   dispose(): void {

@@ -21,4 +21,8 @@ import { Messages } from '@shared/Messages';
 import { RPCReadable } from './rpcReadable';
 import type { UpdateInfo } from '@shared/src/models/IUpdate';
 
-export const modelsUpdateInfo = RPCReadable<UpdateInfo[]>([], [Messages.MSG_UPDATES_INFO], studioClient.getModelsUpdateInfo);
+export const modelsUpdateInfo = RPCReadable<UpdateInfo[]>(
+  [],
+  [Messages.MSG_UPDATES_INFO],
+  studioClient.getModelsUpdateInfo,
+);

@@ -200,15 +200,15 @@ export class Studio {
     );
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
-      if(!this.#lazyInitialized) {
+      if (!this.#lazyInitialized) {
         // init inference manager
-        if(this.#inferenceManager) {
+        if (this.#inferenceManager) {
           this.#inferenceManager.init();
           this.#extensionContext.subscriptions.push(this.#inferenceManager);
         }
 
         // init update manager
-        if(this.#updateManager) {
+        if (this.#updateManager) {
           this.#updateManager.init();
           this.#extensionContext.subscriptions.push(this.#updateManager);
         }

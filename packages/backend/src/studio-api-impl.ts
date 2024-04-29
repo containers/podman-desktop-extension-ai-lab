@@ -497,7 +497,7 @@ export class StudioApiImpl implements StudioAPI {
     return this.updateManager.getAll();
   }
 
-  async requestModelUpdate(modelId:string): Promise<void> {
+  async requestModelUpdate(modelId: string): Promise<void> {
     this.updateManager.requestUpdate(modelId).catch((err: unknown) => {
       console.error('Something went wrong while trying to request model update', err);
     });

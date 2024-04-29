@@ -38,9 +38,9 @@ function createModelService() {
 }
 
 function updateModel() {
-  studioClient.requestModelUpdate(object.id).catch((err) => {
+  studioClient.requestModelUpdate(object.id).catch(err => {
     console.error('Something went wrong while trying to request model update', err);
-  })
+  });
 }
 </script>
 
@@ -60,8 +60,5 @@ function updateModel() {
   <ListItemButtonIcon icon="{faDownload}" onClick="{downloadModel}" title="Download Model" enabled="{!object.state}" />
 {/if}
 {#if updateInfo}
-  <ListItemButtonIcon
-    icon="{faCircleArrowUp}"
-    title="Update model"
-    onClick="{() => updateModel()}" />
+  <ListItemButtonIcon icon="{faCircleArrowUp}" title="Update model" onClick="{() => updateModel()}" />
 {/if}

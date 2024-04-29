@@ -21,14 +21,17 @@ import { Publisher } from '../../utils/Publisher';
 import type { UpdateInfo } from '@shared/src/models/IUpdate';
 import { Messages } from '@shared/Messages';
 import https from 'node:https';
-import { existsSync, promises } from 'node:fs';
+import fs, { promises } from 'node:fs';
 import path from 'node:path';
-import { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
-export class UpdateManager extends Publisher<UpdateInfo[]>  implements Disposable {
+export class UpdateManager extends Publisher<UpdateInfo[]> implements Disposable {
   #updates: Map<string, UpdateInfo> = new Map();
 
-  constructor(webview: Webview, private modelsManager: ModelsManager) {
+  constructor(
+    webview: Webview,
+    private modelsManager: ModelsManager,
+  ) {
     super(webview, Messages.MSG_UPDATES_INFO, () => this.getAll());
   }
 
@@ -43,24 +46,21 @@ export class UpdateManager extends Publisher<UpdateInfo[]>  implements Disposabl
   private async checkUpdates(): Promise<void> {
     const models = this.modelsManager.getModelsInfo();
     for (const model of models) {
-      if(!model.url || !model.file)
-        continue;
+      if (!model.url || !model.file) continue;
 
-      let etag: string | undefined = undefined;
+      const localEtag = await this.readEtagValue(model.file.path);
+      if (!localEtag) continue;
+
+      let remoteEtag: string | undefined = undefined;
       try {
-        etag = await this.getEtag(model.url);
+        remoteEtag = await this.getEtag(model.url);
       } catch (err: unknown) {
         console.error(`Something went wrong while getting the etag for model ${model.id}:`, err);
       }
 
-      if(!etag)
-        continue;
+      if (!remoteEtag) continue;
 
-      const localEtag = await this.readEtagValue(model.file.path);
-      if(!localEtag)
-        continue;
-
-      if(localEtag !== etag) {
+      if (localEtag !== remoteEtag) {
         this.#updates.set(model.id, {
           modelsId: model.id,
           message: 'New update is available.',
@@ -79,14 +79,12 @@ export class UpdateManager extends Publisher<UpdateInfo[]>  implements Disposabl
     console.log(`requestUpdate ${modelId}`);
 
     const modelInfo: ModelInfo = this.modelsManager.getModelInfo(modelId);
-    if(!modelInfo.url || !modelInfo.file)
-      throw new Error(`model with id ${modelId} cannot be updated.`);
+    if (!modelInfo.url || !modelInfo.file) throw new Error(`model with id ${modelId} cannot be updated.`);
 
-    if(!this.#updates.has(modelId))
-      throw new Error(`no update available for the model id ${modelId}`);
+    if (!this.#updates.has(modelId)) throw new Error(`no update available for the model id ${modelId}`);
 
     const etag = await this.getEtag(modelInfo.url);
-    if(!etag) {
+    if (!etag) {
       // cleanup
       this.#updates.delete(modelId);
       throw new Error('Something went wrong: undefined etag.');
@@ -113,8 +111,7 @@ export class UpdateManager extends Publisher<UpdateInfo[]>  implements Disposabl
   private async readEtagValue(directory: string): Promise<string | undefined> {
     const etagPath = this.getEtagPath(directory);
 
-    if(!existsSync(etagPath))
-      return undefined;
+    if (!fs.existsSync(etagPath)) return undefined;
 
     const content = await promises.readFile(etagPath, 'utf-8');
     return content.trim();
@@ -136,8 +133,8 @@ export class UpdateManager extends Publisher<UpdateInfo[]>  implements Disposabl
   private getEtag(url: string): Promise<string | undefined> {
     return new Promise((resolve, reject) => {
       // fetch through a HEAD request the Etag property
-      this.fetchETag(url, (result) => {
-        if(result.error) {
+      this.fetchETag(url, result => {
+        if (result.error) {
           reject(new Error(result.error));
           return;
         }
@@ -153,20 +150,25 @@ export class UpdateManager extends Publisher<UpdateInfo[]>  implements Disposabl
    * @param url the url to perform the head request on
    * @param callback the function to callback
    */
-  private fetchETag(url: string, callback: (result: { etag?: string, error?: string}) => void): void {
-    https.get(url, {
-      method: 'HEAD',
-    }, resp => {
-      if (resp.headers.location) {
-        this.fetchETag(resp.headers.location, callback);
-        return;
-      }
+  private fetchETag(url: string, callback: (result: { etag?: string; error?: string }) => void): void {
+    https.get(
+      url,
+      {
+        method: 'HEAD',
+      },
+      resp => {
+        // follow redirect
+        if (resp.headers.location) {
+          this.fetchETag(resp.headers.location, callback);
+          return;
+        }
 
-      if(!('etag' in resp.headers) || typeof resp.headers['etag'] !== 'string') {
-        callback({ error: `ETag could not be found for ${url}` });
-      } else {
-        callback({ etag: resp.headers['etag'] });
-      }
-    });
+        if (!('etag' in resp.headers) || typeof resp.headers['etag'] !== 'string') {
+          callback({ error: `ETag could not be found for ${url}` });
+        } else {
+          callback({ etag: resp.headers['etag'] });
+        }
+      },
+    );
   }
 }

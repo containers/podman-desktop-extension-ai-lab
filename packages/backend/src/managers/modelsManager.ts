@@ -111,7 +111,9 @@ export class ModelsManager implements Disposable {
     const entries = fs.readdirSync(this.#modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {
-      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name)).filter((file) => !file.endsWith('tmp') && file !== 'etag');
+      const modelEntries = fs
+        .readdirSync(path.resolve(d.path, d.name))
+        .filter(file => !file.endsWith('tmp') && file !== 'etag');
       if (modelEntries.length !== 1) {
         // we support models with one file only for now
         continue;
@@ -385,8 +387,7 @@ export class ModelsManager implements Disposable {
 
     // perform download
     const aborted = await downloader.perform(model.id);
-    if(aborted)
-      throw new Error('The downloader has been aborted.');
+    if (aborted) throw new Error('The downloader has been aborted.');
 
     return downloader.getTarget();
   }

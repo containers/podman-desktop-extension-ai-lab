@@ -76,6 +76,7 @@ function requestFocus(element: HTMLElement) {
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter') {
     askPlayground();
+    e.preventDefault();
   }
 }
 

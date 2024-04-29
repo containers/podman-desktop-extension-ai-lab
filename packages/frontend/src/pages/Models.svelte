@@ -39,7 +39,7 @@ const columns: Column<ModelInfo>[] = [
     comparator: (a, b) => (a.file?.creation?.getTime() ?? 0) - (b.file?.creation?.getTime() ?? 0),
   }),
   new Column<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
-  new Column<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
+  new Column<ModelInfo>('Actions', { align: 'right', width: '160px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});
 

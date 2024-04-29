@@ -39,7 +39,12 @@ export class Downloader {
     return this.target;
   }
 
-  async perform(id: string) {
+  /**
+   * perform the download
+   * @param id
+   * @return true if the downloader has been aborted
+   */
+  async perform(id: string): Promise<boolean> {
     this.requestedIdentifier = id;
     const startTime = performance.now();
 
@@ -69,6 +74,7 @@ export class Downloader {
     } finally {
       this.completed = true;
     }
+    return this.abortSignal?.aborted === true;
   }
 
   private download(url: string): Promise<void> {

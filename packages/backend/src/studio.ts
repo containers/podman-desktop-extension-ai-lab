@@ -41,6 +41,7 @@ import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import { engines } from '../package.json';
+import { UpdateManager } from './managers/models/UpdateManager';
 
 export const AI_LAB_COLLECT_GPU_COMMAND = 'ai-lab.gpu.collect';
 
@@ -53,9 +54,14 @@ export class Studio {
   studioApi: StudioApiImpl | undefined;
   catalogManager: CatalogManager | undefined;
   modelsManager: ModelsManager | undefined;
+
   telemetry: TelemetryLogger | undefined;
 
   #inferenceManager: InferenceManager | undefined;
+  #updateManager: UpdateManager | undefined;
+
+  // a boolean value to know if we have already init resources than want to be lazy init
+  #lazyInitialized: boolean = false;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -167,6 +173,9 @@ export class Studio {
       cancellationTokenRegistry,
     );
     this.modelsManager.init();
+
+    this.#updateManager = new UpdateManager(this.#panel.webview, this.modelsManager);
+
     const localRepositoryRegistry = new LocalRepositoryRegistry(this.#panel.webview, appUserDirectory);
     localRepositoryRegistry.init(this.catalogManager.getRecipes());
     const applicationManager = new ApplicationManager(
@@ -191,10 +200,20 @@ export class Studio {
     );
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
-      // Lazily init inference manager
-      if (this.#inferenceManager && !this.#inferenceManager.isInitialize()) {
-        this.#inferenceManager.init();
-        this.#extensionContext.subscriptions.push(this.#inferenceManager);
+      if(!this.#lazyInitialized) {
+        // init inference manager
+        if(this.#inferenceManager) {
+          this.#inferenceManager.init();
+          this.#extensionContext.subscriptions.push(this.#inferenceManager);
+        }
+
+        // init update manager
+        if(this.#updateManager) {
+          this.#updateManager.init();
+          this.#extensionContext.subscriptions.push(this.#updateManager);
+        }
+
+        this.#lazyInitialized = true;
       }
 
       this.telemetry?.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
@@ -222,6 +241,7 @@ export class Studio {
       playgroundV2,
       snippetManager,
       cancellationTokenRegistry,
+      this.#updateManager,
     );
 
     await this.modelsManager.loadLocalModels();

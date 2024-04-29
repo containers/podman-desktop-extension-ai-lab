@@ -401,6 +401,17 @@
   resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.10.1.tgz#cbee9812d3f84fefb394cc0044fd0e72a574f486"
   integrity sha512-SUIP3+/FV/rumiMGb4GBYRXQoi4F2mVYYw+hWk6XmnRMPrBakVZcS0/TChZ9upV6o7Mhzt8K2zJC/fsyBJVA6Q==
 
+"@podman-desktop/ui-svelte@^1.9.1":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/ui-svelte/-/ui-svelte-1.9.1.tgz#aa7550ee6b3310366ce2f7576821b9562912e147"
+  integrity sha512-fAxAjE/mdEOhQt605I5FyFvBDW7PHp/+C8JEVBStP2InBfcLTaBhVFWuSJdYlmZYOOZ4tzmplfgxBi8gg7SOYw==
+  dependencies:
+    "@fortawesome/fontawesome-free" "^6.5.2"
+    "@fortawesome/free-brands-svg-icons" "^6.5.2"
+    "@fortawesome/free-regular-svg-icons" "^6.5.2"
+    "@fortawesome/free-solid-svg-icons" "^6.5.2"
+    svelte-fa "^4.0.2"
+
 "@rollup/rollup-android-arm-eabi@4.13.0":
   version "4.13.0"
   resolved "https://registry.yarnpkg.com/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.13.0.tgz#b98786c1304b4ff8db3a873180b778649b5dff2b"

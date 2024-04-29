@@ -45,6 +45,8 @@ import type { CancellationTokenRegistry } from './registries/CancellationTokenRe
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { checkContainerConnectionStatusAndResources, getPodmanConnection } from './utils/podman';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { UpdateInfo } from '@shared/src/models/IUpdate';
+import type { UpdateManager } from './managers/models/UpdateManager';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -62,6 +64,7 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundV2: PlaygroundV2Manager,
     private snippetManager: SnippetManager,
     private cancellationTokenRegistry: CancellationTokenRegistry,
+    private updateManager: UpdateManager,
   ) {}
 
   async requestDeleteConversation(conversationId: string): Promise<void> {
@@ -488,5 +491,15 @@ export class StudioApiImpl implements StudioAPI {
 
   async checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo> {
     return checkContainerConnectionStatusAndResources(modelInfo);
+  }
+
+  async getModelsUpdateInfo(): Promise<UpdateInfo[]> {
+    return this.updateManager.getAll();
+  }
+
+  async requestModelUpdate(modelId:string): Promise<void> {
+    this.updateManager.requestUpdate(modelId).catch((err: unknown) => {
+      console.error('Something went wrong while trying to request model update', err);
+    });
   }
 }

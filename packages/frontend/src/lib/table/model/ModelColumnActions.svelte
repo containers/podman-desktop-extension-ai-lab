@@ -1,11 +1,16 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { faDownload, faRocket, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUp, faCircleArrowUp, faDownload, faRocket, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '../../button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
+import { modelsUpdateInfo } from '/@/stores/modelsUpdateInfo';
+import type { UpdateInfo } from '@shared/src/models/IUpdate';
 export let object: ModelInfo;
+
+let updateInfo: UpdateInfo | undefined = undefined;
+$: updateInfo = $modelsUpdateInfo.find(update => update.modelsId === object.id);
 
 function deleteModel() {
   studioClient.requestRemoveLocalModel(object.id).catch(err => {
@@ -31,6 +36,12 @@ function createModelService() {
   router.goto('/service/create');
   router.location.query.replace({ 'model-id': object.id });
 }
+
+function updateModel() {
+  studioClient.requestModelUpdate(object.id).catch((err) => {
+    console.error('Something went wrong while trying to request model update', err);
+  })
+}
 </script>
 
 {#if object.file !== undefined}
@@ -47,4 +58,10 @@ function createModelService() {
   <ListItemButtonIcon icon="{faTrash}" onClick="{deleteModel}" title="Delete Model" enabled="{!object.state}" />
 {:else}
   <ListItemButtonIcon icon="{faDownload}" onClick="{downloadModel}" title="Download Model" enabled="{!object.state}" />
+{/if}
+{#if updateInfo}
+  <ListItemButtonIcon
+    icon="{faCircleArrowUp}"
+    title="Update model"
+    onClick="{() => updateModel()}" />
 {/if}

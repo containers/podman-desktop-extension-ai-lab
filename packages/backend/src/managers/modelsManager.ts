@@ -111,17 +111,18 @@ export class ModelsManager implements Disposable {
     const entries = fs.readdirSync(this.#modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {
-      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
+      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name)).filter((file) => !file.endsWith('tmp') && file !== 'etag');
       if (modelEntries.length !== 1) {
         // we support models with one file only for now
         continue;
       }
+
       const modelFile = modelEntries[0];
       const fullPath = path.resolve(d.path, d.name, modelFile);
 
       // Check for corresponding models or tmp file that should be ignored
       const model = this.#models.get(d.name);
-      if (model === undefined || fullPath.endsWith('.tmp')) {
+      if (model === undefined) {
         continue;
       }
 
@@ -354,9 +355,13 @@ export class ModelsManager implements Disposable {
     });
   }
 
+  private isUpdateTask(task: Task): boolean {
+    return task.labels !== undefined && 'is-update' in task.labels;
+  }
+
   private async downloadModel(model: ModelInfo, task: Task): Promise<string> {
     // Check if the model is already on disk.
-    if (this.isModelOnDisk(model.id)) {
+    if (this.isModelOnDisk(model.id) && !this.isUpdateTask(task)) {
       task.state = 'success';
       task.name = `Model ${model.name} already present on disk`;
       this.taskRegistry.updateTask(task); // update task
@@ -379,7 +384,10 @@ export class ModelsManager implements Disposable {
     downloader.onEvent(event => this.onDownloadUploadEvent(event, 'download'), this);
 
     // perform download
-    await downloader.perform(model.id);
+    const aborted = await downloader.perform(model.id);
+    if(aborted)
+      throw new Error('The downloader has been aborted.');
+
     return downloader.getTarget();
   }
 

@@ -30,6 +30,7 @@ import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
 import type { LocalModelImportInfo } from './models/ILocalModelInfo';
 import type { ContainerConnectionInfo } from './models/IContainerConnectionInfo';
+import type { UpdateInfo } from './models/IUpdate';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -195,4 +196,15 @@ export abstract class StudioAPI {
    * @param modelInfo object containing info about the model to check
    */
   abstract checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo>;
+
+  /**
+   * Get the current models update info.
+   */
+  abstract getModelsUpdateInfo(): Promise<UpdateInfo[]>;
+
+  /**
+   * Request to update a model
+   * @param modelId the id of the model to update
+   */
+  abstract requestModelUpdate(modelId: string): Promise<void>;
 }

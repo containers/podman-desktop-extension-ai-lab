@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, test, expect } from 'vitest';
+import { vi, test, expect, describe } from 'vitest';
 import { screen, render, waitFor, within } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import { router } from 'tinro';
@@ -145,91 +145,182 @@ test('should display one model', async () => {
   expect(name).toBeDefined();
 });
 
-test('should display no model in downloaded tab', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([
-    {
-      id: 'dummy-id',
-      name: 'dummy-name',
-      memory: 1024,
-    },
-  ]);
-  mocks.tasksSubscribeMock.mockReturnValue([]);
-
-  render(Models);
-
-  router.goto('downloaded');
-
-  await waitFor(() => {
-    const status = screen.getByRole('status');
-    expect(status).toBeDefined();
-  });
-});
-
-test('should display a model in downloaded tab', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([
-    {
-      id: 'dummy-id',
-      name: 'dummy-name',
-      file: {
-        file: 'dummy',
-        path: 'dummy',
+describe('downloaded models', () => {
+  test('should display no model in downloaded tab', async () => {
+    mocks.modelsInfoSubscribeMock.mockReturnValue([
+      {
+        id: 'dummy-id',
+        name: 'dummy-name',
+        memory: 1024,
       },
-      memory: 1024,
-    },
-  ]);
-  mocks.tasksSubscribeMock.mockReturnValue([]);
+    ]);
+    mocks.tasksSubscribeMock.mockReturnValue([]);
 
-  render(Models);
+    render(Models);
 
-  router.goto('downloaded');
+    router.goto('downloaded');
 
-  await waitFor(() => {
-    const table = screen.getByRole('table');
-    expect(table).toBeDefined();
+    await waitFor(() => {
+      const status = screen.getByRole('status');
+      expect(status).toBeDefined();
+    });
   });
-});
 
-test('should display a model in available tab', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([
-    {
-      id: 'dummy-id',
-      name: 'dummy-name',
-      memory: 1024,
-    },
-  ]);
-  mocks.tasksSubscribeMock.mockReturnValue([]);
-
-  render(Models);
-
-  router.goto('available');
-
-  await waitFor(() => {
-    const table = screen.getByRole('table');
-    expect(table).toBeDefined();
-  });
-});
-
-test('should display no model in available tab', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([
-    {
-      id: 'dummy-id',
-      name: 'dummy-name',
-      file: {
-        file: 'dummy',
-        path: 'dummy',
+  test('should display a model in downloaded tab', async () => {
+    mocks.modelsInfoSubscribeMock.mockReturnValue([
+      {
+        id: 'dummy-id',
+        name: 'dummy-name',
+        file: {
+          file: 'dummy',
+          path: 'dummy',
+        },
+        memory: 1024,
+        url: 'http://url',
       },
-      memory: 1024,
-    },
-  ]);
-  mocks.tasksSubscribeMock.mockReturnValue([]);
+    ]);
+    mocks.tasksSubscribeMock.mockReturnValue([]);
 
-  render(Models);
+    render(Models);
 
-  router.goto('available');
+    router.goto('downloaded');
 
-  await waitFor(() => {
-    const status = screen.getByRole('status');
-    expect(status).toBeDefined();
+    await waitFor(() => {
+      const table = screen.getByRole('table');
+      expect(table).toBeDefined();
+    });
+  });
+
+  test('should display only downloaded models', async () => {
+    mocks.modelsInfoSubscribeMock.mockReturnValue([
+      {
+        id: 'dummy-id-downloaded',
+        name: 'dummy-downloaded-1',
+        file: {
+          file: 'dummy',
+          path: 'dummy',
+        },
+        memory: 1024,
+        url: 'http://url',
+      },
+      {
+        id: 'dummy-id-downloaded-2',
+        name: 'dummy-downloaded-2',
+        file: {
+          file: 'dummy',
+          path: 'dummy',
+        },
+        memory: 1024,
+        url: 'http://url',
+      },
+      {
+        id: 'dummy-id-imported',
+        name: 'dummy-imported',
+        file: {
+          file: 'dummy',
+          path: 'dummy',
+        },
+        memory: 1024,
+      },
+    ]);
+    mocks.tasksSubscribeMock.mockReturnValue([]);
+
+    render(Models);
+
+    router.goto('downloaded');
+
+    await waitFor(() => expect(screen.getByRole('table')).toBeDefined());
+
+    const rows = screen.getAllByRole('cell', { name: 'Model Name' });
+    expect(rows.length).toBe(2);
+    expect((rows[0].firstChild as HTMLElement).title).toBe('dummy-downloaded-1');
+    expect((rows[1].firstChild as HTMLElement).title).toBe('dummy-downloaded-2');
+  });
+});
+
+describe('imported models', () => {
+  test('should display no model in imported tab', async () => {
+    mocks.modelsInfoSubscribeMock.mockReturnValue([]);
+    mocks.tasksSubscribeMock.mockReturnValue([]);
+
+    render(Models);
+
+    router.goto('imported');
+
+    await waitFor(() => {
+      const status = screen.getByRole('status');
+      expect(status).toBeDefined();
+    });
+  });
+
+  test('should display a model in imported tab', async () => {
+    mocks.modelsInfoSubscribeMock.mockReturnValue([
+      {
+        id: 'dummy-id',
+        name: 'dummy-name',
+        file: {
+          file: 'dummy',
+          path: 'dummy',
+        },
+        memory: 1024,
+      },
+    ]);
+    mocks.tasksSubscribeMock.mockReturnValue([]);
+
+    render(Models);
+
+    router.goto('imported');
+
+    await waitFor(() => {
+      const table = screen.getByRole('table');
+      expect(table).toBeDefined();
+    });
+  });
+});
+
+describe('available models', () => {
+  test('should display a model in available tab', async () => {
+    mocks.modelsInfoSubscribeMock.mockReturnValue([
+      {
+        id: 'dummy-id',
+        name: 'dummy-name',
+        memory: 1024,
+      },
+    ]);
+    mocks.tasksSubscribeMock.mockReturnValue([]);
+
+    render(Models);
+
+    router.goto('available');
+
+    await waitFor(() => {
+      const table = screen.getByRole('table');
+      expect(table).toBeDefined();
+    });
+  });
+
+  test('should display no model in available tab', async () => {
+    mocks.modelsInfoSubscribeMock.mockReturnValue([
+      {
+        id: 'dummy-id',
+        name: 'dummy-name',
+        file: {
+          file: 'dummy',
+          path: 'dummy',
+        },
+        memory: 1024,
+      },
+    ]);
+    mocks.tasksSubscribeMock.mockReturnValue([]);
+
+    render(Models);
+
+    router.goto('available');
+
+    await waitFor(() => {
+      const status = screen.getByRole('status');
+      expect(status).toBeDefined();
+    });
   });
 });
 

@@ -51,8 +51,9 @@ let models: ModelInfo[] = [];
 // filtered mean, we remove the models that are being downloaded
 let filteredModels: ModelInfo[] = [];
 
-$: localModels = filteredModels.filter(model => model.file);
+$: localModels = filteredModels.filter(model => model.file && model.url);
 $: remoteModels = filteredModels.filter(model => !model.file);
+$: importedModels = filteredModels.filter(model => !model.url);
 
 function filterModels(): void {
   // Let's collect the models we do not want to show (loading, error).
@@ -108,6 +109,7 @@ async function importModel() {
   <svelte:fragment slot="tabs">
     <Tab title="All" url="models" />
     <Tab title="Downloaded" url="models/downloaded" />
+    <Tab title="Imported" url="models/imported" />
     <Tab title="Available" url="models/available" />
   </svelte:fragment>
   <svelte:fragment slot="additional-actions">
@@ -142,6 +144,15 @@ async function importModel() {
                 <Table kind="model" data="{localModels}" columns="{columns}" row="{row}"></Table>
               {:else}
                 <div role="status">There is no model yet</div>
+              {/if}
+            </Route>
+
+            <!-- Imported models -->
+            <Route path="/imported">
+              {#if importedModels.length > 0}
+                <Table kind="model" data="{importedModels}" columns="{columns}" row="{row}"></Table>
+              {:else}
+                <div role="status">There are no models yet</div>
               {/if}
             </Route>
 

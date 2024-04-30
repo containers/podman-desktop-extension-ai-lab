@@ -50,7 +50,7 @@ export class PlaygroundV2Manager implements Disposable {
     this.#conversationRegistry.deleteConversation(conversationId);
   }
 
-  async requestCreatePlayground(name: string, model: ModelInfo, systemPrompt?: string): Promise<string> {
+  async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
     const trackingId: string = getRandomString();
     const task = this.taskRegistry.createTask('Creating Playground environment', 'loading', {
       trackingId: trackingId,
@@ -58,10 +58,9 @@ export class PlaygroundV2Manager implements Disposable {
 
     const telemetry: Record<string, unknown> = {
       hasName: !!name,
-      hasSystemPrompt: !!systemPrompt,
       modelId: model.id,
     };
-    this.createPlayground(name, model, systemPrompt, trackingId)
+    this.createPlayground(name, model, trackingId)
       .then((playgroundId: string) => {
         this.taskRegistry.updateTask({
           ...task,
@@ -100,12 +99,7 @@ export class PlaygroundV2Manager implements Disposable {
     return trackingId;
   }
 
-  async createPlayground(
-    name: string,
-    model: ModelInfo,
-    systemPrompt: string | undefined,
-    trackingId: string,
-  ): Promise<string> {
+  async createPlayground(name: string, model: ModelInfo, trackingId: string): Promise<string> {
     if (!name) {
       name = this.getFreeName();
     }
@@ -115,11 +109,6 @@ export class PlaygroundV2Manager implements Disposable {
 
     // Create conversation
     const conversationId = this.#conversationRegistry.createConversation(name, model.id);
-
-    // If system prompt let's add it to the conversation
-    if (systemPrompt !== undefined && systemPrompt.length > 0) {
-      this.submitSystemPrompt(conversationId, systemPrompt);
-    }
 
     // create/start inference server if necessary
     const servers = this.inferenceManager.getServers();

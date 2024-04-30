@@ -76,7 +76,6 @@ export class UpdateManager extends Publisher<UpdateInfo[]> implements Disposable
   }
 
   async requestUpdate(modelId: string): Promise<void> {
-    console.log(`requestUpdate ${modelId}`);
 
     const modelInfo: ModelInfo = this.modelsManager.getModelInfo(modelId);
     if (!modelInfo.url || !modelInfo.file) throw new Error(`model with id ${modelId} cannot be updated.`);
@@ -90,7 +89,6 @@ export class UpdateManager extends Publisher<UpdateInfo[]> implements Disposable
       throw new Error('Something went wrong: undefined etag.');
     }
 
-    console.log(`requestDownloadModel ${modelId}`);
     await this.modelsManager.requestDownloadModel(modelInfo, {
       'is-update': 'true',
     });

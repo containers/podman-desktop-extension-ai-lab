@@ -18,5 +18,5 @@
 
 export interface UpdateInfo {
   message: string;
-  modelsId: string;
+  modelId: string;
 }

@@ -27,6 +27,17 @@ const mocks = vi.hoisted(() => ({
   requestRemoveLocalModel: vi.fn(),
   openFile: vi.fn(),
   downloadModel: vi.fn(),
+  requestModelUpdate: vi.fn(),
+  getModelsUpdateInfoMock: vi.fn(),
+}));
+
+vi.mock('/@/stores/modelsUpdateInfo', () => ({
+  modelsUpdateInfo: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getModelsUpdateInfoMock());
+      return () => {};
+    },
+  },
 }));
 
 vi.mock('/@/utils/client', () => ({
@@ -34,15 +45,21 @@ vi.mock('/@/utils/client', () => ({
     requestRemoveLocalModel: mocks.requestRemoveLocalModel,
     openFile: mocks.openFile,
     downloadModel: mocks.downloadModel,
+    requestModelUpdate: mocks.requestModelUpdate,
   },
 }));
 
 beforeEach(() => {
   vi.resetAllMocks();
 
+  // mock store content
+  mocks.getModelsUpdateInfoMock.mockReturnValue([]);
+
+  // mocks studio client methods
   mocks.downloadModel.mockResolvedValue(undefined);
   mocks.openFile.mockResolvedValue(undefined);
   mocks.requestRemoveLocalModel.mockResolvedValue(undefined);
+  mocks.requestModelUpdate.mockResolvedValue(undefined);
 });
 
 test('Expect folder and delete button in document', async () => {
@@ -158,5 +175,40 @@ test('Expect router to be called when rocket icon clicked', async () => {
   await waitFor(() => {
     expect(gotoMock).toHaveBeenCalledWith('/service/create');
     expect(replaceMock).toHaveBeenCalledWith({ 'model-id': 'my-model' });
+  });
+});
+
+test('Expect update icon to be visible when one available', async () => {
+  mocks.getModelsUpdateInfoMock.mockReturnValue([
+    {
+      modelId: 'my-model',
+      message: 'New version available',
+    },
+  ]);
+
+  const object: ModelInfo = {
+    id: 'my-model',
+    description: '',
+    hw: '',
+    license: '',
+    name: '',
+    registry: '',
+    url: '',
+    file: {
+      file: 'file',
+      creation: new Date(),
+      size: 1000,
+      path: 'path',
+    },
+    memory: 1000,
+  };
+  render(ModelColumnActions, { object });
+
+  const updateBtn = screen.getByTitle('New version available');
+  expect(updateBtn).toBeDefined();
+
+  await fireEvent.click(updateBtn);
+  await waitFor(() => {
+    expect(mocks.requestModelUpdate).toHaveBeenCalledWith('my-model');
   });
 });

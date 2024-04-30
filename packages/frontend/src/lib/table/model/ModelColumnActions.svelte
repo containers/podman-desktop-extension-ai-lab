@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { faArrowUp, faCircleArrowUp, faDownload, faRocket, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCircleArrowUp, faDownload, faRocket, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '../../button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
@@ -10,7 +10,7 @@ import type { UpdateInfo } from '@shared/src/models/IUpdate';
 export let object: ModelInfo;
 
 let updateInfo: UpdateInfo | undefined = undefined;
-$: updateInfo = $modelsUpdateInfo.find(update => update.modelsId === object.id);
+$: updateInfo = $modelsUpdateInfo.find(update => update.modelId === object.id);
 
 function deleteModel() {
   studioClient.requestRemoveLocalModel(object.id).catch(err => {
@@ -60,5 +60,5 @@ function updateModel() {
   <ListItemButtonIcon icon="{faDownload}" onClick="{downloadModel}" title="Download Model" enabled="{!object.state}" />
 {/if}
 {#if updateInfo}
-  <ListItemButtonIcon icon="{faCircleArrowUp}" title="Update model" onClick="{() => updateModel()}" />
+  <ListItemButtonIcon icon="{faCircleArrowUp}" title="{updateInfo.message}" onClick="{() => updateModel()}" />
 {/if}

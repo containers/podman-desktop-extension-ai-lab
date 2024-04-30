@@ -62,7 +62,7 @@ export class UpdateManager extends Publisher<UpdateInfo[]> implements Disposable
 
       if (localEtag !== remoteEtag) {
         this.#updates.set(model.id, {
-          modelsId: model.id,
+          modelId: model.id,
           message: 'New update is available.',
         });
       }

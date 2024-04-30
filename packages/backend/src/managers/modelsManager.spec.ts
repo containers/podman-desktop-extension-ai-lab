@@ -774,4 +774,33 @@ describe('downloadModel', () => {
     expect(mocks.performDownloadMock).toHaveBeenCalledTimes(1);
     expect(mocks.onEventDownloadMock).toHaveBeenCalledTimes(2);
   });
+
+  test('using is-update label should force models to be re-downloaded', async () => {
+    const manager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels(): ModelInfo[] {
+          return [];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+      cancellationTokenRegistryMock,
+    );
+    vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
+    await manager.requestDownloadModel(
+      {
+        id: 'id',
+        url: 'url',
+        name: 'name',
+      } as ModelInfo,
+      {
+        'is-update': 'true',
+      },
+    );
+
+    expect(mocks.performDownloadMock).toHaveBeenCalledTimes(1);
+    expect(mocks.onEventDownloadMock).toHaveBeenCalledTimes(1);
+  });
 });

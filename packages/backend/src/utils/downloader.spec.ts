@@ -96,8 +96,11 @@ test('perform download failed', async () => {
   const listenerMock = vi.fn();
   downloader.onEvent(listenerMock);
 
+  let aborted: boolean | undefined = undefined;
   // perform download logic (do not wait)
-  void downloader.perform('followUpId');
+  void downloader.perform('followUpId').then(result => {
+    aborted = result;
+  });
 
   // wait for listener to be registered
   await vi.waitFor(() => {
@@ -115,6 +118,8 @@ test('perform download failed', async () => {
   await vi.waitFor(() => {
     expect(downloader.completed).toBeTruthy();
   });
+
+  expect(aborted).toBe(false);
 
   expect(listenerMock).toHaveBeenCalledWith({
     id: 'followUpId',
@@ -168,6 +173,55 @@ test('perform download successfully', async () => {
   await vi.waitFor(() => {
     expect(downloader.completed).toBeTruthy();
   });
+
+  expect(promises.rename).toHaveBeenCalledWith('dummyTarget.tmp', 'dummyTarget');
+  expect(downloader.completed).toBeTruthy();
+  expect(listenerMock).toHaveBeenCalledWith({
+    id: 'followUpId',
+    duration: expect.anything(),
+    message: expect.anything(),
+    status: 'completed',
+  });
+  expect(promises.rm).not.toHaveBeenCalled();
+});
+
+test('aborted signal should return true to perform', async () => {
+  const controller = new AbortController();
+  const downloader = new Downloader('dummyUrl', 'dummyTarget', controller.signal);
+  vi.mocked(https.get).mockImplementation((_url, _options, callback) => {
+    callback?.({
+      pipe: vi.fn(),
+      on: vi.fn(),
+      headers: { location: undefined },
+    } as unknown as IncomingMessage);
+    return {} as unknown as ClientRequest;
+  });
+
+  const closeMock = vi.fn();
+  const onMock = vi.fn();
+  vi.mocked(createWriteStream).mockReturnValue({
+    close: closeMock,
+    on: onMock,
+  } as unknown as WriteStream);
+
+  onMock.mockImplementation((event: string, callback: () => void) => {
+    if (event === 'finish') {
+      callback();
+    }
+  });
+
+  // capture downloader event(s)
+  const listenerMock = vi.fn();
+  downloader.onEvent(listenerMock);
+
+  // abort controller
+  controller.abort('testing');
+
+  // perform download logic
+  const aborted = await downloader.perform('followUpId');
+
+  expect(downloader.completed).toBeTruthy();
+  expect(aborted).toBeTruthy();
 
   expect(promises.rename).toHaveBeenCalledWith('dummyTarget.tmp', 'dummyTarget');
   expect(downloader.completed).toBeTruthy();

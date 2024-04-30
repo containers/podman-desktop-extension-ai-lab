@@ -38,7 +38,7 @@ const columns: Column<ModelInfo>[] = [
     renderer: ModelColumnAge,
     comparator: (a, b) => (a.file?.creation?.getTime() ?? 0) - (b.file?.creation?.getTime() ?? 0),
   }),
-  new Column<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
+  new Column<ModelInfo>('', { width: '240px', align: 'right', renderer: ModelColumnLabels }),
   new Column<ModelInfo>('Actions', { align: 'right', width: '160px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});

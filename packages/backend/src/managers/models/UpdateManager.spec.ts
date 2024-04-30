@@ -151,7 +151,7 @@ test('init call should ignore request without etag header', async () => {
   await vi.waitFor(() => {
     const updates = updater.getAll();
     expect(updates.length).toBe(1);
-    expect(updates[0].modelsId).toBe('dummy-model-id-2');
+    expect(updates[0].modelId).toBe('dummy-model-id-2');
   });
 });
 
@@ -194,7 +194,7 @@ test('models info without file should not be checked', async () => {
   await vi.waitFor(() => {
     const updates = updater.getAll();
     expect(updates.length).toBe(1);
-    expect(updates[0].modelsId).toBe('dummy-model-id-2');
+    expect(updates[0].modelId).toBe('dummy-model-id-2');
   });
 });
 
@@ -243,6 +243,6 @@ test('models info without local etag should not be checked', async () => {
   await vi.waitFor(() => {
     const updates = updater.getAll();
     expect(updates.length).toBe(1);
-    expect(updates[0].modelsId).toBe('dummy-model-id-2');
+    expect(updates[0].modelId).toBe('dummy-model-id-2');
   });
 });

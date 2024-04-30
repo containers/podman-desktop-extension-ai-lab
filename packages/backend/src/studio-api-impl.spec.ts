@@ -38,6 +38,7 @@ import type { CancellationTokenRegistry } from './registries/CancellationTokenRe
 import path from 'node:path';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import * as podman from './utils/podman';
+import type { UpdateManager } from './managers/models/UpdateManager';
 
 vi.mock('./ai.json', () => {
   return {
@@ -138,6 +139,7 @@ beforeEach(async () => {
     {} as unknown as PlaygroundV2Manager,
     {} as unknown as SnippetManager,
     {} as unknown as CancellationTokenRegistry,
+    {} as unknown as UpdateManager,
   );
   vi.mock('node:fs');
 

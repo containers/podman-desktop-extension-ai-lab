@@ -31,8 +31,6 @@ let trackingId: string | undefined = undefined;
 // The trackedTasks are the tasks linked to the trackingId
 let trackedTasks: Task[] = [];
 
-let error: boolean = false;
-
 $: {
   if (!modelId && localModels.length > 0) {
     modelId = localModels[0].id;
@@ -82,7 +80,10 @@ const processTasks = (tasks: Task[]) => {
 
   // Check for errors
   // hint: we do not need to display them as the TasksProgress component will
-  error = trackedTasks.find(task => task.error)?.error !== undefined;
+  const error = trackedTasks.find(task => task.error)?.error !== undefined;
+  if (error) {
+    submitted = false;
+  }
 
   const task: Task | undefined = trackedTasks.find(task => 'playgroundId' in (task.labels ?? {}));
   if (task === undefined) return;

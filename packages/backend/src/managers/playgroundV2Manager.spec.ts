@@ -428,6 +428,31 @@ test('delete conversation should delete the conversation', async () => {
   expect(webviewMock.postMessage).toHaveBeenCalled();
 });
 
+test('creating a new playground with an existing name shoud fail', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
+  await manager.createPlayground(
+    'a name',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+    } as unknown as ModelInfo,
+    '',
+    'tracking-1',
+  );
+  await expect(
+    manager.createPlayground(
+      'a name',
+      {
+        id: 'model-2',
+        name: 'Model 2',
+      } as unknown as ModelInfo,
+      '',
+      'tracking-2',
+    ),
+  ).rejects.toThrowError('a playground with the name a name already exists');
+});
+
 test('requestCreatePlayground should call createPlayground and createTask, then updateTask', async () => {
   vi.useRealTimers();
   const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);

@@ -47,7 +47,7 @@
     "fast-xml-parser": "^4.3.6",
     "isomorphic-git": "^1.25.7",
     "mustache": "^4.2.0",
-    "openai": "^4.38.5",
+    "openai": "^4.40.0",
     "postman-code-generators": "^1.9.0",
     "postman-collection": "^4.4.0",
     "semver": "^7.6.0",

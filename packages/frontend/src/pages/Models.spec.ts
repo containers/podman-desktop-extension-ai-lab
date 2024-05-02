@@ -139,10 +139,10 @@ test('should display one model', async () => {
   expect(table).toBeDefined();
 
   const cells = screen.queryAllByRole('cell');
-  expect(cells.length > 0).toBeTruthy();
+  expect(cells.length > 2).toBeTruthy();
 
-  const name = within(cells[0]).findByText('dummy-name');
-  expect(name).toBeDefined();
+  const name = await within(cells[2]).findByText('dummy-name');
+  expect(name).not.toBeNull();
 });
 
 describe('downloaded models', () => {

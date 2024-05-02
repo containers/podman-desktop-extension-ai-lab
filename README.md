@@ -1,6 +1,6 @@
 # Podman AI Lab
 
-odman AI Lab is an open source extension for Podman Desktop to work with LLMs (Large Language Models) on a local environment. Featuring a recipe catalog with common AI use cases, a curated set of open source models, and a playground for learning, prototyping and experimentation, Podman AI Lab helps you to quickly and easily get started bringing AI into your applications, without depending on infrastructure beyond your laptop ensuring data privacy and security.
+Podman AI Lab is an open source extension for Podman Desktop to work with LLMs (Large Language Models) on a local environment. Featuring a recipe catalog with common AI use cases, a curated set of open source models, and a playground for learning, prototyping and experimentation, Podman AI Lab helps you to quickly and easily get started bringing AI into your applications, without depending on infrastructure beyond your laptop ensuring data privacy and security.
 
 
 ## Topics

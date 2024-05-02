@@ -67,13 +67,17 @@ Please note that this is not relevant for WSL on Windows as the WSL technology t
 
 ## Installation
 
-To install the extension, go to the Podman Desktop UI > ⚙ Settings > Extensions > Install a new extension from OCI Image.
+You can install the Podman AI Lab extension directly inside of Podman Desktop.
 
-The name of the image to use is `ghcr.io/containers/podman-desktop-extension-ai-lab`.  You can get released tags for the image at https://github.com/containers/podman-desktop-extension-ai-lab/pkgs/container/podman-desktop-extension-ai-lab.
+Go to Extensions > Catalog > Install Podman Desktop AI Lab.
 
-To install a development version, use the `:nightly` tag as shown in the recording below.
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/gifs/install_ai_lab.gif)
 
-![](https://github.com/containers/podman-desktop-media/raw/ai-lab/gifs/installation.gif)
+To install a development version, use the `Install custom...` action as shown in the recording below.
+
+The name of the image to use is `ghcr.io/containers/podman-desktop-extension-ai-lab`. You can get released tags for the image at https://github.com/containers/podman-desktop-extension-ai-lab/pkgs/container/podman-desktop-extension-ai-lab.
+
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/gifs/install_development_version.gif)
 
 ## Usage
 
@@ -81,21 +85,21 @@ To install a development version, use the `:nightly` tag as shown in the recordi
 
 Let's select a model from the catalog and download it locally to our workstation.
 
-[![](/docs/img/download-model.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/download-model.mp4)
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/download-model.gif)
 
 2. **Start an inference server**
 
 Once a model is available locally, let's start an inference server
 
-[![](/docs/img/start-inference-server.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-inference-server.mp4)
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-inference-server.gif)
 
 3. **Start a playground to have a chat conversation with model**
 
-[![](/docs/img/playground.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/playground.mp4)
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/playground.gif)
 
 4. **Start a AI application and use it from the browser**
 
-[![](/docs/img/start-ai-app.gif)](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-ai-app.mp4)
+![](https://github.com/containers/podman-desktop-media/raw/ai-lab/videos/start-ai-app.gif)
 
 ## Contributing
 
@@ -143,7 +147,7 @@ It must follow the same format as the default catalog [in the sources of the ext
 
 ### Packaging sample applications
 
-Sample applications may be added to the catalog. See [packaging guide](PACKAGING-GUIDE.md) for detailed information.
+Sample applications may be added to the catalog. See [packaging guide](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/PACKAGING-GUIDE.md) for detailed information.
 
 
 ## Feedback

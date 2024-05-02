@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, test, expect, describe } from 'vitest';
+import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor, within } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import { router } from 'tinro';

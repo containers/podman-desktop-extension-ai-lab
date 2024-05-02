@@ -42,8 +42,18 @@ const mocks = vi.hoisted(() => {
     },
     getModelsInfoMock: vi.fn().mockResolvedValue([]),
     getTasks: vi.fn().mockResolvedValue([]),
+    getModelsUpdateInfoMock: vi.fn().mockReturnValue([]),
   };
 });
+
+vi.mock('/@/stores/modelsUpdateInfo', () => ({
+  modelsUpdateInfo: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getModelsUpdateInfoMock());
+      return () => {};
+    },
+  },
+}));
 
 vi.mock('/@/utils/client', async () => {
   return {

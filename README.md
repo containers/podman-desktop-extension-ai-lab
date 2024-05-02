@@ -67,7 +67,7 @@ Please note that this is not relevant for WSL on Windows as the WSL technology t
 
 ## Installation
 
-You can install the Podman Desktop AI Lab extension directly inside of Podman Desktop.
+You can install the Podman AI Lab extension directly inside of Podman Desktop.
 
 Go to Extensions > Catalog > Install Podman Desktop AI Lab.
 

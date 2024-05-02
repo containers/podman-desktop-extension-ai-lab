@@ -3730,10 +3730,10 @@ postcss@^8.4.23, postcss@^8.4.38:
     picocolors "^1.0.0"
     source-map-js "^1.2.0"
 
-postman-code-generators@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/postman-code-generators/-/postman-code-generators-1.9.0.tgz#3abba8a62b67a73fb8f2c03f7b2b56edf02be520"
-  integrity sha512-ZM4H7cU1dNUuMPw9CsEoQ7aONl/n8bpSEunZcvzyJd1WtLNj5ktGBGOlDtbTo773dZy5CiVrugdCdt0jhdnUOA==
+postman-code-generators@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/postman-code-generators/-/postman-code-generators-1.10.0.tgz#0790e5f59455a5d72a73343209ce35a987be81c8"
+  integrity sha512-sONnaOC2Ql/VKQn7utTAUn1gLkh6fPGJLvrYc6hs1WKtoPk/eo9UKmboOTnQbZliSh9baHmexQI+tqOPhI3zCA==
   dependencies:
     async "3.2.2"
     lodash "4.17.21"

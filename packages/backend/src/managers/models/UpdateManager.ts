@@ -76,7 +76,6 @@ export class UpdateManager extends Publisher<UpdateInfo[]> implements Disposable
   }
 
   async requestUpdate(modelId: string): Promise<void> {
-
     const modelInfo: ModelInfo = this.modelsManager.getModelInfo(modelId);
     if (!modelInfo.url || !modelInfo.file) throw new Error(`model with id ${modelId} cannot be updated.`);
 

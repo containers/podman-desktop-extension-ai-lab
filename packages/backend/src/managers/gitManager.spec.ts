@@ -291,6 +291,7 @@ describe('isRepositoryUpToDate', () => {
         url: 'repo',
       },
     ]);
+    vi.spyOn(gitmanager, 'getTagCommitId').mockResolvedValue(undefined); // ref is not a tag
     mocks.currentBranchMock.mockResolvedValue(undefined);
 
     const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'invalidRef');
@@ -594,6 +595,61 @@ describe('isRepositoryUpToDate', () => {
     expect(result.ok).toBeFalsy();
     expect(result.error).toBe('The local repository is not clean.');
   });
+});
+
+test('using tag and no local change', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(statSync).mockReturnValue({
+    isDirectory: () => true,
+  } as unknown as Stats);
+
+  const gitmanager = new GitManager();
+
+  vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+    {
+      remote: 'origin',
+      url: 'repo',
+    },
+  ]);
+  vi.spyOn(gitmanager, 'getTagCommitId').mockResolvedValue('dummyCommit'); // ref is a tag and points to commit
+  vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+    modified: [],
+    created: [],
+    deleted: [],
+    clean: true,
+  });
+  mocks.currentBranchMock.mockResolvedValue(undefined);
+
+  const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'v1.0.0');
+  expect(result.ok).toBeTruthy();
+});
+
+test('using wrong tag', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(statSync).mockReturnValue({
+    isDirectory: () => true,
+  } as unknown as Stats);
+
+  const gitmanager = new GitManager();
+
+  vi.spyOn(gitmanager, 'getRepositoryRemotes').mockResolvedValue([
+    {
+      remote: 'origin',
+      url: 'repo',
+    },
+  ]);
+  vi.spyOn(gitmanager, 'getTagCommitId').mockResolvedValue('otherCommit'); // ref is a tag and points to commit
+  vi.spyOn(gitmanager, 'getRepositoryStatus').mockResolvedValue({
+    modified: [],
+    created: [],
+    deleted: [],
+    clean: true,
+  });
+  mocks.currentBranchMock.mockResolvedValue(undefined);
+
+  const result = await gitmanager.isRepositoryUpToDate('target', 'repo', 'v1.0.0');
+  expect(result.ok).toBeFalsy();
+  expect(result.error).toBe('The local repository is detached. HEAD is dummyCommit expected otherCommit.');
 });
 
 test('getBehindAhead', async () => {

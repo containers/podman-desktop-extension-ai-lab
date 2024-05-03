@@ -195,6 +195,10 @@ export class GitManager {
       if (ref === undefined) {
         return { error: 'The local repository is detached.' };
       } else {
+        const tag = await this.getTagCommitId(directory, ref);
+        if (tag) {
+          ref = tag;
+        }
         const commit = await this.getCurrentCommit(directory);
         if (!commit.startsWith(ref)) {
           return { error: `The local repository is detached. HEAD is ${commit} expected ${ref}.` };
@@ -293,5 +297,17 @@ export class GitManager {
       behind: behind + remoteCommits.length,
       ahead: ahead + localCommits.length,
     };
+  }
+
+  async getTagCommitId(directory: string, tagName: string): Promise<string | undefined> {
+    try {
+      return await git.resolveRef({
+        fs,
+        dir: directory,
+        ref: tagName,
+      });
+    } catch {
+      return undefined;
+    }
   }
 }

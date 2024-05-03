@@ -153,11 +153,13 @@ The roadmap is always open and we are looking for your feedback. Please create n
 We will be working on the following items:
 - **Expanded Recipes**: Discover new use cases and samples to inspire and accelerate your applications. 
 - **GPU Acceleration**: Speeding up processing times by leveraging GPU acceleration.
+- **API/CLI**: Interact with Podman AI Lab from CLI and APIs.
 - **Enhanced Playgrounds**: Streamlined workflows and UX giving a better space to experiment with LLMs and quickly iterate.
 - **Fine Tuning with [InstructLab](https://instructlab.ai/)**: Re-train LLMs with a set of taxonomy knowledges. Learn more about [the InstructLab project](https://github.com/instructlab).
 - **Enable Function Calling**: Use LLMs to retrieve or interact with external tool by doing API calls.
 - **Local RAG**: Explore RAG pattern, load your document and test behavior of the model.
 - **Bridge with AI Platforms (incl. K8s)**: Connect to remote models and ease deployment of applications.
+- 
 
 ## Feedback
 

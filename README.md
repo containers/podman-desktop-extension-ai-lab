@@ -41,8 +41,6 @@ Podman AI Lab ships with a so-called Recipes Catalog that helps you navigate a n
 
 ## Requirements
 
-Disclaimer: This is **EXPERIMENTAL** and all features are subject to change as we develop the extension.
-
 ### Requirement 1. Software and hardware requirements
 
 **OS:**
@@ -148,6 +146,18 @@ It must follow the same format as the default catalog [in the sources of the ext
 
 Sample applications may be added to the catalog. See [packaging guide](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/PACKAGING-GUIDE.md) for detailed information.
 
+## Roadmap
+
+The roadmap is always open and we are looking for your feedback. Please create new issues and upvote on the issues that are feeling the most important for you. 
+
+We will be working on the following items:
+- **Expanded Recipes**: Discover new use cases and samples to inspire and accelerate your applications. 
+- **GPU Acceleration**: Speeding up processing times by leveraging GPU acceleration.
+- **Enhanced Playgrounds**: Streamlined workflows and UX giving a better space to experiment with LLMs and quickly iterate.
+- **Fine Tuning with [InstructLab](https://instructlab.ai/)**: Re-train LLMs with a set of taxonomy knowledges. Learn more about [the InstructLab project](https://github.com/instructlab).
+- **Enable Function Calling**: Use LLMs to retrieve or interact with external tool by doing API calls.
+- **Local RAG**: Explore RAG pattern, load your document and test behavior of the model.
+- **Bridge with AI Platforms (incl. K8s)**: Connect to remote models and ease deployment of applications.
 
 ## Feedback
 

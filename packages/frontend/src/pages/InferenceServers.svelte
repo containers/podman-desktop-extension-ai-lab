@@ -18,7 +18,7 @@ const columns: Column<InferenceServer>[] = [
   new Column<InferenceServer>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),
   new Column<InferenceServer>('Name', { width: '1fr', renderer: ServiceColumnName, align: 'left' }),
   new Column<InferenceServer>('Model', { renderer: ServiceColumnModelName, align: 'left' }),
-  new Column<InferenceServer>('Action', { width: '80px', renderer: ServiceAction, align: 'right' }),
+  new Column<InferenceServer>('Actions', { width: '80px', renderer: ServiceAction, align: 'right' }),
 ];
 const row = new Row<InferenceServer>({ selectable: _service => true });
 

@@ -35,7 +35,7 @@ const openDiscussionsPage = () => {
 };
 </script>
 
-<NavPage title="Welcome to AI Lab" searchEnabled="{false}">
+<NavPage title="Welcome to Podman AI Lab" searchEnabled="{false}">
   <svelte:fragment slot="additional-actions">
     <Button type="secondary" title="Open GitHub repository" on:click="{openGithub}" icon="{faGithub}">Github</Button>
   </svelte:fragment>
@@ -44,15 +44,15 @@ const openDiscussionsPage = () => {
       <div class="mt-4 px-5 space-y-5" aria-label="inner-content">
         <DashboardBanner class="rounded-md my-2 w-full" />
         <p>
-          The Podman Desktop AI Lab extension simplifies getting started and develop with AI in a local environment. It
-          provides key open-source technologies to start building on AI. A curated catalog of so-called recipes helps
-          navigate the jungle of AI use cases and AI models. AI Lab further ships playgrounds: environments to
-          experiment with and test AI models, for instance, a chat bot.
+          Podman AI Lab is an open source extension for Podman Desktop to work with LLMs (Large Language Models) on a
+          local environment. It provides key open-source technologies to start building on AI. A curated catalog of
+          so-called recipes helps navigate the jungle of AI use cases and AI models. AI Lab further ships playgrounds:
+          environments to experiment with and test AI models, for instance, a chat bot.
         </p>
 
         <h1 class="text-xl first-letter:uppercase underline">Recipes Catalog</h1>
         <p>
-          AI Lab ships with a so-called
+          Podman AI Lab ships with a so-called
           <button class="underline" title="Open the Recipes Catalog page" on:click="{openRecipesCatalog}"
             >Recipes Catalog</button>
           that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and
@@ -62,7 +62,7 @@ const openDiscussionsPage = () => {
 
         <h1 class="text-xl first-letter:uppercase underline">AI Models</h1>
         <p>
-          AI Lab provides a curated list of open source
+          Podman AI Lab provides a curated list of open source
           <button class="underline" title="Open the Models page" on:click="{openModelsPage}">AI Models and LLMs</button
           >. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
         </p>

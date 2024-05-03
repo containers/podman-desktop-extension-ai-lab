@@ -1,7 +1,6 @@
-# AI Lab
+# Podman AI Lab
 
-The Podman Desktop AI Lab extension simplifies getting started and developing with AI in a local environment.  It provides key open-source technologies to start building on AI.  A curated catalog of so-called recipes helps navigate the jungle of AI use cases and AI models. AI Lab further ships playgrounds: environments to experiment with and test AI models, for instance, a chat bot.
-
+Podman AI Lab is an open source extension for Podman Desktop to work with LLMs (Large Language Models) on a local environment. Featuring a recipe catalog with common AI use cases, a curated set of open source models, and a playground for learning, prototyping and experimentation, Podman AI Lab helps you to quickly and easily get started bringing AI into your applications, without depending on infrastructure beyond your laptop ensuring data privacy and security.
 
 
 ## Topics
@@ -17,14 +16,14 @@ The Podman Desktop AI Lab extension simplifies getting started and developing wi
 
 ## Technology
 
-The AI Lab extensions uses [Podman](https://podman.io) machines to run inference servers for LLM models and AI applications.
+Podman AI Lab uses [Podman](https://podman.io) machines to run inference servers for LLM models and AI applications.
 The AI models can be downloaded, and common formats like [GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md), [Pytorch](https://pytorch.org) or [Tensorflow](https://www.tensorflow.org) are supported.
 
 ## Extension features
 
 ### AI Models
 
-AI Lab provides a curated list of open source AI models and LLMs. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
+Podman AI Lab provides a curated list of open source AI models and LLMs. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
 
 #### Model services
 
@@ -36,9 +35,9 @@ The integrated Playground environments allow for experimenting with available mo
 
 ### AI applications
 
-Once an AI model is available through a well known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. AI Lab support AI applications as a set of containers that are connected together. 
+Once an AI model is available through a well known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. Podman AI Lab supports AI applications as a set of containers that are connected together. 
 
-AI Lab ships with a so-called Recipes Catalog that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
+Podman AI Lab ships with a so-called Recipes Catalog that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
 
 ## Requirements
 
@@ -69,7 +68,7 @@ Please note that this is not relevant for WSL on Windows as the WSL technology t
 
 You can install the Podman AI Lab extension directly inside of Podman Desktop.
 
-Go to Extensions > Catalog > Install Podman Desktop AI Lab.
+Go to Extensions > Catalog > Install Podman AI Lab.
 
 ![](https://github.com/containers/podman-desktop-media/raw/ai-lab/gifs/install_ai_lab.gif)
 
@@ -103,7 +102,7 @@ Once a model is available locally, let's start an inference server
 
 ## Contributing
 
-Want to help develop and contribute to the AI Lab extension?
+Want to help develop and contribute to Podman AI Lab?
 
 You can use `yarn watch --extension-folder` from the Podman Desktop directory to automatically rebuild and test the AI Lab extension:
 
@@ -125,7 +124,7 @@ $ yarn watch
 
 ### Cleaning up resources 
 
-We'll be adding a way in AI Lab to let a user cleanup the environment: see issue https://github.com/containers/podman-desktop-extension-ai-lab/issues/469.
+We'll be adding a way to let a user cleanup their environment: see issue https://github.com/containers/podman-desktop-extension-ai-lab/issues/469.
 For the time being, please consider the following actions:
 1. Remove the extension from Podman Desktop, from the Settings > Extensions
 2. Remove the running playground environments from the list of Pods

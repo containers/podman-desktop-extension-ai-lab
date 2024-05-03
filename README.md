@@ -159,7 +159,6 @@ We will be working on the following items:
 - **Enable Function Calling**: Use LLMs to retrieve or interact with external tool by doing API calls.
 - **Local RAG**: Explore RAG pattern, load your document and test behavior of the model.
 - **Bridge with AI Platforms (incl. K8s)**: Connect to remote models and ease deployment of applications.
-- 
 
 ## Feedback
 

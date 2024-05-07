@@ -50,7 +50,7 @@
     "openai": "^4.40.2",
     "postman-code-generators": "^1.10.0",
     "postman-collection": "^4.4.0",
-    "semver": "^7.6.0",
+    "semver": "^7.6.1",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {

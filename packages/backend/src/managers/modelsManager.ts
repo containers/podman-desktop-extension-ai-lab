@@ -35,7 +35,7 @@ import { getFirstRunningMachineName } from '../utils/podman';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 
 export class ModelsManager implements Disposable {
-  #modelsDir: string;
+  #modelsDir: string = '';
   #models: Map<string, ModelInfo>;
   #watcher?: podmanDesktopApi.FileSystemWatcher;
   #disposables: Disposable[];
@@ -50,12 +50,12 @@ export class ModelsManager implements Disposable {
     private taskRegistry: TaskRegistry,
     private cancellationTokenRegistry: CancellationTokenRegistry,
   ) {
-    this.#modelsDir = path.join(this.appUserDirectory, 'models');
     this.#models = new Map();
     this.#disposables = [];
   }
 
   init() {
+    this.#modelsDir = this.getModelsDirectoryPath();
     const disposable = this.catalogManager.onCatalogUpdate(() => {
       this.loadLocalModels().catch((err: unknown) => {
         console.error(`Something went wrong when loading local models`, err);
@@ -68,6 +68,14 @@ export class ModelsManager implements Disposable {
     this.#models.clear();
     this.#watcher?.dispose();
     this.#disposables.forEach(d => d.dispose());
+  }
+
+  getModelsDirectoryPath(): string {
+    const customDir = podmanDesktopApi.configuration.getConfiguration('ai-lab').get<string>('models.path');
+    if (!customDir) {
+      return path.join(this.appUserDirectory, 'models');
+    }
+    return customDir;
   }
 
   async loadLocalModels() {
@@ -333,7 +341,7 @@ export class ModelsManager implements Disposable {
     }
 
     // Ensure path to model directory exist
-    const destDir = path.join(this.appUserDirectory, 'models', model.id);
+    const destDir = path.join(this.getModelsDirectory(), model.id);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }

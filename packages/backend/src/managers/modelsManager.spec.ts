@@ -28,6 +28,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
+import * as sha from '../utils/sha';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -730,6 +731,34 @@ describe('downloadModel', () => {
       },
       state: 'success',
     });
+  });
+  test('fail if model on disk has different sha of the expected value', async () => {
+    const manager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels(): ModelInfo[] {
+          return [];
+        },
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+      cancellationTokenRegistryMock,
+    );
+    vi.spyOn(taskRegistry, 'updateTask');
+    vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
+    vi.spyOn(manager, 'getLocalModelPath').mockReturnValue('path');
+    vi.spyOn(sha, 'hasValidSha').mockResolvedValue(false);
+    await expect(() =>
+      manager.requestDownloadModel({
+        id: 'id',
+        url: 'url',
+        name: 'name',
+        sha: 'sha',
+      } as ModelInfo),
+    ).rejects.toThrowError(
+      'Model name is already present on disk at path but its security hash (SHA) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.',
+    );
   });
   test('multiple download request same model - second call after first completed', async () => {
     mocks.getDownloaderCompleter.mockReturnValue(true);

@@ -16,28 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { LocalModelInfo } from './ILocalModelInfo';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
-export interface ModelInfo {
-  id: string;
-  name: string;
-  description: string;
-  hw: string;
-  registry?: string;
-  license?: string;
-  url?: string;
-  file?: LocalModelInfo;
-  state?: 'deleting';
-  memory?: number;
-  properties?: {
-    [key: string]: string;
-  };
-  sha?: string;
-}
-
-export type ModelCheckerContext = 'inference' | 'recipe';
-
-export interface ModelCheckerInfo {
-  memoryNeeded: number;
-  context: ModelCheckerContext;
+export interface ModelInfoUI extends ModelInfo {
+  actionError?: string;
 }

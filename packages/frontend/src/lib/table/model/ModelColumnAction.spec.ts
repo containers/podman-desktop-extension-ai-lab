@@ -19,9 +19,9 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import ModelColumnActions from '/@/lib/table/model/ModelColumnActions.svelte';
 import { router } from 'tinro';
+import type { ModelInfoUI } from '/@/models/ModelInfoUI';
 
 const mocks = vi.hoisted(() => ({
   requestRemoveLocalModel: vi.fn(),
@@ -49,7 +49,7 @@ test('Expect folder and delete button in document', async () => {
   const d = new Date();
   d.setDate(d.getDate() - 2);
 
-  const object: ModelInfo = {
+  const object: ModelInfoUI = {
     id: 'my-model',
     description: '',
     hw: '',
@@ -81,7 +81,7 @@ test('Expect folder and delete button in document', async () => {
 });
 
 test('Expect download button in document', async () => {
-  const object: ModelInfo = {
+  const object: ModelInfoUI = {
     id: 'my-model',
     description: '',
     hw: '',
@@ -108,7 +108,7 @@ test('Expect download button in document', async () => {
 });
 
 test('Expect downloadModel to be call on click', async () => {
-  const object: ModelInfo = {
+  const object: ModelInfoUI = {
     id: 'my-model',
     description: '',
     hw: '',
@@ -134,7 +134,7 @@ test('Expect router to be called when rocket icon clicked', async () => {
   const gotoMock = vi.spyOn(router, 'goto');
   const replaceMock = vi.spyOn(router.location.query, 'replace');
 
-  const object: ModelInfo = {
+  const object: ModelInfoUI = {
     id: 'my-model',
     description: '',
     hw: '',
@@ -159,4 +159,24 @@ test('Expect router to be called when rocket icon clicked', async () => {
     expect(gotoMock).toHaveBeenCalledWith('/service/create');
     expect(replaceMock).toHaveBeenCalledWith({ 'model-id': 'my-model' });
   });
+});
+
+test('Expect error tooltip to be shown if action failed', async () => {
+  const object: ModelInfoUI = {
+    id: 'my-model',
+    description: '',
+    hw: '',
+    license: '',
+    name: '',
+    registry: '',
+    url: '',
+    file: undefined,
+    memory: 1000,
+    actionError: 'error while executing X',
+  };
+  render(ModelColumnActions, { object });
+
+  const tooltip = screen.getByLabelText('tooltip');
+  expect(tooltip).toBeInTheDocument();
+  expect(tooltip.textContent).equals('error while executing X');
 });

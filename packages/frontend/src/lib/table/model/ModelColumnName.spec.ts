@@ -19,14 +19,14 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import ModelColumnName from './ModelColumnName.svelte';
 import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
+import type { ModelInfoUI } from '/@/models/ModelInfoUI';
 
 test('Expect model info lower bar to be visible', async () => {
   const routerMock = vi.spyOn(router, 'goto');
-  const object: ModelInfo = {
+  const object: ModelInfoUI = {
     id: 'my-model',
     description: '',
     hw: '',
@@ -58,7 +58,7 @@ test('Expect model info lower bar to be visible', async () => {
 
 test('Expect model info lower bar to be visible', async () => {
   const routerMock = vi.spyOn(router, 'goto');
-  const object: ModelInfo = {
+  const object: ModelInfoUI = {
     id: 'my-model',
     description: '',
     hw: '',

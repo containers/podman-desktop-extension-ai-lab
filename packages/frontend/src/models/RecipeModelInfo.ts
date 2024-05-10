@@ -16,9 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfoUI } from './ModelInfoUI';
 
-export interface RecipeModelInfo extends ModelInfo {
+export interface RecipeModelInfo extends ModelInfoUI {
   recommended: boolean;
   inUse: boolean;
 }

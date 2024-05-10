@@ -96,8 +96,10 @@ test('perform download failed', async () => {
   const listenerMock = vi.fn();
   downloader.onEvent(listenerMock);
 
+  const rejectSpy = vi.fn();
+
   // perform download logic (do not wait)
-  void downloader.perform('followUpId');
+  downloader.perform('followUpId').catch((e: unknown) => rejectSpy(e));
 
   // wait for listener to be registered
   await vi.waitFor(() => {
@@ -122,6 +124,8 @@ test('perform download failed', async () => {
     status: 'error',
   });
   expect(promises.rm).toHaveBeenCalledWith('dummyTarget.tmp');
+
+  expect(rejectSpy).toHaveBeenCalledWith('dummyError');
 });
 
 test('perform download successfully', async () => {

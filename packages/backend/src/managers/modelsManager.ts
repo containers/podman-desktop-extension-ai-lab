@@ -33,6 +33,7 @@ import { Uploader } from '../utils/uploader';
 import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/modelsUtils';
 import { getFirstRunningMachineName } from '../utils/podman';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
+import { hasValidSha } from '../utils/sha';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string = '';
@@ -348,7 +349,7 @@ export class ModelsManager implements Disposable {
 
     const target = path.resolve(destDir, path.basename(model.url));
     // Create a downloader
-    const downloader = new Downloader(model.url, target, abortSignal);
+    const downloader = new Downloader(model.url, target, model.sha, abortSignal);
 
     this.#downloaders.set(model.id, downloader);
 
@@ -365,12 +366,26 @@ export class ModelsManager implements Disposable {
   private async downloadModel(model: ModelInfo, task: Task): Promise<string> {
     // Check if the model is already on disk.
     if (this.isModelOnDisk(model.id)) {
-      task.state = 'success';
       task.name = `Model ${model.name} already present on disk`;
+
+      const modelPath = this.getLocalModelPath(model.id);
+      if (model.sha) {
+        const isValid = await hasValidSha(modelPath, model.sha);
+        if (!isValid) {
+          task.state = 'error';
+          task.error = `Model ${model.name} is already present on disk at ${modelPath} but its security hash (SHA) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.`;
+          this.taskRegistry.updateTask(task); // update task
+          throw new Error(
+            `Model ${model.name} is already present on disk at ${modelPath} but its security hash (SHA) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.`,
+          );
+        }
+      }
+
+      task.state = 'success';
       this.taskRegistry.updateTask(task); // update task
 
       // return model path
-      return this.getLocalModelPath(model.id);
+      return modelPath;
     }
 
     const abortController = new AbortController();

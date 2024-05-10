@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { router } from 'tinro';
-export let object: ModelInfo;
+import type { ModelInfoUI } from '/@/models/ModelInfoUI';
+export let object: ModelInfoUI;
 
 function openDetails() {
   router.goto(`/model/${object.id}`);

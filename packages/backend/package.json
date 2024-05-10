@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "fast-xml-parser": "^4.3.6",
-    "isomorphic-git": "^1.25.7",
+    "isomorphic-git": "^1.25.9",
     "mustache": "^4.2.0",
     "openai": "^4.44.0",
     "postman-code-generators": "^1.10.0",

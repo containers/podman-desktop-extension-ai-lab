@@ -26,6 +26,18 @@
   transform: translate(-80%, -100%);
   margin-top: -8px;
 }
+.tooltip.bottom-left {
+  left: 0;
+  bottom: 0;
+  transform: translate(-80%, 100%);
+  margin-top: -8px;
+}
+.tooltip.bottom-right {
+  left: 0;
+  bottom: 0;
+  transform: translate(0%, 100%);
+  margin-top: -8px;
+}
 .tooltip.top-right {
   left: 0;
   transform: translate(0%, -100%);
@@ -38,18 +50,19 @@
 </style>
 
 <script>
-export let tip = '';
 export let top = false;
 export let topLeft = false;
 export let topRight = false;
 export let right = false;
 export let bottom = false;
+export let bottomLeft = false;
+export let bottomRight = false;
 export let left = false;
 </script>
 
 <div class="relative inline-block">
-  <span class="group tooltip-slot">
-    <slot />
+  <span class="group tooltip-slot {$$props.class}">
+    <slot name="content" />
   </span>
   <div
     class="whitespace-nowrap absolute tooltip opacity-0 inline-block transition-opacity duration-150 ease-in-out pointer-events-none z-[10]"
@@ -58,9 +71,9 @@ export let left = false;
     class:bottom="{bottom}"
     class:top="{top}"
     class:top-left="{topLeft}"
-    class:top-right="{topRight}">
-    {#if tip}
-      <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs" aria-label="tooltip">{tip}</div>
-    {/if}
+    class:top-right="{topRight}"
+    class:bottom-left="{bottomLeft}"
+    class:bottom-right="{bottomRight}">
+    <slot name="tip" />
   </div>
 </div>

@@ -11,7 +11,7 @@ export let tooltipClass = '';
 
 {#if icon}
   {#if error !== undefined && error !== ''}
-    <Tooltip 
+    <Tooltip
       top="{tooltipPosition === 'top'}"
       topLeft="{tooltipPosition === 'topLeft'}"
       bottomLeft="{tooltipPosition === 'bottomLeft'}">
@@ -20,7 +20,9 @@ export let tooltipClass = '';
       </svelte:fragment>
       <svelte:fragment slot="tip">
         {#if error}
-          <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs {tooltipClass}" aria-label="tooltip">{error}</div>
+          <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs {tooltipClass}" aria-label="tooltip">
+            {error}
+          </div>
         {/if}
       </svelte:fragment>
     </Tooltip>

@@ -164,8 +164,7 @@ export class Downloader {
           const actualSha = checkSum.digest('hex');
           if (this.sha !== actualSha) {
             callback({
-              error:
-                "The file's security hash (SHA) does not match the expected value. The file may have been altered or corrupted during the download process",
+              error: `The file's security hash (SHA) does not match the expected value. The file may have been altered or corrupted during the download process`,
             });
             return;
           }

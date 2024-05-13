@@ -1191,7 +1191,7 @@ assertion-error@^1.1.0:
   resolved "https://registry.npmjs.org/assertion-error/-/assertion-error-1.1.0.tgz"
   integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
 
-async-lock@^1.1.0:
+async-lock@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/async-lock/-/async-lock-1.4.1.tgz#56b8718915a9b68b10fce2f2a9a3dddf765ef53f"
   integrity sha512-Az2ZTpuytrtqENulXwO3GGv1Bztugx6TT37NIo7imr/Qo0gsYiGtSdBa2B6fsXhTpVZDNfu1Qn3pk531e3q+nQ==
@@ -2876,12 +2876,12 @@ isexe@^2.0.0:
   resolved "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-isomorphic-git@^1.25.9:
-  version "1.25.9"
-  resolved "https://registry.yarnpkg.com/isomorphic-git/-/isomorphic-git-1.25.9.tgz#e57ec36fe74a4efd90de450dbe622a439e2fef7c"
-  integrity sha512-s/KFSOP2/0I8EK0RreK9ZHurUW2At30jDEp1W0WUWT0ANtEKt4ArQbSgoUsZ0tyTiiUnTvR3MYx6BtrHwAEa1Q==
+isomorphic-git@^1.25.10:
+  version "1.25.10"
+  resolved "https://registry.yarnpkg.com/isomorphic-git/-/isomorphic-git-1.25.10.tgz#59ff7af88773b126f2b273ef3c536c08308b6d36"
+  integrity sha512-IxGiaKBwAdcgBXwIcxJU6rHLk+NrzYaaPKXXQffcA0GW3IUrQXdUPDXDo+hkGVcYruuz/7JlGBiuaeTCgIgivQ==
   dependencies:
-    async-lock "^1.1.0"
+    async-lock "^1.4.1"
     clean-git-ref "^2.0.1"
     crc-32 "^1.2.0"
     diff3 "0.0.3"

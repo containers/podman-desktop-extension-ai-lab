@@ -16,6 +16,10 @@ let actionName: string | undefined = '';
 $: updateTitleDescription(connectionInfo);
 
 function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
+  if (connectionInfo.status === 'native') {
+    return;
+  }
+
   if (connectionInfo.status === 'no-machine') {
     title = 'No Podman Machine is running';
     description = 'Please start a Podman Machine before proceeding further.';

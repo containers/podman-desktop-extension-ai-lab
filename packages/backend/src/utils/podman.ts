@@ -138,15 +138,22 @@ export async function isQEMUMachine(): Promise<boolean> {
 export async function checkContainerConnectionStatusAndResources(
   modelInfo: ModelCheckerInfo,
 ): Promise<ContainerConnectionInfo> {
+  // starting from podman desktop 1.10 we have the navigate functions
+  const hasNavigateFunction = !!navigation.navigateToResources;
+
+  if (env.isLinux) {
+    return {
+      status: 'native',
+      canRedirect: hasNavigateFunction,
+    };
+  }
+
   let connection: ProviderContainerConnection | undefined = undefined;
   try {
     connection = getFirstRunningPodmanConnection();
   } catch (e) {
     console.log(String(e));
   }
-
-  // starting from podman desktop 1.10 we have the navigate functions
-  const hasNavigateFunction = !!navigation.navigateToResources;
 
   if (!connection) {
     return {

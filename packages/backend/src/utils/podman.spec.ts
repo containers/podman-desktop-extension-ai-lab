@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { beforeEach, expect, test, describe, vi } from 'vitest';
+import { beforeEach, expect, test, describe, vi, afterEach } from 'vitest';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import * as utils from '../utils/podman';
 import type { ContainerEngineInfo } from '@podman-desktop/api';
@@ -38,6 +38,7 @@ vi.mock('@podman-desktop/api', () => {
   return {
     env: {
       isWindows: false,
+      isLinux: false,
     },
     configuration: {
       getConfiguration: () => config,
@@ -330,6 +331,21 @@ describe('checkContainerConnectionStatusAndResources', () => {
     engineName: 'enginerName',
     engineType: 'podman',
   };
+  afterEach(() => {
+    vi.mocked(podmanDesktopApi.env).isLinux = false;
+  });
+  test('return native on Linux', async () => {
+    vi.mocked(podmanDesktopApi.env).isLinux = true;
+    vi.spyOn(utils, 'getFirstRunningPodmanConnection').mockReturnValue(undefined);
+    const result = await utils.checkContainerConnectionStatusAndResources({
+      memoryNeeded: 10,
+      context: 'inference',
+    });
+    expect(result).toStrictEqual({
+      status: 'native',
+      canRedirect: true,
+    });
+  });
   test('return noMachineInfo if there is no running podman connection', async () => {
     vi.spyOn(utils, 'getFirstRunningPodmanConnection').mockReturnValue(undefined);
     const result = await utils.checkContainerConnectionStatusAndResources({

@@ -58,7 +58,6 @@ export let bottom = false;
 export let bottomLeft = false;
 export let bottomRight = false;
 export let left = false;
-export let tipClass = '';
 </script>
 
 <div class="relative inline-block">
@@ -66,7 +65,7 @@ export let tipClass = '';
     <slot name="content" />
   </span>
   <div
-    class="whitespace-nowrap absolute tooltip opacity-0 inline-block transition-opacity duration-150 ease-in-out pointer-events-none z-[10] {tipClass}"
+    class="whitespace-nowrap absolute tooltip opacity-0 inline-block transition-opacity duration-150 ease-in-out pointer-events-none z-[10]"
     class:left="{left}"
     class:right="{right}"
     class:bottom="{bottom}"

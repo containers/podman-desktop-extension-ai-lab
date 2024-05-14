@@ -124,7 +124,7 @@
       "properties": {
         "chatFormat": "openchat"
       },
-      "sha": "6adeaad8c048b35ea54562c55e454cc32c63118a32c7b8152cf706b290611487"
+      "sha256": "6adeaad8c048b35ea54562c55e454cc32c63118a32c7b8152cf706b290611487"
     },
     {
       "id": "hf.instructlab.merlinite-7b-lab-GGUF",
@@ -138,7 +138,7 @@
       "properties": {
         "chatFormat": "openchat"
       },
-      "sha": "9ca044d727db34750e1aeb04e3b18c3cf4a8c064a9ac96cf00448c506631d16c"
+      "sha256": "9ca044d727db34750e1aeb04e3b18c3cf4a8c064a9ac96cf00448c506631d16c"
     },
     {
       "id": "hf.TheBloke.mistral-7b-instruct-v0.2.Q4_K_M",
@@ -149,7 +149,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf",
       "memory": 4370129224,
-      "sha": "3e0039fd0273fcbebb49228943b17831aadd55cbcbf56f0af00499be2040ccf9"
+      "sha256": "3e0039fd0273fcbebb49228943b17831aadd55cbcbf56f0af00499be2040ccf9"
     },
     {
       "id": "hf.NousResearch.Hermes-2-Pro-Mistral-7B.Q4_K_M",
@@ -160,7 +160,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/NousResearch/Hermes-2-Pro-Mistral-7B-GGUF/resolve/main/Hermes-2-Pro-Mistral-7B.Q4_K_M.gguf",
       "memory": 4370129224,
-      "sha": "e1e4253b94e3c04c7b6544250f29ad864a56eb2126e61eb440991a8284453674"
+      "sha256": "e1e4253b94e3c04c7b6544250f29ad864a56eb2126e61eb440991a8284453674"
     },
     {
       "id": "hf.ibm.merlinite-7b-Q4_K_M",
@@ -174,7 +174,7 @@
       "properties": {
         "chatFormat": "openchat"
       },
-      "sha": "94f3a16321c9604ca22e970f3b89931ae5b4bbfd4c5d996e2bb606c506590666"
+      "sha256": "94f3a16321c9604ca22e970f3b89931ae5b4bbfd4c5d996e2bb606c506590666"
     },
     {
       "id": "hf.TheBloke.mistral-7b-codealpaca-lora.Q4_K_M",
@@ -185,7 +185,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-codealpaca-lora-GGUF/resolve/main/mistral-7b-codealpaca-lora.Q4_K_M.gguf",
       "memory": 4370129224,
-      "sha": "69c07f27f682ca8da59fcd8a981335876882a2577f0f9df51b49cf6b97fd470f"
+      "sha256": "69c07f27f682ca8da59fcd8a981335876882a2577f0f9df51b49cf6b97fd470f"
     },
     {
       "id": "hf.TheBloke.mistral-7b-code-16k-qlora.Q4_K_M",
@@ -196,7 +196,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-Code-16K-qlora-GGUF/resolve/main/mistral-7b-code-16k-qlora.Q4_K_M.gguf",
       "memory": 4370129224,
-      "sha": "0f3c9aced2de6caad52323fea5a92a22fba0b4efddb564fda7a3071e0614443f"
+      "sha256": "0f3c9aced2de6caad52323fea5a92a22fba0b4efddb564fda7a3071e0614443f"
     },
     {
       "id": "hf.froggeric.Cerebrum-1.0-7b-Q4_KS",
@@ -210,7 +210,7 @@
       "properties": {
         "chatFormat": "openchat"
       },
-      "sha": "98861462a0a80e08704631df23ffee860bd5634551c48d069d4daa3c8931bc52"
+      "sha256": "98861462a0a80e08704631df23ffee860bd5634551c48d069d4daa3c8931bc52"
     },
     {
       "id": "hf.TheBloke.openchat-3.5-0106.Q4_K_M",
@@ -221,7 +221,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/openchat-3.5-0106-GGUF/resolve/main/openchat-3.5-0106.Q4_K_M.gguf",
       "memory": 4370129224,
-      "sha": "49190d4d039e6dea463e567ebce707eb001648f4ba01e43eb7fa88d9975fc0ce"
+      "sha256": "49190d4d039e6dea463e567ebce707eb001648f4ba01e43eb7fa88d9975fc0ce"
     },
     {
       "id": "hf.TheBloke.mistral-7b-openorca.Q4_K_M",
@@ -232,7 +232,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/TheBloke/Mistral-7B-OpenOrca-GGUF/resolve/main/mistral-7b-openorca.Q4_K_M.gguf",
       "memory": 4370129224,
-      "sha": "83967e58c10c25fbe9d358b6d9e9a8212ca8a292061110dcb68511d39133407b"
+      "sha256": "83967e58c10c25fbe9d358b6d9e9a8212ca8a292061110dcb68511d39133407b"
     },
     {
       "id": "hf.MaziyarPanahi.phi-2.Q4_K_M",
@@ -243,7 +243,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/MaziyarPanahi/phi-2-GGUF/resolve/main/phi-2.Q4_K_M.gguf",
       "memory": 1739461755,
-      "sha": "013e0e421b70dc169adb0c0010171202371e907e5f648084e4ddc8ad9985127a"
+      "sha256": "013e0e421b70dc169adb0c0010171202371e907e5f648084e4ddc8ad9985127a"
     },
     {
       "id": "hf.llmware.dragon-mistral-7b-q4_k_m",
@@ -257,7 +257,7 @@
       "properties": {
         "chatFormat": "openchat"
       },
-      "sha": "1d8f463c4917480b770db5d7921f3d144471891c45a0d25ba3ab3dd753ec620f"
+      "sha256": "1d8f463c4917480b770db5d7921f3d144471891c45a0d25ba3ab3dd753ec620f"
     },
     {
       "id": "hf.MaziyarPanahi.MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M",
@@ -268,7 +268,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/MaziyarPanahi/MixTAO-7Bx2-MoE-Instruct-v7.0-GGUF/resolve/main/MixTAO-7Bx2-MoE-Instruct-v7.0.Q4_K_M.gguf",
       "memory": 7784628224,
-      "sha": "f5fcf04c77a5b69ae37791b48df90daa553e40b5a39efc9068258bedef373182"
+      "sha256": "f5fcf04c77a5b69ae37791b48df90daa553e40b5a39efc9068258bedef373182"
     },
     {
       "id": "hf.ggerganov.whisper.cpp",
@@ -279,7 +279,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin",
       "memory": 487010000,
-      "sha": "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b"
+      "sha256": "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b"
     },
     {
       "id": "hf.facebook.detr-resnet-101",
@@ -293,7 +293,7 @@
       "properties": {
         "name": "facebook/detr-resnet-101"
       },
-      "sha": "0943b5a9085a95a0e3ecc1c99a7db0451ecb9d79f4dcb543b0939c1a12481a5d"
+      "sha256": "0943b5a9085a95a0e3ecc1c99a7db0451ecb9d79f4dcb543b0939c1a12481a5d"
     }
   ],
   "categories": [

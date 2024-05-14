@@ -349,7 +349,7 @@ export class ModelsManager implements Disposable {
 
     const target = path.resolve(destDir, path.basename(model.url));
     // Create a downloader
-    const downloader = new Downloader(model.url, target, model.sha, abortSignal);
+    const downloader = new Downloader(model.url, target, model.sha256, abortSignal);
 
     this.#downloaders.set(model.id, downloader);
 
@@ -369,14 +369,14 @@ export class ModelsManager implements Disposable {
       task.name = `Model ${model.name} already present on disk`;
 
       const modelPath = this.getLocalModelPath(model.id);
-      if (model.sha) {
-        const isValid = await hasValidSha(modelPath, model.sha);
+      if (model.sha256) {
+        const isValid = await hasValidSha(modelPath, model.sha256);
         if (!isValid) {
           task.state = 'error';
-          task.error = `Model ${model.name} is already present on disk at ${modelPath} but its security hash (SHA) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.`;
+          task.error = `Model ${model.name} is already present on disk at ${modelPath} but its security hash (SHA-256) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.`;
           this.taskRegistry.updateTask(task); // update task
           throw new Error(
-            `Model ${model.name} is already present on disk at ${modelPath} but its security hash (SHA) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.`,
+            `Model ${model.name} is already present on disk at ${modelPath} but its security hash (SHA-256) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.`,
           );
         }
       }

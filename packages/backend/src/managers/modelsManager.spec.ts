@@ -754,10 +754,10 @@ describe('downloadModel', () => {
         id: 'id',
         url: 'url',
         name: 'name',
-        sha: 'sha',
+        sha256: 'sha',
       } as ModelInfo),
     ).rejects.toThrowError(
-      'Model name is already present on disk at path but its security hash (SHA) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.',
+      'Model name is already present on disk at path but its security hash (SHA-256) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.',
     );
   });
   test('multiple download request same model - second call after first completed', async () => {

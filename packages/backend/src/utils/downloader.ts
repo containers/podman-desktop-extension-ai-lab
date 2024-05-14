@@ -33,7 +33,7 @@ export class Downloader {
   constructor(
     private url: string,
     private target: string,
-    private sha?: string,
+    private sha256?: string,
     private abortSignal?: AbortSignal,
   ) {}
 
@@ -94,7 +94,7 @@ export class Downloader {
     let progress = 0;
     let previousProgressValue = -1;
     let checkSum: crypto.Hash;
-    if (this.sha) {
+    if (this.sha256) {
       checkSum = crypto.createHash('sha256');
     }
 
@@ -162,9 +162,9 @@ export class Downloader {
 
         if (checkSum) {
           const actualSha = checkSum.digest('hex');
-          if (this.sha !== actualSha) {
+          if (this.sha256 !== actualSha) {
             callback({
-              error: `The file's security hash (SHA) does not match the expected value. The file may have been altered or corrupted during the download process`,
+              error: `The file's security hash (SHA-256) does not match the expected value. The file may have been altered or corrupted during the download process`,
             });
             return;
           }

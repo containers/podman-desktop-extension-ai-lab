@@ -32,7 +32,7 @@ export interface ModelInfo {
   properties?: {
     [key: string]: string;
   };
-  sha?: string;
+  sha256?: string;
 }
 
 export type ModelCheckerContext = 'inference' | 'recipe';

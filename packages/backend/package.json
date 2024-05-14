@@ -11,6 +11,17 @@
   },
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "AI Lab",
+      "properties": {
+        "ai-lab.models.path": {
+          "type": "string",
+          "format": "folder",
+          "default": "",
+          "description": "Custom path where to download models. Note: The extension must be restarted for changes to take effect. (Default is blank)"
+        }
+      }
+    },
     "icons": {
       "brain-icon": {
         "description": "Brain icon",

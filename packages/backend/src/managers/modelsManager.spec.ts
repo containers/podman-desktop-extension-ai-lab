@@ -21,9 +21,9 @@ import os from 'os';
 import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
-import { env, process as coreProcess } from '@podman-desktop/api';
-import type { RunResult, TelemetryLogger, Webview } from '@podman-desktop/api';
-import type { CatalogManager } from './catalogManager';
+import { env, process as coreProcess, Disposable } from '@podman-desktop/api';
+import type { Configuration, RunResult, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { CatalogManager, catalogUpdateHandle } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';
 import { TaskRegistry } from '../registries/TaskRegistry';
@@ -49,8 +49,21 @@ vi.mock('../utils/podman', () => ({
   getPodmanCli: mocks.getPodmanCliMock,
 }));
 
+const getConfigurationMock = vi.fn().mockReturnValue('');
+const config: Configuration = {
+  get: getConfigurationMock,
+  has: () => true,
+  update: () => Promise.resolve(),
+};
+
 vi.mock('@podman-desktop/api', () => {
   return {
+    configuration: {
+      getConfiguration: (): Configuration => config,
+    },
+    Disposable: {
+      create: vi.fn(),
+    },
     env: {
       isWindows: false,
     },
@@ -169,11 +182,15 @@ test('getModelsInfo should get models in local directory', async () => {
           { id: 'model-id-2', name: 'model-id-2-model' } as ModelInfo,
         ];
       },
+      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
+        return Disposable.create(() => {});
+      },
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
   );
+  manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
     {
@@ -216,11 +233,15 @@ test('getModelsInfo should return an empty array if the models folder does not e
       getModels(): ModelInfo[] {
         return [];
       },
+      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
+        return Disposable.create(() => {});
+      },
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
   );
+  manager.init();
   manager.getLocalModelsFromDisk();
   expect(manager.getModelsInfo()).toEqual([]);
   if (process.platform === 'win32') {
@@ -254,11 +275,15 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
       getModels(): ModelInfo[] {
         return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
       },
+      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
+        return Disposable.create(() => {});
+      },
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
   );
+  manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
     {
@@ -311,11 +336,15 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
       getModels(): ModelInfo[] {
         return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
       },
+      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
+        return Disposable.create(() => {});
+      },
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
   );
+  manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
     {
@@ -349,11 +378,15 @@ test('loadLocalModels should post a message with the message on disk and on cata
           },
         ] as ModelInfo[];
       },
+      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
+        return Disposable.create(() => {});
+      },
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
   );
+  manager.init();
   await manager.loadLocalModels();
   expect(postMessageMock).toHaveBeenNthCalledWith(1, {
     id: 'new-models-state',
@@ -397,11 +430,15 @@ test('deleteModel deletes the model folder', async () => {
           },
         ] as ModelInfo[];
       },
+      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
+        return Disposable.create(() => {});
+      },
     } as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
   );
+  manager.init();
   await manager.loadLocalModels();
   await manager.deleteModel('model-id-1');
   // check that the model's folder is removed from disk
@@ -459,11 +496,15 @@ describe('deleting models', () => {
             },
           ] as ModelInfo[];
         },
+        onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
+          return Disposable.create(() => {});
+        },
       } as CatalogManager,
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
     );
+    manager.init();
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
     // check that the model's folder is removed from disk
@@ -774,4 +815,42 @@ describe('downloadModel', () => {
     expect(mocks.performDownloadMock).toHaveBeenCalledTimes(1);
     expect(mocks.onEventDownloadMock).toHaveBeenCalledTimes(2);
   });
+});
+
+test('download directory should be equals to the one set in the settings', async () => {
+  const now = new Date();
+  mockFiles(now);
+
+  getConfigurationMock.mockReturnValue('/my_custom_directory');
+  const postMessageMock = vi.fn();
+  let appdir: string;
+  if (process.platform === 'win32') {
+    appdir = 'C:\\home\\user\\aistudio';
+  } else {
+    appdir = '/home/user/aistudio';
+  }
+  const manager = new ModelsManager(
+    appdir,
+    {
+      postMessage: postMessageMock,
+    } as unknown as Webview,
+    {
+      getModels: () => {
+        return [
+          {
+            id: 'model-id-1',
+          },
+        ] as ModelInfo[];
+      },
+      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
+        return Disposable.create(() => {});
+      },
+    } as CatalogManager,
+    telemetryLogger,
+    taskRegistry,
+    cancellationTokenRegistryMock,
+  );
+  manager.init();
+  const directory = manager.getModelsDirectory();
+  expect(directory).equals('/my_custom_directory');
 });

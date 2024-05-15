@@ -166,6 +166,9 @@ export class Downloader {
             callback({
               error: `The file's security hash (SHA-256) does not match the expected value. The file may have been altered or corrupted during the download process`,
             });
+            promises.rm(tmpFile).catch((err: unknown) => {
+              console.error(`Something went wrong while trying to delete ${tmpFile}`, err);
+            });
             return;
           }
         }

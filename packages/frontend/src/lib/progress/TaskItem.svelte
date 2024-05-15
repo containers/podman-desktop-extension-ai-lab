@@ -16,7 +16,7 @@ const cancel = () => {
 </script>
 
 <div class="flex flex-row items-center">
-  <div class="min-w-4 mr-2">
+  <div class="min-w-4 mr-2 flex items-center justify-center">
     {#if task.state === 'success'}
       <svg
         role="img"

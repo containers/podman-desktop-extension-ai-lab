@@ -1,9 +1,9 @@
 <script lang="ts">
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { faMemory, faMicrochip } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
 import { filesize } from 'filesize';
-import type { ModelInfoUI } from '/@/models/ModelInfoUI';
-export let object: ModelInfoUI;
+export let object: ModelInfo;
 </script>
 
 <div class="text-sm text-gray-700">

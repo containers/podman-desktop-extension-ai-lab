@@ -1,7 +1,7 @@
 <script lang="ts">
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { filesize } from 'filesize';
-import type { ModelInfoUI } from '/@/models/ModelInfoUI';
-export let object: ModelInfoUI;
+export let object: ModelInfo;
 </script>
 
 <div class="text-xs text-gray-700 flex-flex-row">

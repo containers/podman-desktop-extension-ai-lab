@@ -357,6 +357,16 @@ export class ModelsManager implements Disposable {
   }
 
   private createDownloadTask(model: ModelInfo, labels?: { [key: string]: string }): Task {
+    // it may happen that the taskRegistry contains old entries representing an old failing download, we delete them as we are starting a new download
+    const failedPullingTaskIds = this.taskRegistry
+      .getTasksByLabels({
+        'model-pulling': model.id,
+      })
+      .filter(t => t.state === 'error')
+      .map(t => t.id);
+    if (failedPullingTaskIds.length > 0) {
+      this.taskRegistry.deleteAll(failedPullingTaskIds);
+    }
     return this.taskRegistry.createTask(`Downloading model ${model.name}`, 'loading', {
       ...labels,
       'model-pulling': model.id,

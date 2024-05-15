@@ -5,24 +5,17 @@ import Tooltip from './Tooltip.svelte';
 
 export let error: string;
 export let icon = false;
-export let tooltipPosition: 'top' | 'topLeft' | 'bottomLeft' = 'top';
-export let tooltipClass = '';
 </script>
 
 {#if icon}
   {#if error !== undefined && error !== ''}
-    <Tooltip
-      top="{tooltipPosition === 'top'}"
-      topLeft="{tooltipPosition === 'topLeft'}"
-      bottomLeft="{tooltipPosition === 'bottomLeft'}">
+    <Tooltip top>
       <svelte:fragment slot="content">
         <Fa size="1.125x" class="cursor-pointer text-red-500 {$$props.class}" icon="{faExclamationCircle}" />
       </svelte:fragment>
       <svelte:fragment slot="tip">
         {#if error}
-          <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs {tooltipClass}" aria-label="tooltip">
-            {error}
-          </div>
+          <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs" aria-label="tooltip">{error}</div>
         {/if}
       </svelte:fragment>
     </Tooltip>

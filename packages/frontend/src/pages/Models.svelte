@@ -19,61 +19,50 @@ import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 import Button from '../lib/button/Button.svelte';
 import { router } from 'tinro';
-import type { ModelInfoUI } from '../models/ModelInfoUI';
 
-const columns: Column<ModelInfoUI>[] = [
-  new Column<ModelInfoUI>('', { width: '40px', renderer: ModelColumnIcon }),
-  new Column<ModelInfoUI>('Name', {
+const columns: Column<ModelInfo>[] = [
+  new Column<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
+  new Column<ModelInfo>('Name', {
     width: '3fr',
     renderer: ModelColumnName,
     comparator: (a, b) => b.name.localeCompare(a.name),
   }),
-  new Column<ModelInfoUI>('Size', {
+  new Column<ModelInfo>('Size', {
     width: '50px',
     renderer: ModelColumnSize,
     comparator: (a, b) => (a.file?.size ?? 0) - (b.file?.size ?? 0),
   }),
-  new Column<ModelInfoUI>('Age', {
+  new Column<ModelInfo>('Age', {
     width: '70px',
     renderer: ModelColumnAge,
     comparator: (a, b) => (a.file?.creation?.getTime() ?? 0) - (b.file?.creation?.getTime() ?? 0),
   }),
-  new Column<ModelInfoUI>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
-  new Column<ModelInfoUI>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions, overflow: true }),
+  new Column<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
+  new Column<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
 ];
 const row = new Row<ModelInfo>({});
 
 let loading: boolean = true;
 
 let pullingTasks: Task[] = [];
-let activeTasks: Task[] = [];
 let models: ModelInfo[] = [];
 
 // filtered mean, we remove the models that are being downloaded
-let filteredModels: ModelInfoUI[] = [];
+let filteredModels: ModelInfo[] = [];
 
 $: localModels = filteredModels.filter(model => model.file && model.url);
 $: remoteModels = filteredModels.filter(model => !model.file);
 $: importedModels = filteredModels.filter(model => !model.url);
 
 function filterModels(): void {
-  // Let's collect the models we do not want to show (loading, error).
-  const modelsId: string[] = activeTasks.reduce((previousValue, currentValue) => {
+  // Let's collect the models we do not want to show (loading).
+  const modelsId: string[] = pullingTasks.reduce((previousValue, currentValue) => {
     if (currentValue.labels !== undefined && currentValue.state !== 'error') {
       previousValue.push(currentValue.labels['model-pulling']);
     }
     return previousValue;
   }, [] as string[]);
-  pullingTasks = activeTasks.filter(task => task.state === 'loading');
-  filteredModels = models
-    .filter(model => !modelsId.includes(model.id))
-    .map(model => {
-      return {
-        ...model,
-        actionError: activeTasks.find(task => task.state === 'error' && task.labels?.['model-pulling'] === model.id)
-          ?.error,
-      };
-    });
+  filteredModels = models.filter(model => !modelsId.includes(model.id));
 }
 
 onMount(() => {
@@ -81,7 +70,7 @@ onMount(() => {
   const tasksUnsubscribe = tasks.subscribe(value => {
     // Filter out duplicates
     const modelIds = new Set<string>();
-    activeTasks = value.reduce((filtered: Task[], task: Task) => {
+    pullingTasks = value.reduce((filtered: Task[], task: Task) => {
       if (
         (task.state === 'loading' || task.state === 'error') &&
         task.labels !== undefined &&

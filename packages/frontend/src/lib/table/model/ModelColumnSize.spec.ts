@@ -19,11 +19,11 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import ModelColumnSize from './ModelColumnSize.svelte';
-import type { ModelInfoUI } from '/@/models/ModelInfoUI';
 
 test('Expect simple column styling', async () => {
-  const object: ModelInfoUI = {
+  const object: ModelInfo = {
     id: 'my-model',
     description: '',
     hw: '',

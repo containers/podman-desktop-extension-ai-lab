@@ -16,13 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import crypto from 'node:crypto';
-import { promises } from 'node:fs';
+import * as fs from 'node:fs';
+import { promises } from 'node:stream';
 
 export async function hasValidSha(filePath: string, expectedSha: string): Promise<boolean> {
   const checkSum = crypto.createHash('sha256');
-  const readStream = await promises.readFile(filePath);
+  const input = fs.createReadStream(filePath);
+  await promises.pipeline(input, checkSum);
 
-  checkSum.update(readStream);
   const actualSha = checkSum.digest('hex');
   return actualSha === expectedSha;
 }

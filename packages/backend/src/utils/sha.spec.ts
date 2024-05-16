@@ -16,8 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { beforeEach, expect, test, vi } from 'vitest';
-import { promises } from 'node:fs';
+import * as fs from 'node:fs';
 import { hasValidSha } from './sha';
+import { Readable } from 'node:stream';
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -25,7 +26,12 @@ beforeEach(() => {
 
 test('return true if file has same hash of the expected one', () => {
   vi.mock('node:fs');
-  vi.spyOn(promises, 'readFile').mockImplementation(() => Promise.resolve(Buffer.from('test')));
+
+  const readable = Readable.from('test');
+
+  vi.spyOn(fs, 'createReadStream').mockImplementation(() => {
+    return readable as fs.ReadStream;
+  });
 
   // sha of test => 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
   const isValid = hasValidSha('file', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08');
@@ -34,7 +40,11 @@ test('return true if file has same hash of the expected one', () => {
 
 test('return false if file has different hash of the expected one', () => {
   vi.mock('node:fs');
-  vi.spyOn(promises, 'readFile').mockImplementation(() => Promise.resolve(Buffer.from('test')));
+  const readable = Readable.from('test');
+
+  vi.spyOn(fs, 'createReadStream').mockImplementation(() => {
+    return readable as fs.ReadStream;
+  });
 
   // sha of test => 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
   const isValid = hasValidSha('file', 'fakeSha');

@@ -19,7 +19,8 @@
 export type ContainerConnectionInfo =
   | RunningContainerConnection
   | LowResourcesContainerConnection
-  | NoContainerConnection;
+  | NoContainerConnection
+  | NativeContainerConnection;
 
 export type ContainerConnectionInfoStatus = 'running' | 'no-machine' | 'low-resources';
 
@@ -42,5 +43,10 @@ export interface LowResourcesContainerConnection {
 
 export interface NoContainerConnection {
   status: 'no-machine';
+  canRedirect: boolean;
+}
+
+export interface NativeContainerConnection {
+  status: 'native';
   canRedirect: boolean;
 }

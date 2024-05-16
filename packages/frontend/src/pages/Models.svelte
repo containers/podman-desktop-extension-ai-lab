@@ -16,7 +16,6 @@ import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
 import Tab from '/@/lib/Tab.svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
-import { catalog } from '../stores/catalog';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 import Button from '../lib/button/Button.svelte';
 import { router } from 'tinro';
@@ -56,9 +55,9 @@ $: remoteModels = filteredModels.filter(model => !model.file);
 $: importedModels = filteredModels.filter(model => !model.url);
 
 function filterModels(): void {
-  // Let's collect the models we do not want to show (loading, error).
+  // Let's collect the models we do not want to show (loading).
   const modelsId: string[] = pullingTasks.reduce((previousValue, currentValue) => {
-    if (currentValue.labels !== undefined) {
+    if (currentValue.labels !== undefined && currentValue.state !== 'error') {
       previousValue.push(currentValue.labels['model-pulling']);
     }
     return previousValue;
@@ -73,7 +72,7 @@ onMount(() => {
     const modelIds = new Set<string>();
     pullingTasks = value.reduce((filtered: Task[], task: Task) => {
       if (
-        task.state === 'loading' &&
+        (task.state === 'loading' || task.state === 'error') &&
         task.labels !== undefined &&
         'model-pulling' in task.labels &&
         !modelIds.has(task.labels['model-pulling'])

@@ -15,29 +15,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import crypto from 'node:crypto';
+import { promises } from 'node:fs';
 
-import type { LocalModelInfo } from './ILocalModelInfo';
+export async function hasValidSha(filePath: string, expectedSha: string): Promise<boolean> {
+  const checkSum = crypto.createHash('sha256');
+  const readStream = await promises.readFile(filePath);
 
-export interface ModelInfo {
-  id: string;
-  name: string;
-  description: string;
-  hw: string;
-  registry?: string;
-  license?: string;
-  url?: string;
-  file?: LocalModelInfo;
-  state?: 'deleting';
-  memory?: number;
-  properties?: {
-    [key: string]: string;
-  };
-  sha256?: string;
-}
-
-export type ModelCheckerContext = 'inference' | 'recipe';
-
-export interface ModelCheckerInfo {
-  memoryNeeded: number;
-  context: ModelCheckerContext;
+  checkSum.update(readStream);
+  const actualSha = checkSum.digest('hex');
+  return actualSha === expectedSha;
 }

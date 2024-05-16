@@ -33,6 +33,7 @@ import { Uploader } from '../utils/uploader';
 import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/modelsUtils';
 import { getFirstRunningMachineName } from '../utils/podman';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
+import { hasValidSha } from '../utils/sha';
 
 export class ModelsManager implements Disposable {
   #modelsDir: string = '';
@@ -348,7 +349,7 @@ export class ModelsManager implements Disposable {
 
     const target = path.resolve(destDir, path.basename(model.url));
     // Create a downloader
-    const downloader = new Downloader(model.url, target, abortSignal);
+    const downloader = new Downloader(model.url, target, model.sha256, abortSignal);
 
     this.#downloaders.set(model.id, downloader);
 
@@ -356,6 +357,16 @@ export class ModelsManager implements Disposable {
   }
 
   private createDownloadTask(model: ModelInfo, labels?: { [key: string]: string }): Task {
+    // it may happen that the taskRegistry contains old entries representing an old failing download, we delete them as we are starting a new download
+    const failedPullingTaskIds = this.taskRegistry
+      .getTasksByLabels({
+        'model-pulling': model.id,
+      })
+      .filter(t => t.state === 'error')
+      .map(t => t.id);
+    if (failedPullingTaskIds.length > 0) {
+      this.taskRegistry.deleteAll(failedPullingTaskIds);
+    }
     return this.taskRegistry.createTask(`Downloading model ${model.name}`, 'loading', {
       ...labels,
       'model-pulling': model.id,
@@ -365,12 +376,26 @@ export class ModelsManager implements Disposable {
   private async downloadModel(model: ModelInfo, task: Task): Promise<string> {
     // Check if the model is already on disk.
     if (this.isModelOnDisk(model.id)) {
-      task.state = 'success';
       task.name = `Model ${model.name} already present on disk`;
+
+      const modelPath = this.getLocalModelPath(model.id);
+      if (model.sha256) {
+        const isValid = await hasValidSha(modelPath, model.sha256);
+        if (!isValid) {
+          task.state = 'error';
+          task.error = `Model ${model.name} is already present on disk at ${modelPath} but its security hash (SHA-256) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.`;
+          this.taskRegistry.updateTask(task); // update task
+          throw new Error(
+            `Model ${model.name} is already present on disk at ${modelPath} but its security hash (SHA-256) does not match the expected value. This may indicate the file has been altered or corrupted. Please delete it and try again.`,
+          );
+        }
+      }
+
+      task.state = 'success';
       this.taskRegistry.updateTask(task); // update task
 
       // return model path
-      return this.getLocalModelPath(model.id);
+      return modelPath;
     }
 
     const abortController = new AbortController();

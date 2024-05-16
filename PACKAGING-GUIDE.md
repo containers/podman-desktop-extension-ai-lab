@@ -38,6 +38,7 @@ A model has the following attributes:
 - ```license```: the license under which the model is available
 - ```url```: the URL used to download the model
 - ```memory```: the memory footprint of the model in bytes, as computed by the workflow `.github/workflows/compute-model-sizes.yaml`
+- ```sha256```: the SHA-256 checksum to be used to verify the downloaded model is identical to the original. It is optional and it must be HEX encoded  
 
 #### Recipes
 

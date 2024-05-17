@@ -14,6 +14,9 @@ import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConne
 import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
 import { modelsInfo } from '../stores/modelsInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
+import Button from '/@/lib/button/Button.svelte';
+import { faFileImport } from '@fortawesome/free-solid-svg-icons';
+import Modal from '/@/lib/Modal.svelte';
 
 export let recipeId: string;
 

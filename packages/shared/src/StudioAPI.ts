@@ -185,6 +185,12 @@ export abstract class StudioAPI {
   abstract checkInvalidModels(models: string[]): Promise<string[]>;
 
   /**
+   * Given a recipe config file, import it to the user's catalog
+   * @param configFile the ai-lab.yaml file to import
+   */
+  abstract importLocalRecipe(configFile: string): Promise<void>;
+
+  /**
    * Copy the provided content to the user clipboard
    * @param content
    */

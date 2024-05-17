@@ -31,6 +31,9 @@ export interface ContainerConfig {
 }
 export interface AIConfig {
   application: {
+    name: string;
+    type: string;
+    description?: string;
     containers: ContainerConfig[];
   };
 }
@@ -66,14 +69,30 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
     throw new Error('AIConfig has bad formatting: application does not have valid container property');
   }
 
+  if(!('name' in application) || typeof application['name'] !== 'string') {
+    throw new Error('name property is missing or malformed');
+  }
+
+  if(!('type' in application) || typeof application['type'] !== 'string') {
+    throw new Error('type property is missing or malformed');
+  }
+
   if (!Array.isArray(application['containers'])) {
     throw new Error('AIConfig has bad formatting: containers property must be an array.');
+  }
+
+  let description: string | undefined = undefined;
+  if('description' in application && typeof application['description'] === 'string') {
+    description = application['description']
   }
 
   const containers: unknown[] = application['containers'];
 
   return {
     application: {
+      name: application['name'],
+      type: application['type'],
+      description: description,
       containers: containers.map(container => {
         if (!container || typeof container !== 'object') throw new Error('containers array malformed');
 

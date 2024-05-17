@@ -27,6 +27,8 @@ import { Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+import { type AIConfig, parseYamlFile } from '../models/AIConfig';
+import { goarch } from '../utils/arch';
 
 export type catalogUpdateHandle = () => void;
 
@@ -86,7 +88,10 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
         ...defaultCatalog.models.filter(a => !sanitize.models.some(b => a.id === b.id)),
         ...sanitize.models,
       ] as ModelInfo[],
-      recipes: [...defaultCatalog.recipes.filter(a => !sanitize.recipes.some(b => a.id === b.id)), ...sanitize.recipes],
+      recipes: [
+        ...defaultCatalog.recipes.filter(a => !sanitize.recipes.some(b => a.id === b.id)),
+        ...sanitize.recipes
+      ],
       categories: [
         ...defaultCatalog.categories.filter(a => !sanitize.categories.some(b => a.id === b.id)),
         ...sanitize.categories,
@@ -182,25 +187,79 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     return recipe;
   }
 
-  /**
-   * This method is used to imports user's local models.
-   * @param localModels the models to imports
-   */
-  async importUserModels(localModels: LocalModelImportInfo[]): Promise<void> {
+  async importLocalRecipe(configFile: string): Promise<void> {
+    // Get the base dir of the ai-lab.yaml imported file
+    let basedir = path.dirname(configFile);
+
+    // Ensure we are not trying to import an existing recipe
+    const exists = this.getRecipes().some(recipe => recipe.basedir === basedir);
+    if(exists) {
+      throw new Error('Cannot import an existing known recipe.');
+    }
+
+    // Let's try to parse the ai-lab.yaml provided
+    let aiConfig: AIConfig;
+    try {
+      aiConfig = parseYamlFile(configFile, goarch());
+    } catch (err) {
+      console.error('Cannot load configure file.', err);
+      throw new Error(`Cannot load configuration file.`);
+    }
+
+    // Let's check for a readme.md
+    let readme: string | undefined = undefined;
+    const readmePath = path.join(basedir, 'README.md');
+    if(fs.existsSync(readmePath)) {
+      readme = await promises.readFile(readmePath, 'utf-8');
+    }
+
+    // Create the recipe from ai-lab content
+    const userRecipe: Recipe = {
+      id: configFile,
+      name: aiConfig.application.name,
+      description: aiConfig.application.description ?? 'no description',
+      categories: [aiConfig.application.type],
+      models: [],
+      basedir: path.dirname(configFile),
+      readme: readme ?? 'no readme',
+    }
+
+    // append the new recipe
+    const content: ApplicationCatalog = await this.getUserCatalog();
+    content.recipes.push(userRecipe);
+
+    // overwrite the existing catalog
+    return this.saveUserCatalog(content);
+    // no need to notify as we have a file watcher
+  }
+
+  private saveUserCatalog(content: ApplicationCatalog): Promise<void> {
     const userCatalogPath = this.getUserCatalogPath();
-    let content: ApplicationCatalog;
+    return promises.writeFile(userCatalogPath, JSON.stringify(content, undefined, 2), 'utf-8');
+  }
+
+  private async getUserCatalog(): Promise<ApplicationCatalog> {
+    const userCatalogPath = this.getUserCatalogPath();
 
     // check if we already have an existing user's catalog
     if (fs.existsSync(userCatalogPath)) {
       const raw = await promises.readFile(userCatalogPath, 'utf-8');
-      content = this.sanitize(JSON.parse(raw));
+      return this.sanitize(JSON.parse(raw));
     } else {
-      content = {
+      return {
         recipes: [],
         models: [],
         categories: [],
       };
     }
+  }
+
+  /**
+   * This method is used to imports user's local models.
+   * @param localModels the models to imports
+   */
+  async importUserModels(localModels: LocalModelImportInfo[]): Promise<void> {
+    const content: ApplicationCatalog = await this.getUserCatalog();
 
     // Transform local models into ModelInfo
     const models: ModelInfo[] = await Promise.all(
@@ -226,7 +285,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     content.models.push(...models);
 
     // overwrite the existing catalog
-    return promises.writeFile(userCatalogPath, JSON.stringify(content, undefined, 2), 'utf-8');
+    return this.saveUserCatalog(content);
   }
 
   /**

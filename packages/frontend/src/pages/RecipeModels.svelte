@@ -7,20 +7,14 @@ import ModelColumnRecipeSelection from '../lib/table/model/ModelColumnRecipeSele
 import ModelColumnRecipeRecommended from '../lib/table/model/ModelColumnRecipeRecommended.svelte';
 import type { RecipeModelInfo } from '../models/RecipeModelInfo';
 import ModelColumnIcon from '/@/lib/table/model/ModelColumnIcon.svelte';
+import { onMount } from 'svelte';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export let modelsIds: string[] | undefined;
 export let selectedModelId: string;
 export let setSelectedModel: (modelId: string) => void;
 
-$: models = $catalog.models
-  .filter(m => modelsIds?.includes(m.id))
-  .map((m, i) => {
-    return {
-      ...m,
-      recommended: i === 0,
-      inUse: m.id === selectedModelId,
-    } as RecipeModelInfo;
-  });
+let models: RecipeModelInfo[] = [];
 
 const columns: Column<RecipeModelInfo>[] = [
   new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
@@ -32,7 +26,28 @@ const row = new Row<RecipeModelInfo>({});
 
 function setModelToUse(selected: RecipeModelInfo) {
   setSelectedModel(selected.id);
+  // update inUse models
+  models = models.map(model => ({...model, inUse: model.id === selected.id}));
 }
+
+onMount(() => {
+  return catalog.subscribe((catalog) => {
+    let mModels: ModelInfo[];
+    // If we do not have any models id provided, we just provide all
+    if(modelsIds === undefined || modelsIds.length === 0) {
+      mModels = catalog.models;
+    } else {
+      mModels= catalog.models.filter(m => modelsIds?.includes(m.id));
+    }
+    // Map ModelInfo to RecipeModelInfo
+    models = mModels.map((m, i) =>  ({
+        ...m,
+        recommended: i === 0,
+        inUse: m.id === selectedModelId,
+      }) as RecipeModelInfo
+    );
+  });
+})
 </script>
 
 {#if models}

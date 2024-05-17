@@ -67,11 +67,20 @@ export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> {
 
   private loadLocalRecipeRepositories(recipes: Recipe[]): void {
     recipes.forEach(recipe => {
+
       const recipeFolder = path.join(this.appUserDirectory, recipe.id);
-      if (fs.existsSync(recipeFolder)) {
+      if(recipe.repository && fs.existsSync(recipeFolder)) {
         this.register({
           path: recipeFolder,
           sourcePath: path.join(recipeFolder, recipe.basedir ?? ''),
+          labels: {
+            'recipe-id': recipe.id,
+          },
+        });
+      } else if(recipe.basedir && path.isAbsolute(recipe.basedir)) {
+        this.register({
+          path: recipe.basedir,
+          sourcePath: recipe.basedir,
           labels: {
             'recipe-id': recipe.id,
           },

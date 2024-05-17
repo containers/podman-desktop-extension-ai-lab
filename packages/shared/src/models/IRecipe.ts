@@ -22,9 +22,10 @@ export interface Recipe {
   categories: string[];
   description: string;
   icon?: string;
-  repository: string;
+  repository?: string;
   ref?: string;
   readme: string;
+  // basedir is relative to the local folder if a repository is associated otherwise absolute path
   basedir?: string;
   models?: string[];
 }

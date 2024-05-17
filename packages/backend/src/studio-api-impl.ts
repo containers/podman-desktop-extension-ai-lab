@@ -463,6 +463,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.catalogManager.importUserModels(models);
   }
 
+  importLocalRecipe(configFile: string): Promise<void> {
+    return this.catalogManager.importLocalRecipe(configFile);
+  }
+
   async checkInvalidModels(models: string[]): Promise<string[]> {
     const invalidPaths: string[] = [];
     const catalogModels = await this.getModelsInfo();

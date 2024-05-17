@@ -486,8 +486,8 @@ describe('getConfiguration', () => {
       localRepositoryRegistry,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-    expect(() => manager.getConfiguration('config', 'local')).toThrowError(
-      `The file located at ${path.join('local', 'config', CONFIG_FILENAME)} does not exist.`,
+    expect(() => manager.getConfiguration('local')).toThrowError(
+      `The file located at ${path.join('local', CONFIG_FILENAME)} does not exist.`,
     );
   });
 
@@ -522,8 +522,8 @@ describe('getConfiguration', () => {
     };
     mocks.parseYamlFileMock.mockReturnValue(aiConfig);
 
-    const result = manager.getConfiguration('config', 'local');
-    expect(result.path).toEqual(path.join('local', 'config', CONFIG_FILENAME));
+    const result = manager.getConfiguration('local');
+    expect(result.path).toEqual(path.join('local', CONFIG_FILENAME));
     expect(result.aiConfig).toEqual(aiConfig);
   });
 });
@@ -532,6 +532,8 @@ describe('filterContainers', () => {
   test('return empty array when no container fit the system', () => {
     const aiConfig: AIConfig = {
       application: {
+        name: 'dummy-name',
+        type: 'dummy-type',
         containers: [
           {
             name: 'container2',
@@ -564,6 +566,8 @@ describe('filterContainers', () => {
   test('return one container when only one fit the system', () => {
     const aiConfig: AIConfig = {
       application: {
+        name: 'dummy-name',
+        type: 'dummy-type',
         containers: [
           {
             name: 'container1',
@@ -631,6 +635,8 @@ describe('filterContainers', () => {
     ];
     const aiConfig: AIConfig = {
       application: {
+        name: 'dummy-name',
+        type: 'dummy-type',
         containers: containerConfig,
       },
     };
@@ -1472,5 +1478,143 @@ describe('getImageTag', () => {
     const state = manager.getApplicationsState();
     expect(state).toHaveLength(1);
     expect(state[0].health).toEqual('healthy');
+  });
+});
+
+describe('getRecipeLocalFolder', () => {
+  const appUserDirectory = '/home/user/aistudio';
+  const processCheckoutMock = vi.fn();
+
+  test('recipe with git repository should checkout', async () => {
+    const manager = new ApplicationManager(
+      appUserDirectory,
+      {
+        processCheckout: processCheckoutMock,
+        isGitInstalled: () => true,
+      } as unknown as GitManager,
+      taskRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
+      {} as unknown as ModelsManager,
+      telemetryLogger,
+      localRepositoryRegistry,
+    );
+
+    const local = await manager.getRecipeLocalFolder({
+      id: 'dummy-recipe-id',
+      name: 'dummy-recipe-name',
+      basedir: undefined,
+      repository: 'dummy-repository',
+      readme: 'dummy-readme',
+      description: '',
+      categories: [],
+    }, {id: 'dummy-model-id'} as unknown as ModelInfo);
+
+    const targetDir = path.join(appUserDirectory, 'dummy-recipe-id');
+    expect(processCheckoutMock).toHaveBeenCalledWith({
+      repository: 'dummy-repository',
+      ref: undefined,
+      targetDirectory: targetDir,
+    });
+
+    expect(local).toBe(targetDir);
+  });
+
+  test('recipe with git repository and basedir should return joined path', async () => {
+    const manager = new ApplicationManager(
+      appUserDirectory,
+      {
+        processCheckout: processCheckoutMock,
+        isGitInstalled: () => true,
+      } as unknown as GitManager,
+      taskRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
+      {} as unknown as ModelsManager,
+      telemetryLogger,
+      localRepositoryRegistry,
+    );
+
+    const local = await manager.getRecipeLocalFolder({
+      id: 'dummy-recipe-id',
+      name: 'dummy-recipe-name',
+      basedir: 'relative-path',
+      repository: 'dummy-repository',
+      readme: 'dummy-readme',
+      description: '',
+      categories: [],
+    }, {id: 'dummy-model-id'} as unknown as ModelInfo);
+
+    const targetDir = path.join(appUserDirectory, 'dummy-recipe-id', 'relative-path');
+    expect(local).toBe(targetDir);
+  });
+
+  test('recipe without git repository should return basedir path', async () => {
+    const isAbsoluteMock = vi.spyOn(path, 'isAbsolute');
+    isAbsoluteMock.mockReturnValue(true);
+
+    const manager = new ApplicationManager(
+      appUserDirectory,
+      {
+        processCheckout: processCheckoutMock,
+        isGitInstalled: () => true,
+      } as unknown as GitManager,
+      taskRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
+      {} as unknown as ModelsManager,
+      telemetryLogger,
+      localRepositoryRegistry,
+    );
+
+    const local = await manager.getRecipeLocalFolder({
+      id: 'dummy-recipe-id',
+      name: 'dummy-recipe-name',
+      basedir: 'absolute-path',
+      repository: undefined,
+      readme: 'dummy-readme',
+      description: '',
+      categories: [],
+    }, {id: 'dummy-model-id'} as unknown as ModelInfo);
+
+    expect(processCheckoutMock).not.toHaveBeenCalled();
+    expect(isAbsoluteMock).toHaveBeenCalled();
+
+    expect(local).toBe('absolute-path');
+  });
+
+  test('recipe without git repository and not absolute basedir should throw error', async () => {
+    const isAbsoluteMock = vi.spyOn(path, 'isAbsolute');
+    isAbsoluteMock.mockReturnValue(false);
+
+    const manager = new ApplicationManager(
+      appUserDirectory,
+      {
+        processCheckout: processCheckoutMock,
+        isGitInstalled: () => true,
+      } as unknown as GitManager,
+      taskRegistry,
+      {} as Webview,
+      {} as PodmanConnection,
+      {} as CatalogManager,
+      {} as unknown as ModelsManager,
+      telemetryLogger,
+      localRepositoryRegistry,
+    );
+
+    expect(async () => {
+      await manager.getRecipeLocalFolder({
+        id: 'dummy-recipe-id',
+        name: 'dummy-recipe-name',
+        basedir: 'absolute-path',
+        repository: undefined,
+        readme: 'dummy-readme',
+        description: '',
+        categories: [],
+      }, {id: 'dummy-model-id'} as unknown as ModelInfo);
+    }).rejects.toThrowError('recipe is malformed: either a repository or an absolute basedir must be defined.');
   });
 });

@@ -19,7 +19,7 @@
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
-import * as path from 'node:path';
+import path from 'node:path';
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import type {
   BuildImageOptions,
@@ -114,10 +114,14 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     return this.startApplication(recipe, model);
   }
 
-  async startApplication(recipe: Recipe, model: ModelInfo) {
-    // const recipeStatus = this.recipeStatusRegistry.
-    const startTime = performance.now();
-    try {
+  /**
+   * The local folder is the path to the directory containing the CONFIG_FILENAME (ai-lab.yaml)
+   *
+   * @return the absolute path to the folder with the CONFIG_FILENAME file in it.
+   */
+  async getRecipeLocalFolder(recipe: Recipe, model: ModelInfo): Promise<string> {
+    // if the recipe has an associate git
+    if(recipe.repository) {
       const localFolder = path.join(this.appUserDirectory, recipe.id);
 
       // clone the recipe repository on the local folder
@@ -131,26 +135,43 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         'model-id': model.id,
       });
 
+      // Get the absolute base folder
+      const source = recipe.basedir?path.join(localFolder, recipe.basedir):localFolder;
       this.localRepositories.register({
         path: gitCloneInfo.targetDirectory,
-        sourcePath: path.join(gitCloneInfo.targetDirectory, recipe.basedir ?? ''),
+        sourcePath: source,
         labels: {
           'recipe-id': recipe.id,
         },
       });
 
+      return source
+    } else if(recipe.basedir && path.isAbsolute(recipe.basedir)) {
+      return recipe.basedir;
+    } else {
+      throw new Error('recipe is malformed: either a repository or an absolute basedir must be defined.');
+    }
+  }
+
+  async startApplication(recipe: Recipe, model: ModelInfo): Promise<void> {
+    // const recipeStatus = this.recipeStatusRegistry.
+    const startTime = performance.now();
+    try {
+      // Get the absolute path to the CONFIG_FILENAME folder
+      const localFolder = await this.getRecipeLocalFolder(recipe, model);
+
       // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
       // and backend (that define which model supports)
-      const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.basedir, localFolder);
+      const configAndFilteredContainers = this.getConfigAndFilterContainers(localFolder);
 
       // get model by downloading it or retrieving locally
-      let modelPath = await this.modelsManager.requestDownloadModel(model, {
+      await this.modelsManager.requestDownloadModel(model, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });
 
       // upload model to podman machine if user system is supported
-      modelPath = await this.modelsManager.uploadModelToPodmanMachine(model, {
+      const modelPath = await this.modelsManager.uploadModelToPodmanMachine(model, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });
@@ -515,7 +536,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   getConfigAndFilterContainers(
-    recipeBaseDir: string | undefined,
     localFolder: string,
     labels?: { [key: string]: string },
   ): AIContainers {
@@ -525,7 +545,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     let aiConfigFile: AIConfigFile;
     try {
       // load and parse the recipe configuration file
-      aiConfigFile = this.getConfiguration(recipeBaseDir, localFolder);
+      aiConfigFile = this.getConfiguration(localFolder);
     } catch (e) {
       task.error = `Something went wrong while loading configuration: ${String(e)}.`;
       this.taskRegistry.updateTask(task);
@@ -557,13 +577,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     );
   }
 
-  getConfiguration(recipeBaseDir: string | undefined, localFolder: string): AIConfigFile {
-    let configFile: string;
-    if (recipeBaseDir !== undefined) {
-      configFile = path.join(localFolder, recipeBaseDir, CONFIG_FILENAME);
-    } else {
-      configFile = path.join(localFolder, CONFIG_FILENAME);
-    }
+  getConfiguration(localFolder: string): AIConfigFile {
+    let configFile: string = path.join(localFolder, CONFIG_FILENAME);
 
     if (!fs.existsSync(configFile)) {
       throw new Error(`The file located at ${configFile} does not exist.`);

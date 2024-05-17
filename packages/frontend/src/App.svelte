@@ -20,6 +20,7 @@ import Playgrounds from './pages/Playgrounds.svelte';
 import Playground from './pages/Playground.svelte';
 import PlaygroundCreate from './pages/PlaygroundCreate.svelte';
 import ImportModels from './pages/ImportModels.svelte';
+import ImportRecipe from '/@/pages/ImportRecipe.svelte';
 
 router.mode.hash();
 
@@ -44,8 +45,13 @@ onMount(() => {
       </Route>
 
       <!-- Recipes Catalog -->
-      <Route path="/recipes">
-        <Recipes />
+      <Route path="/recipes/*" firstmatch>
+        <Route path="/import/*">
+          <ImportRecipe />
+        </Route>
+        <Route path="/*">
+          <Recipes />
+        </Route>
       </Route>
 
       <!-- Applications -->

@@ -55,7 +55,7 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
-    "fast-xml-parser": "^4.3.6",
+    "fast-xml-parser": "^4.4.0",
     "isomorphic-git": "^1.25.10",
     "mustache": "^4.2.0",
     "openai": "^4.47.1",

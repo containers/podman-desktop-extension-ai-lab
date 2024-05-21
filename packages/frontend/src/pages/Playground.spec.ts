@@ -103,8 +103,9 @@ test('should display playground and model names in header', async () => {
     expect(header).toBeInTheDocument();
     const title = within(header).getAllByText('Playground 1')[0];
     expect(title).toBeInTheDocument();
-    const subtitle = within(header).getAllByText('Model 1')[0];
+    const subtitle = within(header).getByLabelText('Model name');
     expect(subtitle).toBeInTheDocument();
+    expect(subtitle.textContent).equals('Model: Model 1');
   });
 });
 

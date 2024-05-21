@@ -157,7 +157,7 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
     <svelte:fragment slot="subtitle">
       <div class="flex gap-x-2 items-center">
         {#if model}
-          <div class="text-xs">Model: {model.name}</div>
+          <div class="text-xs" aria-label="Model name">Model: {model.name}</div>
           <Chip
             icon="{faMemory}"
             content="RAM usage: {model.memory ? filesize(model.memory, { base: 2 }) : 'N/A'}"

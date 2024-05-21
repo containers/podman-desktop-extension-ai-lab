@@ -19,7 +19,7 @@ import { type BuildImageOptions, type Disposable, containerEngine } from '@podma
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ContainerConfig } from '../../models/AIConfig';
-import type { ImageInfo} from '../applicationManager';
+import type { ImageInfo } from '../applicationManager';
 import { LABEL_RECIPE_ID } from '../applicationManager';
 import type { Task } from '@shared/src/models/ITask';
 import path from 'node:path';

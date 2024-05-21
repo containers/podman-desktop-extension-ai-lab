@@ -41,6 +41,7 @@ import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import { engines } from '../package.json';
+import { BuilderManager } from './managers/recipes/BuilderManager';
 
 export const AI_LAB_COLLECT_GPU_COMMAND = 'ai-lab.gpu.collect';
 
@@ -158,6 +159,9 @@ export class Studio {
     this.catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);
     this.catalogManager.init();
 
+    const builderManager = new BuilderManager(taskRegistry);
+    this.#extensionContext.subscriptions.push(builderManager);
+
     this.modelsManager = new ModelsManager(
       appUserDirectory,
       this.#panel.webview,
@@ -179,6 +183,7 @@ export class Studio {
       this.modelsManager,
       this.telemetry,
       localRepositoryRegistry,
+      builderManager,
     );
 
     this.#inferenceManager = new InferenceManager(

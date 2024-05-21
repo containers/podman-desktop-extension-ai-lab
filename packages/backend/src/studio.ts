@@ -42,6 +42,7 @@ import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import { engines } from '../package.json';
 import { BuilderManager } from './managers/recipes/BuilderManager';
+import { PodManager } from './managers/recipes/PodManager';
 
 export const AI_LAB_COLLECT_GPU_COMMAND = 'ai-lab.gpu.collect';
 
@@ -162,6 +163,9 @@ export class Studio {
     const builderManager = new BuilderManager(taskRegistry);
     this.#extensionContext.subscriptions.push(builderManager);
 
+    const podManager = new PodManager();
+    this.#extensionContext.subscriptions.push(podManager);
+
     this.modelsManager = new ModelsManager(
       appUserDirectory,
       this.#panel.webview,
@@ -184,6 +188,7 @@ export class Studio {
       this.telemetry,
       localRepositoryRegistry,
       builderManager,
+      podManager,
     );
 
     this.#inferenceManager = new InferenceManager(

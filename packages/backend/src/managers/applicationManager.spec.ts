@@ -49,6 +49,7 @@ import type {
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { BuilderManager } from './recipes/BuilderManager';
+import type { PodManager } from './recipes/PodManager';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -74,7 +75,6 @@ const mocks = vi.hoisted(() => {
     startupSubscribeMock: vi.fn(),
     onMachineStopMock: vi.fn(),
     listContainersMock: vi.fn(),
-    listPodsMock: vi.fn(),
     stopPodMock: vi.fn(),
     removePodMock: vi.fn(),
     performDownloadMock: vi.fn(),
@@ -118,7 +118,6 @@ vi.mock('@podman-desktop/api', () => ({
     pullImage: mocks.pullImageMock,
     stopContainer: mocks.stopContainerMock,
     listContainers: mocks.listContainersMock,
-    listPods: mocks.listPodsMock,
     stopPod: mocks.stopPodMock,
     removePod: mocks.removePodMock,
   },
@@ -146,6 +145,13 @@ const taskRegistry = {
 const builderManager = {
   build: vi.fn(),
 } as unknown as BuilderManager;
+
+const podManager = {
+  getAllPods: vi.fn(),
+  findPodByLabelsValues: vi.fn(),
+  getPodsWithLabels: vi.fn(),
+  getHealth: vi.fn(),
+} as unknown as PodManager;
 
 const localRepositoryRegistry = {
   register: mocks.registerLocalRepositoryMock,
@@ -269,13 +275,14 @@ describe('pullApplication', () => {
       telemetryLogger,
       localRepositoryRegistry,
       builderManager,
+      podManager,
     );
   }
   test('pullApplication should clone repository and call downloadModelMain and buildImage', async () => {
     mockForPullApplication({
       recipeFolderExists: false,
     });
-    mocks.listPodsMock.mockResolvedValue([]);
+    vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
@@ -355,7 +362,7 @@ describe('pullApplication', () => {
       recipeFolderExists: false,
     });
     vi.mocked(builderManager.build).mockRejectedValue(new Error('Build failed'));
-    mocks.listPodsMock.mockResolvedValue([]);
+    vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
@@ -420,7 +427,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: true,
     });
-    mocks.listPodsMock.mockResolvedValue([]);
+    vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(true);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     vi.spyOn(modelsManager, 'getLocalModelPath').mockReturnValue('path');
@@ -496,6 +503,7 @@ describe('getConfiguration', () => {
       telemetryLogger,
       localRepositoryRegistry,
       builderManager,
+      podManager,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     expect(() => manager.getConfiguration('config', 'local')).toThrowError(
@@ -515,6 +523,7 @@ describe('getConfiguration', () => {
       telemetryLogger,
       localRepositoryRegistry,
       builderManager,
+      podManager,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     const stats = {
@@ -571,6 +580,7 @@ describe('filterContainers', () => {
       telemetryLogger,
       localRepositoryRegistry,
       builderManager,
+      podManager,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(0);
@@ -612,6 +622,7 @@ describe('filterContainers', () => {
       telemetryLogger,
       localRepositoryRegistry,
       builderManager,
+      podManager,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(1);
@@ -663,6 +674,7 @@ describe('filterContainers', () => {
       telemetryLogger,
       localRepositoryRegistry,
       builderManager,
+      podManager,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(2);
@@ -695,6 +707,7 @@ describe('createPod', async () => {
     telemetryLogger,
     localRepositoryRegistry,
     builderManager,
+    podManager,
   );
   test('throw an error if there is no sample image', async () => {
     const images = [imageInfo2];
@@ -771,6 +784,7 @@ describe('createApplicationPod', () => {
     telemetryLogger,
     localRepositoryRegistry,
     builderManager,
+    podManager,
   );
   const images = [imageInfo1, imageInfo2];
   test('throw if createPod fails', async () => {
@@ -844,6 +858,7 @@ describe('runApplication', () => {
     telemetryLogger,
     localRepositoryRegistry,
     builderManager,
+    podManager,
   );
   const pod: ApplicationPodInfo = {
     engineId: 'engine',
@@ -897,6 +912,7 @@ describe('createAndAddContainersToPod', () => {
     telemetryLogger,
     localRepositoryRegistry,
     builderManager,
+    podManager,
   );
   const pod: ApplicationPodInfo = {
     engineId: 'engine',
@@ -1012,11 +1028,12 @@ describe('pod detection', async () => {
       {} as TelemetryLogger,
       localRepositoryRegistry,
       builderManager,
+      podManager,
     );
   });
 
   test('adoptRunningApplications updates the app state with the found pod', async () => {
-    mocks.listPodsMock.mockResolvedValue([
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([
       {
         Labels: {
           'ai-lab-recipe-id': 'recipe-id-1',
@@ -1024,7 +1041,7 @@ describe('pod detection', async () => {
           'ai-lab-app-ports': '5000,5001',
           'ai-lab-model-ports': '8000,8001',
         },
-      },
+      } as unknown as PodInfo,
     ]);
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
@@ -1052,7 +1069,7 @@ describe('pod detection', async () => {
   });
 
   test('adoptRunningApplications does not update the application state with the found pod without label', async () => {
-    mocks.listPodsMock.mockResolvedValue([{}]);
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([{} as unknown as PodInfo]);
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
@@ -1063,7 +1080,7 @@ describe('pod detection', async () => {
   });
 
   test('onMachineStop updates the applications state with no application running', async () => {
-    mocks.listPodsMock.mockResolvedValue([]);
+    vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((f: machineStopHandle) => {
       f();
     });
@@ -1073,7 +1090,7 @@ describe('pod detection', async () => {
   });
 
   test('onPodStart updates the applications state with the started pod', async () => {
-    mocks.listPodsMock.mockResolvedValue([]);
+    vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
       f({
@@ -1092,7 +1109,7 @@ describe('pod detection', async () => {
   });
 
   test('onPodStart does no update the applications state with the started pod without labels', async () => {
-    mocks.listPodsMock.mockResolvedValue([]);
+    vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
       f({
@@ -1107,7 +1124,7 @@ describe('pod detection', async () => {
   });
 
   test('onPodStart does no update the applications state with the started pod without specific labels', async () => {
-    mocks.listPodsMock.mockResolvedValue([]);
+    vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
       f({
@@ -1128,13 +1145,13 @@ describe('pod detection', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
-    mocks.listPodsMock.mockResolvedValue([
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([
       {
         Labels: {
           'ai-lab-recipe-id': 'recipe-id-1',
           'ai-lab-model-id': 'model-id-1',
         },
-      },
+      } as unknown as PodInfo,
     ]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodStopMock.mockImplementation((f: podStopHandle) => {
@@ -1160,14 +1177,14 @@ describe('pod detection', async () => {
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
-    mocks.listPodsMock.mockResolvedValue([
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([
       {
         Id: 'pod-id-1',
         Labels: {
           'ai-lab-recipe-id': 'recipe-id-1',
           'ai-lab-model-id': 'model-id-1',
         },
-      },
+      } as unknown as PodInfo,
     ]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
     mocks.onPodRemoveMock.mockImplementation((f: podRemoveHandle) => {
@@ -1182,20 +1199,12 @@ describe('pod detection', async () => {
   });
 
   test('getApplicationPod', async () => {
-    mocks.listPodsMock.mockResolvedValue([
-      {
-        Labels: {
-          'ai-lab-recipe-id': 'recipe-id-1',
-          'ai-lab-model-id': 'model-id-1',
-        },
+    vi.mocked(podManager.findPodByLabelsValues).mockResolvedValue({
+      Labels: {
+        'ai-lab-recipe-id': 'recipe-id-1',
+        'ai-lab-model-id': 'model-id-1',
       },
-      {
-        Labels: {
-          'ai-lab-recipe-id': 'recipe-id-2',
-          'ai-lab-model-id': 'model-id-2',
-        },
-      },
-    ]);
+    } as unknown as PodInfo);
     const result = await manager.getApplicationPod('recipe-id-1', 'model-id-1');
     expect(result).toEqual({
       Labels: {
@@ -1206,48 +1215,28 @@ describe('pod detection', async () => {
   });
 
   test('deleteApplication calls stopPod and removePod', async () => {
-    mocks.listPodsMock.mockResolvedValue([
-      {
-        engineId: 'engine-1',
-        Id: 'pod-1',
-        Labels: {
-          'ai-lab-recipe-id': 'recipe-id-1',
-          'ai-lab-model-id': 'model-id-1',
-        },
+    vi.mocked(podManager.findPodByLabelsValues).mockResolvedValue({
+      engineId: 'engine-1',
+      Id: 'pod-1',
+      Labels: {
+        'ai-lab-recipe-id': 'recipe-id-1',
+        'ai-lab-model-id': 'model-id-1',
       },
-      {
-        engineId: 'engine-2',
-        Id: 'pod-2',
-        Labels: {
-          'ai-lab-recipe-id': 'recipe-id-2',
-          'ai-lab-model-id': 'model-id-2',
-        },
-      },
-    ]);
+    } as unknown as PodInfo);
     await manager.deleteApplication('recipe-id-1', 'model-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });
 
   test('deleteApplication calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
-    mocks.listPodsMock.mockResolvedValue([
-      {
-        engineId: 'engine-1',
-        Id: 'pod-1',
-        Labels: {
-          'ai-lab-recipe-id': 'recipe-id-1',
-          'ai-lab-model-id': 'model-id-1',
-        },
+    vi.mocked(podManager.findPodByLabelsValues).mockResolvedValue({
+      engineId: 'engine-1',
+      Id: 'pod-1',
+      Labels: {
+        'ai-lab-recipe-id': 'recipe-id-1',
+        'ai-lab-model-id': 'model-id-1',
       },
-      {
-        engineId: 'engine-2',
-        Id: 'pod-2',
-        Labels: {
-          'ai-lab-recipe-id': 'recipe-id-2',
-          'ai-lab-model-id': 'model-id-2',
-        },
-      },
-    ]);
+    } as unknown as PodInfo);
     mocks.stopPodMock.mockRejectedValue('something went wrong, pod already stopped...');
     await manager.deleteApplication('recipe-id-1', 'model-id-1');
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
@@ -1255,7 +1244,8 @@ describe('pod detection', async () => {
   });
 
   test('adoptRunningApplications should check pods health', async () => {
-    mocks.listPodsMock.mockResolvedValue([
+    vi.mocked(podManager.getHealth).mockResolvedValue('healthy');
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([
       {
         Id: 'pod1',
         engineId: 'engine1',
@@ -1276,38 +1266,10 @@ describe('pod detection', async () => {
             Id: 'container3',
           },
         ],
-      },
+      } as unknown as PodInfo,
     ]);
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
-    });
-    mocks.inspectContainerMock.mockImplementation(async (_engineId: string, id: string) => {
-      switch (id) {
-        case 'container1':
-          return {
-            State: {
-              Status: 'running',
-              Health: {
-                Status: 'healthy',
-              },
-            },
-          };
-        case 'container2':
-          return {
-            State: {
-              Status: 'running',
-              Health: {
-                Status: '',
-              },
-            },
-          };
-        case 'container3':
-          return {
-            State: {
-              Status: 'running',
-            },
-          };
-      }
     });
     vi.useFakeTimers();
     manager.adoptRunningApplications();
@@ -1315,5 +1277,12 @@ describe('pod detection', async () => {
     const state = manager.getApplicationsState();
     expect(state).toHaveLength(1);
     expect(state[0].health).toEqual('healthy');
+
+    expect(podManager.getHealth).toHaveBeenCalledWith({
+      Id: 'pod1',
+      engineId: 'engine1',
+      Labels: expect.anything(),
+      Containers: expect.anything(),
+    });
   });
 });

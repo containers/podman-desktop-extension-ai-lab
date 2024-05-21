@@ -14,11 +14,10 @@ import Fa from 'svelte-fa';
 import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
-import { faCircleInfo, faMemory, faMicrochip, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo, faMicrochip, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Tooltip from '/@/lib/Tooltip.svelte';
 import StatusIcon from '../lib/StatusIcon.svelte';
-import { filesize } from 'filesize';
-import Chip from '../lib/Chip.svelte';
+import Badge from '../lib/Badge.svelte';
 import { router } from 'tinro';
 import ConversationActions from '../lib/conversation/ConversationActions.svelte';
 
@@ -160,7 +159,7 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
           <div class="text-xs" aria-label="Model name">
             <a href="/model/{model.id}">{model.name}</a>
           </div>
-          <Chip icon="{faMicrochip}" content="{model.hw}" background="bg-charcoal-700" />
+          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-charcoal-700" />
         {/if}
       </div>
     </svelte:fragment>

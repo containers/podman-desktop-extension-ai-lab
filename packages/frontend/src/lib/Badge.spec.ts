@@ -19,22 +19,22 @@
 import '@testing-library/jest-dom/vitest';
 import { expect, test } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import Chip from './Chip.svelte';
+import Badge from './Badge.svelte';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
-test('print Chip with custom text and default background', async () => {
-  render(Chip, { icon: faTrash, content: 'custom-text' });
+test('print Badge with custom text and default background', async () => {
+  render(Badge, { icon: faTrash, content: 'custom-text' });
 
-  const chipContent = screen.getByText('custom-text');
-  expect(chipContent).toBeInTheDocument();
-  expect(chipContent).toHaveClass('bg-charcoal-600');
+  const badgeContent = screen.getByText('custom-text');
+  expect(badgeContent).toBeInTheDocument();
+  expect(badgeContent).toHaveClass('bg-charcoal-600');
 });
 
-test('print Chip with custom text and custom background', async () => {
-  render(Chip, { icon: faTrash, content: 'custom-text', background: 'bg-charcoal-100' });
+test('print Badge with custom text and custom background', async () => {
+  render(Badge, { icon: faTrash, content: 'custom-text', background: 'bg-charcoal-100' });
 
-  const chipContent = screen.getByText('custom-text');
-  expect(chipContent).toBeInTheDocument();
-  expect(chipContent).toHaveClass('bg-charcoal-100');
-  expect(chipContent).not.toHaveClass('bg-charcoal-600');
+  const badgeContent = screen.getByText('custom-text');
+  expect(badgeContent).toBeInTheDocument();
+  expect(badgeContent).toHaveClass('bg-charcoal-100');
+  expect(badgeContent).not.toHaveClass('bg-charcoal-600');
 });

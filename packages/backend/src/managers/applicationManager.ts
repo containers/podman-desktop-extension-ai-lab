@@ -36,7 +36,7 @@ import type { Task } from '@shared/src/models/ITask';
 import { getParentDirectory } from '../utils/pathUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
-import { getPortsInfo } from '../utils/ports';
+import { getPortsFromLabel, getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, timeout } from '../utils/utils';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
@@ -50,6 +50,9 @@ import { Publisher } from '../utils/Publisher';
 import { isQEMUMachine } from '../utils/podman';
 import { SECOND } from '../utils/inferenceUtils';
 import { getModelPropertiesForEnvironment } from '../utils/modelsUtils';
+import { getPodHealth } from '../utils/podsUtils';
+import { getImageTag } from '../utils/imagesUtils';
+import { getRandomName } from '../utils/randomUtils';
 
 export const LABEL_MODEL_ID = 'ai-lab-model-id';
 export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';
@@ -318,7 +321,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
           };
         }
 
-        const podifiedName = this.getRandomName(`${image.appName}-podified`);
+        const podifiedName = getRandomName(`${image.appName}-podified`);
         await containerEngine.createContainer(podInfo.engineId, {
           Image: image.id,
           name: podifiedName,
@@ -384,7 +387,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       labels[LABEL_APP_PORTS] = appPorts.join(',');
     }
     const pod = await containerEngine.createPod({
-      name: this.getRandomName(`pod-${sampleAppImageInfo.appName}`),
+      name: getRandomName(`pod-${sampleAppImageInfo.appName}`),
       portmappings: portmappings,
       labels,
     });
@@ -393,10 +396,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       engineId: pod.engineId,
       portmappings: portmappings,
     };
-  }
-
-  getRandomName(base: string): string {
-    return `${base ?? ''}-${new Date().getTime()}`;
   }
 
   async buildImages(
@@ -432,7 +431,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
             throw new Error('Context configured does not exist.');
           }
 
-          const imageTag = this.getImageTag(recipe, container);
+          const imageTag = getImageTag(recipe, container);
           const buildOptions: BuildImageOptions = {
             containerFile: container.containerfile,
             tag: imageTag,
@@ -479,7 +478,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     await Promise.all(
       containers.map(async container => {
         const task = containerTasks[container.name];
-        const imageTag = this.getImageTag(recipe, container);
+        const imageTag = getImageTag(recipe, container);
 
         const image = images.find(im => {
           return im.RepoTags?.some(tag => tag.endsWith(imageTag));
@@ -504,14 +503,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     );
 
     return imageInfoList;
-  }
-
-  getImageTag(recipe: Recipe, container: ContainerConfig) {
-    let tag = container.image ?? `${recipe.id}-${container.name}`;
-    if (!tag.includes(':')) {
-      tag += ':latest';
-    }
-    return tag;
   }
 
   getConfigAndFilterContainers(
@@ -672,7 +663,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     );
   }
 
-  adoptPod(pod: PodInfo) {
+  private adoptPod(pod: PodInfo) {
     if (!pod.Labels) {
       return;
     }
@@ -681,8 +672,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     if (!recipeId || !modelId) {
       return;
     }
-    const appPorts = this.getPortsFromLabel(pod.Labels, LABEL_APP_PORTS);
-    const modelPorts = this.getPortsFromLabel(pod.Labels, LABEL_MODEL_PORTS);
+    const appPorts = getPortsFromLabel(pod.Labels, LABEL_APP_PORTS);
+    const modelPorts = getPortsFromLabel(pod.Labels, LABEL_MODEL_PORTS);
     if (this.#applications.has({ recipeId, modelId })) {
       return;
     }
@@ -697,7 +688,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     this.updateApplicationState(recipeId, modelId, state);
   }
 
-  forgetPod(pod: PodInfo) {
+  private forgetPod(pod: PodInfo) {
     if (!pod.Labels) {
       return;
     }
@@ -723,7 +714,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
-  forgetPodById(podId: string) {
+  private forgetPodById(podId: string) {
     const app = Array.from(this.#applications.values()).find(p => p.pod.Id === podId);
     if (!app) {
       return;
@@ -753,7 +744,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
-  async checkPodsHealth() {
+  private async checkPodsHealth() {
     const pods = await containerEngine
       .listPods()
       .then(pods => pods.filter(pod => LABEL_RECIPE_ID in pod.Labels && LABEL_MODEL_ID in pod.Labels));
@@ -770,7 +761,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
           containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State.Health?.Status),
         ),
       );
-      const podHealth = this.getPodHealth(containerStates);
+      const podHealth = getPodHealth(containerStates);
       const state = this.#applications.get({ recipeId, modelId });
       if (state.health !== podHealth) {
         state.health = podHealth;
@@ -786,20 +777,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     if (changes) {
       this.notify();
     }
-  }
-
-  getPodHealth(infos: (string | undefined)[]): PodHealth {
-    const checked = infos.filter(info => !!info && info !== 'none' && info !== '');
-    if (!checked.length) {
-      return 'none';
-    }
-    if (infos.some(info => info === 'unhealthy')) {
-      return 'unhealthy';
-    }
-    if (infos.some(info => info === 'starting')) {
-      return 'starting';
-    }
-    return 'healthy';
   }
 
   updateApplicationState(recipeId: string, modelId: string, state: ApplicationState): void {
@@ -890,29 +867,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     );
   }
 
-  getPortsFromLabel(labels: { [key: string]: string }, key: string): number[] {
-    if (!(key in labels)) {
-      return [];
-    }
-    const value = labels[key];
-    const portsStr = value.split(',');
-    const result: number[] = [];
-    for (const portStr of portsStr) {
-      const port = parseInt(portStr, 10);
-      if (isNaN(port)) {
-        // malformed label, just ignore it
-        return [];
-      }
-      result.push(port);
-    }
-    return result;
-  }
-
   dispose(): void {
-    this.cleanDisposables();
-  }
-
-  private cleanDisposables(): void {
     this.#disposables.forEach(disposable => disposable.dispose());
   }
 }

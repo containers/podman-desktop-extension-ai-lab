@@ -16,10 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export const getRandomString = (): string => {
-  return (Math.random() + 1).toString(36).substring(7);
-};
+import type { Recipe } from '@shared/src/models/IRecipe';
+import type { ContainerConfig } from '../models/AIConfig';
 
-export function getRandomName(prefix: string): string {
-  return `${prefix ?? ''}-${new Date().getTime()}`;
+export function getImageTag(recipe: Recipe, container: ContainerConfig) {
+  let tag = container.image ?? `${recipe.id}-${container.name}`;
+  if (!tag.includes(':')) {
+    tag += ':latest';
+  }
+  return tag;
 }

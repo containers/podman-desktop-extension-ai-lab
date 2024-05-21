@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2022 Red Hat, Inc.
+ * Copyright (C) 2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,38 +41,6 @@ export async function getFreeRandomPort(address: string): Promise<number> {
   );
 }
 
-/**
- * Find a free port starting from the given port
- */
-export async function getFreePort(port = 0): Promise<number> {
-  if (port < 1024) {
-    port = 9000;
-  }
-  let isFree = false;
-  while (!isFree) {
-    isFree = await isFreePort(port);
-    if (!isFree) {
-      port++;
-    }
-  }
-
-  return port;
-}
-
-function isFreeAddressPort(address: string, port: number): Promise<boolean> {
-  const server = net.createServer();
-  return new Promise((resolve, reject) =>
-    server
-      .on('error', (error: NodeJS.ErrnoException) => (error.code === 'EADDRINUSE' ? resolve(false) : reject(error)))
-      .on('listening', () => server.close(() => resolve(true)))
-      .listen(port, address),
-  );
-}
-
-export async function isFreePort(port: number): Promise<boolean> {
-  return (await isFreeAddressPort('127.0.0.1', port)) && (await isFreeAddressPort('0.0.0.0', port));
-}
-
 export async function getPortsInfo(portDescriptor: string): Promise<string | undefined> {
   const localPort = await getPort(portDescriptor);
   if (!localPort) {
@@ -98,4 +66,22 @@ async function getPort(portDescriptor: string): Promise<number | undefined> {
     console.error(e);
     return undefined;
   }
+}
+
+export function getPortsFromLabel(labels: { [key: string]: string }, key: string): number[] {
+  if (!(key in labels)) {
+    return [];
+  }
+  const value = labels[key];
+  const portsStr = value.split(',');
+  const result: number[] = [];
+  for (const portStr of portsStr) {
+    const port = parseInt(portStr, 10);
+    if (isNaN(port)) {
+      // malformed label, just ignore it
+      return [];
+    }
+    result.push(port);
+  }
+  return result;
 }

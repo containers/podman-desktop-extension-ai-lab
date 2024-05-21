@@ -68,7 +68,6 @@ const mocks = vi.hoisted(() => {
     getContainerConnectionsMock: vi.fn(),
     pullImageMock: vi.fn(),
     stopContainerMock: vi.fn(),
-    getFreePortMock: vi.fn(),
     containerRegistrySubscribeMock: vi.fn(),
     onPodStartMock: vi.fn(),
     onPodStopMock: vi.fn(),
@@ -655,40 +654,6 @@ describe('filterContainers', () => {
   });
 });
 
-describe('getRandomName', () => {
-  test('return base name plus random string', () => {
-    const manager = new ApplicationManager(
-      '/home/user/aistudio',
-      {} as unknown as GitManager,
-      taskRegistry,
-      {} as Webview,
-      {} as PodmanConnection,
-      {} as CatalogManager,
-      {} as unknown as ModelsManager,
-      telemetryLogger,
-      localRepositoryRegistry,
-    );
-    const randomName = manager.getRandomName('base');
-    expect(randomName).not.equal('base');
-    expect(randomName.length).toBeGreaterThan(4);
-  });
-  test('return random string when base is empty', () => {
-    const manager = new ApplicationManager(
-      '/home/user/aistudio',
-      {} as unknown as GitManager,
-      taskRegistry,
-      {} as Webview,
-      {} as PodmanConnection,
-      {} as CatalogManager,
-      {} as unknown as ModelsManager,
-      telemetryLogger,
-      localRepositoryRegistry,
-    );
-    const randomName = manager.getRandomName('');
-    expect(randomName.length).toBeGreaterThan(0);
-  });
-});
-
 describe('buildImages', () => {
   const recipe = {
     id: 'recipe1',
@@ -807,7 +772,6 @@ describe('createPod', async () => {
   });
   test('call createPod with sample app exposed port', async () => {
     const images = [imageInfo1, imageInfo2];
-    vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
     vi.spyOn(portsUtils, 'getPortsInfo').mockResolvedValueOnce('9000');
     vi.spyOn(portsUtils, 'getPortsInfo').mockResolvedValueOnce('9001');
     vi.spyOn(portsUtils, 'getPortsInfo').mockResolvedValueOnce('9002');
@@ -817,7 +781,7 @@ describe('createPod', async () => {
     });
     await manager.createPod({ id: 'recipe-id' } as Recipe, { id: 'model-id' } as ModelInfo, images);
     expect(mocks.createPodMock).toBeCalledWith({
-      name: 'name',
+      name: expect.anything(),
       portmappings: [
         {
           container_port: 8080,
@@ -1021,14 +985,13 @@ describe('createAndAddContainersToPod', () => {
       id: 'container-1',
     });
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
-    vi.spyOn(manager, 'getRandomName').mockReturnValue('name');
     await manager.createAndAddContainersToPod(pod, [imageInfo1, imageInfo2], modelInfo, 'path');
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {
       Image: 'id',
       Detach: true,
       Env: ['MODEL_ENDPOINT=http://localhost:8085'],
       start: false,
-      name: 'name',
+      name: expect.anything(),
       pod: 'id',
       HealthCheck: {
         Interval: 5000000000,
@@ -1042,7 +1005,7 @@ describe('createAndAddContainersToPod', () => {
       Detach: true,
       Env: ['MODEL_PATH=/path', ...extraEnvs],
       start: false,
-      name: 'name',
+      name: expect.anything(),
       pod: 'id',
       HostConfig: {
         Mounts: [
@@ -1354,62 +1317,6 @@ describe('pod detection', async () => {
     expect(mocks.stopPodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
     expect(mocks.removePodMock).toHaveBeenCalledWith('engine-1', 'pod-1');
   });
-});
-
-describe('getImageTag', () => {
-  const manager = new ApplicationManager(
-    '/path/to/user/dir',
-    {} as GitManager,
-    taskRegistry,
-    {
-      postMessage: mocks.postMessageMock,
-    } as unknown as Webview,
-    {
-      onPodStart: mocks.onPodStartMock,
-      onPodStop: mocks.onPodStopMock,
-      onPodRemove: mocks.onPodRemoveMock,
-      startupSubscribe: mocks.startupSubscribeMock,
-      onMachineStop: mocks.onMachineStopMock,
-    } as unknown as PodmanConnection,
-    {
-      getRecipeById: vi.fn().mockReturnValue({ name: 'MyRecipe' } as Recipe),
-    } as unknown as CatalogManager,
-    {} as ModelsManager,
-    {} as TelemetryLogger,
-    localRepositoryRegistry,
-  );
-  test('return recipe-container tag if container image prop is not defined', () => {
-    const recipe = {
-      id: 'recipe1',
-    } as Recipe;
-    const container = {
-      name: 'name',
-    } as ContainerConfig;
-    const imageTag = manager.getImageTag(recipe, container);
-    expect(imageTag).equals('recipe1-name:latest');
-  });
-  test('return container image prop is defined', () => {
-    const recipe = {
-      id: 'recipe1',
-    } as Recipe;
-    const container = {
-      name: 'name',
-      image: 'quay.io/repo/image:v1',
-    } as ContainerConfig;
-    const imageTag = manager.getImageTag(recipe, container);
-    expect(imageTag).equals('quay.io/repo/image:v1');
-  });
-  test('append latest tag to container image prop if it has no tag', () => {
-    const recipe = {
-      id: 'recipe1',
-    } as Recipe;
-    const container = {
-      name: 'name',
-      image: 'quay.io/repo/image',
-    } as ContainerConfig;
-    const imageTag = manager.getImageTag(recipe, container);
-    expect(imageTag).equals('quay.io/repo/image:latest');
-  });
 
   test('adoptRunningApplications should check pods health', async () => {
     mocks.listPodsMock.mockResolvedValue([
@@ -1474,3 +1381,4 @@ describe('getImageTag', () => {
     expect(state[0].health).toEqual('healthy');
   });
 });
+

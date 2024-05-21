@@ -15,11 +15,18 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { PodHealth } from '@shared/src/models/IApplicationState';
 
-export const getRandomString = (): string => {
-  return (Math.random() + 1).toString(36).substring(7);
-};
-
-export function getRandomName(prefix: string): string {
-  return `${prefix ?? ''}-${new Date().getTime()}`;
+export function getPodHealth(infos: (string | undefined)[]): PodHealth {
+  const checked = infos.filter(info => !!info && info !== 'none' && info !== '');
+  if (!checked.length) {
+    return 'none';
+  }
+  if (infos.some(info => info === 'unhealthy')) {
+    return 'unhealthy';
+  }
+  if (infos.some(info => info === 'starting')) {
+    return 'starting';
+  }
+  return 'healthy';
 }

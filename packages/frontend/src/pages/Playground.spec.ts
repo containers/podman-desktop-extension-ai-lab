@@ -105,7 +105,7 @@ test('should display playground and model names in header', async () => {
     expect(title).toBeInTheDocument();
     const subtitle = within(header).getByLabelText('Model name');
     expect(subtitle).toBeInTheDocument();
-    expect(subtitle.textContent).equals('Model: Model 1');
+    expect(subtitle.textContent).equals('Model 1');
   });
 });
 

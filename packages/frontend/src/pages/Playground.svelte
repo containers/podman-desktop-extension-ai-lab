@@ -7,14 +7,19 @@ import { catalog } from '../stores/catalog';
 import Button from '../lib/button/Button.svelte';
 import { afterUpdate } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
+import ContainerIcon from '/@/lib/images/ContainerIcon.svelte';
 import RangeInput from '../lib/RangeInput.svelte';
 import Fa from 'svelte-fa';
 
 import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
-import { faCircleInfo, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo, faMicrochip, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Tooltip from '/@/lib/Tooltip.svelte';
+import StatusIcon from '../lib/StatusIcon.svelte';
+import Badge from '../lib/Badge.svelte';
+import { router } from 'tinro';
+import ConversationActions from '../lib/conversation/ConversationActions.svelte';
 
 export let playgroundId: string;
 let prompt: string;
@@ -60,6 +65,10 @@ function askPlayground() {
 }
 
 afterUpdate(() => {
+  if (!conversation) {
+    router.goto('/playgrounds');
+    return;
+  }
   if (!conversation?.messages.length) {
     return;
   }
@@ -88,8 +97,20 @@ function isHealthy(status?: string, health?: string): boolean {
   return status === 'running' && (!health || health === 'healthy');
 }
 
-function getStatusColor(status?: string, health?: string): string {
-  return isHealthy(status, health) ? 'bg-green-600' : 'bg-gray-900';
+function getStatusForIcon(status?: string, health?: string): string {
+  switch (status) {
+    case 'running':
+      switch (health) {
+        case 'healthy':
+          return 'RUNNING';
+        case 'starting':
+          return 'STARTING';
+        default:
+          return 'NOT-RUNNING';
+      }
+    default:
+      return 'NOT-RUNNING';
+  }
 }
 
 function getStatusText(status?: string, health?: string): string {
@@ -124,13 +145,27 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
     title="{conversation?.name}"
     searchEnabled="{false}"
     contentBackground="bg-charcoal-500">
-    <svelte:fragment slot="subtitle">{model?.name}</svelte:fragment>
+    <svelte:fragment slot="icon">
+      <div class="mr-3">
+        <StatusIcon
+          icon="{ContainerIcon}"
+          size="{24}"
+          status="{getStatusForIcon(server?.status, server?.health?.Status)}" />
+      </div>
+    </svelte:fragment>
+    <svelte:fragment slot="subtitle">
+      <div class="flex gap-x-2 items-center">
+        {#if model}
+          <div class="text-xs" aria-label="Model name">
+            <a href="/model/{model.id}">{model.name}</a>
+          </div>
+          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-charcoal-700" />
+        {/if}
+      </div>
+    </svelte:fragment>
     <svelte:fragment slot="additional-actions">
-      <div role="status" class="flex items-center bg-charcoal-500 p-1 rounded-md">
-        <div class="w-2 h-2 {getStatusColor(server?.status, server?.health?.Status)} rounded-full mx-1"></div>
-        <span class="text-xs capitalize mr-1">
-          {getStatusText(server?.status, server?.health?.Status)}
-        </span>
+      <div class="bg-charcoal-800 rounded-lg">
+        <ConversationActions conversation="{conversation}" />
       </div>
     </svelte:fragment>
     <svelte:fragment slot="content">

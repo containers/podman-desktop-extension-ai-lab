@@ -1,15 +1,7 @@
 <script lang="ts">
-import { studioClient } from '/@/utils/client';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
+import ConversationActions from '../../conversation/ConversationActions.svelte';
 export let object: Conversation;
-
-function deleteConversation() {
-  studioClient.requestDeleteConversation(object.id).catch((err: unknown) => {
-    console.error('Something went wrong while trying to delete conversation', err);
-  });
-}
 </script>
 
-<ListItemButtonIcon icon="{faTrash}" onClick="{deleteConversation}" title="Delete conversation" />
+<ConversationActions conversation="{object}" />

@@ -22,7 +22,6 @@ import fs from 'fs';
 import * as path from 'node:path';
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import type {
-  BuildImageOptions,
   PodCreatePortOptions,
   TelemetryLogger,
   PodInfo,
@@ -33,7 +32,6 @@ import type {
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
-import { getParentDirectory } from '../utils/pathUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from './modelsManager';
 import { getPortsFromLabel, getPortsInfo } from '../utils/ports';
@@ -51,8 +49,8 @@ import { isQEMUMachine } from '../utils/podman';
 import { SECOND } from '../utils/inferenceUtils';
 import { getModelPropertiesForEnvironment } from '../utils/modelsUtils';
 import { getPodHealth } from '../utils/podsUtils';
-import { getImageTag } from '../utils/imagesUtils';
 import { getRandomName } from '../utils/randomUtils';
+import type { BuilderManager } from './recipes/BuilderManager';
 
 export const LABEL_MODEL_ID = 'ai-lab-model-id';
 export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';
@@ -102,13 +100,14 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     private modelsManager: ModelsManager,
     private telemetry: TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
+    private builderManager: BuilderManager,
   ) {
     super(webview, Messages.MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
     this.#disposables = [];
   }
 
-  async pullApplication(recipe: Recipe, model: ModelInfo) {
+  async pullApplication(recipe: Recipe, model: ModelInfo): Promise<void> {
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
       'recipe-id': recipe.id,
@@ -117,7 +116,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     return this.startApplication(recipe, model);
   }
 
-  async startApplication(recipe: Recipe, model: ModelInfo) {
+  private async startApplication(recipe: Recipe, model: ModelInfo): Promise<void> {
     // const recipeStatus = this.recipeStatusRegistry.
     const startTime = performance.now();
     try {
@@ -147,19 +146,19 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       const configAndFilteredContainers = this.getConfigAndFilterContainers(recipe.basedir, localFolder);
 
       // get model by downloading it or retrieving locally
-      let modelPath = await this.modelsManager.requestDownloadModel(model, {
+      await this.modelsManager.requestDownloadModel(model, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });
 
       // upload model to podman machine if user system is supported
-      modelPath = await this.modelsManager.uploadModelToPodmanMachine(model, {
+      const modelPath = await this.modelsManager.uploadModelToPodmanMachine(model, {
         'recipe-id': recipe.id,
         'model-id': model.id,
       });
 
       // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
-      const images = await this.buildImages(
+      const images = await this.builderManager.build(
         recipe,
         configAndFilteredContainers.containers,
         configAndFilteredContainers.aiConfigFile.path,
@@ -199,7 +198,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
-  async runApplication(podInfo: ApplicationPodInfo, labels?: { [key: string]: string }) {
+  async runApplication(podInfo: ApplicationPodInfo, labels?: { [key: string]: string }): Promise<void> {
     const task = this.taskRegistry.createTask('Starting AI App', 'loading', labels);
 
     // it starts the pod
@@ -398,114 +397,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     };
   }
 
-  async buildImages(
-    recipe: Recipe,
-    containers: ContainerConfig[],
-    configPath: string,
-    labels?: { [key: string]: string },
-  ): Promise<ImageInfo[]> {
-    const containerTasks: { [key: string]: Task } = Object.fromEntries(
-      containers.map(container => [
-        container.name,
-        this.taskRegistry.createTask(`Building ${container.name}`, 'loading', labels),
-      ]),
-    );
-
-    const imageInfoList: ImageInfo[] = [];
-
-    // Promise all the build images
-    const abortController = new AbortController();
-    try {
-      await Promise.all(
-        containers.map(container => {
-          const task = containerTasks[container.name];
-
-          // We use the parent directory of our configFile as the rootdir, then we append the contextDir provided
-          const context = path.join(getParentDirectory(configPath), container.contextdir);
-          console.log(`Application Manager using context ${context} for container ${container.name}`);
-
-          // Ensure the context provided exist otherwise throw an Error
-          if (!fs.existsSync(context)) {
-            task.error = 'The context provided does not exist.';
-            this.taskRegistry.updateTask(task);
-            throw new Error('Context configured does not exist.');
-          }
-
-          const imageTag = getImageTag(recipe, container);
-          const buildOptions: BuildImageOptions = {
-            containerFile: container.containerfile,
-            tag: imageTag,
-            labels: {
-              [LABEL_RECIPE_ID]: labels !== undefined && 'recipe-id' in labels ? labels['recipe-id'] : '',
-            },
-            abortController: abortController,
-          };
-
-          let error = false;
-          return containerEngine
-            .buildImage(
-              context,
-              (event, data) => {
-                // todo: do something with the event
-                if (event === 'error' || (event === 'finish' && data !== '')) {
-                  console.error('Something went wrong while building the image: ', data);
-                  task.error = `Something went wrong while building the image: ${data}`;
-                  this.taskRegistry.updateTask(task);
-                  error = true;
-                }
-              },
-              buildOptions,
-            )
-            .catch((err: unknown) => {
-              task.error = `Something went wrong while building the image: ${String(err)}`;
-              this.taskRegistry.updateTask(task);
-              throw new Error(`Something went wrong while building the image: ${String(err)}`);
-            })
-            .then(() => {
-              if (error) {
-                throw new Error(`Something went wrong while building the image: ${imageTag}`);
-              }
-            });
-        }),
-      );
-    } catch (err: unknown) {
-      abortController.abort();
-      throw err;
-    }
-
-    // after image are built we return their data
-    const images = await containerEngine.listImages();
-    await Promise.all(
-      containers.map(async container => {
-        const task = containerTasks[container.name];
-        const imageTag = getImageTag(recipe, container);
-
-        const image = images.find(im => {
-          return im.RepoTags?.some(tag => tag.endsWith(imageTag));
-        });
-
-        if (!image) {
-          task.error = `no image found for ${container.name}:latest`;
-          this.taskRegistry.updateTask(task);
-          throw new Error(`no image found for ${container.name}:latest`);
-        }
-
-        imageInfoList.push({
-          id: image.Id,
-          modelService: container.modelService,
-          ports: container.ports?.map(p => `${p}`) ?? [],
-          appName: container.name,
-        });
-
-        task.state = 'success';
-        this.taskRegistry.updateTask(task);
-      }),
-    );
-
-    return imageInfoList;
-  }
-
-  getConfigAndFilterContainers(
+  private getConfigAndFilterContainers(
     recipeBaseDir: string | undefined,
     localFolder: string,
     labels?: { [key: string]: string },
@@ -586,7 +478,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     };
   }
 
-  async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }): Promise<void> {
+  private async doCheckout(gitCloneInfo: GitCloneInfo, labels?: { [id: string]: string }): Promise<void> {
     // Creating checkout task
     const checkoutTask: Task = this.taskRegistry.createTask('Checking out repository', 'loading', {
       ...labels,
@@ -744,7 +636,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
-  private async checkPodsHealth() {
+  private async checkPodsHealth(): Promise<void> {
     const pods = await containerEngine
       .listPods()
       .then(pods => pods.filter(pod => LABEL_RECIPE_ID in pod.Labels && LABEL_MODEL_ID in pod.Labels));
@@ -788,7 +680,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     return Array.from(this.#applications.values());
   }
 
-  async deleteApplication(recipeId: string, modelId: string) {
+  async deleteApplication(recipeId: string, modelId: string): Promise<void> {
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
       'recipe-id': recipeId,
@@ -826,7 +718,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
-  async restartApplication(recipeId: string, modelId: string) {
+  async restartApplication(recipeId: string, modelId: string): Promise<void> {
     const appPod = await this.getApplicationPod(recipeId, modelId);
     await this.deleteApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
@@ -851,12 +743,12 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     return appPod;
   }
 
-  async hasApplicationPod(recipeId: string, modelId: string): Promise<boolean> {
+  private async hasApplicationPod(recipeId: string, modelId: string): Promise<boolean> {
     const appPod = await this.queryPod(recipeId, modelId);
     return !!appPod;
   }
 
-  async queryPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {
+  private async queryPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {
     const pods = await containerEngine.listPods();
     return pods.find(
       pod =>

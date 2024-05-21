@@ -21,7 +21,6 @@ import {
   type ImageInfo,
   type ApplicationPodInfo,
   ApplicationManager,
-  LABEL_RECIPE_ID,
   CONFIG_FILENAME,
 } from './applicationManager';
 import type { GitManager } from './gitManager';
@@ -49,11 +48,11 @@ import type {
 } from './podmanConnection';
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
+import type { BuilderManager } from './recipes/BuilderManager';
 
 const mocks = vi.hoisted(() => {
   return {
     parseYamlFileMock: vi.fn(),
-    buildImageMock: vi.fn(),
     listImagesMock: vi.fn(),
     getImageInspectMock: vi.fn(),
     createPodMock: vi.fn(),
@@ -109,7 +108,6 @@ vi.mock('@podman-desktop/api', () => ({
     getContainerConnections: mocks.getContainerConnectionsMock,
   },
   containerEngine: {
-    buildImage: mocks.buildImageMock,
     listImages: mocks.listImagesMock,
     getImageInspect: mocks.getImageInspectMock,
     createPod: mocks.createPodMock,
@@ -145,6 +143,10 @@ const taskRegistry = {
   deleteByLabels: mocks.deleteByLabelsMock,
 } as unknown as TaskRegistry;
 
+const builderManager = {
+  build: vi.fn(),
+} as unknown as BuilderManager;
+
 const localRepositoryRegistry = {
   register: mocks.registerLocalRepositoryMock,
 } as unknown as LocalRepositoryRegistry;
@@ -169,6 +171,7 @@ describe('pullApplication', () => {
   let manager: ApplicationManager;
   let modelsManager: ModelsManager;
   vi.spyOn(utils, 'timeout').mockResolvedValue();
+
   function mockForPullApplication(options: mockForPullApplicationOptions) {
     vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
     vi.spyOn(fs, 'mkdirSync').mockReturnValue(undefined);
@@ -216,7 +219,14 @@ describe('pullApplication', () => {
         Running: true,
       },
     });
-    mocks.buildImageMock.mockResolvedValue(undefined);
+    vi.mocked(builderManager.build).mockResolvedValue([
+      {
+        modelService: false,
+        appName: 'dummy-app-name',
+        ports: [],
+        id: 'dummy-id',
+      },
+    ]);
     mocks.listImagesMock.mockResolvedValue([
       {
         RepoTags: ['recipe1-container1:latest'],
@@ -258,6 +268,7 @@ describe('pullApplication', () => {
       modelsManager,
       telemetryLogger,
       localRepositoryRegistry,
+      builderManager,
     );
   }
   test('pullApplication should clone repository and call downloadModelMain and buildImage', async () => {
@@ -307,17 +318,30 @@ describe('pullApplication', () => {
       expect(processCheckoutMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     }
     expect(mocks.performDownloadMock).toHaveBeenCalledOnce();
-    expect(mocks.buildImageMock).toHaveBeenCalledOnce();
-    expect(mocks.buildImageMock).toHaveBeenCalledWith(
-      `${gitCloneOptions.targetDirectory}${path.sep}contextdir1`,
+    expect(builderManager.build).toHaveBeenCalledOnce();
+    expect(builderManager.build).toHaveBeenCalledWith(
+      {
+        categories: [],
+        description: '',
+        id: 'recipe1',
+        name: 'Recipe 1',
+        readme: '',
+        ref: '000000',
+        repository: 'repo',
+      },
+      [
+        {
+          arch: ['amd64'],
+          containerfile: 'Containerfile',
+          contextdir: 'contextdir1',
+          gpu_env: [],
+          name: 'container1',
+        },
+      ],
       expect.anything(),
       {
-        containerFile: 'Containerfile',
-        tag: 'recipe1-container1:latest',
-        labels: {
-          [LABEL_RECIPE_ID]: 'recipe1',
-        },
-        abortController: expect.anything(),
+        'model-id': 'model1',
+        'recipe-id': 'recipe1',
       },
     );
     expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'recipe.pull', {
@@ -330,7 +354,7 @@ describe('pullApplication', () => {
     mockForPullApplication({
       recipeFolderExists: false,
     });
-    mocks.buildImageMock.mockRejectedValue(new Error('Build failed'));
+    vi.mocked(builderManager.build).mockRejectedValue(new Error('Build failed'));
     mocks.listPodsMock.mockResolvedValue([]);
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
@@ -380,19 +404,7 @@ describe('pullApplication', () => {
       expect(processCheckoutMock).toHaveBeenNthCalledWith(1, gitCloneOptions);
     }
     expect(mocks.performDownloadMock).toHaveBeenCalledOnce();
-    expect(mocks.buildImageMock).toHaveBeenCalledOnce();
-    expect(mocks.buildImageMock).toHaveBeenCalledWith(
-      `${gitCloneOptions.targetDirectory}${path.sep}contextdir1`,
-      expect.anything(),
-      {
-        containerFile: 'Containerfile',
-        tag: 'recipe1-container1:latest',
-        labels: {
-          [LABEL_RECIPE_ID]: 'recipe1',
-        },
-        abortController: expect.anything(),
-      },
-    );
+    expect(builderManager.build).toHaveBeenCalledOnce();
     expect(mocks.logErrorMock).toHaveBeenNthCalledWith(
       1,
       'recipe.pull',
@@ -483,6 +495,7 @@ describe('getConfiguration', () => {
       {} as unknown as ModelsManager,
       telemetryLogger,
       localRepositoryRegistry,
+      builderManager,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     expect(() => manager.getConfiguration('config', 'local')).toThrowError(
@@ -501,6 +514,7 @@ describe('getConfiguration', () => {
       {} as unknown as ModelsManager,
       telemetryLogger,
       localRepositoryRegistry,
+      builderManager,
     );
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     const stats = {
@@ -556,6 +570,7 @@ describe('filterContainers', () => {
       {} as unknown as ModelsManager,
       telemetryLogger,
       localRepositoryRegistry,
+      builderManager,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(0);
@@ -596,6 +611,7 @@ describe('filterContainers', () => {
       {} as unknown as ModelsManager,
       telemetryLogger,
       localRepositoryRegistry,
+      builderManager,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(1);
@@ -646,97 +662,12 @@ describe('filterContainers', () => {
       {} as unknown as ModelsManager,
       telemetryLogger,
       localRepositoryRegistry,
+      builderManager,
     );
     const containers = manager.filterContainers(aiConfig);
     expect(containers.length).toBe(2);
     expect(containers[0].name).equal('container1');
     expect(containers[1].name).equal('container3');
-  });
-});
-
-describe('buildImages', () => {
-  const recipe = {
-    id: 'recipe1',
-  } as Recipe;
-  const containers: ContainerConfig[] = [
-    {
-      name: 'container1',
-      contextdir: 'contextdir1',
-      containerfile: 'Containerfile',
-      arch: ['amd64'],
-      modelService: false,
-      gpu_env: [],
-      ports: [8080],
-    },
-  ];
-  const manager = new ApplicationManager(
-    '/home/user/aistudio',
-    {} as unknown as GitManager,
-    taskRegistry,
-    {} as Webview,
-    {} as PodmanConnection,
-    {} as CatalogManager,
-    {} as unknown as ModelsManager,
-    telemetryLogger,
-    localRepositoryRegistry,
-  );
-  test('setTaskState should be called with error if context does not exist', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-    mocks.listImagesMock.mockRejectedValue([]);
-    await expect(manager.buildImages(recipe, containers, 'config')).rejects.toThrow(
-      'Context configured does not exist.',
-    );
-  });
-  test('setTaskState should be called with error if buildImage executon fails', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    mocks.buildImageMock.mockRejectedValue('error');
-    mocks.listImagesMock.mockRejectedValue([]);
-    await expect(manager.buildImages(recipe, containers, 'config')).rejects.toThrow(
-      'Something went wrong while building the image: error',
-    );
-    expect(mocks.updateTaskMock).toBeCalledWith({
-      error: 'Something went wrong while building the image: error',
-      name: 'Building container1',
-      id: expect.any(String),
-      state: expect.any(String),
-      labels: {},
-    });
-  });
-  test('setTaskState should be called with error if unable to find the image after built', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    mocks.buildImageMock.mockResolvedValue({});
-    mocks.listImagesMock.mockResolvedValue([]);
-    await expect(manager.buildImages(recipe, containers, 'config')).rejects.toThrow(
-      'no image found for container1:latest',
-    );
-    expect(mocks.updateTaskMock).toBeCalledWith({
-      error: 'no image found for container1:latest',
-      name: 'Building container1',
-      id: expect.any(String),
-      state: expect.any(String),
-      labels: {},
-    });
-  });
-  test('succeed if building image do not fail', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    mocks.buildImageMock.mockResolvedValue({});
-    mocks.listImagesMock.mockResolvedValue([
-      {
-        RepoTags: ['recipe1-container1:latest'],
-        engineId: 'engine',
-        Id: 'id1',
-      },
-    ]);
-    const imageInfoList = await manager.buildImages(recipe, containers, 'config');
-    expect(mocks.updateTaskMock).toBeCalledWith({
-      name: 'Building container1',
-      id: expect.any(String),
-      state: 'success',
-      labels: {},
-    });
-    expect(imageInfoList.length).toBe(1);
-    expect(imageInfoList[0].ports.length).toBe(1);
-    expect(imageInfoList[0].ports[0]).equals('8080');
   });
 });
 
@@ -763,6 +694,7 @@ describe('createPod', async () => {
     {} as unknown as ModelsManager,
     telemetryLogger,
     localRepositoryRegistry,
+    builderManager,
   );
   test('throw an error if there is no sample image', async () => {
     const images = [imageInfo2];
@@ -838,6 +770,7 @@ describe('createApplicationPod', () => {
     {} as unknown as ModelsManager,
     telemetryLogger,
     localRepositoryRegistry,
+    builderManager,
   );
   const images = [imageInfo1, imageInfo2];
   test('throw if createPod fails', async () => {
@@ -910,6 +843,7 @@ describe('runApplication', () => {
     {} as unknown as ModelsManager,
     telemetryLogger,
     localRepositoryRegistry,
+    builderManager,
   );
   const pod: ApplicationPodInfo = {
     engineId: 'engine',
@@ -962,6 +896,7 @@ describe('createAndAddContainersToPod', () => {
     {} as unknown as ModelsManager,
     telemetryLogger,
     localRepositoryRegistry,
+    builderManager,
   );
   const pod: ApplicationPodInfo = {
     engineId: 'engine',
@@ -1076,6 +1011,7 @@ describe('pod detection', async () => {
       {} as ModelsManager,
       {} as TelemetryLogger,
       localRepositoryRegistry,
+      builderManager,
     );
   });
 

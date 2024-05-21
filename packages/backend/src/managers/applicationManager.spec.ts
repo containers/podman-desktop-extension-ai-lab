@@ -1381,4 +1381,3 @@ describe('pod detection', async () => {
     expect(state[0].health).toEqual('healthy');
   });
 });
-

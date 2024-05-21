@@ -40,7 +40,7 @@ import { getPortsFromLabel, getPortsInfo } from '../utils/ports';
 import { goarch } from '../utils/arch';
 import { getDurationSecondsSince, timeout } from '../utils/utils';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
-import type { ApplicationState, PodHealth } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { PodmanConnection } from './podmanConnection';
 import { Messages } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';

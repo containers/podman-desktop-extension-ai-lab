@@ -27,6 +27,7 @@ export let lastPage: TinroBreadcrumb | undefined = undefined;
           </div>
         {/if}
         <div class="flex flex-row w-full">
+          <slot name="icon" />
           {#if icon}
             <div class="bg-charcoal-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">
               <Fa size="1.125x" class="text-purple-500" icon="{icon}" />

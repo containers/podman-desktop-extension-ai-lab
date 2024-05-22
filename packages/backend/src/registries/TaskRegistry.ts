@@ -89,7 +89,7 @@ export class TaskRegistry {
    * @param taskIds The IDs of the tasks to delete.
    */
   deleteAll(taskIds: string[]) {
-    taskIds.map(taskId => this.tasks.delete(taskId));
+    taskIds.forEach(taskId => this.tasks.delete(taskId));
     this.notify();
   }
 

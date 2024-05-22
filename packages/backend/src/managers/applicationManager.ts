@@ -28,7 +28,8 @@ import type {
   Webview,
   HostConfig,
   HealthConfig,
- PodContainerInfo } from '@podman-desktop/api';
+  PodContainerInfo,
+} from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
@@ -713,7 +714,15 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     await this.deleteApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(appPod.Labels[LABEL_MODEL_ID]);
-    await this.initApplication(recipe, model);
+
+    // init the recipe
+    const podInfo = await this.initApplication(recipe, model);
+
+    // start the pod
+    return this.runApplication(podInfo, {
+      'recipe-id': recipe.id,
+      'model-id': model.id,
+    });
   }
 
   async getApplicationPorts(recipeId: string, modelId: string): Promise<number[]> {

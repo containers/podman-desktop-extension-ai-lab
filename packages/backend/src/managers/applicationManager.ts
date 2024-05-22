@@ -48,9 +48,9 @@ import { Publisher } from '../utils/Publisher';
 import { isQEMUMachine } from '../utils/podman';
 import { SECOND } from '../utils/inferenceUtils';
 import { getModelPropertiesForEnvironment } from '../utils/modelsUtils';
-import { getPodHealth } from '../utils/podsUtils';
 import { getRandomName } from '../utils/randomUtils';
 import type { BuilderManager } from './recipes/BuilderManager';
+import type { PodManager } from './recipes/PodManager';
 
 export const LABEL_MODEL_ID = 'ai-lab-model-id';
 export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';
@@ -101,6 +101,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     private telemetry: TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
     private builderManager: BuilderManager,
+    private podManager: PodManager,
   ) {
     super(webview, Messages.MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
@@ -501,13 +502,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
   adoptRunningApplications() {
     this.podmanConnection.startupSubscribe(() => {
-      containerEngine
-        .listPods()
+      this.podManager
+        .getPodsWithLabels([LABEL_RECIPE_ID])
         .then(pods => {
-          const appsPods = pods.filter(pod => LABEL_RECIPE_ID in pod.Labels);
-          for (const podToAdopt of appsPods) {
-            this.adoptPod(podToAdopt);
-          }
+          pods.forEach(pod => this.adoptPod(pod));
         })
         .catch((err: unknown) => {
           console.error('error during adoption of existing playground containers', err);
@@ -637,10 +635,9 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   private async checkPodsHealth(): Promise<void> {
-    const pods = await containerEngine
-      .listPods()
-      .then(pods => pods.filter(pod => LABEL_RECIPE_ID in pod.Labels && LABEL_MODEL_ID in pod.Labels));
+    const pods = await this.podManager.getPodsWithLabels([LABEL_RECIPE_ID, LABEL_MODEL_ID]);
     let changes = false;
+
     for (const pod of pods) {
       const recipeId = pod.Labels[LABEL_RECIPE_ID];
       const modelId = pod.Labels[LABEL_MODEL_ID];
@@ -648,12 +645,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         // a fresh pod could not have been added yet, we will handle it at next iteration
         continue;
       }
-      const containerStates: (string | undefined)[] = await Promise.all(
-        pod.Containers.map(container =>
-          containerEngine.inspectContainer(pod.engineId, container.Id).then(data => data.State.Health?.Status),
-        ),
-      );
-      const podHealth = getPodHealth(containerStates);
+
+      const podHealth = await this.podManager.getHealth(pod);
       const state = this.#applications.get({ recipeId, modelId });
       if (state.health !== podHealth) {
         state.health = podHealth;
@@ -736,7 +729,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   async getApplicationPod(recipeId: string, modelId: string): Promise<PodInfo> {
-    const appPod = await this.queryPod(recipeId, modelId);
+    const appPod = await this.findPod(recipeId, modelId);
     if (!appPod) {
       throw new Error(`no pod found with recipe Id ${recipeId} and model Id ${modelId}`);
     }
@@ -744,19 +737,18 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   private async hasApplicationPod(recipeId: string, modelId: string): Promise<boolean> {
-    const appPod = await this.queryPod(recipeId, modelId);
-    return !!appPod;
+    const pod = await this.podManager.findPodByLabelsValues({
+      LABEL_RECIPE_ID: recipeId,
+      LABEL_MODEL_ID: modelId,
+    });
+    return !!pod;
   }
 
-  private async queryPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {
-    const pods = await containerEngine.listPods();
-    return pods.find(
-      pod =>
-        LABEL_RECIPE_ID in pod.Labels &&
-        pod.Labels[LABEL_RECIPE_ID] === recipeId &&
-        LABEL_MODEL_ID in pod.Labels &&
-        pod.Labels[LABEL_MODEL_ID] === modelId,
-    );
+  private async findPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {
+    return this.podManager.findPodByLabelsValues({
+      [LABEL_RECIPE_ID]: recipeId,
+      [LABEL_MODEL_ID]: modelId,
+    });
   }
 
   dispose(): void {

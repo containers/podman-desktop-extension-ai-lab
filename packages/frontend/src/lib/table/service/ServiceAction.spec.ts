@@ -131,3 +131,20 @@ test('should be disabled on transition', async () => {
   const deleteBtn = screen.getByTitle('Delete service');
   expect(deleteBtn.classList).toContain('text-gray-900');
 });
+
+test('should have background on details', async () => {
+  render(ServiceAction, {
+    object: {
+      health: undefined,
+      models: [],
+      connection: { port: 8888 },
+      status: 'stopped',
+      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+    },
+    detailed: true,
+  });
+
+  const startBtn = screen.getByTitle('Start service');
+  expect(startBtn.classList).toContain('bg-charcoal-800');
+  expect(startBtn.classList).toContain('rounded-lg');
+});

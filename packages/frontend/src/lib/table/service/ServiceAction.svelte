@@ -4,6 +4,7 @@ import { studioClient } from '/@/utils/client';
 import { faPlay, faStop, faTrash } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 export let object: InferenceServer;
+export let detailed: boolean = false;
 
 function stopInferenceServer() {
   studioClient.stopInferenceServer(object.container.containerId).catch((err: unknown) => {
@@ -30,8 +31,18 @@ $: {
 </script>
 
 {#if object.status === 'running'}
-  <ListItemButtonIcon icon="{faStop}" onClick="{stopInferenceServer}" title="Stop service" />
+  <ListItemButtonIcon detailed="{detailed}" icon="{faStop}" onClick="{stopInferenceServer}" title="Stop service" />
 {:else}
-  <ListItemButtonIcon enabled="{!loading}" icon="{faPlay}" onClick="{startInferenceServer}" title="Start service" />
+  <ListItemButtonIcon
+    detailed="{detailed}"
+    enabled="{!loading}"
+    icon="{faPlay}"
+    onClick="{startInferenceServer}"
+    title="Start service" />
 {/if}
-<ListItemButtonIcon enabled="{!loading}" icon="{faTrash}" onClick="{deleteInferenceServer}" title="Delete service" />
+<ListItemButtonIcon
+  detailed="{detailed}"
+  enabled="{!loading}"
+  icon="{faTrash}"
+  onClick="{deleteInferenceServer}"
+  title="Delete service" />

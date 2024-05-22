@@ -12,6 +12,7 @@ import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 import Button from '/@/lib/button/Button.svelte';
+import Badge from '/@/lib/Badge.svelte';
 
 export let containerId: string | undefined = undefined;
 
@@ -118,35 +119,44 @@ onMount(() => {
 });
 </script>
 
-<NavPage lastPage="{{ name: 'Model Services', path: '/services' }}" title="Service Details" searchEnabled="{false}">
+<NavPage lastPage="{{ name: 'Model Services', path: '/services' }}" title="Service details" searchEnabled="{false}">
+  <svelte:fragment slot="icon">
+    <div class="mr-3">
+      {#if service !== undefined}
+        <ServiceStatus object="{service}" />
+      {/if}
+    </div>
+  </svelte:fragment>
+  <svelte:fragment slot="subtitle">
+    <div class="flex gap-x-2 items-center">
+      {#if service}
+        <span class="text-xs">{service.container.containerId}</span>
+        {#each service.models as model}
+          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-charcoal-700" />
+        {/each}
+      {/if}
+    </div>
+  </svelte:fragment>
+  <svelte:fragment slot="additional-actions">
+    {#if service !== undefined}
+      <ServiceAction detailed object="{service}" />
+    {/if}
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">
       <div class="min-w-full min-h-full flex-1">
         <div class="mt-4 px-5 space-y-5">
           {#if service !== undefined}
-            <!-- container details -->
+            <!-- models info -->
             <div class="bg-charcoal-800 rounded-md w-full px-4 pt-2 pb-4">
-              <!-- container info -->
-              <span class="text-sm">Container</span>
-              <div class="w-full bg-charcoal-600 rounded-md p-2 flex items-center">
-                <div class="grow ml-2 flex flex-row">
-                  {#key service.health?.Status}
-                    <ServiceStatus object="{service}" />
-                  {/key}
-                  <div class="flex flex-col text-xs ml-2 items-center justify-center">
-                    <span>{service.container.containerId}</span>
-                  </div>
-                </div>
-                <ServiceAction object="{service}" />
-              </div>
-
-              <!-- models info -->
-              <div class="mt-4">
+              <div>
                 <span class="text-sm">Models</span>
                 <div class="w-full bg-charcoal-600 rounded-md p-2 flex flex-col gap-y-4">
                   {#each service.models as model}
                     <div class="flex flex-row gap-2 items-center">
-                      <div class="grow text-sm">{model.name}</div>
+                      <div class="grow text-sm" aria-label="Model name">
+                        <a href="/model/{model.id}">{model.name}</a>
+                      </div>
                       <div>
                         <div
                           class="bg-charcoal-800 rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">

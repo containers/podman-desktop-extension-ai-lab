@@ -16,13 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import {
-  type ContainerAttachedInfo,
-  type ImageInfo,
-  type ApplicationPodInfo,
-  ApplicationManager,
-  CONFIG_FILENAME,
-} from './applicationManager';
+import { type ImageInfo, ApplicationManager, CONFIG_FILENAME } from './applicationManager';
 import type { GitManager } from './gitManager';
 import os from 'os';
 import fs, { type PathLike } from 'node:fs';
@@ -151,6 +145,7 @@ const podManager = {
   findPodByLabelsValues: vi.fn(),
   getPodsWithLabels: vi.fn(),
   getHealth: vi.fn(),
+  getPod: vi.fn(),
 } as unknown as PodManager;
 
 const localRepositoryRegistry = {
@@ -283,6 +278,10 @@ describe('pullApplication', () => {
       recipeFolderExists: false,
     });
     vi.mocked(podManager.getAllPods).mockResolvedValue([]);
+    vi.mocked(podManager.getPod).mockResolvedValue({
+      engineId: 'dummyEngineId',
+      Id: 'dummyPodId',
+    } as unknown as PodInfo);
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
@@ -428,6 +427,10 @@ describe('pullApplication', () => {
       recipeFolderExists: true,
     });
     vi.mocked(podManager.getAllPods).mockResolvedValue([]);
+    vi.mocked(podManager.getPod).mockResolvedValue({
+      engineId: 'dummyEngineId',
+      Id: 'dummyPodId',
+    } as unknown as PodInfo);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(true);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     vi.spyOn(modelsManager, 'getLocalModelPath').mockReturnValue('path');
@@ -801,17 +804,15 @@ describe('createApplicationPod', () => {
     });
   });
   test('call createAndAddContainersToPod after pod is created', async () => {
-    const pod: ApplicationPodInfo = {
+    const pod: PodInfo = {
       engineId: 'engine',
       Id: 'id',
-      portmappings: [],
-    };
+    } as unknown as PodInfo;
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
+    // mock createContainerAndAttachToPod
     const createAndAddContainersToPodMock = vi
-      .spyOn(manager, 'createAndAddContainersToPod')
-      .mockImplementation((_pod: ApplicationPodInfo, _images: ImageInfo[], _modelInfo: ModelInfo, _modelPath: string) =>
-        Promise.resolve([]),
-      );
+      .spyOn(manager, 'createContainerAndAttachToPod')
+      .mockResolvedValue(undefined);
     await manager.createApplicationPod({ id: 'recipe-id' } as Recipe, { id: 'model-id' } as ModelInfo, images, 'path');
     expect(createAndAddContainersToPodMock).toBeCalledWith(pod, images, { id: 'model-id' }, 'path');
     expect(mocks.updateTaskMock).toBeCalledWith({
@@ -824,13 +825,12 @@ describe('createApplicationPod', () => {
     });
   });
   test('throw if createAndAddContainersToPod fails', async () => {
-    const pod: ApplicationPodInfo = {
+    const pod: PodInfo = {
       engineId: 'engine',
       Id: 'id',
-      portmappings: [],
-    };
+    } as unknown as PodInfo;
     vi.spyOn(manager, 'createPod').mockResolvedValue(pod);
-    vi.spyOn(manager, 'createAndAddContainersToPod').mockRejectedValue('error');
+    vi.spyOn(manager, 'createContainerAndAttachToPod').mockRejectedValue('error');
     await expect(() =>
       manager.createApplicationPod({ id: 'recipe-id' } as Recipe, { id: 'model-id' } as ModelInfo, images, 'path'),
     ).rejects.toThrowError('error');
@@ -860,42 +860,22 @@ describe('runApplication', () => {
     builderManager,
     podManager,
   );
-  const pod: ApplicationPodInfo = {
+  const pod: PodInfo = {
     engineId: 'engine',
     Id: 'id',
-    containers: [
+    Containers: [
       {
-        name: 'first',
-        modelService: false,
-        ports: ['8080', '8081'],
-      },
-      {
-        name: 'second',
-        modelService: true,
-        ports: ['9000'],
+        Id: 'dummyContainerId',
       },
     ],
-    portmappings: [
-      {
-        container_port: 9000,
-        host_port: 9001,
-        host_ip: '',
-        protocol: '',
-        range: -1,
-      },
-    ],
-  };
+  } as unknown as PodInfo;
   test('check startPod is called and also waitContainerIsRunning for sample app', async () => {
-    const waitContainerIsRunningMock = vi
-      .spyOn(manager, 'waitContainerIsRunning')
-      .mockImplementation((_engineId: string, _container: ContainerAttachedInfo) => Promise.resolve());
+    const waitContainerIsRunningMock = vi.spyOn(manager, 'waitContainerIsRunning').mockResolvedValue(undefined);
     vi.spyOn(utils, 'timeout').mockResolvedValue();
     await manager.runApplication(pod);
     expect(mocks.startPod).toBeCalledWith(pod.engineId, pod.Id);
     expect(waitContainerIsRunningMock).toBeCalledWith(pod.engineId, {
-      name: 'first',
-      modelService: false,
-      ports: ['8080', '8081'],
+      Id: 'dummyContainerId',
     });
   });
 });
@@ -914,11 +894,11 @@ describe('createAndAddContainersToPod', () => {
     builderManager,
     podManager,
   );
-  const pod: ApplicationPodInfo = {
+  const pod: PodInfo = {
     engineId: 'engine',
     Id: 'id',
     portmappings: [],
-  };
+  } as unknown as PodInfo;
   const imageInfo1: ImageInfo = {
     id: 'id',
     appName: 'appName',
@@ -936,7 +916,7 @@ describe('createAndAddContainersToPod', () => {
       id: 'container-1',
     });
     vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
-    await manager.createAndAddContainersToPod(pod, [imageInfo1, imageInfo2], modelInfo, 'path');
+    await manager.createContainerAndAttachToPod(pod, [imageInfo1, imageInfo2], modelInfo, 'path');
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {
       Image: 'id',
       Detach: true,

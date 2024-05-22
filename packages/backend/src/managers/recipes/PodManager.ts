@@ -74,4 +74,11 @@ export class PodManager implements Disposable {
 
     return getPodHealth(containerStates);
   }
+
+  async getPod(engineId: string, Id: string): Promise<PodInfo> {
+    const pods = await this.getAllPods();
+    const result = pods.find(pod => pod.engineId === engineId && pod.Id === Id);
+    if (!result) throw new Error(`pod with engineId ${engineId} and Id ${Id} cannot be found.`);
+    return result;
+  }
 }

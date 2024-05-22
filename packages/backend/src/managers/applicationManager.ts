@@ -746,8 +746,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
   private async findPod(recipeId: string, modelId: string): Promise<PodInfo | undefined> {
     return this.podManager.findPodByLabelsValues({
-      LABEL_RECIPE_ID: recipeId,
-      LABEL_MODEL_ID: modelId,
+      [LABEL_RECIPE_ID]: recipeId,
+      [LABEL_MODEL_ID]: modelId,
     });
   }
 

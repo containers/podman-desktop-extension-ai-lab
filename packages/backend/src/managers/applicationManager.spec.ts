@@ -1212,6 +1212,10 @@ describe('pod detection', async () => {
         'ai-lab-model-id': 'model-id-1',
       },
     });
+    expect(podManager.findPodByLabelsValues).toHaveBeenCalledWith({
+      'ai-lab-recipe-id': 'recipe-id-1',
+      'ai-lab-model-id': 'model-id-1',
+    });
   });
 
   test('deleteApplication calls stopPod and removePod', async () => {

@@ -18,12 +18,16 @@
 
 import { beforeEach, describe, vi, expect, test } from 'vitest';
 import { PodManager } from './PodManager';
-import type { ContainerInspectInfo, PodInfo } from '@podman-desktop/api';
+import type { ContainerInspectInfo, PodCreateOptions, PodInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
     listPods: vi.fn(),
+    stopPod: vi.fn(),
+    removePod: vi.fn(),
+    startPod: vi.fn(),
+    createPod: vi.fn(),
     inspectContainer: vi.fn(),
   },
 }));
@@ -205,4 +209,28 @@ describe('getPod', () => {
     expect(pod.engineId).toBe('engine-3');
     expect(pod.Id).toBe('pod-id-3');
   });
+});
+
+test('stopPod should call containerEngine.stopPod', async () => {
+  await new PodManager().stopPod('dummy-engine-id', 'dummy-pod-id');
+  expect(containerEngine.stopPod).toHaveBeenCalledWith('dummy-engine-id', 'dummy-pod-id');
+});
+
+test('removePod should call containerEngine.removePod', async () => {
+  await new PodManager().removePod('dummy-engine-id', 'dummy-pod-id');
+  expect(containerEngine.removePod).toHaveBeenCalledWith('dummy-engine-id', 'dummy-pod-id');
+});
+
+test('startPod should call containerEngine.startPod', async () => {
+  await new PodManager().startPod('dummy-engine-id', 'dummy-pod-id');
+  expect(containerEngine.startPod).toHaveBeenCalledWith('dummy-engine-id', 'dummy-pod-id');
+});
+
+test('createPod should call containerEngine.createPod', async () => {
+  const options: PodCreateOptions = {
+    name: 'dummy-name',
+    portmappings: [],
+  };
+  await new PodManager().createPod(options);
+  expect(containerEngine.createPod).toHaveBeenCalledWith(options);
 });

@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { expect, test, vi, beforeEach } from 'vitest';
+import { expect, test, vi, beforeEach, describe } from 'vitest';
 
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import { studioClient } from '../utils/client';
@@ -27,6 +27,8 @@ import { router } from 'tinro';
 
 vi.mock('../utils/client', async () => ({
   studioClient: {
+    requestStopApplication: vi.fn(),
+    requestStartApplication: vi.fn(),
     requestRemoveApplication: vi.fn(),
     requestRestartApplication: vi.fn(),
     requestOpenApplication: vi.fn(),
@@ -35,6 +37,8 @@ vi.mock('../utils/client', async () => ({
 
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.mocked(studioClient.requestStopApplication).mockResolvedValue(undefined);
+  vi.mocked(studioClient.requestStartApplication).mockResolvedValue(undefined);
   vi.mocked(studioClient.requestRemoveApplication).mockResolvedValue(undefined);
   vi.mocked(studioClient.requestRestartApplication).mockResolvedValue(undefined);
   vi.mocked(studioClient.requestOpenApplication).mockResolvedValue(undefined);
@@ -43,7 +47,9 @@ beforeEach(() => {
 test('deletion action should call requestRemoveApplication', async () => {
   render(ApplicationActions, {
     object: {
-      pod: {},
+      pod: {
+        Containers: [],
+      },
     } as unknown as ApplicationState,
     recipeId: 'dummy-recipe-id',
     modelId: 'dummy-model-id',
@@ -56,26 +62,101 @@ test('deletion action should call requestRemoveApplication', async () => {
   expect(studioClient.requestRemoveApplication).toHaveBeenCalledWith('dummy-recipe-id', 'dummy-model-id');
 });
 
-test('open action should call requestOpenApplication', async () => {
-  render(ApplicationActions, {
-    object: {
-      pod: {},
-    } as unknown as ApplicationState,
-    recipeId: 'dummy-recipe-id',
-    modelId: 'dummy-model-id',
+describe('open action', () => {
+  test('open action should call requestOpenApplication', async () => {
+    render(ApplicationActions, {
+      object: {
+        pod: {
+          Containers: [
+            {
+              Status: 'running',
+            },
+          ],
+        },
+      } as unknown as ApplicationState,
+      recipeId: 'dummy-recipe-id',
+      modelId: 'dummy-model-id',
+    });
+
+    const openBtn = screen.getByTitle('Open AI App');
+    expect(openBtn).toBeVisible();
+
+    await fireEvent.click(openBtn);
+    expect(studioClient.requestOpenApplication).toHaveBeenCalledWith('dummy-recipe-id', 'dummy-model-id');
   });
 
-  const openBtn = screen.getByTitle('Open AI App');
-  expect(openBtn).toBeVisible();
+  test('open action should not be visible when all container exited', async () => {
+    render(ApplicationActions, {
+      object: {
+        pod: {
+          Containers: [
+            {
+              Status: 'exited',
+            },
+          ],
+        },
+      } as unknown as ApplicationState,
+      recipeId: 'dummy-recipe-id',
+      modelId: 'dummy-model-id',
+    });
 
-  await fireEvent.click(openBtn);
-  expect(studioClient.requestOpenApplication).toHaveBeenCalledWith('dummy-recipe-id', 'dummy-model-id');
+    const openBtn = screen.queryByTitle('Open AI App');
+    expect(openBtn).toBeNull();
+  });
+});
+
+describe('start action', () => {
+  test('start action should be visible when all container exited', async () => {
+    render(ApplicationActions, {
+      object: {
+        pod: {
+          Containers: [
+            {
+              Status: 'exited',
+            },
+          ],
+        },
+      } as unknown as ApplicationState,
+      recipeId: 'dummy-recipe-id',
+      modelId: 'dummy-model-id',
+    });
+
+    const startBtn = screen.getByTitle('Start AI App');
+    expect(startBtn).toBeDefined();
+
+    await fireEvent.click(startBtn);
+    expect(studioClient.requestStartApplication).toHaveBeenCalledWith('dummy-recipe-id', 'dummy-model-id');
+  });
+
+  test('start action should be hidden when one container is not exited', async () => {
+    render(ApplicationActions, {
+      object: {
+        pod: {
+          Containers: [
+            {
+              Status: 'exited',
+            },
+            {
+              Status: 'running',
+            },
+          ],
+        },
+      } as unknown as ApplicationState,
+      recipeId: 'dummy-recipe-id',
+      modelId: 'dummy-model-id',
+    });
+
+    const startBtn = screen.queryByTitle('Start AI App');
+    expect(startBtn).toBeNull();
+  });
 });
 
 test('restart action should call requestRestartApplication', async () => {
   render(ApplicationActions, {
     object: {
-      pod: {},
+      pod: {
+        Containers: [],
+      },
     } as unknown as ApplicationState,
     recipeId: 'dummy-recipe-id',
     modelId: 'dummy-model-id',
@@ -92,7 +173,9 @@ test('open recipe action should redirect to recipe page', async () => {
   const routerSpy = vi.spyOn(router, 'goto');
   render(ApplicationActions, {
     object: {
-      pod: {},
+      pod: {
+        Containers: [],
+      },
     } as unknown as ApplicationState,
     recipeId: 'dummy-recipe-id',
     modelId: 'dummy-model-id',
@@ -109,7 +192,9 @@ test('open recipe action should redirect to recipe page', async () => {
 test('open recipe action should not be visible by default', async () => {
   render(ApplicationActions, {
     object: {
-      pod: {},
+      pod: {
+        Containers: [],
+      },
     } as unknown as ApplicationState,
     recipeId: 'dummy-recipe-id',
     modelId: 'dummy-model-id',

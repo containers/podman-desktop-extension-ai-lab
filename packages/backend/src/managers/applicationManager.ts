@@ -194,7 +194,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
     // first delete any existing pod with matching labels
     if (await this.hasApplicationPod(recipe.id, model.id)) {
-      await this.deleteApplication(recipe.id, model.id);
+      await this.removeApplication(recipe.id, model.id);
     }
 
     // create a pod containing all the containers to run the application
@@ -213,7 +213,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     const task = this.taskRegistry.createTask('Starting AI App', 'loading', labels);
 
     // it starts the pod
-    await containerEngine.startPod(podInfo.engineId, podInfo.Id);
+    await this.podManager.startPod(podInfo.engineId, podInfo.Id);
 
     // check if all containers have started successfully
     for (const container of podInfo.Containers ?? []) {
@@ -387,13 +387,63 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     if (appPorts.length) {
       labels[LABEL_APP_PORTS] = appPorts.join(',');
     }
-    const { engineId, Id } = await containerEngine.createPod({
+    const { engineId, Id } = await this.podManager.createPod({
       name: getRandomName(`pod-${sampleAppImageInfo.appName}`),
       portmappings: portmappings,
       labels,
     });
 
     return this.podManager.getPod(engineId, Id);
+  }
+
+  /**
+   * Stop the pod with matching recipeId and modelId
+   * @param recipeId
+   * @param modelId
+   */
+  async stopApplication(recipeId: string, modelId: string): Promise<PodInfo> {
+    // clear existing tasks
+    this.clearTasks(recipeId, modelId);
+
+    // get the application pod
+    const appPod = await this.getApplicationPod(recipeId, modelId);
+    console.log(' stopApplication appPod', appPod);
+
+    // if the pod is already stopped skip
+    if (appPod.Status === 'stopped') {
+      return appPod;
+    }
+
+    // create a task to follow progress/error
+    const stoppingTask = this.taskRegistry.createTask(`Stopping AI App`, 'loading', {
+      'recipe-id': recipeId,
+      'model-id': modelId,
+    });
+
+    try {
+      await this.podManager.stopPod(appPod.engineId, appPod.Id);
+
+      stoppingTask.state = 'success';
+      stoppingTask.name = `AI App Stopped`;
+    } catch (err: unknown) {
+      stoppingTask.error = `Error removing the pod.: ${String(err)}`;
+      stoppingTask.name = 'Error stopping AI App';
+    } finally {
+      this.taskRegistry.updateTask(stoppingTask);
+    }
+    return appPod;
+  }
+
+  /**
+   * Utility method to start a pod using (recipeId, modelId)
+   * @param recipeId
+   * @param modelId
+   */
+  async startApplication(recipeId: string, modelId: string): Promise<void> {
+    this.clearTasks(recipeId, modelId);
+    const pod = await this.getApplicationPod(recipeId, modelId);
+
+    return this.runApplication(pod);
   }
 
   private getConfigAndFilterContainers(
@@ -525,9 +575,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
     this.podmanConnection.onPodStart((pod: PodInfo) => {
       this.adoptPod(pod);
-    });
-    this.podmanConnection.onPodStop((pod: PodInfo) => {
-      this.forgetPod(pod);
     });
     this.podmanConnection.onPodRemove((podId: string) => {
       this.forgetPodById(podId);
@@ -671,47 +718,45 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     return Array.from(this.#applications.values());
   }
 
-  async deleteApplication(recipeId: string, modelId: string): Promise<void> {
+  private clearTasks(recipeId: string, modelId: string): void {
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
       'recipe-id': recipeId,
       'model-id': modelId,
     });
+  }
 
-    const stoppingTask = this.taskRegistry.createTask(`Stopping AI App`, 'loading', {
+  /**
+   * Method that will stop then remove a pod corresponding to the recipe and model provided
+   * @param recipeId
+   * @param modelId
+   */
+  async removeApplication(recipeId: string, modelId: string): Promise<void> {
+    const appPod = await this.stopApplication(recipeId, modelId);
+
+    const remoteTask = this.taskRegistry.createTask(`Removing AI App`, 'loading', {
       'recipe-id': recipeId,
       'model-id': modelId,
     });
-    try {
-      const appPod = await this.getApplicationPod(recipeId, modelId);
-      try {
-        await containerEngine.stopPod(appPod.engineId, appPod.Id);
-      } catch (err: unknown) {
-        // continue when the pod is already stopped
-        if (!String(err).includes('pod already stopped')) {
-          stoppingTask.error = 'error stopping the pod. Please try to stop and remove the pod manually';
-          stoppingTask.name = 'Error stopping AI App';
-          this.taskRegistry.updateTask(stoppingTask);
-          throw err;
-        }
-      }
-      this.protectTasks.add(appPod.Id);
-      await containerEngine.removePod(appPod.engineId, appPod.Id);
+    // protect the task
+    this.protectTasks.add(appPod.Id);
 
-      stoppingTask.state = 'success';
-      stoppingTask.name = `AI App stopped`;
+    try {
+      await this.podManager.removePod(appPod.engineId, appPod.Id);
+
+      remoteTask.state = 'success';
+      remoteTask.name = `AI App Removed`;
     } catch (err: unknown) {
-      stoppingTask.error = 'error removing the pod. Please try to remove the pod manually';
-      stoppingTask.name = 'Error stopping AI App';
-      throw err;
+      remoteTask.error = 'error removing the pod. Please try to remove the pod manually';
+      remoteTask.name = 'Error stopping AI App';
     } finally {
-      this.taskRegistry.updateTask(stoppingTask);
+      this.taskRegistry.updateTask(remoteTask);
     }
   }
 
   async restartApplication(recipeId: string, modelId: string): Promise<void> {
     const appPod = await this.getApplicationPod(recipeId, modelId);
-    await this.deleteApplication(recipeId, modelId);
+    await this.removeApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(appPod.Labels[LABEL_MODEL_ID]);
 

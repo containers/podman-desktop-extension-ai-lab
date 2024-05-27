@@ -168,3 +168,41 @@ describe('getHealth', () => {
     expect(health).toBe('starting');
   });
 });
+
+describe('getPod', () => {
+  test('getPod should throw an error if none is matching', async () => {
+    vi.mocked(containerEngine.listPods).mockResolvedValue([]);
+    await expect(async () => {
+      await new PodManager().getPod('fakeEngineId', 'fakePodId');
+    }).rejects.toThrowError('pod with engineId fakeEngineId and Id fakePodId cannot be found.');
+  });
+
+  test('getPod should return matching pod', async () => {
+    vi.mocked(containerEngine.listPods).mockResolvedValue([
+      {
+        engineId: 'engine-1',
+        Id: 'pod-id-1',
+        Labels: {
+          'dummy-key': 'dummy-value',
+          hello: 'world',
+        },
+      },
+      {
+        engineId: 'engine-2',
+        Id: 'pod-id-2',
+        Labels: {
+          hello: 'world',
+          'dummy-key': 'dummy-value',
+        },
+      },
+      {
+        engineId: 'engine-3',
+        Id: 'pod-id-3',
+      },
+    ] as unknown as PodInfo[]);
+    const pod = await new PodManager().getPod('engine-3', 'pod-id-3');
+    expect(pod).toBeDefined();
+    expect(pod.engineId).toBe('engine-3');
+    expect(pod.Id).toBe('pod-id-3');
+  });
+});

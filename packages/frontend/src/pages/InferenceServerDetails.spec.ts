@@ -24,6 +24,7 @@ import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
 import type { Language } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -99,7 +100,12 @@ beforeEach(() => {
         Log: [],
         FailingStreak: 0,
       },
-      models: [],
+      models: [
+        {
+          id: 'dummyModelId',
+          name: 'Dummy model id',
+        } as unknown as ModelInfo,
+      ],
       connection: { port: 9999 },
       status: 'running',
       container: {
@@ -180,4 +186,23 @@ test('copy snippet should call copyToClipboard', async () => {
   await vi.waitFor(() => {
     expect(studioClient.copyToClipboard).toHaveBeenCalledWith('dummy generated snippet');
   });
+});
+
+test('ensure dummyContainerId is visible', async () => {
+  render(InferenceServerDetails, {
+    containerId: 'dummyContainerId',
+  });
+
+  const span = screen.getByText('dummyContainerId');
+  expect(span).toBeDefined();
+});
+
+test('ensure models to be clickable', async () => {
+  render(InferenceServerDetails, {
+    containerId: 'dummyContainerId',
+  });
+
+  const a = screen.getByText('Dummy model id');
+  expect(a).toBeDefined();
+  expect(a.getAttribute('href')).toBe('/model/dummyModelId');
 });

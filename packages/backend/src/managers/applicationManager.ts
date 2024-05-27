@@ -410,7 +410,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     console.log(' stopApplication appPod', appPod);
 
     // if the pod is already stopped skip
-    if (appPod.Status === 'stopped') {
+    if (appPod.Status === 'Exited') {
       return appPod;
     }
 

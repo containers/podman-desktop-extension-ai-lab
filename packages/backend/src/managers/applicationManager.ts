@@ -226,6 +226,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       state: 'success',
       name: 'AI App is running',
     });
+
+    return this.checkPodsHealth();
   }
 
   async waitContainerIsRunning(engineId: string, container: PodContainerInfo): Promise<void> {
@@ -429,6 +431,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       stoppingTask.name = 'Error stopping AI App';
     } finally {
       this.taskRegistry.updateTask(stoppingTask);
+      await this.checkPodsHealth();
     }
     return appPod;
   }
@@ -442,7 +445,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     this.clearTasks(recipeId, modelId);
     const pod = await this.getApplicationPod(recipeId, modelId);
 
-    return this.runApplication(pod);
+    return this.runApplication(pod, {
+      'recipe-id': recipeId,
+      'model-id': modelId,
+    });
   }
 
   private getConfigAndFilterContainers(
@@ -620,32 +626,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       health: 'starting',
     };
     this.updateApplicationState(recipeId, modelId, state);
-  }
-
-  private forgetPod(pod: PodInfo) {
-    if (!pod.Labels) {
-      return;
-    }
-    const recipeId = pod.Labels[LABEL_RECIPE_ID];
-    const modelId = pod.Labels[LABEL_MODEL_ID];
-    if (!recipeId || !modelId) {
-      return;
-    }
-    if (!this.#applications.has({ recipeId, modelId })) {
-      return;
-    }
-    this.#applications.delete({ recipeId, modelId });
-    this.notify();
-
-    const protect = this.protectTasks.has(pod.Id);
-    if (!protect) {
-      this.taskRegistry.createTask('AI App stopped manually', 'success', {
-        'recipe-id': recipeId,
-        'model-id': modelId,
-      });
-    } else {
-      this.protectTasks.delete(pod.Id);
-    }
   }
 
   private forgetPodById(podId: string) {

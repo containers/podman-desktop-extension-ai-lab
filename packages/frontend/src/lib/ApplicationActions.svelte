@@ -61,8 +61,11 @@ if (dropdownMenu) {
   actionsStyle = FlatMenu;
 }
 
-let exited = object?.pod?.Containers?.every(container => container.Status === 'exited');
+let exited: boolean | undefined = undefined;
 
+$: {
+  exited = object?.pod?.Containers?.every(container => container.Status === 'exited');
+}
 </script>
 
 {#if object?.pod !== undefined}

@@ -270,6 +270,7 @@ describe('pullApplication', () => {
     );
   }
   test('pullApplication should clone repository and call downloadModelMain and buildImage', async () => {
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([]);
     mockForPullApplication({
       recipeFolderExists: false,
     });
@@ -419,6 +420,7 @@ describe('pullApplication', () => {
     );
   });
   test('pullApplication should not download model if already on disk', async () => {
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([]);
     mockForPullApplication({
       recipeFolderExists: true,
     });
@@ -866,6 +868,7 @@ describe('runApplication', () => {
     ],
   } as unknown as PodInfo;
   test('check startPod is called and also waitContainerIsRunning for sample app', async () => {
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([]);
     const waitContainerIsRunningMock = vi.spyOn(manager, 'waitContainerIsRunning').mockResolvedValue(undefined);
     vi.spyOn(utils, 'timeout').mockResolvedValue();
     await manager.runApplication(pod);
@@ -1195,6 +1198,7 @@ describe('pod detection', async () => {
   });
 
   test('removeApplication calls stopPod and removePod', async () => {
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([]);
     vi.mocked(podManager.findPodByLabelsValues).mockResolvedValue({
       engineId: 'engine-1',
       Id: 'pod-1',
@@ -1209,6 +1213,7 @@ describe('pod detection', async () => {
   });
 
   test('removeApplication calls stopPod and removePod even if stopPod fails because pod already stopped', async () => {
+    vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([]);
     vi.mocked(podManager.findPodByLabelsValues).mockResolvedValue({
       engineId: 'engine-1',
       Id: 'pod-1',

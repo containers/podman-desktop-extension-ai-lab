@@ -407,7 +407,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
     // get the application pod
     const appPod = await this.getApplicationPod(recipeId, modelId);
-    console.log(' stopApplication appPod', appPod);
 
     // if the pod is already stopped skip
     if (appPod.Status === 'Exited') {

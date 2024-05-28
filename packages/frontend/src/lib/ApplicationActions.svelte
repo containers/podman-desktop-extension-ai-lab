@@ -63,9 +63,6 @@ if (dropdownMenu) {
 
 let exited = object?.pod?.Containers?.every(container => container.Status === 'exited');
 
-onMount(() => {
-  console.log(object?.pod);
-});
 </script>
 
 {#if object?.pod !== undefined}

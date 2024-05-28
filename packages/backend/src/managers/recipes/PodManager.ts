@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Disposable, PodInfo } from '@podman-desktop/api';
+import type { Disposable, PodCreateOptions, PodInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { PodHealth } from '@shared/src/models/IApplicationState';
 import { getPodHealth } from '../../utils/podsUtils';
@@ -80,5 +80,21 @@ export class PodManager implements Disposable {
     const result = pods.find(pod => pod.engineId === engineId && pod.Id === Id);
     if (!result) throw new Error(`pod with engineId ${engineId} and Id ${Id} cannot be found.`);
     return result;
+  }
+
+  async stopPod(engineId: string, id: string): Promise<void> {
+    return containerEngine.stopPod(engineId, id);
+  }
+
+  async removePod(engineId: string, id: string): Promise<void> {
+    return containerEngine.removePod(engineId, id);
+  }
+
+  async startPod(engineId: string, id: string): Promise<void> {
+    return containerEngine.startPod(engineId, id);
+  }
+
+  async createPod(podOptions: PodCreateOptions): Promise<{ engineId: string; Id: string }> {
+    return containerEngine.createPod(podOptions);
   }
 }

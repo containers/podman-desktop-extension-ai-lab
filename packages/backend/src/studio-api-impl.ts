@@ -271,6 +271,18 @@ export class StudioApiImpl implements StudioAPI {
     return this.applicationManager.getApplicationsState();
   }
 
+  async requestStartApplication(recipeId: string, modelId: string): Promise<void> {
+    this.applicationManager.startApplication(recipeId, modelId).catch((err: unknown) => {
+      console.error('Something went wrong while trying to start application', err);
+    });
+  }
+
+  async requestStopApplication(recipeId: string, modelId: string): Promise<void> {
+    this.applicationManager.stopApplication(recipeId, modelId).catch((err: unknown) => {
+      console.error('Something went wrong while trying to stop application', err);
+    });
+  }
+
   async requestRemoveApplication(recipeId: string, modelId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipeById(recipeId);
     // Do not wait on the promise as the api would probably timeout before the user answer.
@@ -282,7 +294,7 @@ export class StudioApiImpl implements StudioAPI {
       )
       .then((result: string | undefined) => {
         if (result === 'Confirm') {
-          this.applicationManager.deleteApplication(recipeId, modelId).catch((err: unknown) => {
+          this.applicationManager.removeApplication(recipeId, modelId).catch((err: unknown) => {
             console.error(`error deleting AI App's pod: ${String(err)}`);
             podmanDesktopApi.window
               .showErrorMessage(

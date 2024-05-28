@@ -127,7 +127,7 @@ beforeEach(async () => {
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
     {
-      deleteApplication: mocks.deleteApplicationMock,
+      removeApplication: mocks.deleteApplicationMock,
     } as unknown as ApplicationManager,
     catalogManager,
     {} as ModelsManager,

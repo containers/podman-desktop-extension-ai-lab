@@ -1,11 +1,19 @@
 <script lang="ts">
-import { faRotateForward, faArrowUpRightFromSquare, faTrash, faBookOpen } from '@fortawesome/free-solid-svg-icons';
+import {
+  faRotateForward,
+  faArrowUpRightFromSquare,
+  faTrash,
+  faBookOpen,
+  faStop,
+  faPlay,
+} from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import { router } from 'tinro';
 import DropDownMenu from './DropDownMenu.svelte';
 import FlatMenu from './FlatMenu.svelte';
+import { onMount } from 'svelte';
 export let object: ApplicationState | undefined;
 export let recipeId: string;
 export let modelId: string;
@@ -14,6 +22,18 @@ export let enableGoToRecipeAction = false;
 
 function deleteApplication() {
   studioClient.requestRemoveApplication(recipeId, modelId).catch(err => {
+    console.error(`Something went wrong while trying to delete AI App: ${String(err)}.`);
+  });
+}
+
+function startApplication() {
+  studioClient.requestStartApplication(recipeId, modelId).catch(err => {
+    console.error(`Something went wrong while trying to start AI App: ${String(err)}.`);
+  });
+}
+
+function stopApplication() {
+  studioClient.requestStopApplication(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to delete AI App: ${String(err)}.`);
   });
 }
@@ -40,12 +60,21 @@ if (dropdownMenu) {
 } else {
   actionsStyle = FlatMenu;
 }
+
+let exited: boolean | undefined = undefined;
+
+$: {
+  exited = object?.pod?.Containers?.every(container => container.Status === 'exited');
+}
 </script>
 
 {#if object?.pod !== undefined}
-  <ListItemButtonIcon icon="{faTrash}" onClick="{() => deleteApplication()}" title="Delete AI App" />
-
-  <ListItemButtonIcon icon="{faArrowUpRightFromSquare}" onClick="{() => openApplication()}" title="Open AI App" />
+  {#if exited}
+    <ListItemButtonIcon icon="{faPlay}" onClick="{() => startApplication()}" title="Start AI App" />
+  {:else}
+    <ListItemButtonIcon icon="{faStop}" onClick="{() => stopApplication()}" title="Stop AI App" />
+    <ListItemButtonIcon icon="{faArrowUpRightFromSquare}" onClick="{() => openApplication()}" title="Open AI App" />
+  {/if}
 
   <svelte:component this="{actionsStyle}">
     <ListItemButtonIcon
@@ -59,6 +88,12 @@ if (dropdownMenu) {
       onClick="{() => redirectToRecipe()}"
       title="Open Recipe"
       hidden="{!enableGoToRecipeAction}"
+      menu="{dropdownMenu}" />
+
+    <ListItemButtonIcon
+      icon="{faTrash}"
+      onClick="{() => deleteApplication()}"
+      title="Delete AI App"
       menu="{dropdownMenu}" />
   </svelte:component>
 {/if}

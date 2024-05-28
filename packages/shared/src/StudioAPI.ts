@@ -34,7 +34,16 @@ import type { ContainerConnectionInfo } from './models/IContainerConnectionInfo'
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
   abstract getCatalog(): Promise<ApplicationCatalog>;
+
+  // Application related methods
   abstract pullApplication(recipeId: string, modelId: string): Promise<void>;
+  abstract requestStopApplication(recipeId: string, modelId: string): Promise<void>;
+  abstract requestStartApplication(recipeId: string, modelId: string): Promise<void>;
+  abstract requestRemoveApplication(recipeId: string, modelId: string): Promise<void>;
+  abstract requestRestartApplication(recipeId: string, modelId: string): Promise<void>;
+  abstract requestOpenApplication(recipeId: string, modelId: string): Promise<void>;
+  abstract getApplicationsState(): Promise<ApplicationState[]>;
+
   abstract openURL(url: string): Promise<boolean>;
   abstract openFile(file: string, recipeId?: string): Promise<boolean>;
   abstract openDialog(options?: OpenDialogOptions): Promise<Uri[] | undefined>;
@@ -54,11 +63,6 @@ export abstract class StudioAPI {
   abstract navigateToPod(podId: string): Promise<void>;
   abstract navigateToResources(): Promise<void>;
   abstract navigateToEditConnectionProvider(connectionName: string): Promise<void>;
-
-  abstract getApplicationsState(): Promise<ApplicationState[]>;
-  abstract requestRemoveApplication(recipeId: string, modelId: string): Promise<void>;
-  abstract requestRestartApplication(recipeId: string, modelId: string): Promise<void>;
-  abstract requestOpenApplication(recipeId: string, modelId: string): Promise<void>;
 
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;

@@ -20,7 +20,6 @@ import {
   type RegisterContainerConnectionEvent,
   provider,
   type UpdateContainerConnectionEvent,
-  containerEngine,
   type PodInfo,
   type Disposable,
 } from '@podman-desktop/api';
@@ -38,16 +37,12 @@ export class PodmanConnection implements Disposable {
   #toExecuteAtStartup: startupHandle[] = [];
   #toExecuteAtMachineStop: machineStopHandle[] = [];
   #toExecuteAtMachineStart: machineStartHandle[] = [];
-  #toExecuteAtPodStart: podStartHandle[] = [];
-  #toExecuteAtPodStop: podStopHandle[] = [];
-  #toExecuteAtPodRemove: podRemoveHandle[] = [];
 
   #onEventDisposable: Disposable | undefined;
 
   init(): void {
     this.listenRegistration();
     this.listenMachine();
-    this.watchPods();
   }
 
   dispose(): void {
@@ -113,66 +108,5 @@ export class PodmanConnection implements Disposable {
 
   onMachineStop(f: machineStopHandle) {
     this.#toExecuteAtMachineStop.push(f);
-  }
-
-  watchPods() {
-    if (this.#onEventDisposable !== undefined) throw new Error('already watching pods.');
-
-    this.#onEventDisposable = containerEngine.onEvent(event => {
-      if (event.Type !== 'pod') {
-        return;
-      }
-      switch (event.status) {
-        case 'remove':
-          for (const f of this.#toExecuteAtPodRemove) {
-            f(event.id);
-          }
-          break;
-        case 'start':
-          containerEngine
-            .listPods()
-            .then((pods: PodInfo[]) => {
-              const pod = pods.find((p: PodInfo) => p.Id === event.id);
-              if (!pod) {
-                return;
-              }
-              for (const f of this.#toExecuteAtPodStart) {
-                f(pod);
-              }
-            })
-            .catch((err: unknown) => {
-              console.error(err);
-            });
-          break;
-        case 'stop':
-          containerEngine
-            .listPods()
-            .then((pods: PodInfo[]) => {
-              const pod = pods.find((p: PodInfo) => p.Id === event.id);
-              if (!pod) {
-                return;
-              }
-              for (const f of this.#toExecuteAtPodStop) {
-                f(pod);
-              }
-            })
-            .catch((err: unknown) => {
-              console.error(err);
-            });
-          break;
-      }
-    });
-  }
-
-  onPodStart(f: podStartHandle) {
-    this.#toExecuteAtPodStart.push(f);
-  }
-
-  onPodStop(f: podStopHandle) {
-    this.#toExecuteAtPodStop.push(f);
-  }
-
-  onPodRemove(f: podRemoveHandle) {
-    this.#toExecuteAtPodRemove.push(f);
   }
 }

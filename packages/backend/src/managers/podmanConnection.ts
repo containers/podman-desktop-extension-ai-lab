@@ -20,7 +20,6 @@ import {
   type RegisterContainerConnectionEvent,
   provider,
   type UpdateContainerConnectionEvent,
-  type PodInfo,
   type Disposable,
 } from '@podman-desktop/api';
 import { getFirstRunningPodmanConnection } from '../utils/podman';

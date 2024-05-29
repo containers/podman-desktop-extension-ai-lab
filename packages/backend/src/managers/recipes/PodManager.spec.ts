@@ -18,8 +18,8 @@
 
 import { beforeEach, describe, vi, expect, test } from 'vitest';
 import { PodManager } from './PodManager';
-import type { ContainerInspectInfo, PodCreateOptions, PodInfo } from '@podman-desktop/api';
-import { containerEngine } from '@podman-desktop/api';
+import type { ContainerInspectInfo, ContainerJSONEvent, PodCreateOptions, PodInfo } from '@podman-desktop/api';
+import { EventEmitter, containerEngine } from '@podman-desktop/api';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -29,7 +29,9 @@ vi.mock('@podman-desktop/api', () => ({
     startPod: vi.fn(),
     createPod: vi.fn(),
     inspectContainer: vi.fn(),
+    onEvent: vi.fn(),
   },
+  EventEmitter: vi.fn(),
 }));
 
 beforeEach(() => {
@@ -45,6 +47,18 @@ beforeEach(() => {
       },
     } as unknown as ContainerInspectInfo;
   });
+
+  // mocking the EventEmitter mechanism
+  const listeners: ((value: unknown) => void)[] = [];
+
+  vi.mocked(EventEmitter).mockReturnValue({
+    event: vi.fn().mockImplementation(callback => {
+      listeners.push(callback);
+    }),
+    fire: vi.fn().mockImplementation((content: unknown) => {
+      listeners.forEach(listener => listener(content));
+    }),
+  } as unknown as EventEmitter<unknown>);
 });
 
 test('getAllPods should use container engine list pods method', async () => {
@@ -233,4 +247,113 @@ test('createPod should call containerEngine.createPod', async () => {
   };
   await new PodManager().createPod(options);
   expect(containerEngine.createPod).toHaveBeenCalledWith(options);
+});
+
+test('dispose should dispose onEvent disposable', () => {
+  const disposableMock = vi.fn();
+  vi.mocked(containerEngine.onEvent).mockImplementation(() => {
+    return { dispose: disposableMock };
+  });
+
+  const podManager = new PodManager();
+  podManager.init();
+
+  podManager.dispose();
+
+  expect(containerEngine.onEvent).toHaveBeenCalled();
+  expect(disposableMock).toHaveBeenCalled();
+});
+
+const getInitializedPodManager = (): {
+  onEventListener: (e: ContainerJSONEvent) => unknown;
+  podManager: PodManager;
+} => {
+  let func: ((e: ContainerJSONEvent) => unknown) | undefined = undefined;
+  vi.mocked(containerEngine.onEvent).mockImplementation(fn => {
+    func = fn;
+    return { dispose: vi.fn() };
+  });
+
+  const podManager = new PodManager();
+  podManager.init();
+
+  if (!func) throw new Error('listener should be defined');
+
+  return { onEventListener: func, podManager };
+};
+
+describe('events', () => {
+  test('onStartPodEvent listener should be called on start pod event', async () => {
+    vi.mocked(containerEngine.listPods).mockResolvedValue([
+      {
+        Id: 'pod-id-1',
+        Labels: {
+          'dummy-key': 'dummy-value',
+          hello: 'world',
+        },
+      },
+    ] as unknown as PodInfo[]);
+
+    const { onEventListener, podManager } = getInitializedPodManager();
+
+    const startListenerMock = vi.fn();
+    podManager.onStartPodEvent(startListenerMock);
+
+    onEventListener({ id: 'pod-id-1', Type: 'pod', type: '', status: 'start' });
+
+    await vi.waitFor(() => {
+      expect(startListenerMock).toHaveBeenCalledWith({
+        Id: 'pod-id-1',
+        Labels: {
+          'dummy-key': 'dummy-value',
+          hello: 'world',
+        },
+      });
+    });
+  });
+
+  test('onStopPodEvent listener should be called on start pod event', async () => {
+    vi.mocked(containerEngine.listPods).mockResolvedValue([
+      {
+        Id: 'pod-id-1',
+        Labels: {
+          'dummy-key': 'dummy-value',
+          hello: 'world',
+        },
+      },
+    ] as unknown as PodInfo[]);
+
+    const { onEventListener, podManager } = getInitializedPodManager();
+
+    const stopListenerMock = vi.fn();
+    podManager.onStopPodEvent(stopListenerMock);
+
+    onEventListener({ id: 'pod-id-1', Type: 'pod', type: '', status: 'stop' });
+
+    await vi.waitFor(() => {
+      expect(stopListenerMock).toHaveBeenCalledWith({
+        Id: 'pod-id-1',
+        Labels: {
+          'dummy-key': 'dummy-value',
+          hello: 'world',
+        },
+      });
+    });
+  });
+
+  test('onRemovePodEvent listener should be called on start pod event', async () => {
+    const { onEventListener, podManager } = getInitializedPodManager();
+
+    const removeListenerMock = vi.fn();
+    podManager.onRemovePodEvent(removeListenerMock);
+
+    onEventListener({ id: 'pod-id-1', Type: 'pod', type: '', status: 'remove' });
+
+    await vi.waitFor(() => {
+      expect(removeListenerMock).toHaveBeenCalledWith({
+        podId: 'pod-id-1',
+      });
+    });
+    expect(containerEngine.listPods).not.toHaveBeenCalled();
+  });
 });

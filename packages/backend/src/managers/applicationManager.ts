@@ -578,10 +578,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       this.notify();
     });
 
-    this.podmanConnection.onPodStart((pod: PodInfo) => {
+    this.podManager.onStartPodEvent((pod: PodInfo) => {
       this.adoptPod(pod);
     });
-    this.podmanConnection.onPodRemove((podId: string) => {
+    this.podManager.onRemovePodEvent(({ podId }) => {
       this.forgetPodById(podId);
     });
 

@@ -15,13 +15,60 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Disposable, PodCreateOptions, PodInfo } from '@podman-desktop/api';
-import { containerEngine } from '@podman-desktop/api';
+import type { Disposable, PodCreateOptions, PodInfo, Event } from '@podman-desktop/api';
+import { containerEngine, EventEmitter } from '@podman-desktop/api';
 import type { PodHealth } from '@shared/src/models/IApplicationState';
 import { getPodHealth } from '../../utils/podsUtils';
 
+export interface PodEvent {
+  podId: string;
+}
+
 export class PodManager implements Disposable {
-  dispose(): void {}
+  #eventDisposable: Disposable | undefined;
+
+  // start pod events
+  private readonly _onStartPodEvent = new EventEmitter<PodInfo>();
+  readonly onStartPodEvent: Event<PodInfo> = this._onStartPodEvent.event;
+
+  // stop pod events
+  private readonly _onStopPodEvent = new EventEmitter<PodInfo>();
+  readonly onStopPodEvent: Event<PodInfo> = this._onStopPodEvent.event;
+
+  // remove pod events
+  private readonly _onRemovePodEvent = new EventEmitter<PodEvent>();
+  readonly onRemovePodEvent: Event<PodEvent> = this._onRemovePodEvent.event;
+
+  constructor() {}
+
+  dispose(): void {
+    this.#eventDisposable?.dispose();
+  }
+
+  init(): void {
+    this.#eventDisposable = containerEngine.onEvent(async event => {
+      // filter on pod event type
+      if (event.Type !== 'pod') {
+        return;
+      }
+
+      if (event.status === 'remove') {
+        return this._onRemovePodEvent.fire({
+          podId: event.id,
+        });
+      }
+
+      const pod: PodInfo = await this.getPodById(event.id);
+      switch (event.status) {
+        case 'start':
+          this._onStartPodEvent.fire(pod);
+          break;
+        case 'stop':
+          this._onStopPodEvent.fire(pod);
+          break;
+      }
+    });
+  }
 
   /**
    * Utility method to get all the pods
@@ -73,6 +120,19 @@ export class PodManager implements Disposable {
     );
 
     return getPodHealth(containerStates);
+  }
+
+  /**
+   * This handy method is private as we do not want expose method not providing
+   * the engineId, but this is required because PodEvent do not provide the engineId
+   * @param id
+   * @private
+   */
+  private async getPodById(id: string): Promise<PodInfo> {
+    const pods = await this.getAllPods();
+    const result = pods.find(pod => pod.Id === id);
+    if (!result) throw new Error(`pod with Id ${id} cannot be found.`);
+    return result;
   }
 
   async getPod(engineId: string, Id: string): Promise<PodInfo> {

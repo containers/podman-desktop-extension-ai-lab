@@ -29,21 +29,14 @@ import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
 import * as podman from '../utils/podman';
-import type { Webview, TelemetryLogger, PodInfo } from '@podman-desktop/api';
+import type { Webview, TelemetryLogger, PodInfo, Disposable } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
-import type {
-  PodmanConnection,
-  machineStopHandle,
-  podRemoveHandle,
-  podStartHandle,
-  podStopHandle,
-  startupHandle,
-} from './podmanConnection';
+import type { PodmanConnection, machineStopHandle, startupHandle } from './podmanConnection';
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { BuilderManager } from './recipes/BuilderManager';
-import type { PodManager } from './recipes/PodManager';
+import type { PodEvent, PodManager } from './recipes/PodManager';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -61,9 +54,6 @@ const mocks = vi.hoisted(() => {
     pullImageMock: vi.fn(),
     stopContainerMock: vi.fn(),
     containerRegistrySubscribeMock: vi.fn(),
-    onPodStartMock: vi.fn(),
-    onPodStopMock: vi.fn(),
-    onPodRemoveMock: vi.fn(),
     startupSubscribeMock: vi.fn(),
     onMachineStopMock: vi.fn(),
     listContainersMock: vi.fn(),
@@ -142,6 +132,9 @@ const podManager = {
   stopPod: vi.fn(),
   removePod: vi.fn(),
   startPod: vi.fn(),
+  onStartPodEvent: vi.fn(),
+  onStopPodEvent: vi.fn(),
+  onRemovePodEvent: vi.fn(),
 } as unknown as PodManager;
 
 const localRepositoryRegistry = {
@@ -994,9 +987,6 @@ describe('pod detection', async () => {
         postMessage: mocks.postMessageMock,
       } as unknown as Webview,
       {
-        onPodStart: mocks.onPodStartMock,
-        onPodStop: mocks.onPodStopMock,
-        onPodRemove: mocks.onPodRemoveMock,
         startupSubscribe: mocks.startupSubscribeMock,
         onMachineStop: mocks.onMachineStopMock,
       } as unknown as PodmanConnection,
@@ -1071,7 +1061,7 @@ describe('pod detection', async () => {
   test('onPodStart updates the applications state with the started pod', async () => {
     vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
-    mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
+    vi.mocked(podManager.onStartPodEvent).mockImplementation((f: (e: PodInfo) => void): Disposable => {
       f({
         engineId: 'engine-1',
         engineName: 'Engine 1',
@@ -1081,6 +1071,7 @@ describe('pod detection', async () => {
           'ai-lab-model-id': 'model-id-1',
         },
       } as unknown as PodInfo);
+      return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
@@ -1090,12 +1081,13 @@ describe('pod detection', async () => {
   test('onPodStart does no update the applications state with the started pod without labels', async () => {
     vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
-    mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
+    vi.mocked(podManager.onStartPodEvent).mockImplementation((f: (e: PodInfo) => void): Disposable => {
       f({
         engineId: 'engine-1',
         engineName: 'Engine 1',
         kind: 'podman',
       } as unknown as PodInfo);
+      return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
@@ -1105,7 +1097,7 @@ describe('pod detection', async () => {
   test('onPodStart does no update the applications state with the started pod without specific labels', async () => {
     vi.mocked(podManager.getAllPods).mockResolvedValue([]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
-    mocks.onPodStartMock.mockImplementation((f: podStartHandle) => {
+    vi.mocked(podManager.onStartPodEvent).mockImplementation((f: (e: PodInfo) => void): Disposable => {
       f({
         engineId: 'engine-1',
         engineName: 'Engine 1',
@@ -1114,6 +1106,7 @@ describe('pod detection', async () => {
           label1: 'value1',
         },
       } as unknown as PodInfo);
+      return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
@@ -1133,7 +1126,7 @@ describe('pod detection', async () => {
       } as unknown as PodInfo,
     ]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
-    mocks.onPodStopMock.mockImplementation((f: podStopHandle) => {
+    vi.mocked(podManager.onStopPodEvent).mockImplementation((f: (e: PodInfo) => void): Disposable => {
       setTimeout(() => {
         f({
           engineId: 'engine-1',
@@ -1144,7 +1137,9 @@ describe('pod detection', async () => {
             'ai-lab-model-id': 'model-id-1',
           },
         } as unknown as PodInfo);
+        return { dispose: vi.fn() };
       }, 1);
+      return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();
@@ -1166,10 +1161,13 @@ describe('pod detection', async () => {
       } as unknown as PodInfo,
     ]);
     mocks.onMachineStopMock.mockImplementation((_f: machineStopHandle) => {});
-    mocks.onPodRemoveMock.mockImplementation((f: podRemoveHandle) => {
+    vi.mocked(podManager.onRemovePodEvent).mockImplementation((f: (e: PodEvent) => void): Disposable => {
       setTimeout(() => {
-        f('pod-id-1');
+        f({
+          podId: 'pod-id-1',
+        });
       }, 1);
+      return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
     manager.adoptRunningApplications();

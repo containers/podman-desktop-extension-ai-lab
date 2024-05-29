@@ -164,6 +164,7 @@ export class Studio {
     this.#extensionContext.subscriptions.push(builderManager);
 
     const podManager = new PodManager();
+    podManager.init();
     this.#extensionContext.subscriptions.push(podManager);
 
     this.modelsManager = new ModelsManager(

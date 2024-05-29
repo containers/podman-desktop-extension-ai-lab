@@ -28,9 +28,6 @@ import { getFirstRunningPodmanConnection } from '../utils/podman';
 export type startupHandle = () => void;
 export type machineStartHandle = () => void;
 export type machineStopHandle = () => void;
-export type podStartHandle = (pod: PodInfo) => void;
-export type podStopHandle = (pod: PodInfo) => void;
-export type podRemoveHandle = (podId: string) => void;
 
 export class PodmanConnection implements Disposable {
   #firstFound = false;

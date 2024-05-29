@@ -16,7 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { type Disposable, type FileSystemWatcher, fs, EventEmitter, type Event } from '@podman-desktop/api';
-import { promises, existsSync } from 'node:fs';
+import { promises, existsSync, mkdirSync } from 'node:fs';
+import path from 'node:path';
 
 export class JsonWatcher<T> implements Disposable {
   #fileSystemWatcher: FileSystemWatcher | undefined;
@@ -31,6 +32,10 @@ export class JsonWatcher<T> implements Disposable {
 
   init(): void {
     try {
+      // we create the parent directory of the
+      mkdirSync(path.dirname(this.path), { recursive: true });
+
+      // create file system watcher
       this.#fileSystemWatcher = fs.createFileSystemWatcher(this.path);
       // Setup listeners
       this.#fileSystemWatcher.onDidChange(this.onDidChange.bind(this));
@@ -43,14 +48,17 @@ export class JsonWatcher<T> implements Disposable {
   }
 
   private onDidCreate(): void {
+    console.log('JsonWatcher onDidCreate', this.path);
     this.requestUpdate();
   }
 
   private onDidDelete(): void {
+    console.log('JsonWatcher onDidDelete', this.path);
     this.requestUpdate();
   }
 
   private onDidChange(): void {
+    console.log('JsonWatcher onDidChange', this.path);
     this.requestUpdate();
   }
 

@@ -19,7 +19,7 @@
 import { beforeEach, describe, vi, expect, test } from 'vitest';
 import { PodManager } from './PodManager';
 import type { ContainerInspectInfo, ContainerJSONEvent, PodCreateOptions, PodInfo } from '@podman-desktop/api';
-import { EventEmitter , containerEngine } from '@podman-desktop/api';
+import { EventEmitter, containerEngine } from '@podman-desktop/api';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {

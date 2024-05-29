@@ -225,6 +225,9 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     // Add all our models infos to the user's models catalog
     content.models.push(...models);
 
+    // ensure parent directory exists
+    await promises.mkdir(path.dirname(userCatalogPath), { recursive: true });
+
     // overwrite the existing catalog
     return promises.writeFile(userCatalogPath, JSON.stringify(content, undefined, 2), 'utf-8');
   }

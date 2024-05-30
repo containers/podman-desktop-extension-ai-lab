@@ -33,7 +33,7 @@ export class JsonWatcher<T> implements Disposable {
   init(): void {
     try {
       // we create the parent directory of the watched content
-      // if the parent directory does not exists, the watcher is not initialized properly 
+      // if the parent directory does not exists, the watcher is not initialized properly
       mkdirSync(path.dirname(this.path), { recursive: true });
 
       // create file system watcher

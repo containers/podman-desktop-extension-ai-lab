@@ -42,6 +42,7 @@ vi.mock('node:fs', () => {
       readFile: vi.fn(),
       stat: vi.fn(),
       writeFile: vi.fn(),
+      mkdir: vi.fn(),
     },
   };
 });
@@ -183,6 +184,7 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
     },
   ]);
 
+  expect(promises.mkdir).toHaveBeenCalled();
   expect(writeFileMock).toBeCalledWith('path', JSON.stringify(updatedCatalog, undefined, 2), 'utf-8');
 });
 

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { promises, existsSync } from 'node:fs';
+import { promises, existsSync, mkdirSync } from 'node:fs';
 import type { FileSystemWatcher } from '@podman-desktop/api';
 import { EventEmitter, fs } from '@podman-desktop/api';
 import { JsonWatcher } from './JsonWatcher';
@@ -37,6 +37,7 @@ vi.mock('@podman-desktop/api', () => {
 vi.mock('node:fs', () => {
   return {
     existsSync: vi.fn(),
+    mkdirSync: vi.fn(),
     promises: {
       readFile: vi.fn(),
     },
@@ -68,6 +69,7 @@ test('should provide default value', async () => {
   await vi.waitFor(() => {
     expect(listener).toHaveBeenCalledWith('dummyDefaultvalue');
   });
+  expect(mkdirSync).toHaveBeenCalled();
   expect(existsSync).toHaveBeenCalledWith('dummyPath');
   expect(promises.readFile).not.toHaveBeenCalled();
 });

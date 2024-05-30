@@ -32,7 +32,8 @@ export class JsonWatcher<T> implements Disposable {
 
   init(): void {
     try {
-      // we create the parent directory of the
+      // we create the parent directory of the watched content
+      // if the parent directory does not exists, the watcher is not initialized properly 
       mkdirSync(path.dirname(this.path), { recursive: true });
 
       // create file system watcher
@@ -48,17 +49,14 @@ export class JsonWatcher<T> implements Disposable {
   }
 
   private onDidCreate(): void {
-    console.log('JsonWatcher onDidCreate', this.path);
     this.requestUpdate();
   }
 
   private onDidDelete(): void {
-    console.log('JsonWatcher onDidDelete', this.path);
     this.requestUpdate();
   }
 
   private onDidChange(): void {
-    console.log('JsonWatcher onDidChange', this.path);
     this.requestUpdate();
   }
 

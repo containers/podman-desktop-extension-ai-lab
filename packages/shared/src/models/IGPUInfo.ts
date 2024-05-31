@@ -17,18 +17,6 @@
  ***********************************************************************/
 
 export interface IGPUInfo {
-  uuid: string;
-  product_name: string;
-  product_brand: string;
-  product_architecture: string;
-  fb_memory_usage: {
-    total: string;
-    used: string;
-    free: string;
-  };
-  temperature: {
-    gpu_temp: string;
-    gpu_temp_max_threshold: string;
-    gpu_temp_slow_threshold: string;
-  };
+  model: string;
+  vram: number | undefined;
 }

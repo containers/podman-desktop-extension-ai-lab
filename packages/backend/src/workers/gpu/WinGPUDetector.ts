@@ -29,12 +29,31 @@ export class WinGPUDetector extends WindowsWorker<void, IGPUInfo[]> {
   }
 
   /**
+   * This method transform the value to a string, it will convert if required
+   * @param item
+   * @private
+   */
+  private getString(item: WinReg.RegistryItem): string {
+    switch (item.type) {
+      case WinReg.REG_BINARY:
+        return Buffer.from(item.value, 'hex').toString();
+      case WinReg.REG_SZ:
+        return item.value;
+      default:
+        throw new Error(`registry item type not supported (${item.type})`);
+    }
+  }
+
+  /**
    * Extracts GPU information from registry values.
    * @param values - An array of WinReg.RegistryItem objects representing the registry values.
    * @returns An IGPUInfo object if the necessary information is found; otherwise, undefined.
    */
   private extractGpuInfo(values: WinReg.RegistryItem[]): IGPUInfo | undefined {
-    const adapterString = values.find(item => item.name === 'HardwareInformation.AdapterString')?.value;
+    const adapterItem = values.find(item => item.name === 'HardwareInformation.AdapterString');
+    if (!adapterItem) return undefined;
+
+    const adapterString = this.getString(adapterItem);
     const memorySize = values.find(item => item.name === 'HardwareInformation.qwMemorySize')?.value;
 
     if (adapterString) {

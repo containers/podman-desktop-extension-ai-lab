@@ -3,6 +3,8 @@ import { WinGPUDetector } from './WinGPUDetector';
 import { env } from '@podman-desktop/api';
 import WinReg from 'winreg';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 type WinRegKeys = (err: unknown, registries: WinReg.Registry[] | undefined) => void;
 type WinRegValues = (err: unknown, registries: WinReg.RegistryItem[] | undefined) => void;
 
@@ -16,9 +18,11 @@ vi.mock('@podman-desktop/api', () => {
 
 // Mock winreg module
 vi.mock('winreg', () => {
-  const Registry = vi.fn();
+  const Registry: any = vi.fn();
   Registry.prototype.keys = vi.fn();
   Registry.prototype.values = vi.fn();
+  Registry.REG_BINARY = 'REG_BINARY';
+  Registry.REG_SZ = 'REG_SZ';
   return { default: Registry };
 });
 
@@ -64,7 +68,7 @@ test('getValues should return a list of values for a given subkey', async () => 
 
 test('extractGpuInfo should return correct IGPUInfo object', () => {
   const mockValues = [
-    { name: 'HardwareInformation.AdapterString', value: 'GPU Model' },
+    { name: 'HardwareInformation.AdapterString', value: 'GPU Model', type: 'REG_SZ' },
     { name: 'HardwareInformation.qwMemorySize', value: '40000000' },
   ] as unknown as WinReg.RegistryItem[];
 
@@ -86,7 +90,7 @@ test('extractGpuInfo should return undefined if necessary information is missing
 test('getGpuInfoFromSubkey should return IGPUInfo object', async () => {
   const mockSubkey = new WinReg({ hive: WinReg.HKLM, key: '\\Subkey1' });
   const mockValues = [
-    { name: 'HardwareInformation.AdapterString', value: 'GPU Model' },
+    { name: 'HardwareInformation.AdapterString', value: 'GPU Model', type: 'REG_SZ' },
     { name: 'HardwareInformation.qwMemorySize', value: '40000000' },
   ] as unknown as WinReg.RegistryItem[];
 

@@ -36,7 +36,7 @@ export class WinGPUDetector extends WindowsWorker<void, IGPUInfo[]> {
   private getString(item: WinReg.RegistryItem): string {
     switch (item.type) {
       case WinReg.REG_BINARY:
-        return Buffer.from(item.value, 'hex').toString();
+        return Buffer.from(item.value, 'hex').toString('utf16le');
       case WinReg.REG_SZ:
         return item.value;
       default:

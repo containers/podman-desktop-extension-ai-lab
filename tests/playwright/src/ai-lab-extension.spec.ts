@@ -19,28 +19,25 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
-import type { DashboardPage, SettingsBar, RunnerTestContext } from '@podman-desktop/tests-playwright';
-import {
-  NavigationBar,
-  SettingsExtensionsPage,
-  WelcomePage,
-  PodmanDesktopRunner,
-} from '@podman-desktop/tests-playwright';
+import type { DashboardPage, ExtensionsPage, RunnerTestContext } from '@podman-desktop/tests-playwright';
+import { NavigationBar, WelcomePage, PodmanDesktopRunner } from '@podman-desktop/tests-playwright';
 
 const AI_LAB_EXTENSION_OCI_IMAGE: string = 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
+const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
+const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
+const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;
 
 let navigationBar: NavigationBar;
 let dashboardPage: DashboardPage;
-let settingsBar: SettingsBar;
-let extensionsPage: SettingsExtensionsPage;
+let extensionsPage: ExtensionsPage;
 
 beforeAll(async () => {
-  pdRunner = new PodmanDesktopRunner();
+  pdRunner = new PodmanDesktopRunner({ customFolder: 'ai-lab-tests-pd', autoUpdate: false, autoCheckUpdate: false });
   page = await pdRunner.start();
-  pdRunner.setVideoAndTraceName('podman-desktop-extension-ai-lab-installation');
+  pdRunner.setVideoAndTraceName('ai-lab-e2e');
 
   await new WelcomePage(page).handleWelcomePage(true);
   navigationBar = new NavigationBar(page);
@@ -59,31 +56,24 @@ describe(`AI Lab extension installation and verification`, async () => {
     test(`Open Settings -> Extensions page`, async () => {
       dashboardPage = await navigationBar.openDashboard();
       await playExpect(dashboardPage.mainPage).toBeVisible();
-      settingsBar = await navigationBar.openSettings();
-      await playExpect(settingsBar.extensionsTab).toBeVisible();
-      await settingsBar.extensionsTab.click();
-      extensionsPage = new SettingsExtensionsPage(page);
-      await playExpect(extensionsPage.imageInstallBox).toBeVisible();
+      extensionsPage = await navigationBar.openExtensions();
+      await playExpect(extensionsPage.header).toBeVisible();
     });
     test(`Install AI Lab extension`, async () => {
       await extensionsPage.installExtensionFromOCIImage(AI_LAB_EXTENSION_OCI_IMAGE);
-    });
-    test(`Verify AI Lab extension in extension list`, async () => {
-      const aiStudioExtension: Locator = extensionsPage.installedExtensions.getByLabel('ai-lab');
-      await playExpect(aiStudioExtension).toBeVisible({ timeout: 60_000 });
-      await playExpect(aiStudioExtension.getByLabel('Extension Status Label')).toHaveText('ACTIVE', {
-        timeout: 10_000,
-      });
+      await playExpect
+        .poll(async () => await extensionsPage.extensionIsInstalled(AI_LAB_CATALOG_EXTENSION_LABEL), { timeout: 30000 })
+        .toBeTruthy();
     });
   });
   describe(`AI Lab extension verification`, async () => {
     test(`Verify AI Lab is present in notification bar and open it`, async () => {
-      const aiLabNavBarItem: Locator = navigationBar.navigationLocator.getByLabel('AI Lab');
+      const aiLabNavBarItem: Locator = navigationBar.navigationLocator.getByLabel(AI_LAB_NAVBAR_EXTENSION_LABEL);
       await playExpect(aiLabNavBarItem).toBeVisible();
       await aiLabNavBarItem.click();
     });
     test(`Verify AI Lab is running`, async () => {
-      const aiLabWebview: Locator = page.getByLabel('Webview AI Lab');
+      const aiLabWebview: Locator = page.getByLabel(AI_LAB_PAGE_BODY_LABEL);
       await playExpect(aiLabWebview).toBeVisible();
     });
   });

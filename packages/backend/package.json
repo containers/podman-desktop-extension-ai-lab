@@ -55,13 +55,13 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
-    "fast-xml-parser": "^4.4.0",
     "isomorphic-git": "^1.25.10",
     "mustache": "^4.2.0",
     "openai": "^4.47.3",
     "postman-code-generators": "^1.10.1",
     "postman-collection": "^4.4.0",
     "semver": "^7.6.2",
+    "winreg": "^1.2.5",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
@@ -69,6 +69,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20",
     "@types/postman-collection": "^3.5.10",
+    "@types/winreg": "^1.2.36",
     "vitest": "^1.6.0",
     "@types/mustache": "^4.2.5"
   }

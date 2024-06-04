@@ -31,7 +31,7 @@ export interface InferenceServerConfig {
   /**
    * Image to use
    */
-  image: string;
+  image?: string;
   /**
    * Labels to use for the container
    */

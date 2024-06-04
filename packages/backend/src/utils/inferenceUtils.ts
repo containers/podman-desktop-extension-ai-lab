@@ -16,7 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import {
-  type ContainerCreateOptions,
   containerEngine,
   type ContainerProviderConnection,
   type ImageInfo,
@@ -26,17 +25,12 @@ import {
   type PullEvent,
 } from '@podman-desktop/api';
 import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from './utils';
 import { getFreeRandomPort } from './ports';
-import { getModelPropertiesForEnvironment } from './modelsUtils';
 import type { InferenceServer } from '@shared/src/models/IInference';
 
 export const SECOND: number = 1_000_000_000;
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
-
-export const INFERENCE_SERVER_IMAGE =
-  'ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.3.2';
 
 /**
  * Return container connection provider
@@ -96,67 +90,6 @@ export async function getImageInfo(
   return imageInfo;
 }
 
-/**
- * Given an {@link InferenceServerConfig} and an {@link ImageInfo} generate a container creation options object
- * @param config the config to use
- * @param imageInfo the image to use
- */
-export function generateContainerCreateOptions(
-  config: InferenceServerConfig,
-  imageInfo: ImageInfo,
-): ContainerCreateOptions {
-  if (config.modelsInfo.length === 0) throw new Error('Need at least one model info to start an inference server.');
-
-  if (config.modelsInfo.length > 1) {
-    throw new Error('Currently the inference server does not support multiple models serving.');
-  }
-
-  const modelInfo = config.modelsInfo[0];
-
-  if (modelInfo.file === undefined) {
-    throw new Error('The model info file provided is undefined');
-  }
-
-  const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
-  envs.push(...getModelPropertiesForEnvironment(modelInfo));
-
-  return {
-    Image: imageInfo.Id,
-    Detach: true,
-    ExposedPorts: { [`${config.port}`]: {} },
-    HostConfig: {
-      AutoRemove: false,
-      Mounts: [
-        {
-          Target: '/models',
-          Source: modelInfo.file.path,
-          Type: 'bind',
-        },
-      ],
-      SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
-      PortBindings: {
-        '8000/tcp': [
-          {
-            HostPort: `${config.port}`,
-          },
-        ],
-      },
-    },
-    HealthCheck: {
-      // must be the port INSIDE the container not the exposed one
-      Test: ['CMD-SHELL', `curl -sSf localhost:8000/docs > /dev/null`],
-      Interval: SECOND * 5,
-      Retries: 4 * 5,
-    },
-    Labels: {
-      ...config.labels,
-      [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
-    },
-    Env: envs,
-    Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
-  };
-}
-
 export async function withDefaultConfiguration(
   options: CreationInferenceServerOptions,
 ): Promise<InferenceServerConfig> {
@@ -164,7 +97,7 @@ export async function withDefaultConfiguration(
 
   return {
     port: options.port || (await getFreeRandomPort('0.0.0.0')),
-    image: options.image || INFERENCE_SERVER_IMAGE,
+    image: options.image,
     labels: options.labels || {},
     modelsInfo: options.modelsInfo,
     providerId: options.providerId,

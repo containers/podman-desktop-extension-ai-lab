@@ -39,6 +39,7 @@ beforeEach(() => {
   vi.mocked(getFreeRandomPort).mockResolvedValue(8888);
 });
 
+// TODO: move to LlamaCppPython.spec.ts
 describe('generateContainerCreateOptions', () => {
   test('valid arguments', () => {
     const result = generateContainerCreateOptions(

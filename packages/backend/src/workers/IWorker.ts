@@ -18,5 +18,5 @@
 
 export interface IWorker<T, R> {
   enabled(): boolean;
-  perform(trackingId: T): Promise<R>;
+  perform(args: T): Promise<R>;
 }

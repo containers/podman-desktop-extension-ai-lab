@@ -16,15 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import {
-  generateContainerCreateOptions,
-  withDefaultConfiguration,
-  INFERENCE_SERVER_IMAGE,
-  SECOND,
-  isTransitioning,
-} from './inferenceUtils';
-import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import type { ImageInfo } from '@podman-desktop/api';
+import { withDefaultConfiguration, isTransitioning } from './inferenceUtils';
 import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
@@ -35,132 +27,7 @@ vi.mock('./ports', () => ({
 
 beforeEach(() => {
   vi.resetAllMocks();
-
   vi.mocked(getFreeRandomPort).mockResolvedValue(8888);
-});
-
-// TODO: move to LlamaCppPython.spec.ts
-describe('generateContainerCreateOptions', () => {
-  test('valid arguments', () => {
-    const result = generateContainerCreateOptions(
-      {
-        port: 8888,
-        providerId: 'test@providerId',
-        image: INFERENCE_SERVER_IMAGE,
-        modelsInfo: [
-          {
-            id: 'dummyModelId',
-            file: {
-              file: 'dummyFile',
-              path: 'dummyPath',
-            },
-          },
-        ],
-      } as unknown as InferenceServerConfig,
-      {
-        Id: 'dummyImageId',
-        engineId: 'dummyEngineId',
-        RepoTags: [INFERENCE_SERVER_IMAGE],
-      } as unknown as ImageInfo,
-    );
-    expect(result).toStrictEqual({
-      Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
-      Detach: true,
-      Env: ['MODEL_PATH=/models/dummyFile', 'HOST=0.0.0.0', 'PORT=8000'],
-      ExposedPorts: {
-        '8888': {},
-      },
-      HealthCheck: {
-        Interval: SECOND * 5,
-        Retries: 20,
-        Test: ['CMD-SHELL', 'curl -sSf localhost:8000/docs > /dev/null'],
-      },
-      HostConfig: {
-        AutoRemove: false,
-        Mounts: [
-          {
-            Source: 'dummyPath',
-            Target: '/models',
-            Type: 'bind',
-          },
-        ],
-        PortBindings: {
-          '8000/tcp': [
-            {
-              HostPort: '8888',
-            },
-          ],
-        },
-        SecurityOpt: ['label=disable'],
-      },
-      Image: 'dummyImageId',
-      Labels: {
-        'ai-lab-inference-server': '["dummyModelId"]',
-      },
-    });
-  });
-
-  test('model info with chat_format properties', () => {
-    const result = generateContainerCreateOptions(
-      {
-        port: 8888,
-        providerId: 'test@providerId',
-        image: INFERENCE_SERVER_IMAGE,
-        modelsInfo: [
-          {
-            id: 'dummyModelId',
-            file: {
-              file: 'dummyFile',
-              path: 'dummyPath',
-            },
-            properties: {
-              chatFormat: 'dummyChatFormat',
-            },
-          },
-        ],
-      } as unknown as InferenceServerConfig,
-      {
-        Id: 'dummyImageId',
-        engineId: 'dummyEngineId',
-        RepoTags: [INFERENCE_SERVER_IMAGE],
-      } as unknown as ImageInfo,
-    );
-
-    expect(result.Env).toContain('MODEL_CHAT_FORMAT=dummyChatFormat');
-  });
-
-  test('model info with multiple properties', () => {
-    const result = generateContainerCreateOptions(
-      {
-        port: 8888,
-        providerId: 'test@providerId',
-        image: INFERENCE_SERVER_IMAGE,
-        modelsInfo: [
-          {
-            id: 'dummyModelId',
-            file: {
-              file: 'dummyFile',
-              path: 'dummyPath',
-            },
-            properties: {
-              basicProp: 'basicProp',
-              lotOfCamelCases: 'lotOfCamelCases',
-              lowercase: 'lowercase',
-            },
-          },
-        ],
-      } as unknown as InferenceServerConfig,
-      {
-        Id: 'dummyImageId',
-        engineId: 'dummyEngineId',
-        RepoTags: [INFERENCE_SERVER_IMAGE],
-      } as unknown as ImageInfo,
-    );
-
-    expect(result.Env).toContain('MODEL_BASIC_PROP=basicProp');
-    expect(result.Env).toContain('MODEL_LOT_OF_CAMEL_CASES=lotOfCamelCases');
-    expect(result.Env).toContain('MODEL_LOWERCASE=lowercase');
-  });
 });
 
 describe('withDefaultConfiguration', () => {
@@ -176,7 +43,7 @@ describe('withDefaultConfiguration', () => {
     expect(getFreeRandomPort).toHaveBeenCalledWith('0.0.0.0');
 
     expect(result.port).toBe(8888);
-    expect(result.image).toBe(INFERENCE_SERVER_IMAGE);
+    expect(result.image).toBe(undefined);
     expect(result.labels).toStrictEqual({});
     expect(result.providerId).toBe(undefined);
   });

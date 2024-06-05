@@ -46,7 +46,7 @@ export class InferenceProviderRegistry extends Publisher<string[]> {
 
   get(name: string): InferenceProvider {
     const provider = this.#providers.get(name);
-    if(provider === undefined) throw new Error(`no provider with name ${name} was found.`);
+    if (provider === undefined) throw new Error(`no provider with name ${name} was found.`);
     return provider;
   }
 }

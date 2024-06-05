@@ -18,16 +18,9 @@
 import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
 import type { PodmanConnection } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
-import {
-  type ContainerInfo,
-  type TelemetryLogger,
-  type Webview,
-} from '@podman-desktop/api';
+import { type ContainerInfo, type TelemetryLogger, type Webview } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
-import {
-  isTransitioning,
-  LABEL_INFERENCE_SERVER,
-} from '../../utils/inferenceUtils';
+import { isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
@@ -162,38 +155,41 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
-   * Given an engineId, it will create an inference server.
+   * Given an engineId, it will create an inference server using an InferenceProvider.
    * @param config
-   * @param trackingId
    *
    * @return the containerId of the created inference server
    */
   async createInferenceServer(config: InferenceServerConfig): Promise<string> {
     if (!this.isInitialize()) throw new Error('Cannot start the inference server: not initialized.');
 
-    const providers: InferenceProvider[] = this.inferenceProviderRegistry.getAll().filter(provider => provider.enabled());
-    if(providers.length === 0) throw new Error('no enabled provider could be found.');
-
-    // let's take the first provider
-    const mProvider = providers[0];
+    let provider: InferenceProvider;
+    if (config.inferenceProvider) {
+      provider = this.inferenceProviderRegistry.get(config.inferenceProvider);
+      if (!provider.enabled()) throw new Error('provider requested is not enabled.');
+    } else {
+      const providers: InferenceProvider[] = this.inferenceProviderRegistry
+        .getAll()
+        .filter(provider => provider.enabled());
+      if (providers.length === 0) throw new Error('no enabled provider could be found.');
+      provider = providers[0];
+    }
 
     // upload models to podman machine if user system is supported
     config.modelsInfo = await Promise.all(
       config.modelsInfo.map(modelInfo =>
-        this.modelsManager
-          .uploadModelToPodmanMachine(modelInfo, config.labels)
-          .then(path => ({
-            ...modelInfo,
-            file: {
-              path: dirname(path),
-              file: basename(path),
-            },
-          })),
+        this.modelsManager.uploadModelToPodmanMachine(modelInfo, config.labels).then(path => ({
+          ...modelInfo,
+          file: {
+            path: dirname(path),
+            file: basename(path),
+          },
+        })),
       ),
     );
 
     // create the inference server using the selected inference provider
-    const result = await mProvider.perform(config);
+    const result = await provider.perform(config);
 
     // Adding a new inference server
     this.#servers.set(result.id, {

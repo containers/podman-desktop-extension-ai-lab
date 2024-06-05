@@ -15,36 +15,35 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type {
-  ContainerCreateOptions,
-  ImageInfo,
-} from '@podman-desktop/api';
+import type { ContainerCreateOptions, ContainerCreateResult, ImageInfo } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import { type BetterContainerCreateResult, InferenceProvider } from './InferenceProvider';
+import { InferenceProvider } from './InferenceProvider';
 import { getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
-import {
-  LABEL_INFERENCE_SERVER,
-  SECOND,
-} from '../../utils/inferenceUtils';
+import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 
-const INFERENCE_SERVER_IMAGE =
+export const LLAMA_CPP_INFERENCE_IMAGE =
   'ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.3.2';
+
+export const SECOND: number = 1_000_000_000;
 
 export class LlamaCppPython extends InferenceProvider {
   name: string;
 
   constructor(taskRegistry: TaskRegistry) {
     super(taskRegistry);
-    this.name = 'Llamacpp';
+    this.name = 'llama-cpp';
   }
 
   dispose() {}
 
   public enabled = (): boolean => true;
 
-  protected async getContainerCreateOptions(config: InferenceServerConfig, imageInfo: ImageInfo): Promise<ContainerCreateOptions> {
+  protected async getContainerCreateOptions(
+    config: InferenceServerConfig,
+    imageInfo: ImageInfo,
+  ): Promise<ContainerCreateOptions> {
     if (config.modelsInfo.length === 0) throw new Error('Need at least one model info to start an inference server.');
 
     if (config.modelsInfo.length > 1) {
@@ -97,19 +96,20 @@ export class LlamaCppPython extends InferenceProvider {
     };
   }
 
-  async perform(config: InferenceServerConfig): Promise<BetterContainerCreateResult> {
-    if(!this.enabled()) throw new Error('not enabled');
+  async perform(config: InferenceServerConfig): Promise<ContainerCreateResult> {
+    if (!this.enabled()) throw new Error('not enabled');
 
     // pull the image
-    const imageInfo: ImageInfo = await this.pullImage(config.providerId, config.image ?? INFERENCE_SERVER_IMAGE, config.labels);
+    const imageInfo: ImageInfo = await this.pullImage(
+      config.providerId,
+      config.image ?? LLAMA_CPP_INFERENCE_IMAGE,
+      config.labels,
+    );
 
     // Get the container creation options
     const containerCreateOptions: ContainerCreateOptions = await this.getContainerCreateOptions(config, imageInfo);
 
     // Create the container
-    return this.createContainer(
-      imageInfo.engineId,
-      containerCreateOptions,
-    );
+    return this.createContainer(imageInfo.engineId, containerCreateOptions);
   }
 }

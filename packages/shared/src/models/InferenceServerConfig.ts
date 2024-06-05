@@ -29,6 +29,10 @@ export interface InferenceServerConfig {
    */
   providerId?: string;
   /**
+   * The name of the inference provider to use
+   */
+  inferenceProvider?: string;
+  /**
    * Image to use
    */
   image?: string;

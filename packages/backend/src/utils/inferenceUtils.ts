@@ -28,8 +28,6 @@ import type { CreationInferenceServerOptions, InferenceServerConfig } from '@sha
 import { getFreeRandomPort } from './ports';
 import type { InferenceServer } from '@shared/src/models/IInference';
 
-export const SECOND: number = 1_000_000_000;
-
 export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
 
 /**
@@ -101,6 +99,7 @@ export async function withDefaultConfiguration(
     labels: options.labels || {},
     modelsInfo: options.modelsInfo,
     providerId: options.providerId,
+    inferenceProvider: options.inferenceProvider,
   };
 }
 

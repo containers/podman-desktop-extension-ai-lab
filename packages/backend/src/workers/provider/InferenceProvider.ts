@@ -17,48 +17,38 @@
  ***********************************************************************/
 import type {
   ContainerCreateOptions,
+  ContainerCreateResult,
   Disposable,
   ImageInfo,
   PullEvent,
 } from '@podman-desktop/api';
-import {
-  containerEngine
-} from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { IWorker } from '../IWorker';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 
-// hopefully get replaced by https://github.com/containers/podman-desktop/pull/7464
-export interface BetterContainerCreateResult {
-  id: string;
-  engineId: string;
-}
-
-export abstract class InferenceProvider implements IWorker<InferenceServerConfig, BetterContainerCreateResult>, Disposable {
-  constructor(private taskRegistry: TaskRegistry) {}
+export abstract class InferenceProvider implements IWorker<InferenceServerConfig, ContainerCreateResult>, Disposable {
+  protected constructor(private taskRegistry: TaskRegistry) {}
 
   abstract name: string;
   abstract enabled(): boolean;
-  abstract perform(config: InferenceServerConfig): Promise<BetterContainerCreateResult>;
+  abstract perform(config: InferenceServerConfig): Promise<ContainerCreateResult>;
   abstract dispose(): void;
 
   protected async createContainer(
     engineId: string,
     containerCreateOptions: ContainerCreateOptions,
     labels: { [id: string]: string } = {},
-  ): Promise<BetterContainerCreateResult> {
+  ): Promise<ContainerCreateResult> {
     const containerTask = this.taskRegistry.createTask(`Creating container.`, 'loading', labels);
 
     try {
-      const result = await containerEngine.createContainer(
-        engineId,
-        containerCreateOptions,
-      );
+      const result = await containerEngine.createContainer(engineId, containerCreateOptions);
       // update the task
       containerTask.state = 'success';
       containerTask.progress = undefined;
-      // return the BetterContainerCreateResult
+      // return the ContainerCreateResult
       return {
         id: result.id,
         engineId: engineId,
@@ -80,7 +70,11 @@ export abstract class InferenceProvider implements IWorker<InferenceServerConfig
    * @param labels
    * @protected
    */
-  protected pullImage(providerId: string | undefined, image: string, labels: { [id: string]: string }): Promise<ImageInfo> {
+  protected pullImage(
+    providerId: string | undefined,
+    image: string,
+    labels: { [id: string]: string },
+  ): Promise<ImageInfo> {
     // Creating a task to follow pulling progress
     const pullingTask = this.taskRegistry.createTask(`Pulling ${image}.`, 'loading', labels);
 
@@ -88,21 +82,20 @@ export abstract class InferenceProvider implements IWorker<InferenceServerConfig
     const provider = getProviderContainerConnection(providerId);
 
     // get the default image info for this provider
-    return getImageInfo(
-      provider.connection,
-      image,
-      (_event: PullEvent) => {},
-    ).catch((err: unknown) => {
-      pullingTask.state = 'error';
-      pullingTask.progress = undefined;
-      pullingTask.error = `Something went wrong while pulling ${image}: ${String(err)}`;
-      throw err;
-    }).then((imageInfo) => {
-      pullingTask.state = 'success';
-      pullingTask.progress = undefined;
-      return imageInfo;
-    }).finally(() => {
-      this.taskRegistry.updateTask(pullingTask);
-    });
+    return getImageInfo(provider.connection, image, (_event: PullEvent) => {})
+      .catch((err: unknown) => {
+        pullingTask.state = 'error';
+        pullingTask.progress = undefined;
+        pullingTask.error = `Something went wrong while pulling ${image}: ${String(err)}`;
+        throw err;
+      })
+      .then(imageInfo => {
+        pullingTask.state = 'success';
+        pullingTask.progress = undefined;
+        return imageInfo;
+      })
+      .finally(() => {
+        this.taskRegistry.updateTask(pullingTask);
+      });
   }
 }

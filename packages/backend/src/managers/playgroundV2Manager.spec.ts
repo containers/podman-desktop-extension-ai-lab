@@ -24,7 +24,6 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 import type { InferenceManager } from './inference/inferenceManager';
 import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { INFERENCE_SERVER_IMAGE } from '../utils/inferenceUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task, TaskState } from '@shared/src/models/ITask';
 
@@ -333,20 +332,21 @@ test('creating a new playground with no model served should start an inference s
     } as unknown as ModelInfo,
     'tracking-1',
   );
-  expect(createInferenceServerMock).toHaveBeenCalledWith(
-    {
-      image: INFERENCE_SERVER_IMAGE,
-      labels: {},
-      modelsInfo: [
-        {
-          id: 'model-1',
-          name: 'Model 1',
-        },
-      ],
-      port: expect.anything(),
+  expect(createInferenceServerMock).toHaveBeenCalledWith({
+    image: undefined,
+    providerId: undefined,
+    inferenceProvider: undefined,
+    labels: {
+      trackingId: 'tracking-1',
     },
-    expect.anything(),
-  );
+    modelsInfo: [
+      {
+        id: 'model-1',
+        name: 'Model 1',
+      },
+    ],
+    port: expect.anything(),
+  });
 });
 
 test('creating a new playground with the model already served should not start an inference server', async () => {

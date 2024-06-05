@@ -47,11 +47,11 @@ import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import { Publisher } from '../utils/Publisher';
 import { isQEMUMachine } from '../utils/podman';
-import { SECOND } from '../utils/inferenceUtils';
 import { getModelPropertiesForEnvironment } from '../utils/modelsUtils';
 import { getRandomName } from '../utils/randomUtils';
 import type { BuilderManager } from './recipes/BuilderManager';
 import type { PodManager } from './recipes/PodManager';
+import { SECOND } from '../workers/provider/LlamaCppPython';
 
 export const LABEL_MODEL_ID = 'ai-lab-model-id';
 export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';

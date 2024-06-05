@@ -117,8 +117,10 @@ export class PlaygroundV2Manager implements Disposable {
       await this.inferenceManager.createInferenceServer(
         await withDefaultConfiguration({
           modelsInfo: [model],
+          labels: {
+            trackingId: trackingId,
+          },
         }),
-        trackingId,
       );
     } else if (server.status === 'stopped') {
       await this.inferenceManager.startInferenceServer(server.container.containerId);

@@ -39,7 +39,7 @@ export abstract class InferenceProvider implements IWorker<InferenceServerConfig
   protected async createContainer(
     engineId: string,
     containerCreateOptions: ContainerCreateOptions,
-    labels: { [id: string]: string } = {},
+    labels: { [id: string]: string },
   ): Promise<ContainerCreateResult> {
     const containerTask = this.taskRegistry.createTask(`Creating container.`, 'loading', labels);
 

@@ -110,6 +110,6 @@ export class LlamaCppPython extends InferenceProvider {
     const containerCreateOptions: ContainerCreateOptions = await this.getContainerCreateOptions(config, imageInfo);
 
     // Create the container
-    return this.createContainer(imageInfo.engineId, containerCreateOptions);
+    return this.createContainer(imageInfo.engineId, containerCreateOptions, config.labels);
   }
 }

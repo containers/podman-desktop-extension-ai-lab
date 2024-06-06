@@ -223,7 +223,7 @@ describe('Create Inference Server', () => {
         modelsInfo: [],
         port: 8888,
       }),
-    ).rejects.toThrowError('o enabled provider could be found.');
+    ).rejects.toThrowError('no enabled provider could be found.');
   });
 
   test('inference provider provided should use get from InferenceProviderRegistry', async () => {

@@ -553,7 +553,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
-  adoptRunningApplications() {
+  init() {
     this.podmanConnection.startupSubscribe(() => {
       this.podManager
         .getPodsWithLabels([LABEL_RECIPE_ID])

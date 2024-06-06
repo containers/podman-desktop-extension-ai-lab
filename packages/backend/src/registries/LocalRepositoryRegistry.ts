@@ -22,23 +22,32 @@ import { Publisher } from '../utils/Publisher';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import fs from 'node:fs';
 import path from 'node:path';
+import type { CatalogManager } from '../managers/catalogManager';
 
 /**
  * The LocalRepositoryRegistry is responsible for keeping track of the directories where recipe are cloned
  */
-export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> {
+export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> implements Disposable {
   // Map path => LocalRepository
   private repositories: Map<string, LocalRepository> = new Map();
+  #catalogEventDisposable: Disposable | undefined;
 
   constructor(
     webview: Webview,
     private appUserDirectory: string,
+    private catalogManager: CatalogManager,
   ) {
     super(webview, Messages.MSG_LOCAL_REPOSITORY_UPDATE, () => this.getLocalRepositories());
   }
 
-  init(recipes: Recipe[]): void {
-    this.loadLocalRecipeRepositories(recipes);
+  dispose(): void {
+    this.#catalogEventDisposable?.dispose();
+  }
+
+  init(): void {
+    this.#catalogEventDisposable = this.catalogManager.onCatalogUpdate(() => {
+      this.loadLocalRecipeRepositories(this.catalogManager.getRecipes());
+    });
   }
 
   register(localRepository: LocalRepository): Disposable {

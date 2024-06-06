@@ -17,7 +17,7 @@
  ***********************************************************************/
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { Webview } from '@podman-desktop/api';
+import type { Webview, Disposable } from '@podman-desktop/api';
 import { noTimeoutChannels } from './NoTimeoutChannels';
 
 export interface IMessage {
@@ -51,15 +51,20 @@ export function isMessageResponse(content: unknown): content is IMessageResponse
   return isMessageRequest(content) && 'status' in content;
 }
 
-export class RpcExtension {
+export class RpcExtension implements Disposable {
+  #webviewDisposable: Disposable | undefined;
   methods: Map<string, (...args: unknown[]) => Promise<unknown>> = new Map();
 
   constructor(private webview: Webview) {
     this.init();
   }
 
+  dispose(): void {
+    this.#webviewDisposable?.dispose();
+  }
+
   init() {
-    this.webview.onDidReceiveMessage(async (message: unknown) => {
+    this.#webviewDisposable = this.webview.onDidReceiveMessage(async (message: unknown) => {
       if (!isMessageRequest(message)) {
         console.error('Received incompatible message.', message);
         return;

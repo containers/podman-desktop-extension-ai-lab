@@ -1,7 +1,7 @@
 <script lang="ts">
 import Fa from 'svelte-fa';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
-import LinearProgress from '/@/lib/progress/LinearProgress.svelte';
+import { LinearProgress } from '@podman-desktop/ui-svelte';
 import type { TinroBreadcrumb } from 'tinro';
 
 export let title: string;

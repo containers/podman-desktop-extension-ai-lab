@@ -13,7 +13,7 @@ import { onMount } from 'svelte';
 import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
 import ModelColumnAge from '../lib/table/model/ModelColumnAge.svelte';
 import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
-import Tab from '/@/lib/Tab.svelte';
+import { Tab } from '@podman-desktop/ui-svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
@@ -106,10 +106,10 @@ async function importModel() {
 
 <NavPage title="Models" searchEnabled="{false}" loading="{loading}">
   <svelte:fragment slot="tabs">
-    <Tab title="All" url="models" />
-    <Tab title="Downloaded" url="models/downloaded" />
-    <Tab title="Imported" url="models/imported" />
-    <Tab title="Available" url="models/available" />
+    <Tab title="All" url="/models" selected="{$router.path === '/models'}" />
+    <Tab title="Downloaded" url="/models/downloaded" selected="{$router.path === '/models/downloaded'}" />
+    <Tab title="Imported" url="/models/imported" selected="{$router.path === '/models/imported'}" />
+    <Tab title="Available" url="/models/available" selected="{$router.path === '/models/available'}" />
   </svelte:fragment>
   <svelte:fragment slot="additional-actions">
     <Button on:click="{importModel}" aria-label="Import Models">Import</Button>

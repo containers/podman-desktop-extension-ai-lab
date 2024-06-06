@@ -1,10 +1,10 @@
 <script lang="ts">
 import Fa from 'svelte-fa';
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
-import Button from '../button/Button.svelte';
 import { filesize } from 'filesize';
 import { studioClient } from '/@/utils/client';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import { Button } from '@podman-desktop/ui-svelte';
 
 export let connectionInfo: ContainerConnectionInfo;
 type BannerBackgroundColor = 'light' | 'dark';

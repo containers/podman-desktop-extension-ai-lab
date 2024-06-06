@@ -4,7 +4,6 @@ import NavPage from '../lib/NavPage.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import Fa from 'svelte-fa';
-import Button from '../lib/button/Button.svelte';
 import { studioClient } from '../utils/client';
 import { router } from 'tinro';
 import { onDestroy, onMount } from 'svelte';
@@ -14,6 +13,7 @@ import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
 import ErrorMessage from '../lib/ErrorMessage.svelte';
+import { Button } from '@podman-desktop/ui-svelte';
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);

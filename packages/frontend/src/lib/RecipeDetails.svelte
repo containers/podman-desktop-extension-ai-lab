@@ -10,7 +10,6 @@ import { router } from 'tinro';
 import { applicationStates } from '../stores/application-states';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import ApplicationActions from './ApplicationActions.svelte';
-import Button from './button/Button.svelte';
 import VSCodeIcon from '/@/lib/images/VSCodeIcon.svelte';
 import { localRepositories } from '../stores/localRepositories';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
@@ -21,6 +20,7 @@ import StatusIcon from '/@/lib/StatusIcon.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getApplicationStatus, getApplicationStatusText } from '../pages/applications';
 import Spinner from './button/Spinner.svelte';
+import { Button } from '@podman-desktop/ui-svelte';
 
 export let recipeId: string;
 export let modelId: string;

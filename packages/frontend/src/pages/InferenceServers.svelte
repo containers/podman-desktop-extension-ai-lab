@@ -8,11 +8,11 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import ServiceColumnModelName from '/@/lib/table/service/ServiceColumnModelName.svelte';
-import Button from '/@/lib/button/Button.svelte';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
+import { Button } from '@podman-desktop/ui-svelte';
 
 const columns: Column<InferenceServer>[] = [
   new Column<InferenceServer>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),

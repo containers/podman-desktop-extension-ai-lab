@@ -15,7 +15,7 @@ import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import { faCircleInfo, faMicrochip, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import Tooltip from '/@/lib/Tooltip.svelte';
+import { Tooltip } from '@podman-desktop/ui-svelte';
 import StatusIcon from '../lib/StatusIcon.svelte';
 import Badge from '../lib/Badge.svelte';
 import { router } from 'tinro';

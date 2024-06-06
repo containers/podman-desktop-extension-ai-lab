@@ -96,6 +96,7 @@ export class Studio {
 
     // init webview
     this.#panel = await initWebview(this.#extensionContext.extensionUri);
+    this.#extensionContext.subscriptions.push(this.#panel);
 
     // Creating cancellation token registry
     const cancellationTokenRegistry = new CancellationTokenRegistry();

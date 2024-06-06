@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { beforeEach, expect, test, vi, describe } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { initWebview } from './webviewUtils';
 import type { Uri } from '@podman-desktop/api';
 import { promises } from 'node:fs';

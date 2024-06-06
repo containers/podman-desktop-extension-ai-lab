@@ -16,12 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { Uri, window, env, version } from '@podman-desktop/api';
+import { env, version } from '@podman-desktop/api';
 import { satisfies, minVersion, coerce } from 'semver';
 import type {
   ExtensionContext,
   TelemetryLogger,
-  WebviewOptions,
   WebviewPanel,
   WebviewPanelOnDidChangeViewStateEvent,
 } from '@podman-desktop/api';
@@ -32,7 +31,6 @@ import { GitManager } from './managers/gitManager';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { CatalogManager } from './managers/catalogManager';
 import { ModelsManager } from './managers/modelsManager';
-import fs from 'node:fs';
 import { ContainerRegistry } from './registries/ContainerRegistry';
 import { PodmanConnection } from './managers/podmanConnection';
 import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
@@ -43,6 +41,7 @@ import { CancellationTokenRegistry } from './registries/CancellationTokenRegistr
 import { engines } from '../package.json';
 import { BuilderManager } from './managers/recipes/BuilderManager';
 import { PodManager } from './managers/recipes/PodManager';
+import { initWebview } from './webviewUtils';
 
 export const AI_LAB_COLLECT_GPU_COMMAND = 'ai-lab.gpu.collect';
 
@@ -95,50 +94,8 @@ export class Studio {
 
     this.telemetry.logUsage('start');
 
-    const extensionUri = this.#extensionContext.extensionUri;
-
-    // register webview
-    this.#panel = window.createWebviewPanel('studio', 'AI Lab', this.getWebviewOptions(extensionUri));
-    this.#extensionContext.subscriptions.push(this.#panel);
-
-    // update html
-
-    const indexHtmlUri = Uri.joinPath(extensionUri, 'media', 'index.html');
-    const indexHtmlPath = indexHtmlUri.fsPath;
-
-    let indexHtml = await fs.promises.readFile(indexHtmlPath, 'utf8');
-
-    // replace links with webView Uri links
-    // in the content <script type="module" crossorigin src="./index-RKnfBG18.js"></script> replace src with webview.asWebviewUri
-    const scriptLink = indexHtml.match(/<script.*?src="(.*?)".*?>/g);
-    if (scriptLink) {
-      scriptLink.forEach(link => {
-        const src = link.match(/src="(.*?)"/);
-        if (src) {
-          const webviewSrc = this.#panel?.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', src[1]));
-          if (!webviewSrc) throw new Error('undefined webviewSrc');
-          indexHtml = indexHtml.replace(src[1], webviewSrc.toString());
-        }
-      });
-    }
-
-    // and now replace for css file as well
-    const cssLink = indexHtml.match(/<link.*?href="(.*?)".*?>/g);
-    if (cssLink) {
-      cssLink.forEach(link => {
-        const href = link.match(/href="(.*?)"/);
-        if (href) {
-          const webviewHref = this.#panel?.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', href[1]));
-          if (!webviewHref)
-            throw new Error('Something went wrong while replacing links with webView Uri links: undefined webviewHref');
-          indexHtml = indexHtml.replace(href[1], webviewHref.toString());
-        }
-      });
-    }
-
-    console.log('updated indexHtml to', indexHtml);
-
-    this.#panel.webview.html = indexHtml;
+    // init webview
+    this.#panel = await initWebview(this.#extensionContext.extensionUri);
 
     // Creating cancellation token registry
     const cancellationTokenRegistry = new CancellationTokenRegistry();
@@ -250,15 +207,5 @@ export class Studio {
   public async deactivate(): Promise<void> {
     console.log('stopping AI Lab extension');
     this.telemetry?.logUsage('stop');
-  }
-
-  getWebviewOptions(extensionUri: Uri): WebviewOptions {
-    return {
-      // Enable javascript in the webview
-      // enableScripts: true,
-
-      // And restrict the webview to only loading content from our extension's `media` directory.
-      localResourceRoots: [Uri.joinPath(extensionUri, 'media')],
-    };
   }
 }

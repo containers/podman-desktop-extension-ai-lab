@@ -74,7 +74,6 @@ beforeEach(() => {
   vi.mocked(taskRegistry.createTask).mockReturnValue({ id: 'dummy-task-id', name: '', labels: {}, state: 'loading' });
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
     id: 'dummy-container-id',
-    engineId: 'dummy-engine-id',
   });
 });
 

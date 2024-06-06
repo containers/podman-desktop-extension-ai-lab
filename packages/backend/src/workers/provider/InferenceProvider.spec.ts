@@ -18,11 +18,10 @@
 
 import { vi, describe, test, expect, beforeEach } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { InferenceProvider } from './InferenceProvider';
+import { type BetterContainerCreateResult, InferenceProvider } from './InferenceProvider';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { containerEngine } from '@podman-desktop/api';
 import type {
-  ContainerCreateResult,
   ContainerProviderConnection,
   ImageInfo,
   ProviderContainerConnection,
@@ -76,15 +75,19 @@ class TestInferenceProvider extends InferenceProvider {
     return super.pullImage(providerId, image, labels);
   }
 
-  publicCreateContainer(
+  async publicCreateContainer(
     engineId: string,
     containerCreateOptions: ContainerCreateOptions,
     labels: { [id: string]: string } = {},
-  ): Promise<ContainerCreateResult> {
-    return this.createContainer(engineId, containerCreateOptions, labels);
+  ): Promise<BetterContainerCreateResult> {
+    const result = await this.createContainer(engineId, containerCreateOptions, labels);
+    return {
+      id: result.id,
+      engineId: engineId,
+    };
   }
 
-  async perform(_config: InferenceServerConfig): Promise<ContainerCreateResult> {
+  async perform(_config: InferenceServerConfig): Promise<BetterContainerCreateResult> {
     throw new Error('not implemented');
   }
   dispose(): void {}
@@ -105,7 +108,6 @@ beforeEach(() => {
   );
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
     id: 'dummy-container-id',
-    engineId: 'dummy-engine-id',
   });
 });
 

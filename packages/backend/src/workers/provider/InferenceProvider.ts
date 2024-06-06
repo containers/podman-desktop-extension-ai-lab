@@ -30,7 +30,9 @@ import { getImageInfo, getProviderContainerConnection } from '../../utils/infere
 
 export type BetterContainerCreateResult = ContainerCreateResult & { engineId: string };
 
-export abstract class InferenceProvider implements IWorker<InferenceServerConfig, BetterContainerCreateResult>, Disposable {
+export abstract class InferenceProvider
+  implements IWorker<InferenceServerConfig, BetterContainerCreateResult>, Disposable
+{
   protected constructor(private taskRegistry: TaskRegistry) {}
 
   abstract name: string;

@@ -1,7 +1,7 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
 import { studioClient } from '/@/utils/client';
-import Tab from '/@/lib/Tab.svelte';
+import { Tab } from '@podman-desktop/ui-svelte';
 import Route from '/@/Route.svelte';
 import Card from '/@/lib/Card.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
@@ -14,6 +14,7 @@ import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConne
 import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
 import { modelsInfo } from '../stores/modelsInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
+import { router } from 'tinro';
 
 export let recipeId: string;
 
@@ -49,8 +50,8 @@ function setSelectedModel(modelId: string) {
   searchEnabled="{false}"
   contentBackground="bg-charcoal-500">
   <svelte:fragment slot="tabs">
-    <Tab title="Summary" url="{recipeId}" />
-    <Tab title="Models" url="{recipeId}/models" />
+    <Tab title="Summary" url="/recipe/{recipeId}" selected="{$router.path === `/recipe/${recipeId}`}" />
+    <Tab title="Models" url="/recipe/{recipeId}/models" selected="{$router.path === `/recipe/${recipeId}/models`}" />
   </svelte:fragment>
   <svelte:fragment slot="content">
     <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">

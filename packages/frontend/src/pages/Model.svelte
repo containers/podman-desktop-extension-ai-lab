@@ -1,6 +1,5 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
-import Tab from '/@/lib/Tab.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import { catalog } from '/@/stores/catalog';
 

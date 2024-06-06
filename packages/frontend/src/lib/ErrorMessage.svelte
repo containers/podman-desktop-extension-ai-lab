@@ -1,7 +1,7 @@
 <script lang="ts">
 import Fa from 'svelte-fa';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
-import Tooltip from './Tooltip.svelte';
+import { Tooltip } from '@podman-desktop/ui-svelte';
 
 export let error: string;
 export let icon = false;

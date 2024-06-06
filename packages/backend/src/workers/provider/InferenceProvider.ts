@@ -28,19 +28,21 @@ import type { IWorker } from '../IWorker';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 
-export abstract class InferenceProvider implements IWorker<InferenceServerConfig, ContainerCreateResult>, Disposable {
+export type BetterContainerCreateResult = ContainerCreateResult & { engineId: string };
+
+export abstract class InferenceProvider implements IWorker<InferenceServerConfig, BetterContainerCreateResult>, Disposable {
   protected constructor(private taskRegistry: TaskRegistry) {}
 
   abstract name: string;
   abstract enabled(): boolean;
-  abstract perform(config: InferenceServerConfig): Promise<ContainerCreateResult>;
+  abstract perform(config: InferenceServerConfig): Promise<BetterContainerCreateResult>;
   abstract dispose(): void;
 
   protected async createContainer(
     engineId: string,
     containerCreateOptions: ContainerCreateOptions,
     labels: { [id: string]: string },
-  ): Promise<ContainerCreateResult> {
+  ): Promise<BetterContainerCreateResult> {
     const containerTask = this.taskRegistry.createTask(`Creating container.`, 'loading', labels);
 
     try {

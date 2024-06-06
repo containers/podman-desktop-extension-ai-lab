@@ -15,9 +15,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { ContainerCreateOptions, ContainerCreateResult, ImageInfo } from '@podman-desktop/api';
+import type { ContainerCreateOptions, ImageInfo } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import { InferenceProvider } from './InferenceProvider';
+import { type BetterContainerCreateResult, InferenceProvider } from './InferenceProvider';
 import { getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
@@ -96,7 +96,7 @@ export class LlamaCppPython extends InferenceProvider {
     };
   }
 
-  async perform(config: InferenceServerConfig): Promise<ContainerCreateResult> {
+  async perform(config: InferenceServerConfig): Promise<BetterContainerCreateResult> {
     if (!this.enabled()) throw new Error('not enabled');
 
     // pull the image

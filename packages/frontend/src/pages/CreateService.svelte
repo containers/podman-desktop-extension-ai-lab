@@ -1,6 +1,5 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
-import Button from '/@/lib/button/Button.svelte';
 import { faExclamationCircle, faLocationArrow, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -17,6 +16,7 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
+import { Button } from '@podman-desktop/ui-svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];

@@ -11,8 +11,8 @@ import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
-import Button from '/@/lib/button/Button.svelte';
 import Badge from '/@/lib/Badge.svelte';
+import { Button } from '@podman-desktop/ui-svelte';
 
 export let containerId: string | undefined = undefined;
 

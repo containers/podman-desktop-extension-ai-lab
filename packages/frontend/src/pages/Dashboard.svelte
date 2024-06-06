@@ -1,10 +1,10 @@
 <script lang="ts">
 import NavPage from '/@/lib/NavPage.svelte';
 import { router } from 'tinro';
-import Button from '/@/lib/button/Button.svelte';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { studioClient } from '/@/utils/client';
 import DashboardBanner from '/@/lib/images/DashboardBanner.svelte';
+import { Button } from '@podman-desktop/ui-svelte';
 
 const openRecipesCatalog = () => {
   router.goto('/recipes');

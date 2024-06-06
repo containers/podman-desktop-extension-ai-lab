@@ -17,8 +17,8 @@ import { Tab } from '@podman-desktop/ui-svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
-import Button from '../lib/button/Button.svelte';
 import { router } from 'tinro';
+import { Button } from '@podman-desktop/ui-svelte';
 
 const columns: Column<ModelInfo>[] = [
   new Column<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),

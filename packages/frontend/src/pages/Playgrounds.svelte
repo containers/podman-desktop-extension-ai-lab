@@ -1,7 +1,6 @@
 <script lang="ts">
 import { router } from 'tinro';
 import NavPage from '../lib/NavPage.svelte';
-import Button from '../lib/button/Button.svelte';
 import Table from '../lib/table/Table.svelte';
 import PlaygroundColumnModel from '../lib/table/playground/PlaygroundColumnModel.svelte';
 import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.svelte';
@@ -10,6 +9,7 @@ import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
 import { conversations } from '/@/stores/conversations';
 import PlaygroundColumnIcon from '/@/lib/table/playground/PlaygroundColumnIcon.svelte';
+import { Button } from '@podman-desktop/ui-svelte';
 
 const columns: Column<PlaygroundV2>[] = [
   new Column<PlaygroundV2>('', { width: '40px', renderer: PlaygroundColumnIcon }),

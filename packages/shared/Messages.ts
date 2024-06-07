@@ -27,4 +27,5 @@ export enum Messages {
   MSG_SUPPORTED_LANGUAGES_UPDATE = 'supported-languages-supported',
   MSG_CONVERSATIONS_UPDATE = 'conversations-update',
   MSG_GPUS_UPDATE = 'gpus-update',
+  MSG_INFERENCE_PROVIDER_UPDATE = 'inference-provider-update',
 }

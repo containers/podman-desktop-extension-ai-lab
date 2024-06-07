@@ -42,8 +42,8 @@ import { engines } from '../package.json';
 import { BuilderManager } from './managers/recipes/BuilderManager';
 import { PodManager } from './managers/recipes/PodManager';
 import { initWebview } from './webviewUtils';
-
-export const AI_LAB_COLLECT_GPU_COMMAND = 'ai-lab.gpu.collect';
+import { LlamaCppPython } from './workers/provider/LlamaCppPython';
+import { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -56,6 +56,7 @@ export class Studio {
   modelsManager: ModelsManager | undefined;
   telemetry: TelemetryLogger | undefined;
 
+  #taskRegistry: TaskRegistry | undefined;
   #inferenceManager: InferenceManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
@@ -112,13 +113,19 @@ export class Studio {
     const gitManager = new GitManager();
 
     const podmanConnection = new PodmanConnection();
-    const taskRegistry = new TaskRegistry(this.#panel.webview);
+    this.#taskRegistry = new TaskRegistry(this.#panel.webview);
+
+    // Init the inference provider registry
+    const inferenceProviderRegistry = new InferenceProviderRegistry(this.#panel.webview);
+    this.#extensionContext.subscriptions.push(
+      inferenceProviderRegistry.register(new LlamaCppPython(this.#taskRegistry)),
+    );
 
     // Create catalog manager, responsible for loading the catalog files and watching for changes
     this.catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);
     this.catalogManager.init();
 
-    const builderManager = new BuilderManager(taskRegistry);
+    const builderManager = new BuilderManager(this.#taskRegistry);
     this.#extensionContext.subscriptions.push(builderManager);
 
     const podManager = new PodManager();
@@ -130,7 +137,7 @@ export class Studio {
       this.#panel.webview,
       this.catalogManager,
       this.telemetry,
-      taskRegistry,
+      this.#taskRegistry,
       cancellationTokenRegistry,
     );
     this.modelsManager.init();
@@ -139,7 +146,7 @@ export class Studio {
     const applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,
-      taskRegistry,
+      this.#taskRegistry,
       this.#panel.webview,
       podmanConnection,
       this.catalogManager,
@@ -156,7 +163,8 @@ export class Studio {
       podmanConnection,
       this.modelsManager,
       this.telemetry,
-      taskRegistry,
+      this.#taskRegistry,
+      inferenceProviderRegistry,
     );
 
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
@@ -172,7 +180,7 @@ export class Studio {
     const playgroundV2 = new PlaygroundV2Manager(
       this.#panel.webview,
       this.#inferenceManager,
-      taskRegistry,
+      this.#taskRegistry,
       this.telemetry,
     );
 
@@ -186,7 +194,7 @@ export class Studio {
       this.modelsManager,
       this.telemetry,
       localRepositoryRegistry,
-      taskRegistry,
+      this.#taskRegistry,
       this.#inferenceManager,
       playgroundV2,
       snippetManager,

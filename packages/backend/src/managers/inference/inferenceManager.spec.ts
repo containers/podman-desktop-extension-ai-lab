@@ -17,42 +17,35 @@
  ***********************************************************************/
 import {
   containerEngine,
-  provider,
   type Webview,
   type TelemetryLogger,
-  type ImageInfo,
   type ContainerInfo,
   type ContainerInspectInfo,
-  type ProviderContainerConnection,
 } from '@podman-desktop/api';
 import type { ContainerRegistry } from '../../registries/ContainerRegistry';
 import type { PodmanConnection } from '../podmanConnection';
 import { beforeEach, expect, describe, test, vi } from 'vitest';
 import { InferenceManager } from './inferenceManager';
 import type { ModelsManager } from '../modelsManager';
-import { LABEL_INFERENCE_SERVER, INFERENCE_SERVER_IMAGE } from '../../utils/inferenceUtils';
+import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { Messages } from '@shared/Messages';
+import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
+import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
     containerEngine: {
       startContainer: vi.fn(),
       stopContainer: vi.fn(),
-      listContainers: vi.fn(),
       inspectContainer: vi.fn(),
-      pullImage: vi.fn(),
-      listImages: vi.fn(),
-      createContainer: vi.fn(),
       deleteContainer: vi.fn(),
+      listContainers: vi.fn(),
     },
     Disposable: {
       from: vi.fn(),
       create: vi.fn(),
-    },
-    provider: {
-      getContainerConnections: vi.fn(),
     },
   };
 });
@@ -87,6 +80,11 @@ const taskRegistryMock = {
   getTasksByLabels: vi.fn(),
 } as unknown as TaskRegistry;
 
+const inferenceProviderRegistryMock = {
+  getAll: vi.fn(),
+  get: vi.fn(),
+} as unknown as InferenceProviderRegistry;
+
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
   const manager = new InferenceManager(
     webviewMock,
@@ -95,6 +93,7 @@ const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
     modelsManager,
     telemetryMock,
     taskRegistryMock,
+    inferenceProviderRegistryMock,
   );
   manager.init();
   await vi.waitUntil(manager.isInitialize.bind(manager), {
@@ -119,26 +118,6 @@ beforeEach(() => {
       Health: undefined,
     },
   } as unknown as ContainerInspectInfo);
-  vi.mocked(provider.getContainerConnections).mockReturnValue([
-    {
-      providerId: 'test@providerId',
-      connection: {
-        type: 'podman',
-        name: 'test@connection',
-        status: () => 'started',
-      },
-    } as unknown as ProviderContainerConnection,
-  ]);
-  vi.mocked(containerEngine.listImages).mockResolvedValue([
-    {
-      Id: 'dummyImageId',
-      engineId: 'dummyEngineId',
-      RepoTags: [INFERENCE_SERVER_IMAGE],
-    },
-  ] as unknown as ImageInfo[]);
-  vi.mocked(containerEngine.createContainer).mockResolvedValue({
-    id: 'dummyCreatedContainerId',
-  });
   vi.mocked(taskRegistryMock.getTasksByLabels).mockReturnValue([]);
   vi.mocked(modelsManager.getLocalModelPath).mockReturnValue('/local/model.guff');
   vi.mocked(modelsManager.uploadModelToPodmanMachine).mockResolvedValue('/mnt/path/model.guff');
@@ -233,119 +212,59 @@ describe('init Inference Manager', () => {
  * Testing the creation logic
  */
 describe('Create Inference Server', () => {
-  test('unknown providerId', async () => {
+  test('no provider available should throw an error', async () => {
+    vi.mocked(inferenceProviderRegistryMock.getAll).mockReturnValue([]);
+
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer(
-        {
-          providerId: 'unknown',
-        } as unknown as InferenceServerConfig,
-        'dummyTrackingId',
-      ),
-    ).rejects.toThrowError('cannot find any started container provider.');
-
-    expect(provider.getContainerConnections).toHaveBeenCalled();
-  });
-
-  test('unknown imageId', async () => {
-    const inferenceManager = await getInitializedInferenceManager();
-    await expect(
-      inferenceManager.createInferenceServer(
-        {
-          providerId: 'test@providerId',
-          image: 'unknown',
-        } as unknown as InferenceServerConfig,
-        'dummyTrackingId',
-      ),
-    ).rejects.toThrowError('image unknown not found.');
-
-    expect(containerEngine.listImages).toHaveBeenCalled();
-  });
-
-  test('empty modelsInfo', async () => {
-    const inferenceManager = await getInitializedInferenceManager();
-    await expect(
-      inferenceManager.createInferenceServer(
-        {
-          providerId: 'test@providerId',
-          image: INFERENCE_SERVER_IMAGE,
-          modelsInfo: [],
-        } as unknown as InferenceServerConfig,
-        'dummyTrackingId',
-      ),
-    ).rejects.toThrowError('Need at least one model info to start an inference server.');
-  });
-
-  test('valid InferenceServerConfig', async () => {
-    const inferenceManager = await getInitializedInferenceManager();
-    await inferenceManager.createInferenceServer(
-      {
+      inferenceManager.createInferenceServer({
+        inferenceProvider: undefined,
+        labels: {},
+        modelsInfo: [],
         port: 8888,
-        providerId: 'test@providerId',
-        image: INFERENCE_SERVER_IMAGE,
-        modelsInfo: [
-          {
-            id: 'dummyModelId',
-            file: {
-              file: 'model.guff',
-              path: '/mnt/path',
-            },
-          },
-        ],
-      } as unknown as InferenceServerConfig,
-      'dummyTrackingId',
-    );
+      }),
+    ).rejects.toThrowError('no enabled provider could be found.');
+  });
 
-    expect(modelsManager.uploadModelToPodmanMachine).toHaveBeenCalledWith(
-      {
-        id: 'dummyModelId',
-        file: {
-          file: 'model.guff',
-          path: '/mnt/path',
-        },
-      },
-      {
-        trackingId: 'dummyTrackingId',
-      },
-    );
-    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(
-      1,
-      expect.stringContaining(
-        'Pulling ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:',
-      ),
-      'loading',
-      {
-        trackingId: 'dummyTrackingId',
-      },
-    );
-    expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(2, 'Creating container.', 'loading', {
-      trackingId: 'dummyTrackingId',
-    });
-    expect(taskRegistryMock.updateTask).toHaveBeenLastCalledWith({
-      state: 'success',
-    });
-    expect(containerEngine.createContainer).toHaveBeenCalled();
-    expect(inferenceManager.getServers()).toStrictEqual([
-      {
-        connection: {
-          port: 8888,
-        },
-        container: {
-          containerId: 'dummyCreatedContainerId',
-          engineId: 'dummyEngineId',
-        },
-        models: [
-          {
-            file: {
-              file: 'model.guff',
-              path: '/mnt/path',
-            },
-            id: 'dummyModelId',
-          },
-        ],
-        status: 'running',
-      },
-    ]);
+  test('inference provider provided should use get from InferenceProviderRegistry', async () => {
+    vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue({
+      enabled: () => false,
+    } as unknown as InferenceProvider);
+
+    const inferenceManager = await getInitializedInferenceManager();
+    await expect(
+      inferenceManager.createInferenceServer({
+        inferenceProvider: 'dummy-inference-provider',
+        labels: {},
+        modelsInfo: [],
+        port: 8888,
+      }),
+    ).rejects.toThrowError('provider requested is not enabled.');
+    expect(inferenceProviderRegistryMock.get).toHaveBeenCalledWith('dummy-inference-provider');
+  });
+
+  test('selected inference provider should receive config', async () => {
+    const provider: InferenceProvider = {
+      enabled: () => true,
+      name: 'dummy-inference-provider',
+      dispose: () => {},
+      perform: vi.fn().mockResolvedValue({ id: 'dummy-container-id', engineId: 'dummy-engine-id' }),
+    } as unknown as InferenceProvider;
+    vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue(provider);
+
+    const inferenceManager = await getInitializedInferenceManager();
+
+    const config: InferenceServerConfig = {
+      inferenceProvider: 'dummy-inference-provider',
+      labels: {},
+      modelsInfo: [],
+      port: 8888,
+    };
+    const result = await inferenceManager.createInferenceServer(config);
+
+    expect(provider.perform).toHaveBeenCalledWith(config);
+
+    expect(result).toBe('dummy-container-id');
   });
 });
 
@@ -509,33 +428,6 @@ describe('Request Create Inference Server', () => {
 
     expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(1, 'Creating Inference server', 'loading', {
       trackingId: identifier,
-    });
-  });
-
-  test('Pull image error should be reflected in task registry', async () => {
-    vi.mocked(containerEngine.pullImage).mockRejectedValue(new Error('dummy pull image error'));
-
-    const inferenceManager = await getInitializedInferenceManager();
-    inferenceManager.requestCreateInferenceServer({
-      port: 8888,
-      providerId: 'test@providerId',
-      image: 'quay.io/bootsy/playground:v0',
-      modelsInfo: [
-        {
-          id: 'dummyModelId',
-          file: {
-            file: 'dummyFile',
-            path: 'dummyPath',
-          },
-        },
-      ],
-    } as unknown as InferenceServerConfig);
-
-    await vi.waitFor(() => {
-      expect(taskRegistryMock.updateTask).toHaveBeenLastCalledWith({
-        state: 'error',
-        error: 'Something went wrong while trying to create an inference server Error: dummy pull image error.',
-      });
     });
   });
 });

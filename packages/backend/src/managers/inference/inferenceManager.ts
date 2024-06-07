@@ -18,21 +18,9 @@
 import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
 import type { PodmanConnection } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
-import {
-  type ContainerInfo,
-  type ImageInfo,
-  type PullEvent,
-  type TelemetryLogger,
-  type Webview,
-} from '@podman-desktop/api';
+import { type ContainerInfo, type TelemetryLogger, type Webview } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
-import {
-  generateContainerCreateOptions,
-  getImageInfo,
-  getProviderContainerConnection,
-  isTransitioning,
-  LABEL_INFERENCE_SERVER,
-} from '../../utils/inferenceUtils';
+import { isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
@@ -40,6 +28,8 @@ import type { ModelsManager } from '../modelsManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getRandomString } from '../../utils/randomUtils';
 import { basename, dirname } from 'node:path';
+import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
+import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -56,6 +46,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     private modelsManager: ModelsManager,
     private telemetry: TelemetryLogger,
     private taskRegistry: TaskRegistry,
+    private inferenceProviderRegistry: InferenceProviderRegistry,
   ) {
     super(webview, Messages.MSG_INFERENCE_SERVERS_UPDATE, () => this.getServers());
     this.#servers = new Map<string, InferenceServer>();
@@ -116,12 +107,19 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
    * @return a unique tracking identifier to follow the creation request
    */
   requestCreateInferenceServer(config: InferenceServerConfig): string {
+    // create a tracking id to put in the labels
     const trackingId: string = getRandomString();
+
+    config.labels = {
+      ...config.labels,
+      trackingId: trackingId,
+    };
+
     const task = this.taskRegistry.createTask('Creating Inference server', 'loading', {
       trackingId: trackingId,
     });
 
-    this.createInferenceServer(config, trackingId)
+    this.createInferenceServer(config)
       .then((containerId: string) => {
         this.taskRegistry.updateTask({
           ...task,
@@ -157,64 +155,46 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
-   * Given an engineId, it will create an inference server.
+   * Given an engineId, it will create an inference server using an InferenceProvider.
    * @param config
-   * @param trackingId
    *
    * @return the containerId of the created inference server
    */
-  async createInferenceServer(config: InferenceServerConfig, trackingId: string): Promise<string> {
+  async createInferenceServer(config: InferenceServerConfig): Promise<string> {
     if (!this.isInitialize()) throw new Error('Cannot start the inference server: not initialized.');
 
-    // Fetch a provider container connection
-    const provider = getProviderContainerConnection(config.providerId);
-
-    // Creating a task to follow pulling progress
-    const pullingTask = this.taskRegistry.createTask(`Pulling ${config.image}.`, 'loading', { trackingId: trackingId });
-
-    // Get the image inspect info
-    const imageInfo: ImageInfo = await getImageInfo(provider.connection, config.image, (_event: PullEvent) => {});
-
-    this.taskRegistry.updateTask({
-      ...pullingTask,
-      state: 'success',
-      progress: undefined,
-    });
+    let provider: InferenceProvider;
+    if (config.inferenceProvider) {
+      provider = this.inferenceProviderRegistry.get(config.inferenceProvider);
+      if (!provider.enabled()) throw new Error('provider requested is not enabled.');
+    } else {
+      const providers: InferenceProvider[] = this.inferenceProviderRegistry
+        .getAll()
+        .filter(provider => provider.enabled());
+      if (providers.length === 0) throw new Error('no enabled provider could be found.');
+      provider = providers[0];
+    }
 
     // upload models to podman machine if user system is supported
     config.modelsInfo = await Promise.all(
       config.modelsInfo.map(modelInfo =>
-        this.modelsManager
-          .uploadModelToPodmanMachine(modelInfo, {
-            trackingId: trackingId,
-          })
-          .then(path => ({
-            ...modelInfo,
-            file: {
-              path: dirname(path),
-              file: basename(path),
-            },
-          })),
+        this.modelsManager.uploadModelToPodmanMachine(modelInfo, config.labels).then(path => ({
+          ...modelInfo,
+          file: {
+            path: dirname(path),
+            file: basename(path),
+          },
+        })),
       ),
     );
 
-    const containerTask = this.taskRegistry.createTask(`Creating container.`, 'loading', { trackingId: trackingId });
-
-    // Create container on requested engine
-    const result = await containerEngine.createContainer(
-      imageInfo.engineId,
-      generateContainerCreateOptions(config, imageInfo),
-    );
-
-    this.taskRegistry.updateTask({
-      ...containerTask,
-      state: 'success',
-    });
+    // create the inference server using the selected inference provider
+    const result = await provider.perform(config);
 
     // Adding a new inference server
     this.#servers.set(result.id, {
       container: {
-        engineId: imageInfo.engineId,
+        engineId: result.engineId,
         containerId: result.id,
       },
       connection: {
@@ -225,7 +205,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     });
 
     // Watch for container changes
-    this.watchContainerStatus(imageInfo.engineId, result.id);
+    this.watchContainerStatus(result.engineId, result.id);
 
     // Log usage
     this.telemetry.logUsage('inference.start', {

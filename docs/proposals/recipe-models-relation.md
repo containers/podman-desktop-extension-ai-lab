@@ -64,3 +64,7 @@ Should we add a property to providers to group them ? (tags, labels, implementat
 ### Personal
 
 I am having difficulty choosing the right wording to define them.
+
+An easy solution might be to add a `type: string` property to InferenceProvider.
+
+And uses `backend: string` for models and recipe, and llama-cpp would be the type for all llama-cpp* and ollama*

@@ -75,9 +75,6 @@ export class Studio {
   #applicationManager: ApplicationManager | undefined;
   #inferenceProviderRegistry: InferenceProviderRegistry | undefined;
 
-  #initialized: boolean = false;
-  #lazyInitialization: { init(): void }[] = [];
-
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
   }
@@ -125,12 +122,6 @@ export class Studio {
     this.#panel = await initWebview(this.#extensionContext.extensionUri);
     this.#extensionContext.subscriptions.push(this.#panel);
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
-      // Lazily init classes
-      if (!this.#initialized) {
-        this.#initialized = true;
-        this.lazyInit();
-      }
-
       this.#telemetry?.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
     });
 
@@ -144,7 +135,7 @@ export class Studio {
      * The container registry handle the events linked to containers (start, remove, die...)
      */
     this.#containerRegistry = new ContainerRegistry();
-    this.#lazyInitialization.push(this.#containerRegistry);
+    this.#containerRegistry.init();
     this.#extensionContext.subscriptions.push(this.#containerRegistry);
 
     const appUserDirectory = this.extensionContext.storagePath;
@@ -153,7 +144,7 @@ export class Studio {
      * The RpcExtension handle the communication channels between the frontend and the backend
      */
     this.#rpcExtension = new RpcExtension(this.#panel.webview);
-    this.#lazyInitialization.push(this.#rpcExtension);
+    this.#rpcExtension.init();
     this.#extensionContext.subscriptions.push(this.#rpcExtension);
 
     /**
@@ -165,7 +156,7 @@ export class Studio {
      * The podman connection class is responsible for podman machine events (start/stop)
      */
     this.#podmanConnection = new PodmanConnection();
-    this.#lazyInitialization.push(this.#podmanConnection);
+    this.#podmanConnection.init();
     this.#extensionContext.subscriptions.push(this.#podmanConnection);
 
     /**
@@ -177,7 +168,7 @@ export class Studio {
      * Create catalog manager, responsible for loading the catalog files and watching for changes
      */
     this.#catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);
-    this.#lazyInitialization.push(this.#catalogManager);
+    this.#catalogManager.init();
 
     /**
      * The builder manager is handling the building tasks, create corresponding tasks
@@ -190,7 +181,7 @@ export class Studio {
      * The pod manager is a class responsible for managing the Pods
      */
     this.#podManager = new PodManager();
-    this.#lazyInitialization.push(this.#podManager);
+    this.#podManager.init();
     this.#extensionContext.subscriptions.push(this.#podManager);
 
     /**
@@ -204,7 +195,7 @@ export class Studio {
       this.#taskRegistry,
       this.#cancellationTokenRegistry,
     );
-    this.#lazyInitialization.push(this.#modelsManager);
+    this.#modelsManager.init();
     this.#extensionContext.subscriptions.push(this.#modelsManager);
 
     /**
@@ -215,7 +206,7 @@ export class Studio {
       appUserDirectory,
       this.#catalogManager,
     );
-    this.#lazyInitialization.push(this.#localRepositoryRegistry);
+    this.#localRepositoryRegistry.init();
     this.#extensionContext.subscriptions.push(this.#localRepositoryRegistry);
 
     /**
@@ -234,7 +225,7 @@ export class Studio {
       this.#builderManager,
       this.#podManager,
     );
-    this.#lazyInitialization.push(this.#applicationManager);
+    this.#applicationManager.init();
     this.#extensionContext.subscriptions.push(this.#applicationManager);
 
     /**
@@ -258,7 +249,7 @@ export class Studio {
       this.#taskRegistry,
       this.#inferenceProviderRegistry,
     );
-    this.#lazyInitialization.push(this.#inferenceManager);
+    this.#inferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#inferenceManager);
 
     /**
@@ -277,7 +268,7 @@ export class Studio {
      * InferenceServer details page
      */
     this.#snippetManager = new SnippetManager(this.#panel.webview, this.#telemetry);
-    this.#lazyInitialization.push(this.#snippetManager);
+    this.#snippetManager.init();
 
     /**
      * The StudioApiImpl is the implementation of our API between backend and frontend
@@ -296,14 +287,6 @@ export class Studio {
     );
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);
-  }
-
-  /**
-   * In an effort to limit the IO, lazy init as much classes as possible
-   * @private
-   */
-  private lazyInit(): void {
-    this.#lazyInitialization.forEach(item => item.init());
   }
 
   public async deactivate(): Promise<void> {

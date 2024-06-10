@@ -3,10 +3,9 @@ import { faMinusCircle, faPlusCircle, faUpload } from '@fortawesome/free-solid-s
 import { router } from 'tinro';
 import { studioClient } from '../utils/client';
 import { Uri } from '@shared/src/uri/Uri';
-import ErrorMessage from '../lib/ErrorMessage.svelte';
 import NavPage from '../lib/NavPage.svelte';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
-import { Button } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage } from '@podman-desktop/ui-svelte';
 
 let modelsToImport: LocalModelImportInfo[] = [];
 let importError: string = '';

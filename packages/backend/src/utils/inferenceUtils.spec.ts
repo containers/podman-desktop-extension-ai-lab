@@ -16,10 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { withDefaultConfiguration, isTransitioning } from './inferenceUtils';
+import { withDefaultConfiguration, isTransitioning, parseInferenceType, getInferenceType } from './inferenceUtils';
 import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceServerStatus} from '@shared/src/models/IInference';
+import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('./ports', () => ({
   getFreeRandomPort: vi.fn(),
@@ -83,4 +84,66 @@ test.each(['running', 'stopped', 'error'] as InferenceServerStatus[])('%s should
       status: status,
     } as unknown as InferenceServer),
   ).toBeFalsy();
+});
+
+describe('parseInferenceType', () => {
+  test('undefined argument should return InferenceType.None', () => {
+    expect(parseInferenceType(undefined)).toBe(InferenceType.NONE);
+  });
+
+  test('llamacpp should return the proper InferenceType.LLAMA_CPP', () => {
+    expect(parseInferenceType('llamacpp')).toBe(InferenceType.LLAMA_CPP);
+  });
+});
+
+describe('getInferenceType', () => {
+  test('empty array should return InferenceType.None', () => {
+    expect(getInferenceType([])).toBe(InferenceType.NONE);
+  });
+
+  test('single model with undefined backend should return InferenceType.None', () => {
+    expect(
+      getInferenceType([
+        {
+          backend: undefined,
+        } as unknown as ModelInfo,
+      ]),
+    ).toBe(InferenceType.NONE);
+  });
+
+  test('single model with llamacpp backend should return InferenceType.LLAMA_CPP', () => {
+    expect(
+      getInferenceType([
+        {
+          backend: 'llamacpp',
+        } as unknown as ModelInfo,
+      ]),
+    ).toBe(InferenceType.LLAMA_CPP);
+  });
+
+  test('multiple model with llamacpp backend should return InferenceType.LLAMA_CPP', () => {
+    expect(
+      getInferenceType([
+        {
+          backend: 'llamacpp',
+        },
+        {
+          backend: 'llamacpp',
+        },
+      ] as unknown as ModelInfo[]),
+    ).toBe(InferenceType.LLAMA_CPP);
+  });
+
+  test('multiple model with different backend should return InferenceType.None', () => {
+    expect(
+      getInferenceType([
+        {
+          backend: 'llamacpp',
+        },
+        {
+          backend: 'whispercpp',
+        },
+      ] as unknown as ModelInfo[]),
+    ).toBe(InferenceType.NONE);
+  });
 });

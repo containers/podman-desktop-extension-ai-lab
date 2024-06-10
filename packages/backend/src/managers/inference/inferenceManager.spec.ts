@@ -33,6 +33,7 @@ import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { Messages } from '@shared/Messages';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
+import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -82,6 +83,7 @@ const taskRegistryMock = {
 
 const inferenceProviderRegistryMock = {
   getAll: vi.fn(),
+  getByType: vi.fn(),
   get: vi.fn(),
 } as unknown as InferenceProviderRegistry;
 
@@ -174,6 +176,7 @@ describe('init Inference Manager', () => {
         health: undefined,
         models: [],
         status: 'running',
+        type: expect.anything(),
       },
     ]);
   });
@@ -213,7 +216,7 @@ describe('init Inference Manager', () => {
  */
 describe('Create Inference Server', () => {
   test('no provider available should throw an error', async () => {
-    vi.mocked(inferenceProviderRegistryMock.getAll).mockReturnValue([]);
+    vi.mocked(inferenceProviderRegistryMock.getByType).mockReturnValue([]);
 
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
@@ -548,6 +551,7 @@ describe('transition statuses', () => {
           models: expect.anything(),
           health: undefined,
           status: 'stopping',
+          type: expect.anything(),
         },
       ],
     });
@@ -562,6 +566,7 @@ describe('transition statuses', () => {
           models: expect.anything(),
           health: undefined,
           status: 'stopped',
+          type: expect.anything(),
         },
       ],
     });
@@ -596,6 +601,7 @@ describe('transition statuses', () => {
           models: expect.anything(),
           health: undefined,
           status: 'deleting',
+          type: expect.anything(),
         },
       ],
     });
@@ -631,6 +637,7 @@ describe('transition statuses', () => {
           models: expect.anything(),
           health: undefined,
           status: 'starting',
+          type: expect.anything(),
         },
       ],
     });
@@ -645,6 +652,7 @@ describe('transition statuses', () => {
           models: expect.anything(),
           health: undefined,
           status: 'running',
+          type: expect.anything(),
         },
       ],
     });

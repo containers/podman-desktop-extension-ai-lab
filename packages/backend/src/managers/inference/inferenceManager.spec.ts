@@ -33,7 +33,6 @@ import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { Messages } from '@shared/Messages';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
-import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('@podman-desktop/api', async () => {
   return {

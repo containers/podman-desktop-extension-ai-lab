@@ -19,7 +19,7 @@ import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { withDefaultConfiguration, isTransitioning, parseInferenceType, getInferenceType } from './inferenceUtils';
 import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { InferenceServer, InferenceServerStatus} from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('./ports', () => ({

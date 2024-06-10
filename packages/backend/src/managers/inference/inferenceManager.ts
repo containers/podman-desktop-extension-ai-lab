@@ -15,12 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceServerStatus, InferenceType } from '@shared/src/models/IInference';
 import type { PodmanConnection } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import { type ContainerInfo, type TelemetryLogger, type Webview } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
-import { isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
+import { getInferenceType, isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
@@ -30,6 +30,7 @@ import { getRandomString } from '../../utils/randomUtils';
 import { basename, dirname } from 'node:path';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -163,13 +164,16 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   async createInferenceServer(config: InferenceServerConfig): Promise<string> {
     if (!this.isInitialize()) throw new Error('Cannot start the inference server: not initialized.');
 
+    // Get the backend for the model inference server {@link InferenceType}
+    const backend: InferenceType = getInferenceType(config.modelsInfo);
+
     let provider: InferenceProvider;
     if (config.inferenceProvider) {
       provider = this.inferenceProviderRegistry.get(config.inferenceProvider);
       if (!provider.enabled()) throw new Error('provider requested is not enabled.');
     } else {
       const providers: InferenceProvider[] = this.inferenceProviderRegistry
-        .getAll()
+        .getByType(backend)
         .filter(provider => provider.enabled());
       if (providers.length === 0) throw new Error('no enabled provider could be found.');
       provider = providers[0];
@@ -202,6 +206,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       },
       status: 'running',
       models: config.modelsInfo,
+      type: backend,
     });
 
     // Watch for container changes
@@ -353,9 +358,12 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     this.cleanDisposables();
     this.#servers = new Map<string, InferenceServer>(
       filtered.map(containerInfo => {
-        let modelsId: string[] = [];
+        let modelInfos: ModelInfo[] = [];
         try {
-          modelsId = JSON.parse(containerInfo.Labels[LABEL_INFERENCE_SERVER]);
+          const modelIds: string[] = JSON.parse(containerInfo.Labels[LABEL_INFERENCE_SERVER]);
+          modelInfos = modelIds
+            .filter(id => this.modelsManager.isModelOnDisk(id))
+            .map(id => this.modelsManager.getModelInfo(id));
         } catch (err: unknown) {
           console.error('Something went wrong while getting the models ids from the label.', err);
         }
@@ -371,10 +379,9 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
               port: !!containerInfo.Ports && containerInfo.Ports.length > 0 ? containerInfo.Ports[0].PublicPort : -1,
             },
             status: containerInfo.Status === 'running' ? 'running' : 'stopped',
-            models: modelsId
-              .filter(id => this.modelsManager.isModelOnDisk(id))
-              .map(id => this.modelsManager.getModelInfo(id)),
-          },
+            models: modelInfos,
+            type: getInferenceType(modelInfos),
+          } as InferenceServer,
         ];
       }),
     );

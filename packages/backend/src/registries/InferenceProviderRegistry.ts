@@ -19,6 +19,7 @@ import { Publisher } from '../utils/Publisher';
 import type { InferenceProvider } from '../workers/provider/InferenceProvider';
 import { Disposable, type Webview } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
+import type { InferenceType } from '@shared/src/models/IInference';
 
 export class InferenceProviderRegistry extends Publisher<string[]> {
   #providers: Map<string, InferenceProvider>;
@@ -42,6 +43,10 @@ export class InferenceProviderRegistry extends Publisher<string[]> {
 
   getAll(): InferenceProvider[] {
     return Array.from(this.#providers.values());
+  }
+
+  getByType(type: InferenceType): InferenceProvider[] {
+    return Array.from(this.#providers.values()).filter(provider => provider.type === type);
   }
 
   get(name: string): InferenceProvider {

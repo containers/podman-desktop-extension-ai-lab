@@ -26,7 +26,8 @@ import {
 } from '@podman-desktop/api';
 import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { getFreeRandomPort } from './ports';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
 
@@ -114,4 +115,26 @@ export function isTransitioning(server: InferenceServer): boolean {
   }
 
   return false;
+}
+
+/**
+ * Given a primitive (string) return the InferenceType enum
+ * @param value
+ */
+export function parseInferenceType(value: string | undefined): InferenceType {
+  if (!value) return InferenceType.NONE;
+  return (Object.values(InferenceType) as unknown as string[]).includes(value)
+    ? (value as unknown as InferenceType)
+    : InferenceType.NONE;
+}
+
+/**
+ * Let's collect the backend required by the provided models
+ * we only support one backend for all the models, if multiple are provided, NONE will be return
+ */
+export function getInferenceType(modelsInfo: ModelInfo[]): InferenceType {
+  const backends: InferenceType[] = modelsInfo.map(info => parseInferenceType(info.backend));
+  if (new Set(backends).size !== 1) return InferenceType.NONE;
+
+  return backends[0];
 }

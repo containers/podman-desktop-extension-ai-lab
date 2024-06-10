@@ -27,4 +27,9 @@ export interface Recipe {
   readme: string;
   basedir?: string;
   models?: string[];
+  /**
+   * The backend field aims to target which inference
+   * server the recipe requires
+   */
+  backend?: string;
 }

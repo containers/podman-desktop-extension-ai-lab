@@ -17,6 +17,12 @@
  ***********************************************************************/
 import type { ModelInfo } from './IModelInfo';
 
+export enum InferenceType {
+  LLAMA_CPP = 'llamacpp',
+  WHISPER_CPP = 'whispercpp',
+  NONE = 'none',
+}
+
 export type InferenceServerStatus = 'stopped' | 'running' | 'deleting' | 'stopping' | 'error' | 'starting';
 
 export interface InferenceServer {
@@ -55,4 +61,8 @@ export interface InferenceServer {
    * Exit code
    */
   exit?: number;
+  /**
+   * The type of inference server (aka backend)
+   */
+  type: InferenceType;
 }

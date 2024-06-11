@@ -182,6 +182,13 @@ export class StudioApiImpl implements StudioAPI {
     return await podmanDesktopApi.window.showOpenDialog(options);
   }
 
+  async cloneApplication(recipeId: string): Promise<void> {
+    const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
+    if (!recipe) throw new Error(`recipe with if ${recipeId} not found`);
+
+    return this.applicationManager.cloneApplication(recipe);
+  }
+
   async pullApplication(recipeId: string, modelId: string): Promise<void> {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
     if (!recipe) throw new Error(`recipe with if ${recipeId} not found`);

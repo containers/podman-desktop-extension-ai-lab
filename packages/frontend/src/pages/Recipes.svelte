@@ -48,12 +48,7 @@ onMount(() => {
     <div class="min-w-full min-h-full flex-1">
       <div class="px-5 space-y-5">
         {#each groups.entries() as [category, recipes]}
-          <RecipesCard
-            category="{category}"
-            recipes="{recipes}"
-            primaryBackground=""
-            secondaryBackground="bg-charcoal-800"
-            displayCategory="{false}" />
+          <RecipesCard category="{category}" recipes="{recipes}" />
         {/each}
       </div>
     </div>

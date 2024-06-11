@@ -36,6 +36,11 @@ export abstract class StudioAPI {
   abstract getCatalog(): Promise<ApplicationCatalog>;
 
   // Application related methods
+  /**
+   * Clone a recipe
+   * @param recipeId
+   */
+  abstract cloneApplication(recipeId: string): Promise<void>;
   abstract pullApplication(recipeId: string, modelId: string): Promise<void>;
   abstract requestStopApplication(recipeId: string, modelId: string): Promise<void>;
   abstract requestStartApplication(recipeId: string, modelId: string): Promise<void>;

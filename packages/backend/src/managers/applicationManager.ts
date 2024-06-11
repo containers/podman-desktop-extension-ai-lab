@@ -129,6 +129,29 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
+  public async cloneApplication(recipe: Recipe, labels?: { [key: string]: string }): Promise<void> {
+    const localFolder = path.join(this.appUserDirectory, recipe.id);
+
+    // clone the recipe repository on the local folder
+    const gitCloneInfo: GitCloneInfo = {
+      repository: recipe.repository,
+      ref: recipe.ref,
+      targetDirectory: localFolder,
+    };
+    await this.doCheckout(gitCloneInfo, {
+      ...labels,
+      'recipe-id': recipe.id,
+    });
+
+    this.localRepositories.register({
+      path: gitCloneInfo.targetDirectory,
+      sourcePath: path.join(gitCloneInfo.targetDirectory, recipe.basedir ?? ''),
+      labels: {
+        'recipe-id': recipe.id,
+      },
+    });
+  }
+
   /**
    * This method will execute the following tasks
    * - git clone
@@ -146,24 +169,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   private async initApplication(recipe: Recipe, model: ModelInfo): Promise<PodInfo> {
     const localFolder = path.join(this.appUserDirectory, recipe.id);
 
-    // clone the recipe repository on the local folder
-    const gitCloneInfo: GitCloneInfo = {
-      repository: recipe.repository,
-      ref: recipe.ref,
-      targetDirectory: localFolder,
-    };
-    await this.doCheckout(gitCloneInfo, {
-      'recipe-id': recipe.id,
-      'model-id': model.id,
-    });
-
-    this.localRepositories.register({
-      path: gitCloneInfo.targetDirectory,
-      sourcePath: path.join(gitCloneInfo.targetDirectory, recipe.basedir ?? ''),
-      labels: {
-        'recipe-id': recipe.id,
-      },
-    });
+    // clone the application
+    await this.cloneApplication(recipe, { 'model-id': model.id });
 
     // load and parse the recipe configuration file and filter containers based on architecture, gpu accelerator
     // and backend (that define which model supports)

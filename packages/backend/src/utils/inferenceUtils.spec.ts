@@ -91,8 +91,8 @@ describe('parseInferenceType', () => {
     expect(parseInferenceType(undefined)).toBe(InferenceType.NONE);
   });
 
-  test('llamacpp should return the proper InferenceType.LLAMA_CPP', () => {
-    expect(parseInferenceType('llamacpp')).toBe(InferenceType.LLAMA_CPP);
+  test('llama-cpp should return the proper InferenceType.LLAMA_CPP', () => {
+    expect(parseInferenceType('llama-cpp')).toBe(InferenceType.LLAMA_CPP);
   });
 });
 
@@ -115,7 +115,7 @@ describe('getInferenceType', () => {
     expect(
       getInferenceType([
         {
-          backend: 'llamacpp',
+          backend: 'llama-cpp',
         } as unknown as ModelInfo,
       ]),
     ).toBe(InferenceType.LLAMA_CPP);
@@ -125,10 +125,10 @@ describe('getInferenceType', () => {
     expect(
       getInferenceType([
         {
-          backend: 'llamacpp',
+          backend: 'llama-cpp',
         },
         {
-          backend: 'llamacpp',
+          backend: 'llama-cpp',
         },
       ] as unknown as ModelInfo[]),
     ).toBe(InferenceType.LLAMA_CPP);
@@ -138,10 +138,10 @@ describe('getInferenceType', () => {
     expect(
       getInferenceType([
         {
-          backend: 'llamacpp',
+          backend: 'llama-cpp',
         },
         {
-          backend: 'whispercpp',
+          backend: 'whisper-cpp',
         },
       ] as unknown as ModelInfo[]),
     ).toBe(InferenceType.NONE);

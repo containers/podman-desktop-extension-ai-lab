@@ -201,9 +201,7 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
                       <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value="{temperature}" />
                     </div>
                     <Tooltip left>
-                      <svelte:fragment slot="content">
-                        <Fa icon="{faCircleInfo}" />
-                      </svelte:fragment>
+                      <Fa icon="{faCircleInfo}" />
                       <svelte:fragment slot="tip">
                         <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs" aria-label="tooltip">
                           What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output
@@ -217,9 +215,7 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
                       <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value="{max_tokens}" />
                     </div>
                     <Tooltip left>
-                      <svelte:fragment slot="content">
-                        <Fa icon="{faCircleInfo}" />
-                      </svelte:fragment>
+                      <Fa icon="{faCircleInfo}" />
                       <svelte:fragment slot="tip">
                         <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs" aria-label="tooltip">
                           The maximum number of tokens that can be generated in the chat completion.
@@ -232,9 +228,7 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
                       <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value="{top_p}" />
                     </div>
                     <Tooltip left>
-                      <svelte:fragment slot="content">
-                        <Fa icon="{faCircleInfo}" />
-                      </svelte:fragment>
+                      <Fa icon="{faCircleInfo}" />
                       <svelte:fragment slot="tip">
                         <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs" aria-label="tooltip">
                           An alternative to sampling with temperature, where the model considers the results of the

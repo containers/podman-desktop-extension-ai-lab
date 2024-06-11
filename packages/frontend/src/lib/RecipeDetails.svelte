@@ -19,8 +19,7 @@ import PodIcon from '/@/lib/images/PodIcon.svelte';
 import StatusIcon from '/@/lib/StatusIcon.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getApplicationStatus, getApplicationStatusText } from '../pages/applications';
-import Spinner from './button/Spinner.svelte';
-import { Button } from '@podman-desktop/ui-svelte';
+import { Button, Spinner } from '@podman-desktop/ui-svelte';
 
 export let recipeId: string;
 export let modelId: string;

@@ -3,7 +3,7 @@ import { getIcon } from '/@/utils/categoriesUtils.js';
 import Card from '/@/lib/Card.svelte';
 import type { Recipe } from '@shared/src/models/IRecipe';
 
-export let background: string = 'bg-charcoal-700';
+export let background: string = 'bg-charcoal-600';
 export let backgroundHover: string = 'hover:bg-charcoal-500';
 
 export let recipe: Recipe;

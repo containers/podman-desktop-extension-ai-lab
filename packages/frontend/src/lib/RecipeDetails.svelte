@@ -81,7 +81,7 @@ const deleteLocalClone = () => {
 };
 </script>
 
-<div class="w-full bg-charcoal-600 rounded-md p-4">
+<div class="w-full bg-charcoal-700 rounded-md p-4">
   <div class="flex flex-row items-center">
     {#if appState && appState.pod}
       <div class="grow flex overflow-hidden whitespace-nowrap items-center" aria-label="app-status">
@@ -116,7 +116,7 @@ const deleteLocalClone = () => {
     </div>
   {/if}
 </div>
-<div class="flex flex-col w-full space-y-4 rounded-md bg-charcoal-600 p-4">
+<div class="flex flex-col w-full space-y-4 rounded-md bg-charcoal-700 p-4">
   {#if model}
     <div class="flex flex-col space-y-2">
       <div class="flex flex-row justify-between">

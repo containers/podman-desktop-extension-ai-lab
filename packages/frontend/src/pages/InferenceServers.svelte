@@ -1,9 +1,7 @@
 <script lang="ts">
-import { Column, Row } from '/@/lib/table/table';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import ServiceColumnName from '/@/lib/table/service/ServiceColumnName.svelte';
 import NavPage from '/@/lib/NavPage.svelte';
-import Table from '/@/lib/table/Table.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
@@ -13,14 +11,15 @@ import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
 import { Button } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
 
-const columns: Column<InferenceServer>[] = [
-  new Column<InferenceServer>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),
-  new Column<InferenceServer>('Name', { width: '1fr', renderer: ServiceColumnName, align: 'left' }),
-  new Column<InferenceServer>('Model', { renderer: ServiceColumnModelName, align: 'left' }),
-  new Column<InferenceServer>('Actions', { width: '80px', renderer: ServiceAction, align: 'right' }),
+const columns: TableColumn<InferenceServer>[] = [
+  new TableColumn<InferenceServer>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),
+  new TableColumn<InferenceServer>('Name', { width: '1fr', renderer: ServiceColumnName, align: 'left' }),
+  new TableColumn<InferenceServer>('Model', { renderer: ServiceColumnModelName, align: 'left' }),
+  new TableColumn<InferenceServer>('Actions', { width: '80px', renderer: ServiceAction, align: 'right' }),
 ];
-const row = new Row<InferenceServer>({ selectable: _service => true });
+const row = new TableRow<InferenceServer>({ selectable: _service => true });
 
 let data: (InferenceServer & { selected?: boolean })[];
 

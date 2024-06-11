@@ -1,23 +1,22 @@
 <script lang="ts">
 import { router } from 'tinro';
 import NavPage from '../lib/NavPage.svelte';
-import Table from '../lib/table/Table.svelte';
 import PlaygroundColumnModel from '../lib/table/playground/PlaygroundColumnModel.svelte';
 import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.svelte';
-import { Row, Column } from '../lib/table/table';
 import type { PlaygroundV2 } from '@shared/src/models/IPlaygroundV2';
 import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
 import { conversations } from '/@/stores/conversations';
 import PlaygroundColumnIcon from '/@/lib/table/playground/PlaygroundColumnIcon.svelte';
 import { Button } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
 
-const columns: Column<PlaygroundV2>[] = [
-  new Column<PlaygroundV2>('', { width: '40px', renderer: PlaygroundColumnIcon }),
-  new Column<PlaygroundV2>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
-  new Column<PlaygroundV2>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
-  new Column<PlaygroundV2>('Actions', { width: '40px', renderer: ConversationColumnAction, align: 'center' }),
+const columns: TableColumn<PlaygroundV2>[] = [
+  new TableColumn<PlaygroundV2>('', { width: '40px', renderer: PlaygroundColumnIcon }),
+  new TableColumn<PlaygroundV2>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
+  new TableColumn<PlaygroundV2>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
+  new TableColumn<PlaygroundV2>('Actions', { width: '40px', renderer: ConversationColumnAction, align: 'center' }),
 ];
-const row = new Row<PlaygroundV2>({});
+const row = new TableRow<PlaygroundV2>({});
 
 function createNewPlayground() {
   router.goto('/playground/create');

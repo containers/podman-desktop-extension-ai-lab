@@ -13,7 +13,7 @@ export let contentBackground = '';
 export let lastPage: TinroBreadcrumb | undefined = undefined;
 </script>
 
-<div class="flex flex-col w-full h-full shadow-pageheader bg-charcoal-600">
+<div class="flex flex-col w-full h-full shadow-pageheader bg-charcoal-700">
   <div class="flex flex-col w-full h-full pt-4" role="region" aria-label="{title}">
     <div class="flex pb-2 px-5" role="region" aria-label="header">
       <div class="flex flex-col w-full">

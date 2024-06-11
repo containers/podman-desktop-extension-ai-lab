@@ -117,6 +117,7 @@ beforeEach(async () => {
       postMessage: vi.fn().mockResolvedValue(undefined),
     } as unknown as Webview,
     appUserDirectory,
+    {} as unknown as CatalogManager,
   );
 
   const telemetryMock = {

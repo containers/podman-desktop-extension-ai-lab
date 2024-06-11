@@ -63,6 +63,10 @@ export class ModelsManager implements Disposable {
       });
     });
     this.#disposables.push(disposable);
+
+    this.loadLocalModels().catch((err: unknown) => {
+      console.error('Something went wrong while trying to load local models', err);
+    });
   }
 
   dispose(): void {

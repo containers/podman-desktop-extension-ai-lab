@@ -48,16 +48,32 @@ import { InferenceProviderRegistry } from './registries/InferenceProviderRegistr
 export class Studio {
   readonly #extensionContext: ExtensionContext;
 
+  /**
+   * Webview panel used by AI Lab
+   */
   #panel: WebviewPanel | undefined;
 
-  rpcExtension: RpcExtension | undefined;
-  studioApi: StudioApiImpl | undefined;
-  catalogManager: CatalogManager | undefined;
-  modelsManager: ModelsManager | undefined;
-  telemetry: TelemetryLogger | undefined;
+  /**
+   * API related classes
+   */
+  #rpcExtension: RpcExtension | undefined;
+  #studioApi: StudioApiImpl | undefined;
 
-  #taskRegistry: TaskRegistry | undefined;
+  #localRepositoryRegistry: LocalRepositoryRegistry | undefined;
+  #catalogManager: CatalogManager | undefined;
+  #modelsManager: ModelsManager | undefined;
+  #telemetry: TelemetryLogger | undefined;
   #inferenceManager: InferenceManager | undefined;
+  #podManager: PodManager | undefined;
+  #builderManager: BuilderManager | undefined;
+  #containerRegistry: ContainerRegistry | undefined;
+  #podmanConnection: PodmanConnection | undefined;
+  #taskRegistry: TaskRegistry | undefined;
+  #cancellationTokenRegistry: CancellationTokenRegistry | undefined;
+  #snippetManager: SnippetManager | undefined;
+  #playgroundManager: PlaygroundV2Manager | undefined;
+  #applicationManager: ApplicationManager | undefined;
+  #inferenceProviderRegistry: InferenceProviderRegistry | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -79,12 +95,16 @@ export class Studio {
 
   public async activate(): Promise<void> {
     console.log('starting AI Lab extension');
-    this.telemetry = env.createTelemetryLogger();
+    this.#telemetry = env.createTelemetryLogger();
 
+    /**
+     * Ensure the running version of podman is compatible with
+     * our minimum requirement
+     */
     if (!this.checkVersion()) {
       const min = minVersion(engines['podman-desktop']) ?? { version: 'unknown' };
       const current = version ?? 'unknown';
-      this.telemetry.logError('start.incompatible', {
+      this.#telemetry.logError('start.incompatible', {
         version: current,
         message: `error activating extension on version below ${min.version}`,
       });
@@ -93,128 +113,184 @@ export class Studio {
       );
     }
 
-    this.telemetry.logUsage('start');
+    this.#telemetry.logUsage('start');
 
-    // init webview
+    /**
+     * The AI Lab has a webview integrated in Podman Desktop
+     * We need to initialize and configure it properly
+     */
     this.#panel = await initWebview(this.#extensionContext.extensionUri);
     this.#extensionContext.subscriptions.push(this.#panel);
+    this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
+      this.#telemetry?.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
+    });
 
-    // Creating cancellation token registry
-    const cancellationTokenRegistry = new CancellationTokenRegistry();
-    this.#extensionContext.subscriptions.push(cancellationTokenRegistry);
+    /**
+     * Cancellation token registry store the tokens used to cancel a task
+     */
+    this.#cancellationTokenRegistry = new CancellationTokenRegistry();
+    this.#extensionContext.subscriptions.push(this.#cancellationTokenRegistry);
 
-    // Creating container registry
-    const containerRegistry = new ContainerRegistry();
-    this.#extensionContext.subscriptions.push(containerRegistry.init());
+    /**
+     * The container registry handle the events linked to containers (start, remove, die...)
+     */
+    this.#containerRegistry = new ContainerRegistry();
+    this.#containerRegistry.init();
+    this.#extensionContext.subscriptions.push(this.#containerRegistry);
 
     const appUserDirectory = this.extensionContext.storagePath;
 
-    this.rpcExtension = new RpcExtension(this.#panel.webview);
+    /**
+     * The RpcExtension handle the communication channels between the frontend and the backend
+     */
+    this.#rpcExtension = new RpcExtension(this.#panel.webview);
+    this.#rpcExtension.init();
+    this.#extensionContext.subscriptions.push(this.#rpcExtension);
+
+    /**
+     * GitManager is used for cloning, pulling etc. recipes repositories
+     */
     const gitManager = new GitManager();
 
-    const podmanConnection = new PodmanConnection();
+    /**
+     * The podman connection class is responsible for podman machine events (start/stop)
+     */
+    this.#podmanConnection = new PodmanConnection();
+    this.#podmanConnection.init();
+    this.#extensionContext.subscriptions.push(this.#podmanConnection);
+
+    /**
+     * The task registry store the tasks
+     */
     this.#taskRegistry = new TaskRegistry(this.#panel.webview);
 
-    // Init the inference provider registry
-    const inferenceProviderRegistry = new InferenceProviderRegistry(this.#panel.webview);
-    this.#extensionContext.subscriptions.push(
-      inferenceProviderRegistry.register(new LlamaCppPython(this.#taskRegistry)),
-    );
+    /**
+     * Create catalog manager, responsible for loading the catalog files and watching for changes
+     */
+    this.#catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);
+    this.#catalogManager.init();
 
-    // Create catalog manager, responsible for loading the catalog files and watching for changes
-    this.catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);
-    this.catalogManager.init();
+    /**
+     * The builder manager is handling the building tasks, create corresponding tasks
+     * through the task registry and cancellation.
+     */
+    this.#builderManager = new BuilderManager(this.#taskRegistry);
+    this.#extensionContext.subscriptions.push(this.#builderManager);
 
-    const builderManager = new BuilderManager(this.#taskRegistry);
-    this.#extensionContext.subscriptions.push(builderManager);
+    /**
+     * The pod manager is a class responsible for managing the Pods
+     */
+    this.#podManager = new PodManager();
+    this.#podManager.init();
+    this.#extensionContext.subscriptions.push(this.#podManager);
 
-    const podManager = new PodManager();
-    podManager.init();
-    this.#extensionContext.subscriptions.push(podManager);
-
-    this.modelsManager = new ModelsManager(
+    /**
+     * The ModelManager role is to download and
+     */
+    this.#modelsManager = new ModelsManager(
       appUserDirectory,
       this.#panel.webview,
-      this.catalogManager,
-      this.telemetry,
+      this.#catalogManager,
+      this.#telemetry,
       this.#taskRegistry,
-      cancellationTokenRegistry,
+      this.#cancellationTokenRegistry,
     );
-    this.modelsManager.init();
-    const localRepositoryRegistry = new LocalRepositoryRegistry(this.#panel.webview, appUserDirectory);
-    localRepositoryRegistry.init(this.catalogManager.getRecipes());
-    const applicationManager = new ApplicationManager(
+    this.#modelsManager.init();
+    this.#extensionContext.subscriptions.push(this.#modelsManager);
+
+    /**
+     * The LocalRepositoryRegistry store and watch for recipes repository locally and expose it.
+     */
+    this.#localRepositoryRegistry = new LocalRepositoryRegistry(
+      this.#panel.webview,
+      appUserDirectory,
+      this.#catalogManager,
+    );
+    this.#localRepositoryRegistry.init();
+    this.#extensionContext.subscriptions.push(this.#localRepositoryRegistry);
+
+    /**
+     * The application manager is managing the Recipes
+     */
+    this.#applicationManager = new ApplicationManager(
       appUserDirectory,
       gitManager,
       this.#taskRegistry,
       this.#panel.webview,
-      podmanConnection,
-      this.catalogManager,
-      this.modelsManager,
-      this.telemetry,
-      localRepositoryRegistry,
-      builderManager,
-      podManager,
+      this.#podmanConnection,
+      this.#catalogManager,
+      this.#modelsManager,
+      this.#telemetry,
+      this.#localRepositoryRegistry,
+      this.#builderManager,
+      this.#podManager,
+    );
+    this.#applicationManager.init();
+    this.#extensionContext.subscriptions.push(this.#applicationManager);
+
+    /**
+     * The Inference Provider registry stores all the InferenceProvider (aka backend) which
+     * can be used to create InferenceServers
+     */
+    this.#inferenceProviderRegistry = new InferenceProviderRegistry(this.#panel.webview);
+    this.#extensionContext.subscriptions.push(
+      this.#inferenceProviderRegistry.register(new LlamaCppPython(this.#taskRegistry)),
     );
 
+    /**
+     * The inference manager create, stop, manage Inference servers
+     */
     this.#inferenceManager = new InferenceManager(
       this.#panel.webview,
-      containerRegistry,
-      podmanConnection,
-      this.modelsManager,
-      this.telemetry,
+      this.#containerRegistry,
+      this.#podmanConnection,
+      this.#modelsManager,
+      this.#telemetry,
       this.#taskRegistry,
-      inferenceProviderRegistry,
+      this.#inferenceProviderRegistry,
     );
+    this.#inferenceManager.init();
+    this.#extensionContext.subscriptions.push(this.#inferenceManager);
 
-    this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
-      // Lazily init inference manager
-      if (this.#inferenceManager && !this.#inferenceManager.isInitialize()) {
-        this.#inferenceManager.init();
-        this.#extensionContext.subscriptions.push(this.#inferenceManager);
-      }
-
-      this.telemetry?.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
-    });
-
-    const playgroundV2 = new PlaygroundV2Manager(
+    /**
+     * PlaygroundV2Manager handle the conversations of the Playground by using the InferenceServer available
+     */
+    this.#playgroundManager = new PlaygroundV2Manager(
       this.#panel.webview,
       this.#inferenceManager,
       this.#taskRegistry,
-      this.telemetry,
+      this.#telemetry,
     );
+    this.#extensionContext.subscriptions.push(this.#playgroundManager);
 
-    const snippetManager = new SnippetManager(this.#panel.webview, this.telemetry);
-    snippetManager.init();
+    /**
+     * The snippet manager provide code snippet used in the
+     * InferenceServer details page
+     */
+    this.#snippetManager = new SnippetManager(this.#panel.webview, this.#telemetry);
+    this.#snippetManager.init();
 
-    // Creating StudioApiImpl
-    this.studioApi = new StudioApiImpl(
-      applicationManager,
-      this.catalogManager,
-      this.modelsManager,
-      this.telemetry,
-      localRepositoryRegistry,
+    /**
+     * The StudioApiImpl is the implementation of our API between backend and frontend
+     */
+    this.#studioApi = new StudioApiImpl(
+      this.#applicationManager,
+      this.#catalogManager,
+      this.#modelsManager,
+      this.#telemetry,
+      this.#localRepositoryRegistry,
       this.#taskRegistry,
       this.#inferenceManager,
-      playgroundV2,
-      snippetManager,
-      cancellationTokenRegistry,
+      this.#playgroundManager,
+      this.#snippetManager,
+      this.#cancellationTokenRegistry,
     );
-
-    await this.modelsManager.loadLocalModels();
-    podmanConnection.init();
-    applicationManager.adoptRunningApplications();
-    this.#extensionContext.subscriptions.push(applicationManager);
-
     // Register the instance
-    this.rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.studioApi);
-    this.#extensionContext.subscriptions.push(this.catalogManager);
-    this.#extensionContext.subscriptions.push(this.modelsManager);
-    this.#extensionContext.subscriptions.push(podmanConnection);
+    this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);
   }
 
   public async deactivate(): Promise<void> {
     console.log('stopping AI Lab extension');
-    this.telemetry?.logUsage('stop');
+    this.#telemetry?.logUsage('stop');
   }
 }

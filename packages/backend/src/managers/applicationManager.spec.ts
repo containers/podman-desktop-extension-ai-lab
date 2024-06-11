@@ -1001,7 +1001,7 @@ describe('pod detection', async () => {
     );
   });
 
-  test('adoptRunningApplications updates the app state with the found pod', async () => {
+  test('init updates the app state with the found pod', async () => {
     vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([
       {
         Labels: {
@@ -1016,7 +1016,7 @@ describe('pod detection', async () => {
       f();
     });
     const updateApplicationStateSpy = vi.spyOn(manager, 'updateApplicationState');
-    manager.adoptRunningApplications();
+    manager.init();
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(updateApplicationStateSpy).toHaveBeenNthCalledWith(1, 'recipe-id-1', 'model-id-1', {
       pod: {
@@ -1037,13 +1037,13 @@ describe('pod detection', async () => {
     expect(ports).toStrictEqual([5000, 5001]);
   });
 
-  test('adoptRunningApplications does not update the application state with the found pod without label', async () => {
+  test('init does not update the application state with the found pod without label', async () => {
     vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([{} as unknown as PodInfo]);
     mocks.startupSubscribeMock.mockImplementation((f: startupHandle) => {
       f();
     });
     const updateApplicationStateSpy = vi.spyOn(manager, 'updateApplicationState');
-    manager.adoptRunningApplications();
+    manager.init();
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(updateApplicationStateSpy).not.toHaveBeenCalled();
   });
@@ -1054,7 +1054,7 @@ describe('pod detection', async () => {
       f();
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
-    manager.adoptRunningApplications();
+    manager.init();
     expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
 
@@ -1074,7 +1074,7 @@ describe('pod detection', async () => {
       return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
-    manager.adoptRunningApplications();
+    manager.init();
     expect(sendApplicationStateSpy).toHaveBeenCalledOnce();
   });
 
@@ -1090,7 +1090,7 @@ describe('pod detection', async () => {
       return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
-    manager.adoptRunningApplications();
+    manager.init();
     expect(sendApplicationStateSpy).not.toHaveBeenCalledOnce();
   });
 
@@ -1109,7 +1109,7 @@ describe('pod detection', async () => {
       return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
-    manager.adoptRunningApplications();
+    manager.init();
     expect(sendApplicationStateSpy).not.toHaveBeenCalledOnce();
   });
 
@@ -1142,7 +1142,7 @@ describe('pod detection', async () => {
       return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
-    manager.adoptRunningApplications();
+    manager.init();
     await new Promise(resolve => setTimeout(resolve, 10));
     expect(sendApplicationStateSpy).toHaveBeenCalledTimes(1);
   });
@@ -1170,7 +1170,7 @@ describe('pod detection', async () => {
       return { dispose: vi.fn() };
     });
     const sendApplicationStateSpy = vi.spyOn(manager, 'notify').mockResolvedValue();
-    manager.adoptRunningApplications();
+    manager.init();
     await new Promise(resolve => setTimeout(resolve, 10));
     expect(sendApplicationStateSpy).toHaveBeenCalledTimes(2);
   });
@@ -1226,7 +1226,7 @@ describe('pod detection', async () => {
     expect(podManager.removePod).toHaveBeenCalledWith('engine-1', 'pod-1');
   });
 
-  test('adoptRunningApplications should check pods health', async () => {
+  test('init should check pods health', async () => {
     vi.mocked(podManager.getHealth).mockResolvedValue('healthy');
     vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([
       {
@@ -1255,7 +1255,7 @@ describe('pod detection', async () => {
       f();
     });
     vi.useFakeTimers();
-    manager.adoptRunningApplications();
+    manager.init();
     await vi.advanceTimersByTimeAsync(1100);
     const state = manager.getApplicationsState();
     expect(state).toHaveLength(1);

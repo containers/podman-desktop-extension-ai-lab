@@ -456,9 +456,9 @@ test('deleteModel deletes the model folder', async () => {
       maxRetries: 3,
     });
   }
-  expect(postMessageMock).toHaveBeenCalledTimes(3);
+  expect(postMessageMock).toHaveBeenCalledTimes(4);
   // check that a new state is sent with the model removed
-  expect(postMessageMock).toHaveBeenNthCalledWith(3, {
+  expect(postMessageMock).toHaveBeenNthCalledWith(4, {
     id: 'new-models-state',
     body: [
       {
@@ -522,9 +522,9 @@ describe('deleting models', () => {
         maxRetries: 3,
       });
     }
-    expect(postMessageMock).toHaveBeenCalledTimes(3);
+    expect(postMessageMock).toHaveBeenCalledTimes(4);
     // check that a new state is sent with the model non removed
-    expect(postMessageMock).toHaveBeenNthCalledWith(3, {
+    expect(postMessageMock).toHaveBeenNthCalledWith(4, {
       id: 'new-models-state',
       body: [
         {

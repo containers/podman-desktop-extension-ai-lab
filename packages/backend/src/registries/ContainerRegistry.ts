@@ -26,15 +26,17 @@ export interface ContainerStart {
   id: string;
 }
 
-export class ContainerRegistry {
+export class ContainerRegistry implements podmanDesktopApi.Disposable {
   private count: number = 0;
   private subscribers: Map<string, Subscriber[]> = new Map();
 
   private readonly _onStartContainerEvent = new podmanDesktopApi.EventEmitter<ContainerStart>();
   readonly onStartContainerEvent: podmanDesktopApi.Event<ContainerStart> = this._onStartContainerEvent.event;
 
-  init(): podmanDesktopApi.Disposable {
-    return podmanDesktopApi.containerEngine.onEvent(event => {
+  #eventDisposable: podmanDesktopApi.Disposable | undefined;
+
+  init(): void {
+    this.#eventDisposable = podmanDesktopApi.containerEngine.onEvent(event => {
       if (event.status === 'start') {
         this._onStartContainerEvent.fire({
           id: event.id,
@@ -50,6 +52,10 @@ export class ContainerRegistry {
         }
       }
     });
+  }
+
+  dispose(): void {
+    this.#eventDisposable?.dispose();
   }
 
   subscribe(containerId: string, callback: (status: string) => void): podmanDesktopApi.Disposable {

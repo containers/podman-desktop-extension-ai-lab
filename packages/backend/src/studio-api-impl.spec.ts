@@ -284,6 +284,8 @@ describe('validateLocalModel', () => {
     vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
       return path;
     });
+    vi.spyOn(path, 'dirname').mockReturnValue('path');
+    vi.spyOn(path, 'basename').mockReturnValue('file.gguf');
     vi.spyOn(path, 'join').mockImplementation((path1: string, path2: string) => `${path1}/${path2}`);
     vi.spyOn(studioApiImpl, 'getModelsInfo').mockResolvedValue([
       {
@@ -296,8 +298,8 @@ describe('validateLocalModel', () => {
     ]);
     await expect(
       studioApiImpl.validateLocalModel({
-        path: 'path',
-        name: 'file.gguf',
+        path: 'path/file.gguf',
+        name: 'file',
       }),
     ).rejects.toThrowError('file already imported');
   });

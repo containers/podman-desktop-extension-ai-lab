@@ -22,6 +22,7 @@ import { getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
+import { InferenceType } from '@shared/src/models/IInference';
 
 export const LLAMA_CPP_INFERENCE_IMAGE =
   'ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.3.2';
@@ -29,11 +30,8 @@ export const LLAMA_CPP_INFERENCE_IMAGE =
 export const SECOND: number = 1_000_000_000;
 
 export class LlamaCppPython extends InferenceProvider {
-  name: string;
-
   constructor(taskRegistry: TaskRegistry) {
-    super(taskRegistry);
-    this.name = 'llama-cpp';
+    super(taskRegistry, InferenceType.LLAMA_CPP, 'LLama-cpp (CPU)');
   }
 
   dispose() {}

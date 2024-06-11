@@ -33,6 +33,11 @@ export interface ModelInfo {
     [key: string]: string;
   };
   sha256?: string;
+  /**
+   * The backend field aims to target which inference
+   * server the model requires
+   */
+  backend?: string;
 }
 
 export type ModelCheckerContext = 'inference' | 'recipe';

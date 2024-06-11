@@ -16,19 +16,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, describe, test, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { type BetterContainerCreateResult, InferenceProvider } from './InferenceProvider';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import { containerEngine } from '@podman-desktop/api';
 import type {
+  ContainerCreateOptions,
   ContainerProviderConnection,
   ImageInfo,
   ProviderContainerConnection,
-  ContainerCreateOptions,
 } from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 import type { TaskState } from '@shared/src/models/ITask';
+import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('../../utils/inferenceUtils', () => ({
   getProviderContainerConnection: vi.fn(),
@@ -61,10 +62,8 @@ const taskRegistry: TaskRegistry = {
 } as unknown as TaskRegistry;
 
 class TestInferenceProvider extends InferenceProvider {
-  name: string = 'test-inference-provider';
-
   constructor() {
-    super(taskRegistry);
+    super(taskRegistry, InferenceType.NONE, 'test-inference-provider');
   }
 
   enabled(): boolean {

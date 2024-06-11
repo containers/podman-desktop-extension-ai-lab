@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render, fireEvent } from '@testing-library/svelte';
 import InferenceServers from '/@/pages/InferenceServers.svelte';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 
@@ -70,6 +70,7 @@ test('store with inference server should display the table', async () => {
       connection: { port: 8888 },
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+      type: InferenceType.NONE,
     },
   ] as InferenceServer[]);
   render(InferenceServers);
@@ -98,6 +99,7 @@ test('table should have checkbox', async () => {
       connection: { port: 8888 },
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+      type: InferenceType.NONE,
     },
   ] as InferenceServer[]);
   render(InferenceServers);
@@ -117,6 +119,7 @@ test('delete button should delete selected item', async () => {
       connection: { port: 8888 },
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
+      type: InferenceType.NONE,
     },
   ] as InferenceServer[]);
   render(InferenceServers);

@@ -11,12 +11,11 @@ import { tasks } from '/@/stores/tasks';
 import type { Task } from '@shared/src/models/ITask';
 import { filterByLabel } from '/@/utils/taskUtils';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
-import ErrorMessage from '../lib/ErrorMessage.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
-import { Button } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage } from '@podman-desktop/ui-svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];

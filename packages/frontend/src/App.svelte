@@ -19,7 +19,7 @@ import ServiceDetails from '/@/pages/InferenceServerDetails.svelte';
 import Playgrounds from './pages/Playgrounds.svelte';
 import Playground from './pages/Playground.svelte';
 import PlaygroundCreate from './pages/PlaygroundCreate.svelte';
-import ImportModels from './pages/ImportModels.svelte';
+import ImportModels from './pages/ImportModel.svelte';
 
 router.mode.hash();
 

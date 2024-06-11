@@ -17,6 +17,7 @@ import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 import { router } from 'tinro';
 import { Button } from '@podman-desktop/ui-svelte';
+import { faFileImport } from '@fortawesome/free-solid-svg-icons';
 import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<ModelInfo>[] = [
@@ -111,7 +112,7 @@ async function importModel() {
     <Tab title="Available" url="/models/available" selected="{$router.path === '/models/available'}" />
   </svelte:fragment>
   <svelte:fragment slot="additional-actions">
-    <Button on:click="{importModel}" aria-label="Import Models">Import</Button>
+    <Button on:click="{importModel}" icon="{faFileImport}" aria-label="Import Models">Import</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div slot="content" class="flex flex-col min-w-full min-h-full">

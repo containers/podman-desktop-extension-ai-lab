@@ -48,7 +48,7 @@ function setSelectedModel(modelId: string) {
   title="{recipe?.name || ''}"
   icon="{getIcon(recipe?.icon)}"
   searchEnabled="{false}"
-  contentBackground="bg-charcoal-500">
+  contentBackground="bg-charcoal-700">
   <svelte:fragment slot="tabs">
     <Tab title="Summary" url="/recipe/{recipeId}" selected="{$router.path === `/recipe/${recipeId}`}" />
     <Tab title="Models" url="/recipe/{recipeId}/models" selected="{$router.path === `/recipe/${recipeId}/models`}" />

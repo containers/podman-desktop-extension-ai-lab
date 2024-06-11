@@ -1,8 +1,6 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import NavPage from '../lib/NavPage.svelte';
-import Table from '../lib/table/Table.svelte';
-import { Column, Row } from '../lib/table/table';
 import { modelsInfo } from '../stores/modelsInfo';
 import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
 import ModelColumnLabels from '../lib/table/model/ModelColumnLabels.svelte';
@@ -19,28 +17,29 @@ import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 import { router } from 'tinro';
 import { Button } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
 
-const columns: Column<ModelInfo>[] = [
-  new Column<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
-  new Column<ModelInfo>('Name', {
+const columns: TableColumn<ModelInfo>[] = [
+  new TableColumn<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
+  new TableColumn<ModelInfo>('Name', {
     width: '3fr',
     renderer: ModelColumnName,
     comparator: (a, b) => b.name.localeCompare(a.name),
   }),
-  new Column<ModelInfo>('Size', {
+  new TableColumn<ModelInfo>('Size', {
     width: '50px',
     renderer: ModelColumnSize,
     comparator: (a, b) => (a.file?.size ?? 0) - (b.file?.size ?? 0),
   }),
-  new Column<ModelInfo>('Age', {
+  new TableColumn<ModelInfo>('Age', {
     width: '70px',
     renderer: ModelColumnAge,
     comparator: (a, b) => (a.file?.creation?.getTime() ?? 0) - (b.file?.creation?.getTime() ?? 0),
   }),
-  new Column<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
-  new Column<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
+  new TableColumn<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
+  new TableColumn<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
 ];
-const row = new Row<ModelInfo>({});
+const row = new TableRow<ModelInfo>({});
 
 let loading: boolean = true;
 

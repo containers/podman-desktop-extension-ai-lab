@@ -1,12 +1,11 @@
 <script lang="ts">
-import Table from '/@/lib/table/Table.svelte';
-import { Column, Row } from '/@/lib/table/table';
 import ModelColumnName from '/@/lib/table/model/ModelColumnName.svelte';
 import { catalog } from '/@/stores/catalog';
 import ModelColumnRecipeSelection from '../lib/table/model/ModelColumnRecipeSelection.svelte';
 import ModelColumnRecipeRecommended from '../lib/table/model/ModelColumnRecipeRecommended.svelte';
 import type { RecipeModelInfo } from '../models/RecipeModelInfo';
 import ModelColumnIcon from '/@/lib/table/model/ModelColumnIcon.svelte';
+import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
 
 export let modelsIds: string[] | undefined;
 export let selectedModelId: string;
@@ -22,13 +21,13 @@ $: models = $catalog.models
     } as RecipeModelInfo;
   });
 
-const columns: Column<RecipeModelInfo>[] = [
-  new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
-  new Column<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeRecommended }),
-  new Column<RecipeModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
-  new Column<RecipeModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
+const columns: TableColumn<RecipeModelInfo>[] = [
+  new TableColumn<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
+  new TableColumn<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeRecommended }),
+  new TableColumn<RecipeModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
+  new TableColumn<RecipeModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
 ];
-const row = new Row<RecipeModelInfo>({});
+const row = new TableRow<RecipeModelInfo>({});
 
 function setModelToUse(selected: RecipeModelInfo) {
   setSelectedModel(selected.id);
@@ -39,13 +38,7 @@ function setModelToUse(selected: RecipeModelInfo) {
   <div class="flex flex-col grow min-h-full">
     <div class="w-full min-h-full flex-1">
       <div class="h-full">
-        <Table
-          kind="model"
-          data="{models}"
-          columns="{columns}"
-          row="{row}"
-          headerBackground="bg-transparent"
-          on:update="{e => setModelToUse(e.detail)}">
+        <Table kind="model" data="{models}" columns="{columns}" row="{row}" on:update="{e => setModelToUse(e.detail)}">
         </Table>
       </div>
     </div>

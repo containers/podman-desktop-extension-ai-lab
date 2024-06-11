@@ -52,7 +52,7 @@ onMount(() => {
             category="{category}"
             recipes="{recipes}"
             primaryBackground=""
-            secondaryBackground="bg-charcoal-700"
+            secondaryBackground="bg-charcoal-800"
             displayCategory="{false}" />
         {/each}
       </div>

@@ -18,8 +18,8 @@
 import type { ModelInfo } from './IModelInfo';
 
 export enum InferenceType {
-  LLAMA_CPP = 'llamacpp',
-  WHISPER_CPP = 'whispercpp',
+  LLAMA_CPP = 'llama-cpp',
+  WHISPER_CPP = 'whisper-cpp',
   NONE = 'none',
 }
 

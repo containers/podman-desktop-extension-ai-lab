@@ -6,7 +6,6 @@ import NavPage from '../lib/NavPage.svelte';
 import { catalog } from '../stores/catalog';
 import { afterUpdate } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
-import ContainerIcon from '/@/lib/images/ContainerIcon.svelte';
 import RangeInput from '../lib/RangeInput.svelte';
 import Fa from 'svelte-fa';
 
@@ -19,6 +18,7 @@ import StatusIcon from '../lib/StatusIcon.svelte';
 import Badge from '../lib/Badge.svelte';
 import { router } from 'tinro';
 import ConversationActions from '../lib/conversation/ConversationActions.svelte';
+import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 
 export let playgroundId: string;
 let prompt: string;

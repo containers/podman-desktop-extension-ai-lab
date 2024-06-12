@@ -1,8 +1,7 @@
 <script lang="ts">
-import type { RecipeModelInfo } from '/@/models/RecipeModelInfo';
-export let object: RecipeModelInfo;
+export let object: boolean;
 </script>
 
-{#if object.recommended}
+{#if object}
   <i class="fas fa-star fa-xs text-gray-900" title="Recommended model"></i>
 {/if}

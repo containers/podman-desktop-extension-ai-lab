@@ -1,46 +1,45 @@
 <script lang="ts">
 import ModelColumnName from '/@/lib/table/model/ModelColumnName.svelte';
-import { catalog } from '/@/stores/catalog';
 import ModelColumnRecipeSelection from '../lib/table/model/ModelColumnRecipeSelection.svelte';
 import ModelColumnRecipeRecommended from '../lib/table/model/ModelColumnRecipeRecommended.svelte';
-import type { RecipeModelInfo } from '../models/RecipeModelInfo';
 import ModelColumnIcon from '/@/lib/table/model/ModelColumnIcon.svelte';
 import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
-export let modelsIds: string[] | undefined;
-export let selectedModelId: string;
+export let models: ModelInfo[];
+export let recommended: string[];
+export let selected: string;
 export let setSelectedModel: (modelId: string) => void;
 
-$: models = $catalog.models
-  .filter(m => modelsIds?.includes(m.id))
+$: models = models
   .map((m, i) => {
     return {
       ...m,
-      recommended: i === 0,
-      inUse: m.id === selectedModelId,
-    } as RecipeModelInfo;
+      inUse: m.id === selected,
+    };
   });
 
-const columns: TableColumn<RecipeModelInfo>[] = [
-  new TableColumn<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
-  new TableColumn<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeRecommended }),
-  new TableColumn<RecipeModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
-  new TableColumn<RecipeModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
+const columns = [
+  new TableColumn<ModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
+  new TableColumn<ModelInfo, boolean>('', {
+    width: '20px',
+    renderer: ModelColumnRecipeRecommended,
+    renderMapping: (object) => recommended.includes(object.id),
+  }),
+  new TableColumn<ModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
+  new TableColumn<ModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
 ];
-const row = new TableRow<RecipeModelInfo>({});
+const row = new TableRow<ModelInfo>({});
 
-function setModelToUse(selected: RecipeModelInfo) {
+function setModelToUse(selected: ModelInfo) {
   setSelectedModel(selected.id);
 }
 </script>
 
-{#if models}
-  <div class="flex flex-col grow min-h-full">
-    <div class="w-full min-h-full flex-1">
-      <div class="h-full">
-        <Table kind="model" data="{models}" columns="{columns}" row="{row}" on:update="{e => setModelToUse(e.detail)}">
-        </Table>
-      </div>
+<div class="flex flex-col grow min-h-full">
+  <div class="w-full min-h-full flex-1">
+    <div class="h-full">
+      <Table kind="model" data="{models}" columns="{columns}" row="{row}" on:update="{e => setModelToUse(e.detail)}"/>
     </div>
   </div>
-{/if}
+</div>

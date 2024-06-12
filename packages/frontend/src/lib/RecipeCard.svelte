@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Recipe } from '@shared/src/models/IRecipe';
 import { router } from 'tinro';
-import { faArrowUpRightFromSquare, faDownload, faCircleChevronDown, faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUpRightFromSquare, faFolder } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
 import { localRepositories } from '../stores/localRepositories';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
@@ -30,7 +30,7 @@ $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
 
       <!-- right column -->
       <div>
-        <RecipeStatus recipe="{recipe}" localPath="{localPath}" />
+        <RecipeStatus recipe="{recipe}" localRepository="{localPath}" />
       </div>
     </div>
 

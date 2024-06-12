@@ -7,12 +7,12 @@ import { Spinner } from '@podman-desktop/ui-svelte';
 import { studioClient } from '/@/utils/client';
 
 export let recipe: Recipe;
-export let localPath: LocalRepository | undefined;
+export let localRepository: LocalRepository | undefined;
 
 let loading: boolean = false;
 
 function onClick(): void {
-  if (loading || localPath) return;
+  if (loading || localRepository) return;
   loading = true;
 
   studioClient
@@ -31,12 +31,16 @@ function onClick(): void {
     on:click="{onClick}"
     disabled="{loading}"
     class="border-2 justify-center relative rounded border-dustypurple-700 text-dustypurple-700 hover:bg-charcoal-800 hover:text-dustypurple-600 w-10 p-2 text-center cursor-pointer flex flex-row">
-    {#if localPath}
-      <Fa size="sm" icon="{faCircleChevronDown}" />
+    {#if localRepository}
+      <div aria-label="chevron down icon">
+        <Fa size="sm" icon="{faCircleChevronDown}" />
+      </div>
     {:else if loading}
       <Spinner size="1em" />
     {:else}
-      <Fa size="sm" icon="{faDownload}" />
+      <div aria-label="download icon">
+        <Fa size="sm" icon="{faDownload}" />
+      </div>
     {/if}
   </button>
 {/key}

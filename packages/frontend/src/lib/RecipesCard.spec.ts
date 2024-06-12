@@ -18,8 +18,21 @@
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/svelte';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 import RecipesCard from '/@/lib/RecipesCard.svelte';
+
+vi.mock('../utils/client', async () => ({
+  studioClient: {},
+}));
+
+vi.mock('../stores/localRepositories', () => ({
+  localRepositories: {
+    subscribe: (f: (msg: any) => void) => {
+      f([]);
+      return () => {};
+    },
+  },
+}));
 
 test('recipes card without recipes should display empty message', async () => {
   render(RecipesCard, {

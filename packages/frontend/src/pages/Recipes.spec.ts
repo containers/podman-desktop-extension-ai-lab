@@ -30,6 +30,19 @@ vi.mock('/@/stores/catalog', async () => {
   };
 });
 
+vi.mock('../utils/client', async () => ({
+  studioClient: {},
+}));
+
+vi.mock('../stores/localRepositories', () => ({
+  localRepositories: {
+    subscribe: (f: (msg: any) => void) => {
+      f([]);
+      return () => {};
+    },
+  },
+}));
+
 beforeEach(() => {
   vi.resetAllMocks();
   const catalog: ApplicationCatalog = {

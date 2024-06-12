@@ -109,8 +109,7 @@ test('should display playground and model names in header', async () => {
   });
 });
 
-
-test('send prompt should be enabled initially', async () => {
+test('send prompt should be enabld initially', async () => {
   vi.mocked(studioClient.getCatalog).mockResolvedValue({
     models: [
       {

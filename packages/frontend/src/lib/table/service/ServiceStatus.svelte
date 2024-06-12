@@ -2,7 +2,7 @@
 import type { InferenceServer } from '@shared/src/models/IInference';
 import StatusIcon from '/@/lib/StatusIcon.svelte';
 import { studioClient } from '/@/utils/client';
-import Spinner from '/@/lib/button/Spinner.svelte';
+import { Spinner } from '@podman-desktop/ui-svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 export let object: InferenceServer;
 

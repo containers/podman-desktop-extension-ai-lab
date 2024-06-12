@@ -66,16 +66,18 @@ test('should display model icon', async () => {
     recommended: [],
     selected: 'model1',
     setSelectedModel: vi.fn(),
-    models: [{
-      id: 'model1',
-      name: 'Model 1',
-      url: 'https://podman-desktop.io',
-      registry: 'Podman Desktop',
-      license: 'Apache 2.0',
-      description: '',
-      hw: 'CPU',
-      memory: 4 * 1024 * 1024 * 1024,
-    }],
+    models: [
+      {
+        id: 'model1',
+        name: 'Model 1',
+        url: 'https://podman-desktop.io',
+        registry: 'Podman Desktop',
+        license: 'Apache 2.0',
+        description: '',
+        hw: 'CPU',
+        memory: 4 * 1024 * 1024 * 1024,
+      },
+    ],
   });
 
   await waitFor(async () => {

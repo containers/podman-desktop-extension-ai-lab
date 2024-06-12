@@ -26,7 +26,7 @@ $: categories = $catalog.categories;
 
 // model selected to start the recipe
 let selectedModelId: string;
-$: selectedModelId = (recipe?.recommended && recipe.recommended.length > 0) ? recipe?.recommended?.[0] : '';
+$: selectedModelId = recipe?.recommended && recipe.recommended.length > 0 ? recipe?.recommended?.[0] : '';
 
 let connectionInfo: ContainerConnectionInfo | undefined;
 $: if ($modelsInfo && selectedModelId) {
@@ -36,7 +36,9 @@ $: if ($modelsInfo && selectedModelId) {
 }
 
 let models: ModelInfo[];
-$: models = $catalog.models.filter(model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE));
+$: models = $catalog.models.filter(
+  model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE),
+);
 
 // Send recipe info to telemetry
 let recipeTelemetry: string | undefined = undefined;

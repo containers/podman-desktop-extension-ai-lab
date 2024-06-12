@@ -11,20 +11,19 @@ export let recommended: string[];
 export let selected: string;
 export let setSelectedModel: (modelId: string) => void;
 
-$: models = models
-  .map((m, i) => {
-    return {
-      ...m,
-      inUse: m.id === selected,
-    };
-  });
+$: models = models.map((m, i) => {
+  return {
+    ...m,
+    inUse: m.id === selected,
+  };
+});
 
 const columns = [
   new TableColumn<ModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
   new TableColumn<ModelInfo, boolean>('', {
     width: '20px',
     renderer: ModelColumnRecipeRecommended,
-    renderMapping: (object) => recommended.includes(object.id),
+    renderMapping: object => recommended.includes(object.id),
   }),
   new TableColumn<ModelInfo>('', { width: '32px', renderer: ModelColumnIcon }),
   new TableColumn<ModelInfo>('Name', { width: '4fr', renderer: ModelColumnName }),
@@ -39,7 +38,7 @@ function setModelToUse(selected: ModelInfo) {
 <div class="flex flex-col grow min-h-full">
   <div class="w-full min-h-full flex-1">
     <div class="h-full">
-      <Table kind="model" data="{models}" columns="{columns}" row="{row}" on:update="{e => setModelToUse(e.detail)}"/>
+      <Table kind="model" data="{models}" columns="{columns}" row="{row}" on:update="{e => setModelToUse(e.detail)}" />
     </div>
   </div>
 </div>

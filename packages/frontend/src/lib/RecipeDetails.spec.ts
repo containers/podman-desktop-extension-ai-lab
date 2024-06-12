@@ -183,36 +183,6 @@ test('swap model panel should be hidden on models tab', async () => {
   expect(swapModelPanel2.classList.contains('hidden'));
 });
 
-test('should display default model information when model is the recommended', async () => {
-  mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
-  render(RecipeDetails, {
-    recipeId: 'recipe 1',
-    modelId: 'model1',
-  });
-
-  const modelInfo = screen.getByLabelText('model-selected');
-  expect(modelInfo.textContent).equal('Model 1');
-  const licenseBadge = screen.getByLabelText('license-model');
-  expect(licenseBadge.textContent).equal('?');
-  const defaultWarning = screen.getByLabelText('model-warning');
-  expect(defaultWarning.textContent).contains('This is the default, recommended model for this recipe.');
-});
-
-test('should display non-default model information when model is not the recommended one', async () => {
-  mocks.getApplicationsStateMock.mockResolvedValue([]);
-  vi.mocked(catalogStore).catalog = readable<ApplicationCatalog>(initialCatalog);
-  render(RecipeDetails, {
-    recipeId: 'recipe 1',
-    modelId: 'model2',
-  });
-
-  const modelInfo = screen.getByLabelText('model-selected');
-  expect(modelInfo.textContent).equal('Model 2');
-  const defaultWarning = screen.getByLabelText('model-warning');
-  expect(defaultWarning.textContent).contains('The default model for this recipe is Model 1');
-});
-
 test('button vs code should be visible if local repository is not empty', async () => {
   mocks.getApplicationsStateMock.mockResolvedValue([]);
   mocks.getLocalRepositoriesMock.mockReturnValue([

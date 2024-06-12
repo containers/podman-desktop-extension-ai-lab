@@ -37,7 +37,7 @@ beforeEach(() => {
       {
         id: 'recipe1',
         name: 'Recipe 1',
-        models: ['model1'],
+        recommended: ['model1'],
         categories: [],
         description: 'Recipe 1',
         readme: '',
@@ -63,9 +63,19 @@ beforeEach(() => {
 
 test('should display model icon', async () => {
   render(RecipeModels, {
-    selectedModelId: 'model1',
+    recommended: [],
+    selected: 'model1',
     setSelectedModel: vi.fn(),
-    modelsIds: ['model1'],
+    models: [{
+      id: 'model1',
+      name: 'Model 1',
+      url: 'https://podman-desktop.io',
+      registry: 'Podman Desktop',
+      license: 'Apache 2.0',
+      description: '',
+      hw: 'CPU',
+      memory: 4 * 1024 * 1024 * 1024,
+    }],
   });
 
   await waitFor(async () => {

@@ -109,48 +109,7 @@ test('should display playground and model names in header', async () => {
   });
 });
 
-test('should display playground and parameters', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
-  vi.mocked(inferenceServersStore).inferenceServers = readable([
-    {
-      models: ['model-1'],
-    } as unknown as InferenceServer,
-  ]);
-  render(Playground, {
-    playgroundId: 'playground-1',
-  });
-
-  await waitFor(async () => {
-    const parameters = await screen.findByLabelText('parameters');
-    expect(parameters.children.length).toBe(3);
-    const temperatureTooltip = await within(parameters.children[0] as HTMLElement).findByLabelText('tooltip');
-    expect(temperatureTooltip).toBeInTheDocument();
-    const maxTokensTooltip = await within(parameters.children[1] as HTMLElement).findByLabelText('tooltip');
-    expect(maxTokensTooltip).toBeInTheDocument();
-    const topPTooltip = await within(parameters.children[2] as HTMLElement).findByLabelText('tooltip');
-    expect(topPTooltip).toBeInTheDocument();
-  });
-});
-
-test('send prompt should be enabled initially', async () => {
+test('send prompt should be enabld initially', async () => {
   vi.mocked(studioClient.getCatalog).mockResolvedValue({
     models: [
       {

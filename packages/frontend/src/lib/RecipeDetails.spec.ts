@@ -109,7 +109,7 @@ const initialCatalog: ApplicationCatalog = {
       name: 'Recipe 1',
       readme: 'readme 1',
       categories: [],
-      models: ['model1', 'model2'],
+      recommended: ['model1', 'model2'],
       description: 'description 1',
       repository: 'repo 1',
     },

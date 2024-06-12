@@ -86,7 +86,10 @@ async function onFile(event: DragEvent): Promise<void> {
   if (files.length !== 1) {
     return;
   }
-  localModel = files[0];
+  localModel = {
+    ...files[0],
+    backend: InferenceType.LLAMA_CPP,
+  };
 }
 </script>
 
@@ -147,9 +150,7 @@ async function onFile(event: DragEvent): Promise<void> {
             <div class="flex flex-row items-center justify-center">
               <label for="backend" class="pt-4 grow block mb-2 text-sm font-bold text-gray-400">Backend</label>
               <Tooltip left>
-                <svelte:fragment slot="content">
-                  <Fa size="1.1x" class="cursor-pointer" icon="{faCircleInfo}" />
-                </svelte:fragment>
+                <Fa size="1.1x" class="cursor-pointer" icon="{faCircleInfo}" />
                 <svelte:fragment slot="tip">
                   <span class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs"
                     ><code>backends</code> represents the technology required to run the models.</span>

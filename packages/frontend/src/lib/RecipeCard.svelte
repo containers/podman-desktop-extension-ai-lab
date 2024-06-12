@@ -8,8 +8,6 @@ import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 import RecipeStatus from '/@/lib/RecipeStatus.svelte';
 
-export let background: string = 'bg-charcoal-600';
-
 export let recipe: Recipe;
 
 let localPath: LocalRepository | undefined = undefined;
@@ -18,7 +16,7 @@ $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
 
 <div class="no-underline">
   <div
-    class="{background} hover:bg-charcoal-500 flex-grow p-4 h-full rounded-md flex-nowrap flex flex-col"
+    class="bg-[var(--pd-content-card-bg)] hover:bg-[var(--pd-content-card-hover-bg)] flex-grow p-4 h-full rounded-md flex-nowrap flex flex-col"
     role="region">
     <!-- body -->
     <div class="flex flex-row text-base grow">

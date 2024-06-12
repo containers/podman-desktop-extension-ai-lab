@@ -6,8 +6,6 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 
 export let category: Category;
 export let recipes: Recipe[];
-
-export let secondaryBackground: string = 'bg-charcoal-700';
 </script>
 
 <Card title="{category.name}" classes="{$$props.class} text-sm font-medium mt-4">
@@ -17,7 +15,7 @@ export let secondaryBackground: string = 'bg-charcoal-700';
     {/if}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
       {#each recipes as recipe}
-        <RecipeCard recipe="{recipe}" background="{secondaryBackground}" />
+        <RecipeCard recipe="{recipe}" />
       {/each}
     </div>
   </div>

@@ -38,6 +38,7 @@ vi.mock('../assets/ai.json', () => {
 vi.mock('node:fs', () => {
   return {
     existsSync: vi.fn(),
+    mkdirSync: vi.fn(),
     promises: {
       readFile: vi.fn(),
       stat: vi.fn(),
@@ -174,6 +175,7 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
       creation: mtimeDate,
     },
     memory: 1,
+    backend: 'none',
   });
   const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
 
@@ -209,6 +211,7 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
 test('catalog should be the combination of user catalog and default catalog', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
   vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+  vi.spyOn(path, 'resolve').mockReturnValue('path');
 
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().length > userContent.models.length);
@@ -231,6 +234,7 @@ test('catalog should be the combination of user catalog and default catalog', as
 
 test('catalog should use user items in favour of default', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
+  vi.spyOn(path, 'resolve').mockReturnValue('path');
 
   const overwriteFullCatalog: ApplicationCatalog = {
     recipes: content.recipes.map(recipe => ({

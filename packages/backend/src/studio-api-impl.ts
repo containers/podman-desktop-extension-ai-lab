@@ -475,23 +475,18 @@ export class StudioApiImpl implements StudioAPI {
     return this.catalogManager.importUserModels(models);
   }
 
-  async checkInvalidModels(models: string[]): Promise<string[]> {
-    const invalidPaths: string[] = [];
+  async validateLocalModel(model: LocalModelImportInfo): Promise<void> {
     const catalogModels = await this.getModelsInfo();
-    for (const model of models) {
-      const modelPath = path.resolve(model);
-      for (const catalogModel of catalogModels) {
-        if (!catalogModel.file) {
-          continue;
-        }
-        const catalogModelPath = path.resolve(path.join(catalogModel.file.path, catalogModel.file.file));
-        if (modelPath === catalogModelPath) {
-          invalidPaths.push(model);
-          break;
-        }
+
+    for (const catalogModel of catalogModels) {
+      if (!catalogModel.file) {
+        continue;
+      }
+
+      if (catalogModel.file.path === path.dirname(model.path) && catalogModel.file.file === path.basename(model.path)) {
+        throw new Error('file already imported');
       }
     }
-    return invalidPaths;
   }
 
   copyToClipboard(content: string): Promise<void> {

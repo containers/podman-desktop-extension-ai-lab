@@ -15,26 +15,26 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { InferenceType } from './IInference';
+import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 
-export interface LocalModelInfo {
-  file: string;
-  path: string;
-  size?: number;
-  creation?: Date;
-}
+/**
+ * This would only work in Electron as the `path` property is
+ * not available is browser.
+ */
+export function getFilesFromDropEvent(event: DragEvent): LocalModelImportInfo[] {
+  if (!event.dataTransfer) return [];
+  const output: LocalModelImportInfo[] = [];
 
-export interface LocalModelImportInfo {
-  /**
-   * Absolute path to the models file
-   */
-  path: string;
-  /**
-   * Name that will be used to display the model
-   */
-  name: string;
-  /**
-   * The backend to use to run the model
-   */
-  backend?: InferenceType;
+  let files: File[];
+  if (event.dataTransfer.files.length) {
+    files = Array.from(event.dataTransfer.files);
+  } else {
+    files = Array.from(event.dataTransfer.items)
+      .map(item => item.getAsFile())
+      .filter((item): item is File => !!item);
+  }
+  for (const file of files) {
+    if (file && 'path' in file && typeof file.path === 'string') output.push({ path: file.path, name: file.name });
+  }
+  return output;
 }

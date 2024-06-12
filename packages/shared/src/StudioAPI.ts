@@ -182,11 +182,10 @@ export abstract class StudioAPI {
   abstract importModels(models: LocalModelImportInfo[]): Promise<void>;
 
   /**
-   * Check if there is some invalid model from the list of paths
-   * @param models list of local models path to import
-   * @returns the list of invalid models
+   * Validate a LocalModelImportInfo
+   * throw an error if invalid
    */
-  abstract checkInvalidModels(models: string[]): Promise<string[]>;
+  abstract validateLocalModel(model: LocalModelImportInfo): Promise<void>;
 
   /**
    * Copy the provided content to the user clipboard

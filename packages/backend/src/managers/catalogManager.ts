@@ -27,6 +27,7 @@ import { Disposable, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+import { InferenceType } from '@shared/src/models/IInference';
 
 export type catalogUpdateHandle = () => void;
 
@@ -218,6 +219,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
             creation: statFile.mtime,
           },
           memory: statFile.size,
+          backend: local.backend ?? InferenceType.NONE,
         };
       }),
     );

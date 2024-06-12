@@ -106,7 +106,7 @@ test('Expect import submit to call studioClient.importModels', async () => {
       {
         path: 'path/file.gguf',
         name: 'file',
-        backend: 'llamacpp',
+        backend: 'llama-cpp',
       },
     ]);
   });

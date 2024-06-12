@@ -19,16 +19,11 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
-import type { RecipeModelInfo } from '/@/models/RecipeModelInfo';
 import ModelColumnRecipeRecommended from './ModelColumnRecipeRecommended.svelte';
 
 test('expect the star icon to be rendered whn recipe is recommended', async () => {
   render(ModelColumnRecipeRecommended, {
-    object: {
-      id: 'id',
-      inUse: false,
-      recommended: true,
-    } as RecipeModelInfo,
+    object: true,
   });
 
   const starIcon = screen.getByTitle('Recommended model');
@@ -37,11 +32,7 @@ test('expect the star icon to be rendered whn recipe is recommended', async () =
 
 test('expect nothing when recipe is NOT recommended', async () => {
   render(ModelColumnRecipeRecommended, {
-    object: {
-      id: 'id',
-      inUse: false,
-      recommended: false,
-    } as RecipeModelInfo,
+    object: false,
   });
 
   const starIcon = screen.queryByTitle('Recommended model');

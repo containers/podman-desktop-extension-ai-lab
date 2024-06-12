@@ -55,9 +55,7 @@ export class RpcExtension implements Disposable {
   #webviewDisposable: Disposable | undefined;
   methods: Map<string, (...args: unknown[]) => Promise<unknown>> = new Map();
 
-  constructor(private webview: Webview) {
-    this.init();
-  }
+  constructor(private webview: Webview) {}
 
   dispose(): void {
     this.#webviewDisposable?.dispose();

@@ -52,8 +52,17 @@ beforeAll(() => {
   } as unknown as PodmanDesktopApi;
 });
 
+test('init logic should be executing once', () => {
+  vi.spyOn(webview, 'onDidReceiveMessage');
+  const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
+
+  expect(webview.onDidReceiveMessage).toHaveBeenCalledOnce();
+});
+
 test('Test register channel no argument', async () => {
   const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
   const rpcBrowser = new RpcBrowser(window, api);
 
   rpcExtension.register('ping', () => {
@@ -65,6 +74,7 @@ test('Test register channel no argument', async () => {
 
 test('Test register channel one argument', async () => {
   const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
   const rpcBrowser = new RpcBrowser(window, api);
 
   rpcExtension.register('double', (value: number) => {
@@ -76,6 +86,7 @@ test('Test register channel one argument', async () => {
 
 test('Test register channel multiple arguments', async () => {
   const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
   const rpcBrowser = new RpcBrowser(window, api);
 
   rpcExtension.register('sum', (...args: number[]) => {
@@ -93,6 +104,7 @@ test('Test register instance with async', async () => {
   }
 
   const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
   const rpcBrowser = new RpcBrowser(window, api);
 
   rpcExtension.registerInstance(Dummy, new Dummy());
@@ -103,6 +115,7 @@ test('Test register instance with async', async () => {
 
 test('Test raising exception', async () => {
   const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
   const rpcBrowser = new RpcBrowser(window, api);
 
   rpcExtension.register('raiseError', () => {
@@ -114,6 +127,7 @@ test('Test raising exception', async () => {
 
 test('A noTimeoutChannel should not call the setTimeout', async () => {
   const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
   const rpcBrowser = new RpcBrowser(window, api);
 
   rpcExtension.register('openDialog', () => {

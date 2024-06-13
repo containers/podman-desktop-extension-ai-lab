@@ -2,9 +2,10 @@
 import type { Recipe } from '@shared/src/models/IRecipe';
 import Fa from 'svelte-fa';
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
-import { faCircleChevronDown, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faCircleCheck, faDownload } from '@fortawesome/free-solid-svg-icons';
 import { Spinner } from '@podman-desktop/ui-svelte';
 import { studioClient } from '/@/utils/client';
+import { Tooltip } from '@podman-desktop/ui-svelte';
 
 export let recipe: Recipe;
 export let localRepository: LocalRepository | undefined;
@@ -27,20 +28,28 @@ function onClick(): void {
 </script>
 
 {#key loading}
-  <button
-    on:click="{onClick}"
-    disabled="{loading}"
-    class="border-2 justify-center relative rounded border-dustypurple-700 text-dustypurple-700 hover:bg-charcoal-800 hover:text-dustypurple-600 w-10 p-2 text-center cursor-pointer flex flex-row">
+  <Tooltip>
     {#if localRepository}
-      <div aria-label="chevron down icon">
-        <Fa size="sm" icon="{faCircleChevronDown}" />
+      <div aria-label="chevron down icon" class="text-dustypurple-700 p-2 w-10 text-center">
+        <Fa size="lg" icon="{faCircleCheck}" />
       </div>
-    {:else if loading}
-      <Spinner size="1em" />
     {:else}
-      <div aria-label="download icon">
-        <Fa size="sm" icon="{faDownload}" />
-      </div>
+      <button
+        on:click="{onClick}"
+        disabled="{loading}"
+        class="border-2 justify-center relative rounded border-dustypurple-700 text-dustypurple-700 hover:bg-charcoal-800 hover:text-dustypurple-600 w-10 p-2 text-center cursor-pointer flex flex-row">
+        {#if loading}
+          <Spinner size="1em" />
+        {:else}
+          <div aria-label="download icon">
+            <Fa size="sm" icon="{faDownload}" />
+          </div>
+        {/if}
+      </button>
     {/if}
-  </button>
+    <svelte:fragment slot="tip">
+      <span class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs"
+        >{loading ? 'Cloning...' : localRepository ? 'Recipe cloned' : 'Clone recipe'}</span>
+    </svelte:fragment>
+  </Tooltip>
 {/key}

@@ -248,6 +248,7 @@ export class Studio {
       this.#telemetry,
       this.#taskRegistry,
       this.#inferenceProviderRegistry,
+      this.#catalogManager,
     );
     this.#inferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#inferenceManager);

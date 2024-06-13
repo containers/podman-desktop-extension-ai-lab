@@ -31,6 +31,7 @@ import { basename, dirname } from 'node:path';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { CatalogManager } from '../catalogManager';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -48,6 +49,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     private telemetry: TelemetryLogger,
     private taskRegistry: TaskRegistry,
     private inferenceProviderRegistry: InferenceProviderRegistry,
+    private catalogManager: CatalogManager,
   ) {
     super(webview, Messages.MSG_INFERENCE_SERVERS_UPDATE, () => this.getServers());
     this.#servers = new Map<string, InferenceServer>();
@@ -59,8 +61,9 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     this.podmanConnection.onMachineStart(this.watchMachineEvent.bind(this, 'start'));
     this.podmanConnection.onMachineStop(this.watchMachineEvent.bind(this, 'stop'));
     this.containerRegistry.onStartContainerEvent(this.watchContainerStart.bind(this));
-
-    this.retryableRefresh(3);
+    this.catalogManager.onCatalogUpdate(() => {
+      this.retryableRefresh(3);
+    });
   }
 
   public isInitialize(): boolean {

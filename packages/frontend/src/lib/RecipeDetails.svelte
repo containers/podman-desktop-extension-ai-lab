@@ -135,7 +135,7 @@ const deleteLocalClone = () => {
       <div class="bg-charcoal-900 min-w-[200px] grow flex flex-col p-2 rounded-md space-y-3">
         <div class="flex justify-between items-center">
           <span class="text-sm" aria-label="model-selected">{model?.name}</span>
-          {#if recipe?.recommended?.[0] === model.id}
+          {#if recipe?.recommended?.includes(model.id)}
             <i class="fas fa-star fa-xs text-gray-900" title="Recommended model"></i>
           {/if}
         </div>
@@ -150,16 +150,14 @@ const deleteLocalClone = () => {
         {/if}
       </div>
       <div class="px-2 text-xs text-gray-700" aria-label="model-warning">
-        {#if recipe?.recommended?.[0] === model.id}
-          * This is the default, recommended model for this recipe. You can <a
+        {#if recipe?.recommended?.includes(model.id)}
+          * This is a recommended model for this recipe. You can <a
             class="underline"
             href="{`/recipe/${recipeId}/models`}">swap for a different compatible model</a
           >.
         {:else}
-          * The default model for this recipe is {findModel(recipe?.recommended?.[0])?.name}. You can
-          <a class="underline" href="{`/recipe/${recipeId}/models`}"
-            >swap for {findModel(recipe?.recommended?.[0])?.name} or a different compatible model</a
-          >.
+          * This is not a recommended model. You can
+          <a class="underline" href="{`/recipe/${recipeId}/models`}">swap in the models section</a>.
         {/if}
       </div>
     </div>

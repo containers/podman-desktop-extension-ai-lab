@@ -33,6 +33,7 @@ import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { Messages } from '@shared/Messages';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
+import type { CatalogManager } from '../catalogManager';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -86,7 +87,15 @@ const inferenceProviderRegistryMock = {
   get: vi.fn(),
 } as unknown as InferenceProviderRegistry;
 
+const catalogManager = {
+  onCatalogUpdate: vi.fn(),
+} as unknown as CatalogManager;
+
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
+  vi.mocked(catalogManager.onCatalogUpdate).mockImplementation(fn => {
+    fn();
+    return { dispose: vi.fn() };
+  });
   const manager = new InferenceManager(
     webviewMock,
     containerRegistryMock,
@@ -95,6 +104,7 @@ const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
     telemetryMock,
     taskRegistryMock,
     inferenceProviderRegistryMock,
+    catalogManager,
   );
   manager.init();
   await vi.waitUntil(manager.isInitialize.bind(manager), {

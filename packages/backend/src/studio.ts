@@ -85,11 +85,6 @@ export class Studio {
     const current = coerce(version);
     if (!current) return false;
 
-    if (current.major === 0 && current.minor === 0) {
-      console.warn('nightlies version are not subject to version verification.');
-      return true;
-    }
-
     return satisfies(current, engines['podman-desktop']);
   }
 

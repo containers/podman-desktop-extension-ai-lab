@@ -15,20 +15,30 @@ import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnecti
 import { modelsInfo } from '../stores/modelsInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
 import { router } from 'tinro';
+import { InferenceType } from '@shared/src/models/IInference';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export let recipeId: string;
 
 // The recipe model provided
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: categories = $catalog.categories;
+
+// model selected to start the recipe
 let selectedModelId: string;
-$: selectedModelId = recipe?.models?.[0] ?? '';
+$: selectedModelId = recipe?.recommended && recipe.recommended.length > 0 ? recipe?.recommended?.[0] : '';
+
 let connectionInfo: ContainerConnectionInfo | undefined;
 $: if ($modelsInfo && selectedModelId) {
   checkContainerConnectionStatus($modelsInfo, selectedModelId, 'recipe')
     .then(value => (connectionInfo = value))
     .catch((e: unknown) => console.log(String(e)));
 }
+
+let models: ModelInfo[];
+$: models = $catalog.models.filter(
+  model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE),
+);
 
 // Send recipe info to telemetry
 let recipeTelemetry: string | undefined = undefined;
@@ -68,8 +78,9 @@ function setSelectedModel(modelId: string) {
         </Route>
         <Route path="/models">
           <RecipeModels
-            modelsIds="{recipe?.models}"
-            selectedModelId="{selectedModelId}"
+            models="{models}"
+            selected="{selectedModelId}"
+            recommended="{recipe?.recommended ?? []}"
             setSelectedModel="{setSelectedModel}" />
         </Route>
       </svelte:fragment>

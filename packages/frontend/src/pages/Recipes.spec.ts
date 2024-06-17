@@ -50,7 +50,7 @@ beforeEach(() => {
       {
         id: 'recipe1',
         name: 'Recipe 1',
-        models: ['model1'],
+        recommended: ['model1'],
         categories: [],
         description: 'Recipe 1',
         readme: '',
@@ -59,7 +59,7 @@ beforeEach(() => {
       {
         id: 'recipe2',
         name: 'Recipe 2',
-        models: ['model2'],
+        recommended: ['model2'],
         categories: ['dummy-category'],
         description: 'Recipe 2',
         readme: '',

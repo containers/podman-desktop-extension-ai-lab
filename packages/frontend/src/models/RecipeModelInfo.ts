@@ -18,6 +18,7 @@
 
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
+// todo :remove
 export interface RecipeModelInfo extends ModelInfo {
   recommended: boolean;
   inUse: boolean;

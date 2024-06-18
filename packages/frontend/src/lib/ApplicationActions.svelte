@@ -13,7 +13,6 @@ import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import { router } from 'tinro';
 import DropDownMenu from './DropDownMenu.svelte';
 import FlatMenu from './FlatMenu.svelte';
-import { onMount } from 'svelte';
 export let object: ApplicationState | undefined;
 export let recipeId: string;
 export let modelId: string;

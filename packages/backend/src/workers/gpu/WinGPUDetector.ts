@@ -77,7 +77,7 @@ export class WinGPUDetector extends WindowsWorker<void, IGPUInfo[]> {
       const values = await this.getValues(subkey);
       return this.extractGpuInfo(values);
     } catch (error) {
-      console.error(`Error processing subkey: ${subkey.key}, error: ${error.message}`);
+      console.error(`Error processing subkey: ${subkey.key}, error: ${error}`);
       return undefined;
     }
   }
@@ -95,7 +95,7 @@ export class WinGPUDetector extends WindowsWorker<void, IGPUInfo[]> {
       const gpuInfos = await Promise.all(gpuInfoPromises);
       return gpuInfos.filter(info => info !== undefined) as IGPUInfo[];
     } catch (error) {
-      throw new Error(`Failed to get GPU information: ${error.message}`);
+      throw new Error(`Failed to get GPU information: ${error}`);
     }
   }
 }

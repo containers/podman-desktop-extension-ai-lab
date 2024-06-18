@@ -17,7 +17,6 @@ import { tasks } from '/@/stores/tasks';
 import { filterByLabel } from '/@/utils/taskUtils';
 import PodIcon from '/@/lib/images/PodIcon.svelte';
 import StatusIcon from '/@/lib/StatusIcon.svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getApplicationStatus, getApplicationStatusText } from '../pages/applications';
 import { Button, Spinner } from '@podman-desktop/ui-svelte';
 
@@ -56,10 +55,6 @@ const navigateToPod = () => {
     studioClient.navigateToPod(appState.pod.Id);
   }
 };
-
-function findModel(id: string | undefined): ModelInfo | undefined {
-  return $catalog.models.find(m => m.id === id);
-}
 
 function startApplication() {
   studioClient.pullApplication(recipeId, modelId).catch((err: unknown) => {

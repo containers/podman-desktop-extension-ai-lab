@@ -24,7 +24,6 @@ export let playgroundId: string;
 let prompt: string;
 let sendEnabled = false;
 let scrollable: Element;
-let lastIsUserMessage = false;
 let errorMsg = '';
 
 // settings
@@ -41,7 +40,6 @@ $: {
     if (isSystemPrompt(latest) || (isAssistantChat(latest) && !isPendingChat(latest))) {
       sendEnabled = true;
     }
-    lastIsUserMessage = isUserChat(latest);
   } else {
     sendEnabled = true;
   }

@@ -703,12 +703,13 @@ test('getBehindAhead', async () => {
 
 test('getTrackingBranch', async () => {
   const gitmanager = new GitManager();
-  mocks.getConfigMock.mockImplementation(async ({ path }: { path: string }) => {
+  mocks.getConfigMock.mockImplementation(async ({ path }: { path: string }): Promise<string> => {
     if (path === 'branch.my-branch.remote') {
       return 'origin';
     } else if (path === 'branch.my-branch.merge') {
       return 'refs/heads/my-remote-branch';
     }
+    throw new Error('should never been reached');
   });
   const result = await gitmanager.getTrackingBranch('path/to/repository', 'my-branch');
   expect(result).toEqual('origin/my-remote-branch');

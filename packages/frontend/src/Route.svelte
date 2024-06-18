@@ -1,7 +1,7 @@
 <script lang="ts">
 import { createRouteObject } from 'tinro/dist/tinro_lib';
 import type { TinroRouteMeta } from 'tinro';
-import { saveRouterState, studioClient } from '/@/utils/client';
+import { saveRouterState } from '/@/utils/client';
 
 export let path = '/*';
 export let fallback = false;

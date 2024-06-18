@@ -123,7 +123,19 @@ test('expect error message to be hidden when models locally', () => {
 
 test('button click should call createInferenceServer', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
+
+  let onMountDone = false;
+  vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((_f: (tasks: Task[]) => void) => {
+    onMountDone = true;
+    return () => {};
+  });
+
   render(CreateService);
+
+  // wait for onMount to be called
+  await vi.waitFor(() => {
+    expect(onMountDone).toBeTruthy();
+  });
 
   let createBtn: HTMLElement | undefined = undefined;
   await vi.waitFor(() => {

@@ -29,7 +29,7 @@ import type {
   TelemetryLogger,
   Webview,
 } from '@podman-desktop/api';
-import { containerEngine, Disposable } from '@podman-desktop/api';
+import { containerEngine, Disposable, window, ProgressLocation } from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
@@ -106,7 +106,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
     const task = this.taskRegistry.createTask(`Pulling ${recipe.name} recipe`, 'loading', labels);
 
-    this.pullApplication(recipe, model, labels)
+    window
+      .withProgress({ location: ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` }, () =>
+        this.pullApplication(recipe, model, labels),
+      )
       .then(() => {
         task.state = 'success';
       })

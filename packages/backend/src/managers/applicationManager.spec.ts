@@ -176,7 +176,7 @@ describe('pullApplication', () => {
       }
       return false;
     });
-    vi.spyOn(fs, 'statSync').mockImplementation((path: PathLike) => {
+    vi.spyOn(fs, 'statSync').mockImplementation((path: PathLike): fs.Stats => {
       path = path.toString();
       if (path.endsWith('recipe1')) {
         const stat = new fs.Stats();
@@ -187,6 +187,7 @@ describe('pullApplication', () => {
         stat.isDirectory = () => false;
         return stat;
       }
+      throw new Error('should never be reached');
     });
     vi.spyOn(fs, 'readFileSync').mockImplementation(() => {
       return '';

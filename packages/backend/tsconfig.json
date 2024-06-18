@@ -19,13 +19,10 @@
     "paths": {
       "@shared/*": ["../shared/*"]
     },
-    "strictBindCallApply": true,
-    "alwaysStrict": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "strictPropertyInitialization": true
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
   },
   "include": [
     "src",

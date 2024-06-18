@@ -2,9 +2,8 @@
 import { faCircleInfo, faFileImport } from '@fortawesome/free-solid-svg-icons';
 import { studioClient } from '../utils/client';
 import { Uri } from '@shared/src/uri/Uri';
-import NavPage from '../lib/NavPage.svelte';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
-import { Button, ErrorMessage, Tooltip } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage, Tooltip } from '@podman-desktop/ui-svelte';
 import { InferenceType } from '@shared/src/models/IInference';
 import Fa from 'svelte-fa';
 import { getFilesFromDropEvent } from '/@/utils/fileUtils';
@@ -91,13 +90,24 @@ async function onFile(event: DragEvent): Promise<void> {
     backend: InferenceType.LLAMA_CPP,
   };
 }
+
+export function goToUpPage(): void {
+  router.goto('/models');
+}
 </script>
 
-<NavPage
-  lastPage="{{ name: 'Models', path: '/models' }}"
-  icon="{faFileImport}"
+<FormPage
   title="Import Model"
-  searchEnabled="{false}">
+  breadcrumbLeftPart="Models"
+  breadcrumbRightPart="Import Model"
+  breadcrumbTitle="Go back to Models Catalog"
+  on:close="{goToUpPage}"
+  on:breadcrumbClick="{goToUpPage}">
+  <svelte:fragment slot="icon">
+    <div class="rounded-full w-8 h-8 flex items-center justify-center">
+      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{faFileImport}" />
+    </div>
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex m-5 flex-col w-full">
       <!-- Error banner -->
@@ -108,7 +118,7 @@ async function onFile(event: DragEvent): Promise<void> {
       </div>
 
       <!-- form -->
-      <div class="bg-charcoal-800 space-y-6 px-8 sm:py-6 xl:py-8 rounded-lg h-fit">
+      <div class="bg-[var(--pd-content-card-bg)] space-y-6 px-8 sm:py-6 xl:py-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- model input -->
           {#if localModel === undefined}
@@ -123,7 +133,7 @@ async function onFile(event: DragEvent): Promise<void> {
               on:dragleave|preventDefault="{() => (dragging = false)}"
               class="w-full cursor-pointer flex-col px-4 py-8 border-2 border-dashed rounded flex justify-center items-center">
               <Fa size="1.1x" class="cursor-pointer text-purple-400" icon="{faFileImport}" />
-              <span>Drag & Drop or <strong class="text-purple-400">Choice file</strong> to import</span>
+              <span>Drag & Drop or <strong class="text-purple-400">Choose file</strong> to import</span>
               <span class="text-gray-800 text-sm">Supported format: .guff, .bin</span>
             </button>
           {:else}
@@ -183,4 +193,4 @@ async function onFile(event: DragEvent): Promise<void> {
       </div>
     </div>
   </svelte:fragment>
-</NavPage>
+</FormPage>

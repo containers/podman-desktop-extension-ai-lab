@@ -122,5 +122,5 @@ test('perform should handle errors and return an empty list', async () => {
 
   const detector = new WinGPUDetector();
 
-  await expect(detector.perform()).rejects.toThrowError('Failed to get GPU information: test error');
+  await expect(detector.perform()).rejects.toThrowError('Failed to get GPU information: Error: test error');
 });

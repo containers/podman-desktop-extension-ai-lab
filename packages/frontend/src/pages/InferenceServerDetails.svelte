@@ -152,7 +152,7 @@ export function goToUpPage(): void {
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <div slot="content" class="h-full overflow-y-auto">
+    <div slot="content" class="h-full overflow-y-auto bg-[var(--pd-content-bg)]">
       <div class="flex flex-col min-w-full min-h-full">
         <div class="min-w-full min-h-full flex-1">
           <div class="mt-4 px-5 space-y-5">

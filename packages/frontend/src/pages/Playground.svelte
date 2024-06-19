@@ -2,7 +2,6 @@
 import { conversations } from '../stores/conversations';
 import { studioClient } from '/@/utils/client';
 import { isAssistantChat, isPendingChat, isUserChat, isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
-import NavPage from '../lib/NavPage.svelte';
 import { catalog } from '../stores/catalog';
 import { afterUpdate } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
@@ -13,7 +12,7 @@ import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import { faCircleInfo, faMicrochip, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { Button, Tooltip } from '@podman-desktop/ui-svelte';
+import { Button, Tooltip, DetailsPage } from '@podman-desktop/ui-svelte';
 import StatusIcon from '../lib/StatusIcon.svelte';
 import Badge from '../lib/Badge.svelte';
 import { router } from 'tinro';
@@ -134,14 +133,20 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
   }
   return undefined;
 }
+
+export function goToUpPage(): void {
+  router.goto('/playgrounds');
+}
 </script>
 
 {#if conversation}
-  <NavPage
-    lastPage="{{ name: 'Playgrounds', path: '/playgrounds' }}"
+  <DetailsPage
     title="{conversation?.name}"
-    searchEnabled="{false}"
-    contentBackground="bg-charcoal-500">
+    breadcrumbLeftPart="Playgrounds"
+    breadcrumbRightPart="{conversation?.name}"
+    breadcrumbTitle="Go back to Playgrounds"
+    on:close="{goToUpPage}"
+    on:breadcrumbClick="{goToUpPage}">
     <svelte:fragment slot="icon">
       <div class="mr-3">
         <StatusIcon
@@ -160,13 +165,13 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
         {/if}
       </div>
     </svelte:fragment>
-    <svelte:fragment slot="additional-actions">
+    <svelte:fragment slot="actions">
       <div class="bg-charcoal-800 rounded-lg">
         <ConversationActions conversation="{conversation}" />
       </div>
     </svelte:fragment>
     <svelte:fragment slot="content">
-      <div class="flex flex-col w-full h-full">
+      <div class="flex flex-col w-full h-full bg-charcoal-500">
         <div class="h-full overflow-auto" bind:this="{scrollable}">
           <ContentDetailsLayout detailsTitle="Settings" detailsLabel="settings">
             <svelte:fragment slot="content">
@@ -266,5 +271,5 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
         </div>
       </div>
     </svelte:fragment>
-  </NavPage>
+  </DetailsPage>
 {/if}

@@ -1,7 +1,6 @@
 <script lang="ts">
 import type { InferenceServer } from '@shared/src/models/IInference';
 import ServiceColumnName from '/@/lib/table/service/ServiceColumnName.svelte';
-import NavPage from '/@/lib/NavPage.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
@@ -11,7 +10,7 @@ import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
 import { Button } from '@podman-desktop/ui-svelte';
-import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<InferenceServer>[] = [
   new TableColumn<InferenceServer>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),

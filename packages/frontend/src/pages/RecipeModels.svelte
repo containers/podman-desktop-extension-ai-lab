@@ -5,6 +5,7 @@ import ModelColumnRecipeRecommended from '../lib/table/model/ModelColumnRecipeRe
 import ModelColumnIcon from '/@/lib/table/model/ModelColumnIcon.svelte';
 import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { RecipeModelInfo } from '../models/RecipeModelInfo';
 
 export let models: ModelInfo[];
 export let recommended: string[];
@@ -19,7 +20,7 @@ $: models = models.map((m, i) => {
 });
 
 const columns = [
-  new TableColumn<ModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
+  new TableColumn<RecipeModelInfo>('', { width: '20px', renderer: ModelColumnRecipeSelection }),
   new TableColumn<ModelInfo, boolean>('', {
     width: '20px',
     renderer: ModelColumnRecipeRecommended,

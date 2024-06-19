@@ -1,6 +1,5 @@
 <script lang="ts">
 import { faExclamationCircle, faInfoCircle, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
-import NavPage from '../lib/NavPage.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import Fa from 'svelte-fa';
@@ -12,7 +11,7 @@ import TasksProgress from '../lib/progress/TasksProgress.svelte';
 import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
-import { Button, ErrorMessage } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage } from '@podman-desktop/ui-svelte';
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
@@ -102,13 +101,24 @@ onMount(() => {
 onDestroy(() => {
   unsubscribeTasks?.();
 });
+
+export function goToUpPage(): void {
+  router.goto('/playgrounds');
+}
 </script>
 
-<NavPage
-  lastPage="{{ name: 'Playgrounds', path: '/playgrounds' }}"
-  icon="{faPlus}"
+<FormPage
   title="New Playground environment"
-  searchEnabled="{false}">
+  breadcrumbLeftPart="Playgrounds"
+  breadcrumbRightPart="New Playground environment"
+  breadcrumbTitle="Go back to Playgrounds"
+  on:close="{goToUpPage}"
+  on:breadcrumbClick="{goToUpPage}">
+  <svelte:fragment slot="icon">
+    <div class="rounded-full w-8 h-8 flex items-center justify-center">
+      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{faPlus}" />
+    </div>
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
       <!-- tasks tracked -->
@@ -119,7 +129,7 @@ onDestroy(() => {
       {/if}
 
       <!-- form -->
-      <div class="bg-charcoal-800 m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
+      <div class="bg-[var(--pd-content-card-bg)] m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- playground name input -->
           <label for="playgroundName" class="block mb-2 text-sm font-bold text-gray-400">Playground name</label>
@@ -190,4 +200,4 @@ onDestroy(() => {
       </div>
     </div>
   </svelte:fragment>
-</NavPage>
+</FormPage>

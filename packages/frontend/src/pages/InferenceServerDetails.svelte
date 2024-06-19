@@ -1,6 +1,5 @@
 <script lang="ts">
 import { inferenceServers } from '/@/stores/inferenceServers';
-import NavPage from '/@/lib/NavPage.svelte';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
@@ -12,7 +11,7 @@ import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 import Badge from '/@/lib/Badge.svelte';
-import { Button } from '@podman-desktop/ui-svelte';
+import { Button, DetailsPage } from '@podman-desktop/ui-svelte';
 
 export let containerId: string | undefined = undefined;
 
@@ -117,9 +116,19 @@ onMount(() => {
     }
   });
 });
+
+export function goToUpPage(): void {
+  router.goto('/services');
+}
 </script>
 
-<NavPage lastPage="{{ name: 'Model Services', path: '/services' }}" title="Service details" searchEnabled="{false}">
+<DetailsPage 
+  title="Service details"
+  breadcrumbLeftPart="Model Services"
+  breadcrumbRightPart="Service details"
+  breadcrumbTitle="Go back to Model Services"
+  on:close="{goToUpPage}"
+  on:breadcrumbClick="{goToUpPage}">
   <svelte:fragment slot="icon">
     <div class="mr-3">
       {#if service !== undefined}
@@ -137,7 +146,7 @@ onMount(() => {
       {/if}
     </div>
   </svelte:fragment>
-  <svelte:fragment slot="additional-actions">
+  <svelte:fragment slot="actions">
     {#if service !== undefined}
       <ServiceAction detailed object="{service}" />
     {/if}
@@ -243,4 +252,4 @@ onMount(() => {
       </div>
     </div>
   </svelte:fragment>
-</NavPage>
+</DetailsPage>

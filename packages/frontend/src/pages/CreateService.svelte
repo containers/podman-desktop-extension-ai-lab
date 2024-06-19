@@ -1,5 +1,4 @@
 <script lang="ts">
-import NavPage from '/@/lib/NavPage.svelte';
 import { faExclamationCircle, faLocationArrow, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -15,7 +14,7 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
-import { Button, ErrorMessage } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage } from '@podman-desktop/ui-svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];
@@ -124,14 +123,24 @@ onMount(async () => {
     processTasks(tasks);
   });
 });
+
+export function goToUpPage(): void {
+  router.goto('/services');
+}
 </script>
 
-<NavPage
-  lastPage="{{ name: 'Model Services', path: '/services' }}"
-  icon="{faPlus}"
+<FormPage
   title="Creating Model service"
-  searchEnabled="{false}"
-  loading="{containerPort === undefined}">
+  breadcrumbLeftPart="Model Services"
+  breadcrumbRightPart="Creating Model service"
+  breadcrumbTitle="Go back to Model Services"
+  on:close="{goToUpPage}"
+  on:breadcrumbClick="{goToUpPage}">
+  <svelte:fragment slot="icon">
+    <div class="rounded-full w-8 h-8 flex items-center justify-center">
+      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{faPlus}" />
+    </div>
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
       <!-- warning machine resources -->
@@ -149,7 +158,7 @@ onMount(async () => {
       {/if}
 
       <!-- form -->
-      <div class="bg-charcoal-800 m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
+      <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- model input -->
           <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
@@ -201,7 +210,7 @@ onMount(async () => {
                 title="Create service"
                 inProgress="{loading}"
                 on:click="{submit}"
-                disabled="{!modelId}"
+                disabled="{!modelId || !containerPort}"
                 icon="{faPlusCircle}">
                 Create service
               </Button>
@@ -219,4 +228,4 @@ onMount(async () => {
       </div>
     </div>
   </svelte:fragment>
-</NavPage>
+</FormPage>

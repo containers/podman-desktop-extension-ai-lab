@@ -123,12 +123,14 @@ test('expect error message to be hidden when models locally', () => {
 
 test('button click should call createInferenceServer', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
+
   render(CreateService);
 
   let createBtn: HTMLElement | undefined = undefined;
   await vi.waitFor(() => {
     createBtn = screen.getByTitle('Create service');
     expect(createBtn).toBeDefined();
+    expect(createBtn).toBeEnabled();
   });
 
   if (createBtn === undefined) throw new Error('createBtn undefined');

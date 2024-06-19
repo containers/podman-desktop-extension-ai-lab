@@ -12,7 +12,7 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
-    "@podman-desktop/ui-svelte": "^1.11.0-202406181903-a7b815c",
+    "@podman-desktop/ui-svelte": "^1.11.0-202406191438-fe235e7",
     "tinro": "^0.6.12"
   },
   "devDependencies": {

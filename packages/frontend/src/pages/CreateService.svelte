@@ -210,7 +210,7 @@ export function goToUpPage(): void {
                 title="Create service"
                 inProgress="{loading}"
                 on:click="{submit}"
-                disabled="{!modelId}"
+                disabled="{!modelId || !containerPort}"
                 icon="{faPlusCircle}">
                 Create service
               </Button>

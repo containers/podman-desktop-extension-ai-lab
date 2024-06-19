@@ -99,11 +99,10 @@ test('should display playground and model names in header', async () => {
   });
 
   await waitFor(() => {
-    const header = screen.getByRole('region', { name: 'header' });
-    expect(header).toBeInTheDocument();
-    const title = within(header).getAllByText('Playground 1')[0];
+    // TODO: restrict to header when https://github.com/containers/podman-desktop/issues/7740 is fixed
+    const title = screen.getAllByText('Playground 1')[0];
     expect(title).toBeInTheDocument();
-    const subtitle = within(header).getByLabelText('Model name');
+    const subtitle = screen.getByLabelText('Model name');
     expect(subtitle).toBeInTheDocument();
     expect(subtitle.textContent).equals('Model 1');
   });

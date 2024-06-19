@@ -1,5 +1,4 @@
 <script lang="ts">
-import NavPage from '../lib/NavPage.svelte';
 import { applicationStates } from '../stores/application-states';
 import ColumnActions from '../lib/table/application/ColumnActions.svelte';
 import ColumnStatus from '../lib/table/application/ColumnStatus.svelte';
@@ -10,7 +9,7 @@ import ColumnAge from '../lib/table/application/ColumnAge.svelte';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
-import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<ApplicationState>[] = [
   new TableColumn<ApplicationState>('Status', { width: '70px', align: 'center', renderer: ColumnStatus }),

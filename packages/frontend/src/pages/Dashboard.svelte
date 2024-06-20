@@ -39,7 +39,7 @@ const openDiscussionsPage = () => {
     <Button type="secondary" title="Open GitHub repository" on:click="{openGithub}" icon="{faGithub}">Github</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <div slot="content" class="flex flex-col min-w-full min-h-full">
+    <div slot="content" class="flex flex-col min-w-full min-h-full text-[var(--pd-details-body-text)]">
       <div class="mt-4 px-5 space-y-5" aria-label="inner-content">
         <DashboardBanner class="rounded-md my-2 w-full" />
         <p>

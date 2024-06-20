@@ -1,23 +1,30 @@
 <script lang="ts">
-import NavPage from '/@/lib/NavPage.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import { catalog } from '/@/stores/catalog';
+import { DetailsPage } from '@podman-desktop/ui-svelte';
+import { router } from 'tinro';
 
 export let modelId: string;
 
 $: model = $catalog.models.find(m => m.id === modelId);
+
+export function goToUpPage(): void {
+  router.goto('/models');
+}
 </script>
 
-<NavPage
-  lastPage="{{ name: 'Models', path: '/models' }}"
+<DetailsPage
   title="{model?.name || ''}"
-  searchEnabled="{false}"
-  loading="{model === undefined}">
+  breadcrumbLeftPart="Models"
+  breadcrumbRightPart="{model?.name || ''}"
+  breadcrumbTitle="Go back to Models"
+  on:close="{goToUpPage}"
+  on:breadcrumbClick="{goToUpPage}">
   <svelte:fragment slot="content">
-    <div class="flex flex-row w-full">
+    <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
       <div class="flex-grow p-5">
         <MarkdownRenderer source="{model?.description}" />
       </div>
     </div>
   </svelte:fragment>
-</NavPage>
+</DetailsPage>

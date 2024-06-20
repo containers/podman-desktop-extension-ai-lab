@@ -10,10 +10,10 @@ $: name = $catalog.recipes.find(r => r.id === object.recipeId)?.name;
 </script>
 
 <div class="flex flex-col">
-  <div class="text-sm text-gray-300 overflow-hidden text-ellipsis">
+  <div class="text-sm text-[var(--pd-table-body-text-highlight)] overflow-hidden text-ellipsis">
     {name}
   </div>
-  <div class="text-sm text-gray-700 overflow-hidden text-ellipsis">
+  <div class="text-sm text-[var(--pd-table-body-text)] overflow-hidden text-ellipsis">
     {displayPorts(object.appPorts)}
   </div>
 </div>

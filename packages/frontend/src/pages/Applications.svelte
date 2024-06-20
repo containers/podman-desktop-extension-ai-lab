@@ -46,7 +46,7 @@ onMount(() => {
         {#if data?.length > 0}
           <Table kind="AI App" data="{data}" columns="{columns}" row="{row}"></Table>
         {:else}
-          <div class="w-full flex items-center justify-center">
+          <div class="w-full flex items-center justify-center text-[var(--pd-content-text)]">
             <div role="status">
               There is no AI App running. You may run a new AI App via the <a
                 href="{'javascript:void(0);'}"

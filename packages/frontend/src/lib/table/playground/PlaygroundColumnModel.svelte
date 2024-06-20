@@ -6,6 +6,6 @@ import { catalog } from '/@/stores/catalog';
 $: name = $catalog.models.find(r => r.id === object.modelId)?.name;
 </script>
 
-<div class="text-sm text-gray-300 overflow-hidden text-ellipsis">
+<div class="text-sm text-[var(--pd-table-body-text)] overflow-hidden text-ellipsis">
   {name}
 </div>

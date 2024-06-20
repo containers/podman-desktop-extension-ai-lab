@@ -11,7 +11,7 @@ import TasksProgress from '../lib/progress/TasksProgress.svelte';
 import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
-import { Button, ErrorMessage, FormPage } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
@@ -132,11 +132,12 @@ export function goToUpPage(): void {
       <div class="bg-[var(--pd-content-card-bg)] m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- playground name input -->
-          <label for="playgroundName" class="block mb-2 text-sm font-bold text-gray-400">Playground name</label>
-          <input
+          <label for="playgroundName" class="block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+            >Playground name</label>
+          <Input
             disabled="{submitted}"
             id="playgroundName"
-            class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
+            class="w-full"
             type="text"
             name="playgroundName"
             on:input="{onNameInput}"
@@ -144,7 +145,8 @@ export function goToUpPage(): void {
             aria-label="playgroundName" />
 
           <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
+          <label for="model" class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+            >Model</label>
           <select
             required
             disabled="{submitted}"
@@ -169,7 +171,7 @@ export function goToUpPage(): void {
               </div>
             </div>
           {:else if availModels.length > 0}
-            <div class="text-sm p-1 flex flex-row items-center text-gray-500">
+            <div class="text-sm p-1 flex flex-row items-center text-[var(--pd-content-card-text)]">
               <Fa size="1.1x" class="cursor-pointer" icon="{faInfoCircle}" />
               <div role="alert" aria-label="Info Message Content" class="ml-2">
                 Other models are available, but must be downloaded from the <a

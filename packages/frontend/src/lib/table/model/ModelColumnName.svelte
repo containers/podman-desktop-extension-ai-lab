@@ -13,13 +13,16 @@ function openDetails() {
   title="{object.name}"
   on:click="{() => openDetails()}"
   aria-label="Open Model Details">
-  <div class="text-sm text-gray-300 overflow-hidden text-ellipsis w-full text-left" aria-label="Model Name">
+  <div
+    class="text-sm text-[var(--pd-table-body-text-highlight)] overflow-hidden text-ellipsis w-full text-left"
+    aria-label="Model Name">
     {object.name}
   </div>
   {#if object.registry || object.license}
-    <span class="text-xs text-gray-700" aria-label="Model Info">{object.registry} - {object.license}</span>
+    <span class="text-xs text-[var(--pd-table-body-text)]" aria-label="Model Info"
+      >{object.registry} - {object.license}</span>
   {/if}
   {#if !object.registry && !object.license && !object.url}
-    <span class="text-xs text-gray-700" aria-label="Imported Model Info">Imported by User</span>
+    <span class="text-xs text-[var(--pd-table-body-text)]" aria-label="Imported Model Info">Imported by User</span>
   {/if}
 </button>

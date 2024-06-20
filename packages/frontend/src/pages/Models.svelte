@@ -132,7 +132,7 @@ async function importModel() {
               {#if filteredModels.length > 0}
                 <Table kind="model" data="{filteredModels}" columns="{columns}" row="{row}"></Table>
               {:else}
-                <div role="status">There are no models yet</div>
+                <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
               {/if}
             </Route>
 
@@ -141,7 +141,7 @@ async function importModel() {
               {#if localModels.length > 0}
                 <Table kind="model" data="{localModels}" columns="{columns}" row="{row}"></Table>
               {:else}
-                <div role="status">There are no models yet</div>
+                <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
               {/if}
             </Route>
 
@@ -150,7 +150,7 @@ async function importModel() {
               {#if importedModels.length > 0}
                 <Table kind="model" data="{importedModels}" columns="{columns}" row="{row}"></Table>
               {:else}
-                <div role="status">There are no models yet</div>
+                <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
               {/if}
             </Route>
 
@@ -159,7 +159,7 @@ async function importModel() {
               {#if remoteModels.length > 0}
                 <Table kind="model" data="{remoteModels}" columns="{columns}" row="{row}"></Table>
               {:else}
-                <div role="status">There are no models yet</div>
+                <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
               {/if}
             </Route>
           {/if}

@@ -26,7 +26,9 @@ export let primaryBackground: string = 'bg-charcoal-800';
             <Fa size="1x" class="text-purple-500 cursor-pointer" icon="{icon}" />
           </button>
         {/if}
-        <div class="flex flex-col text-gray-400 whitespace-normal space-y-2" aria-label="context-name">
+        <div
+          class="flex flex-col text-[var(--pd-content-card-text)] whitespace-normal space-y-2"
+          aria-label="context-name">
           {#if title}
             <div class="text-sm">
               {title}

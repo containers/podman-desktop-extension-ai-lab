@@ -243,7 +243,7 @@ test('form should be disabled when loading', async () => {
     const select = screen.getByRole('combobox', { name: 'Model select' });
     expect(select).toBeDisabled();
 
-    const input = screen.getByRole('spinbutton', { name: 'Port input' });
+    const input = screen.getByRole('textbox', { name: 'Port input' });
     expect(input).toBeDisabled();
   });
 });

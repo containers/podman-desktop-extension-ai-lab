@@ -14,7 +14,7 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
-import { Button, ErrorMessage, FormPage } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];
@@ -161,7 +161,8 @@ export function goToUpPage(): void {
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
+          <label for="model" class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+            >Model</label>
           <select
             required
             bind:value="{modelId}"
@@ -188,12 +189,13 @@ export function goToUpPage(): void {
             </div>
           {/if}
           <!-- container port input -->
-          <label for="containerPort" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Container port</label>
-          <input
+          <label for="containerPort" class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+            >Container port</label>
+          <Input
             type="number"
             bind:value="{containerPort}"
             on:input="{onContainerPortInput}"
-            class="w-full p-2 outline-none text-sm bg-charcoal-600 rounded-sm text-gray-700 placeholder-gray-700"
+            class="w-full"
             placeholder="8888"
             name="containerPort"
             aria-label="Port input"

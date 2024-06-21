@@ -37,7 +37,7 @@ function onClick(): void {
       <button
         on:click="{onClick}"
         disabled="{loading}"
-        class="border-2 justify-center relative rounded border-dustypurple-700 text-dustypurple-700 hover:bg-charcoal-800 hover:text-dustypurple-600 w-10 p-2 text-center cursor-pointer flex flex-row">
+        class="border-2 justify-center relative rounded border-[var(--pd-button-secondary)] text-[var(--pd-button-secondary)] hover:bg-[var(--pd-button-secondary-hover)] hover:border-[var(--pd-button-secondary-hover)] hover:text-[var(--pd-button-text)] w-10 p-2 text-center cursor-pointer flex flex-row">
         {#if loading}
           <Spinner size="1em" />
         {:else}
@@ -48,7 +48,7 @@ function onClick(): void {
       </button>
     {/if}
     <svelte:fragment slot="tip">
-      <span class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs"
+      <span class="inline-block py-2 px-4 rounded-md text-xs"
         >{loading ? 'Cloning...' : localRepository ? 'Recipe cloned' : 'Clone recipe'}</span>
     </svelte:fragment>
   </Tooltip>

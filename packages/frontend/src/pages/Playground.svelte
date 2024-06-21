@@ -257,7 +257,8 @@ export function goToUpPage(): void {
             on:keydown="{handleKeydown}"
             rows="2"
             class="w-full p-2 outline-none text-sm rounded-sm bg-charcoal-800 text-white placeholder-white"
-            placeholder="Type your prompt here"></textarea>
+            placeholder="Type your prompt here"
+            disabled="{!sendEnabled}"></textarea>
 
           <div class="flex-none text-right m-4">
             <Button

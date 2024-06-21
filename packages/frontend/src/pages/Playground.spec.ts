@@ -263,7 +263,7 @@ test('send prompt should be enabled initially, with a system prompt', async () =
   });
 });
 
-test('sending prompt should disable the send button', async () => {
+test('sending prompt should disable the send button and the input element', async () => {
   vi.mocked(studioClient.getCatalog).mockResolvedValue({
     models: [
       {
@@ -304,10 +304,12 @@ test('sending prompt should disable the send button', async () => {
   await waitFor(() => {
     send = screen.getByRole('button', { name: 'Send prompt' });
     expect(send).toBeDisabled();
+    const input = screen.getByRole('textbox', { name: 'prompt' });
+    expect(input).toBeDisabled();
   });
 });
 
-test('sending prompt not using button should disable the send button', async () => {
+test('sending prompt not using button should disable the send button and the input element', async () => {
   vi.mocked(studioClient.getCatalog).mockResolvedValue({
     models: [
       {
@@ -349,10 +351,12 @@ test('sending prompt not using button should disable the send button', async () 
   await waitFor(() => {
     prompt = screen.getByRole('button', { name: 'Send prompt' });
     expect(prompt).toBeDisabled();
+    const input = screen.getByRole('textbox', { name: 'prompt' });
+    expect(input).toBeDisabled();
   });
 });
 
-test('receiving complete message should enable the send button', async () => {
+test('receiving complete message should enable the send button and the input element', async () => {
   vi.mocked(studioClient.getCatalog).mockResolvedValue({
     models: [
       {
@@ -393,6 +397,8 @@ test('receiving complete message should enable the send button', async () => {
   await waitFor(() => {
     send = screen.getByRole('button', { name: 'Send prompt' });
     expect(send).toBeDisabled();
+    const input = screen.getByRole('textbox', { name: 'prompt' });
+    expect(input).toBeDisabled();
   });
 
   customConversations.set([
@@ -419,6 +425,8 @@ test('receiving complete message should enable the send button', async () => {
   await waitFor(() => {
     send = screen.getByRole('button', { name: 'Send prompt' });
     expect(send).toBeEnabled();
+    const input = screen.getByRole('textbox', { name: 'prompt' });
+    expect(input).toBeEnabled();
   });
 });
 

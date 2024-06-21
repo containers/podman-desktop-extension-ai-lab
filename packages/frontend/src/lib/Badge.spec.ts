@@ -27,14 +27,14 @@ test('print Badge with custom text and default background', async () => {
 
   const badgeContent = screen.getByText('custom-text');
   expect(badgeContent).toBeInTheDocument();
-  expect(badgeContent).toHaveClass('bg-charcoal-600');
+  expect(badgeContent).toHaveClass('bg-[var(--pd-label-bg)]');
 });
 
 test('print Badge with custom text and custom background', async () => {
-  render(Badge, { icon: faTrash, content: 'custom-text', background: 'bg-charcoal-100' });
+  render(Badge, { icon: faTrash, content: 'custom-text', background: 'bg-[var(--pd-label-text)]' });
 
   const badgeContent = screen.getByText('custom-text');
   expect(badgeContent).toBeInTheDocument();
-  expect(badgeContent).toHaveClass('bg-charcoal-100');
-  expect(badgeContent).not.toHaveClass('bg-charcoal-600');
+  expect(badgeContent).toHaveClass('bg-[var(--pd-label-text)]');
+  expect(badgeContent).not.toHaveClass('bg-[var(--pd-label-bg)]');
 });

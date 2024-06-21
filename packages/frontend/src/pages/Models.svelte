@@ -1,6 +1,5 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import NavPage from '../lib/NavPage.svelte';
 import { modelsInfo } from '../stores/modelsInfo';
 import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
 import ModelColumnLabels from '../lib/table/model/ModelColumnLabels.svelte';
@@ -18,7 +17,7 @@ import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 import { router } from 'tinro';
 import { Button } from '@podman-desktop/ui-svelte';
 import { faFileImport } from '@fortawesome/free-solid-svg-icons';
-import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<ModelInfo>[] = [
   new TableColumn<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
@@ -104,7 +103,7 @@ async function importModel() {
 }
 </script>
 
-<NavPage title="Models" searchEnabled="{false}" loading="{loading}">
+<NavPage title="Models" searchEnabled="{false}">
   <svelte:fragment slot="tabs">
     <Tab title="All" url="/models" selected="{$router.path === '/models'}" />
     <Tab title="Downloaded" url="/models/downloaded" selected="{$router.path === '/models/downloaded'}" />

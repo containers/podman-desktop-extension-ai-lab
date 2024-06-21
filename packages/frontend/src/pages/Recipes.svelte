@@ -1,10 +1,10 @@
 <script lang="ts">
-import NavPage from '/@/lib/NavPage.svelte';
 import RecipesCard from '/@/lib/RecipesCard.svelte';
 import { catalog } from '/@/stores/catalog';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import { onMount } from 'svelte';
 import type { Category } from '@shared/src/models/ICategory';
+import { NavPage } from '@podman-desktop/ui-svelte';
 
 let groups: Map<Category, Recipe[]> = new Map();
 

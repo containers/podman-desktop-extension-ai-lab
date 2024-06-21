@@ -1,13 +1,12 @@
 <script lang="ts">
 import { router } from 'tinro';
-import NavPage from '../lib/NavPage.svelte';
 import PlaygroundColumnModel from '../lib/table/playground/PlaygroundColumnModel.svelte';
 import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.svelte';
 import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
 import { conversations } from '/@/stores/conversations';
 import PlaygroundColumnIcon from '/@/lib/table/playground/PlaygroundColumnIcon.svelte';
 import { Button } from '@podman-desktop/ui-svelte';
-import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 
 const columns = [

@@ -3,7 +3,7 @@ import { faCircleInfo, faFileImport } from '@fortawesome/free-solid-svg-icons';
 import { studioClient } from '../utils/client';
 import { Uri } from '@shared/src/uri/Uri';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
-import { Button, ErrorMessage, FormPage, Tooltip } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage, Input, Tooltip } from '@podman-desktop/ui-svelte';
 import { InferenceType } from '@shared/src/models/IInference';
 import Fa from 'svelte-fa';
 import { getFilesFromDropEvent } from '/@/utils/fileUtils';
@@ -118,7 +118,8 @@ export function goToUpPage(): void {
       </div>
 
       <!-- form -->
-      <div class="bg-[var(--pd-content-card-bg)] space-y-6 px-8 sm:py-6 xl:py-8 rounded-lg h-fit">
+      <div
+        class="bg-[var(--pd-content-card-bg)] space-y-6 px-8 sm:py-6 xl:py-8 rounded-lg h-fit text-[var(--pd-content-card-text)]">
         <div class="w-full">
           <!-- model input -->
           {#if localModel === undefined}
@@ -132,37 +133,36 @@ export function goToUpPage(): void {
               on:dragover|preventDefault="{() => (dragging = true)}"
               on:dragleave|preventDefault="{() => (dragging = false)}"
               class="w-full cursor-pointer flex-col px-4 py-8 border-2 border-dashed rounded flex justify-center items-center">
-              <Fa size="1.1x" class="cursor-pointer text-purple-400" icon="{faFileImport}" />
-              <span>Drag & Drop or <strong class="text-purple-400">Choose file</strong> to import</span>
-              <span class="text-gray-800 text-sm">Supported format: .guff, .bin</span>
+              <Fa size="1.1x" class="cursor-pointer text-[var(--pd-link)]" icon="{faFileImport}" />
+              <span>Drag & Drop or <strong class="text-[var(--pd-link)]">Choose file</strong> to import</span>
+              <span class="opacity-50 text-sm">Supported format: .guff, .bin</span>
             </button>
           {:else}
             <!-- showing path -->
-            <label for="path" class="w-full block mb-2 text-sm font-bold text-gray-400">Path</label>
-            <input
-              class="flex w-full flex-col grow p-2 outline-none text-sm bg-transparent rounded-sm text-gray-700 placeholder-gray-700 border-charcoal-100 border-b mr-2"
-              bind:value="{localModel.path}"
-              name="path"
-              aria-label="model path"
-              readonly="{true}" />
+            <label for="path" class="w-full block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+              >Path</label>
+            <Input class="grow" bind:value="{localModel.path}" name="path" aria-label="model path" readonly="{true}" />
 
             <!-- Model name -->
-            <label for="name" class="pt-4 w-full block mb-2 text-sm font-bold text-gray-400">Name</label>
-            <input
+            <label for="name" class="pt-4 w-full block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+              >Name</label>
+            <Input
               bind:value="{localModel.name}"
               on:input="{event => {}}"
               name="name"
               aria-label="model importing name"
               placeholder="Model Name displayed"
-              class="flex flex-col w-full grow p-2 outline-none text-sm bg-transparent rounded-sm text-gray-700 placeholder-gray-700 border-charcoal-100 border-b hover:border-purple-400 focus:border-purple-400 focus:border focus:rounded-lg focus:bg-charcoal-900" />
+              class="grow" />
 
             <!-- selecting backend -->
             <div class="flex flex-row items-center justify-center">
-              <label for="backend" class="pt-4 grow block mb-2 text-sm font-bold text-gray-400">Backend</label>
+              <label
+                for="backend"
+                class="pt-4 grow block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]">Backend</label>
               <Tooltip left>
                 <Fa size="1.1x" class="cursor-pointer" icon="{faCircleInfo}" />
                 <svelte:fragment slot="tip">
-                  <span class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs"
+                  <span class="inline-block py-2 px-4 rounded-md text-xs"
                     ><code>backends</code> represents the technology required to run the models.</span>
                 </svelte:fragment>
               </Tooltip>

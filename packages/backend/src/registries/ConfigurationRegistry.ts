@@ -21,7 +21,7 @@ import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfig
 import { Messages } from '@shared/Messages';
 import path from 'node:path';
 
-const CONFIGURATION_SECTIONS: string[] = ['ai-lab.models.path'];
+const CONFIGURATION_SECTIONS: string[] = ['ai-lab.models.path', 'ai-lab.experimentalGPU'];
 
 export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> implements Disposable {
   #configuration: Configuration;
@@ -39,6 +39,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
   getExtensionConfiguration(): ExtensionConfiguration {
     return {
       modelsPath: this.getModelsPath(),
+      experimentalGPU: this.#configuration.get<boolean>('experimentalGPU') ?? false,
     };
   }
 

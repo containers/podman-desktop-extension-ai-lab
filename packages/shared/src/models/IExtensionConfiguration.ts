@@ -18,4 +18,5 @@
 
 export interface ExtensionConfiguration {
   modelsPath: string;
+  experimentalGPU: boolean;
 }

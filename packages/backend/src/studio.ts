@@ -46,6 +46,7 @@ import { LlamaCppPython } from './workers/provider/LlamaCppPython';
 import { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
 import { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import { RecipeManager } from './managers/recipes/RecipeManager';
+import { GPUManager } from './managers/GPUManager';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -78,6 +79,7 @@ export class Studio {
   #recipeManager: RecipeManager | undefined;
   #inferenceProviderRegistry: InferenceProviderRegistry | undefined;
   #configurationRegistry: ConfigurationRegistry | undefined;
+  #gpuManager: GPUManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -248,12 +250,18 @@ export class Studio {
     this.#extensionContext.subscriptions.push(this.#applicationManager);
 
     /**
+     * GPUManager is a class responsible for detecting and storing the GPU specs
+     */
+    this.#gpuManager = new GPUManager(this.#panel.webview);
+    this.#extensionContext.subscriptions.push(this.#gpuManager);
+
+    /**
      * The Inference Provider registry stores all the InferenceProvider (aka backend) which
      * can be used to create InferenceServers
      */
     this.#inferenceProviderRegistry = new InferenceProviderRegistry(this.#panel.webview);
     this.#extensionContext.subscriptions.push(
-      this.#inferenceProviderRegistry.register(new LlamaCppPython(this.#taskRegistry, this.#podmanConnection)),
+      this.#inferenceProviderRegistry.register(new LlamaCppPython(this.#taskRegistry, this.#podmanConnection, this.#gpuManager)),
     );
 
     /**

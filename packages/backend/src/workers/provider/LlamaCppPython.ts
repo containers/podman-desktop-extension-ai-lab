@@ -36,9 +36,9 @@ export const LLAMA_CPP_MAC_GPU = 'quay.io/ai-lab/llamacpp-python-vulkan:latest';
 export const SECOND: number = 1_000_000_000;
 
 interface Device {
-  PathOnHost: string,
-  PathInContainer: string,
-  CgroupPermissions: string,
+  PathOnHost: string;
+  PathInContainer: string;
+  CgroupPermissions: string;
 }
 
 export class LlamaCppPython extends InferenceProvider {
@@ -47,7 +47,7 @@ export class LlamaCppPython extends InferenceProvider {
     private podmanConnection: PodmanConnection,
     private gpuManager: GPUManager,
   ) {
-    super(taskRegistry, InferenceType.LLAMA_CPP, 'LLama-cpp (CPU)');
+    super(taskRegistry, InferenceType.LLAMA_CPP, 'LLama-cpp');
   }
 
   dispose() {}
@@ -173,10 +173,11 @@ export class LlamaCppPython extends InferenceProvider {
     let gpu: IGPUInfo | undefined = undefined;
 
     // get the first GPU if requested
-    if((config.gpuLayers ?? 0) !== 0) {
+    if ((config.gpuLayers ?? 0) !== 0) {
       const gpus: IGPUInfo[] = await this.gpuManager.collectGPUs();
-      if(gpus.length === 0) throw new Error('no gpu was found.');
-      if(gpus.length > 1) console.warn(`found ${gpus.length} gpus: using multiple GPUs is not supported. Using ${gpus[0].model}.`);
+      if (gpus.length === 0) throw new Error('no gpu was found.');
+      if (gpus.length > 1)
+        console.warn(`found ${gpus.length} gpus: using multiple GPUs is not supported. Using ${gpus[0].model}.`);
       gpu = gpus[0];
     }
 

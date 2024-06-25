@@ -5,7 +5,7 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "lib": [
-      "ES2017",
+      "ES2017"
     ],
     "sourceMap": true,
     "outDir": "dist",

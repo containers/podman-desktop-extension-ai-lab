@@ -17,6 +17,5 @@
  ***********************************************************************/
 
 export interface ExtensionConfiguration {
-  experimentalGPU: boolean;
   modelsPath: string;
 }

@@ -38,7 +38,6 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
 
   getExtensionConfiguration(): ExtensionConfiguration {
     return {
-      experimentalGPU: this.#configuration.get<boolean>('experimentalGPU') ?? false,
       modelsPath: this.getModelsPath(),
     };
   }

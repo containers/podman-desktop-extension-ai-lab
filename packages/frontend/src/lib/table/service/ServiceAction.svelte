@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServerInfo } from '@shared/src/models/IInference';
 import { studioClient } from '/@/utils/client';
 import { faPlay, faStop, faTrash } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
-export let object: InferenceServer;
+export let object: InferenceServerInfo;
 export let detailed: boolean = false;
 
 function stopInferenceServer() {

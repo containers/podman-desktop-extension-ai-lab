@@ -1,10 +1,10 @@
 <script lang="ts">
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServerInfo } from '@shared/src/models/IInference';
 import StatusIcon from '/@/lib/StatusIcon.svelte';
 import { studioClient } from '/@/utils/client';
 import { Spinner } from '@podman-desktop/ui-svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
-export let object: InferenceServer;
+export let object: InferenceServerInfo;
 
 function navigateToContainer() {
   studioClient.navigateToContainer(object.container.containerId);

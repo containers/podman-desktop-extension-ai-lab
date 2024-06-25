@@ -34,7 +34,7 @@ import * as conversationsStore from '/@/stores/conversations';
 import * as inferenceServersStore from '/@/stores/inferenceServers';
 import { readable, writable } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServerInfo } from '@shared/src/models/IInference';
 
 vi.mock('../utils/client', async () => {
   return {
@@ -92,7 +92,7 @@ test('should display playground and model names in header', async () => {
   vi.mocked(inferenceServersStore).inferenceServers = readable([
     {
       models: ['model-1'],
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -132,7 +132,7 @@ test('send prompt should be enabld initially', async () => {
     {
       models: [{ id: 'model-1' }],
       status: 'running',
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -171,7 +171,7 @@ test('send prompt should be disabled initially if model server is not healhty', 
       health: {
         Status: 'starting',
       },
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -210,7 +210,7 @@ test('send prompt should be disabled initially if model server is not running', 
       health: {
         Status: '',
       },
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -251,7 +251,7 @@ test('send prompt should be enabled initially, with a system prompt', async () =
     {
       models: [{ id: 'model-1' }],
       status: 'running',
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -288,7 +288,7 @@ test('sending prompt should disable the send button and the input element', asyn
     {
       models: [{ id: 'model-1' }],
       status: 'running',
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -334,7 +334,7 @@ test('sending prompt not using button should disable the send button and the inp
     {
       models: [{ id: 'model-1' }],
       status: 'running',
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -380,7 +380,7 @@ test('receiving complete message should enable the send button and the input ele
     {
       models: [{ id: 'model-1' }],
       status: 'running',
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
   render(Playground, {
@@ -454,7 +454,7 @@ test('sending prompt should display the prompt and the response', async () => {
     {
       models: [{ id: 'model-1' }],
       status: 'running',
-    } as unknown as InferenceServer,
+    } as unknown as InferenceServerInfo,
   ]);
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue();
   render(Playground, {

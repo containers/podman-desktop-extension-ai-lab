@@ -22,7 +22,7 @@ import type { OpenDialogOptions, TelemetryTrustedValue, Uri } from '@podman-desk
 import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
-import type { InferenceServer } from './models/IInference';
+import type { InferenceServerInfo } from './models/IInference';
 import type { RequestOptions } from './models/RequestOptions';
 import type { Language } from 'postman-code-generators';
 import type { CreationInferenceServerOptions } from './models/InferenceServerConfig';
@@ -91,7 +91,7 @@ export abstract class StudioAPI {
   /**
    * Get inference servers
    */
-  abstract getInferenceServers(): Promise<InferenceServer[]>;
+  abstract getInferenceServers(): Promise<InferenceServerInfo[]>;
 
   /**
    * Request to start an inference server
@@ -103,21 +103,21 @@ export abstract class StudioAPI {
 
   /**
    * Start an inference server
-   * @param containerId the container id of the inference server
+   * @param serverId the serverId of the inference server
    */
-  abstract startInferenceServer(containerId: string): Promise<void>;
+  abstract startInferenceServer(serverId: string): Promise<void>;
 
   /**
    * Stop an inference server
-   * @param containerId the container id of the inference server
+   * @param serverId the serverId of the inference server
    */
-  abstract stopInferenceServer(containerId: string): Promise<void>;
+  abstract stopInferenceServer(serverId: string): Promise<void>;
 
   /**
    * Delete an inference server container
-   * @param containerIds ids of the container to delete
+   * @param serverId ids of the servers to delete
    */
-  abstract requestDeleteInferenceServer(...containerIds: string[]): Promise<void>;
+  abstract requestDeleteInferenceServer(...serverId: string[]): Promise<void>;
 
   /**
    * Return a free random port on the host machine

@@ -17,26 +17,27 @@
  ***********************************************************************/
 import {
   containerEngine,
-  type Webview,
   type TelemetryLogger,
   type ContainerInfo,
   type ContainerInspectInfo,
+  EventEmitter,
 } from '@podman-desktop/api';
 import type { ContainerRegistry } from '../../registries/ContainerRegistry';
 import type { PodmanConnection } from '../podmanConnection';
 import { beforeEach, expect, describe, test, vi } from 'vitest';
-import { InferenceManager } from './inferenceManager';
+import { PodmanInferenceManager } from './podmanInferenceManager';
 import type { ModelsManager } from '../modelsManager';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { Messages } from '@shared/Messages';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 import type { CatalogManager } from '../catalogManager';
+import { RuntimeType } from './RuntimeEngine';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
+    EventEmitter: vi.fn(),
     containerEngine: {
       startContainer: vi.fn(),
       stopContainer: vi.fn(),
@@ -50,10 +51,6 @@ vi.mock('@podman-desktop/api', async () => {
     },
   };
 });
-
-const webviewMock = {
-  postMessage: vi.fn(),
-} as unknown as Webview;
 
 const containerRegistryMock = {
   onStartContainerEvent: vi.fn(),
@@ -91,13 +88,12 @@ const catalogManager = {
   onCatalogUpdate: vi.fn(),
 } as unknown as CatalogManager;
 
-const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
+const getInitializedInferenceManager = async (): Promise<PodmanInferenceManager> => {
   vi.mocked(catalogManager.onCatalogUpdate).mockImplementation(fn => {
     fn();
     return { dispose: vi.fn() };
   });
-  const manager = new InferenceManager(
-    webviewMock,
+  const manager = new PodmanInferenceManager(
     containerRegistryMock,
     podmanConnectionMock,
     modelsManager,
@@ -122,7 +118,6 @@ beforeEach(() => {
   vi.resetAllMocks();
   // Default listContainers is empty
   mockListContainers([]);
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
   vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
     State: {
       Status: 'running',
@@ -132,6 +127,18 @@ beforeEach(() => {
   vi.mocked(taskRegistryMock.getTasksByLabels).mockReturnValue([]);
   vi.mocked(modelsManager.getLocalModelPath).mockReturnValue('/local/model.guff');
   vi.mocked(modelsManager.uploadModelToPodmanMachine).mockResolvedValue('/mnt/path/model.guff');
+
+  // mock EventEmitter logic
+  const listeners: ((value: unknown) => void)[] = [];
+
+  vi.mocked(EventEmitter).mockReturnValue({
+    event: vi.fn().mockImplementation(callback => {
+      listeners.push(callback);
+    }),
+    fire: vi.fn().mockImplementation((content: unknown) => {
+      listeners.forEach(listener => listener(content));
+    }),
+  } as unknown as EventEmitter<unknown>);
 });
 
 /**
@@ -185,7 +192,11 @@ describe('init Inference Manager', () => {
         health: undefined,
         models: [],
         status: 'running',
+        runtime: RuntimeType.PODMAN,
         type: expect.anything(),
+        remove: expect.anything(),
+        start: expect.anything(),
+        stop: expect.anything(),
       },
     ]);
   });
@@ -229,7 +240,7 @@ describe('Create Inference Server', () => {
 
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
+      inferenceManager.create({
         inferenceProvider: undefined,
         labels: {},
         modelsInfo: [],
@@ -245,7 +256,7 @@ describe('Create Inference Server', () => {
 
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
-      inferenceManager.createInferenceServer({
+      inferenceManager.create({
         inferenceProvider: 'dummy-inference-provider',
         labels: {},
         modelsInfo: [],
@@ -272,11 +283,11 @@ describe('Create Inference Server', () => {
       modelsInfo: [],
       port: 8888,
     };
-    const result = await inferenceManager.createInferenceServer(config);
+    const result = await inferenceManager.create(config);
 
     expect(provider.perform).toHaveBeenCalledWith(config);
 
-    expect(result).toBe('dummy-container-id');
+    expect(result.container.containerId).toBe('dummy-container-id');
   });
 });
 
@@ -403,7 +414,7 @@ describe('Delete Inference Server', () => {
 describe('Request Create Inference Server', () => {
   test('Should return unique string identifier', async () => {
     const inferenceManager = await getInitializedInferenceManager();
-    const identifier = inferenceManager.requestCreateInferenceServer({
+    const identifier = inferenceManager.requestCreate({
       port: 8888,
       providerId: 'test@providerId',
       image: 'quay.io/bootsy/playground:v0',
@@ -423,7 +434,7 @@ describe('Request Create Inference Server', () => {
 
   test('Task registry should have tasks matching unique identifier provided', async () => {
     const inferenceManager = await getInitializedInferenceManager();
-    const identifier = inferenceManager.requestCreateInferenceServer({
+    const identifier = inferenceManager.requestCreate({
       port: 8888,
       providerId: 'test@providerId',
       image: 'quay.io/bootsy/playground:v0',
@@ -548,37 +559,43 @@ describe('transition statuses', () => {
     } as unknown as ContainerInspectInfo);
 
     const inferenceManager = await getInitializedInferenceManager();
+
+    const updateListener = vi.fn();
+    inferenceManager.onUpdate(updateListener);
+
     await inferenceManager.stopInferenceServer('dummyId');
 
     // first called with stopping status
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'stopping',
-          type: expect.anything(),
-        },
-      ],
-    });
+    expect(updateListener).toHaveBeenCalledWith([
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'stopping',
+        type: expect.anything(),
+        runtime: RuntimeType.PODMAN,
+        remove: expect.anything(),
+        start: expect.anything(),
+        stop: expect.anything(),
+      },
+    ]);
 
     // finally have been called with status stopped
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'stopped',
-          type: expect.anything(),
-        },
-      ],
-    });
+    expect(updateListener).toHaveBeenCalledWith([
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'stopped',
+        type: expect.anything(),
+        runtime: RuntimeType.PODMAN,
+        remove: expect.anything(),
+        start: expect.anything(),
+        stop: expect.anything(),
+      },
+    ]);
   });
 
   test('deleting an inference server should first set status to stopping', async () => {
@@ -599,21 +616,26 @@ describe('transition statuses', () => {
     } as unknown as ContainerInspectInfo);
 
     const inferenceManager = await getInitializedInferenceManager();
+
+    const updateListener = vi.fn();
+    inferenceManager.onUpdate(updateListener);
+
     await inferenceManager.deleteInferenceServer('dummyId');
 
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'deleting',
-          type: expect.anything(),
-        },
-      ],
-    });
+    expect(updateListener).toHaveBeenCalledWith([
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'deleting',
+        type: expect.anything(),
+        runtime: RuntimeType.PODMAN,
+        remove: expect.anything(),
+        start: expect.anything(),
+        stop: expect.anything(),
+      },
+    ]);
   });
 
   test('starting an inference server should first set status to stopping', async () => {
@@ -634,36 +656,42 @@ describe('transition statuses', () => {
     } as unknown as ContainerInspectInfo);
 
     const inferenceManager = await getInitializedInferenceManager();
+
+    const updateListener = vi.fn();
+    inferenceManager.onUpdate(updateListener);
+
     await inferenceManager.startInferenceServer('dummyId');
 
     // first status must be set to starting
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'starting',
-          type: expect.anything(),
-        },
-      ],
-    });
+    expect(updateListener).toHaveBeenCalledWith([
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'starting',
+        type: expect.anything(),
+        runtime: RuntimeType.PODMAN,
+        remove: expect.anything(),
+        start: expect.anything(),
+        stop: expect.anything(),
+      },
+    ]);
 
     // on success it should have been set to running
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'running',
-          type: expect.anything(),
-        },
-      ],
-    });
+    expect(updateListener).toHaveBeenCalledWith([
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'running',
+        type: expect.anything(),
+        runtime: RuntimeType.PODMAN,
+        remove: expect.anything(),
+        start: expect.anything(),
+        stop: expect.anything(),
+      },
+    ]);
   });
 });

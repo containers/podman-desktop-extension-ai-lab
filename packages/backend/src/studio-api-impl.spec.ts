@@ -22,7 +22,7 @@ import { beforeEach, expect, test, vi, describe } from 'vitest';
 import content from './tests/ai-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
-import type { InferenceManager } from './managers/inference/inferenceManager';
+import type { PodmanInferenceManager } from './managers/inference/podmanInferenceManager';
 import type { ProviderContainerConnection, TelemetryLogger, Webview } from '@podman-desktop/api';
 import { window, EventEmitter, navigation } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
@@ -135,7 +135,7 @@ beforeEach(async () => {
     telemetryMock,
     localRepositoryRegistry,
     {} as unknown as TaskRegistry,
-    {} as unknown as InferenceManager,
+    {} as unknown as PodmanInferenceManager,
     {} as unknown as PlaygroundV2Manager,
     {} as unknown as SnippetManager,
     {} as unknown as CancellationTokenRegistry,

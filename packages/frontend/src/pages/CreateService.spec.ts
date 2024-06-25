@@ -23,7 +23,7 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
 import type { Task } from '@shared/src/models/ITask';
 import userEvent from '@testing-library/user-event';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServerInfo } from '@shared/src/models/IInference';
 import * as modelsInfoStore from '/@/stores/modelsInfo';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { writable } from 'svelte/store';
@@ -90,7 +90,7 @@ beforeEach(() => {
   vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
   mocks.getInferenceServersMock.mockReturnValue([
-    { container: { containerId: 'dummyContainerId' } } as InferenceServer,
+    { container: { containerId: 'dummyContainerId' } } as InferenceServerInfo,
   ]);
 });
 
@@ -121,7 +121,7 @@ test('expect error message to be hidden when models locally', () => {
   expect(alert).toBeNull();
 });
 
-test('button click should call createInferenceServer', async () => {
+test('button click should call create', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
 
   render(CreateService);

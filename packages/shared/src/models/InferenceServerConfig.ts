@@ -16,8 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ModelInfo } from './IModelInfo';
+import type { RuntimeType } from './IInference';
 
-export type CreationInferenceServerOptions = Partial<InferenceServerConfig> & { modelsInfo: ModelInfo[] };
+export type CreationInferenceServerOptions = Partial<InferenceServerConfig> & {
+  runtime: RuntimeType;
+  modelsInfo: ModelInfo[];
+};
 
 export interface InferenceServerConfig {
   /**
@@ -45,4 +49,9 @@ export interface InferenceServerConfig {
    * Model info for the models
    */
   modelsInfo: ModelInfo[];
+
+  /**
+   * The runtime to use, default will always be podman
+   */
+  runtime?: RuntimeType;
 }

@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render, fireEvent } from '@testing-library/svelte';
 import InferenceServers from '/@/pages/InferenceServers.svelte';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServerInfo, InferenceType } from '@shared/src/models/IInference';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 
@@ -72,7 +72,7 @@ test('store with inference server should display the table', async () => {
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
     },
-  ] as InferenceServer[]);
+  ] as InferenceServerInfo[]);
   render(InferenceServers);
 
   const table = screen.getByRole('table');
@@ -101,7 +101,7 @@ test('table should have checkbox', async () => {
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
     },
-  ] as InferenceServer[]);
+  ] as InferenceServerInfo[]);
   render(InferenceServers);
 
   const checkbox = screen.getByTitle('Toggle service');
@@ -121,7 +121,7 @@ test('delete button should delete selected item', async () => {
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
     },
-  ] as InferenceServer[]);
+  ] as InferenceServerInfo[]);
   render(InferenceServers);
 
   const checkbox = screen.getByTitle('Toggle service');

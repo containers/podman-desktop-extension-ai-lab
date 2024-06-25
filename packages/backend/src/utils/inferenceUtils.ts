@@ -26,7 +26,7 @@ import {
 } from '@podman-desktop/api';
 import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { getFreeRandomPort } from './ports';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServerInfo, InferenceType, RuntimeType } from '@shared/src/models/IInference';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
@@ -91,7 +91,7 @@ export async function getImageInfo(
 
 export async function withDefaultConfiguration(
   options: CreationInferenceServerOptions,
-): Promise<InferenceServerConfig> {
+): Promise<InferenceServerConfig & { runtime: RuntimeType, port: number, labels: Record<string, string> }> {
   if (options.modelsInfo.length === 0) throw new Error('modelsInfo need to contain at least one element.');
 
   return {
@@ -101,10 +101,11 @@ export async function withDefaultConfiguration(
     modelsInfo: options.modelsInfo,
     providerId: options.providerId,
     inferenceProvider: options.inferenceProvider,
+    runtime: options.runtime ?? RuntimeType.PODMAN,
   };
 }
 
-export function isTransitioning(server: InferenceServer): boolean {
+export function isTransitioning(server: InferenceServerInfo): boolean {
   switch (server.status) {
     case 'deleting':
     case 'stopping':

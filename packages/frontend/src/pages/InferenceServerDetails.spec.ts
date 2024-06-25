@@ -19,7 +19,7 @@
 import '@testing-library/jest-dom/vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServerInfo, InferenceType } from '@shared/src/models/IInference';
 import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
 import type { Language } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -113,7 +113,7 @@ beforeEach(() => {
         engineId: 'dummyEngineId',
       },
       type: InferenceType.NONE,
-    } as InferenceServer,
+    } as InferenceServerInfo,
   ]);
 });
 

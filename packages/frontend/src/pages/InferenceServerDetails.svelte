@@ -4,7 +4,7 @@ import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
 import { faBuildingColumns, faCheck, faCopy, faMicrochip, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServerInfo } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -15,7 +15,7 @@ import { Button, DetailsPage } from '@podman-desktop/ui-svelte';
 
 export let containerId: string | undefined = undefined;
 
-let service: InferenceServer | undefined = undefined;
+let service: InferenceServerInfo | undefined = undefined;
 
 let selectedLanguage: string = 'curl';
 $: selectedLanguage;

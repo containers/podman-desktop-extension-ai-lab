@@ -1,6 +1,6 @@
 <script lang="ts">
-import type { InferenceServer } from '@shared/src/models/IInference';
-export let object: InferenceServer;
+import type { InferenceServerInfo } from '@shared/src/models/IInference';
+export let object: InferenceServerInfo;
 </script>
 
 {#if object.models.length === 1}

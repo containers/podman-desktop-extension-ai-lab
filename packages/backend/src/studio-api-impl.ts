@@ -30,9 +30,8 @@ import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import path from 'node:path';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServerInfo } from '@shared/src/models/IInference';
 import type { CreationInferenceServerOptions } from '@shared/src/models/InferenceServerConfig';
-import type { InferenceManager } from './managers/inference/inferenceManager';
 import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { getFreeRandomPort } from './utils/ports';
@@ -45,6 +44,7 @@ import type { CancellationTokenRegistry } from './registries/CancellationTokenRe
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { checkContainerConnectionStatusAndResources, getPodmanConnection } from './utils/podman';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { InferenceServerRegistry } from './registries/InferenceServerRegistry';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -58,7 +58,7 @@ export class StudioApiImpl implements StudioAPI {
     private telemetry: podmanDesktopApi.TelemetryLogger,
     private localRepositories: LocalRepositoryRegistry,
     private taskRegistry: TaskRegistry,
-    private inferenceManager: InferenceManager,
+    private inferenceServerRegistry: InferenceServerRegistry,
     private playgroundV2: PlaygroundV2Manager,
     private snippetManager: SnippetManager,
     private cancellationTokenRegistry: CancellationTokenRegistry,
@@ -107,19 +107,19 @@ export class StudioApiImpl implements StudioAPI {
     return this.snippetManager.generate(options, language, variant);
   }
 
-  async getInferenceServers(): Promise<InferenceServer[]> {
-    return this.inferenceManager.getServers();
+  async getInferenceServers(): Promise<InferenceServerInfo[]> {
+    return this.inferenceServerRegistry.getInferenceServerInfo();
   }
 
-  async requestDeleteInferenceServer(...containerIds: string[]): Promise<void> {
+  async requestDeleteInferenceServer(...serverId: string[]): Promise<void> {
     // Do not wait on the promise as the api would probably timeout before the user answer.
-    if (containerIds.length === 0) throw new Error('At least one container id should be provided.');
+    if (serverId.length === 0) throw new Error('At least one container id should be provided.');
 
     let dialogMessage: string;
-    if (containerIds.length === 1) {
+    if (serverId.length === 1) {
       dialogMessage = `Are you sure you want to delete this service ?`;
     } else {
-      dialogMessage = `Are you sure you want to delete those ${containerIds.length} services ?`;
+      dialogMessage = `Are you sure you want to delete those ${serverId.length} services ?`;
     }
 
     podmanDesktopApi.window
@@ -127,7 +127,7 @@ export class StudioApiImpl implements StudioAPI {
       .then((result: string | undefined) => {
         if (result !== 'Confirm') return;
 
-        Promise.all(containerIds.map(containerId => this.inferenceManager.deleteInferenceServer(containerId))).catch(
+        Promise.all(serverId.map(containerId => this.inferenceServerRegistry.get(containerId).remove())).catch(
           (err: unknown) => {
             console.error('Something went wrong while trying to delete the inference server', err);
           },
@@ -141,19 +141,21 @@ export class StudioApiImpl implements StudioAPI {
   async requestCreateInferenceServer(options: CreationInferenceServerOptions): Promise<string> {
     try {
       const config = await withDefaultConfiguration(options);
-      return this.inferenceManager.requestCreateInferenceServer(config);
+
+      const runtime = this.inferenceServerRegistry.getRuntime(config.runtime);
+      return runtime.requestCreate(config);
     } catch (err: unknown) {
       console.error('Something went wrong while trying to start inference server', err);
       throw err;
     }
   }
 
-  startInferenceServer(containerId: string): Promise<void> {
-    return this.inferenceManager.startInferenceServer(containerId);
+  startInferenceServer(serverId: string): Promise<void> {
+    return this.inferenceServerRegistry.get(serverId).start();
   }
 
-  stopInferenceServer(containerId: string): Promise<void> {
-    return this.inferenceManager.stopInferenceServer(containerId);
+  stopInferenceServer(serverId: string): Promise<void> {
+    return this.inferenceServerRegistry.get(serverId).stop();
   }
 
   async ping(): Promise<string> {

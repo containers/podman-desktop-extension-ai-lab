@@ -34,7 +34,7 @@ import { ModelsManager } from './managers/modelsManager';
 import { ContainerRegistry } from './registries/ContainerRegistry';
 import { PodmanConnection } from './managers/podmanConnection';
 import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
-import { InferenceManager } from './managers/inference/inferenceManager';
+import { PodmanInferenceManager } from './managers/inference/podmanInferenceManager';
 import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
@@ -44,6 +44,8 @@ import { PodManager } from './managers/recipes/PodManager';
 import { initWebview } from './webviewUtils';
 import { LlamaCppPython } from './workers/provider/LlamaCppPython';
 import { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
+import { InferenceServerRegistry } from './registries/InferenceServerRegistry';
+import { KubernetesInferenceManager } from './managers/inference/kubernetesInferenceManager';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -63,7 +65,8 @@ export class Studio {
   #catalogManager: CatalogManager | undefined;
   #modelsManager: ModelsManager | undefined;
   #telemetry: TelemetryLogger | undefined;
-  #inferenceManager: InferenceManager | undefined;
+  #podmanInferenceManager: PodmanInferenceManager | undefined;
+  #inferenceServerRegistry: InferenceServerRegistry | undefined;
   #podManager: PodManager | undefined;
   #builderManager: BuilderManager | undefined;
   #containerRegistry: ContainerRegistry | undefined;
@@ -235,8 +238,7 @@ export class Studio {
     /**
      * The inference manager create, stop, manage Inference servers
      */
-    this.#inferenceManager = new InferenceManager(
-      this.#panel.webview,
+    this.#podmanInferenceManager = new PodmanInferenceManager(
       this.#containerRegistry,
       this.#podmanConnection,
       this.#modelsManager,
@@ -245,15 +247,26 @@ export class Studio {
       this.#inferenceProviderRegistry,
       this.#catalogManager,
     );
-    this.#inferenceManager.init();
-    this.#extensionContext.subscriptions.push(this.#inferenceManager);
+    this.#podmanInferenceManager.init();
+    this.#extensionContext.subscriptions.push(this.#podmanInferenceManager);
 
     /**
-     * PlaygroundV2Manager handle the conversations of the Playground by using the InferenceServer available
+     * tests
+     */
+    new KubernetesInferenceManager(this.#taskRegistry).init();
+
+    /**
+     * The inference server registry hold the runtime inference manager (E.g. PodmanInferenceManager)
+     */
+    this.#inferenceServerRegistry = new InferenceServerRegistry(this.#panel.webview);
+    this.#extensionContext.subscriptions.push(this.#inferenceServerRegistry.register(this.#podmanInferenceManager));
+
+    /**
+     * PlaygroundV2Manager handle the conversations of the Playground by using the InferenceServerInfo available
      */
     this.#playgroundManager = new PlaygroundV2Manager(
       this.#panel.webview,
-      this.#inferenceManager,
+      this.#podmanInferenceManager,
       this.#taskRegistry,
       this.#telemetry,
     );
@@ -261,7 +274,7 @@ export class Studio {
 
     /**
      * The snippet manager provide code snippet used in the
-     * InferenceServer details page
+     * InferenceServerInfo details page
      */
     this.#snippetManager = new SnippetManager(this.#panel.webview, this.#telemetry);
     this.#snippetManager.init();
@@ -276,7 +289,7 @@ export class Studio {
       this.#telemetry,
       this.#localRepositoryRegistry,
       this.#taskRegistry,
-      this.#inferenceManager,
+      this.#inferenceServerRegistry,
       this.#playgroundManager,
       this.#snippetManager,
       this.#cancellationTokenRegistry,

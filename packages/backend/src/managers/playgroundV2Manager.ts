@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { Disposable, TelemetryLogger, Webview } from '@podman-desktop/api';
-import type { InferenceManager } from './inference/inferenceManager';
+import type { PodmanInferenceManager } from './inference/podmanInferenceManager';
 import OpenAI from 'openai';
 import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src/resources/chat/completions';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
@@ -34,7 +34,7 @@ export class PlaygroundV2Manager implements Disposable {
 
   constructor(
     webview: Webview,
-    private inferenceManager: InferenceManager,
+    private inferenceManager: PodmanInferenceManager,
     private taskRegistry: TaskRegistry,
     private telemetry: TelemetryLogger,
   ) {
@@ -114,7 +114,7 @@ export class PlaygroundV2Manager implements Disposable {
     const servers = this.inferenceManager.getServers();
     const server = servers.find(s => s.models.map(mi => mi.id).includes(model.id));
     if (!server) {
-      await this.inferenceManager.createInferenceServer(
+      await this.inferenceManager.create(
         await withDefaultConfiguration({
           modelsInfo: [model],
           labels: {

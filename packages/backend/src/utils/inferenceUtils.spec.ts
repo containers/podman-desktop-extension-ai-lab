@@ -19,7 +19,7 @@ import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { withDefaultConfiguration, isTransitioning, parseInferenceType, getInferenceType } from './inferenceUtils';
 import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
+import type { InferenceServerInfo, InferenceServerStatus } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('./ports', () => ({
@@ -73,7 +73,7 @@ test.each(['stopping', 'deleting', 'starting'] as InferenceServerStatus[])(
     expect(
       isTransitioning({
         status: status,
-      } as unknown as InferenceServer),
+      } as unknown as InferenceServerInfo),
     ).toBeTruthy();
   },
 );
@@ -82,7 +82,7 @@ test.each(['running', 'stopped', 'error'] as InferenceServerStatus[])('%s should
   expect(
     isTransitioning({
       status: status,
-    } as unknown as InferenceServer),
+    } as unknown as InferenceServerInfo),
   ).toBeFalsy();
 });
 

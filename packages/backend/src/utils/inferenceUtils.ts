@@ -70,18 +70,26 @@ export async function getImageInfo(
   callback: (event: PullEvent) => void,
 ): Promise<ImageInfo> {
   let imageInfo: ImageInfo | undefined;
-  try {
-    // Pull image
-    await containerEngine.pullImage(connection, image, callback);
-    // Get image inspect
-    imageInfo = (
-      await containerEngine.listImages({
-        provider: connection,
-      } as ListImagesOptions)
-    ).find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
-  } catch (err: unknown) {
-    console.warn('Something went wrong while trying to get image inspect', err);
-    throw err;
+  // Get image inspect
+  imageInfo = (
+    await containerEngine.listImages({
+      provider: connection,
+    } as ListImagesOptions)
+  ).find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
+  if (!imageInfo) {
+    try {
+      // Pull image
+      await containerEngine.pullImage(connection, image, callback);
+      // Get image inspect
+      imageInfo = (
+        await containerEngine.listImages({
+          provider: connection,
+        } as ListImagesOptions)
+      ).find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
+    } catch (err: unknown) {
+      console.warn('Something went wrong while trying to get image inspect', err);
+      throw err;
+    }
   }
 
   if (imageInfo === undefined) throw new Error(`image ${image} not found.`);

@@ -66,6 +66,7 @@ export class Studio {
   #modelsManager: ModelsManager | undefined;
   #telemetry: TelemetryLogger | undefined;
   #podmanInferenceManager: PodmanInferenceManager | undefined;
+  #kubernetesInferenceManager: KubernetesInferenceManager | undefined;
   #inferenceServerRegistry: InferenceServerRegistry | undefined;
   #podManager: PodManager | undefined;
   #builderManager: BuilderManager | undefined;
@@ -253,13 +254,18 @@ export class Studio {
     /**
      * tests
      */
-    new KubernetesInferenceManager(this.#taskRegistry).init();
+    this.#kubernetesInferenceManager = new KubernetesInferenceManager(this.#taskRegistry, this.#modelsManager);
+    this.#kubernetesInferenceManager.init();
+    this.#extensionContext.subscriptions.push(this.#kubernetesInferenceManager);
 
     /**
      * The inference server registry hold the runtime inference manager (E.g. PodmanInferenceManager)
      */
     this.#inferenceServerRegistry = new InferenceServerRegistry(this.#panel.webview);
+    // register podman inference manager
     this.#extensionContext.subscriptions.push(this.#inferenceServerRegistry.register(this.#podmanInferenceManager));
+    // register kubernetes inference manager
+    this.#extensionContext.subscriptions.push(this.#inferenceServerRegistry.register(this.#kubernetesInferenceManager));
 
     /**
      * PlaygroundV2Manager handle the conversations of the Playground by using the InferenceServerInfo available

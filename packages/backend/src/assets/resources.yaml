@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-ai-lab-models
+  labels:
+    creator: podman-ai-lab
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 8Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  volumes:
+    - name: pvc-ai-lab-models
+      persistentVolumeClaim:
+        claimName: pvc-ai-lab-models
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/models"
+          name: pvc-ai-lab-models
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lab-pod
+  labels:
+    app: lab-app
+spec:
+  containers:
+    - name: lab-container
+      image: nginx
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: lab-volume
+      env:
+        - name: MODELS
+          value: "/path/to/models/file"  # Update this to the actual path
+  initContainers:
+    - name: wait-for-models
+      image: busybox
+      command:
+        - sh
+        - -c
+        - >
+          timeout ${INIT_TIMEOUT} sh -c '
+          while [ ! -f "${MODELS}" ]; do
+            echo "Waiting for ${MODELS} to exist...";
+            sleep 1;
+          done;
+          echo "${MODELS} exists.";
+          '
+      env:
+        - name: MODELS
+          value: "/path/to/models/file"  # Ensure this matches the value in the main container
+        - name: INIT_TIMEOUT
+          value: "3600"  # Ensure this matches the value in the main container
+      volumeMounts:
+        - mountPath: /path/to/models/dir  # This should be the directory containing the models file
+          name: lab-volume
+  volumes:
+    - name: lab-volume
+      persistentVolumeClaim:
+        claimName: lab-volume

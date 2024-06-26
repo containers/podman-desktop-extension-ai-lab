@@ -33,7 +33,7 @@ import type { TaskRegistry } from '../../registries/TaskRegistry';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 import type { CatalogManager } from '../catalogManager';
-import { RuntimeType } from './RuntimeEngine';
+import { RuntimeType } from '@shared/src/models/IInference';
 
 vi.mock('@podman-desktop/api', async () => {
   return {

@@ -21,21 +21,22 @@ import { TaskRegistry } from '../../registries/TaskRegistry';
 import { InferenceServerStatus, InferenceType, RuntimeType } from '@shared/src/models/IInference';
 import { type Disposable, kubernetes, navigation } from '@podman-desktop/api';
 import {
-  CoreV1Api,
-  KubeConfig,
-  type V1PersistentVolumeClaim,
   type V1Pod,
   makeInformer,
   Informer,
   PortForward,
 } from '@kubernetes/client-node';
 import { ModelInfo } from '@shared/src/models/IModelInfo';
-import { posix } from 'node:path';
-import { getRandomString } from '../../utils/randomUtils';
-import file from '../../assets/kube-inference-init.sh?raw';
 import { ADD, CHANGE, DELETE, ERROR, UPDATE } from '@kubernetes/client-node';
 import { ModelsManager } from '../modelsManager';
 import { createServer, Server as ProxyServer, Socket } from 'net';
+import {
+  getCoreV1Api,
+  getKubeConfig,
+  getLabelSelector, KubernetesInferenceProvider,
+} from '../../workers/provider/KubernetesInferenceProvider';
+import { getInferenceType } from '../../utils/inferenceUtils';
+import { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 
 export const DEFAULT_NAMESPACE = 'default';
 
@@ -60,6 +61,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
   constructor(
     taskRegistry: TaskRegistry,
     private modelManager: ModelsManager,
+    private inferenceProviderRegistry: InferenceProviderRegistry,
   ) {
     super('kubernetes', RuntimeType.KUBERNETES, taskRegistry);
 
@@ -77,14 +79,14 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
   }
 
   protected initInformer(): void {
-    const coreApi = this.getCoreV1Api();
+    const coreApi = getCoreV1Api();
 
     const listFn = () => coreApi.listNamespacedPod(DEFAULT_NAMESPACE);
     this.#informer = makeInformer(
-      this.getKubeConfig(),
+      getKubeConfig(),
       `/api/v1/namespaces/${DEFAULT_NAMESPACE}/pods`,
       listFn,
-      this.getLabelSelector(),
+      getLabelSelector(),
     );
     this.#informer.on(ADD, this.updateStatus.bind(this, ADD));
     this.#informer.on(UPDATE, this.updateStatus.bind(this, UPDATE));
@@ -143,31 +145,6 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
     this.notify();
   }
 
-  protected getLabels(): Record<string, string> {
-    return {
-      creator: 'podman-ai-lab',
-    };
-  }
-
-  protected getLabelSelector(): string {
-    return Object.entries(this.getLabels())
-      .map(([key, value]) => `${key}=${value}`)
-      .join(',');
-  }
-
-  protected getKubeConfig(): KubeConfig {
-    const uri = kubernetes.getKubeconfig();
-    const config = new KubeConfig();
-    config.loadFromFile(uri.fsPath);
-    console.debug(`current context ${config.getCurrentContext()}`);
-    return config;
-  }
-
-  protected getCoreV1Api(): CoreV1Api {
-    const config = this.getKubeConfig();
-    return config.makeApiClient(CoreV1Api);
-  }
-
   private refresh(): void {
     this.clearServers();
 
@@ -194,7 +171,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
       targetPorts.push(...(container.ports ?? []).map(value => value.containerPort));
     }
     console.log('targetPorts', targetPorts);
-    const forward = new PortForward(this.getKubeConfig());
+    const forward = new PortForward(getKubeConfig());
     return createServer((socket) => {
       forward.portForward(DEFAULT_NAMESPACE, podName, targetPorts, socket, null, socket).catch((err: unknown) => {
         console.error(`Something went wrong while trying to port forward pod ${podName}`, err);
@@ -219,30 +196,6 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
     return Array.from(this.#servers.values());
   }
 
-  protected async getVolumes(): Promise<V1PersistentVolumeClaim[]> {
-    const coreAPI = this.getCoreV1Api();
-    const result = await coreAPI.listNamespacedPersistentVolumeClaim(
-      DEFAULT_NAMESPACE,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      this.getLabelSelector(),
-    );
-    return result.body.items;
-  }
-
-  protected async findModelVolume(modelId: string): Promise<V1PersistentVolumeClaim | undefined> {
-    // get the volumes
-    const volumes = await this.getVolumes();
-    return volumes.find(
-      volume =>
-        volume.metadata?.annotations &&
-        AI_LAB_ANNOTATIONS.MODEL in volume.metadata.annotations &&
-        volume.metadata.annotations[AI_LAB_ANNOTATIONS.MODEL] === modelId,
-    );
-  }
-
   /**
    * Given a V1Pod create an InferenceServerInstance
    * @param pod
@@ -259,7 +212,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
     }
 
     const name = pod.metadata.name;
-    const coreAPI = this.getCoreV1Api();
+    const coreAPI = getCoreV1Api();
 
     let status: InferenceServerStatus;
     switch (pod.status?.phase) {
@@ -329,7 +282,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
       type: InferenceType.LLAMA_CPP,
       details: {
         namespace: DEFAULT_NAMESPACE,
-        context: this.getKubeConfig().getCurrentContext(),
+        context: getKubeConfig().getCurrentContext(),
       },
       models: modelInfo ? [modelInfo] : [],
       connection: {
@@ -353,151 +306,23 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
     };
   }
 
-  /**
-   * @param model
-   * @protected
-   */
-  protected async createModelVolume(model: ModelInfo): Promise<V1PersistentVolumeClaim> {
-    if (!model.memory) throw new Error('model need to have memory estimate');
-
-    const volumeSize = Math.ceil(model.memory / 2 ** 30);
-
-    const coreAPI = this.getCoreV1Api();
-    const result = await coreAPI.createNamespacedPersistentVolumeClaim(DEFAULT_NAMESPACE, {
-      metadata: {
-        name: `pvc-podman-ai-lab-${getRandomString()}`,
-        labels: this.getLabels(),
-        annotations: {
-          [AI_LAB_ANNOTATIONS.MODEL]: model.id,
-        },
-      },
-      apiVersion: 'v1',
-      spec: {
-        accessModes: ['ReadWriteOnce'],
-        volumeMode: 'Filesystem',
-        resources: {
-          requests: {
-            storage: `${volumeSize}Gi`,
-          },
-        },
-      },
-    });
-    return result.body;
-  }
-
   override async create(config: InferenceServerConfig): Promise<InferenceServerInstance<KubernetesInferenceDetails>> {
-    if (config.modelsInfo.length !== 1)
-      throw new Error(
-        `kubernetes inference creation does not support anything else than one model. (Got ${config.modelsInfo.length})`,
-      );
+    // Get the backend for the model inference server {@link InferenceType}
+    const backend: InferenceType = getInferenceType(config.modelsInfo);
 
-    const modelInfo = config.modelsInfo[0];
-    if (!modelInfo.url) throw new Error('only remote models can be used.');
-
-    // todo compute it live for imported models
-    if (!modelInfo.sha256) throw new Error('models provided need a valid sha256 value.');
-
-    let volume = await this.findModelVolume(modelInfo.id);
-    if (!volume) {
-      const volumeTask = this.taskRegistry.createTask(`Creating Kubernetes PVC`, 'loading', {
-        ...config.labels,
-      });
-
-      try {
-        volume = await this.createModelVolume(modelInfo);
-        volumeTask.state = 'success';
-      } catch (err: unknown) {
-        volumeTask.state = 'error';
-        volumeTask.error = `Something went wrong while creating Kubernetes PVC: ${String(err)}`;
-        throw err;
-      } finally {
-        this.taskRegistry.updateTask(volumeTask);
-      }
+    let provider: KubernetesInferenceProvider;
+    if (config.inferenceProvider) {
+      provider = this.inferenceProviderRegistry.get<KubernetesInferenceProvider>(RuntimeType.KUBERNETES, config.inferenceProvider);
+      if (!provider.enabled()) throw new Error('provider requested is not enabled.');
+    } else {
+      const providers: KubernetesInferenceProvider[] = this.inferenceProviderRegistry
+        .getByType<KubernetesInferenceProvider>(RuntimeType.KUBERNETES, backend)
+        .filter(provider => provider.enabled());
+      if (providers.length === 0) throw new Error('no enabled provider could be found.');
+      provider = providers[0];
     }
 
-    if (!volume.metadata || !volume.metadata.name) throw new Error('invalid volume metadata.');
-
-    const coreAPI = this.getCoreV1Api();
-
-    const podTask = this.taskRegistry.createTask(`Creating Kubernetes namespaced pod`, 'loading', {
-      ...config.labels,
-    });
-
-    let result: { body: V1Pod };
-    try {
-      result = await coreAPI.createNamespacedPod(DEFAULT_NAMESPACE, {
-        metadata: {
-          name: `podman-ai-lab-inference-${getRandomString()}`,
-          labels: this.getLabels(),
-          annotations: {
-            [AI_LAB_ANNOTATIONS.MODEL]: modelInfo.id,
-            [AI_LAB_ANNOTATIONS.PORT]: `${config.port}`,
-          },
-        },
-        spec: {
-          volumes: [
-            {
-              name: 'pvc-ai-lab-model',
-              persistentVolumeClaim: {
-                claimName: volume.metadata.name,
-              },
-            },
-          ],
-          containers: [
-            {
-              name: 'nginx',
-              image: 'nginx',
-              ports: [
-                {
-                  containerPort: 80,
-                }
-              ]
-            },
-          ],
-          // the init container is used to wait for the models to be available
-          // ~this is hacky
-          initContainers: [
-            {
-              name: 'init-model-checker',
-              image: 'busybox',
-              volumeMounts: [
-                {
-                  mountPath: '/models',
-                  name: 'pvc-ai-lab-model',
-                },
-              ],
-              env: [
-                {
-                  name: 'MODEL_URL',
-                  value: modelInfo.url,
-                },
-                {
-                  name: 'MODEL_PATH',
-                  value: posix.join('/models', modelInfo.id),
-                },
-                {
-                  name: 'MODEL_SHA256',
-                  value: modelInfo.sha256,
-                },
-                {
-                  name: 'INIT_TIMEOUT',
-                  value: '3600', // default to one hour
-                },
-              ],
-              command: ['sh', '-c', file.replace(/\r\n/g, '\n')],
-            },
-          ],
-        },
-      });
-      podTask.state = 'success';
-    } catch (err: unknown) {
-      podTask.state = 'error';
-      podTask.error = `Something went wrong while creating Kubernetes namespaced pod: ${String(err)}`;
-      throw err;
-    } finally {
-      this.taskRegistry.updateTask(podTask);
-    }
-
-    return this.fromV1Pod(result.body);
+    const pod = await provider.perform(config);
+    return this.fromV1Pod(pod);
   }
 }

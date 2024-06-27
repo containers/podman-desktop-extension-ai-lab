@@ -22,6 +22,7 @@ import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { KubernetesInferenceManager } from './kubernetesInferenceManager';
 import { InferenceType, RuntimeType } from '@shared/src/models/IInference';
 import type { ModelsManager } from '../modelsManager';
+import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -48,6 +49,12 @@ const modelsManager = {
   uploadModelToPodmanMachine: vi.fn(),
 } as unknown as ModelsManager;
 
+const inferenceProviderRegistryMock = {
+  getAll: vi.fn(),
+  getByType: vi.fn(),
+  get: vi.fn(),
+} as unknown as InferenceProviderRegistry;
+
 beforeEach(() => {
   vi.mocked(kubernetes.getKubeconfig).mockReturnValue({ fsPath: 'C:\\Users\\axels\\.kube\\config' } as unknown as Uri);
 
@@ -67,7 +74,7 @@ beforeEach(() => {
 test(
   'create inference server',
   async () => {
-    const kubeInferenceManager = new KubernetesInferenceManager(taskRegistryMock, modelsManager);
+    const kubeInferenceManager = new KubernetesInferenceManager(taskRegistryMock, modelsManager, inferenceProviderRegistryMock);
     const server = await kubeInferenceManager.create({
       runtime: RuntimeType.KUBERNETES,
       port: 8888,

@@ -16,42 +16,53 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { Publisher } from '../utils/Publisher';
-import type { InferenceProvider } from '../workers/provider/InferenceProvider';
 import { Disposable, type Webview } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
-import type { InferenceType } from '@shared/src/models/IInference';
+import type { InferenceType, RuntimeType } from '@shared/src/models/IInference';
+import type { InferenceProvider } from '../workers/provider/InferenceProvider';
 
 export class InferenceProviderRegistry extends Publisher<string[]> {
-  #providers: Map<string, InferenceProvider>;
+  #providers: Map<RuntimeType, InferenceProvider<unknown>[]>;
+
   constructor(webview: Webview) {
     super(webview, Messages.MSG_INFERENCE_PROVIDER_UPDATE, () => this.getAll().map(provider => provider.name));
     this.#providers = new Map();
   }
 
-  register(provider: InferenceProvider): Disposable {
-    this.#providers.set(provider.name, provider);
+  register(provider: InferenceProvider<unknown>): Disposable {
+    if(this.has(provider.runtime, provider.name)) throw new Error('provider already registered');
+
+    const providers = this.#providers.get(provider.runtime) ?? [];
+    this.#providers.set(provider.runtime, [...providers, provider]);
 
     this.notify();
     return Disposable.create(() => {
-      this.unregister(provider.name);
+      this.unregister(provider.runtime, provider.name);
     });
   }
 
-  unregister(name: string): void {
-    this.#providers.delete(name);
+  unregister(runtime: RuntimeType, name: string): void {
+    const providers = this.#providers.get(runtime) ?? [];
+    if(providers.length === 0) return;
+
+    this.#providers.set(runtime, providers.filter(provider => provider.name !== name));
   }
 
-  getAll(): InferenceProvider[] {
-    return Array.from(this.#providers.values());
+  getAll(): InferenceProvider<unknown>[] {
+    return Array.from(this.#providers.values()).flat();
   }
 
-  getByType(type: InferenceType): InferenceProvider[] {
-    return Array.from(this.#providers.values()).filter(provider => provider.type === type);
+  getByType<T extends InferenceProvider<unknown>>(runtime: RuntimeType, type: InferenceType): T[] {
+    return (this.#providers.get(runtime) ?? []).filter((provider): provider is T => provider.type === type);
   }
 
-  get(name: string): InferenceProvider {
-    const provider = this.#providers.get(name);
+  has(runtime: RuntimeType, name: string): boolean {
+    return (this.#providers.get(runtime) ?? []).some(provider => provider.name === name);
+  }
+
+  get<T extends InferenceProvider<unknown>>(runtime: RuntimeType, name: string): T {
+    const provider = (this.#providers.get(runtime) ?? []).find(provider => provider.name === name);
     if (provider === undefined) throw new Error(`no provider with name ${name} was found.`);
-    return provider;
+    return provider as T;
   }
 }

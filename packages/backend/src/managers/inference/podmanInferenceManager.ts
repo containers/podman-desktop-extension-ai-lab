@@ -15,10 +15,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { InferenceServerStatus, InferenceType } from '@shared/src/models/IInference';
-import { RuntimeType } from '@shared/src/models/IInference';
+import { InferenceServerStatus, InferenceType, RuntimeType } from '@shared/src/models/IInference';
 import type { PodmanConnection } from '../podmanConnection';
-import { containerEngine, type ContainerInfo, Disposable, type TelemetryLogger } from '@podman-desktop/api';
+import podmanDesktopApi, {
+  containerEngine,
+  type ContainerInfo,
+  Disposable,
+  type TelemetryLogger,
+} from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
 import { getInferenceType, isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
@@ -26,11 +30,10 @@ import type { ModelsManager } from '../modelsManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { basename, dirname } from 'node:path';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
-import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
+import type { PodmanInferenceProvider } from '../../workers/provider/PodmanInferenceProvider';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CatalogManager } from '../catalogManager';
 import { type InferenceServerInstance, RuntimeEngine } from './RuntimeEngine';
-import podmanDesktopApi from '@podman-desktop/api';
 
 export interface PodmanInferenceDetails {
   engineId: string;
@@ -105,7 +108,7 @@ export class PodmanInferenceManager extends RuntimeEngine<PodmanInferenceDetails
   }
 
   /**
-   * Given an engineId, it will create an inference server using an InferenceProvider.
+   * Given an engineId, it will create an inference server using an PodmanInferenceProvider.
    * @param config
    *
    * @return the containerId of the created inference server
@@ -116,13 +119,13 @@ export class PodmanInferenceManager extends RuntimeEngine<PodmanInferenceDetails
     // Get the backend for the model inference server {@link InferenceType}
     const backend: InferenceType = getInferenceType(config.modelsInfo);
 
-    let provider: InferenceProvider;
+    let provider: PodmanInferenceProvider;
     if (config.inferenceProvider) {
-      provider = this.inferenceProviderRegistry.get(config.inferenceProvider);
+      provider = this.inferenceProviderRegistry.get<PodmanInferenceProvider>(RuntimeType.PODMAN, config.inferenceProvider);
       if (!provider.enabled()) throw new Error('provider requested is not enabled.');
     } else {
-      const providers: InferenceProvider[] = this.inferenceProviderRegistry
-        .getByType(backend)
+      const providers: PodmanInferenceProvider[] = this.inferenceProviderRegistry
+        .getByType<PodmanInferenceProvider>(RuntimeType.PODMAN, backend)
         .filter(provider => provider.enabled());
       if (providers.length === 0) throw new Error('no enabled provider could be found.');
       provider = providers[0];

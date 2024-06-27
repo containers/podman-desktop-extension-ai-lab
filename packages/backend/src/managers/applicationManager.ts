@@ -51,7 +51,7 @@ import { getModelPropertiesForEnvironment } from '../utils/modelsUtils';
 import { getRandomName } from '../utils/randomUtils';
 import type { BuilderManager } from './recipes/BuilderManager';
 import type { PodManager } from './recipes/PodManager';
-import { SECOND } from '../workers/provider/LlamaCppPython';
+import { SECOND } from '../workers/provider/PodmanLlamaCppPython';
 
 export const LABEL_MODEL_ID = 'ai-lab-model-id';
 export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';

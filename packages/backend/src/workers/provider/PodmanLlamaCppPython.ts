@@ -17,7 +17,7 @@
  ***********************************************************************/
 import type { ContainerCreateOptions, ImageInfo } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import { type BetterContainerCreateResult, InferenceProvider } from './InferenceProvider';
+import { type BetterContainerCreateResult, PodmanInferenceProvider } from './PodmanInferenceProvider';
 import { getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
@@ -29,7 +29,7 @@ export const LLAMA_CPP_INFERENCE_IMAGE =
 
 export const SECOND: number = 1_000_000_000;
 
-export class LlamaCppPython extends InferenceProvider {
+export class PodmanLlamaCppPython extends PodmanInferenceProvider {
   constructor(taskRegistry: TaskRegistry) {
     super(taskRegistry, InferenceType.LLAMA_CPP, 'LLama-cpp (CPU)');
   }

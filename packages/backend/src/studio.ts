@@ -42,10 +42,11 @@ import { engines } from '../package.json';
 import { BuilderManager } from './managers/recipes/BuilderManager';
 import { PodManager } from './managers/recipes/PodManager';
 import { initWebview } from './webviewUtils';
-import { LlamaCppPython } from './workers/provider/LlamaCppPython';
+import { PodmanLlamaCppPython } from './workers/provider/PodmanLlamaCppPython';
 import { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
 import { InferenceServerRegistry } from './registries/InferenceServerRegistry';
 import { KubernetesInferenceManager } from './managers/inference/kubernetesInferenceManager';
+import { KubernetesLlamaCppPython } from './workers/provider/KubernetesLlamaCppPython';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -65,8 +66,10 @@ export class Studio {
   #catalogManager: CatalogManager | undefined;
   #modelsManager: ModelsManager | undefined;
   #telemetry: TelemetryLogger | undefined;
+  // our runtime inference managers
   #podmanInferenceManager: PodmanInferenceManager | undefined;
   #kubernetesInferenceManager: KubernetesInferenceManager | undefined;
+
   #inferenceServerRegistry: InferenceServerRegistry | undefined;
   #podManager: PodManager | undefined;
   #builderManager: BuilderManager | undefined;
@@ -233,11 +236,14 @@ export class Studio {
      */
     this.#inferenceProviderRegistry = new InferenceProviderRegistry(this.#panel.webview);
     this.#extensionContext.subscriptions.push(
-      this.#inferenceProviderRegistry.register(new LlamaCppPython(this.#taskRegistry)),
+      this.#inferenceProviderRegistry.register(new PodmanLlamaCppPython(this.#taskRegistry)),
+    );
+    this.#extensionContext.subscriptions.push(
+      this.#inferenceProviderRegistry.register(new KubernetesLlamaCppPython(this.#taskRegistry)),
     );
 
     /**
-     * The inference manager create, stop, manage Inference servers
+     * The PodmanInferenceManager create, stop, manage Inference servers on podman machines
      */
     this.#podmanInferenceManager = new PodmanInferenceManager(
       this.#containerRegistry,
@@ -252,9 +258,13 @@ export class Studio {
     this.#extensionContext.subscriptions.push(this.#podmanInferenceManager);
 
     /**
-     * tests
+     * KubernetesInferenceManager
      */
-    this.#kubernetesInferenceManager = new KubernetesInferenceManager(this.#taskRegistry, this.#modelsManager);
+    this.#kubernetesInferenceManager = new KubernetesInferenceManager(
+      this.#taskRegistry,
+      this.#modelsManager,
+      this.#inferenceProviderRegistry,
+    );
     this.#kubernetesInferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#kubernetesInferenceManager);
 

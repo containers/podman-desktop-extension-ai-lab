@@ -31,7 +31,7 @@ import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
-import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
+import type { PodmanInferenceProvider } from '../../workers/provider/PodmanInferenceProvider';
 import type { CatalogManager } from '../catalogManager';
 import { RuntimeType } from '@shared/src/models/IInference';
 
@@ -252,7 +252,7 @@ describe('Create Inference Server', () => {
   test('inference provider provided should use get from InferenceProviderRegistry', async () => {
     vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue({
       enabled: () => false,
-    } as unknown as InferenceProvider);
+    } as unknown as PodmanInferenceProvider);
 
     const inferenceManager = await getInitializedInferenceManager();
     await expect(
@@ -267,12 +267,12 @@ describe('Create Inference Server', () => {
   });
 
   test('selected inference provider should receive config', async () => {
-    const provider: InferenceProvider = {
+    const provider: PodmanInferenceProvider = {
       enabled: () => true,
       name: 'dummy-inference-provider',
       dispose: () => {},
       perform: vi.fn().mockResolvedValue({ id: 'dummy-container-id', engineId: 'dummy-engine-id' }),
-    } as unknown as InferenceProvider;
+    } as unknown as PodmanInferenceProvider;
     vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue(provider);
 
     const inferenceManager = await getInitializedInferenceManager();

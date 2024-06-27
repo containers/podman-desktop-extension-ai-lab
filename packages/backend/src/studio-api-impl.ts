@@ -45,6 +45,7 @@ import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { checkContainerConnectionStatusAndResources, getPodmanConnection } from './utils/podman';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import type { InferenceServerRegistry } from './registries/InferenceServerRegistry';
+import type { RecipeManager } from './managers/recipes/RecipeManager';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -62,6 +63,7 @@ export class StudioApiImpl implements StudioAPI {
     private playgroundV2: PlaygroundV2Manager,
     private snippetManager: SnippetManager,
     private cancellationTokenRegistry: CancellationTokenRegistry,
+    private recipeManager: RecipeManager,
   ) {}
 
   async requestDeleteConversation(conversationId: string): Promise<void> {
@@ -192,7 +194,7 @@ export class StudioApiImpl implements StudioAPI {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
     if (!recipe) throw new Error(`recipe with if ${recipeId} not found`);
 
-    return this.applicationManager.cloneApplication(recipe);
+    return this.recipeManager.cloneRecipe(recipe);
   }
 
   async pullApplication(recipeId: string, modelId: string): Promise<void> {

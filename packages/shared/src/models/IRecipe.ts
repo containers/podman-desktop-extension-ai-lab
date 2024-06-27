@@ -16,6 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+export interface RecipeImage {
+  recipeId: string;
+  id: string;
+  modelService: boolean;
+  ports: string[];
+  appName: string;
+}
+
 export interface Recipe {
   id: string;
   name: string;

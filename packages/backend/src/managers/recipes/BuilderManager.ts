@@ -17,15 +17,19 @@
  ***********************************************************************/
 import { type BuildImageOptions, type Disposable, containerEngine } from '@podman-desktop/api';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { RecipeImage, Recipe } from '@shared/src/models/IRecipe';
 import type { ContainerConfig } from '../../models/AIConfig';
-import type { ImageInfo } from '../applicationManager';
-import { LABEL_RECIPE_ID } from '../applicationManager';
 import type { Task } from '@shared/src/models/ITask';
 import path from 'node:path';
 import { getParentDirectory } from '../../utils/pathUtils';
 import fs from 'fs';
 import { getImageTag } from '../../utils/imagesUtils';
+import {
+  IMAGE_LABEL_APP_PORTS,
+  IMAGE_LABEL_APPLICATION_NAME,
+  IMAGE_LABEL_MODEL_SERVICE,
+  IMAGE_LABEL_RECIPE_ID,
+} from '../../utils/RecipeConstants';
 
 export class BuilderManager implements Disposable {
   private controller: Map<string, AbortController> = new Map();
@@ -44,7 +48,7 @@ export class BuilderManager implements Disposable {
     containers: ContainerConfig[],
     configPath: string,
     labels?: { [key: string]: string },
-  ): Promise<ImageInfo[]> {
+  ): Promise<RecipeImage[]> {
     const containerTasks: { [key: string]: Task } = Object.fromEntries(
       containers.map(container => [
         container.name,
@@ -52,7 +56,7 @@ export class BuilderManager implements Disposable {
       ]),
     );
 
-    const imageInfoList: ImageInfo[] = [];
+    const imageInfoList: RecipeImage[] = [];
 
     // Promise all the build images
     const abortController = new AbortController();
@@ -85,7 +89,11 @@ export class BuilderManager implements Disposable {
             containerFile: container.containerfile,
             tag: imageTag,
             labels: {
-              [LABEL_RECIPE_ID]: labels !== undefined && 'recipe-id' in labels ? labels['recipe-id'] : '',
+              ...labels,
+              [IMAGE_LABEL_RECIPE_ID]: recipe.id,
+              [IMAGE_LABEL_MODEL_SERVICE]: container.modelService?'true':'false',
+              [IMAGE_LABEL_APPLICATION_NAME]: container.name,
+              [IMAGE_LABEL_APP_PORTS]: (container.ports ?? []).join(','),
             },
             abortController: abortController,
           };
@@ -147,6 +155,7 @@ export class BuilderManager implements Disposable {
           modelService: container.modelService,
           ports: container.ports?.map(p => `${p}`) ?? [],
           appName: container.name,
+          recipeId: recipe.id,
         });
 
         task.state = 'success';

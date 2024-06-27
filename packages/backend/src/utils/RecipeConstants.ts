@@ -16,17 +16,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export enum Messages {
-  MSG_NEW_CATALOG_STATE = 'new-catalog-state',
-  MSG_TASKS_UPDATE = 'tasks-update',
-  MSG_NEW_MODELS_STATE = 'new-models-state',
-  MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update',
-  MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update',
-  MSG_INFERENCE_SERVERS_UPDATE = 'inference-servers-update',
-  MSG_MONITORING_UPDATE = 'monitoring-update',
-  MSG_SUPPORTED_LANGUAGES_UPDATE = 'supported-languages-supported',
-  MSG_CONVERSATIONS_UPDATE = 'conversations-update',
-  MSG_GPUS_UPDATE = 'gpus-update',
-  MSG_INFERENCE_PROVIDER_UPDATE = 'inference-provider-update',
-  MSG_RECIPE_IMAGES_UPDATE = 'recipe-images-update'
-}
+export const CONFIG_FILENAME = 'ai-lab.yaml';
+
+// pod labels
+export const POD_LABEL_RECIPE_ID = 'ai-lab-recipe-id';
+export const POD_LABEL_MODEL_ID = 'ai-lab-model-id';
+export const POD_LABEL_MODEL_PORTS = 'ai-lab-model-ports';
+export const POD_LABEL_APP_PORTS = 'ai-lab-application-ports';
+
+// image labels
+export const IMAGE_LABEL_RECIPE_ID = 'ai-lab-recipe-id';
+export const IMAGE_LABEL_APP_PORTS = 'ai-lab-application-ports';
+export const IMAGE_LABEL_MODEL_SERVICE = 'ai-lab-model-service';
+export const IMAGE_LABEL_APPLICATION_NAME = 'ai-lab-application-name';

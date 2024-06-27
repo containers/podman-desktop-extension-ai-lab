@@ -26,7 +26,7 @@ import { parseYamlFile } from '../../models/AIConfig';
 import fs from 'fs';
 import { goarch } from '../../utils/arch';
 import type { BuilderManager } from './BuilderManager';
-import { containerEngine, type Webview } from '@podman-desktop/api';
+import { containerEngine, type Disposable, type Webview } from '@podman-desktop/api';
 import { Publisher } from '../../utils/Publisher';
 import { Messages } from '@shared/Messages';
 import {
@@ -41,7 +41,7 @@ export interface AIContainers {
   containers: ContainerConfig[];
 }
 
-export class RecipeManager extends Publisher<RecipeImage[]> {
+export class RecipeManager extends Publisher<RecipeImage[]> implements Disposable {
   #images: Map<string, RecipeImage>;
 
   constructor(
@@ -53,6 +53,10 @@ export class RecipeManager extends Publisher<RecipeImage[]> {
     private localRepositories: LocalRepositoryRegistry) {
     super(webview, Messages.MSG_RECIPE_IMAGES_UPDATE, () => this.getImages());
     this.#images = new Map();
+  }
+
+  dispose(): void {
+    this.#images.clear();
   }
 
   init(): void {
@@ -79,6 +83,7 @@ export class RecipeManager extends Publisher<RecipeImage[]> {
       modelService: IMAGE_LABEL_MODEL_SERVICE in image.Labels && image.Labels[IMAGE_LABEL_MODEL_SERVICE] === 'true',
       appName:  image.Labels[IMAGE_LABEL_APPLICATION_NAME],
     } as RecipeImage)).forEach(recipeImage => this.#images.set(recipeImage.id, recipeImage));
+    this.notify();
   }
 
   getImages(): RecipeImage[] {

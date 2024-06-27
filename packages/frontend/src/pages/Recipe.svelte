@@ -17,10 +17,13 @@ import { router } from 'tinro';
 import { InferenceType } from '@shared/src/models/IInference';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import Fa from 'svelte-fa';
+import RecipeImages from '/@/pages/RecipeImages.svelte';
+import type { Recipe } from '@shared/src/models/IRecipe';
 
 export let recipeId: string;
 
 // The recipe model provided
+let recipe: Recipe | undefined = undefined;
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: categories = $catalog.categories;
 
@@ -72,6 +75,7 @@ export function goToUpPage(): void {
   <svelte:fragment slot="tabs">
     <Tab title="Summary" url="/recipe/{recipeId}" selected="{$router.path === `/recipe/${recipeId}`}" />
     <Tab title="Models" url="/recipe/{recipeId}/models" selected="{$router.path === `/recipe/${recipeId}/models`}" />
+    <Tab title="Images" url="/recipe/{recipeId}/images" selected="{$router.path === `/recipe/${recipeId}/images`}" />
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="bg-[var(--pd-content-bg)] h-full overflow-y-auto">
@@ -93,6 +97,11 @@ export function goToUpPage(): void {
               selected="{selectedModelId}"
               recommended="{recipe?.recommended ?? []}"
               setSelectedModel="{setSelectedModel}" />
+          </Route>
+          <Route path="/images">
+            {#if recipe}
+              <RecipeImages recipe="{recipe}"/>
+            {/if}
           </Route>
         </svelte:fragment>
         <svelte:fragment slot="details">

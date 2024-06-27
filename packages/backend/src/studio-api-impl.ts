@@ -46,6 +46,7 @@ import { checkContainerConnectionStatusAndResources, getPodmanConnection } from 
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import type { InferenceServerRegistry } from './registries/InferenceServerRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
+import type { RecipeImage } from '@shared/src/models/IRecipe';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -220,6 +221,10 @@ export class StudioApiImpl implements StudioAPI {
 
   async getModelsInfo(): Promise<ModelInfo[]> {
     return this.modelsManager.getModelsInfo();
+  }
+
+  async getRecipeImages(): Promise<RecipeImage[]> {
+    return this.recipeManager.getImages();
   }
 
   async getCatalog(): Promise<ApplicationCatalog> {

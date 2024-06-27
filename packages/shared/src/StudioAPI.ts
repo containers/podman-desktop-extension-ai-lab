@@ -30,6 +30,7 @@ import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
 import type { LocalModelImportInfo } from './models/ILocalModelInfo';
 import type { ContainerConnectionInfo } from './models/IContainerConnectionInfo';
+import type { RecipeImage } from './models/IRecipe';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -57,6 +58,8 @@ export abstract class StudioAPI {
    * Get the information of models saved locally into the user's directory
    */
   abstract getModelsInfo(): Promise<ModelInfo[]>;
+
+  abstract getRecipeImages(): Promise<RecipeImage[]>;
   /**
    * Delete the folder containing the model from local storage
    */

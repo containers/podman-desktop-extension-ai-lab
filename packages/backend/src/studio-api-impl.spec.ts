@@ -22,7 +22,6 @@ import { beforeEach, expect, test, vi, describe } from 'vitest';
 import content from './tests/ai-test.json';
 import type { ApplicationManager } from './managers/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
-import type { PodmanInferenceManager } from './managers/inference/podmanInferenceManager';
 import type { ProviderContainerConnection, TelemetryLogger, Webview } from '@podman-desktop/api';
 import { window, EventEmitter, navigation } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
@@ -38,6 +37,7 @@ import type { CancellationTokenRegistry } from './registries/CancellationTokenRe
 import path from 'node:path';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import * as podman from './utils/podman';
+import type { InferenceServerRegistry } from './registries/InferenceServerRegistry';
 
 vi.mock('./ai.json', () => {
   return {
@@ -135,7 +135,7 @@ beforeEach(async () => {
     telemetryMock,
     localRepositoryRegistry,
     {} as unknown as TaskRegistry,
-    {} as unknown as PodmanInferenceManager,
+    {} as unknown as InferenceServerRegistry,
     {} as unknown as PlaygroundV2Manager,
     {} as unknown as SnippetManager,
     {} as unknown as CancellationTokenRegistry,

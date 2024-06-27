@@ -28,6 +28,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
 import { getRandomString } from '../utils/randomUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
+import { RuntimeType } from '@shared/src/models/IInference';
 
 export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;
@@ -120,10 +121,11 @@ export class PlaygroundV2Manager implements Disposable {
           labels: {
             trackingId: trackingId,
           },
+          runtime: RuntimeType.PODMAN,
         }),
       );
     } else if (server.status === 'stopped') {
-      await this.inferenceManager.startInferenceServer(server.container.containerId);
+      await this.inferenceManager.startInferenceServer(server.id);
     }
 
     return conversationId;

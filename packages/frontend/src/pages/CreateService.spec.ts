@@ -90,7 +90,7 @@ beforeEach(() => {
   vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
   mocks.getInferenceServersMock.mockReturnValue([
-    { container: { containerId: 'dummyContainerId' } } as InferenceServerInfo,
+    { id: 'dummyContainerId' } as InferenceServerInfo,
   ]);
 });
 

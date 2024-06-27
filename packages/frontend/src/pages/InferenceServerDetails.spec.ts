@@ -19,7 +19,7 @@
 import '@testing-library/jest-dom/vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { type InferenceServerInfo, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServerInfo, InferenceType, RuntimeType } from '@shared/src/models/IInference';
 import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
 import type { Language } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -95,6 +95,8 @@ beforeEach(() => {
 
   mocks.getInferenceServersMock.mockReturnValue([
     {
+      id: 'dummyContainerId',
+      runtime: RuntimeType.PODMAN,
       health: {
         Status: 'healthy',
         Log: [],
@@ -106,12 +108,8 @@ beforeEach(() => {
           name: 'Dummy model id',
         } as unknown as ModelInfo,
       ],
-      connection: { port: 9999 },
+      connection: { host: 'localhost', port: 9999 },
       status: 'running',
-      container: {
-        containerId: 'dummyContainerId',
-        engineId: 'dummyEngineId',
-      },
       type: InferenceType.NONE,
     } as InferenceServerInfo,
   ]);
@@ -119,7 +117,7 @@ beforeEach(() => {
 
 test('ensure address is displayed', async () => {
   render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
+    serverId: 'dummyContainerId',
   });
 
   const address = screen.getByText('http://localhost:9999/v1');
@@ -128,7 +126,7 @@ test('ensure address is displayed', async () => {
 
 test('language select must have the mocked snippet languages', async () => {
   render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
+    serverId: 'dummyContainerId',
   });
 
   const select: HTMLSelectElement = screen.getByLabelText('snippet language selection');
@@ -139,7 +137,7 @@ test('language select must have the mocked snippet languages', async () => {
 
 test('default render should show curl', async () => {
   render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
+    serverId: 'dummyContainerId',
   });
 
   const variantSelect: HTMLSelectElement = screen.getByLabelText('snippet language variant');
@@ -148,7 +146,7 @@ test('default render should show curl', async () => {
 
 test('on mount should call createSnippet', async () => {
   render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
+    serverId: 'dummyContainerId',
   });
 
   expect(studioClient.createSnippet).toHaveBeenCalledWith(
@@ -166,7 +164,7 @@ test('on mount should call createSnippet', async () => {
 test('invalid container id should redirect to services page', async () => {
   const gotoSpy = vi.spyOn(router, 'goto');
   render(InferenceServerDetails, {
-    containerId: 'fakeContainerId',
+    serverId: 'fakeContainerId',
   });
 
   expect(gotoSpy).toHaveBeenCalledWith('/services');
@@ -175,7 +173,7 @@ test('invalid container id should redirect to services page', async () => {
 test('copy snippet should call copyToClipboard', async () => {
   vi.mocked(studioClient.createSnippet).mockResolvedValue('dummy generated snippet');
   render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
+    serverId: 'dummyContainerId',
   });
 
   await vi.waitFor(() => {
@@ -191,7 +189,7 @@ test('copy snippet should call copyToClipboard', async () => {
 
 test('ensure dummyContainerId is visible', async () => {
   render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
+    serverId: 'dummyContainerId',
   });
 
   const span = screen.getByText('dummyContainerId');
@@ -200,7 +198,7 @@ test('ensure dummyContainerId is visible', async () => {
 
 test('ensure models to be clickable', async () => {
   render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
+    serverId: 'dummyContainerId',
   });
 
   const a = screen.getByText('Dummy model id');

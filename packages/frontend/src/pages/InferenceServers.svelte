@@ -11,10 +11,12 @@ import { router } from 'tinro';
 import { onMount } from 'svelte';
 import { Button } from '@podman-desktop/ui-svelte';
 import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
+import ServiceColumnRuntime from '/@/lib/table/service/ServiceColumnRuntime.svelte';
 
 const columns: TableColumn<InferenceServerInfo>[] = [
   new TableColumn<InferenceServerInfo>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),
   new TableColumn<InferenceServerInfo>('Name', { width: '1fr', renderer: ServiceColumnName, align: 'left' }),
+  new TableColumn<InferenceServerInfo>('Runtime', { width: '90px', renderer: ServiceColumnRuntime, align: 'left' }),
   new TableColumn<InferenceServerInfo>('Model', { renderer: ServiceColumnModelName, align: 'left' }),
   new TableColumn<InferenceServerInfo>('Actions', { width: '80px', renderer: ServiceAction, align: 'right' }),
 ];
@@ -32,9 +34,7 @@ let selectedItemsNumber: number;
 
 const deleteSelected = () => {
   studioClient
-    .requestDeleteInferenceServer(
-      ...data.filter(service => service.selected).map(service => service.container.containerId),
-    )
+    .requestDeleteInferenceServer(...data.filter(service => service.selected).map(service => service.id))
     .catch((err: unknown) => {
       console.error('Something went wrong while trying to delete inference server', err);
     });

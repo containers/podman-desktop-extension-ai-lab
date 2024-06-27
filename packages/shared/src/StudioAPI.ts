@@ -64,6 +64,8 @@ export abstract class StudioAPI {
 
   abstract getModelsDirectory(): Promise<string>;
 
+  abstract navigateToServer(serverId: string): Promise<void>;
+
   abstract navigateToContainer(containerId: string): Promise<void>;
   abstract navigateToPod(podId: string): Promise<void>;
   abstract navigateToResources(): Promise<void>;

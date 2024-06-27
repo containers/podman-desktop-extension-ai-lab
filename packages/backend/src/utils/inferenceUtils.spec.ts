@@ -15,12 +15,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { withDefaultConfiguration, isTransitioning, parseInferenceType, getInferenceType } from './inferenceUtils';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { getInferenceType, isTransitioning, parseInferenceType, withDefaultConfiguration } from './inferenceUtils';
 import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { InferenceServerInfo, InferenceServerStatus } from '@shared/src/models/IInference';
-import { InferenceType } from '@shared/src/models/IInference';
+import { InferenceServerInfo, InferenceServerStatus, InferenceType, RuntimeType } from '@shared/src/models/IInference';
 
 vi.mock('./ports', () => ({
   getFreeRandomPort: vi.fn(),
@@ -33,13 +32,13 @@ beforeEach(() => {
 
 describe('withDefaultConfiguration', () => {
   test('zero modelsInfo', async () => {
-    await expect(withDefaultConfiguration({ modelsInfo: [] })).rejects.toThrowError(
+    await expect(withDefaultConfiguration({ modelsInfo: [], runtime: RuntimeType.PODMAN })).rejects.toThrowError(
       'modelsInfo need to contain at least one element.',
     );
   });
 
   test('expect all default values', async () => {
-    const result = await withDefaultConfiguration({ modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo] });
+    const result = await withDefaultConfiguration({ modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo], runtime: RuntimeType.PODMAN });
 
     expect(getFreeRandomPort).toHaveBeenCalledWith('0.0.0.0');
 
@@ -56,6 +55,7 @@ describe('withDefaultConfiguration', () => {
       providerId: 'dummyProviderId',
       image: 'random-image',
       labels: { hello: 'world' },
+      runtime: RuntimeType.PODMAN,
     });
 
     expect(getFreeRandomPort).not.toHaveBeenCalled();

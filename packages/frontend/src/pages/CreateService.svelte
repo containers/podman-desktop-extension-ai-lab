@@ -41,8 +41,8 @@ let error: boolean = false;
 
 // The containerId will be included in the tasks when the creation
 // process will be completed
-let containerId: string | undefined = undefined;
-$: available = containerId && $inferenceServers.some(server => server.container.containerId);
+let serverId: string | undefined = undefined;
+$: available = serverId && $inferenceServers.some(server => server.id === serverId);
 
 $: loading = trackingId !== undefined && !error;
 
@@ -91,7 +91,7 @@ const openModelsPage = () => {
 
 // Navigate to the new created service
 const openServiceDetails = () => {
-  router.goto(`/service/${containerId}`);
+  router.goto(`/service/${serverId}`);
 };
 
 // Utility method to filter the tasks properly based on the tracking Id
@@ -109,10 +109,10 @@ const processTasks = (tasks: Task[]) => {
   // hint: we do not need to display them as the TasksProgress component will
   error = trackedTasks.find(task => task.error)?.error !== undefined;
 
-  const task: Task | undefined = trackedTasks.find(task => 'containerId' in (task.labels || {}));
+  const task: Task | undefined = trackedTasks.find(task => 'serverId' in (task.labels || {}));
   if (task === undefined) return;
 
-  containerId = task.labels?.['containerId'];
+  serverId = task.labels?.['serverId'];
 };
 
 onMount(async () => {
@@ -165,7 +165,7 @@ export function goToUpPage(): void {
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <label for="model" class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
-          >Runtime</label>
+            >Runtime</label>
           <select
             required
             bind:value="{runtime}"
@@ -225,7 +225,7 @@ export function goToUpPage(): void {
         {/if}
         <footer>
           <div class="w-full flex flex-col">
-            {#if containerId === undefined}
+            {#if serverId === undefined}
               <Button
                 title="Create service"
                 inProgress="{loading}"

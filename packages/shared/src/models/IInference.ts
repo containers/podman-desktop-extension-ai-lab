@@ -31,18 +31,15 @@ export enum InferenceType {
 export type InferenceServerStatus = 'stopped' | 'running' | 'deleting' | 'stopping' | 'error' | 'starting';
 
 export interface InferenceServerInfo {
+  id: string;
+
   /**
    * Supported models
    */
   models: ModelInfo[];
-  /**
-   * Container info
-   */
-  container: {
-    engineId: string;
-    containerId: string;
-  };
+
   connection: {
+    host: string;
     port: number;
   };
   /**
@@ -70,4 +67,5 @@ export interface InferenceServerInfo {
    * The type of inference server (aka backend)
    */
   type: InferenceType;
+  runtime: RuntimeType;
 }

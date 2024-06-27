@@ -226,8 +226,8 @@ describe('init Inference Manager', () => {
     const inferenceManager = await getInitializedInferenceManager();
     const servers = inferenceManager.getServers();
     expect(servers.length).toBe(2);
-    expect(servers.some(server => server.container.containerId === 'dummyContainerId-1')).toBeTruthy();
-    expect(servers.some(server => server.container.containerId === 'dummyContainerId-3')).toBeTruthy();
+    expect(servers.some(server => server.id === 'dummyContainerId-1')).toBeTruthy();
+    expect(servers.some(server => server.id === 'dummyContainerId-3')).toBeTruthy();
   });
 });
 
@@ -287,7 +287,7 @@ describe('Create Inference Server', () => {
 
     expect(provider.perform).toHaveBeenCalledWith(config);
 
-    expect(result.container.containerId).toBe('dummy-container-id');
+    expect(result.id).toBe('dummy-container-id');
   });
 });
 

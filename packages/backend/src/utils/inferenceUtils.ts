@@ -91,7 +91,7 @@ export async function getImageInfo(
 
 export async function withDefaultConfiguration(
   options: CreationInferenceServerOptions,
-): Promise<InferenceServerConfig & { runtime: RuntimeType, port: number, labels: Record<string, string> }> {
+): Promise<InferenceServerConfig & { runtime: RuntimeType; port: number; labels: Record<string, string> }> {
   if (options.modelsInfo.length === 0) throw new Error('modelsInfo need to contain at least one element.');
 
   return {

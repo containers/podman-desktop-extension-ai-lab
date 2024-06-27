@@ -17,10 +17,10 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { vi, test, expect, beforeEach } from 'vitest';
-import { screen, render, fireEvent } from '@testing-library/svelte';
+import { beforeEach, expect, test, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import InferenceServers from '/@/pages/InferenceServers.svelte';
-import { type InferenceServerInfo, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServerInfo, InferenceType, RuntimeType } from '@shared/src/models/IInference';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 
@@ -65,11 +65,12 @@ test('no inference servers should display a status message', async () => {
 test('store with inference server should display the table', async () => {
   mocks.inferenceServersSubscribeMock.mockReturnValue([
     {
+      id: 'dummyContainerId',
+      runtime: RuntimeType.PODMAN,
       health: undefined,
       models: [],
-      connection: { port: 8888 },
+      connection: { host: 'localhost', port: 8888 },
       status: 'running',
-      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
     },
   ] as InferenceServerInfo[]);
@@ -94,11 +95,12 @@ test('create service button should redirect to create page', async () => {
 test('table should have checkbox', async () => {
   mocks.inferenceServersSubscribeMock.mockReturnValue([
     {
+      id: 'dummyContainerId',
+      runtime: RuntimeType.PODMAN,
       health: undefined,
       models: [],
-      connection: { port: 8888 },
+      connection: { host: 'localhost', port: 8888 },
       status: 'running',
-      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
     },
   ] as InferenceServerInfo[]);
@@ -114,11 +116,12 @@ test('table should have checkbox', async () => {
 test('delete button should delete selected item', async () => {
   mocks.inferenceServersSubscribeMock.mockReturnValue([
     {
+      id: 'dummyContainerId',
+      runtime: RuntimeType.PODMAN,
       health: undefined,
       models: [],
-      connection: { port: 8888 },
+      connection: { host: 'localhost', port: 8888 },
       status: 'running',
-      container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
     },
   ] as InferenceServerInfo[]);

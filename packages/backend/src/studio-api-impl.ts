@@ -154,6 +154,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.inferenceServerRegistry.get(serverId).start();
   }
 
+  navigateToServer(serverId: string): Promise<void> {
+    return this.inferenceServerRegistry.get(serverId).navigate();
+  }
+
   stopInferenceServer(serverId: string): Promise<void> {
     return this.inferenceServerRegistry.get(serverId).stop();
   }

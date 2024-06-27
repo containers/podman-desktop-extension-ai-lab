@@ -17,27 +17,27 @@
  ***********************************************************************/
 import type { Disposable, Event } from '@podman-desktop/api';
 import { EventEmitter } from '@podman-desktop/api';
-import { type InferenceServerInfo, RuntimeType } from '@shared/src/models/IInference';
+import type { RuntimeType, InferenceServerInfo } from '@shared/src/models/IInference';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { getRandomString } from '../../utils/randomUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 
-export interface InferenceServerInstance extends InferenceServerInfo {
-  id: string;
-  runtime: RuntimeType;
+export interface InferenceServerInstance<T> extends InferenceServerInfo {
+  details: T;
 
   // utility methods
   stop: () => Promise<void>;
   start: () => Promise<void>;
   remove: () => Promise<void>;
+  navigate: () => Promise<void>;
 }
 
-export abstract class RuntimeEngine implements Disposable {
+export abstract class RuntimeEngine<T> implements Disposable {
   id: string;
   runtime: RuntimeType;
 
-  protected readonly _onUpdate = new EventEmitter<InferenceServerInstance[]>();
-  readonly onUpdate: Event<InferenceServerInstance[]> = this._onUpdate.event;
+  protected readonly _onUpdate = new EventEmitter<InferenceServerInstance<T>[]>();
+  readonly onUpdate: Event<InferenceServerInstance<T>[]> = this._onUpdate.event;
 
   protected constructor(
     id: string,
@@ -55,7 +55,7 @@ export abstract class RuntimeEngine implements Disposable {
   abstract init(): void;
   abstract dispose(): void;
 
-  abstract getServers(): InferenceServerInstance[];
+  abstract getServers(): InferenceServerInstance<T>[];
 
   /**
    * Creating an inference server can be heavy task (pulling image, uploading model to WSL etc.)
@@ -85,7 +85,7 @@ export abstract class RuntimeEngine implements Disposable {
           state: 'success',
           labels: {
             ...task.labels,
-            containerId: server.container.containerId,
+            serverId: server.id,
           },
         });
       })
@@ -116,5 +116,5 @@ export abstract class RuntimeEngine implements Disposable {
 
     return trackingId;
   }
-  abstract create(config: InferenceServerConfig): Promise<InferenceServerInstance>;
+  abstract create(config: InferenceServerConfig): Promise<InferenceServerInstance<T>>;
 }

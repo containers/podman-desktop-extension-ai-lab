@@ -49,7 +49,7 @@ const modelsManager = {
 } as unknown as ModelsManager;
 
 beforeEach(() => {
-  vi.mocked(kubernetes.getKubeconfig).mockReturnValue({ fsPath: 'C:\\Users\\axels\\.kube\\config'} as unknown as Uri);
+  vi.mocked(kubernetes.getKubeconfig).mockReturnValue({ fsPath: 'C:\\Users\\axels\\.kube\\config' } as unknown as Uri);
 
   // mock EventEmitter logic
   const listeners: ((value: unknown) => void)[] = [];
@@ -64,25 +64,31 @@ beforeEach(() => {
   } as unknown as EventEmitter<unknown>);
 });
 
-test('create inference server', async () => {
-  const kubeInferenceManager = new KubernetesInferenceManager(taskRegistryMock, modelsManager);
-  const server = await kubeInferenceManager.create({
-    runtime: RuntimeType.KUBERNETES,
-    port: 8888,
-    labels: {},
-    modelsInfo: [{
-      id: 'hf.instructlab.granite-7b-lab-GGUF',
-      sha256: '893ae2442b36b2e8e1134ccbf8c0d9bd670648d0964509202ab30c9cbb3d2114',
-      backend: InferenceType.LLAMA_CPP,
-      name: 'hf.instructlab.granite-7b-lab-GGUF',
-      memory: 4080218931,
-      hw: '',
-      "properties": {
-        "chatFormat": "openchat"
-      },
-      description: '',
-      url: 'https://huggingface.co/facebook/detr-resnet-101/resolve/no_timm/pytorch_model.bin'
-    }]
-  });
-  expect(server).toBeDefined();
-}, { timeout: 1000 * 3600 });
+test(
+  'create inference server',
+  async () => {
+    const kubeInferenceManager = new KubernetesInferenceManager(taskRegistryMock, modelsManager);
+    const server = await kubeInferenceManager.create({
+      runtime: RuntimeType.KUBERNETES,
+      port: 8888,
+      labels: {},
+      modelsInfo: [
+        {
+          id: 'hf.instructlab.granite-7b-lab-GGUF',
+          sha256: '893ae2442b36b2e8e1134ccbf8c0d9bd670648d0964509202ab30c9cbb3d2114',
+          backend: InferenceType.LLAMA_CPP,
+          name: 'hf.instructlab.granite-7b-lab-GGUF',
+          memory: 4080218931,
+          hw: '',
+          properties: {
+            chatFormat: 'openchat',
+          },
+          description: '',
+          url: 'https://huggingface.co/facebook/detr-resnet-101/resolve/no_timm/pytorch_model.bin',
+        },
+      ],
+    });
+    expect(server).toBeDefined();
+  },
+  { timeout: 1000 * 3600 },
+);

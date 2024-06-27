@@ -13,7 +13,7 @@ import { router } from 'tinro';
 import Badge from '/@/lib/Badge.svelte';
 import { Button, DetailsPage } from '@podman-desktop/ui-svelte';
 
-export let containerId: string | undefined = undefined;
+export let serverId: string | undefined = undefined;
 
 let service: InferenceServerInfo | undefined = undefined;
 
@@ -110,7 +110,7 @@ function copySnippet(): void {
 
 onMount(() => {
   return inferenceServers.subscribe(servers => {
-    service = servers.find(server => server.container.containerId === containerId);
+    service = servers.find(server => server.id === serverId);
     if (!service) {
       router.goto('/services');
     }
@@ -139,7 +139,7 @@ export function goToUpPage(): void {
   <svelte:fragment slot="subtitle">
     <div class="flex gap-x-2 items-center">
       {#if service}
-        <span class="text-xs">{service.container.containerId}</span>
+        <span class="text-xs">{service.id}</span>
         {#each service.models as model}
           <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-charcoal-700" />
         {/each}
@@ -191,10 +191,11 @@ export function goToUpPage(): void {
               <div class="bg-charcoal-800 rounded-md w-full px-4 pt-2 pb-4 mt-2">
                 <span class="text-sm">Server</span>
                 <div class="flex flex-row gap-4">
-                  <div
-                    class="bg-charcoal-600 rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
-                    http://localhost:{service.connection.port}/v1
-                  </div>
+                  <button
+                    on:click={() => service && studioClient.openURL(`http://${service.connection.host}:${service.connection.port}/v1`)}
+                    class="bg-charcoal-600 rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
+                    http://{service.connection.host}:{service.connection.port}/v1
+                  </button>
 
                   <div
                     class="bg-charcoal-600 rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">

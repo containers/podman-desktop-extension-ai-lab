@@ -5,7 +5,7 @@ import { Messages } from '@shared/Messages';
 import type { InferenceServerInstance, RuntimeEngine } from '../managers/inference/RuntimeEngine';
 
 export class InferenceServerRegistry extends Publisher<InferenceServerInfo[]> {
-  readonly #engines: Map<string, RuntimeEngine>;
+  readonly #engines: Map<string, RuntimeEngine<unknown>>;
 
   constructor(webview: Webview) {
     super(webview, Messages.MSG_INFERENCE_SERVERS_UPDATE, () => this.getInferenceServerInfo());
@@ -13,7 +13,7 @@ export class InferenceServerRegistry extends Publisher<InferenceServerInfo[]> {
     this.#engines = new Map();
   }
 
-  public register(runtime: RuntimeEngine): Disposable {
+  public register(runtime: RuntimeEngine<unknown>): Disposable {
     this.#engines.set(runtime.id, runtime);
 
     const disposable = runtime.onUpdate(() => this.notify());
@@ -24,7 +24,7 @@ export class InferenceServerRegistry extends Publisher<InferenceServerInfo[]> {
     });
   }
 
-  public getRuntime(type: RuntimeType): RuntimeEngine {
+  public getRuntime(type: RuntimeType): RuntimeEngine<unknown> {
     const runtime = Array.from(this.#engines.values()).find(engine => engine.runtime === type);
     if (!runtime) throw new Error(`no runtime registered for ${type}`);
     return runtime;
@@ -34,25 +34,26 @@ export class InferenceServerRegistry extends Publisher<InferenceServerInfo[]> {
     this.#engines.delete(id);
   }
 
-  public getInstances(): InferenceServerInstance[] {
+  public getInstances(): InferenceServerInstance<unknown>[] {
     return Array.from(this.#engines.values())
       .map(engine => engine.getServers())
       .flat();
   }
 
-  get(serverId: string): InferenceServerInstance {
+  get(serverId: string): InferenceServerInstance<unknown> {
     const instances = this.getInstances();
     const result = instances.find(instance => instance.id === serverId);
     if (!result) throw new Error(`no inference server instance was found with id ${serverId}`);
     return result;
   }
 
-  private toInferenceServer(instance: InferenceServerInstance): InferenceServerInfo {
+  private toInferenceServer(instance: InferenceServerInstance<unknown>): InferenceServerInfo {
     return {
+      id: instance.id,
+      runtime: instance.runtime,
       type: instance.type,
       models: instance.models,
       connection: instance.connection,
-      container: instance.container,
       exit: instance.exit,
       health: instance.health,
       status: instance.status,

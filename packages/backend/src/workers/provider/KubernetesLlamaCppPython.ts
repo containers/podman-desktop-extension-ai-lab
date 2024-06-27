@@ -24,10 +24,12 @@ import { AI_LAB_ANNOTATIONS, DEFAULT_NAMESPACE } from '../../managers/inference/
 import { getCoreV1Api, getLabels, KubernetesInferenceProvider } from './KubernetesInferenceProvider';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import file from '../../assets/kube-inference-init.sh?raw';
+import { getModelPropertiesEnvironmentVariables } from '../../utils/modelsUtils';
+import { LLAMA_CPP_INFERENCE_IMAGE } from './PodmanLlamaCppPython';
 
 export class KubernetesLlamaCppPython extends KubernetesInferenceProvider {
   constructor(taskRegistry: TaskRegistry) {
-    super(taskRegistry, InferenceType.LLAMA_CPP, 'LLamaCpp');
+    super(taskRegistry, InferenceType.LLAMA_CPP, 'LLama-cpp (CPU)');
   }
 
   override enabled(): boolean {
@@ -50,7 +52,9 @@ export class KubernetesLlamaCppPython extends KubernetesInferenceProvider {
     const volume = await this.getVolume(modelInfo, config.labels ?? {});
     if (!volume.metadata?.name) throw new Error('invalid volume metadata.');
 
-    const result = await getCoreV1Api().createNamespacedPod(DEFAULT_NAMESPACE, {
+    const environments = getModelPropertiesEnvironmentVariables(modelInfo);
+
+    const body: V1Pod = {
       metadata: {
         name: `podman-ai-lab-inference-${getRandomString()}`,
         labels: getLabels(),
@@ -70,20 +74,48 @@ export class KubernetesLlamaCppPython extends KubernetesInferenceProvider {
         ],
         containers: [
           {
-            name: 'nginx',
-            image: 'nginx',
+            livenessProbe: {
+              httpGet: {
+                port: 8000,
+                path: '/docs',
+              },
+            },
+            name: 'llamacpp-cpu',
+            image: LLAMA_CPP_INFERENCE_IMAGE,
             ports: [
               {
-                containerPort: 80,
+                containerPort: 8000,
               },
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/models',
+                name: 'pvc-ai-lab-model',
+              },
+            ],
+            env: [
+              {
+                name: 'MODEL_PATH',
+                value: posix.join('/models', modelInfo.id),
+              },
+              {
+                name: 'HOST',
+                value: '0.0.0.0',
+              },
+              {
+                name: 'PORT',
+                value: '8000',
+              },
+              ...Object.entries(environments).map(([key, value]) => ({
+                name: key,
+                value: value,
+              })),
             ],
           },
         ],
-        // the init container is used to wait for the models to be available
-        // ~this is hacky
         initContainers: [
           {
-            name: 'init-model-checker',
+            name: 'init-inference-model',
             image: 'busybox',
             volumeMounts: [
               {
@@ -113,7 +145,11 @@ export class KubernetesLlamaCppPython extends KubernetesInferenceProvider {
           },
         ],
       },
-    });
+    };
+
+    console.log('body', body);
+
+    const result = await getCoreV1Api().createNamespacedPod(DEFAULT_NAMESPACE, body);
     return result.body;
   }
 

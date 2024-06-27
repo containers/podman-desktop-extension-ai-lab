@@ -72,15 +72,17 @@ export async function deleteRemoteModel(machine: string, modelInfo: ModelInfo): 
   }
 }
 
+export function getModelPropertiesEnvironmentVariables(modelInfo: ModelInfo): Record<string, string> {
+  const result: Record<string, string> = {};
+  if(!modelInfo.properties) return result;
+
+  Object.entries(modelInfo.properties).forEach(([key, value]) => {
+    const formattedKey = key.replace(/[A-Z]/g, m => `_${m}`).toUpperCase();
+    result[`MODEL_${formattedKey}`] = value;
+  });
+  return result;
+}
+
 export function getModelPropertiesForEnvironment(modelInfo: ModelInfo): string[] {
-  const envs: string[] = [];
-  if (modelInfo.properties) {
-    envs.push(
-      ...Object.entries(modelInfo.properties).map(([key, value]) => {
-        const formattedKey = key.replace(/[A-Z]/g, m => `_${m}`).toUpperCase();
-        return `MODEL_${formattedKey}=${value}`;
-      }),
-    );
-  }
-  return envs;
+  return Object.entries(getModelPropertiesEnvironmentVariables(modelInfo)).map(([key, value]) => `${key}=${value}`);
 }

@@ -230,6 +230,11 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
         break;
     }
 
+    // ref https://github.com/kubernetes/kubernetes/issues/22839#issuecomment-339106985
+    if(pod.metadata.deletionTimestamp) {
+      status = 'deleting';
+    }
+
     let healthStatus: string | undefined;
     if(pod.status && pod.status.containerStatuses && pod.status.containerStatuses.length === 1) {
       healthStatus = (pod.status.containerStatuses[0].state?.running)?'healthy':undefined;

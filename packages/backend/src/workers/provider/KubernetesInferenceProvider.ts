@@ -21,7 +21,7 @@ import { CoreV1Api, KubeConfig } from '@kubernetes/client-node';
 import { AI_LAB_ANNOTATIONS, DEFAULT_NAMESPACE } from '../../managers/inference/kubernetesInferenceManager';
 import { kubernetes } from '@podman-desktop/api';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import type { InferenceType} from '@shared/src/models/IInference';
+import type { InferenceType } from '@shared/src/models/IInference';
 import { RuntimeType } from '@shared/src/models/IInference';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getRandomString } from '../../utils/randomUtils';
@@ -51,8 +51,11 @@ export function getCoreV1Api(): CoreV1Api {
 }
 
 export abstract class KubernetesInferenceProvider extends InferenceProvider<V1Pod> {
-
-  protected constructor(protected taskRegistry: TaskRegistry, type: InferenceType, name: string) {
+  protected constructor(
+    protected taskRegistry: TaskRegistry,
+    type: InferenceType,
+    name: string,
+  ) {
     super(RuntimeType.KUBERNETES, type, name);
   }
 
@@ -81,10 +84,14 @@ export abstract class KubernetesInferenceProvider extends InferenceProvider<V1Po
   }
 
   protected async getVolume(modelInfo: ModelInfo, labels: Record<string, string>): Promise<V1PersistentVolumeClaim> {
-    let volume = await this.findModelVolume(modelInfo.id);
-    if(volume) return volume;
-
     const volumeTask = this.taskRegistry.createTask(`Creating Kubernetes PVC`, 'loading', labels);
+    let volume = await this.findModelVolume(modelInfo.id);
+    if (volume) {
+      volumeTask.state = 'success';
+      volumeTask.name = `Using existing PVC ${volume.metadata?.name}`;
+      this.taskRegistry.updateTask(volumeTask);
+      return volume;
+    }
 
     try {
       volume = await this.createModelVolume(modelInfo);
@@ -126,5 +133,4 @@ export abstract class KubernetesInferenceProvider extends InferenceProvider<V1Po
     });
     return result.body;
   }
-
 }

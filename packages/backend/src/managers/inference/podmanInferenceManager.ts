@@ -121,7 +121,10 @@ export class PodmanInferenceManager extends RuntimeEngine<PodmanInferenceDetails
 
     let provider: PodmanInferenceProvider;
     if (config.inferenceProvider) {
-      provider = this.inferenceProviderRegistry.get<PodmanInferenceProvider>(RuntimeType.PODMAN, config.inferenceProvider);
+      provider = this.inferenceProviderRegistry.get<PodmanInferenceProvider>(
+        RuntimeType.PODMAN,
+        config.inferenceProvider,
+      );
       if (!provider.enabled()) throw new Error('provider requested is not enabled.');
     } else {
       const providers: PodmanInferenceProvider[] = this.inferenceProviderRegistry

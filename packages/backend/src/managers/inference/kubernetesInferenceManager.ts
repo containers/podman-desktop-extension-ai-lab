@@ -20,12 +20,7 @@ import { InferenceServerInstance, RuntimeEngine } from './RuntimeEngine';
 import { TaskRegistry } from '../../registries/TaskRegistry';
 import { InferenceServerStatus, InferenceType, RuntimeType } from '@shared/src/models/IInference';
 import { type Disposable, kubernetes, navigation } from '@podman-desktop/api';
-import {
-  type V1Pod,
-  makeInformer,
-  Informer,
-  PortForward,
-} from '@kubernetes/client-node';
+import { type V1Pod, makeInformer, Informer, PortForward } from '@kubernetes/client-node';
 import { ModelInfo } from '@shared/src/models/IModelInfo';
 import { ADD, CHANGE, DELETE, ERROR, UPDATE } from '@kubernetes/client-node';
 import { ModelsManager } from '../modelsManager';
@@ -33,7 +28,8 @@ import { createServer, Server as ProxyServer, Socket } from 'net';
 import {
   getCoreV1Api,
   getKubeConfig,
-  getLabelSelector, KubernetesInferenceProvider,
+  getLabelSelector,
+  KubernetesInferenceProvider,
 } from '../../workers/provider/KubernetesInferenceProvider';
 import { getInferenceType } from '../../utils/inferenceUtils';
 import { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
@@ -56,7 +52,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
   #informer: Informer<V1Pod> | undefined;
   #watchers: Disposable[];
   // related to port forwards
-  #proxies: Map<string, { server: ProxyServer, sockets: Socket[] }>
+  #proxies: Map<string, { server: ProxyServer; sockets: Socket[] }>;
 
   constructor(
     taskRegistry: TaskRegistry,
@@ -102,7 +98,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
   protected clearProxy(serverId: string): void {
     console.log(`clearProxy ${serverId}`);
     const proxy = this.#proxies.get(serverId);
-    if(proxy) {
+    if (proxy) {
       proxy.server.close((err: unknown) => {
         console.error(`Something went wrong while trying to close proxy for serverId ${serverId}`, err);
       });
@@ -118,7 +114,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
    */
   protected clearServer(serverId: string): void {
     const server = this.#servers.get(serverId);
-    if(!server) return;
+    if (!server) return;
 
     this.#servers.delete(serverId);
     this.notify();
@@ -149,10 +145,14 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
     this.clearServers();
 
     this.#watchers.forEach(watcher => watcher.dispose());
-    this.#informer?.stop().catch((err: unknown) => {
-      console.error('Something went wrong while trying to stop kubernetes informer', err);
-    });
-    this.initInformer();
+    this.#informer
+      ?.stop()
+      .catch((err: unknown) => {
+        console.error('Something went wrong while trying to stop kubernetes informer', err);
+      })
+      .finally(() => {
+        this.initInformer();
+      });
   }
 
   /**
@@ -161,21 +161,18 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
    * @protected
    */
   protected createProxy(pod: V1Pod): ProxyServer {
-    if(!pod.metadata || !pod.metadata.name) throw new Error('invalid pod metadata');
+    if (!pod.metadata || !pod.metadata.name) throw new Error('invalid pod metadata');
 
     const podName = pod.metadata.name;
-    console.log(`[creating] proxy for pod ${podName}`);
-
     const targetPorts: number[] = [];
     for (let container of pod.spec?.containers ?? []) {
       targetPorts.push(...(container.ports ?? []).map(value => value.containerPort));
     }
-    console.log('targetPorts', targetPorts);
     const forward = new PortForward(getKubeConfig());
-    return createServer((socket) => {
+    return createServer(socket => {
       forward.portForward(DEFAULT_NAMESPACE, podName, targetPorts, socket, null, socket).catch((err: unknown) => {
         console.error(`Something went wrong while trying to port forward pod ${podName}`, err);
-      })
+      });
     });
   }
 
@@ -231,13 +228,13 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
     }
 
     // ref https://github.com/kubernetes/kubernetes/issues/22839#issuecomment-339106985
-    if(pod.metadata.deletionTimestamp) {
+    if (pod.metadata.deletionTimestamp) {
       status = 'deleting';
     }
 
     let healthStatus: string | undefined;
-    if(pod.status && pod.status.containerStatuses && pod.status.containerStatuses.length === 1) {
-      healthStatus = (pod.status.containerStatuses[0].state?.running)?'healthy':undefined;
+    if (pod.status && pod.status.containerStatuses && pod.status.containerStatuses.length === 1) {
+      healthStatus = pod.status.containerStatuses[0].state?.running ? 'healthy' : undefined;
     }
 
     // we try to reuse the port provided when creating the inference server
@@ -251,7 +248,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
 
     // create a proxy server
     const serverId = pod.metadata.uid;
-    if(!this.#proxies.has(serverId)) {
+    if (!this.#proxies.has(serverId)) {
       console.log(`proxy does not exist for pod ${serverId}: creating`);
 
       // create a proxy server used for port forwarding
@@ -264,7 +261,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
       // capture new socket created to be able to destroy them on disposal
       server.on('connection', (socket: Socket) => {
         const proxy = this.#proxies.get(serverId);
-        if(!proxy) {
+        if (!proxy) {
           socket.destroy(new Error('proxy is not defined'));
           throw new Error('proxy is undefined destroying socket');
         }
@@ -275,7 +272,7 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
         });
       });
       // start listening
-      server.listen(localPort,  '127.0.0.1');
+      server.listen(localPort, '127.0.0.1');
     } else {
       console.warn(`the pod ${serverId} already has a proxy defined.`);
     }
@@ -294,9 +291,13 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
         port: localPort,
         host: '127.0.0.1',
       },
-      health: healthStatus?{
-        Status: healthStatus, Log: [], FailingStreak: 0,
-      }:undefined, // need to be formalized
+      health: healthStatus
+        ? {
+            Status: healthStatus,
+            Log: [],
+            FailingStreak: 0,
+          }
+        : undefined, // need to be formalized
       // utility
       stop: async () => {
         throw new Error('a kubernetes pod cannot be stopped');
@@ -317,7 +318,10 @@ export class KubernetesInferenceManager extends RuntimeEngine<KubernetesInferenc
 
     let provider: KubernetesInferenceProvider;
     if (config.inferenceProvider) {
-      provider = this.inferenceProviderRegistry.get<KubernetesInferenceProvider>(RuntimeType.KUBERNETES, config.inferenceProvider);
+      provider = this.inferenceProviderRegistry.get<KubernetesInferenceProvider>(
+        RuntimeType.KUBERNETES,
+        config.inferenceProvider,
+      );
       if (!provider.enabled()) throw new Error('provider requested is not enabled.');
     } else {
       const providers: KubernetesInferenceProvider[] = this.inferenceProviderRegistry

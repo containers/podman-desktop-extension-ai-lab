@@ -38,7 +38,10 @@ describe('withDefaultConfiguration', () => {
   });
 
   test('expect all default values', async () => {
-    const result = await withDefaultConfiguration({ modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo], runtime: RuntimeType.PODMAN });
+    const result = await withDefaultConfiguration({
+      modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
+      runtime: RuntimeType.PODMAN,
+    });
 
     expect(getFreeRandomPort).toHaveBeenCalledWith('0.0.0.0');
 

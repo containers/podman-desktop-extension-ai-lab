@@ -24,8 +24,7 @@ import { InferenceProvider } from './InferenceProvider';
 
 export type BetterContainerCreateResult = ContainerCreateResult & { engineId: string };
 
-export abstract class PodmanInferenceProvider extends InferenceProvider<BetterContainerCreateResult>
-{
+export abstract class PodmanInferenceProvider extends InferenceProvider<BetterContainerCreateResult> {
   protected constructor(
     private taskRegistry: TaskRegistry,
     type: InferenceType,

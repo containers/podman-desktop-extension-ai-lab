@@ -16,6 +16,6 @@ function getProviderColour(providerName: string): string {
 
 <div
   class="flex items-center bg-[var(--pd-label-bg)] p-1 rounded-md text-xs text-[var(--pd-label-text)] gap-x-1 capitalize">
-  <div class="w-2 h-2 {getProviderColour(object.runtime)} rounded-full"/>
+  <div class="w-2 h-2 {getProviderColour(object.runtime)} rounded-full"></div>
   {object.runtime}
 </div>

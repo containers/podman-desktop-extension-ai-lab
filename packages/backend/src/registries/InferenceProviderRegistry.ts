@@ -30,7 +30,7 @@ export class InferenceProviderRegistry extends Publisher<string[]> {
   }
 
   register(provider: InferenceProvider<unknown>): Disposable {
-    if(this.has(provider.runtime, provider.name)) throw new Error('provider already registered');
+    if (this.has(provider.runtime, provider.name)) throw new Error('provider already registered');
 
     const providers = this.#providers.get(provider.runtime) ?? [];
     this.#providers.set(provider.runtime, [...providers, provider]);
@@ -43,9 +43,12 @@ export class InferenceProviderRegistry extends Publisher<string[]> {
 
   unregister(runtime: RuntimeType, name: string): void {
     const providers = this.#providers.get(runtime) ?? [];
-    if(providers.length === 0) return;
+    if (providers.length === 0) return;
 
-    this.#providers.set(runtime, providers.filter(provider => provider.name !== name));
+    this.#providers.set(
+      runtime,
+      providers.filter(provider => provider.name !== name),
+    );
   }
 
   getAll(): InferenceProvider<unknown>[] {

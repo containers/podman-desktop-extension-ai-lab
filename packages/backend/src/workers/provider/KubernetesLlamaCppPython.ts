@@ -147,9 +147,18 @@ export class KubernetesLlamaCppPython extends KubernetesInferenceProvider {
       },
     };
 
-    console.log('body', body);
-
-    const result = await getCoreV1Api().createNamespacedPod(DEFAULT_NAMESPACE, body);
+    let result: { body: V1Pod };
+    const podTask = this.taskRegistry.createTask(`Creating pod ${body.metadata?.name}`, 'loading', config.labels);
+    try {
+      result = await getCoreV1Api().createNamespacedPod(DEFAULT_NAMESPACE, body);
+      podTask.state = 'success';
+    } catch (err: unknown) {
+      podTask.state = 'error';
+      podTask.error = `Something went wrong while trying to create namespaced pod: ${String(err)}`;
+      throw err;
+    } finally {
+      this.taskRegistry.updateTask(podTask);
+    }
     return result.body;
   }
 

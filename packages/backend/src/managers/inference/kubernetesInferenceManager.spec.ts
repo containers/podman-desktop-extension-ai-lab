@@ -74,7 +74,11 @@ beforeEach(() => {
 test(
   'create inference server',
   async () => {
-    const kubeInferenceManager = new KubernetesInferenceManager(taskRegistryMock, modelsManager, inferenceProviderRegistryMock);
+    const kubeInferenceManager = new KubernetesInferenceManager(
+      taskRegistryMock,
+      modelsManager,
+      inferenceProviderRegistryMock,
+    );
     const server = await kubeInferenceManager.create({
       runtime: RuntimeType.KUBERNETES,
       port: 8888,

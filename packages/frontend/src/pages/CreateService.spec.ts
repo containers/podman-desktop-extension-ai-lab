@@ -89,9 +89,7 @@ beforeEach(() => {
 
   vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
-  mocks.getInferenceServersMock.mockReturnValue([
-    { id: 'dummyContainerId' } as InferenceServerInfo,
-  ]);
+  mocks.getInferenceServersMock.mockReturnValue([{ id: 'dummyContainerId' } as InferenceServerInfo]);
 });
 
 test('create button should be disabled when no model id provided', async () => {

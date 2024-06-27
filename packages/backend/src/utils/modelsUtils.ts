@@ -74,7 +74,7 @@ export async function deleteRemoteModel(machine: string, modelInfo: ModelInfo): 
 
 export function getModelPropertiesEnvironmentVariables(modelInfo: ModelInfo): Record<string, string> {
   const result: Record<string, string> = {};
-  if(!modelInfo.properties) return result;
+  if (!modelInfo.properties) return result;
 
   Object.entries(modelInfo.properties).forEach(([key, value]) => {
     const formattedKey = key.replace(/[A-Z]/g, m => `_${m}`).toUpperCase();

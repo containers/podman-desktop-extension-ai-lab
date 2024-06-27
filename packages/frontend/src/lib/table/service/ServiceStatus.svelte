@@ -53,6 +53,6 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
   <Spinner />
 {:else}
   <button on:click="{navigateToContainer}">
-    <StatusIcon status="{status}" icon="{(object.runtime === RuntimeType.PODMAN)?ContainerIcon:PodIcon}" />
+    <StatusIcon status="{status}" icon="{object.runtime === RuntimeType.PODMAN ? ContainerIcon : PodIcon}" />
   </button>
 {/if}

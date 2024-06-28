@@ -44,6 +44,7 @@ import { PodManager } from './managers/recipes/PodManager';
 import { initWebview } from './webviewUtils';
 import { LlamaCppPython } from './workers/provider/LlamaCppPython';
 import { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
+import { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -74,6 +75,7 @@ export class Studio {
   #playgroundManager: PlaygroundV2Manager | undefined;
   #applicationManager: ApplicationManager | undefined;
   #inferenceProviderRegistry: InferenceProviderRegistry | undefined;
+  #configurationRegistry: ConfigurationRegistry | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -108,6 +110,11 @@ export class Studio {
       );
     }
 
+    /**
+     * Storage directory for the extension provided by podman desktop
+     */
+    const appUserDirectory = this.extensionContext.storagePath;
+
     this.#telemetry.logUsage('start');
 
     /**
@@ -127,13 +134,18 @@ export class Studio {
     this.#extensionContext.subscriptions.push(this.#cancellationTokenRegistry);
 
     /**
+     * The configuration registry manage the extension preferences/settings
+     */
+    this.#configurationRegistry = new ConfigurationRegistry(this.#panel.webview, appUserDirectory);
+    this.#configurationRegistry?.init();
+    this.#extensionContext.subscriptions.push(this.#configurationRegistry);
+
+    /**
      * The container registry handle the events linked to containers (start, remove, die...)
      */
     this.#containerRegistry = new ContainerRegistry();
     this.#containerRegistry.init();
     this.#extensionContext.subscriptions.push(this.#containerRegistry);
-
-    const appUserDirectory = this.extensionContext.storagePath;
 
     /**
      * The RpcExtension handle the communication channels between the frontend and the backend
@@ -183,7 +195,7 @@ export class Studio {
      * The ModelManager role is to download and
      */
     this.#modelsManager = new ModelsManager(
-      appUserDirectory,
+      this.#configurationRegistry.getExtensionConfiguration().modelsPath,
       this.#panel.webview,
       this.#catalogManager,
       this.#telemetry,
@@ -280,6 +292,7 @@ export class Studio {
       this.#playgroundManager,
       this.#snippetManager,
       this.#cancellationTokenRegistry,
+      this.#configurationRegistry,
     );
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);

@@ -16,13 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { mount } from 'svelte';
 import App from './App.svelte';
 
 const target = document.getElementById('app');
 let app;
 if (target) {
-  app = new App({
-    target,
-  });
+  app = mount(App, { target });
 }
 export default app;

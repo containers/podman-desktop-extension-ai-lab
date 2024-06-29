@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023 Red Hat, Inc.
+ * Copyright (C) 2023-2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 import { join } from 'path';
 import * as path from 'path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'url';
 
@@ -36,7 +37,7 @@ export default defineConfig({
       '@shared/': join(PACKAGE_ROOT, '../shared') + '/',
     },
   },
-  plugins: [svelte({ hot: !process.env.VITEST })],
+  plugins: [svelte({ hot: !process.env.VITEST }), svelteTesting()],
   optimizeDeps: {
     exclude: [],
   },
@@ -44,10 +45,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     globals: true,
     environment: 'jsdom',
-    alias: [
-      // https://github.com/vitest-dev/vitest/issues/2834
-      { find: /^svelte$/, replacement: 'svelte/internal' },
-    ],
+    alias: [{ find: '@testing-library/svelte', replacement: '@testing-library/svelte/svelte5' }],
     deps: {
       inline: [
 

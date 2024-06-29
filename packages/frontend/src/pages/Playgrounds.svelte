@@ -31,7 +31,7 @@ const openServicesPage = () => {
     <Button on:click="{() => createNewPlayground()}">New Playground</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <div slot="content" class="flex flex-col min-w-full">
+    <div class="flex flex-col min-w-full">
       <div class="min-w-full flex-1">
         <div class="mt-4 px-5 space-y-5">
           {#if $conversations.length > 0}

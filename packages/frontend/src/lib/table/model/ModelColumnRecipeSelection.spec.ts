@@ -25,13 +25,13 @@ import ModelColumnRecipeSelection from './ModelColumnRecipeSelection.svelte';
 const updateMock = vi.fn();
 
 test('expect the setSelectedModel is called when swap button is clicked', async () => {
-  const { component } = render(ModelColumnRecipeSelection, {
+  render(ModelColumnRecipeSelection, {
     object: {
       id: 'id',
       inUse: false,
     } as RecipeModelInfo,
+    onUpdate: updateMock,
   });
-  component.$on('update', updateMock);
 
   const radioSwapModel = screen.getByRole('radio', { name: 'Use this model when running the application' });
 

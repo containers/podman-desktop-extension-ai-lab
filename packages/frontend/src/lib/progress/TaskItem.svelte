@@ -20,7 +20,7 @@ const cancel = () => {
     {#if task.state === 'success'}
       <svg
         role="img"
-        class="w-4 h-4 text-green-500 dark:text-green-400 flex-shrink-0"
+        class="w-4 h-4 text-green-500 flex-shrink-0"
         xmlns="http://www.w3.org/2000/svg"
         fill="currentColor"
         viewBox="0 0 20 20">
@@ -31,7 +31,7 @@ const cancel = () => {
     {:else if task.state === 'loading'}
       <svg
         role="img"
-        class="w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-purple-500"
+        class="w-4 h-4 text-[var(--pd-content-card-text)] animate-spin fill-purple-500"
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg">

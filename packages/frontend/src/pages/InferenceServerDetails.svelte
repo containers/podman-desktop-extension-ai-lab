@@ -137,11 +137,11 @@ export function goToUpPage(): void {
     </div>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">
-    <div class="flex gap-x-2 items-center">
+    <div class="flex gap-x-2 items-center text-[var(--pd-content-sub-header)]">
       {#if service}
         <span class="text-xs">{service.container.containerId}</span>
         {#each service.models as model}
-          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-charcoal-700" />
+          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-[var(--pd-label-bg)]" />
         {/each}
       {/if}
     </div>
@@ -158,10 +158,11 @@ export function goToUpPage(): void {
           <div class="mt-4 px-5 space-y-5">
             {#if service !== undefined}
               <!-- models info -->
-              <div class="bg-charcoal-800 rounded-md w-full px-4 pt-2 pb-4">
+              <div class="bg-[var(--pd-content-card-bg)] rounded-md w-full px-4 pt-2 pb-4">
                 <div>
-                  <span class="text-sm">Models</span>
-                  <div class="w-full bg-charcoal-600 rounded-md p-2 flex flex-col gap-y-4">
+                  <span class="text-sm text-[var(--pd-content-card-text)]">Models</span>
+                  <div
+                    class="w-full bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-col gap-y-4">
                     {#each service.models as model}
                       <div class="flex flex-row gap-2 items-center">
                         <div class="grow text-sm" aria-label="Model name">
@@ -169,14 +170,14 @@ export function goToUpPage(): void {
                         </div>
                         <div>
                           <div
-                            class="bg-charcoal-800 rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
+                            class="bg-[var(--pd-content-card-bg)] rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
                             <Fa class="mr-2" icon="{faScaleBalanced}" />
                             {model.license}
                           </div>
                         </div>
                         <div>
                           <div
-                            class="bg-charcoal-800 rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
+                            class="bg-[var(--pd-content-card-bg)] rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
                             <Fa class="mr-2" icon="{faBuildingColumns}" />
                             {model.registry}
                           </div>
@@ -188,16 +189,16 @@ export function goToUpPage(): void {
               </div>
 
               <!-- server details -->
-              <div class="bg-charcoal-800 rounded-md w-full px-4 pt-2 pb-4 mt-2">
-                <span class="text-sm">Server</span>
+              <div class="bg-[var(--pd-content-card-bg)] rounded-md w-full px-4 pt-2 pb-4 mt-2">
+                <span class="text-sm text-[var(--pd-content-card-text)]">Server</span>
                 <div class="flex flex-row gap-4">
                   <div
-                    class="bg-charcoal-600 rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
+                    class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
                     http://localhost:{service.connection.port}/v1
                   </div>
 
                   <div
-                    class="bg-charcoal-600 rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
+                    class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
                     CPU Inference
                     <Fa class="ml-2" icon="{faMicrochip}" />
                   </div>
@@ -207,7 +208,7 @@ export function goToUpPage(): void {
               <!-- code client -->
               <div>
                 <div class="flex flex-row">
-                  <span class="text-base grow">Client code</span>
+                  <span class="text-base grow text-[var(--pd-content-card-text)]">Client code</span>
 
                   <!-- language choice -->
                   <select
@@ -240,7 +241,8 @@ export function goToUpPage(): void {
                 </div>
 
                 {#if snippet !== undefined}
-                  <div class="bg-charcoal-900 rounded-md w-full p-4 mt-2 relative">
+                  <div
+                    class="bg-[var(--pd-details-empty-cmdline-bg)] text-[var(--pd-details-empty-cmdline-text)] rounded-md w-full p-4 mt-2 relative">
                     <code class="whitespace-break-spaces text-sm" bind:this="{code}">
                       {snippet}
                     </code>

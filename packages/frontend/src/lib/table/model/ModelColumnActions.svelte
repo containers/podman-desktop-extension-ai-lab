@@ -10,7 +10,6 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 export let object: ModelInfo;
 
 let inUse: boolean = false;
-$: inUse;
 
 function deleteModel() {
   studioClient.requestRemoveLocalModel(object.id).catch(err => {

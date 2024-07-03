@@ -7,7 +7,6 @@ import StatusIcon from '/@/lib/StatusIcon.svelte';
 export let object: ModelInfo;
 
 let status: string | undefined = undefined;
-$: status;
 
 onMount(() => {
   return inferenceServers.subscribe(servers => {

@@ -214,6 +214,6 @@ test('Expect delete button to be disabled when model in use', async () => {
 
   await vi.waitFor(() => {
     // disable class
-    expect(deleteBtn.classList).toContain('text-gray-900');
+    expect(deleteBtn.classList).toContain('text-[var(--pd-action-button-disabled-text)]');
   });
 });

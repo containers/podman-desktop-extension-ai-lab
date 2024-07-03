@@ -243,8 +243,8 @@ describe('downloaded models', () => {
 
     const rows = screen.getAllByRole('cell', { name: 'Model Name' });
     expect(rows.length).toBe(2);
-    expect((rows[0].firstChild as HTMLElement).title).toBe('dummy-downloaded-1');
-    expect((rows[1].firstChild as HTMLElement).title).toBe('dummy-downloaded-2');
+    expect(await within(rows[0]).findByTitle('dummy-downloaded-1')).toBeDefined();
+    expect(await within(rows[1]).findByTitle('dummy-downloaded-2')).toBeDefined();
   });
 });
 

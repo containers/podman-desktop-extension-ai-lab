@@ -1,9 +1,8 @@
 <script lang="ts">
 import { getApplicationStatus } from '../../../pages/applications';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
-import StatusIcon from '../../StatusIcon.svelte';
 import PodIcon from '../../images/PodIcon.svelte';
-import { Spinner } from '@podman-desktop/ui-svelte';
+import { Spinner, StatusIcon } from '@podman-desktop/ui-svelte';
 export let object: ApplicationState;
 
 $: status = getApplicationStatus(object);

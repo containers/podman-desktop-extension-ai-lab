@@ -156,22 +156,20 @@ export function goToUpPage(): void {
       </div>
     </svelte:fragment>
     <svelte:fragment slot="subtitle">
-      <div class="flex gap-x-2 items-center">
+      <div class="flex gap-x-2 items-center text-[var(--pd-content-sub-header)]">
         {#if model}
           <div class="text-xs" aria-label="Model name">
             <a href="/model/{model.id}">{model.name}</a>
           </div>
-          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-charcoal-700" />
+          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-[var(--pd-label-bg)]" />
         {/if}
       </div>
     </svelte:fragment>
     <svelte:fragment slot="actions">
-      <div class="bg-charcoal-800 rounded-lg">
-        <ConversationActions conversation="{conversation}" />
-      </div>
+      <ConversationActions detailed conversation="{conversation}" />
     </svelte:fragment>
     <svelte:fragment slot="content">
-      <div class="flex flex-col w-full h-full bg-charcoal-500">
+      <div class="flex flex-col w-full h-full bg-[var(--pd-content-bg)]">
         <div class="h-full overflow-auto" bind:this="{scrollable}">
           <ContentDetailsLayout detailsTitle="Settings" detailsLabel="settings">
             <svelte:fragment slot="content">
@@ -195,8 +193,8 @@ export function goToUpPage(): void {
               </div>
             </svelte:fragment>
             <svelte:fragment slot="details">
-              <div class="text-gray-800 text-xs">Next prompt will use these settings</div>
-              <div class="bg-charcoal-600 w-full rounded-md text-xs p-4">
+              <div class="text-[var(--pd-content-card-text)] text-xs">Next prompt will use these settings</div>
+              <div class="bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] w-full rounded-md text-xs p-4">
                 <div class="mb-4 flex flex-col">Model Parameters</div>
                 <div class="flex flex-col space-y-4" aria-label="parameters">
                   <div class="flex flex-row">
@@ -204,9 +202,9 @@ export function goToUpPage(): void {
                       <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value="{temperature}" />
                     </div>
                     <Tooltip left>
-                      <Fa icon="{faCircleInfo}" />
+                      <Fa class="text-[var(--pd-content-card-icon)]" icon="{faCircleInfo}" />
                       <svelte:fragment slot="tip">
-                        <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs" aria-label="tooltip">
+                        <div class="inline-block py-2 px-4 rounded-md text-xs" aria-label="tooltip">
                           What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output
                           more random, while lower values like 0.2 will make it more focused and deterministic.
                         </div>
@@ -218,9 +216,9 @@ export function goToUpPage(): void {
                       <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value="{max_tokens}" />
                     </div>
                     <Tooltip left>
-                      <Fa icon="{faCircleInfo}" />
+                      <Fa class="text-[var(--pd-content-card-icon)]" icon="{faCircleInfo}" />
                       <svelte:fragment slot="tip">
-                        <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs" aria-label="tooltip">
+                        <div class="inline-block py-2 px-4 rounded-md text-xs" aria-label="tooltip">
                           The maximum number of tokens that can be generated in the chat completion.
                         </div>
                       </svelte:fragment>
@@ -231,9 +229,9 @@ export function goToUpPage(): void {
                       <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value="{top_p}" />
                     </div>
                     <Tooltip left>
-                      <Fa icon="{faCircleInfo}" />
+                      <Fa class="text-[var(--pd-content-card-icon)]" icon="{faCircleInfo}" />
                       <svelte:fragment slot="tip">
-                        <div class="inline-block py-2 px-4 rounded-md bg-charcoal-800 text-xs" aria-label="tooltip">
+                        <div class="inline-block py-2 px-4 rounded-md text-xs" aria-label="tooltip">
                           An alternative to sampling with temperature, where the model considers the results of the
                           tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10%
                           probability mass are considered.
@@ -247,16 +245,16 @@ export function goToUpPage(): void {
           </ContentDetailsLayout>
         </div>
         {#if errorMsg}
-          <div class="text-red-500 text-sm p-2">{errorMsg}</div>
+          <div class="text-[var(--pd-input-field-error-text)] text-sm p-2">{errorMsg}</div>
         {/if}
-        <div class="flex flex-row flex-none w-full px-4 py-2 bg-charcoal-800">
+        <div class="flex flex-row flex-none w-full px-4 py-2 bg-[var(--pd-content-card-bg)]">
           <textarea
             aria-label="prompt"
             bind:value="{prompt}"
             use:requestFocus
             on:keydown="{handleKeydown}"
             rows="2"
-            class="w-full p-2 outline-none text-sm rounded-sm bg-charcoal-800 text-white placeholder-white"
+            class="w-full p-2 outline-none text-sm rounded-sm bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]"
             placeholder="Type your prompt here"
             disabled="{!sendEnabled}"></textarea>
 

@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { arch } from 'node:os';
+import { arch, platform } from 'node:os';
 
 const nodeArch2GoArch = new Map<string, string>([
   ['ia32', '386'],
@@ -28,4 +28,8 @@ export function goarch(): string {
     localArch = nodeArch2GoArch.get(localArch) ?? localArch;
   }
   return localArch;
+}
+
+export function isMacArm() {
+  return platform() === 'darwin' && arch() === 'arm64';
 }

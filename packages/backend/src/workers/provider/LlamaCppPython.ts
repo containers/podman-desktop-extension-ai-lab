@@ -23,9 +23,11 @@ import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { InferenceType } from '@shared/src/models/IInference';
+import { isMacArm } from '../../utils/arch';
 
 export const LLAMA_CPP_INFERENCE_IMAGE =
   'ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.4';
+export const LLAMA_CPP_INFERENCE_IMAGE_MAC_GPU = 'quay.io/ai-lab/llamacpp-python-vulkan:latest';
 
 export const SECOND: number = 1_000_000_000;
 
@@ -56,6 +58,18 @@ export class LlamaCppPython extends InferenceProvider {
 
     const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
     envs.push(...getModelPropertiesForEnvironment(modelInfo));
+    if (isMacArm()) {
+      envs.push('GPU_LAYERS=99');
+    }
+
+    const devices = isMacArm()
+      ? [
+          {
+            PathOnHost: '/dev/dri',
+            PathInContainer: '/dev/dri',
+          },
+        ]
+      : [];
 
     return {
       Image: imageInfo.Id,
@@ -78,6 +92,7 @@ export class LlamaCppPython extends InferenceProvider {
             },
           ],
         },
+        Devices: devices,
       },
       HealthCheck: {
         // must be the port INSIDE the container not the exposed one
@@ -100,7 +115,7 @@ export class LlamaCppPython extends InferenceProvider {
     // pull the image
     const imageInfo: ImageInfo = await this.pullImage(
       config.providerId,
-      config.image ?? LLAMA_CPP_INFERENCE_IMAGE,
+      config.image ?? this.getLlamaCppInferenceImage(),
       config.labels,
     );
 
@@ -109,5 +124,9 @@ export class LlamaCppPython extends InferenceProvider {
 
     // Create the container
     return this.createContainer(imageInfo.engineId, containerCreateOptions, config.labels);
+  }
+
+  private getLlamaCppInferenceImage() {
+    return isMacArm() ? LLAMA_CPP_INFERENCE_IMAGE_MAC_GPU : LLAMA_CPP_INFERENCE_IMAGE;
   }
 }

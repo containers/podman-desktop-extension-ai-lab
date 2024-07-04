@@ -159,6 +159,7 @@ describe('perform', () => {
       },
       HostConfig: {
         AutoRemove: false,
+        Devices: [],
         Mounts: [
           {
             Source: 'dummy-path',

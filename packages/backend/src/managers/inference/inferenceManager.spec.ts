@@ -92,10 +92,6 @@ const catalogManager = {
 } as unknown as CatalogManager;
 
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
-  vi.mocked(catalogManager.onCatalogUpdate).mockImplementation(fn => {
-    fn();
-    return { dispose: vi.fn() };
-  });
   const manager = new InferenceManager(
     webviewMock,
     containerRegistryMock,
@@ -138,9 +134,22 @@ beforeEach(() => {
  * Testing the initialization of the manager
  */
 describe('init Inference Manager', () => {
-  test('should be initialized', async () => {
-    const inferenceManager = await getInitializedInferenceManager();
-    expect(inferenceManager.isInitialize()).toBeTruthy();
+  test('should be initialized without catalog events', async () => {
+    const manager = new InferenceManager(
+      webviewMock,
+      containerRegistryMock,
+      podmanConnectionMock,
+      modelsManager,
+      telemetryMock,
+      taskRegistryMock,
+      inferenceProviderRegistryMock,
+      catalogManager,
+    );
+    manager.init();
+    await vi.waitUntil(manager.isInitialize.bind(manager), {
+      interval: 200,
+      timeout: 2000,
+    });
   });
 
   test('should have listed containers', async () => {

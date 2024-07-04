@@ -194,7 +194,8 @@ export function goToUpPage(): void {
             </svelte:fragment>
             <svelte:fragment slot="details">
               <div class="text-[var(--pd-content-card-text)] text-xs">Next prompt will use these settings</div>
-              <div class="bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] w-full rounded-md text-xs p-4">
+              <div
+                class="bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] w-full rounded-md text-xs p-4">
                 <div class="mb-4 flex flex-col">Model Parameters</div>
                 <div class="flex flex-col space-y-4" aria-label="parameters">
                   <div class="flex flex-row">

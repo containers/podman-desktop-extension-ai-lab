@@ -16,9 +16,8 @@ import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 import { tasks } from '/@/stores/tasks';
 import { filterByLabel } from '/@/utils/taskUtils';
 import PodIcon from '/@/lib/images/PodIcon.svelte';
-import StatusIcon from '/@/lib/StatusIcon.svelte';
 import { getApplicationStatus, getApplicationStatusText } from '../pages/applications';
-import { Button, Spinner } from '@podman-desktop/ui-svelte';
+import { Button, Spinner, StatusIcon } from '@podman-desktop/ui-svelte';
 
 export let recipeId: string;
 export let modelId: string;

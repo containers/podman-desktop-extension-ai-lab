@@ -17,13 +17,12 @@
  ***********************************************************************/
 
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
-import type { KnownStatus } from '../lib/StatusIcon';
 
 /* returns the status of the AI application, to be used by <IconStatus> */
-export function getApplicationStatus(appState: ApplicationState): KnownStatus | 'UNKNOWN' {
+export function getApplicationStatus(appState: ApplicationState): string {
   const podStatus = appState.pod.Status.toUpperCase();
   if (['DEGRADED', 'STARTING', 'USED', 'DELETING', 'CREATED'].includes(podStatus)) {
-    return podStatus as KnownStatus;
+    return podStatus;
   }
   if (podStatus !== 'RUNNING') {
     return 'UNKNOWN';

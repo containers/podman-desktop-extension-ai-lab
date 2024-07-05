@@ -16,9 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { PodmanConnection } from './podmanConnection';
-import type { RegisterContainerConnectionEvent, UpdateContainerConnectionEvent } from '@podman-desktop/api';
+import type { RegisterContainerConnectionEvent, RunResult, UpdateContainerConnectionEvent } from '@podman-desktop/api';
+import { process } from '@podman-desktop/api';
+import { VMType } from '@shared/src/models/IPodman';
 
 const mocks = vi.hoisted(() => ({
   getFirstRunningPodmanConnectionMock: vi.fn(),
@@ -32,11 +34,15 @@ vi.mock('@podman-desktop/api', async () => {
       onDidRegisterContainerConnection: mocks.onDidRegisterContainerConnection,
       onDidUpdateContainerConnection: mocks.onDidUpdateContainerConnection,
     },
+    process: {
+      exec: vi.fn(),
+    },
   };
 });
 
 vi.mock('../utils/podman', () => {
   return {
+    getPodmanCli: vi.fn(),
     getFirstRunningPodmanConnection: mocks.getFirstRunningPodmanConnectionMock,
   };
 });
@@ -131,4 +137,98 @@ test('onMachineStop should call the handler when machine stops', async () => {
   expect(handler).not.toHaveBeenCalledOnce();
   await new Promise(resolve => setTimeout(resolve, 10));
   expect(handler).toHaveBeenCalledOnce();
+});
+
+describe('getVMType', () => {
+  test('empty response should throw an error', async () => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: '[]',
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection();
+    await expect(() => manager.getVMType()).rejects.toThrowError('podman machine list provided an empty array');
+  });
+
+  test('malformed response should return UNKNOWN', async () => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: '{}',
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection();
+    expect(await manager.getVMType()).toBe(VMType.UNKNOWN);
+  });
+
+  test('array with length greater than one require name', async () => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: '[{}, {}]',
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection();
+    await expect(() => manager.getVMType()).rejects.toThrowError(
+      'name need to be provided when more than one podman machine is configured.',
+    );
+  });
+
+  test('argument name should be used to filter the machine', async () => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: JSON.stringify([
+        {
+          Name: 'machine-1',
+          VMType: VMType.QEMU,
+        },
+        {
+          Name: 'machine-2',
+          VMType: VMType.APPLEHV,
+        },
+      ]),
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection();
+    expect(await manager.getVMType('machine-2')).toBe(VMType.APPLEHV);
+  });
+
+  test('invalid name should throw an error', async () => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: JSON.stringify([
+        {
+          Name: 'machine-1',
+        },
+        {
+          Name: 'machine-2',
+        },
+      ]),
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection();
+    await expect(() => manager.getVMType('potatoes')).rejects.toThrowError(
+      'cannot find matching podman machine with name potatoes',
+    );
+  });
+
+  test('single machine should return its VMType', async () => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: JSON.stringify([
+        {
+          Name: 'machine-1',
+          VMType: VMType.WSL,
+        },
+      ]),
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection();
+    expect(await manager.getVMType()).toBe(VMType.WSL);
+  });
+
+  test.each(Object.values(VMType) as string[])('%s type should be the expected result', async vmtype => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: JSON.stringify([
+        {
+          VMType: vmtype,
+        },
+      ]),
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection();
+    expect(await manager.getVMType()).toBe(vmtype);
+  });
 });

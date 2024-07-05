@@ -20,16 +20,16 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { GitCloneInfo, GitManager } from './gitManager';
 import fs from 'fs';
 import * as path from 'node:path';
-import { containerEngine, Disposable } from '@podman-desktop/api';
 import type {
-  PodCreatePortOptions,
-  TelemetryLogger,
-  PodInfo,
-  Webview,
-  HostConfig,
   HealthConfig,
+  HostConfig,
   PodContainerInfo,
+  PodCreatePortOptions,
+  PodInfo,
+  TelemetryLogger,
+  Webview,
 } from '@podman-desktop/api';
+import { containerEngine, Disposable } from '@podman-desktop/api';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../models/AIConfig';
 import { parseYamlFile } from '../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
@@ -46,12 +46,12 @@ import type { CatalogManager } from './catalogManager';
 import { ApplicationRegistry } from '../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import { Publisher } from '../utils/Publisher';
-import { isQEMUMachine } from '../utils/podman';
 import { getModelPropertiesForEnvironment } from '../utils/modelsUtils';
 import { getRandomName } from '../utils/randomUtils';
 import type { BuilderManager } from './recipes/BuilderManager';
 import type { PodManager } from './recipes/PodManager';
 import { SECOND } from '../workers/provider/LlamaCppPython';
+import { VMType } from '@shared/src/models/IPodman';
 
 export const LABEL_MODEL_ID = 'ai-lab-model-id';
 export const LABEL_MODEL_PORTS = 'ai-lab-model-ports';
@@ -297,8 +297,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     modelInfo: ModelInfo,
     modelPath: string,
   ): Promise<void> {
+    const vmType = await this.podmanConnection.getVMType();
     // temporary check to set Z flag or not - to be removed when switching to podman 5
-    const isQEMUVM = await isQEMUMachine();
     await Promise.all(
       images.map(async image => {
         let hostConfig: HostConfig | undefined = undefined;
@@ -313,7 +313,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
                 Target: `/${modelName}`,
                 Source: modelPath,
                 Type: 'bind',
-                Mode: isQEMUVM ? undefined : 'Z',
+                Mode: vmType === VMType.QEMU ? undefined : 'Z',
               },
             ],
           };

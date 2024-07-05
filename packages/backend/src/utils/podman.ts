@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ProviderContainerConnection } from '@podman-desktop/api';
-import { configuration, containerEngine, env, navigation, process, provider } from '@podman-desktop/api';
+import { configuration, containerEngine, env, navigation, provider } from '@podman-desktop/api';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import type { ModelCheckerInfo } from '@shared/src/models/IModelInfo';
 
@@ -102,37 +102,6 @@ export function getPodmanConnection(connectionName: string): ProviderContainerCo
     throw new Error(`no podman connection found with name ${connectionName}`);
   }
   return engine;
-}
-
-async function getJSONMachineList(): Promise<string> {
-  const { stdout } = await process.exec(getPodmanCli(), ['machine', 'list', '--format', 'json']);
-  return stdout;
-}
-
-export async function isQEMUMachine(): Promise<boolean> {
-  try {
-    if (!env.isMac) {
-      return false;
-    }
-
-    const runningMachineName = getFirstRunningMachineName();
-    if (!runningMachineName) {
-      return false;
-    }
-
-    const machineListOutput = await getJSONMachineList();
-    const machines = JSON.parse(machineListOutput) as MachineJSON[];
-    const runningMachine = machines.find(machine => machine.Name === runningMachineName);
-    if (!runningMachine) {
-      return false;
-    }
-
-    return runningMachine.VMType === 'qemu';
-  } catch (e) {
-    console.log(e);
-  }
-
-  return false;
 }
 
 export async function checkContainerConnectionStatusAndResources(

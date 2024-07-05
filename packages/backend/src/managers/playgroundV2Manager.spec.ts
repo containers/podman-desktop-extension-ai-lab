@@ -26,7 +26,7 @@ import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task, TaskState } from '@shared/src/models/ITask';
-import { ChatMessage, ErrorMessage } from '@shared/src/models/IPlaygroundMessage';
+import type { ChatMessage, ErrorMessage } from '@shared/src/models/IPlaygroundMessage';
 
 vi.mock('openai', () => ({
   default: vi.fn(),

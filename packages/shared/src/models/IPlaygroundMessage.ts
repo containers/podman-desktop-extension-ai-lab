@@ -27,9 +27,9 @@ export interface ErrorMessage extends Message {
   message: string;
 }
 
-export interface ChatMessage extends Message {  
+export interface ChatMessage extends Message {
   role: 'system' | 'user' | 'assistant';
-  content?: string;  
+  content?: string;
 }
 
 export interface AssistantChat extends ChatMessage {

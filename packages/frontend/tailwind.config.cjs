@@ -50,6 +50,8 @@ module.exports = {
             color: 'var(--pd-details-body-text)',
             '--tw-prose-body': 'var(--pd-details-body-text)',
             '--tw-prose-bold': 'var(--pd-details-body-text)',
+            '--tw-prose-headings': 'var(--pd-details-body-text)',
+            '--tw-prose-quotes': 'var(--pd-details-body-text)',
             '--tw-prose-hr': 'var(--pd-details-body-text)',
             '--tw-prose-links': 'var(--pd-link)',
             '--tw-prose-code': 'var(--pd-details-body-text)',

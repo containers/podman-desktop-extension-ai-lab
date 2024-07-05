@@ -1,7 +1,7 @@
 <script lang="ts">
 import { conversations } from '../stores/conversations';
 import { studioClient } from '/@/utils/client';
-import { isAssistantChat, isPendingChat, isUserChat, isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
+import { isAssistantChat, isPendingChat, isUserChat, isSystemPrompt, isChatMessage, isErrorMessage } from '@shared/src/models/IPlaygroundMessage';
 import { catalog } from '../stores/catalog';
 import { afterUpdate } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
@@ -30,12 +30,16 @@ let max_tokens = -1;
 let top_p = 0.5;
 
 $: conversation = $conversations.find(conversation => conversation.id === playgroundId);
-$: messages = conversation?.messages.filter(message => !isSystemPrompt(message)) ?? [];
+$: messages = conversation?.messages.filter(message => isChatMessage(message)).filter(message => !isSystemPrompt(message)) ?? [];
 $: model = $catalog.models.find(model => model.id === conversation?.modelId);
 $: {
   if (conversation?.messages.length) {
     const latest = conversation.messages[conversation.messages.length - 1];
     if (isSystemPrompt(latest) || (isAssistantChat(latest) && !isPendingChat(latest))) {
+      sendEnabled = true;
+    }
+    if (isErrorMessage(latest)) {
+      errorMsg = latest.message
       sendEnabled = true;
     }
   } else {

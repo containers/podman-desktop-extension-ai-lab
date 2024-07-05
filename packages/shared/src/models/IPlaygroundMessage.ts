@@ -18,11 +18,18 @@
 
 import type { ModelOptions } from './IModelOptions';
 
-export interface ChatMessage {
+export interface Message {
   id: string;
-  role: 'system' | 'user' | 'assistant';
-  content?: string;
   timestamp: number;
+}
+
+export interface ErrorMessage extends Message {
+  message: string;
+}
+
+export interface ChatMessage extends Message {  
+  role: 'system' | 'user' | 'assistant';
+  content?: string;  
 }
 
 export interface AssistantChat extends ChatMessage {
@@ -47,7 +54,7 @@ export interface UserChat extends ChatMessage {
 
 export interface Conversation {
   id: string;
-  messages: ChatMessage[];
+  messages: Message[];
   modelId: string;
   name: string;
 }
@@ -56,18 +63,26 @@ export interface Choice {
   content: string;
 }
 
-export function isAssistantChat(msg: ChatMessage): msg is AssistantChat {
-  return msg.role === 'assistant';
+export function isErrorMessage(msg: Message): msg is ErrorMessage {
+  return 'message' in msg;
 }
 
-export function isUserChat(msg: ChatMessage): msg is UserChat {
-  return msg.role === 'user';
+export function isChatMessage(msg: Message): msg is ChatMessage {
+  return 'role' in msg;
 }
 
-export function isPendingChat(msg: ChatMessage): msg is PendingChat {
+export function isAssistantChat(msg: Message): msg is AssistantChat {
+  return isChatMessage(msg) && msg.role === 'assistant';
+}
+
+export function isUserChat(msg: Message): msg is UserChat {
+  return isChatMessage(msg) && msg.role === 'user';
+}
+
+export function isPendingChat(msg: Message): msg is PendingChat {
   return isAssistantChat(msg) && !msg.completed;
 }
 
-export function isSystemPrompt(msg: ChatMessage): msg is SystemPrompt {
-  return msg.role === 'system';
+export function isSystemPrompt(msg: Message): msg is SystemPrompt {
+  return isChatMessage(msg) && msg.role === 'system';
 }

@@ -47,12 +47,12 @@ module.exports = {
       typography: (theme) => ({
         DEFAULT: {
           css: {
-            color: tailwindColors.gray[100],
-            '--tw-prose-headings': tailwindColors.gray[100],
-            '--tw-prose-bold': tailwindColors.gray[100],
-            '--tw-prose-links': tailwindColors.purple[500],
-            '--tw-prose-code': tailwindColors.purple[400],
-            // ...
+            color: 'var(--pd-details-body-text)',
+            '--tw-prose-body': 'var(--pd-details-body-text)',
+            '--tw-prose-bold': 'var(--pd-details-body-text)',
+            '--tw-prose-hr': 'var(--pd-details-body-text)',
+            '--tw-prose-links': 'var(--pd-link)',
+            '--tw-prose-code': 'var(--pd-details-body-text)',
           },
         },
       }),

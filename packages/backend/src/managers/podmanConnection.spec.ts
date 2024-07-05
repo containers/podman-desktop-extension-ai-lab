@@ -155,7 +155,9 @@ describe('getVMType', () => {
     } as unknown as RunResult);
 
     const manager = new PodmanConnection();
-    expect(await manager.getVMType()).toBe(VMType.UNKNOWN);
+    await expect(() => manager.getVMType()).rejects.toThrowError(
+      'podman machine list provided a malformed response',
+    );
   });
 
   test('array with length greater than one require name', async () => {

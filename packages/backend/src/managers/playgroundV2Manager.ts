@@ -250,7 +250,7 @@ export class PlaygroundV2Manager implements Disposable {
   private async processError(conversationId: string, error: unknown): Promise<void> {
     let errorMessage = String(error);
     if (errorMessage.endsWith('Please reduce the length of the messages or completion.')) {
-      errorMessage += ' Note: You should start a new playground';
+      errorMessage += ' Note: You should start a new playground.';
     }
     const messageId = this.#conversationRegistry.getUniqueId();
     const start = Date.now();

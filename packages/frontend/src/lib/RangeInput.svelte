@@ -8,7 +8,7 @@ export let value: number;
 
 <div>
   <div class="flex flex-row items-center">
-    <span class="w-full uppercase text-gray-700">{name}</span>
+    <span class="w-full uppercase text-[var(--pd-content-card-text)]">{name}</span>
     <input
       bind:value="{value}"
       type="number"
@@ -17,7 +17,7 @@ export let value: number;
       max="{max}"
       step="{step}"
       placeholder="{name}"
-      class="p-2 w-24 text-right outline-none text-sm bg-charcoal-800 rounded-sm text-gray-700 placeholder-gray-700" />
+      class="p-2 w-24 text-right outline-none text-sm bg-[var(--pd-content-card-bg)] rounded-sm text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]" />
   </div>
   <div class="w-full">
     <input
@@ -29,6 +29,6 @@ export let value: number;
       placeholder="{name}"
       bind:value="{value}"
       aria-label="{`${name} slider`}"
-      class="w-full h-1 bg-violet-600 rounded-lg appearance-none accent-violet-600 cursor-pointer range-xs mt-2" />
+      class="w-full h-1 bg-[var(--pd-button-primary-bg)] rounded-lg appearance-none accent-[var(--pd-button-primary-bg)] cursor-pointer range-xs mt-2" />
   </div>
 </div>

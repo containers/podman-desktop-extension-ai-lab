@@ -45,14 +45,14 @@ function elapsedTime(msg: AssistantChat): string {
 </script>
 
 <div>
-  <div class="text-lg" class:text-right="{isAssistantChat(message)}">
+  <div class="text-lg text-[var(--pd-content-header)]" class:text-right="{isAssistantChat(message)}">
     {roles[message.role]}
   </div>
   <div
-    class="p-4 rounded-md"
-    class:bg-charcoal-400="{isUserChat(message)}"
-    class:bg-charcoal-800="{isSystemPrompt(message)}"
-    class:bg-charcoal-900="{isAssistantChat(message)}"
+    class="p-4 rounded-md text-[var(--pd-content-card-text)]"
+    class:bg-[var(--pd-content-card-bg)]="{isUserChat(message)}"
+    class:bg-[var(--pd-content-bg)]="{isSystemPrompt(message)}"
+    class:bg-[var(--pd-content-card-inset-bg)]="{isAssistantChat(message)}"
     class:ml-8="{isAssistantChat(message)}"
     class:mr-8="{isUserChat(message)}">
     {#each getMessageParagraphs(message) as paragraph}
@@ -60,7 +60,7 @@ function elapsedTime(msg: AssistantChat): string {
     {/each}
   </div>
   {#if isAssistantChat(message)}
-    <div class="text-sm text-gray-400 text-right" aria-label="elapsed">
+    <div class="text-sm text-[var(--pd-content-header)] text-right" aria-label="elapsed">
       {elapsedTime(message)} s
     </div>
   {/if}

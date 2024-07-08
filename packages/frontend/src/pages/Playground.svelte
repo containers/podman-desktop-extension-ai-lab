@@ -47,7 +47,7 @@ $: {
       sendEnabled = true;
     }
     if (isErrorMessage(latest)) {
-      errorMsg = latest.message;
+      errorMsg = latest.error;
       sendEnabled = true;
     }
   } else {

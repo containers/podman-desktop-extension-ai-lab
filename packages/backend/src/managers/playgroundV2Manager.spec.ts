@@ -121,28 +121,6 @@ test('submit should throw an error if the server is unhealthy', async () => {
   );
 });
 
-test('submit should throw an error if the server is unhealthy', async () => {
-  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
-    {
-      status: 'running',
-      health: {
-        Status: 'unhealthy',
-      },
-      models: [
-        {
-          id: 'model1',
-        },
-      ],
-    } as unknown as InferenceServer,
-  ]);
-  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
-  await manager.createPlayground('p1', { id: 'model1' } as ModelInfo, 'tracking-1');
-  const playgroundId = manager.getConversations()[0].id;
-  await expect(manager.submit(playgroundId, 'dummyUserInput')).rejects.toThrowError(
-    'Inference server is not healthy, currently status: unhealthy.',
-  );
-});
-
 test('create playground should create conversation.', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
     {
@@ -335,7 +313,7 @@ test('error', async () => {
 
   // Wait for error message
   await vi.waitFor(() => {
-    expect((manager.getConversations()[0].messages[1] as ErrorMessage).message).toBeDefined();
+    expect((manager.getConversations()[0].messages[1] as ErrorMessage).error).toBeDefined();
   });
 
   const conversations = manager.getConversations();

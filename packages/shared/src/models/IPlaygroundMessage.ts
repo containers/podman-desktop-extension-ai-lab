@@ -24,7 +24,7 @@ export interface Message {
 }
 
 export interface ErrorMessage extends Message {
-  message: string;
+  error: string;
 }
 
 export interface ChatMessage extends Message {
@@ -64,7 +64,7 @@ export interface Choice {
 }
 
 export function isErrorMessage(msg: Message): msg is ErrorMessage {
-  return 'message' in msg;
+  return 'error' in msg;
 }
 
 export function isChatMessage(msg: Message): msg is ChatMessage {

@@ -263,7 +263,7 @@ export class PlaygroundV2Manager implements Disposable {
     this.#conversationRegistry.submit(conversationId, {
       id: messageId,
       timestamp: start,
-      message: errorMessage,
+      error: errorMessage,
     } as ErrorMessage);
   }
 

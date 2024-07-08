@@ -204,6 +204,8 @@ export abstract class StudioAPI {
    */
   abstract copyToClipboard(content: string): Promise<void>;
 
+  abstract getModelMetadata(modelId: string): Promise<Record<string, unknown>>;
+
   /**
    * Check if the running podman machine is running and has enough resources to execute task
    * @param modelInfo object containing info about the model to check

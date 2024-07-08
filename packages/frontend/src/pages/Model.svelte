@@ -3,6 +3,9 @@ import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import { catalog } from '/@/stores/catalog';
 import { DetailsPage } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
+import { Tab } from '@podman-desktop/ui-svelte';
+import Route from '/@/Route.svelte';
+import ModelInspect from '/@/pages/ModelInspect.svelte';
 
 export let modelId: string;
 
@@ -20,11 +23,20 @@ export function goToUpPage(): void {
   breadcrumbTitle="Go back to Models"
   on:close="{goToUpPage}"
   on:breadcrumbClick="{goToUpPage}">
+  <svelte:fragment slot="tabs">
+    <Tab title="Summary" url="/model/{modelId}" selected="{$router.path === `/model/${modelId}`}" />
+    <Tab title="Inspect" url="/model/{modelId}/inspect" selected="{$router.path === `/model/${modelId}/inspect`}" />
+  </svelte:fragment>
   <svelte:fragment slot="content">
-    <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
-      <div class="flex-grow p-5">
-        <MarkdownRenderer source="{model?.description}" />
+      <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
+        <Route path="/">
+          <div class="flex-grow p-5">
+            <MarkdownRenderer source="{model?.description}" />
+          </div>
+        </Route>
+        <Route path="/inspect">
+          <ModelInspect modelId="{modelId}"/>
+        </Route>
       </div>
-    </div>
   </svelte:fragment>
 </DetailsPage>

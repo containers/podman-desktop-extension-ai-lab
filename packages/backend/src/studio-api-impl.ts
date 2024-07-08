@@ -507,6 +507,10 @@ export class StudioApiImpl implements StudioAPI {
     return podmanDesktopApi.env.clipboard.writeText(content);
   }
 
+  getModelMetadata(modelId: string): Promise<Record<string, unknown>> {
+    return this.modelsManager.getModelMetadata(modelId);
+  }
+
   async checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo> {
     return checkContainerConnectionStatusAndResources(modelInfo);
   }

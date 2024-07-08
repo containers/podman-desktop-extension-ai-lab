@@ -16,4 +16,4 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export const noTimeoutChannels: string[] = ['openDialog'];
+export const noTimeoutChannels: string[] = ['openDialog', 'getModelMetadata'];

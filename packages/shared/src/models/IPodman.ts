@@ -21,6 +21,6 @@ export enum VMType {
   LIBKRUN = 'libkrun',
   QEMU = 'qemu',
   APPLEHV = 'applehv',
-  HYPERV = 'hyperv ',
+  HYPERV = 'hyperv',
   UNKNOWN = 'unknown',
 }

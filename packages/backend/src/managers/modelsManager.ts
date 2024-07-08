@@ -34,7 +34,8 @@ import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/
 import { getFirstRunningMachineName } from '../utils/podman';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { hasValidSha } from '../utils/sha';
-import { gguf, GGUFParseOutput } from '@huggingface/gguf';
+import type { GGUFParseOutput } from '@huggingface/gguf';
+import { gguf } from '@huggingface/gguf';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
@@ -430,16 +431,16 @@ export class ModelsManager implements Disposable {
 
     const before = performance.now();
     const data: Record<string, unknown> = {
-      'model-id': model.url?modelId:'imported', // filter imported models
+      'model-id': model.url ? modelId : 'imported', // filter imported models
     };
 
     try {
       let result: GGUFParseOutput<{ strict: false }>;
-      if(this.isModelOnDisk(modelId)) {
+      if (this.isModelOnDisk(modelId)) {
         const modelPath = path.normalize(getLocalModelFile(model));
         console.debug(`[getModelMetadata] reading model ${modelPath}`);
         result = await gguf(modelPath, { allowLocalFile: true });
-      } else if(model.url) {
+      } else if (model.url) {
         result = await gguf(model.url);
       } else {
         throw new Error('cannot get model metadata');

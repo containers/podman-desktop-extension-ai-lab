@@ -31,15 +31,15 @@ export function goToUpPage(): void {
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="content">
-      <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
-        <Route path="/">
-          <div class="flex-grow p-5">
-            <MarkdownRenderer source="{model?.description}" />
-          </div>
-        </Route>
-        <Route path="/inspect">
-          <ModelInspect modelId="{modelId}"/>
-        </Route>
-      </div>
+    <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
+      <Route path="/">
+        <div class="flex-grow p-5">
+          <MarkdownRenderer source="{model?.description}" />
+        </div>
+      </Route>
+      <Route path="/inspect">
+        <ModelInspect modelId="{modelId}" />
+      </Route>
+    </div>
   </svelte:fragment>
 </DetailsPage>

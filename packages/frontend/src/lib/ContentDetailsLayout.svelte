@@ -19,7 +19,7 @@ const toggle = () => {
         <div
           class:hidden="{!open}"
           class:block="{open}"
-          class="h-fit lg:bg-[var(--pd-content-card-bg)] lg:text-[var(--pd-content-card-text)] lg:rounded-l-md lg:mt-5 lg:py-4 max-lg:block"
+          class="h-fit lg:bg-[var(--pd-content-card-bg)] lg:text-[var(--pd-content-card-title)] lg:rounded-l-md lg:mt-5 lg:py-4 max-lg:block"
           aria-label="{`${detailsLabel} panel`}">
           <div class="flex flex-col px-4 space-y-4 mx-auto">
             <div class="w-full flex flex-row justify-between max-lg:hidden">

@@ -70,7 +70,7 @@
     "@types/node": "^20",
     "@types/postman-collection": "^3.5.10",
     "@types/winreg": "^1.2.36",
-    "vitest": "^1.6.0",
+    "vitest": "^2.0.1",
     "@types/mustache": "^4.2.5"
   }
 }

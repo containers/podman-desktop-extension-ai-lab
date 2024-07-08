@@ -40,6 +40,6 @@
     "svelte-markdown": "^0.4.1",
     "svelte-preprocess": "^6.0.1",
     "tailwindcss": "^3.4.4",
-    "vitest": "^1.6.0"
+    "vitest": "^2.0.1"
   }
 }

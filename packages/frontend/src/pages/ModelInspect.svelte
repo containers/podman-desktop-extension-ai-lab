@@ -41,8 +41,6 @@ const row = new TableRow<Item>({});
 
 onMount(() => {
   return modelsMetadata.subscribe(metadatas => {
-    console.log('[ModelInspect] metadatas', metadatas);
-
     const records = metadatas[modelId];
     if (records) {
       items = Object.entries(records).map(([key, value]) => ({

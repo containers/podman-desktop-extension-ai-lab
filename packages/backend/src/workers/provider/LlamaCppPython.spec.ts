@@ -18,11 +18,12 @@
 
 import { vi, describe, test, expect, beforeEach } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { LLAMA_CPP_INFERENCE_IMAGE, LlamaCppPython, SECOND } from './LlamaCppPython';
+import { LLAMA_CPP_CPU, LlamaCppPython, SECOND } from './LlamaCppPython';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 import type { ContainerProviderConnection, ImageInfo, ProviderContainerConnection } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
+import { GPUManager } from '../../managers/GPUManager';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 
@@ -42,6 +43,10 @@ const taskRegistry: TaskRegistry = {
   createTask: vi.fn(),
   updateTask: vi.fn(),
 } as unknown as TaskRegistry;
+
+const gpuManager: GPUManager = {
+
+} as unknown as GPUManager;
 
 const DummyModel: ModelInfo = {
   name: 'dummy model',
@@ -84,13 +89,13 @@ beforeEach(() => {
 });
 
 test('LlamaCppPython being the default, it should always be enable', () => {
-  const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+  const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager);
   expect(provider.enabled()).toBeTruthy();
 });
 
 describe('perform', () => {
   test('config without image should use defined image', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager);
 
     await provider.perform({
       port: 8000,
@@ -103,13 +108,13 @@ describe('perform', () => {
     expect(getProviderContainerConnection).toHaveBeenCalledWith(undefined);
     expect(getImageInfo).toHaveBeenCalledWith(
       DummyProviderContainerConnection.connection,
-      LLAMA_CPP_INFERENCE_IMAGE,
+      LLAMA_CPP_CPU,
       expect.anything(),
     );
   });
 
   test('config without models should throw an error', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager);
 
     await expect(
       provider.perform({
@@ -123,7 +128,7 @@ describe('perform', () => {
   });
 
   test('config model without file should throw an error', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager);
 
     await expect(
       provider.perform({
@@ -141,7 +146,7 @@ describe('perform', () => {
   });
 
   test('valid config should produce expected CreateContainerOptions', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager);
 
     await provider.perform({
       port: 8888,
@@ -152,7 +157,7 @@ describe('perform', () => {
     });
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
-      Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
+      Cmd: [],
       Detach: true,
       Env: ['MODEL_PATH=/models/dummy-file.guff', 'HOST=0.0.0.0', 'PORT=8000'],
       ExposedPorts: {
@@ -165,7 +170,6 @@ describe('perform', () => {
       },
       HostConfig: {
         AutoRemove: false,
-        Devices: [],
         Mounts: [
           {
             Source: 'dummy-path',
@@ -173,6 +177,8 @@ describe('perform', () => {
             Type: 'bind',
           },
         ],
+        DeviceRequests: [],
+        Devices: [],
         PortBindings: {
           '8000/tcp': [
             {
@@ -190,7 +196,7 @@ describe('perform', () => {
   });
 
   test('model properties should be made uppercased', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager);
 
     await provider.perform({
       port: 8000,

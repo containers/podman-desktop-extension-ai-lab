@@ -6,6 +6,7 @@ import { router } from 'tinro';
 import { Tab } from '@podman-desktop/ui-svelte';
 import Route from '/@/Route.svelte';
 import ModelInspect from '/@/pages/ModelInspect.svelte';
+import { InferenceType } from '@shared/src/models/IInference';
 
 export let modelId: string;
 
@@ -24,8 +25,10 @@ export function goToUpPage(): void {
   on:close="{goToUpPage}"
   on:breadcrumbClick="{goToUpPage}">
   <svelte:fragment slot="tabs">
-    <Tab title="Summary" url="/model/{modelId}" selected="{$router.path === `/model/${modelId}`}" />
-    <Tab title="Inspect" url="/model/{modelId}/inspect" selected="{$router.path === `/model/${modelId}/inspect`}" />
+    {#if model?.backend === InferenceType.LLAMA_CPP}
+      <Tab title="Summary" url="/model/{modelId}" selected="{$router.path === `/model/${modelId}`}" />
+      <Tab title="Inspect" url="/model/{modelId}/inspect" selected="{$router.path === `/model/${modelId}/inspect`}" />
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="content">
       <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">

@@ -21,14 +21,17 @@ import { expect as playExpect } from '@playwright/test';
 import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
 import type { DashboardPage, ExtensionsPage, RunnerTestContext } from '@podman-desktop/tests-playwright';
 import { NavigationBar, WelcomePage, PodmanDesktopRunner } from '@podman-desktop/tests-playwright';
+import { AILabPage } from './model/ai-lab-page';
 
-const AI_LAB_EXTENSION_OCI_IMAGE: string = 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
+const AI_LAB_EXTENSION_OCI_IMAGE: string = process.env.AI_LAB_OCI ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
+const AI_LAB_AI_APP_NAME: string = 'ChatBot';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;
+let webview: Page;
 
 let navigationBar: NavigationBar;
 let dashboardPage: DashboardPage;
@@ -67,14 +70,46 @@ describe(`AI Lab extension installation and verification`, async () => {
     });
   });
   describe(`AI Lab extension verification`, async () => {
-    test(`Verify AI Lab is present in notification bar and open it`, async () => {
-      const aiLabNavBarItem: Locator = navigationBar.navigationLocator.getByLabel(AI_LAB_NAVBAR_EXTENSION_LABEL);
-      await playExpect(aiLabNavBarItem).toBeVisible();
-      await aiLabNavBarItem.click();
+    test(`Verify AI Lab is responsive`, async () => {
+      [page, webview] = await handleWebview();
+      const aiLabPage = new AILabPage(page, webview);
+      await aiLabPage.waitForPageLoad();
     });
-    test(`Verify AI Lab is running`, async () => {
-      const aiLabWebview: Locator = page.getByLabel(AI_LAB_PAGE_BODY_LABEL);
-      await playExpect(aiLabWebview).toBeVisible();
+    test(`Open Recipes Catalog`, async () => {
+      [page, webview] = await handleWebview();
+      const aiLabPage = new AILabPage(page, webview);
+      await aiLabPage.openRecipesCatalog();
+    });
+    test(`Install ChatBot example app`, { timeout: 780_000 }, async () => {
+      [page, webview] = await handleWebview();
+      const aiLabPage = new AILabPage(page, webview);
+      await aiLabPage.openRecipesCatalogApp(aiLabPage.recipesCatalogNaturalLanguageProcessing, AI_LAB_AI_APP_NAME);
+      try {
+        await aiLabPage.tryDeleteOpenApp();
+      } catch(error) {
+        console.warn(`Warning: Could not delete open app, possibly app is not installed.\n${error}`);
+      }
+      await aiLabPage.startOpenApp();
     });
   });
 });
+
+async function handleWebview(): Promise<[Page, Page]> {
+  await navigationBar.navigationLocator.getByLabel(AI_LAB_NAVBAR_EXTENSION_LABEL).click({ timeout: 5_000 });
+  await page.waitForTimeout(2_000);
+
+  const webView = page.getByRole('document', { name: AI_LAB_PAGE_BODY_LABEL });
+  await playExpect(webView).toBeVisible();
+  await new Promise(resolve => setTimeout(resolve, 1_000));
+  const [mainPage, webViewPage] = pdRunner.getElectronApp().windows();
+  await mainPage.evaluate(() => {
+    const element = document.querySelector('webview');
+    if (element) {
+      (element as HTMLElement).focus();
+    } else {
+      console.log(`element is null`);
+    }
+  });
+
+  return [mainPage, webViewPage];
+}

@@ -17,12 +17,15 @@
  ***********************************************************************/
 
 import {
-  type RegisterContainerConnectionEvent,
-  provider,
-  type UpdateContainerConnectionEvent,
   type Disposable,
+  process,
+  provider,
+  type RegisterContainerConnectionEvent,
+  type UpdateContainerConnectionEvent,
 } from '@podman-desktop/api';
-import { getFirstRunningPodmanConnection } from '../utils/podman';
+import type { MachineJSON } from '../utils/podman';
+import { getFirstRunningPodmanConnection, getPodmanCli } from '../utils/podman';
+import { VMType } from '@shared/src/models/IPodman';
 
 export type startupHandle = () => void;
 export type machineStartHandle = () => void;
@@ -96,6 +99,45 @@ export class PodmanConnection implements Disposable {
         }
       }
     });
+  }
+
+  /**
+   * Get the VMType of the podman machine
+   * @param name the machine name, from {@link ContainerProviderConnection}
+   */
+  async getVMType(name?: string): Promise<VMType> {
+    const { stdout } = await process.exec(getPodmanCli(), ['machine', 'list', '--format', 'json']);
+
+    const parsed: unknown = JSON.parse(stdout);
+    if (!Array.isArray(parsed)) throw new Error('podman machine list provided a malformed response');
+    if (parsed.length === 0) throw new Error('podman machine list provided an empty array');
+    if (parsed.length > 1 && !name)
+      throw new Error('name need to be provided when more than one podman machine is configured.');
+
+    let output: MachineJSON;
+    if (name) {
+      output = parsed.find(machine => typeof machine === 'object' && 'Name' in machine && machine.Name === name);
+      if (!output) throw new Error(`cannot find matching podman machine with name ${name}`);
+    } else {
+      output = parsed[0];
+    }
+
+    switch (output.VMType) {
+      // mac
+      case VMType.APPLEHV:
+        return VMType.APPLEHV;
+      case VMType.QEMU:
+        return VMType.QEMU;
+      case VMType.LIBKRUN:
+        return VMType.LIBKRUN;
+      // windows
+      case VMType.HYPERV:
+        return VMType.HYPERV;
+      case VMType.WSL:
+        return VMType.WSL;
+      default:
+        return VMType.UNKNOWN;
+    }
   }
 
   onMachineStart(f: machineStartHandle) {

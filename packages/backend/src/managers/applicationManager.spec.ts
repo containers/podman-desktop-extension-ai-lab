@@ -15,8 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { describe, expect, test, vi, beforeEach } from 'vitest';
-import { type ImageInfo, ApplicationManager, CONFIG_FILENAME } from './applicationManager';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { ApplicationManager, CONFIG_FILENAME, type ImageInfo } from './applicationManager';
 import type { GitManager } from './gitManager';
 import os from 'os';
 import fs, { type PathLike } from 'node:fs';
@@ -28,15 +28,15 @@ import type { AIConfig, ContainerConfig } from '../models/AIConfig';
 import * as portsUtils from '../utils/ports';
 import { goarch } from '../utils/arch';
 import * as utils from '../utils/utils';
-import * as podman from '../utils/podman';
-import type { Webview, TelemetryLogger, PodInfo, Disposable } from '@podman-desktop/api';
+import type { Disposable, PodInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { LocalRepositoryRegistry } from '../registries/LocalRepositoryRegistry';
-import type { PodmanConnection, machineStopHandle, startupHandle } from './podmanConnection';
+import type { machineStopHandle, PodmanConnection, startupHandle } from './podmanConnection';
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { BuilderManager } from './recipes/BuilderManager';
 import type { PodEvent, PodManager } from './recipes/PodManager';
+import { VMType } from '@shared/src/models/IPodman';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -140,6 +140,12 @@ const podManager = {
 const localRepositoryRegistry = {
   register: mocks.registerLocalRepositoryMock,
 } as unknown as LocalRepositoryRegistry;
+
+const podmanConnection = {
+  getVMType: vi.fn(),
+  startupSubscribe: mocks.startupSubscribeMock,
+  onMachineStop: mocks.onMachineStopMock,
+} as unknown as PodmanConnection;
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -254,7 +260,7 @@ describe('pullApplication', () => {
       } as unknown as GitManager,
       taskRegistry,
       {} as Webview,
-      {} as PodmanConnection,
+      podmanConnection,
       {} as CatalogManager,
       modelsManager,
       telemetryLogger,
@@ -273,7 +279,7 @@ describe('pullApplication', () => {
       engineId: 'dummyEngineId',
       Id: 'dummyPodId',
     } as unknown as PodInfo);
-    vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
+    vi.mocked(podmanConnection.getVMType).mockResolvedValue(VMType.WSL);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     mocks.performDownloadMock.mockResolvedValue('path');
@@ -353,7 +359,7 @@ describe('pullApplication', () => {
     });
     vi.mocked(builderManager.build).mockRejectedValue(new Error('Build failed'));
     vi.mocked(podManager.getAllPods).mockResolvedValue([]);
-    vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
+    vi.mocked(podmanConnection.getVMType).mockResolvedValue(VMType.WSL);
     vi.spyOn(modelsManager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(modelsManager, 'uploadModelToPodmanMachine').mockResolvedValue('path');
     mocks.performDownloadMock.mockResolvedValue('path');
@@ -879,7 +885,7 @@ describe('createAndAddContainersToPod', () => {
     {} as unknown as GitManager,
     taskRegistry,
     {} as Webview,
-    {} as PodmanConnection,
+    podmanConnection,
     {} as CatalogManager,
     {} as unknown as ModelsManager,
     telemetryLogger,
@@ -908,7 +914,7 @@ describe('createAndAddContainersToPod', () => {
     mocks.createContainerMock.mockResolvedValue({
       id: 'container-1',
     });
-    vi.spyOn(podman, 'isQEMUMachine').mockResolvedValue(false);
+    vi.mocked(podmanConnection.getVMType).mockResolvedValue(VMType.WSL);
     await manager.createContainerAndAttachToPod(pod, [imageInfo1, imageInfo2], modelInfo, 'path');
     expect(mocks.createContainerMock).toHaveBeenNthCalledWith(1, 'engine', {
       Image: 'id',
@@ -987,10 +993,7 @@ describe('pod detection', async () => {
       {
         postMessage: mocks.postMessageMock,
       } as unknown as Webview,
-      {
-        startupSubscribe: mocks.startupSubscribeMock,
-        onMachineStop: mocks.onMachineStopMock,
-      } as unknown as PodmanConnection,
+      podmanConnection,
       {
         getRecipeById: vi.fn().mockReturnValue({ name: 'MyRecipe' } as Recipe),
       } as unknown as CatalogManager,

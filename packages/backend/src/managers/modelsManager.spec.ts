@@ -29,7 +29,8 @@ import * as utils from '../utils/utils';
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import * as sha from '../utils/sha';
-import { gguf, GGUFParseOutput } from '@huggingface/gguf';
+import type { GGUFParseOutput } from '@huggingface/gguf';
+import { gguf } from '@huggingface/gguf';
 
 const mocks = vi.hoisted(() => {
   return {

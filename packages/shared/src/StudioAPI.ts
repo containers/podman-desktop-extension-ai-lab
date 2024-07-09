@@ -58,6 +58,14 @@ export abstract class StudioAPI {
    * Get the information of models saved locally into the user's directory
    */
   abstract getModelsInfo(): Promise<ModelInfo[]>;
+
+  /**
+   * Given a modelId will return the model metadata
+   * @remark If the model is not available locally, a fetch request will be used to get its metadata from the header.
+   * @param modelId
+   */
+  abstract getModelMetadata(modelId: string): Promise<Record<string, unknown>>;
+
   /**
    * Delete the folder containing the model from local storage
    */

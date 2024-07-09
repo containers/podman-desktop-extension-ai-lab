@@ -1040,15 +1040,10 @@ acorn-typescript@^1.4.13:
   resolved "https://registry.yarnpkg.com/acorn-typescript/-/acorn-typescript-1.4.13.tgz#5f851c8bdda0aa716ffdd5f6ac084df8acc6f5ea"
   integrity sha512-xsc9Xv0xlVfwp2o7sQ+GCQ1PgbkdcpWdTzrwXxO3xDMTAywVS3oXVOcOHuRjAPkS4P9b+yc/qNF15460v+jp4Q==
 
-acorn@^8.11.3:
+acorn@^8.11.3, acorn@^8.9.0:
   version "8.12.0"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.12.0.tgz#1627bfa2e058148036133b8d9b51a700663c294c"
   integrity sha512-RTvkC4w+KNXrM39/lWCUaG0IbRkWdCv7W/IOW9oU6SawyxulvkQy5HQPVTKxEjczcUvapcrw3cFx/60VN/NRNw==
-
-acorn@^8.9.0:
-  version "8.11.2"
-  resolved "https://registry.npmjs.org/acorn/-/acorn-8.11.2.tgz"
-  integrity sha512-nc0Axzp/0FILLEVsm4fNwLCwMttvhEI263QtVPQcbpfZZ3ts0hLsZGOpE6czNlid7CJ9MlyH8reXkpsf3YUY4w==
 
 agent-base@^7.0.2, agent-base@^7.1.0:
   version "7.1.0"
@@ -4394,10 +4389,10 @@ svelte-preprocess@^6.0.1:
     detect-indent "^6.1.0"
     strip-indent "^3.0.0"
 
-svelte@5.0.0-next.164:
-  version "5.0.0-next.164"
-  resolved "https://registry.yarnpkg.com/svelte/-/svelte-5.0.0-next.164.tgz#7d397f146a69e56d5876b94219c817f41ac39f35"
-  integrity sha512-e+V1dSZLCCu0Ln7RKwSl/zP9ZZFbDGW7ABfGQYU/+6sWponizQocmyHyKHzctor0ruGgJKOF7QQB+M6lE2+UrA==
+svelte@5.0.0-next.178:
+  version "5.0.0-next.178"
+  resolved "https://registry.yarnpkg.com/svelte/-/svelte-5.0.0-next.178.tgz#73efe570eeefe0e960428f6696ae6cb08711b9d8"
+  integrity sha512-Hr/h/fV+6h7FBoZjop+f8Goc32nfsNP9YWjcWVSZ0kTt3UIWWQbj3rFpaF1b2173fklIq+HJLzrFxC1XMnBfSw==
   dependencies:
     "@ampproject/remapping" "^2.2.1"
     "@jridgewell/sourcemap-codec" "^1.4.15"

@@ -241,7 +241,7 @@ export class Studio {
      */
     this.#inferenceProviderRegistry = new InferenceProviderRegistry(this.#panel.webview);
     this.#extensionContext.subscriptions.push(
-      this.#inferenceProviderRegistry.register(new LlamaCppPython(this.#taskRegistry)),
+      this.#inferenceProviderRegistry.register(new LlamaCppPython(this.#taskRegistry, this.#podmanConnection)),
     );
 
     /**

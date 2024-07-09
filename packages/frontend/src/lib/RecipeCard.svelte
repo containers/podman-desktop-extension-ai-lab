@@ -17,7 +17,8 @@ $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
 <div class="no-underline">
   <div
     class="bg-[var(--pd-content-card-bg)] hover:bg-[var(--pd-content-card-hover-bg)] flex-grow p-4 h-full rounded-md flex-nowrap flex flex-col"
-    role="region">
+    role="region"
+    aria-label="{recipe.name}">
     <!-- body -->
     <div class="flex flex-row text-base grow">
       <!-- left column -->

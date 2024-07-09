@@ -28,7 +28,7 @@ const mocks = vi.hoisted(() => ({
   requestRemoveLocalModel: vi.fn(),
   openFile: vi.fn(),
   downloadModel: vi.fn(),
-  getInferenceServersMock: vi.fn<void[], InferenceServer[]>(),
+  getInferenceServersMock: vi.fn<() => InferenceServer[]>(),
 }));
 
 vi.mock('/@/utils/client', () => ({

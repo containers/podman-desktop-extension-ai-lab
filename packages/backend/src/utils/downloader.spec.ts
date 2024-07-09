@@ -20,8 +20,8 @@ import { vi, test, expect, beforeEach } from 'vitest';
 import { Downloader } from './downloader';
 import { EventEmitter } from '@podman-desktop/api';
 import { createWriteStream, promises, type WriteStream } from 'node:fs';
-import https from 'node:https';
-import type { IncomingMessage, ClientRequest } from 'node:http';
+import https, { type RequestOptions } from 'node:https';
+import type { ClientRequest, IncomingMessage } from 'node:http';
 
 vi.mock('@podman-desktop/api', () => {
   return {
@@ -75,7 +75,9 @@ test('perform download failed', async () => {
   const downloader = new Downloader('dummyUrl', 'dummyTarget');
 
   let onResponse: ((msg: IncomingMessage) => void) | undefined;
-  vi.mocked(https.get).mockImplementation((_url, _options, callback) => {
+  vi.mocked(
+    https.get as (url: string | URL, options: RequestOptions, callback: (_: IncomingMessage) => void) => ClientRequest,
+  ).mockImplementation((_url, _options, callback) => {
     onResponse = callback;
     return {} as unknown as ClientRequest;
   });
@@ -131,7 +133,9 @@ test('perform download failed', async () => {
 test('perform download successfully', async () => {
   const downloader = new Downloader('dummyUrl', 'dummyTarget');
   let onResponse: ((msg: IncomingMessage) => void) | undefined;
-  vi.mocked(https.get).mockImplementation((_url, _options, callback) => {
+  vi.mocked(
+    https.get as (url: string | URL, options: RequestOptions, callback: (_: IncomingMessage) => void) => ClientRequest,
+  ).mockImplementation((_url, _options, callback) => {
     onResponse = callback;
     return {} as unknown as ClientRequest;
   });

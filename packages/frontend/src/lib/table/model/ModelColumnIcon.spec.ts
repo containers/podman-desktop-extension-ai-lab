@@ -25,7 +25,7 @@ import { type InferenceServer, InferenceType } from '@shared/src/models/IInferen
 
 const mocks = vi.hoisted(() => {
   return {
-    getInferenceServersMock: vi.fn<void[], InferenceServer[]>(),
+    getInferenceServersMock: vi.fn<() => InferenceServer[]>(),
   };
 });
 

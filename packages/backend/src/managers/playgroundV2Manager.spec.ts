@@ -328,7 +328,7 @@ test('error', async () => {
     timestamp: expect.any(Number),
   });
   expect(conversations[0].messages[1]).toStrictEqual({
-    message: 'Please reduce the length of the messages or completion. Note: You should start a new playground.',
+    error: 'Please reduce the length of the messages or completion. Note: You should start a new playground.',
     id: expect.anything(),
     timestamp: expect.any(Number),
   });

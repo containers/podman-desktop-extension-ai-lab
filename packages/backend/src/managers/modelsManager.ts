@@ -438,14 +438,12 @@ export class ModelsManager implements Disposable {
       let result: GGUFParseOutput<{ strict: false }>;
       if (this.isModelOnDisk(modelId)) {
         const modelPath = path.normalize(getLocalModelFile(model));
-        console.debug(`[getModelMetadata] reading model ${modelPath}`);
         result = await gguf(modelPath, { allowLocalFile: true });
       } else if (model.url) {
         result = await gguf(model.url);
       } else {
         throw new Error('cannot get model metadata');
       }
-      console.log('result', result);
       return result.metadata;
     } catch (err: unknown) {
       data['error'] = err;
@@ -453,7 +451,7 @@ export class ModelsManager implements Disposable {
       throw err;
     } finally {
       data['duration'] = performance.now() - before;
-      this.telemetry.logUsage('get-metadata');
+      this.telemetry.logUsage('get-metadata', data);
     }
   }
 }

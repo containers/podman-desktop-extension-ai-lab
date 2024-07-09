@@ -19,7 +19,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { initWebview } from './webviewUtils';
 import type { Uri } from '@podman-desktop/api';
-import { promises } from 'node:fs';
+import { type PathLike, promises } from 'node:fs';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -51,7 +51,7 @@ beforeEach(() => {
 });
 
 test('panel should have file content as html', async () => {
-  vi.mocked(promises.readFile).mockImplementation(() => {
+  vi.mocked(promises.readFile as (path: PathLike) => Promise<string>).mockImplementation(() => {
     return Promise.resolve('<html></html>');
   });
 
@@ -60,7 +60,7 @@ test('panel should have file content as html', async () => {
 });
 
 test('script src should be replaced with asWebviewUri result', async () => {
-  vi.mocked(promises.readFile).mockImplementation(() => {
+  vi.mocked(promises.readFile as (path: PathLike) => Promise<string>).mockImplementation(() => {
     return Promise.resolve('<script type="module" crossorigin src="./index-RKnfBG18.js"></script>');
   });
 
@@ -69,7 +69,7 @@ test('script src should be replaced with asWebviewUri result', async () => {
 });
 
 test('links src should be replaced with asWebviewUri result', async () => {
-  vi.mocked(promises.readFile).mockImplementation(() => {
+  vi.mocked(promises.readFile as (path: PathLike) => Promise<string>).mockImplementation(() => {
     return Promise.resolve('<link rel="stylesheet" href="./styles.css">');
   });
 

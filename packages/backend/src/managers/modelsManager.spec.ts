@@ -139,8 +139,7 @@ function mockFiles(now: Date) {
   info.mtime = now;
   statSyncSpy.mockReturnValue(info);
   const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
-    [path: string],
-    string[] | fs.Dirent[]
+    (path: string) => string[] | fs.Dirent[]
   >;
   readdirSyncMock.mockImplementation((dir: string) => {
     if (dir.endsWith('model-id-1') || dir.endsWith('model-id-2')) {
@@ -300,8 +299,7 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
   });
 
   const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
-    [path: string],
-    string[] | fs.Dirent[]
+    (path: string) => string[] | fs.Dirent[]
   >;
   readdirSyncMock.mockImplementation((dir: string) => {
     if (dir.endsWith('model-id-1') || dir.endsWith('model-id-2')) {

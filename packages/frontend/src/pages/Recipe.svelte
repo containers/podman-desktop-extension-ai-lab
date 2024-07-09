@@ -79,7 +79,7 @@ export function goToUpPage(): void {
         <svelte:fragment slot="header">
           {#if connectionInfo}
             <div class="px-4">
-              <ContainerConnectionStatusInfo connectionInfo="{connectionInfo}" background="dark" />
+              <ContainerConnectionStatusInfo connectionInfo="{connectionInfo}" />
             </div>
           {/if}
         </svelte:fragment>
@@ -106,7 +106,7 @@ export function goToUpPage(): void {
       {#each recipe?.categories || [] as categoryId}
         <Card
           title="{categories.find(category => category.id === categoryId)?.name || '?'}"
-          classes="bg-charcoal-800 p-1 text-xs w-fit" />
+          classes="bg-[var(--pd-label-bg)] p-1 text-xs w-fit" />
       {/each}
     </div>
   </svelte:fragment>

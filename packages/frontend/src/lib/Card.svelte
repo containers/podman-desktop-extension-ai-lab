@@ -16,7 +16,7 @@ export let primaryBackground: string = 'bg-charcoal-800';
 </script>
 
 <a class="no-underline" href="{href}">
-  <div class="{classes} rounded-md flex-nowrap overflow-hidden" role="region">
+  <div class="{classes} rounded-md flex-nowrap overflow-hidden" role="region" aria-label="{title ?? 'Card'}">
     <div class="flex flex-row">
       <div class="flex flex-row items-start">
         {#if icon}

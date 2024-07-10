@@ -22,8 +22,14 @@ import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/ConversationRegistry';
-import type { Conversation, PendingChat, SystemPrompt, UserChat } from '@shared/src/models/IPlaygroundMessage';
-import { isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
+import type {
+  Conversation,
+  ErrorMessage,
+  PendingChat,
+  SystemPrompt,
+  UserChat,
+} from '@shared/src/models/IPlaygroundMessage';
+import { isChatMessage, isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
 import { getRandomString } from '../utils/randomUtils';
@@ -238,10 +244,27 @@ export class PlaygroundV2Manager implements Disposable {
       .catch((err: unknown) => {
         telemetry['errorMessage'] = `${String(err)}`;
         console.error('Something went wrong while creating model response', err);
+        this.processError(conversation.id, err).catch((err: unknown) => {
+          console.error('Something went wrong while processing stream', err);
+        });
       })
       .finally(() => {
         this.telemetry.logUsage('playground.submit', telemetry);
       });
+  }
+
+  private async processError(conversationId: string, error: unknown): Promise<void> {
+    let errorMessage = String(error);
+    if (errorMessage.endsWith('Please reduce the length of the messages or completion.')) {
+      errorMessage += ' Note: You should start a new playground.';
+    }
+    const messageId = this.#conversationRegistry.getUniqueId();
+    const start = Date.now();
+    this.#conversationRegistry.submit(conversationId, {
+      id: messageId,
+      timestamp: start,
+      error: errorMessage,
+    } as ErrorMessage);
   }
 
   /**
@@ -283,13 +306,15 @@ export class PlaygroundV2Manager implements Disposable {
     const conversation = this.#conversationRegistry.get(conversationId);
     if (!conversation) throw new Error(`conversation with id ${conversationId} does not exist.`);
 
-    return conversation.messages.map(
-      message =>
-        ({
-          name: undefined,
-          ...message,
-        }) as ChatCompletionMessageParam,
-    );
+    return conversation.messages
+      .filter(m => isChatMessage(m))
+      .map(
+        message =>
+          ({
+            name: undefined,
+            ...message,
+          }) as ChatCompletionMessageParam,
+      );
   }
 
   getConversations(): Conversation[] {

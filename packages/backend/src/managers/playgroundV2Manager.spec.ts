@@ -26,6 +26,7 @@ import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task, TaskState } from '@shared/src/models/ITask';
+import type { ChatMessage, ErrorMessage } from '@shared/src/models/IPlaygroundMessage';
 
 vi.mock('openai', () => ({
   default: vi.fn(),
@@ -185,7 +186,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
 
   // Wait for assistant message to be completed
   await vi.waitFor(() => {
-    expect(manager.getConversations()[0].messages[1].content).toBeDefined();
+    expect((manager.getConversations()[0].messages[1] as ChatMessage).content).toBeDefined();
   });
 
   const conversations = manager.getConversations();
@@ -269,6 +270,72 @@ test('submit should send options', async () => {
     temperature: 0.123,
     max_tokens: 45,
     top_p: 0.345,
+  });
+});
+
+test('error', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      status: 'running',
+      health: {
+        Status: 'healthy',
+      },
+      models: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyModelFile',
+          },
+        },
+      ],
+      connection: {
+        port: 8888,
+      },
+    } as unknown as InferenceServer,
+  ]);
+  const createMock = vi.fn().mockRejectedValue('Please reduce the length of the messages or completion.');
+  vi.mocked(OpenAI).mockReturnValue({
+    chat: {
+      completions: {
+        create: createMock,
+      },
+    },
+  } as unknown as OpenAI);
+
+  const manager = new PlaygroundV2Manager(webviewMock, inferenceManagerMock, taskRegistryMock, telemetryMock);
+  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
+
+  const date = new Date(2000, 1, 1, 13);
+  vi.setSystemTime(date);
+
+  const playgrounds = manager.getConversations();
+  await manager.submit(playgrounds[0].id, 'dummyUserInput');
+
+  // Wait for error message
+  await vi.waitFor(() => {
+    expect((manager.getConversations()[0].messages[1] as ErrorMessage).error).toBeDefined();
+  });
+
+  const conversations = manager.getConversations();
+
+  expect(conversations.length).toBe(1);
+  expect(conversations[0].messages.length).toBe(2);
+  expect(conversations[0].messages[0]).toStrictEqual({
+    content: 'dummyUserInput',
+    id: expect.anything(),
+    options: undefined,
+    role: 'user',
+    timestamp: expect.any(Number),
+  });
+  expect(conversations[0].messages[1]).toStrictEqual({
+    error: 'Please reduce the length of the messages or completion. Note: You should start a new playground.',
+    id: expect.anything(),
+    timestamp: expect.any(Number),
+  });
+
+  expect(webviewMock.postMessage).toHaveBeenLastCalledWith({
+    id: Messages.MSG_CONVERSATIONS_UPDATE,
+    body: conversations,
   });
 });
 
@@ -570,7 +637,7 @@ describe('system prompt', () => {
 
     // Wait for assistant message to be completed
     await vi.waitFor(() => {
-      expect(manager.getConversations()[0].messages[1].content).toBeDefined();
+      expect((manager.getConversations()[0].messages[1] as ChatMessage).content).toBeDefined();
     });
 
     expect(() => {

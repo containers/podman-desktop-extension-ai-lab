@@ -22,6 +22,7 @@ import type {
   ChatMessage,
   Choice,
   Conversation,
+  Message,
   PendingChat,
 } from '@shared/src/models/IPlaygroundMessage';
 import type { Disposable, Webview } from '@podman-desktop/api';
@@ -141,7 +142,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    * @param conversationId
    * @param message
    */
-  submit(conversationId: string, message: ChatMessage): void {
+  submit(conversationId: string, message: Message): void {
     const conversation = this.#conversations.get(conversationId);
     if (conversation === undefined) throw new Error(`conversation with id ${conversationId} does not exist.`);
 

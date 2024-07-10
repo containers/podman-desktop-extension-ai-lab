@@ -18,7 +18,6 @@
 
 import { vi, test, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import type { Task } from '@shared/src/models/ITask';
 import TasksBanner from '/@/lib/progress/TasksBanner.svelte';
 
 vi.mock('../../utils/client', async () => {
@@ -30,7 +29,7 @@ vi.mock('../../utils/client', async () => {
 const mocks = vi.hoisted(() => {
   return {
     // tasks store
-    getTasksMock: vi.fn<void[], Task[]>(),
+    getTasksMock: vi.fn(),
   };
 });
 

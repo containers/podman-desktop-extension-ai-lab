@@ -71,7 +71,7 @@
     "@types/node": "^20",
     "@types/postman-collection": "^3.5.10",
     "@types/winreg": "^1.2.36",
-    "vitest": "^2.0.1",
+    "vitest": "^2.0.2",
     "@types/mustache": "^4.2.5"
   }
 }

@@ -23,15 +23,21 @@ import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { InferenceType } from '@shared/src/models/IInference';
+import { VMType } from '@shared/src/models/IPodman';
+import type { PodmanConnection } from '../../managers/podmanConnection';
 
 export const LLAMA_CPP_INFERENCE_IMAGE =
   'ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat:0.4';
+export const LLAMA_CPP_INFERENCE_IMAGE_MAC_GPU = 'quay.io/ai-lab/llamacpp-python-vulkan:latest';
 
 export const SECOND: number = 1_000_000_000;
 
 export class LlamaCppPython extends InferenceProvider {
-  constructor(taskRegistry: TaskRegistry) {
+  #podmanConnection: PodmanConnection;
+
+  constructor(taskRegistry: TaskRegistry, podmanConnection: PodmanConnection) {
     super(taskRegistry, InferenceType.LLAMA_CPP, 'LLama-cpp (CPU)');
+    this.#podmanConnection = podmanConnection;
   }
 
   dispose() {}
@@ -41,6 +47,7 @@ export class LlamaCppPython extends InferenceProvider {
   protected async getContainerCreateOptions(
     config: InferenceServerConfig,
     imageInfo: ImageInfo,
+    vmType: VMType,
   ): Promise<ContainerCreateOptions> {
     if (config.modelsInfo.length === 0) throw new Error('Need at least one model info to start an inference server.');
 
@@ -56,6 +63,19 @@ export class LlamaCppPython extends InferenceProvider {
 
     const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
     envs.push(...getModelPropertiesForEnvironment(modelInfo));
+    const isMacGPU = vmType === VMType.LIBKRUN;
+    if (isMacGPU) {
+      envs.push('GPU_LAYERS=99');
+    }
+
+    const devices = isMacGPU
+      ? [
+          {
+            PathOnHost: '/dev/dri',
+            PathInContainer: '/dev/dri',
+          },
+        ]
+      : [];
 
     return {
       Image: imageInfo.Id,
@@ -78,6 +98,7 @@ export class LlamaCppPython extends InferenceProvider {
             },
           ],
         },
+        Devices: devices,
       },
       HealthCheck: {
         // must be the port INSIDE the container not the exposed one
@@ -97,17 +118,26 @@ export class LlamaCppPython extends InferenceProvider {
   async perform(config: InferenceServerConfig): Promise<BetterContainerCreateResult> {
     if (!this.enabled()) throw new Error('not enabled');
 
+    const vmType = await this.#podmanConnection.getVMType();
     // pull the image
     const imageInfo: ImageInfo = await this.pullImage(
       config.providerId,
-      config.image ?? LLAMA_CPP_INFERENCE_IMAGE,
+      config.image ?? this.getLlamaCppInferenceImage(vmType),
       config.labels,
     );
 
     // Get the container creation options
-    const containerCreateOptions: ContainerCreateOptions = await this.getContainerCreateOptions(config, imageInfo);
+    const containerCreateOptions: ContainerCreateOptions = await this.getContainerCreateOptions(
+      config,
+      imageInfo,
+      vmType,
+    );
 
     // Create the container
     return this.createContainer(imageInfo.engineId, containerCreateOptions, config.labels);
+  }
+
+  private getLlamaCppInferenceImage(vmType: VMType) {
+    return vmType === VMType.LIBKRUN ? LLAMA_CPP_INFERENCE_IMAGE_MAC_GPU : LLAMA_CPP_INFERENCE_IMAGE;
   }
 }

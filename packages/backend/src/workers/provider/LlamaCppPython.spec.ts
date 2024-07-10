@@ -23,6 +23,8 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 import type { ContainerProviderConnection, ImageInfo, ProviderContainerConnection } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
+import type { PodmanConnection } from '../../managers/podmanConnection';
+import { VMType } from '@shared/src/models/IPodman';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -66,6 +68,10 @@ const DummyImageInfo: ImageInfo = {
   engineId: 'dummy-engine-id',
 } as unknown as ImageInfo;
 
+const podmanConnection: PodmanConnection = {
+  getVMType: vi.fn().mockResolvedValue(VMType.WSL),
+} as unknown as PodmanConnection;
+
 beforeEach(() => {
   vi.resetAllMocks();
 
@@ -78,13 +84,13 @@ beforeEach(() => {
 });
 
 test('LlamaCppPython being the default, it should always be enable', () => {
-  const provider = new LlamaCppPython(taskRegistry);
+  const provider = new LlamaCppPython(taskRegistry, podmanConnection);
   expect(provider.enabled()).toBeTruthy();
 });
 
 describe('perform', () => {
   test('config without image should use defined image', async () => {
-    const provider = new LlamaCppPython(taskRegistry);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
 
     await provider.perform({
       port: 8000,
@@ -103,7 +109,7 @@ describe('perform', () => {
   });
 
   test('config without models should throw an error', async () => {
-    const provider = new LlamaCppPython(taskRegistry);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
 
     await expect(
       provider.perform({
@@ -117,7 +123,7 @@ describe('perform', () => {
   });
 
   test('config model without file should throw an error', async () => {
-    const provider = new LlamaCppPython(taskRegistry);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
 
     await expect(
       provider.perform({
@@ -135,7 +141,7 @@ describe('perform', () => {
   });
 
   test('valid config should produce expected CreateContainerOptions', async () => {
-    const provider = new LlamaCppPython(taskRegistry);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
 
     await provider.perform({
       port: 8888,
@@ -159,6 +165,7 @@ describe('perform', () => {
       },
       HostConfig: {
         AutoRemove: false,
+        Devices: [],
         Mounts: [
           {
             Source: 'dummy-path',
@@ -183,7 +190,7 @@ describe('perform', () => {
   });
 
   test('model properties should be made uppercased', async () => {
-    const provider = new LlamaCppPython(taskRegistry);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
 
     await provider.perform({
       port: 8000,

@@ -221,6 +221,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.modelsManager.getModelsInfo();
   }
 
+  getModelMetadata(modelId: string): Promise<Record<string, unknown>> {
+    return this.modelsManager.getModelMetadata(modelId);
+  }
+
   async getCatalog(): Promise<ApplicationCatalog> {
     return this.catalogManager.getCatalog();
   }

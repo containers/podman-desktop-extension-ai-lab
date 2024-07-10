@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
-import fs from 'fs';
+import fs from 'node:fs';
 import * as path from 'node:path';
 import { type Webview, fs as apiFs, type Disposable, env } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
@@ -34,6 +34,8 @@ import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/
 import { getFirstRunningMachineName } from '../utils/podman';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { hasValidSha } from '../utils/sha';
+import type { GGUFParseOutput } from '@huggingface/gguf';
+import { gguf } from '@huggingface/gguf';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
@@ -421,5 +423,35 @@ export class ModelsManager implements Disposable {
 
     // perform download
     return uploader.perform(model.id);
+  }
+
+  async getModelMetadata(modelId: string): Promise<Record<string, unknown>> {
+    const model = this.#models.get(modelId);
+    if (!model) throw new Error(`model with id ${modelId} does not exists.`);
+
+    const before = performance.now();
+    const data: Record<string, unknown> = {
+      'model-id': model.url ? modelId : 'imported', // filter imported models
+    };
+
+    try {
+      let result: GGUFParseOutput<{ strict: false }>;
+      if (this.isModelOnDisk(modelId)) {
+        const modelPath = path.normalize(getLocalModelFile(model));
+        result = await gguf(modelPath, { allowLocalFile: true });
+      } else if (model.url) {
+        result = await gguf(model.url);
+      } else {
+        throw new Error('cannot get model metadata');
+      }
+      return result.metadata;
+    } catch (err: unknown) {
+      data['error'] = err;
+      console.error(err);
+      throw err;
+    } finally {
+      data['duration'] = performance.now() - before;
+      this.telemetry.logUsage('get-metadata', data);
+    }
   }
 }

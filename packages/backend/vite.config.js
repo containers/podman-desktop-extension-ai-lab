@@ -49,6 +49,7 @@ const config = {
     rollupOptions: {
       external: [
         '@podman-desktop/api',
+        '@huggingface/gguf',
         ...builtinModules.flatMap(p => [p, `node:${p}`]),
       ],
       output: {

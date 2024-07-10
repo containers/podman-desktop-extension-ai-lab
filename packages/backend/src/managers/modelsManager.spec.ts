@@ -29,6 +29,8 @@ import * as utils from '../utils/utils';
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import * as sha from '../utils/sha';
+import type { GGUFParseOutput } from '@huggingface/gguf';
+import { gguf } from '@huggingface/gguf';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -44,6 +46,10 @@ const mocks = vi.hoisted(() => {
     getPodmanCliMock: vi.fn(),
   };
 });
+
+vi.mock('@huggingface/gguf', () => ({
+  gguf: vi.fn(),
+}));
 
 vi.mock('../utils/podman', () => ({
   getFirstRunningMachineName: mocks.getFirstRunningMachineNameMock,
@@ -831,5 +837,101 @@ describe('downloadModel', () => {
     // Only called once
     expect(mocks.performDownloadMock).toHaveBeenCalledTimes(1);
     expect(mocks.onEventDownloadMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('getModelMetadata', () => {
+  test('unknown model', async () => {
+    const manager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels: (): ModelInfo[] => [],
+      } as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+      cancellationTokenRegistryMock,
+    );
+
+    await expect(() => manager.getModelMetadata('unknown-model-id')).rejects.toThrowError(
+      'model with id unknown-model-id does not exists.',
+    );
+  });
+
+  test('remote model', async () => {
+    const manager = new ModelsManager(
+      'appdir',
+      {} as Webview,
+      {
+        getModels: (): ModelInfo[] => [
+          {
+            id: 'test-model-id',
+            url: 'dummy-url',
+            file: undefined,
+          } as unknown as ModelInfo,
+        ],
+        onCatalogUpdate: vi.fn(),
+      } as unknown as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+      cancellationTokenRegistryMock,
+    );
+
+    manager.init();
+
+    const fakeMetadata: Record<string, string> = {
+      hello: 'world',
+    };
+
+    vi.mocked(gguf).mockResolvedValue({
+      metadata: fakeMetadata,
+    } as unknown as GGUFParseOutput & { parameterCount: number });
+
+    const result = await manager.getModelMetadata('test-model-id');
+    expect(result).toStrictEqual(fakeMetadata);
+
+    expect(gguf).toHaveBeenCalledWith('dummy-url');
+  });
+
+  test('local model', async () => {
+    const manager = new ModelsManager(
+      'appdir',
+      {
+        postMessage: vi.fn(),
+      } as unknown as Webview,
+      {
+        getModels: (): ModelInfo[] => [
+          {
+            id: 'test-model-id',
+            url: 'dummy-url',
+            file: {
+              file: 'random',
+              path: 'dummy-path',
+            },
+          } as unknown as ModelInfo,
+        ],
+        onCatalogUpdate: vi.fn(),
+      } as unknown as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+      cancellationTokenRegistryMock,
+    );
+
+    manager.init();
+
+    const fakeMetadata: Record<string, string> = {
+      hello: 'world',
+    };
+
+    vi.mocked(gguf).mockResolvedValue({
+      metadata: fakeMetadata,
+    } as unknown as GGUFParseOutput & { parameterCount: number });
+
+    const result = await manager.getModelMetadata('test-model-id');
+    expect(result).toStrictEqual(fakeMetadata);
+
+    expect(gguf).toHaveBeenCalledWith(path.join('dummy-path', 'random'), {
+      allowLocalFile: true,
+    });
   });
 });

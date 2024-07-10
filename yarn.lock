@@ -281,6 +281,11 @@
   dependencies:
     "@fortawesome/fontawesome-common-types" "6.5.2"
 
+"@huggingface/gguf@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@huggingface/gguf/-/gguf-0.1.7.tgz#0f5afab60f182cf27341738bff794750cacb5876"
+  integrity sha512-RQN1WwuusLjiBTNFuAJCUlhRejIhKt395ywnTmc+Jy8dajGwk8k7EsfgtxVqkBSTWy9D55XzCII7jUjkHEv3JA==
+
 "@humanwhocodes/config-array@^0.11.14":
   version "0.11.14"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.14.tgz#d78e481a039f7566ecc9660b4ea7fe6b1fec442b"

@@ -55,6 +55,7 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
+    "@huggingface/gguf": "^0.1.7",
     "isomorphic-git": "^1.27.1",
     "mustache": "^4.2.0",
     "openai": "^4.52.3",

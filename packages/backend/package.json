@@ -58,7 +58,7 @@
     "@huggingface/gguf": "^0.1.7",
     "isomorphic-git": "^1.27.1",
     "mustache": "^4.2.0",
-    "openai": "^4.52.5",
+    "openai": "^4.52.7",
     "postman-code-generators": "^1.11.0",
     "postman-collection": "^4.4.0",
     "semver": "^7.6.2",

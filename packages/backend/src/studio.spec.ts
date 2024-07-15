@@ -18,7 +18,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { afterEach, beforeEach, expect, test, vi, describe } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi, describe, type MockInstance } from 'vitest';
 import { Studio } from './studio';
 import { type ExtensionContext, EventEmitter, version } from '@podman-desktop/api';
 
@@ -126,7 +126,7 @@ test('check activate', async () => {
   expect(version).toBe('1.8.0');
   mocks.listContainers.mockReturnValue([]);
   mocks.getContainerConnections.mockReturnValue([]);
-  vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
+  (vi.spyOn(fs.promises, 'readFile') as unknown as MockInstance<() => Promise<string>>).mockImplementation(() => {
     return Promise.resolve('<html></html>');
   });
   await studio.activate();

@@ -24,6 +24,7 @@ export interface IGPUInfo {
 
 export enum GPUVendor {
   NVIDIA = 'NVIDIA',
+  APPLE = 'Apple',
   INTEL = 'Intel Corporation',
   UNKNOWN = 'unknown',
 }

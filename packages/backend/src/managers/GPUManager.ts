@@ -54,6 +54,8 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
         return GPUVendor.INTEL;
       case 'NVIDIA':
         return GPUVendor.NVIDIA;
+      case 'Apple':
+        return GPUVendor.APPLE;
       default:
         return GPUVendor.UNKNOWN;
     }

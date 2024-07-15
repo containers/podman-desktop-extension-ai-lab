@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, type MockInstance, test, vi } from 'vitest';
 import { ApplicationManager, CONFIG_FILENAME, type ImageInfo } from './applicationManager';
 import type { GitManager } from './gitManager';
 import os from 'os';
@@ -182,20 +182,22 @@ describe('pullApplication', () => {
       }
       return false;
     });
-    vi.spyOn(fs, 'statSync').mockImplementation((path: PathLike): fs.Stats => {
-      path = path.toString();
-      if (path.endsWith('recipe1')) {
-        const stat = new fs.Stats();
-        stat.isDirectory = () => true;
-        return stat;
-      } else if (path.endsWith('ai-lab.yaml')) {
-        const stat = new fs.Stats();
-        stat.isDirectory = () => false;
-        return stat;
-      }
-      throw new Error('should never be reached');
-    });
-    vi.spyOn(fs, 'readFileSync').mockImplementation(() => {
+    (vi.spyOn(fs, 'statSync') as unknown as MockInstance<(path: PathLike) => fs.Stats>).mockImplementation(
+      (path: PathLike): fs.Stats => {
+        path = path.toString();
+        if (path.endsWith('recipe1')) {
+          const stat = new fs.Stats();
+          stat.isDirectory = () => true;
+          return stat;
+        } else if (path.endsWith('ai-lab.yaml')) {
+          const stat = new fs.Stats();
+          stat.isDirectory = () => false;
+          return stat;
+        }
+        throw new Error('should never be reached');
+      },
+    );
+    (vi.spyOn(fs, 'readFileSync') as unknown as MockInstance<() => string>).mockImplementation(() => {
       return '';
     });
     mocks.parseYamlFileMock.mockReturnValue({

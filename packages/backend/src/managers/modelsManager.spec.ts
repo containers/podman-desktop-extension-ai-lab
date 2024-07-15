@@ -250,7 +250,7 @@ test('getModelsInfo should return an empty array if the models folder does not e
 test('getLocalModelsFromDisk should return undefined Date and size when stat fail', async () => {
   const now = new Date();
   mockFiles(now);
-  const statSyncSpy = vi.spyOn(fs, 'statSync');
+  const statSyncSpy = vi.spyOn(fs, 'statSync') as unknown as MockInstance<(path: PathLike) => Stats>;
   statSyncSpy.mockImplementation((path: PathLike) => {
     if (`${path}`.endsWith('model-id-1')) throw new Error('random-error');
     return { isDirectory: () => true } as Stats;
@@ -298,7 +298,7 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
 test('getLocalModelsFromDisk should skip folders containing tmp files', async () => {
   const now = new Date();
   mockFiles(now);
-  const statSyncSpy = vi.spyOn(fs, 'statSync');
+  const statSyncSpy = vi.spyOn(fs, 'statSync') as unknown as MockInstance<(path: PathLike) => Stats>;
   statSyncSpy.mockImplementation((path: PathLike) => {
     if (`${path}`.endsWith('model-id-1')) throw new Error('random-error');
     return { isDirectory: () => true } as Stats;

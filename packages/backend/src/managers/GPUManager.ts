@@ -49,7 +49,7 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
   }
 
   protected getVendor(raw: string): GPUVendor {
-    switch(raw) {
+    switch (raw) {
       case 'Intel Corporation':
         return GPUVendor.INTEL;
       case 'NVIDIA':

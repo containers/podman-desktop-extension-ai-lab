@@ -64,36 +64,44 @@ test('no controller should return empty array', async () => {
 
 test('intel controller should return intel vendor', async () => {
   vi.mocked(graphics).mockResolvedValue({
-    controllers: [{
-      vendor: 'Intel Corporation',
-      model: 'intel model',
-      vram: 1024,
-    } as unknown as Systeminformation.GraphicsControllerData],
+    controllers: [
+      {
+        vendor: 'Intel Corporation',
+        model: 'intel model',
+        vram: 1024,
+      } as unknown as Systeminformation.GraphicsControllerData,
+    ],
     displays: [],
   });
 
   const manager = new GPUManager(webviewMock);
-  expect(await manager.collectGPUs()).toStrictEqual([{
-    vendor: GPUVendor.INTEL,
-    model: 'intel model',
-    vram: 1024,
-  }]);
+  expect(await manager.collectGPUs()).toStrictEqual([
+    {
+      vendor: GPUVendor.INTEL,
+      model: 'intel model',
+      vram: 1024,
+    },
+  ]);
 });
 
 test('NVIDIA controller should return intel vendor', async () => {
   vi.mocked(graphics).mockResolvedValue({
-    controllers: [{
-      vendor: 'NVIDIA',
-      model: 'NVIDIA GeForce GTX 1060 6GB',
-      vram: 6144,
-    } as unknown as Systeminformation.GraphicsControllerData],
+    controllers: [
+      {
+        vendor: 'NVIDIA',
+        model: 'NVIDIA GeForce GTX 1060 6GB',
+        vram: 6144,
+      } as unknown as Systeminformation.GraphicsControllerData,
+    ],
     displays: [],
   });
 
   const manager = new GPUManager(webviewMock);
-  expect(await manager.collectGPUs()).toStrictEqual([{
-    vendor: GPUVendor.NVIDIA,
-    model: 'NVIDIA GeForce GTX 1060 6GB',
-    vram: 6144,
-  }]);
+  expect(await manager.collectGPUs()).toStrictEqual([
+    {
+      vendor: GPUVendor.NVIDIA,
+      model: 'NVIDIA GeForce GTX 1060 6GB',
+      vram: 6144,
+    },
+  ]);
 });

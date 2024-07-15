@@ -16,9 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { expect, test, vi, beforeEach } from 'vitest';
-import { env } from '@podman-desktop/api';
 import type { Webview } from '@podman-desktop/api';
 import { GPUManager } from './GPUManager';
+import { graphics, type Systeminformation } from 'systeminformation';
+import { GPUVendor } from '@shared/src/models/IGPUInfo';
 
 vi.mock('../utils/inferenceUtils', () => ({
   getProviderContainerConnection: vi.fn(),
@@ -33,8 +34,8 @@ vi.mock('@podman-desktop/api', async () => {
   };
 });
 
-vi.mock('fast-xml-parser', () => ({
-  XMLParser: vi.fn(),
+vi.mock('systeminformation', () => ({
+  graphics: vi.fn(),
 }));
 
 const webviewMock = {
@@ -51,11 +52,48 @@ test('post constructor should have no items', () => {
   expect(manager.getAll().length).toBe(0);
 });
 
-test('non-windows host should throw error', async () => {
-  vi.mocked(env).isWindows = false;
+test('no controller should return empty array', async () => {
+  vi.mocked(graphics).mockResolvedValue({
+    controllers: [],
+    displays: [],
+  });
 
   const manager = new GPUManager(webviewMock);
-  await expect(() => {
-    return manager.collectGPUs();
-  }).rejects.toThrowError();
+  expect(await manager.collectGPUs()).toHaveLength(0);
+});
+
+test('intel controller should return intel vendor', async () => {
+  vi.mocked(graphics).mockResolvedValue({
+    controllers: [{
+      vendor: 'Intel Corporation',
+      model: 'intel model',
+      vram: 1024,
+    } as unknown as Systeminformation.GraphicsControllerData],
+    displays: [],
+  });
+
+  const manager = new GPUManager(webviewMock);
+  expect(await manager.collectGPUs()).toStrictEqual([{
+    vendor: GPUVendor.INTEL,
+    model: 'intel model',
+    vram: 1024,
+  }]);
+});
+
+test('NVIDIA controller should return intel vendor', async () => {
+  vi.mocked(graphics).mockResolvedValue({
+    controllers: [{
+      vendor: 'NVIDIA',
+      model: 'NVIDIA GeForce GTX 1060 6GB',
+      vram: 6144,
+    } as unknown as Systeminformation.GraphicsControllerData],
+    displays: [],
+  });
+
+  const manager = new GPUManager(webviewMock);
+  expect(await manager.collectGPUs()).toStrictEqual([{
+    vendor: GPUVendor.NVIDIA,
+    model: 'NVIDIA GeForce GTX 1060 6GB',
+    vram: 6144,
+  }]);
 });

@@ -62,16 +62,15 @@
     "postman-code-generators": "^1.11.0",
     "postman-collection": "^4.4.0",
     "semver": "^7.6.2",
-    "winreg": "^1.2.5",
+    "systeminformation": "^5.22.11",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@podman-desktop/api": "1.10.3",
     "@types/js-yaml": "^4.0.9",
+    "@types/mustache": "^4.2.5",
     "@types/node": "^20",
     "@types/postman-collection": "^3.5.10",
-    "@types/winreg": "^1.2.36",
-    "vitest": "^2.0.3",
-    "@types/mustache": "^4.2.5"
+    "vitest": "^2.0.3"
   }
 }

@@ -18,5 +18,12 @@
 
 export interface IGPUInfo {
   model: string;
+  vendor: GPUVendor;
   vram: number | undefined;
+}
+
+export enum GPUVendor {
+  NVIDIA = 'NVIDIA',
+  INTEL = 'Intel Corporation',
+  UNKNOWN = 'unknown',
 }

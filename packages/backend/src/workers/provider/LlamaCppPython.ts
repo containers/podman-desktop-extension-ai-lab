@@ -57,8 +57,8 @@ export class LlamaCppPython extends InferenceProvider {
   protected async getContainerCreateOptions(
     config: InferenceServerConfig,
     imageInfo: ImageInfo,
-    gpu?: IGPUInfo,
     vmType: VMType,
+    gpu?: IGPUInfo,
   ): Promise<ContainerCreateOptions> {
     if (config.modelsInfo.length === 0) throw new Error('Need at least one model info to start an inference server.');
 
@@ -89,7 +89,7 @@ export class LlamaCppPython extends InferenceProvider {
     let cmd: string[] = [];
     let user: string | undefined = undefined;
 
-    if(gpu) {
+    if (gpu) {
       // mounting
 
       switch (vmType) {
@@ -123,7 +123,7 @@ export class LlamaCppPython extends InferenceProvider {
       }
 
       // adding gpu capabilities
-      deviceRequests.push( {
+      deviceRequests.push({
         Capabilities: [['gpu']],
         Count: -1, // -1: all
       });
@@ -194,15 +194,15 @@ export class LlamaCppPython extends InferenceProvider {
     const containerCreateOptions: ContainerCreateOptions = await this.getContainerCreateOptions(
       config,
       imageInfo,
-      gpu,
       vmType,
+      gpu,
     );
 
     // Create the container
     return this.createContainer(imageInfo.engineId, containerCreateOptions, config.labels);
   }
 
-  protected getLlamaCppInferenceImage(vmType: VMType, gpu?: IGPUInfo) {
+  protected getLlamaCppInferenceImage(vmType: VMType, gpu?: IGPUInfo): string {
     switch (vmType) {
       case VMType.WSL:
         return gpu?.model.includes('nvidia') ? LLAMA_CPP_CUDA : LLAMA_CPP_CPU;

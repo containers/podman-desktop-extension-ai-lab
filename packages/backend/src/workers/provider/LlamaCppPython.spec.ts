@@ -23,7 +23,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 import type { ContainerProviderConnection, ImageInfo, ProviderContainerConnection } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
-import { GPUManager } from '../../managers/GPUManager';
+import type { GPUManager } from '../../managers/GPUManager';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 
@@ -44,9 +44,7 @@ const taskRegistry: TaskRegistry = {
   updateTask: vi.fn(),
 } as unknown as TaskRegistry;
 
-const gpuManager: GPUManager = {
-
-} as unknown as GPUManager;
+const gpuManager: GPUManager = {} as unknown as GPUManager;
 
 const DummyModel: ModelInfo = {
   name: 'dummy model',
@@ -74,12 +72,13 @@ const DummyImageInfo: ImageInfo = {
 } as unknown as ImageInfo;
 
 const podmanConnection: PodmanConnection = {
-  getVMType: vi.fn().mockResolvedValue(VMType.WSL),
+  getVMType: vi.fn(),
 } as unknown as PodmanConnection;
 
 beforeEach(() => {
   vi.resetAllMocks();
 
+  vi.mocked(podmanConnection.getVMType).mockResolvedValue(VMType.WSL);
   vi.mocked(getProviderContainerConnection).mockReturnValue(DummyProviderContainerConnection);
   vi.mocked(getImageInfo).mockResolvedValue(DummyImageInfo);
   vi.mocked(taskRegistry.createTask).mockReturnValue({ id: 'dummy-task-id', name: '', labels: {}, state: 'loading' });

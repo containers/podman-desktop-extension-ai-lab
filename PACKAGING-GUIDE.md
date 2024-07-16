@@ -16,7 +16,7 @@ represented in the JSON file as an array.
 
 The catalog is `versioned`. Current version can be found in [ai.json](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json#L2).
 
-> :warning:when the version of the catalog is undefined or different from the current, the user-catalog will be ignored.
+> :warning: when the version of the catalog is undefined or different from the current, the user-catalog will be ignored.
 
 #### Categories
 

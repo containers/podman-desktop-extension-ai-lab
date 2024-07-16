@@ -99,7 +99,12 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     }
 
     // merging default catalog with user catalog
-    this.catalog = merge(sanitize(defaultCatalog), sanitize({ ...content, version: userCatalogFormat }));
+    try {
+      this.catalog = merge(sanitize(defaultCatalog), sanitize({ ...content, version: userCatalogFormat }));
+    } catch (err: unknown) {
+      console.warn(err);
+      this.loadDefaultCatalog();
+    }
 
     this.notify();
   }

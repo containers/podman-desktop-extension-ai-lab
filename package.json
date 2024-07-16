@@ -59,10 +59,6 @@
       "tests/*"
     ]
   },
-  "resolutions": {
-    "string-width": "^4.2.0",
-    "wrap-ansi": "^7.0.0"
-  },
   "dependencies": {
     "js-yaml": "^4.1.0"
   }

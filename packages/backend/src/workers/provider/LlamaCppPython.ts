@@ -24,7 +24,7 @@ import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { InferenceType } from '@shared/src/models/IInference';
 import type { GPUManager } from '../../managers/GPUManager';
-import type { IGPUInfo } from '@shared/src/models/IGPUInfo';
+import { GPUVendor, type IGPUInfo } from '@shared/src/models/IGPUInfo';
 import { VMType } from '@shared/src/models/IPodman';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
@@ -207,7 +207,7 @@ export class LlamaCppPython extends InferenceProvider {
   protected getLlamaCppInferenceImage(vmType: VMType, gpu?: IGPUInfo): string {
     switch (vmType) {
       case VMType.WSL:
-        return gpu?.model.includes('nvidia') ? LLAMA_CPP_CUDA : LLAMA_CPP_CPU;
+        return gpu?.vendor === GPUVendor.NVIDIA ? LLAMA_CPP_CUDA : LLAMA_CPP_CPU;
       case VMType.LIBKRUN:
         return gpu ? LLAMA_CPP_MAC_GPU : LLAMA_CPP_CPU;
       // no GPU support

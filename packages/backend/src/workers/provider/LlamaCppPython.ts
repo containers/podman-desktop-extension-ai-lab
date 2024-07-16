@@ -27,6 +27,7 @@ import type { GPUManager } from '../../managers/GPUManager';
 import type { IGPUInfo } from '@shared/src/models/IGPUInfo';
 import { VMType } from '@shared/src/models/IPodman';
 import type { PodmanConnection } from '../../managers/podmanConnection';
+import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 
 export const LLAMA_CPP_CPU = 'ghcr.io/containers/llamacpp_python:latest';
 export const LLAMA_CPP_CUDA = 'ghcr.io/containers/llamacpp_python_cuda:latest';
@@ -46,6 +47,7 @@ export class LlamaCppPython extends InferenceProvider {
     taskRegistry: TaskRegistry,
     private podmanConnection: PodmanConnection,
     private gpuManager: GPUManager,
+    private configurationRegistry: ConfigurationRegistry,
   ) {
     super(taskRegistry, InferenceType.LLAMA_CPP, 'LLama-cpp');
   }
@@ -172,8 +174,8 @@ export class LlamaCppPython extends InferenceProvider {
 
     let gpu: IGPUInfo | undefined = undefined;
 
-    // get the first GPU if requested
-    if ((config.gpuLayers ?? 0) !== 0) {
+    // get the first GPU if option is enabled
+    if (this.configurationRegistry.getExtensionConfiguration().experimentalGPU) {
       const gpus: IGPUInfo[] = await this.gpuManager.collectGPUs();
       if (gpus.length === 0) throw new Error('no gpu was found.');
       if (gpus.length > 1)
@@ -207,7 +209,7 @@ export class LlamaCppPython extends InferenceProvider {
       case VMType.WSL:
         return gpu?.model.includes('nvidia') ? LLAMA_CPP_CUDA : LLAMA_CPP_CPU;
       case VMType.LIBKRUN:
-        return LLAMA_CPP_MAC_GPU;
+        return gpu ? LLAMA_CPP_MAC_GPU : LLAMA_CPP_CPU;
       // no GPU support
       case VMType.QEMU:
       case VMType.APPLEHV:

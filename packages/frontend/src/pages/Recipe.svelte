@@ -12,7 +12,7 @@ import { faRocket } from '@fortawesome/free-solid-svg-icons';
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import Fa from 'svelte-fa';
 import Route from '/@/Route.svelte';
-import ApplicationTable from '/@/lib/ApplicationTable.svelte';
+import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';
 
 export let recipeId: string;
 

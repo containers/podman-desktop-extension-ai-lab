@@ -1,9 +1,9 @@
 <script lang="ts">
 import { NavPage, EmptyScreen } from '@podman-desktop/ui-svelte';
-import ApplicationTable from '/@/lib/ApplicationTable.svelte';
 import { router } from 'tinro';
 import { faRocket } from '@fortawesome/free-solid-svg-icons';
 import TasksBanner from '/@/lib/progress/TasksBanner.svelte';
+import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';
 
 const openApplicationCatalog = () => {
   router.goto('/recipes');

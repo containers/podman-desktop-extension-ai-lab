@@ -1,11 +1,11 @@
 <script lang="ts">
-import { applicationStates } from '../stores/application-states';
-import ColumnActions from '../lib/table/application/ColumnActions.svelte';
-import ColumnStatus from '../lib/table/application/ColumnStatus.svelte';
-import ColumnRecipe from '../lib/table/application/ColumnRecipe.svelte';
-import ColumnModel from '../lib/table/application/ColumnModel.svelte';
-import ColumnPod from '../lib/table/application/ColumnPod.svelte';
-import ColumnAge from '../lib/table/application/ColumnAge.svelte';
+import { applicationStates } from '/@/stores/application-states';
+import ColumnActions from './ColumnActions.svelte';
+import ColumnStatus from './ColumnStatus.svelte';
+import ColumnRecipe from './ColumnRecipe.svelte';
+import ColumnModel from './ColumnModel.svelte';
+import ColumnPod from './ColumnPod.svelte';
+import ColumnAge from './ColumnAge.svelte';
 import { onMount } from 'svelte';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';

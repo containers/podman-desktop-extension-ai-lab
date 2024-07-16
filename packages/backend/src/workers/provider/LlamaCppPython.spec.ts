@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, describe, test, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { LLAMA_CPP_CPU, LLAMA_CPP_CUDA, LlamaCppPython, SECOND } from './LlamaCppPython';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -27,6 +27,7 @@ import type { GPUManager } from '../../managers/GPUManager';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
+import { GPUVendor } from '@shared/src/models/IGPUInfo';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -253,6 +254,7 @@ describe('perform', () => {
       {
         vram: 1024,
         model: 'nvidia',
+        vendor: GPUVendor.NVIDIA,
       },
     ]);
 

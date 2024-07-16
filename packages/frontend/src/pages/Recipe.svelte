@@ -1,6 +1,6 @@
 <script lang="ts">
 import { studioClient } from '/@/utils/client';
-import { DetailsPage } from '@podman-desktop/ui-svelte';
+import { DetailsPage, Tab } from '@podman-desktop/ui-svelte';
 import Card from '/@/lib/Card.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import { getIcon } from '/@/utils/categoriesUtils';
@@ -9,8 +9,10 @@ import RecipeDetails from '/@/lib/RecipeDetails.svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 import { router } from 'tinro';
 import { faRocket } from '@fortawesome/free-solid-svg-icons';
-import { Button } from '@podman-desktop/ui-svelte';
+import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import Fa from 'svelte-fa';
+import Route from '/@/Route.svelte';
+import ApplicationTable from '/@/lib/ApplicationTable.svelte';
 
 export let recipeId: string;
 
@@ -42,20 +44,33 @@ export function goToUpPage(): void {
       <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{getIcon(recipe?.icon)}" />
     </div>
   </svelte:fragment>
+  <svelte:fragment slot="tabs">
+    <Tab title="Summary" url="/recipe/{recipeId}" selected="{$router.path === `/recipe/${recipeId}`}" />
+    <Tab title="Running" url="/recipe/{recipeId}/running" selected="{$router.path === `/recipe/${recipeId}/running`}" />
+  </svelte:fragment>
   <svelte:fragment slot="actions">
     <Button on:click="{() => router.goto(`/recipe/${recipeId}/start`)}" icon="{faRocket}" aria-label="Start recipe"
       >Start</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="bg-[var(--pd-content-bg)] h-full overflow-y-auto">
-      <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">
-        <svelte:fragment slot="content">
-          <MarkdownRenderer source="{recipe?.readme}" />
-        </svelte:fragment>
-        <svelte:fragment slot="details">
-          <RecipeDetails recipeId="{recipeId}" />
-        </svelte:fragment>
-      </ContentDetailsLayout>
+      <Route path="/">
+        <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">
+          <svelte:fragment slot="content">
+            <MarkdownRenderer source="{recipe?.readme}" />
+          </svelte:fragment>
+          <svelte:fragment slot="details">
+            <RecipeDetails recipeId="{recipeId}" />
+          </svelte:fragment>
+        </ContentDetailsLayout>
+      </Route>
+      <Route path="/running">
+        <ApplicationTable filter="{items => items.filter(item => item.recipeId === recipeId)}">
+          <svelte:fragment slot="empty-screen">
+            <EmptyScreen icon="{faRocket}" title="No application running" message="There is no AI App running" />
+          </svelte:fragment>
+        </ApplicationTable>
+      </Route>
     </div>
   </svelte:fragment>
   <svelte:fragment slot="subtitle">

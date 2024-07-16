@@ -244,7 +244,10 @@ export function goToUpPage(): void {
           <footer>
             <div class="w-full flex flex-col">
               {#if completed}
-                <Button icon="{faUpRightFromSquare}" on:click="{() => router.goto(`/recipe/${recipeId}/running`)}">
+                <Button
+                  icon="{faUpRightFromSquare}"
+                  title="Open details"
+                  on:click="{() => router.goto(`/recipe/${recipeId}/running`)}">
                   Open details
                 </Button>
               {:else}

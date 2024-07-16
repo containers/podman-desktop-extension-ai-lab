@@ -146,7 +146,7 @@ test('expect filter to work as expected', async () => {
   ]);
 
   const { container } = render(ApplicationTable, {
-    filter: items => items.filter(item => item.recipeId !== 'recipe-id-2'),
+    filter: (items: ApplicationState[]) => items.filter((item: ApplicationState) => item.recipeId !== 'recipe-id-2'),
   });
 
   const pod1 = within(container).getByText('Test Pod 1');

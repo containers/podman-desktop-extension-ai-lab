@@ -16,12 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { type Disposable, type Webview } from '@podman-desktop/api';
-import type { IGPUInfo } from '@shared/src/models/IGPUInfo';
+import { GPUVendor, type IGPUInfo } from '@shared/src/models/IGPUInfo';
 import { Publisher } from '../utils/Publisher';
 import { Messages } from '@shared/Messages';
-import type { IWorker } from '../workers/IWorker';
-import { WinGPUDetector } from '../workers/gpu/WinGPUDetector';
-import { platform } from 'node:os';
+import { graphics } from 'systeminformation';
 
 /**
  * @experimental
@@ -29,13 +27,10 @@ import { platform } from 'node:os';
 export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
   #gpus: IGPUInfo[];
 
-  #workers: IWorker<void, IGPUInfo[]>[];
-
   constructor(webview: Webview) {
     super(webview, Messages.MSG_GPUS_UPDATE, () => this.getAll());
     // init properties
     this.#gpus = [];
-    this.#workers = [new WinGPUDetector()];
   }
 
   dispose(): void {}
@@ -45,10 +40,24 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
   }
 
   async collectGPUs(): Promise<IGPUInfo[]> {
-    const worker = this.#workers.find(worker => worker.enabled());
-    if (worker === undefined) throw new Error(`no worker enable to collect GPU on platform ${platform}`);
+    const { controllers } = await graphics();
+    return controllers.map(controller => ({
+      vendor: this.getVendor(controller.vendor),
+      model: controller.model,
+      vram: controller.vram ?? undefined,
+    }));
+  }
 
-    this.#gpus = await worker.perform();
-    return this.getAll();
+  protected getVendor(raw: string): GPUVendor {
+    switch (raw) {
+      case 'Intel Corporation':
+        return GPUVendor.INTEL;
+      case 'NVIDIA':
+        return GPUVendor.NVIDIA;
+      case 'Apple':
+        return GPUVendor.APPLE;
+      default:
+        return GPUVendor.UNKNOWN;
+    }
   }
 }

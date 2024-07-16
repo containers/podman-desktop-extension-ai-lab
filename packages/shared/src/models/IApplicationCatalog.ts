@@ -21,7 +21,7 @@ import type { ModelInfo } from './IModelInfo';
 import type { Recipe } from './IRecipe';
 
 export interface ApplicationCatalog {
-  version: string;
+  version?: string;
   recipes: Recipe[];
   models: ModelInfo[];
   categories: Category[];

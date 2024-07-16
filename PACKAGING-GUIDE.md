@@ -14,6 +14,10 @@ Any change done to this file will also be automatically loaded by AI Lab.
 The catalog file has three main elements: categories, models and recipes. Each of these elements is
 represented in the JSON file as an array.
 
+The catalog is `versioned`. Current version can be found in [ai.json](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json#L2).
+
+> :warning:when the version of the catalog is undefined or different from the current, the user-catalog will be ignored.
+
 #### Categories
 
 This is the top level construct of the catalog UI. Recipes are grouped into categories. A category

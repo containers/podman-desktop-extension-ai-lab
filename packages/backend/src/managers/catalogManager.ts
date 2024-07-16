@@ -28,6 +28,7 @@ import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { InferenceType } from '@shared/src/models/IInference';
+import { CatalogFormat, merge, sanitize } from '../utils/catalogUtils';
 
 export type catalogUpdateHandle = () => void;
 
@@ -45,6 +46,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     super(webview, Messages.MSG_NEW_CATALOG_STATE, () => this.getCatalog());
     // We start with an empty catalog, for the methods to work before the catalog is loaded
     this.catalog = {
+      version: CatalogFormat.CURRENT,
       categories: [],
       models: [],
       recipes: [],
@@ -59,12 +61,13 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
    */
   init(): void {
     // Creating a json watcher
-    const jsonWatcher: JsonWatcher<ApplicationCatalog> = new JsonWatcher(this.getUserCatalogPath(), {
+    const jsonWatcher: JsonWatcher<unknown> = new JsonWatcher(this.getUserCatalogPath(), {
+      version: CatalogFormat.CURRENT,
       recipes: [],
       models: [],
       categories: [],
     });
-    jsonWatcher.onContentUpdated(content => this.onCatalogUpdated(content));
+    jsonWatcher.onContentUpdated(content => this.onUserCatalogUpdate(content));
     jsonWatcher.init();
 
     this.#disposables.push(jsonWatcher);
@@ -75,68 +78,30 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     this.notify();
   }
 
-  private onCatalogUpdated(content: ApplicationCatalog): void {
-    if (typeof content !== 'object' || !('models' in content) || typeof content.models !== 'object') {
+  private onUserCatalogUpdate(content: unknown): void {
+    if (!content || typeof content !== 'object') {
       this.loadDefaultCatalog();
       return;
     }
 
-    const sanitize = this.sanitize(content);
-    this.catalog = {
-      models: [
-        ...defaultCatalog.models.filter(a => !sanitize.models.some(b => a.id === b.id)),
-        ...sanitize.models,
-      ] as ModelInfo[],
-      recipes: [...defaultCatalog.recipes.filter(a => !sanitize.recipes.some(b => a.id === b.id)), ...sanitize.recipes],
-      categories: [
-        ...defaultCatalog.categories.filter(a => !sanitize.categories.some(b => a.id === b.id)),
-        ...sanitize.categories,
-      ],
-    };
+    // Get the user-catalog version
+    let userCatalogFormat: string = CatalogFormat.UNKNOWN;
+    if ('version' in content && typeof content.version === 'string') {
+      userCatalogFormat = content.version;
+    }
+
+    if (userCatalogFormat !== CatalogFormat.CURRENT) {
+      this.loadDefaultCatalog();
+      console.error(
+        `the user-catalog provided is using version ${userCatalogFormat} expected ${CatalogFormat.CURRENT}. You can follow the migration guide.`,
+      );
+      return;
+    }
+
+    // merging default catalog with user catalog
+    this.catalog = merge(sanitize(defaultCatalog), sanitize({ ...content, version: userCatalogFormat }));
 
     this.notify();
-  }
-
-  private sanitize(content: unknown): ApplicationCatalog {
-    const output: ApplicationCatalog = {
-      recipes: [],
-      models: [],
-      categories: [],
-    };
-
-    if (!content || typeof content !== 'object') {
-      console.warn('malformed application catalog content');
-      return output;
-    }
-
-    // ensure user's models are properly formatted
-    if ('models' in content && typeof content.models === 'object' && Array.isArray(content.models)) {
-      output.models = content.models.map(model => {
-        // parse the creation date properly
-        if (model.file?.creation) {
-          return {
-            ...model,
-            file: {
-              ...model.file,
-              creation: new Date(model.file.creation),
-            },
-          };
-        }
-        return model;
-      });
-    }
-
-    // ensure user's recipes are properly formatted
-    if ('recipes' in content && typeof content.recipes === 'object' && Array.isArray(content.recipes)) {
-      output.recipes = content.recipes;
-    }
-
-    // ensure user's categories are properly formatted
-    if ('categories' in content && typeof content.categories === 'object' && Array.isArray(content.categories)) {
-      output.categories = content.categories;
-    }
-
-    return output;
   }
 
   override notify() {
@@ -194,9 +159,10 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     // check if we already have an existing user's catalog
     if (fs.existsSync(userCatalogPath)) {
       const raw = await promises.readFile(userCatalogPath, 'utf-8');
-      content = this.sanitize(JSON.parse(raw));
+      content = sanitize(JSON.parse(raw));
     } else {
       content = {
+        version: CatalogFormat.CURRENT,
         recipes: [],
         models: [],
         categories: [],
@@ -245,7 +211,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     }
 
     const raw = await promises.readFile(userCatalogPath, 'utf-8');
-    const content = this.sanitize(JSON.parse(raw));
+    const content = sanitize(JSON.parse(raw));
 
     return promises.writeFile(
       userCatalogPath,

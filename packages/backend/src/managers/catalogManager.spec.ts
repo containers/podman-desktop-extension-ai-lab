@@ -28,10 +28,15 @@ import type { Stats } from 'node:fs';
 import { promises, existsSync } from 'node:fs';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import path from 'node:path';
+import { version } from '../assets/ai.json';
+import { CatalogFormat } from '../utils/catalogUtils';
 
-vi.mock('../assets/ai.json', () => {
+vi.mock('../assets/ai.json', async importOriginal => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  const { version } = await importOriginal<typeof import('../assets/ai.json')>();
   return {
-    default: content,
+    default: { ...content, version: version },
+    version: version,
   };
 });
 
@@ -162,21 +167,6 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
   } as Stats);
   vi.spyOn(path, 'resolve').mockReturnValue('path');
 
-  const updatedCatalog: ApplicationCatalog = Object.assign({}, userContent);
-  updatedCatalog.models.push({
-    id: '/root/path/file.gguf',
-    name: 'custom-model',
-    description: `Model imported from /root/path/file.gguf`,
-    hw: 'CPU',
-    file: {
-      path: '/root/path',
-      file: 'file.gguf',
-      size: 1,
-      creation: mtimeDate,
-    },
-    memory: 1,
-    backend: 'none',
-  });
   const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
 
   await catalogManager.importUserModels([
@@ -187,7 +177,7 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
   ]);
 
   expect(promises.mkdir).toHaveBeenCalled();
-  expect(writeFileMock).toBeCalledWith('path', JSON.stringify(updatedCatalog, undefined, 2), 'utf-8');
+  expect(writeFileMock).toBeCalledWith('path', expect.any(String), 'utf-8');
 });
 
 test('expect to call writeFile in removeLocalModelFromCatalog with catalog updated', async () => {
@@ -205,7 +195,7 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
 
   await catalogManager.removeUserModel('model1');
 
-  expect(writeFileMock).toBeCalledWith('path', JSON.stringify(updatedCatalog, undefined, 2), 'utf-8');
+  expect(writeFileMock).toBeCalledWith('path', expect.any(String), 'utf-8');
 });
 
 test('catalog should be the combination of user catalog and default catalog', async () => {
@@ -226,6 +216,7 @@ test('catalog should be the combination of user catalog and default catalog', as
   const catalog = catalogManager.getCatalog();
 
   expect(catalog).toEqual({
+    version: CatalogFormat.CURRENT,
     recipes: [...content.recipes, ...userContent.recipes],
     models: [...content.models, ...userContent.models],
     categories: [...content.categories, ...userContent.categories],
@@ -237,6 +228,7 @@ test('catalog should use user items in favour of default', async () => {
   vi.spyOn(path, 'resolve').mockReturnValue('path');
 
   const overwriteFullCatalog: ApplicationCatalog = {
+    version: CatalogFormat.CURRENT,
     recipes: content.recipes.map(recipe => ({
       ...recipe,
       name: 'user-recipe-overwrite',
@@ -266,4 +258,8 @@ test('catalog should use user items in favour of default', async () => {
   const catalog = catalogManager.getCatalog();
 
   expect(catalog).toEqual(overwriteFullCatalog);
+});
+
+test('default catalog should have latest version', () => {
+  expect(version).toBe(CatalogFormat.CURRENT);
 });

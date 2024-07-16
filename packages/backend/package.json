@@ -23,8 +23,7 @@
         "ai-lab.experimentalGPU": {
           "type": "boolean",
           "default": false,
-          "description": "Experimental GPU support for inference servers",
-          "when": "isWindows"
+          "description": "Experimental GPU support for inference servers"
         }
       }
      },

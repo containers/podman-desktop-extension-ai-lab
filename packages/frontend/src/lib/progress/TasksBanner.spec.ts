@@ -60,7 +60,7 @@ test('expect all tasks to be displayed', () => {
     },
   ]);
 
-  render(TasksBanner, { labels: [], title: 'Tasks list' });
+  render(TasksBanner, { labels: {}, title: 'Tasks list' });
 
   expect(screen.getByText('Task-1')).toBeDefined();
   expect(screen.getByText('Task-2')).toBeDefined();
@@ -82,7 +82,84 @@ test('expect loading tasks to be displayed', () => {
     },
   ]);
 
-  render(TasksBanner, { labels: [], title: 'Tasks list' });
+  render(TasksBanner, { labels: {}, title: 'Tasks list' });
+
+  expect(screen.getByText('Task-1')).toBeDefined();
+  expect(screen.queryByText('Task-2')).toBeNull();
+});
+
+test('expect tasks with specified labels to be displayed', () => {
+  mocks.getTasksMock.mockReturnValue([
+    {
+      state: 'loading',
+      labels: {
+        hello: 'world',
+      },
+      name: 'Task-1',
+      id: 'task-1',
+    },
+    {
+      state: 'loading',
+      labels: {},
+      name: 'Task-2',
+      id: 'task-2',
+    },
+  ]);
+
+  render(TasksBanner, { labels: { hello: undefined }, title: 'Tasks list' });
+
+  expect(screen.getByText('Task-1')).toBeDefined();
+  expect(screen.queryByText('Task-2')).toBeNull();
+});
+
+test('expect tasks with specified pair label/value to be displayed', () => {
+  mocks.getTasksMock.mockReturnValue([
+    {
+      state: 'loading',
+      labels: {
+        hello: 'saturn',
+      },
+      name: 'Task-1',
+      id: 'task-1',
+    },
+    {
+      state: 'loading',
+      labels: {
+        hello: 'world',
+      },
+      name: 'Task-2',
+      id: 'task-2',
+    },
+  ]);
+
+  render(TasksBanner, { labels: { hello: 'world' }, title: 'Tasks list' });
+
+  expect(screen.queryByText('Task-1')).toBeNull();
+  expect(screen.getByText('Task-2')).toBeDefined();
+});
+
+test('expect tasks with specified pairs labels/values to be displayed', () => {
+  mocks.getTasksMock.mockReturnValue([
+    {
+      state: 'loading',
+      labels: {
+        hello: 'saturn',
+        dummy: 'hello',
+      },
+      name: 'Task-1',
+      id: 'task-1',
+    },
+    {
+      state: 'loading',
+      labels: {
+        hello: 'saturn',
+      },
+      name: 'Task-2',
+      id: 'task-2',
+    },
+  ]);
+
+  render(TasksBanner, { labels: { hello: 'saturn', dummy: 'hello' }, title: 'Tasks list' });
 
   expect(screen.getByText('Task-1')).toBeDefined();
   expect(screen.queryByText('Task-2')).toBeNull();

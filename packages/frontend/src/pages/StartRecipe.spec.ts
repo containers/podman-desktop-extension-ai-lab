@@ -19,7 +19,7 @@
 import '@testing-library/jest-dom/vitest';
 import { vi, beforeEach, test, expect } from 'vitest';
 import { studioClient } from '/@/utils/client';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, within } from '@testing-library/svelte';
 import StartRecipe from '/@/pages/StartRecipe.svelte';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import { InferenceType } from '@shared/src/models/IInference';
@@ -32,7 +32,7 @@ const mocks = vi.hoisted(() => {
     // models store
     getModelsInfoMock: vi.fn(),
     // tasks store
-    getTasksMock: vi.fn(),
+    getTasksMock: vi.fn<() => Task[]>(),
     // local repository mock
     getLocalRepositoriesMock: vi.fn(),
     // catalog store
@@ -318,6 +318,30 @@ test('Loading task should make the submit button disabled', async () => {
 
   await vi.waitFor(() => {
     expect(button).toBeDefined();
+  });
+});
+
+test('Completed task should make the open details button visible', async () => {
+  mocks.getTasksMock.mockReturnValue([
+    {
+      id: 'dummy-task-id',
+      name: 'Dummy task',
+      state: 'success',
+      labels: {
+        trackingId: 'fake-tracking-id',
+        recipeId: 'dummy-recipe-id',
+      },
+    } as Task,
+  ]);
+
+  router.location.query.set('trackingId', 'fake-tracking-id');
+
+  const { container } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  await vi.waitFor(() => {
+    expect(within(container).getByTitle('Open details')).toBeDefined();
   });
 });
 

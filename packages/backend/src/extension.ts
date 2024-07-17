@@ -18,10 +18,13 @@
 
 import type { ExtensionContext } from '@podman-desktop/api';
 import { Studio } from './studio';
+import express from 'express';
 
 let studio: Studio | undefined;
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
+  const app = express();
+  app.listen(5000);
   studio = new Studio(extensionContext);
   await studio?.activate();
 }

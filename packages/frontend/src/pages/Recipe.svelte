@@ -13,6 +13,7 @@ import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import Fa from 'svelte-fa';
 import Route from '/@/Route.svelte';
 import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';
+import TasksBanner from '/@/lib/progress/TasksBanner.svelte';
 
 export let recipeId: string;
 
@@ -65,6 +66,7 @@ export function goToUpPage(): void {
         </ContentDetailsLayout>
       </Route>
       <Route path="/running">
+        <TasksBanner title="Pulling recipes" labels="{{ 'recipe-pulling': recipeId }}" />
         <ApplicationTable filter="{items => items.filter(item => item.recipeId === recipeId)}">
           <svelte:fragment slot="empty-screen">
             <EmptyScreen icon="{faRocket}" title="No application running" message="There is no AI App running" />

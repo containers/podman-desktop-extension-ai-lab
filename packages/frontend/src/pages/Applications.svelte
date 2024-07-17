@@ -14,7 +14,7 @@ const openApplicationCatalog = () => {
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <!-- showing running tasks -->
-      <TasksBanner title="Pulling recipes" labels="{['recipe-pulling']}" />
+      <TasksBanner title="Pulling recipes" labels="{{ 'recipe-pulling': undefined }}" />
 
       <ApplicationTable>
         <svelte:fragment slot="empty-screen">

@@ -26,7 +26,7 @@ import type {
 } from '@podman-desktop/api';
 import { RpcExtension } from '@shared/src/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
-import { ApplicationManager } from './managers/applicationManager';
+import { ApplicationManager } from './managers/application/applicationManager';
 import { GitManager } from './managers/gitManager';
 import { TaskRegistry } from './registries/TaskRegistry';
 import { CatalogManager } from './managers/catalogManager';
@@ -45,6 +45,7 @@ import { initWebview } from './webviewUtils';
 import { LlamaCppPython } from './workers/provider/LlamaCppPython';
 import { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
 import { ConfigurationRegistry } from './registries/ConfigurationRegistry';
+import { RecipeManager } from './managers/recipes/RecipeManager';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -74,6 +75,7 @@ export class Studio {
   #snippetManager: SnippetManager | undefined;
   #playgroundManager: PlaygroundV2Manager | undefined;
   #applicationManager: ApplicationManager | undefined;
+  #recipeManager: RecipeManager | undefined;
   #inferenceProviderRegistry: InferenceProviderRegistry | undefined;
   #configurationRegistry: ConfigurationRegistry | undefined;
 
@@ -217,20 +219,30 @@ export class Studio {
     this.#extensionContext.subscriptions.push(this.#localRepositoryRegistry);
 
     /**
+     * The recipe manage offer some andy methods to manage recipes, build get images etc.
+     */
+    this.#recipeManager = new RecipeManager(
+      appUserDirectory,
+      gitManager,
+      this.#taskRegistry,
+      this.#builderManager,
+      this.#localRepositoryRegistry,
+    );
+    this.#recipeManager.init();
+    this.#extensionContext.subscriptions.push(this.#recipeManager);
+
+    /**
      * The application manager is managing the Recipes
      */
     this.#applicationManager = new ApplicationManager(
-      appUserDirectory,
-      gitManager,
       this.#taskRegistry,
       this.#panel.webview,
       this.#podmanConnection,
       this.#catalogManager,
       this.#modelsManager,
       this.#telemetry,
-      this.#localRepositoryRegistry,
-      this.#builderManager,
       this.#podManager,
+      this.#recipeManager,
     );
     this.#applicationManager.init();
     this.#extensionContext.subscriptions.push(this.#applicationManager);
@@ -293,6 +305,7 @@ export class Studio {
       this.#snippetManager,
       this.#cancellationTokenRegistry,
       this.#configurationRegistry,
+      this.#recipeManager,
     );
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);

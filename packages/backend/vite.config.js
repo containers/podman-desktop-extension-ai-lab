@@ -49,6 +49,8 @@ const config = {
     rollupOptions: {
       external: [
         '@podman-desktop/api',
+        'express',
+        'express-openapi-validator',
         ...builtinModules.flatMap(p => [p, `node:${p}`]),
       ],
       output: {

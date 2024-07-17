@@ -22,7 +22,7 @@ COPY packages/backend/media/ /extension/media
 COPY LICENSE /extension/
 COPY packages/backend/icon.png /extension/
 COPY README.md /extension/
-
+COPY api/openapi.yaml /extension/api/
 
 FROM scratch
 

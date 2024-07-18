@@ -8,11 +8,15 @@ import path from 'node:path';
 import http from 'node:http';
 import { existsSync, readFileSync } from 'fs';
 import { getFreeRandomPort } from '../utils/ports';
+import * as podmanDesktopApi from '@podman-desktop/api';
 
 const DEFAULT_PORT = 10434;
+const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
 
 export class ApiServer implements Disposable {
   #listener?: Server;
+
+  constructor(private extensionContext: podmanDesktopApi.ExtensionContext) {}
 
   async init(): Promise<void> {
     const app = express();
@@ -49,10 +53,15 @@ export class ApiServer implements Disposable {
     app.use('/spec', this.getSpec.bind(this));
 
     const server = http.createServer(app);
+    let listeningOn = DEFAULT_PORT;
+    server.on('listening', () => {
+      this.displayApiInfo(listeningOn);
+    });
     server.on('error', () => {
       getFreeRandomPort('0.0.0.0')
         .then((randomPort: number) => {
           console.warn(`port ${DEFAULT_PORT} in use, using ${randomPort} for API server`);
+          listeningOn = randomPort;
           this.#listener = server.listen(randomPort);
         })
         .catch((e: unknown) => {
@@ -60,6 +69,27 @@ export class ApiServer implements Disposable {
         });
     });
     this.#listener = server.listen(DEFAULT_PORT);
+  }
+
+  displayApiInfo(port: number): void {
+    const apiStatusBarItem = podmanDesktopApi.window.createStatusBarItem();
+    apiStatusBarItem.text = `AI Lab API listening on port ${port}`;
+    apiStatusBarItem.command = SHOW_API_INFO_COMMAND;
+    this.extensionContext.subscriptions.push(
+      podmanDesktopApi.commands.registerCommand(SHOW_API_INFO_COMMAND, async () => {
+        const address = `http://localhost:${port}`;
+        const result = await podmanDesktopApi.window.showInformationMessage(
+          `AI Lab API is listening on\n${address}`,
+          'OK',
+          `Copy`,
+        );
+        if (result === 'Copy') {
+          await podmanDesktopApi.env.clipboard.writeText(address);
+        }
+      }),
+      apiStatusBarItem,
+    );
+    apiStatusBarItem.show();
   }
 
   getSpecFile(): string {

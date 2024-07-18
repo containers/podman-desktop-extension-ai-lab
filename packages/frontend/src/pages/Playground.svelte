@@ -152,18 +152,15 @@ export function goToUpPage(): void {
 
 {#if conversation}
   <DetailsPage
-    title="{conversation?.name}"
+    title={conversation?.name}
     breadcrumbLeftPart="Playgrounds"
-    breadcrumbRightPart="{conversation?.name}"
+    breadcrumbRightPart={conversation?.name}
     breadcrumbTitle="Go back to Playgrounds"
-    on:close="{goToUpPage}"
-    on:breadcrumbClick="{goToUpPage}">
+    on:close={goToUpPage}
+    on:breadcrumbClick={goToUpPage}>
     <svelte:fragment slot="icon">
       <div class="mr-3">
-        <StatusIcon
-          icon="{ContainerIcon}"
-          size="{24}"
-          status="{getStatusForIcon(server?.status, server?.health?.Status)}" />
+        <StatusIcon icon={ContainerIcon} size={24} status={getStatusForIcon(server?.status, server?.health?.Status)} />
       </div>
     </svelte:fragment>
     <svelte:fragment slot="subtitle">
@@ -172,16 +169,16 @@ export function goToUpPage(): void {
           <div class="text-xs" aria-label="Model name">
             <a href="/model/{model.id}">{model.name}</a>
           </div>
-          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-[var(--pd-label-bg)]" />
+          <Badge icon={faMicrochip} content={model.hw} background="bg-[var(--pd-label-bg)]" />
         {/if}
       </div>
     </svelte:fragment>
     <svelte:fragment slot="actions">
-      <ConversationActions detailed conversation="{conversation}" />
+      <ConversationActions detailed conversation={conversation} />
     </svelte:fragment>
     <svelte:fragment slot="content">
       <div class="flex flex-col w-full h-full bg-[var(--pd-content-bg)]">
-        <div class="h-full overflow-auto" bind:this="{scrollable}">
+        <div class="h-full overflow-auto" bind:this={scrollable}>
           <ContentDetailsLayout detailsTitle="Settings" detailsLabel="settings">
             <svelte:fragment slot="content">
               <div class="flex flex-col w-full h-full">
@@ -189,13 +186,13 @@ export function goToUpPage(): void {
                   {#if conversation}
                     <!-- Show a banner for the system prompt -->
                     {#key conversation.messages.length}
-                      <SystemPromptBanner conversation="{conversation}" />
+                      <SystemPromptBanner conversation={conversation} />
                     {/key}
                     <!-- show all message except the sytem prompt -->
                     <ul>
                       {#each messages as message}
                         <li>
-                          <ChatMessage message="{message}" />
+                          <ChatMessage message={message} />
                         </li>
                       {/each}
                     </ul>
@@ -211,10 +208,10 @@ export function goToUpPage(): void {
                 <div class="flex flex-col space-y-4" aria-label="parameters">
                   <div class="flex flex-row">
                     <div class="w-full">
-                      <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value="{temperature}" />
+                      <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value={temperature} />
                     </div>
                     <Tooltip left>
-                      <Fa class="text-[var(--pd-content-card-icon)]" icon="{faCircleInfo}" />
+                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
                       <svelte:fragment slot="tip">
                         <div class="inline-block py-2 px-4 rounded-md text-xs" aria-label="tooltip">
                           What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output
@@ -225,10 +222,10 @@ export function goToUpPage(): void {
                   </div>
                   <div class="flex flex-row">
                     <div class="w-full">
-                      <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value="{max_tokens}" />
+                      <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value={max_tokens} />
                     </div>
                     <Tooltip left>
-                      <Fa class="text-[var(--pd-content-card-icon)]" icon="{faCircleInfo}" />
+                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
                       <svelte:fragment slot="tip">
                         <div class="inline-block py-2 px-4 rounded-md text-xs" aria-label="tooltip">
                           The maximum number of tokens that can be generated in the chat completion.
@@ -238,10 +235,10 @@ export function goToUpPage(): void {
                   </div>
                   <div class="flex flex-row">
                     <div class="w-full">
-                      <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value="{top_p}" />
+                      <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value={top_p} />
                     </div>
                     <Tooltip left>
-                      <Fa class="text-[var(--pd-content-card-icon)]" icon="{faCircleInfo}" />
+                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
                       <svelte:fragment slot="tip">
                         <div class="inline-block py-2 px-4 rounded-md text-xs" aria-label="tooltip">
                           An alternative to sampling with temperature, where the model considers the results of the
@@ -262,21 +259,21 @@ export function goToUpPage(): void {
         <div class="flex flex-row flex-none w-full px-4 py-2 bg-[var(--pd-content-card-bg)]">
           <textarea
             aria-label="prompt"
-            bind:value="{prompt}"
+            bind:value={prompt}
             use:requestFocus
-            on:keydown="{handleKeydown}"
+            on:keydown={handleKeydown}
             rows="2"
             class="w-full p-2 outline-none text-sm rounded-sm bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]"
             placeholder="Type your prompt here"
-            disabled="{!sendEnabled}"></textarea>
+            disabled={!sendEnabled}></textarea>
 
           <div class="flex-none text-right m-4">
             <Button
-              inProgress="{!sendEnabled}"
-              disabled="{!isHealthy(server?.status, server?.health?.Status)}"
-              on:click="{() => askPlayground()}"
-              icon="{faPaperPlane}"
-              title="{getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}"
+              inProgress={!sendEnabled}
+              disabled={!isHealthy(server?.status, server?.health?.Status)}
+              on:click={() => askPlayground()}
+              icon={faPaperPlane}
+              title={getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}
               aria-label="Send prompt"></Button>
           </div>
         </div>

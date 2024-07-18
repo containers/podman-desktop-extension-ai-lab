@@ -34,9 +34,9 @@ const openDiscussionsPage = () => {
 };
 </script>
 
-<NavPage title="Welcome to Podman AI Lab" searchEnabled="{false}">
+<NavPage title="Welcome to Podman AI Lab" searchEnabled={false}>
   <svelte:fragment slot="additional-actions">
-    <Button type="secondary" title="Open GitHub repository" on:click="{openGithub}" icon="{faGithub}">Github</Button>
+    <Button type="secondary" title="Open GitHub repository" on:click={openGithub} icon={faGithub}>Github</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-col min-w-full min-h-full text-[var(--pd-details-body-text)]">
@@ -52,7 +52,7 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">Recipes Catalog</h1>
         <p>
           Podman AI Lab ships with a so-called
-          <button class="underline" title="Open the Recipes Catalog page" on:click="{openRecipesCatalog}"
+          <button class="underline" title="Open the Recipes Catalog page" on:click={openRecipesCatalog}
             >Recipes Catalog</button>
           that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and
           Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various
@@ -62,8 +62,8 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">AI Models</h1>
         <p>
           Podman AI Lab provides a curated list of open source
-          <button class="underline" title="Open the Models page" on:click="{openModelsPage}">AI Models and LLMs</button
-          >. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
+          <button class="underline" title="Open the Models page" on:click={openModelsPage}>AI Models and LLMs</button>.
+          Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
         </p>
 
         <h1 class="text-xl first-letter:uppercase underline">Model Serving</h1>
@@ -76,7 +76,7 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">Playgrounds</h1>
         <p>
           The integrated
-          <button class="underline" title="Open the Playgrounds page" on:click="{openPlaygroundsPage}"
+          <button class="underline" title="Open the Playgrounds page" on:click={openPlaygroundsPage}
             >Playground environments</button>
           allow for experimenting with available models in a local environment. An intuitive user prompt helps in exploring
           the capabilities and accuracy of various models and aids in finding the best model for the use case at hand.
@@ -85,7 +85,7 @@ const openDiscussionsPage = () => {
           Once started, each playground ships with a generic chat client to interact with the model service. The <button
             class="underline"
             title="Open the Services page"
-            on:click="{openServicesPage}">Services</button>
+            on:click={openServicesPage}>Services</button>
           page allows for accessing running model services and provides further details and code snippets to interact with
           them.
         </p>
@@ -93,12 +93,12 @@ const openDiscussionsPage = () => {
         <h1 class="text-xl first-letter:uppercase underline">Feedback</h1>
         <p>
           If you discover an issue or want to request a new feature, you can open an issue
-          <button class="underline" title="Open the issues page" on:click="{openIssuesPage}">here</button>.
+          <button class="underline" title="Open the issues page" on:click={openIssuesPage}>here</button>.
         </p>
         <p>
           If you want to get more information about this project or exchange with the community, you can start a
           discussion
-          <button class="underline" title="Open the discussions page" on:click="{openDiscussionsPage}">here</button>.
+          <button class="underline" title="Open the discussions page" on:click={openDiscussionsPage}>here</button>.
         </p>
       </div>
     </div>

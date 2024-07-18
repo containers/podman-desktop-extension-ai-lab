@@ -14,16 +14,16 @@ export function goToUpPage(): void {
 </script>
 
 <DetailsPage
-  title="{model?.name || ''}"
+  title={model?.name || ''}
   breadcrumbLeftPart="Models"
-  breadcrumbRightPart="{model?.name || ''}"
+  breadcrumbRightPart={model?.name || ''}
   breadcrumbTitle="Go back to Models"
-  on:close="{goToUpPage}"
-  on:breadcrumbClick="{goToUpPage}">
+  on:close={goToUpPage}
+  on:breadcrumbClick={goToUpPage}>
   <svelte:fragment slot="content">
     <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
       <div class="flex-grow p-5">
-        <MarkdownRenderer source="{model?.description}" />
+        <MarkdownRenderer source={model?.description} />
       </div>
     </div>
   </svelte:fragment>

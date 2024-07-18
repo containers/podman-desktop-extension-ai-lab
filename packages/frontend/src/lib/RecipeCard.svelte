@@ -18,7 +18,7 @@ $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
   <div
     class="bg-[var(--pd-content-card-bg)] hover:bg-[var(--pd-content-card-hover-bg)] flex-grow p-4 h-full rounded-md flex-nowrap flex flex-col"
     role="region"
-    aria-label="{recipe.name}">
+    aria-label={recipe.name}>
     <!-- body -->
     <div class="flex flex-row text-base grow">
       <!-- left column -->
@@ -29,14 +29,14 @@ $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
 
       <!-- right column -->
       <div>
-        <RecipeStatus recipe="{recipe}" localRepository="{localPath}" />
+        <RecipeStatus recipe={recipe} localRepository={localPath} />
       </div>
     </div>
 
     {#if localPath}
       <div
         class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md p-2 mb-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
-        <Fa class="mr-2" icon="{faFolder}" />
+        <Fa class="mr-2" icon={faFolder} />
         <span class="overflow-x-hidden text-ellipsis max-w-full">
           {localPath.path}
         </span>
@@ -53,9 +53,9 @@ $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
       </div>
 
       <!-- more details -->
-      <button on:click="{() => router.goto(`/recipe/${recipe.id}`)}">
+      <button on:click={() => router.goto(`/recipe/${recipe.id}`)}>
         <div class="flex flex-row items-center text-[var(--pd-link)]">
-          <Fa class="mr-2" icon="{faArrowUpRightFromSquare}" />
+          <Fa class="mr-2" icon={faArrowUpRightFromSquare} />
           <span> More details </span>
         </div>
       </button>

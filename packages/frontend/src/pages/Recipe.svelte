@@ -34,23 +34,23 @@ export function goToUpPage(): void {
 </script>
 
 <DetailsPage
-  title="{recipe?.name || ''}"
+  title={recipe?.name || ''}
   breadcrumbLeftPart="Recipes"
-  breadcrumbRightPart="{recipe?.name || ''}"
+  breadcrumbRightPart={recipe?.name || ''}
   breadcrumbTitle="Go back to Recipes"
-  on:close="{goToUpPage}"
-  on:breadcrumbClick="{goToUpPage}">
+  on:close={goToUpPage}
+  on:breadcrumbClick={goToUpPage}>
   <svelte:fragment slot="icon">
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
-      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{getIcon(recipe?.icon)}" />
+      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={getIcon(recipe?.icon)} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="tabs">
-    <Tab title="Summary" url="/recipe/{recipeId}" selected="{$router.path === `/recipe/${recipeId}`}" />
-    <Tab title="Running" url="/recipe/{recipeId}/running" selected="{$router.path === `/recipe/${recipeId}/running`}" />
+    <Tab title="Summary" url="/recipe/{recipeId}" selected={$router.path === `/recipe/${recipeId}`} />
+    <Tab title="Running" url="/recipe/{recipeId}/running" selected={$router.path === `/recipe/${recipeId}/running`} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
-    <Button on:click="{() => router.goto(`/recipe/${recipeId}/start`)}" icon="{faRocket}" aria-label="Start recipe"
+    <Button on:click={() => router.goto(`/recipe/${recipeId}/start`)} icon={faRocket} aria-label="Start recipe"
       >Start</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
@@ -58,18 +58,18 @@ export function goToUpPage(): void {
       <Route path="/">
         <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">
           <svelte:fragment slot="content">
-            <MarkdownRenderer source="{recipe?.readme}" />
+            <MarkdownRenderer source={recipe?.readme} />
           </svelte:fragment>
           <svelte:fragment slot="details">
-            <RecipeDetails recipeId="{recipeId}" />
+            <RecipeDetails recipeId={recipeId} />
           </svelte:fragment>
         </ContentDetailsLayout>
       </Route>
       <Route path="/running">
-        <TasksBanner title="Pulling recipes" labels="{{ 'recipe-pulling': recipeId }}" />
-        <ApplicationTable filter="{items => items.filter(item => item.recipeId === recipeId)}">
+        <TasksBanner title="Pulling recipes" labels={{ 'recipe-pulling': recipeId }} />
+        <ApplicationTable filter={items => items.filter(item => item.recipeId === recipeId)}>
           <svelte:fragment slot="empty-screen">
-            <EmptyScreen icon="{faRocket}" title="No application running" message="There is no AI App running" />
+            <EmptyScreen icon={faRocket} title="No application running" message="There is no AI App running" />
           </svelte:fragment>
         </ApplicationTable>
       </Route>
@@ -79,7 +79,7 @@ export function goToUpPage(): void {
     <div class="mt-2">
       {#each recipe?.categories || [] as categoryId}
         <Card
-          title="{categories.find(category => category.id === categoryId)?.name || '?'}"
+          title={categories.find(category => category.id === categoryId)?.name || '?'}
           classes="bg-[var(--pd-label-bg)] p-1 text-xs w-fit" />
       {/each}
     </div>

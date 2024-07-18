@@ -10,25 +10,25 @@ export let value: number;
   <div class="flex flex-row items-center">
     <span class="w-full uppercase text-[var(--pd-content-card-text)]">{name}</span>
     <input
-      bind:value="{value}"
+      bind:value={value}
       type="number"
-      name="{`${name}-input`}"
-      min="{min}"
-      max="{max}"
-      step="{step}"
-      placeholder="{name}"
+      name={`${name}-input`}
+      min={min}
+      max={max}
+      step={step}
+      placeholder={name}
       class="p-2 w-24 text-right outline-none text-sm bg-[var(--pd-content-card-bg)] rounded-sm text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]" />
   </div>
   <div class="w-full">
     <input
       type="range"
-      name="{`${name}-range`}"
-      min="{min}"
-      max="{max}"
-      step="{step}"
-      placeholder="{name}"
-      bind:value="{value}"
-      aria-label="{`${name} slider`}"
+      name={`${name}-range`}
+      min={min}
+      max={max}
+      step={step}
+      placeholder={name}
+      bind:value={value}
+      aria-label={`${name} slider`}
       class="w-full h-1 bg-[var(--pd-button-primary-bg)] rounded-lg appearance-none accent-[var(--pd-button-primary-bg)] cursor-pointer range-xs mt-2" />
   </div>
 </div>

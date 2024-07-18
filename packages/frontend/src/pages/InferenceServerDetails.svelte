@@ -127,12 +127,12 @@ export function goToUpPage(): void {
   breadcrumbLeftPart="Model Services"
   breadcrumbRightPart="Service details"
   breadcrumbTitle="Go back to Model Services"
-  on:close="{goToUpPage}"
-  on:breadcrumbClick="{goToUpPage}">
+  on:close={goToUpPage}
+  on:breadcrumbClick={goToUpPage}>
   <svelte:fragment slot="icon">
     <div class="mr-3">
       {#if service !== undefined}
-        <ServiceStatus object="{service}" />
+        <ServiceStatus object={service} />
       {/if}
     </div>
   </svelte:fragment>
@@ -141,14 +141,14 @@ export function goToUpPage(): void {
       {#if service}
         <span class="text-xs">{service.container.containerId}</span>
         {#each service.models as model}
-          <Badge icon="{faMicrochip}" content="{model.hw}" background="bg-[var(--pd-label-bg)]" />
+          <Badge icon={faMicrochip} content={model.hw} background="bg-[var(--pd-label-bg)]" />
         {/each}
       {/if}
     </div>
   </svelte:fragment>
   <svelte:fragment slot="actions">
     {#if service !== undefined}
-      <ServiceAction detailed object="{service}" />
+      <ServiceAction detailed object={service} />
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="content">
@@ -171,14 +171,14 @@ export function goToUpPage(): void {
                         <div>
                           <div
                             class="bg-[var(--pd-content-card-bg)] rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
-                            <Fa class="mr-2" icon="{faScaleBalanced}" />
+                            <Fa class="mr-2" icon={faScaleBalanced} />
                             {model.license}
                           </div>
                         </div>
                         <div>
                           <div
                             class="bg-[var(--pd-content-card-bg)] rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
-                            <Fa class="mr-2" icon="{faBuildingColumns}" />
+                            <Fa class="mr-2" icon={faBuildingColumns} />
                             {model.registry}
                           </div>
                         </div>
@@ -200,7 +200,7 @@ export function goToUpPage(): void {
                   <div
                     class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
                     CPU Inference
-                    <Fa class="ml-2" icon="{faMicrochip}" />
+                    <Fa class="ml-2" icon={faMicrochip} />
                   </div>
                 </div>
               </div>
@@ -214,13 +214,13 @@ export function goToUpPage(): void {
                   <select
                     required
                     aria-label="snippet language selection"
-                    bind:value="{selectedLanguage}"
-                    on:change="{onLanguageChange}"
+                    bind:value={selectedLanguage}
+                    on:change={onLanguageChange}
                     id="languages"
                     class="border ml-1 text-sm rounded-lg bg-[var(--pd-action-button-details-bg)] block p-1 border-[var(--pd-action-button-details-bg)] placeholder-gray-700 text-[var(--pd-action-button-details-text)]"
                     name="languages">
                     {#each $snippetLanguages as language}
-                      <option class="my-1" value="{language.key}">{language.label}</option>
+                      <option class="my-1" value={language.key}>{language.label}</option>
                     {/each}
                   </select>
                   {#if selectedVariant !== undefined}
@@ -228,13 +228,13 @@ export function goToUpPage(): void {
                       required
                       aria-label="snippet language variant"
                       id="variants"
-                      bind:value="{selectedVariant}"
-                      on:change="{() => generate(selectedLanguage, selectedVariant)}"
-                      disabled="{variants.length === 1}"
+                      bind:value={selectedVariant}
+                      on:change={() => generate(selectedLanguage, selectedVariant)}
+                      disabled={variants.length === 1}
                       class="border ml-1 text-sm rounded-lg bg-[var(--pd-action-button-details-bg)] block p-1 border-[var(--pd-action-button-details-bg)] placeholder-gray-700 text-[var(--pd-action-button-details-text)]"
                       name="variants">
                       {#each variants as variant}
-                        <option class="my-1" value="{variant.key}">{variant.key}</option>
+                        <option class="my-1" value={variant.key}>{variant.key}</option>
                       {/each}
                     </select>
                   {/if}
@@ -243,15 +243,11 @@ export function goToUpPage(): void {
                 {#if snippet !== undefined}
                   <div
                     class="bg-[var(--pd-details-empty-cmdline-bg)] text-[var(--pd-details-empty-cmdline-text)] rounded-md w-full p-4 mt-2 relative">
-                    <code class="whitespace-break-spaces text-sm" bind:this="{code}">
+                    <code class="whitespace-break-spaces text-sm" bind:this={code}>
                       {snippet}
                     </code>
                     <div class="absolute right-4 top-4 z-10">
-                      <Button
-                        icon="{copied ? faCheck : faCopy}"
-                        type="secondary"
-                        title="Copy"
-                        on:click="{copySnippet}" />
+                      <Button icon={copied ? faCheck : faCopy} type="secondary" title="Copy" on:click={copySnippet} />
                     </div>
                   </div>
                 {/if}

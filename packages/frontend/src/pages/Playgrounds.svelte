@@ -26,25 +26,25 @@ const openServicesPage = () => {
 };
 </script>
 
-<NavPage title="Playground Environments" searchEnabled="{false}">
+<NavPage title="Playground Environments" searchEnabled={false}>
   <svelte:fragment slot="additional-actions">
-    <Button on:click="{() => createNewPlayground()}">New Playground</Button>
+    <Button on:click={() => createNewPlayground()}>New Playground</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-col min-w-full">
       <div class="min-w-full flex-1">
         <div class="mt-4 px-5 space-y-5">
           {#if $conversations.length > 0}
-            <Table kind="playground" data="{$conversations}" columns="{columns}" row="{row}"></Table>
+            <Table kind="playground" data={$conversations} columns={columns} row={row}></Table>
           {:else}
             <div class="text-[var(--pd-details-body-text)]">
               <div role="status">
                 There is no playground environment. You can <a
-                  href="{'javascript:void(0);'}"
+                  href={'javascript:void(0);'}
                   class="underline"
                   role="button"
                   title="Create a new Playground environment"
-                  on:click="{createNewPlayground}">create one now</a
+                  on:click={createNewPlayground}>create one now</a
                 >.
               </div>
               <p>
@@ -56,7 +56,7 @@ const openServicesPage = () => {
                 Once started, each playground ships with a generic chat client to interact with the model service. The <button
                   class="underline"
                   title="Open the Services page"
-                  on:click="{openServicesPage}">Services</button>
+                  on:click={openServicesPage}>Services</button>
                 page allows for accessing running model services and provides further details and code snippets to interact
                 with them.
               </p>

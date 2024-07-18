@@ -48,7 +48,7 @@ onMount(() => {
   <Card classes="bg-charcoal-800 mt-4 mx-5">
     <div slot="content" class="text-base font-normal p-2 w-full">
       <div class="text-base mb-2">{title}</div>
-      <TasksProgress tasks="{loadingTasks}" />
+      <TasksProgress tasks={loadingTasks} />
     </div>
   </Card>
 {/if}

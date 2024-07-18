@@ -61,7 +61,7 @@ const cancel = () => {
   </span>
   <div class="flex flex-grow justify-end">
     {#if task.state === 'loading' && task.cancellationToken !== undefined}
-      <button on:click="{cancel}" title="Cancel"><Fa icon="{faClose}" /></button>
+      <button on:click={cancel} title="Cancel"><Fa icon={faClose} /></button>
     {/if}
   </div>
 </div>

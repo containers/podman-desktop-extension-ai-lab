@@ -49,7 +49,7 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
 {#if loading}
   <Spinner />
 {:else}
-  <button on:click="{navigateToContainer}">
-    <StatusIcon status="{status}" icon="{ContainerIcon}" />
+  <button on:click={navigateToContainer}>
+    <StatusIcon status={status} icon={ContainerIcon} />
   </button>
 {/if}

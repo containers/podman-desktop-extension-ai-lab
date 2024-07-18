@@ -8,7 +8,7 @@ export let object: ModelInfo;
 
 <div class="text-sm">
   <div class="flex gap-x-2">
-    <Badge icon="{faMemory}" content="RAM usage: {object.memory ? filesize(object.memory, { base: 2 }) : 'N/A'}" />
-    <Badge icon="{faMicrochip}" content="{object.hw}" />
+    <Badge icon={faMemory} content="RAM usage: {object.memory ? filesize(object.memory, { base: 2 }) : 'N/A'}" />
+    <Badge icon={faMicrochip} content={object.hw} />
   </div>
 </div>

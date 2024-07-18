@@ -34,10 +34,10 @@ onMount(() => {
 });
 </script>
 
-<Route path="/*" isAppMounted="{isMounted}" let:meta>
+<Route path="/*" isAppMounted={isMounted} let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-[var(--pd-content-bg)]">
     <div class="flex flex-row w-full h-full overflow-hidden">
-      <Navigation meta="{meta}" />
+      <Navigation meta={meta} />
 
       <!-- Dashboard -->
       <Route path="/">
@@ -62,7 +62,7 @@ onMount(() => {
         {#if meta.params.id === 'create'}
           <PlaygroundCreate />
         {:else}
-          <Playground playgroundId="{meta.params.id}" />
+          <Playground playgroundId={meta.params.id} />
         {/if}
       </Route>
 
@@ -74,10 +74,10 @@ onMount(() => {
       <!-- Recipes -->
       <Route path="/recipe/:id/*" firstmatch let:meta>
         <Route path="/start">
-          <StartRecipe recipeId="{meta.params.id}" />
+          <StartRecipe recipeId={meta.params.id} />
         </Route>
         <Route path="/*">
-          <Recipe recipeId="{meta.params.id}" />
+          <Recipe recipeId={meta.params.id} />
         </Route>
       </Route>
 
@@ -92,7 +92,7 @@ onMount(() => {
       </Route>
 
       <Route path="/model/:id/*" let:meta>
-        <Model modelId="{meta.params.id}" />
+        <Model modelId={meta.params.id} />
       </Route>
 
       <!-- services -->
@@ -104,7 +104,7 @@ onMount(() => {
         {#if meta.params.id === 'create'}
           <CreateService />
         {:else}
-          <ServiceDetails containerId="{meta.params.id}" />
+          <ServiceDetails containerId={meta.params.id} />
         {/if}
       </Route>
     </div>

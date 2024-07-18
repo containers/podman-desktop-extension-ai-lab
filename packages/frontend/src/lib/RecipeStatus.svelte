@@ -31,18 +31,18 @@ function onClick(): void {
   <Tooltip>
     {#if localRepository}
       <div aria-label="chevron down icon" class="text-dustypurple-700 p-2 w-10 text-center">
-        <Fa size="lg" icon="{faCircleCheck}" />
+        <Fa size="lg" icon={faCircleCheck} />
       </div>
     {:else}
       <button
-        on:click="{onClick}"
-        disabled="{loading}"
+        on:click={onClick}
+        disabled={loading}
         class="border-2 justify-center relative rounded border-[var(--pd-button-secondary)] text-[var(--pd-button-secondary)] hover:bg-[var(--pd-button-secondary-hover)] hover:border-[var(--pd-button-secondary-hover)] hover:text-[var(--pd-button-text)] w-10 p-2 text-center cursor-pointer flex flex-row">
         {#if loading}
           <Spinner size="1em" />
         {:else}
           <div aria-label="download icon">
-            <Fa size="sm" icon="{faDownload}" />
+            <Fa size="sm" icon={faDownload} />
           </div>
         {/if}
       </button>

@@ -101,11 +101,11 @@ export function goToUpPage(): void {
   breadcrumbLeftPart="Models"
   breadcrumbRightPart="Import Model"
   breadcrumbTitle="Go back to Models Catalog"
-  on:close="{goToUpPage}"
-  on:breadcrumbClick="{goToUpPage}">
+  on:close={goToUpPage}
+  on:breadcrumbClick={goToUpPage}>
   <svelte:fragment slot="icon">
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
-      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{faFileImport}" />
+      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faFileImport} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="content">
@@ -113,7 +113,7 @@ export function goToUpPage(): void {
       <!-- Error banner -->
       <div aria-label="importError">
         {#if errorMessage !== ''}
-          <ErrorMessage class="py-2 text-sm" error="{errorMessage}" />
+          <ErrorMessage class="py-2 text-sm" error={errorMessage} />
         {/if}
       </div>
 
@@ -126,14 +126,14 @@ export function goToUpPage(): void {
             <button
               aria-label="model input"
               title="Click to open file explorer"
-              class:border-purple-400="{dragging}"
-              class:border-gray-800="{!dragging}"
-              on:click="{requestExplorerModal}"
-              on:drop|preventDefault="{onFile}"
-              on:dragover|preventDefault="{() => (dragging = true)}"
-              on:dragleave|preventDefault="{() => (dragging = false)}"
+              class:border-purple-400={dragging}
+              class:border-gray-800={!dragging}
+              on:click={requestExplorerModal}
+              on:drop|preventDefault={onFile}
+              on:dragover|preventDefault={() => (dragging = true)}
+              on:dragleave|preventDefault={() => (dragging = false)}
               class="w-full cursor-pointer flex-col px-4 py-8 border-2 border-dashed rounded flex justify-center items-center">
-              <Fa size="1.1x" class="cursor-pointer text-[var(--pd-link)]" icon="{faFileImport}" />
+              <Fa size="1.1x" class="cursor-pointer text-[var(--pd-link)]" icon={faFileImport} />
               <span>Drag & Drop or <strong class="text-[var(--pd-link)]">Choose file</strong> to import</span>
               <span class="opacity-50 text-sm">Supported format: .guff, .bin</span>
             </button>
@@ -141,14 +141,14 @@ export function goToUpPage(): void {
             <!-- showing path -->
             <label for="path" class="w-full block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
               >Path</label>
-            <Input class="grow" bind:value="{localModel.path}" name="path" aria-label="model path" readonly="{true}" />
+            <Input class="grow" bind:value={localModel.path} name="path" aria-label="model path" readonly={true} />
 
             <!-- Model name -->
             <label for="name" class="pt-4 w-full block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
               >Name</label>
             <Input
-              bind:value="{localModel.name}"
-              on:input="{event => {}}"
+              bind:value={localModel.name}
+              on:input={event => {}}
               name="name"
               aria-label="model importing name"
               placeholder="Model Name displayed"
@@ -160,7 +160,7 @@ export function goToUpPage(): void {
                 for="backend"
                 class="pt-4 grow block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]">Backend</label>
               <Tooltip left>
-                <Fa size="1.1x" class="cursor-pointer" icon="{faCircleInfo}" />
+                <Fa size="1.1x" class="cursor-pointer" icon={faCircleInfo} />
                 <svelte:fragment slot="tip">
                   <span class="inline-block py-2 px-4 rounded-md text-xs"
                     ><code>backends</code> represents the technology required to run the models.</span>
@@ -168,11 +168,11 @@ export function goToUpPage(): void {
               </Tooltip>
             </div>
             <select
-              on:change="{onBackendChange}"
+              on:change={onBackendChange}
               name="backend"
               class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white">
               {#each Object.values(InferenceType) as type}
-                <option value="{type}">{type}</option>
+                <option value={type}>{type}</option>
               {/each}
             </select>
           {/if}
@@ -182,10 +182,10 @@ export function goToUpPage(): void {
         <div class="mt-4 flex">
           <Button
             class="flex-grow"
-            on:click="{submit}"
-            inProgress="{loading}"
-            icon="{faFileImport}"
-            disabled="{localModel === undefined}"
+            on:click={submit}
+            inProgress={loading}
+            icon={faFileImport}
+            disabled={localModel === undefined}
             aria-label="Import model">
             Import Models
           </Button>

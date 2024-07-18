@@ -103,15 +103,15 @@ async function importModel() {
 }
 </script>
 
-<NavPage title="Models" searchEnabled="{false}">
+<NavPage title="Models" searchEnabled={false}>
   <svelte:fragment slot="tabs">
-    <Tab title="All" url="/models" selected="{$router.path === '/models'}" />
-    <Tab title="Downloaded" url="/models/downloaded" selected="{$router.path === '/models/downloaded'}" />
-    <Tab title="Imported" url="/models/imported" selected="{$router.path === '/models/imported'}" />
-    <Tab title="Available" url="/models/available" selected="{$router.path === '/models/available'}" />
+    <Tab title="All" url="/models" selected={$router.path === '/models'} />
+    <Tab title="Downloaded" url="/models/downloaded" selected={$router.path === '/models/downloaded'} />
+    <Tab title="Imported" url="/models/imported" selected={$router.path === '/models/imported'} />
+    <Tab title="Available" url="/models/available" selected={$router.path === '/models/available'} />
   </svelte:fragment>
   <svelte:fragment slot="additional-actions">
-    <Button on:click="{importModel}" icon="{faFileImport}" aria-label="Import Models">Import</Button>
+    <Button on:click={importModel} icon={faFileImport} aria-label="Import Models">Import</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-col min-w-full min-h-full">
@@ -122,7 +122,7 @@ async function importModel() {
               <Card classes="bg-charcoal-800 mt-4">
                 <div slot="content" class="text-base font-normal p-2 w-full">
                   <div class="text-base mb-2">Downloading models</div>
-                  <TasksProgress tasks="{pullingTasks}" />
+                  <TasksProgress tasks={pullingTasks} />
                 </div>
               </Card>
             {/if}
@@ -130,7 +130,7 @@ async function importModel() {
             <!-- All models -->
             <Route path="/">
               {#if filteredModels.length > 0}
-                <Table kind="model" data="{filteredModels}" columns="{columns}" row="{row}"></Table>
+                <Table kind="model" data={filteredModels} columns={columns} row={row}></Table>
               {:else}
                 <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
               {/if}
@@ -139,7 +139,7 @@ async function importModel() {
             <!-- Downloaded models -->
             <Route path="/downloaded">
               {#if localModels.length > 0}
-                <Table kind="model" data="{localModels}" columns="{columns}" row="{row}"></Table>
+                <Table kind="model" data={localModels} columns={columns} row={row}></Table>
               {:else}
                 <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
               {/if}
@@ -148,7 +148,7 @@ async function importModel() {
             <!-- Imported models -->
             <Route path="/imported">
               {#if importedModels.length > 0}
-                <Table kind="model" data="{importedModels}" columns="{columns}" row="{row}"></Table>
+                <Table kind="model" data={importedModels} columns={columns} row={row}></Table>
               {:else}
                 <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
               {/if}
@@ -157,7 +157,7 @@ async function importModel() {
             <!-- Available models (from catalogs)-->
             <Route path="/available">
               {#if remoteModels.length > 0}
-                <Table kind="model" data="{remoteModels}" columns="{columns}" row="{row}"></Table>
+                <Table kind="model" data={remoteModels} columns={columns} row={row}></Table>
               {:else}
                 <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
               {/if}

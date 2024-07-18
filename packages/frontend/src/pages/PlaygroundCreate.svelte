@@ -112,11 +112,11 @@ export function goToUpPage(): void {
   breadcrumbLeftPart="Playgrounds"
   breadcrumbRightPart="New Playground environment"
   breadcrumbTitle="Go back to Playgrounds"
-  on:close="{goToUpPage}"
-  on:breadcrumbClick="{goToUpPage}">
+  on:close={goToUpPage}
+  on:breadcrumbClick={goToUpPage}>
   <svelte:fragment slot="icon">
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
-      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{faPlus}" />
+      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faPlus} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="content">
@@ -124,7 +124,7 @@ export function goToUpPage(): void {
       <!-- tasks tracked -->
       {#if trackedTasks.length > 0}
         <div class="mx-5 mt-5" role="status">
-          <TasksProgress tasks="{trackedTasks}" />
+          <TasksProgress tasks={trackedTasks} />
         </div>
       {/if}
 
@@ -135,12 +135,12 @@ export function goToUpPage(): void {
           <label for="playgroundName" class="block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
             >Playground name</label>
           <Input
-            disabled="{submitted}"
+            disabled={submitted}
             id="playgroundName"
             class="w-full"
             type="text"
             name="playgroundName"
-            on:input="{onNameInput}"
+            on:input={onNameInput}
             placeholder="Leave blank to generate a name"
             aria-label="playgroundName" />
 
@@ -149,52 +149,52 @@ export function goToUpPage(): void {
             >Model</label>
           <select
             required
-            disabled="{submitted}"
+            disabled={submitted}
             id="providerChoice"
-            bind:value="{modelId}"
+            bind:value={modelId}
             class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
             name="providerChoice">
             {#each localModels as model}
-              <option class="my-1" value="{model.id}">{model.name}</option>
+              <option class="my-1" value={model.id}>{model.name}</option>
             {/each}
           </select>
           {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">
-              <Fa size="1.1x" class="cursor-pointer text-red-500" icon="{faExclamationCircle}" />
+              <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
               <div role="alert" aria-label="Error Message Content" class="ml-2">
                 You don't have any models downloaded. You can download them in <a
-                  href="{'javascript:void(0);'}"
+                  href={'javascript:void(0);'}
                   class="underline"
                   title="Models page"
-                  on:click="{openModelsPage}">models page</a
+                  on:click={openModelsPage}>models page</a
                 >.
               </div>
             </div>
           {:else if availModels.length > 0}
             <div class="text-sm p-1 flex flex-row items-center text-[var(--pd-content-card-text)]">
-              <Fa size="1.1x" class="cursor-pointer" icon="{faInfoCircle}" />
+              <Fa size="1.1x" class="cursor-pointer" icon={faInfoCircle} />
               <div role="alert" aria-label="Info Message Content" class="ml-2">
                 Other models are available, but must be downloaded from the <a
-                  href="{'javascript:void(0);'}"
+                  href={'javascript:void(0);'}
                   class="underline"
                   title="Models page"
-                  on:click="{openModelsPage}">models page</a
+                  on:click={openModelsPage}>models page</a
                 >.
               </div>
             </div>
           {/if}
         </div>
         {#if errorMsg !== undefined}
-          <ErrorMessage error="{errorMsg}" />
+          <ErrorMessage error={errorMsg} />
         {/if}
         <footer>
           <div class="w-full flex flex-col">
             <Button
               title="Create playground"
-              inProgress="{submitted}"
-              on:click="{submit}"
-              disabled="{!modelId}"
-              icon="{faPlusCircle}">
+              inProgress={submitted}
+              on:click={submit}
+              disabled={!modelId}
+              icon={faPlusCircle}>
               Create playground
             </Button>
           </div>

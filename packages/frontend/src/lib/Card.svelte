@@ -15,15 +15,15 @@ export let icon: IconDefinition | undefined = undefined;
 export let primaryBackground: string = 'bg-charcoal-800';
 </script>
 
-<a class="no-underline" href="{href}">
-  <div class="{classes} rounded-md flex-nowrap overflow-hidden" role="region" aria-label="{title ?? 'Card'}">
+<a class="no-underline" href={href}>
+  <div class="{classes} rounded-md flex-nowrap overflow-hidden" role="region" aria-label={title ?? 'Card'}>
     <div class="flex flex-row">
       <div class="flex flex-row items-start">
         {#if icon}
           <button
-            on:click="{() => dispatch('click')}"
+            on:click={() => dispatch('click')}
             class="{primaryBackground} rounded-full min-w-7 min-h-7 w-7 h-7 flex items-center justify-center mr-3">
-            <Fa size="1x" class="text-purple-500 cursor-pointer" icon="{icon}" />
+            <Fa size="1x" class="text-purple-500 cursor-pointer" icon={icon} />
           </button>
         {/if}
         <div

@@ -47,27 +47,27 @@ const deleteLocalClone = () => {
   <div class="flex flex-col w-full space-y-2 w-[45px]">
     <div class="text-base">Repository</div>
     <div class="cursor-pointer flex flex-col w-full space-y-2 text-nowrap">
-      <button on:click="{onClickRepository}">
+      <button on:click={onClickRepository}>
         <div class="flex flex-row p-0 m-0 bg-transparent items-center space-x-2">
-          <Fa size="lg" icon="{faGithub}" />
+          <Fa size="lg" icon={faGithub} />
           <span>{getDisplayName(recipe?.repository)}</span>
         </div>
       </button>
       {#if localPath}
         <div class="flex flex-row w-full justify-between">
-          <button on:click="{openLocalClone}" aria-label="Local clone">
+          <button on:click={openLocalClone} aria-label="Local clone">
             <div class="flex flex-row p-0 m-0 bg-transparent items-center space-x-2">
-              <Fa size="lg" icon="{faFolderOpen}" />
+              <Fa size="lg" icon={faFolderOpen} />
               <span>Local clone</span>
             </div>
           </button>
-          <Button title="Delete local clone" on:click="{deleteLocalClone}" icon="{faTrash}" />
+          <Button title="Delete local clone" on:click={deleteLocalClone} icon={faTrash} />
         </div>
       {/if}
     </div>
   </div>
   {#if localPath}
-    <Button type="secondary" on:click="{openVSCode}" title="Open in VS Code Desktop" icon="{VSCodeIcon}"
+    <Button type="secondary" on:click={openVSCode} title="Open in VS Code Desktop" icon={VSCodeIcon}
       >Open in VSCode</Button>
   {/if}
 </div>

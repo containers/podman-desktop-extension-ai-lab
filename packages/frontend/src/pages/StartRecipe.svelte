@@ -148,11 +148,11 @@ export function goToUpPage(): void {
   breadcrumbRightPart="Start recipe"
   breadcrumbTitle="Go back to recipes page"
   title="Start recipe"
-  on:close="{goToUpPage}"
-  on:breadcrumbClick="{goToUpPage}">
+  on:close={goToUpPage}
+  on:breadcrumbClick={goToUpPage}>
   <svelte:fragment slot="icon">
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
-      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{faRocket}" />
+      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faRocket} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="content">
@@ -160,14 +160,14 @@ export function goToUpPage(): void {
       <!-- warning machine resources -->
       {#if connectionInfo}
         <div class="mx-5">
-          <ContainerConnectionStatusInfo connectionInfo="{connectionInfo}" />
+          <ContainerConnectionStatusInfo connectionInfo={connectionInfo} />
         </div>
       {/if}
 
       <!-- tasks tracked -->
       {#if trackedTasks?.length > 0}
         <div class="mx-5 mt-5" role="status">
-          <TasksProgress tasks="{trackedTasks}" />
+          <TasksProgress tasks={trackedTasks} />
         </div>
       {/if}
 
@@ -183,7 +183,7 @@ export function goToUpPage(): void {
               {#if localPath}
                 <div
                   class="bg-charcoal-600 max-w-full rounded-md p-2 mb-2 flex flex-row w-full h-min text-xs text-nowrap items-center">
-                  <Fa class="mr-2" icon="{faFolder}" />
+                  <Fa class="mr-2" icon={faFolder} />
                   <span aria-label="Recipe local path" class="overflow-x-hidden text-ellipsis max-w-full">
                     {localPath.path}
                   </span>
@@ -194,18 +194,18 @@ export function goToUpPage(): void {
             <!-- model form -->
             <label for="select-model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
             <Select
-              inputAttributes="{{ 'aria-label': 'Select Model' }}"
+              inputAttributes={{ 'aria-label': 'Select Model' }}
               name="select-model"
-              disabled="{loading}"
-              value="{value}"
-              on:change="{e => (value = e.detail)}"
-              --item-color="{'var(--pd-input-field-focused-text)'}"
-              --item-is-active-color="{'var(--pd-input-field-focused-text)'}"
+              disabled={loading}
+              value={value}
+              on:change={e => (value = e.detail)}
+              --item-color={'var(--pd-input-field-focused-text)'}
+              --item-is-active-color={'var(--pd-input-field-focused-text)'}
               --item-hover-color="var(--pd-input-field-focused-text)"
               --item-active-background="var(--pd-input-field-hover-stroke)"
               --item-is-active-bg="var(--pd-input-field-hover-stroke)"
-              --background="{'var(--pd-input-field-focused-bg)'}"
-              --list-background="{'var(--pd-input-field-focused-bg)'}"
+              --background={'var(--pd-input-field-focused-bg)'}
+              --list-background={'var(--pd-input-field-focused-bg)'}
               --item-hover-bg="var(--pd-action-button-hover-bg)"
               --border="1px solid var(--pd-input-field-focused-bg)"
               --border-hover="1px solid var(--pd-input-field-hover-stroke)"
@@ -213,7 +213,7 @@ export function goToUpPage(): void {
               --border-focused="var(--pd-input-field-focused-bg)"
               placeholder="Select model to use"
               class="!bg-charcoal-900 !text-white !border-charcoal-900"
-              items="{models.map(model => ({ ...model, value: model.id, label: model.name }))}"
+              items={models.map(model => ({ ...model, value: model.id, label: model.name }))}
               showChevron>
               <div slot="item" let:item>
                 <div class="flex items-center">
@@ -225,16 +225,16 @@ export function goToUpPage(): void {
                   </div>
 
                   {#if item.file !== undefined}
-                    <Fa icon="{faCheckCircle}" />
+                    <Fa icon={faCheckCircle} />
                   {:else}
-                    <Fa icon="{faDownload}" />
+                    <Fa icon={faDownload} />
                   {/if}
                 </div>
               </div>
             </Select>
             {#if value && value.file === undefined}
               <div class="text-gray-800 text-sm flex items-center">
-                <Fa class="mr-2" icon="{faWarning}" />
+                <Fa class="mr-2" icon={faWarning} />
                 <span role="alert"
                   >The selected model will be downloaded. This action can take some time depending on your connection</span>
               </div>
@@ -245,18 +245,18 @@ export function goToUpPage(): void {
             <div class="w-full flex flex-col">
               {#if completed}
                 <Button
-                  icon="{faUpRightFromSquare}"
+                  icon={faUpRightFromSquare}
                   title="Open details"
-                  on:click="{() => router.goto(`/recipe/${recipeId}/running`)}">
+                  on:click={() => router.goto(`/recipe/${recipeId}/running`)}>
                   Open details
                 </Button>
               {:else}
                 <Button
                   title="Start {recipe.name} recipe"
-                  inProgress="{loading}"
-                  on:click="{submit}"
-                  disabled="{!value || loading}"
-                  icon="{faRocket}">
+                  inProgress={loading}
+                  on:click={submit}
+                  disabled={!value || loading}
+                  icon={faRocket}>
                   Start {recipe.name} recipe
                 </Button>
               {/if}

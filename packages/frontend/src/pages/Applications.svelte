@@ -10,19 +10,19 @@ const openApplicationCatalog = () => {
 };
 </script>
 
-<NavPage title="AI Apps" searchEnabled="{false}">
+<NavPage title="AI Apps" searchEnabled={false}>
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <!-- showing running tasks -->
-      <TasksBanner title="Pulling recipes" labels="{{ 'recipe-pulling': undefined }}" />
+      <TasksBanner title="Pulling recipes" labels={{ 'recipe-pulling': undefined }} />
 
       <ApplicationTable>
         <svelte:fragment slot="empty-screen">
           <EmptyScreen
-            icon="{faRocket}"
+            icon={faRocket}
             title="No application running"
             message="There is no AI App running"
-            onClick="{openApplicationCatalog}" />
+            onClick={openApplicationCatalog} />
         </svelte:fragment>
       </ApplicationTable>
     </div>

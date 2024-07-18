@@ -8,11 +8,7 @@ function openDetails() {
 }
 </script>
 
-<button
-  class="flex flex-col w-full"
-  title="{object.name}"
-  on:click="{() => openDetails()}"
-  aria-label="Open Model Details">
+<button class="flex flex-col w-full" title={object.name} on:click={() => openDetails()} aria-label="Open Model Details">
   <div
     class="text-sm text-[var(--pd-table-body-text-highlight)] overflow-hidden text-ellipsis w-full text-left"
     aria-label="Model Name">

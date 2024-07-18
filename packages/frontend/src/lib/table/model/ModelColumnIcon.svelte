@@ -22,4 +22,4 @@ onMount(() => {
 });
 </script>
 
-<StatusIcon status="{status}" icon="{ModelWhite}" />
+<StatusIcon status={status} icon={ModelWhite} />

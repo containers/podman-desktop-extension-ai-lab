@@ -5,5 +5,5 @@ export let source: string | undefined;
 </script>
 
 <article class="prose min-w-full">
-  <SvelteMarkdown source="{source}" renderers="{{ link: LinkComponent }}" />
+  <SvelteMarkdown source={source} renderers={{ link: LinkComponent }} />
 </article>

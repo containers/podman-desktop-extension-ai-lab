@@ -46,20 +46,16 @@ onMount(() => {
 
 {#if object.file !== undefined}
   <ListItemButtonIcon
-    icon="{faRocket}"
+    icon={faRocket}
     title="Create Model Service"
-    enabled="{!object.state}"
-    onClick="{() => createModelService()}" />
+    enabled={!object.state}
+    onClick={() => createModelService()} />
   <ListItemButtonIcon
-    icon="{faFolderOpen}"
-    onClick="{() => openModelFolder()}"
+    icon={faFolderOpen}
+    onClick={() => openModelFolder()}
     title="Open Model Folder"
-    enabled="{!object.state}" />
-  <ListItemButtonIcon
-    icon="{faTrash}"
-    onClick="{deleteModel}"
-    title="Delete Model"
-    enabled="{!inUse && !object.state}" />
+    enabled={!object.state} />
+  <ListItemButtonIcon icon={faTrash} onClick={deleteModel} title="Delete Model" enabled={!inUse && !object.state} />
 {:else}
-  <ListItemButtonIcon icon="{faDownload}" onClick="{downloadModel}" title="Download Model" enabled="{!object.state}" />
+  <ListItemButtonIcon icon={faDownload} onClick={downloadModel} title="Download Model" enabled={!object.state} />
 {/if}

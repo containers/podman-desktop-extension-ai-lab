@@ -11,5 +11,5 @@ $: status = getApplicationStatus(object);
 {#if status === 'STARTING'}
   <Spinner />
 {:else}
-  <StatusIcon size="{22}" status="{status}" icon="{PodIcon}" />
+  <StatusIcon size={22} status={status} icon={PodIcon} />
 {/if}

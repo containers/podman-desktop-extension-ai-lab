@@ -13,4 +13,4 @@ function deleteConversation() {
 }
 </script>
 
-<ListItemButtonIcon icon="{faTrash}" detailed="{detailed}" onClick="{deleteConversation}" title="Delete conversation" />
+<ListItemButtonIcon icon={faTrash} detailed={detailed} onClick={deleteConversation} title="Delete conversation" />

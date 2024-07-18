@@ -8,7 +8,7 @@ function openDetails() {
 }
 </script>
 
-<button on:click="{() => openDetails()}">
+<button on:click={() => openDetails()}>
   <div class="text-sm text-[var(--pd-table-body-text-highlight)] overflow-hidden text-ellipsis">
     {object.name}
   </div>

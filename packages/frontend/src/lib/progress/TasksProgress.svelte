@@ -9,8 +9,8 @@ export let tasks: Task[] = [];
 <ul class="space-y-2 text-[var(--pd-content-card-text)] list-inside">
   {#each tasks as task}
     <li class="flex flex-col rounded-md bg-[var(--pd-content-card-bg)] p-2">
-      <TaskItem task="{task}" />
-      <ExpandableMessage message="{task.error}" title="View Error" />
+      <TaskItem task={task} />
+      <ExpandableMessage message={task.error} title="View Error" />
     </li>
   {/each}
 </ul>

@@ -33,7 +33,7 @@ onMount(() => {
 </script>
 
 {#if data?.length > 0}
-  <Table kind="AI App" data="{data}" columns="{columns}" row="{row}"></Table>
+  <Table kind="AI App" data={data} columns={columns} row={row}></Table>
 {:else}
   <slot name="empty-screen" />
 {/if}

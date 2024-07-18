@@ -40,5 +40,5 @@ $: route.update({
 </script>
 
 {#if showContent}
-  <slot params="{params}" meta="{meta}" />
+  <slot params={params} meta={meta} />
 {/if}

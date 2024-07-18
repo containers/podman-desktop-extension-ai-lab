@@ -5,8 +5,8 @@ export let object: ApplicationState;
 </script>
 
 <ApplicationActions
-  recipeId="{object.recipeId}"
-  modelId="{object.modelId}"
-  object="{object}"
-  dropdownMenu="{true}"
-  enableGoToRecipeAction="{true}" />
+  recipeId={object.recipeId}
+  modelId={object.modelId}
+  object={object}
+  dropdownMenu={true}
+  enableGoToRecipeAction={true} />

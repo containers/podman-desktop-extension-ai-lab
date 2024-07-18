@@ -81,7 +81,7 @@ function executeCommand() {
     aria-label="Container connection info banner">
     <div class="flex flex-row space-x-3">
       <div class="flex">
-        <Fa icon="{faTriangleExclamation}" class="text-amber-400" />
+        <Fa icon={faTriangleExclamation} class="text-amber-400" />
       </div>
       <div class="flex flex-col grow">
         <span class="font-medium text-sm" aria-label="title">{title}</span>
@@ -89,7 +89,7 @@ function executeCommand() {
       </div>
       {#if actionName}
         <div class="flex items-center">
-          <Button class="grow text-gray-500" on:click="{executeCommand}" aria-label="{actionName}">{actionName}</Button>
+          <Button class="grow text-gray-500" on:click={executeCommand} aria-label={actionName}>{actionName}</Button>
         </div>
       {/if}
     </div>

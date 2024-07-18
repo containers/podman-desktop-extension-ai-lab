@@ -45,13 +45,13 @@ function createNewService() {
 }
 </script>
 
-<NavPage title="Model Services" searchEnabled="{false}">
+<NavPage title="Model Services" searchEnabled={false}>
   <svelte:fragment slot="additional-actions">
     {#if selectedItemsNumber > 0}
-      <Button title="Delete selected items" on:click="{deleteSelected}" icon="{faTrash}"
+      <Button title="Delete selected items" on:click={deleteSelected} icon={faTrash}
         >Delete {selectedItemsNumber} selected items</Button>
     {/if}
-    <Button title="Create a new model service" on:click="{() => createNewService()}">New Model Service</Button>
+    <Button title="Create a new model service" on:click={() => createNewService()}>New Model Service</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-col min-w-full min-h-full">
@@ -60,19 +60,19 @@ function createNewService() {
           {#if data?.length > 0}
             <Table
               kind="service"
-              data="{data}"
-              columns="{columns}"
-              row="{row}"
-              bind:selectedItemsNumber="{selectedItemsNumber}" />
+              data={data}
+              columns={columns}
+              row={row}
+              bind:selectedItemsNumber={selectedItemsNumber} />
           {:else}
             <div class="text-[var(--pd-details-body-text)]">
               <div role="status">
                 There is no model service. You can <a
-                  href="{'javascript:void(0);'}"
+                  href={'javascript:void(0);'}
                   class="underline"
                   role="button"
                   title="Create a new Model Service"
-                  on:click="{createNewService}">create one now</a
+                  on:click={createNewService}>create one now</a
                 >.
               </div>
               <p>

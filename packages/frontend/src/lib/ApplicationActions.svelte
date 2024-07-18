@@ -69,30 +69,26 @@ $: {
 
 {#if object?.pod !== undefined}
   {#if exited}
-    <ListItemButtonIcon icon="{faPlay}" onClick="{() => startApplication()}" title="Start AI App" />
+    <ListItemButtonIcon icon={faPlay} onClick={() => startApplication()} title="Start AI App" />
   {:else}
-    <ListItemButtonIcon icon="{faStop}" onClick="{() => stopApplication()}" title="Stop AI App" />
-    <ListItemButtonIcon icon="{faArrowUpRightFromSquare}" onClick="{() => openApplication()}" title="Open AI App" />
+    <ListItemButtonIcon icon={faStop} onClick={() => stopApplication()} title="Stop AI App" />
+    <ListItemButtonIcon icon={faArrowUpRightFromSquare} onClick={() => openApplication()} title="Open AI App" />
   {/if}
 
-  <svelte:component this="{actionsStyle}">
+  <svelte:component this={actionsStyle}>
     <ListItemButtonIcon
-      icon="{faRotateForward}"
-      onClick="{() => restartApplication()}"
+      icon={faRotateForward}
+      onClick={() => restartApplication()}
       title="Restart AI App"
-      menu="{dropdownMenu}" />
+      menu={dropdownMenu} />
 
     <ListItemButtonIcon
-      icon="{faBookOpen}"
-      onClick="{() => redirectToRecipe()}"
+      icon={faBookOpen}
+      onClick={() => redirectToRecipe()}
       title="Open Recipe"
-      hidden="{!enableGoToRecipeAction}"
-      menu="{dropdownMenu}" />
+      hidden={!enableGoToRecipeAction}
+      menu={dropdownMenu} />
 
-    <ListItemButtonIcon
-      icon="{faTrash}"
-      onClick="{() => deleteApplication()}"
-      title="Delete AI App"
-      menu="{dropdownMenu}" />
+    <ListItemButtonIcon icon={faTrash} onClick={() => deleteApplication()} title="Delete AI App" menu={dropdownMenu} />
   </svelte:component>
 {/if}

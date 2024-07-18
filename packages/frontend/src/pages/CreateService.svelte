@@ -134,11 +134,11 @@ export function goToUpPage(): void {
   breadcrumbLeftPart="Model Services"
   breadcrumbRightPart="Creating Model service"
   breadcrumbTitle="Go back to Model Services"
-  on:close="{goToUpPage}"
-  on:breadcrumbClick="{goToUpPage}">
+  on:close={goToUpPage}
+  on:breadcrumbClick={goToUpPage}>
   <svelte:fragment slot="icon">
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
-      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon="{faPlus}" />
+      <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faPlus} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="content">
@@ -146,14 +146,14 @@ export function goToUpPage(): void {
       <!-- warning machine resources -->
       {#if connectionInfo}
         <div class="mx-5">
-          <ContainerConnectionStatusInfo connectionInfo="{connectionInfo}" />
+          <ContainerConnectionStatusInfo connectionInfo={connectionInfo} />
         </div>
       {/if}
 
       <!-- tasks tracked -->
       {#if trackedTasks?.length > 0}
         <div class="mx-5 mt-5" role="status">
-          <TasksProgress tasks="{trackedTasks}" />
+          <TasksProgress tasks={trackedTasks} />
         </div>
       {/if}
 
@@ -165,25 +165,25 @@ export function goToUpPage(): void {
             >Model</label>
           <select
             required
-            bind:value="{modelId}"
-            disabled="{loading}"
+            bind:value={modelId}
+            disabled={loading}
             aria-label="Model select"
             id="model-select"
             class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
             name="Model select">
             {#each localModels as model}
-              <option class="my-1" value="{model.id}">{model.name}</option>
+              <option class="my-1" value={model.id}>{model.name}</option>
             {/each}
           </select>
           {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">
-              <Fa size="1.1x" class="cursor-pointer text-red-500" icon="{faExclamationCircle}" />
+              <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
               <div role="alert" aria-label="Error Message Content" class="ml-2">
                 You don't have any models downloaded. You can download them in <a
-                  href="{'javascript:void(0);'}"
+                  href={'javascript:void(0);'}
                   class="underline"
                   title="Models page"
-                  on:click="{openModelsPage}">models page</a
+                  on:click={openModelsPage}>models page</a
                 >.
               </div>
             </div>
@@ -193,35 +193,35 @@ export function goToUpPage(): void {
             >Container port</label>
           <Input
             type="number"
-            bind:value="{containerPort}"
-            on:input="{onContainerPortInput}"
+            bind:value={containerPort}
+            on:input={onContainerPortInput}
             class="w-full"
             placeholder="8888"
             name="containerPort"
             aria-label="Port input"
-            disabled="{loading}"
+            disabled={loading}
             required />
         </div>
         {#if errorMsg !== undefined}
-          <ErrorMessage error="{errorMsg}" />
+          <ErrorMessage error={errorMsg} />
         {/if}
         <footer>
           <div class="w-full flex flex-col">
             {#if containerId === undefined}
               <Button
                 title="Create service"
-                inProgress="{loading}"
-                on:click="{submit}"
-                disabled="{!modelId || !containerPort}"
-                icon="{faPlusCircle}">
+                inProgress={loading}
+                on:click={submit}
+                disabled={!modelId || !containerPort}
+                icon={faPlusCircle}>
                 Create service
               </Button>
             {:else}
               <Button
-                inProgress="{!available}"
+                inProgress={!available}
                 title="Open service details"
-                on:click="{openServiceDetails}"
-                icon="{faLocationArrow}">
+                on:click={openServiceDetails}
+                icon={faLocationArrow}>
                 Open service details
               </Button>
             {/if}

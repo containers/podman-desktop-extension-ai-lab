@@ -1,6 +1,6 @@
 <svg
-  class="{$$props.class}"
-  style="{$$props.style}"
+  class={$$props.class}
+  style={$$props.style}
   viewBox="0 0 157.406 31.095"
   version="1.1"
   xml:space="preserve"

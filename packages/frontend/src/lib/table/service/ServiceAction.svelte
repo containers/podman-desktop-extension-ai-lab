@@ -31,18 +31,18 @@ $: {
 </script>
 
 {#if object.status === 'running'}
-  <ListItemButtonIcon detailed="{detailed}" icon="{faStop}" onClick="{stopInferenceServer}" title="Stop service" />
+  <ListItemButtonIcon detailed={detailed} icon={faStop} onClick={stopInferenceServer} title="Stop service" />
 {:else}
   <ListItemButtonIcon
-    detailed="{detailed}"
-    enabled="{!loading}"
-    icon="{faPlay}"
-    onClick="{startInferenceServer}"
+    detailed={detailed}
+    enabled={!loading}
+    icon={faPlay}
+    onClick={startInferenceServer}
     title="Start service" />
 {/if}
 <ListItemButtonIcon
-  detailed="{detailed}"
-  enabled="{!loading}"
-  icon="{faTrash}"
-  onClick="{deleteInferenceServer}"
+  detailed={detailed}
+  enabled={!loading}
+  icon={faTrash}
+  onClick={deleteInferenceServer}
   title="Delete service" />

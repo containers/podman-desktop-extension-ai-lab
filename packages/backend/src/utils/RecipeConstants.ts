@@ -16,31 +16,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export interface RecipeImage {
-  id: string;
-  engineId: string;
-  name?: string;
-  // recipe related
-  recipeId: string;
-  modelService: boolean;
-  ports: string[];
-  appName: string;
-}
+export const CONFIG_FILENAME = 'ai-lab.yaml';
 
-export interface Recipe {
-  id: string;
-  name: string;
-  categories: string[];
-  description: string;
-  icon?: string;
-  repository: string;
-  ref?: string;
-  readme: string;
-  basedir?: string;
-  recommended?: string[];
-  /**
-   * The backend field aims to target which inference
-   * server the recipe requires
-   */
-  backend?: string;
-}
+// pod labels
+export const POD_LABEL_RECIPE_ID = 'ai-lab-recipe-id';
+export const POD_LABEL_MODEL_ID = 'ai-lab-model-id';
+export const POD_LABEL_MODEL_PORTS = 'ai-lab-model-ports';
+export const POD_LABEL_APP_PORTS = 'ai-lab-application-ports';
+
+// image labels
+export const IMAGE_LABEL_RECIPE_ID = 'ai-lab-recipe-id';
+export const IMAGE_LABEL_APP_PORTS = 'ai-lab-application-ports';
+export const IMAGE_LABEL_MODEL_SERVICE = 'ai-lab-model-service';
+export const IMAGE_LABEL_APPLICATION_NAME = 'ai-lab-application-name';

@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { StudioAPI } from '@shared/src/StudioAPI';
-import type { ApplicationManager } from './managers/applicationManager';
+import type { ApplicationManager } from './managers/application/applicationManager';
 import type { ModelCheckerInfo, ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
 
@@ -47,6 +47,7 @@ import { checkContainerConnectionStatusAndResources, getPodmanConnection } from 
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
+import type { RecipeManager } from './managers/recipes/RecipeManager';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -65,6 +66,7 @@ export class StudioApiImpl implements StudioAPI {
     private snippetManager: SnippetManager,
     private cancellationTokenRegistry: CancellationTokenRegistry,
     private configurationRegistry: ConfigurationRegistry,
+    private recipeManager: RecipeManager,
   ) {}
 
   async requestDeleteConversation(conversationId: string): Promise<void> {
@@ -193,7 +195,7 @@ export class StudioApiImpl implements StudioAPI {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
     if (!recipe) throw new Error(`recipe with if ${recipeId} not found`);
 
-    return this.applicationManager.cloneApplication(recipe);
+    return this.recipeManager.cloneRecipe(recipe);
   }
 
   async requestPullApplication(recipeId: string, modelId: string): Promise<string> {

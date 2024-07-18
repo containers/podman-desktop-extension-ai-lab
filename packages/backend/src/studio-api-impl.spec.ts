@@ -20,7 +20,7 @@
 
 import { beforeEach, expect, test, vi, describe } from 'vitest';
 import content from './tests/ai-test.json';
-import type { ApplicationManager } from './managers/applicationManager';
+import type { ApplicationManager } from './managers/application/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { InferenceManager } from './managers/inference/inferenceManager';
 import type { ProviderContainerConnection, TelemetryLogger, Webview } from '@podman-desktop/api';
@@ -39,6 +39,7 @@ import path from 'node:path';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import * as podman from './utils/podman';
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
+import type { RecipeManager } from './managers/recipes/RecipeManager';
 
 vi.mock('./ai.json', () => {
   return {
@@ -145,6 +146,7 @@ beforeEach(async () => {
     {} as unknown as SnippetManager,
     {} as unknown as CancellationTokenRegistry,
     {} as unknown as ConfigurationRegistry,
+    {} as unknown as RecipeManager,
   );
   vi.mock('node:fs');
 

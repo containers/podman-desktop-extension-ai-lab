@@ -67,11 +67,13 @@ export function goToUpPage(): void {
       </Route>
       <Route path="/running">
         <TasksBanner title="Pulling recipes" labels={{ 'recipe-pulling': recipeId }} />
-        <ApplicationTable filter={items => items.filter(item => item.recipeId === recipeId)}>
-          <svelte:fragment slot="empty-screen">
-            <EmptyScreen icon={faRocket} title="No application running" message="There is no AI App running" />
-          </svelte:fragment>
-        </ApplicationTable>
+        <div class="flex w-full h-full">
+          <ApplicationTable filter={items => items.filter(item => item.recipeId === recipeId)}>
+            <svelte:fragment slot="empty-screen">
+              <EmptyScreen icon={faRocket} title="No application running" message="There is no AI App running" />
+            </svelte:fragment>
+          </ApplicationTable>
+        </div>
       </Route>
     </div>
   </svelte:fragment>

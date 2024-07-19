@@ -35,7 +35,7 @@ $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
 
     {#if localPath}
       <div
-        class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md p-2 mb-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
+        class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md p-2 mb-2 flex flex-row w-min h-min text-sm text-nowrap items-center">
         <Fa class="mr-2" icon={faFolder} />
         <span class="overflow-x-hidden text-ellipsis max-w-full">
           {localPath.path}

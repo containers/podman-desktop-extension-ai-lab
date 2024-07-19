@@ -84,8 +84,8 @@ function executeCommand() {
         <Fa icon={faTriangleExclamation} class="text-amber-400" />
       </div>
       <div class="flex flex-col grow">
-        <span class="font-medium text-sm" aria-label="title">{title}</span>
-        <span class="text-sm" aria-label="description">{description}</span>
+        <span class="font-medium" aria-label="title">{title}</span>
+        <span aria-label="description">{description}</span>
       </div>
       {#if actionName}
         <div class="flex items-center">

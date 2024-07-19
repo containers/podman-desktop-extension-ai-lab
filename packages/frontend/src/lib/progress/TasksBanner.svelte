@@ -46,8 +46,8 @@ onMount(() => {
 
 {#if loadingTasks.length > 0}
   <Card classes="bg-[var(--pd-content-card-bg)] mt-4 mx-5">
-    <div slot="content" class="text-base font-normal p-2 w-full">
-      <div class="text-base mb-2 text-[var(--pd-content-card-title)]">{title}</div>
+    <div slot="content" class="font-normal p-2 w-full">
+      <div class="mb-2 text-[var(--pd-content-card-title)]">{title}</div>
       <TasksProgress tasks={loadingTasks} />
     </div>
   </Card>

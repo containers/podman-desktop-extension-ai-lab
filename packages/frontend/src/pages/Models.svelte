@@ -10,13 +10,13 @@ import { onMount } from 'svelte';
 import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
 import ModelColumnAge from '../lib/table/model/ModelColumnAge.svelte';
 import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
-import { Tab } from '@podman-desktop/ui-svelte';
+import { EmptyScreen, Tab } from '@podman-desktop/ui-svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 import { router } from 'tinro';
 import { Button } from '@podman-desktop/ui-svelte';
-import { faFileImport } from '@fortawesome/free-solid-svg-icons';
+import { faBookOpen, faFileImport } from '@fortawesome/free-solid-svg-icons';
 import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<ModelInfo>[] = [
@@ -114,57 +114,57 @@ async function importModel() {
     <Button on:click={importModel} icon={faFileImport} aria-label="Import Models">Import</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <div class="flex flex-col min-w-full min-h-full">
-      <div class="min-w-full min-h-full flex-1">
-        <div class="mt-4 px-5 space-y-5">
-          {#if !loading}
-            {#if pullingTasks.length > 0}
-              <Card classes="bg-charcoal-800 mt-4">
-                <div slot="content" class="text-base font-normal p-2 w-full">
-                  <div class="text-base mb-2">Downloading models</div>
-                  <TasksProgress tasks={pullingTasks} />
-                </div>
-              </Card>
+    <div class="flex flex-col min-w-full min-h-full space-y-5">
+      {#if !loading}
+        {#if pullingTasks.length > 0}
+          <div class="w-full px-5">
+            <Card classes="bg-charcoal-800 mt-4">
+              <div slot="content" class="font-normal p-2 w-full">
+                <div class=" mb-2">Downloading models</div>
+                <TasksProgress tasks={pullingTasks} />
+              </div>
+            </Card>
+          </div>
+        {/if}
+
+        <div class="flex min-w-full min-h-full">
+          <!-- All models -->
+          <Route path="/">
+            {#if filteredModels.length > 0}
+              <Table kind="model" data={filteredModels} columns={columns} row={row}></Table>
+            {:else}
+              <EmptyScreen icon={faBookOpen} title="No models" message="No models available" />
             {/if}
+          </Route>
 
-            <!-- All models -->
-            <Route path="/">
-              {#if filteredModels.length > 0}
-                <Table kind="model" data={filteredModels} columns={columns} row={row}></Table>
-              {:else}
-                <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
-              {/if}
-            </Route>
+          <!-- Downloaded models -->
+          <Route path="/downloaded">
+            {#if localModels.length > 0}
+              <Table kind="model" data={localModels} columns={columns} row={row}></Table>
+            {:else}
+              <EmptyScreen icon={faBookOpen} title="No models" message="No model has been downloaded yet" />
+            {/if}
+          </Route>
 
-            <!-- Downloaded models -->
-            <Route path="/downloaded">
-              {#if localModels.length > 0}
-                <Table kind="model" data={localModels} columns={columns} row={row}></Table>
-              {:else}
-                <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
-              {/if}
-            </Route>
+          <!-- Imported models -->
+          <Route path="/imported">
+            {#if importedModels.length > 0}
+              <Table kind="model" data={importedModels} columns={columns} row={row}></Table>
+            {:else}
+              <EmptyScreen icon={faBookOpen} title="No models" message="No model has been imported yet" />
+            {/if}
+          </Route>
 
-            <!-- Imported models -->
-            <Route path="/imported">
-              {#if importedModels.length > 0}
-                <Table kind="model" data={importedModels} columns={columns} row={row}></Table>
-              {:else}
-                <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
-              {/if}
-            </Route>
-
-            <!-- Available models (from catalogs)-->
-            <Route path="/available">
-              {#if remoteModels.length > 0}
-                <Table kind="model" data={remoteModels} columns={columns} row={row}></Table>
-              {:else}
-                <div role="status" class="text-[var(--pd-content-text)]">There are no models yet</div>
-              {/if}
-            </Route>
-          {/if}
+          <!-- Available models (from catalogs)-->
+          <Route path="/available">
+            {#if remoteModels.length > 0}
+              <Table kind="model" data={remoteModels} columns={columns} row={row}></Table>
+            {:else}
+              <EmptyScreen icon={faBookOpen} title="No models" message="No model is available" />
+            {/if}
+          </Route>
         </div>
-      </div>
+      {/if}
     </div>
   </svelte:fragment>
 </NavPage>

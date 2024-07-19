@@ -60,7 +60,7 @@ onMount(() => {
       <Fa icon={editing ? faCheck : faEdit} />
     </button>
   </div>
-  <div class="text-sm">
+  <div>
     <textarea
       class:hidden={!editing}
       on:input={onChange}

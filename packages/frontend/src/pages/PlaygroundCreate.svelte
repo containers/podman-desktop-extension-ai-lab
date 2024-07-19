@@ -132,7 +132,7 @@ export function goToUpPage(): void {
       <div class="bg-[var(--pd-content-card-bg)] m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- playground name input -->
-          <label for="playgroundName" class="block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+          <label for="playgroundName" class="block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
             >Playground name</label>
           <Input
             disabled={submitted}
@@ -145,14 +145,13 @@ export function goToUpPage(): void {
             aria-label="playgroundName" />
 
           <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
-            >Model</label>
+          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
           <select
             required
             disabled={submitted}
             id="providerChoice"
             bind:value={modelId}
-            class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
+            class="border rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
             name="providerChoice">
             {#each localModels as model}
               <option class="my-1" value={model.id}>{model.name}</option>

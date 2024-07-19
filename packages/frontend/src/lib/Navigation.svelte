@@ -18,13 +18,13 @@ export let meta: TinroRouteMeta;
   </div>
   <div class="h-full overflow-hidden hover:overflow-y-auto" style="margin-bottom:auto">
     <!-- AI Apps -->
-    <span class="pl-3 text-sm ml-[4px] text-[color:var(--pd-secondary-nav-header-text)]">AI APPS</span>
+    <span class="pl-3 ml-[4px] text-[color:var(--pd-secondary-nav-header-text)]">AI APPS</span>
     <SettingsNavItem icon={faBookOpen} title="Recipes Catalog" selected={meta.url === '/recipes'} href="/recipes" />
     <SettingsNavItem icon={faServer} title="Running" selected={meta.url === '/applications'} href="/applications" />
 
     <!-- Models -->
     <div class="pl-3 mt-2 ml-[4px]">
-      <span class="text-sm text-[color:var(--pd-secondary-nav-header-text)]">MODELS</span>
+      <span class="text-[color:var(--pd-secondary-nav-header-text)]">MODELS</span>
     </div>
     <SettingsNavItem icon={faBookOpen} title="Catalog" selected={meta.url === '/models'} href="/models" />
     <SettingsNavItem icon={faRocket} title="Services" selected={meta.url === '/services'} href="/services" />

@@ -30,12 +30,12 @@ export let primaryBackground: string = 'bg-charcoal-800';
           class="flex flex-col text-[var(--pd-content-card-text)] whitespace-normal space-y-2"
           aria-label="context-name">
           {#if title}
-            <div class="text-sm">
+            <div>
               {title}
             </div>
           {/if}
           {#if description}
-            <div class="text-xs">
+            <div>
               {description}
             </div>
           {/if}

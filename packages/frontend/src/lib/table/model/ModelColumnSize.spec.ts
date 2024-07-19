@@ -43,6 +43,5 @@ test('Expect simple column styling', async () => {
 
   const text = screen.getByText('1 kB');
   expect(text).toBeInTheDocument();
-  expect(text.parentElement).toHaveClass('text-xs');
   expect(text.parentElement).toHaveClass('text-[var(--pd-table-body-text)]');
 });

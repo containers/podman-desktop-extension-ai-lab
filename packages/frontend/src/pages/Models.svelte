@@ -133,7 +133,7 @@ async function importModel() {
             {#if filteredModels.length > 0}
               <Table kind="model" data={filteredModels} columns={columns} row={row}></Table>
             {:else}
-              <EmptyScreen icon={faBookOpen} title="No models" message="No models available" />
+              <EmptyScreen aria-label="status" icon={faBookOpen} title="No models" message="No models available" />
             {/if}
           </Route>
 
@@ -142,7 +142,11 @@ async function importModel() {
             {#if localModels.length > 0}
               <Table kind="model" data={localModels} columns={columns} row={row}></Table>
             {:else}
-              <EmptyScreen icon={faBookOpen} title="No models" message="No model has been downloaded yet" />
+              <EmptyScreen
+                aria-label="status"
+                icon={faBookOpen}
+                title="No models"
+                message="No model has been downloaded yet" />
             {/if}
           </Route>
 
@@ -151,7 +155,11 @@ async function importModel() {
             {#if importedModels.length > 0}
               <Table kind="model" data={importedModels} columns={columns} row={row}></Table>
             {:else}
-              <EmptyScreen icon={faBookOpen} title="No models" message="No model has been imported yet" />
+              <EmptyScreen
+                aria-label="status"
+                icon={faBookOpen}
+                title="No models"
+                message="No model has been imported yet" />
             {/if}
           </Route>
 
@@ -160,7 +168,7 @@ async function importModel() {
             {#if remoteModels.length > 0}
               <Table kind="model" data={remoteModels} columns={columns} row={row}></Table>
             {:else}
-              <EmptyScreen icon={faBookOpen} title="No models" message="No model is available" />
+              <EmptyScreen aria-label="status" icon={faBookOpen} title="No models" message="No model is available" />
             {/if}
           </Route>
         </div>

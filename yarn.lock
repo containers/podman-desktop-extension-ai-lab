@@ -4409,10 +4409,10 @@ svelte-select@^5.8.3:
   dependencies:
     svelte-floating-ui "1.5.8"
 
-svelte@5.0.0-next.191:
-  version "5.0.0-next.191"
-  resolved "https://registry.yarnpkg.com/svelte/-/svelte-5.0.0-next.191.tgz#f60942907fa78f101086ffd1f7e7dd1c53a0140f"
-  integrity sha512-n/R81CHUMNvCsgpLOp0EG2vHFqjHAP/x5aXV8ZK4wgu0BEH7SWQs0/mMrPpO8XegQSjvY6bf6q66oOTeSoS7Uw==
+svelte@5.0.0-next.192:
+  version "5.0.0-next.192"
+  resolved "https://registry.yarnpkg.com/svelte/-/svelte-5.0.0-next.192.tgz#d4c7c9f84b5614cf8465823a5bc4711f8046f7c7"
+  integrity sha512-UgjiqTCsEWyQ157x5YNbmx859vBVFfznKaxuiMCPqHS3HRZ1iqTsSyO3LI/4BHjqPrtxwrOn1Z63VwoJkYBBDA==
   dependencies:
     "@ampproject/remapping" "^2.2.1"
     "@jridgewell/sourcemap-codec" "^1.4.15"

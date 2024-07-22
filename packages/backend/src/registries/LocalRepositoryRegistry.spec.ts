@@ -23,6 +23,7 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { CatalogManager } from '../managers/catalogManager';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 
 const mocks = vi.hoisted(() => ({
   DisposableCreateMock: vi.fn(),
@@ -47,7 +48,7 @@ vi.mock('node:fs', () => {
 });
 
 const catalogManagerMock = {
-  onCatalogUpdate: vi.fn(),
+  onUpdate: vi.fn(),
   getRecipes: vi.fn(),
 } as unknown as CatalogManager;
 
@@ -103,10 +104,6 @@ test('should notify webview when unregister', async () => {
 
 test('should register localRepo if it find the folder of the recipe', () => {
   vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-  vi.mocked(catalogManagerMock.onCatalogUpdate).mockImplementation((fn: () => void) => {
-    fn();
-    return { dispose: vi.fn() };
-  });
   vi.mocked(catalogManagerMock.getRecipes).mockReturnValue([
     {
       id: 'recipe',
@@ -132,12 +129,51 @@ test('should register localRepo if it find the folder of the recipe', () => {
   });
 });
 
-test('should NOT register localRepo if it does not find the folder of the recipe', () => {
-  vi.spyOn(fs, 'existsSync').mockReturnValue(false);
-  vi.mocked(catalogManagerMock.onCatalogUpdate).mockImplementation((fn: () => void) => {
-    fn();
+test('should register localRepo when catalog get updated', () => {
+  vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+  vi.mocked(catalogManagerMock.getRecipes).mockReturnValue([]);
+
+  let listener: ((catalog: ApplicationCatalog) => void) | undefined = undefined;
+  vi.mocked(catalogManagerMock.onUpdate).mockImplementation((fn: (catalog: ApplicationCatalog) => void) => {
+    listener = fn;
     return { dispose: vi.fn() };
   });
+
+  const localRepositories = new LocalRepositoryRegistry(
+    {
+      postMessage: mocks.postMessageMock,
+    } as unknown as Webview,
+    '/appUserDirectory',
+    catalogManagerMock,
+  );
+
+  const registerMock = vi.spyOn(localRepositories, 'register');
+  localRepositories.init();
+
+  const folder = path.join('/appUserDirectory', 'recipe');
+  expect(registerMock).not.toHaveBeenCalled();
+  expect(listener).toBeDefined();
+  if (!listener) throw new Error('undefined listener');
+
+  (listener as (catalog: ApplicationCatalog) => void)({
+    recipes: [
+      {
+        id: 'recipe',
+      } as unknown as Recipe,
+    ],
+    models: [],
+    categories: [],
+  });
+
+  expect(registerMock).toHaveBeenCalledWith({
+    path: folder,
+    sourcePath: folder,
+    labels: { 'recipe-id': 'recipe' },
+  });
+});
+
+test('should NOT register localRepo if it does not find the folder of the recipe', () => {
+  vi.spyOn(fs, 'existsSync').mockReturnValue(false);
   vi.mocked(catalogManagerMock.getRecipes).mockReturnValue([
     {
       id: 'recipe',

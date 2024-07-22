@@ -49,7 +49,7 @@ const openDiscussionsPage = () => {
           environments to experiment with and test AI models, for instance, a chat bot.
         </p>
 
-        <h1 class="text-xl first-letter:uppercase underline">Recipes Catalog</h1>
+        <h1 class="text-lg first-letter:uppercase underline">Recipes Catalog</h1>
         <p>
           Podman AI Lab ships with a so-called
           <button class="underline" title="Open the Recipes Catalog page" on:click={openRecipesCatalog}
@@ -59,21 +59,21 @@ const openDiscussionsPage = () => {
           large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
         </p>
 
-        <h1 class="text-xl first-letter:uppercase underline">AI Models</h1>
+        <h1 class="text-lg first-letter:uppercase underline">AI Models</h1>
         <p>
           Podman AI Lab provides a curated list of open source
           <button class="underline" title="Open the Models page" on:click={openModelsPage}>AI Models and LLMs</button>.
           Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
         </p>
 
-        <h1 class="text-xl first-letter:uppercase underline">Model Serving</h1>
+        <h1 class="text-lg first-letter:uppercase underline">Model Serving</h1>
         <p>
           Once a model has been downloaded, you can start an inference server for the model. This allows to test the
           model using a playground environment or to connect applications as the inference server is exposing a well
           know chat API.
         </p>
 
-        <h1 class="text-xl first-letter:uppercase underline">Playgrounds</h1>
+        <h1 class="text-lg first-letter:uppercase underline">Playgrounds</h1>
         <p>
           The integrated
           <button class="underline" title="Open the Playgrounds page" on:click={openPlaygroundsPage}
@@ -90,7 +90,7 @@ const openDiscussionsPage = () => {
           them.
         </p>
 
-        <h1 class="text-xl first-letter:uppercase underline">Feedback</h1>
+        <h1 class="text-lg first-letter:uppercase underline">Feedback</h1>
         <p>
           If you discover an issue or want to request a new feature, you can open an issue
           <button class="underline" title="Open the issues page" on:click={openIssuesPage}>here</button>.

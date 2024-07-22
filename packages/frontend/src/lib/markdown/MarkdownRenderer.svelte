@@ -4,6 +4,6 @@ import LinkComponent from '/@/lib/markdown/LinkComponent.svelte';
 export let source: string | undefined;
 </script>
 
-<article class="prose min-w-full">
+<article class="prose min-w-full text-base">
   <SvelteMarkdown source={source} renderers={{ link: LinkComponent }} />
 </article>

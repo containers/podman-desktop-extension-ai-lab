@@ -162,7 +162,7 @@ export function goToUpPage(): void {
                 <div>
                   <span class="text-sm text-[var(--pd-content-card-text)]">Models</span>
                   <div
-                    class="w-full bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-col gap-y-4">
+                    class="w-full bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md px-2 py-1 flex flex-col gap-y-4">
                     {#each service.models as model}
                       <div class="flex flex-row gap-2 items-center">
                         <div class="grow text-sm" aria-label="Model name">

@@ -11,11 +11,13 @@ const openApplicationCatalog = () => {
 </script>
 
 <NavPage title="AI Apps" searchEnabled={false}>
-  <div slot="content" class="flex flex-col min-w-full min-h-full">
-    <div class="min-w-full min-h-full flex-1">
-      <!-- showing running tasks -->
+  <div slot="content" class="flex flex-col min-w-full min-h-full space-y-5">
+    <!-- showing running tasks -->
+    <div class="w-full">
       <TasksBanner title="Pulling recipes" labels={{ 'recipe-pulling': undefined }} />
+    </div>
 
+    <div class="flex w-full h-full">
       <ApplicationTable>
         <svelte:fragment slot="empty-screen">
           <EmptyScreen

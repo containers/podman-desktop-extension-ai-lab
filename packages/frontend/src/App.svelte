@@ -35,7 +35,7 @@ onMount(() => {
 </script>
 
 <Route path="/*" isAppMounted={isMounted} let:meta>
-  <main class="flex flex-col w-screen h-screen overflow-hidden bg-[var(--pd-content-bg)]">
+  <main class="flex flex-col w-screen h-screen overflow-hidden bg-[var(--pd-content-bg)] text-base">
     <div class="flex flex-row w-full h-full overflow-hidden">
       <Navigation meta={meta} />
 

@@ -113,7 +113,7 @@ export function goToUpPage(): void {
       <!-- Error banner -->
       <div aria-label="importError">
         {#if errorMessage !== ''}
-          <ErrorMessage class="py-2 text-sm" error={errorMessage} />
+          <ErrorMessage class="py-2" error={errorMessage} />
         {/if}
       </div>
 
@@ -139,12 +139,11 @@ export function goToUpPage(): void {
             </button>
           {:else}
             <!-- showing path -->
-            <label for="path" class="w-full block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
-              >Path</label>
+            <label for="path" class="w-full block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Path</label>
             <Input class="grow" bind:value={localModel.path} name="path" aria-label="model path" readonly={true} />
 
             <!-- Model name -->
-            <label for="name" class="pt-4 w-full block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+            <label for="name" class="pt-4 w-full block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
               >Name</label>
             <Input
               bind:value={localModel.name}
@@ -156,13 +155,12 @@ export function goToUpPage(): void {
 
             <!-- selecting backend -->
             <div class="flex flex-row items-center justify-center">
-              <label
-                for="backend"
-                class="pt-4 grow block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]">Backend</label>
+              <label for="backend" class="pt-4 grow block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+                >Backend</label>
               <Tooltip left>
                 <Fa size="1.1x" class="cursor-pointer" icon={faCircleInfo} />
                 <svelte:fragment slot="tip">
-                  <span class="inline-block py-2 px-4 rounded-md text-xs"
+                  <span class="inline-block py-2 px-4 rounded-md"
                     ><code>backends</code> represents the technology required to run the models.</span>
                 </svelte:fragment>
               </Tooltip>
@@ -170,7 +168,7 @@ export function goToUpPage(): void {
             <select
               on:change={onBackendChange}
               name="backend"
-              class="border text-sm rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white">
+              class="border rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white">
               {#each Object.values(InferenceType) as type}
                 <option value={type}>{type}</option>
               {/each}

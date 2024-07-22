@@ -89,7 +89,7 @@ test('should display There is no model yet', async () => {
 
   render(Models);
 
-  const status = screen.getByRole('status');
+  const status = screen.getByLabelText('status');
   expect(status).toBeDefined();
 });
 
@@ -107,7 +107,7 @@ test('should display There is no model yet and have a task running', async () =>
   ]);
   render(Models);
 
-  const status = screen.getByRole('status');
+  const status = screen.getByLabelText('status');
   expect(status).toBeDefined();
 
   await waitFor(() => {
@@ -171,7 +171,7 @@ describe('downloaded models', () => {
     router.goto('downloaded');
 
     await waitFor(() => {
-      const status = screen.getByRole('status');
+      const status = screen.getByLabelText('status');
       expect(status).toBeDefined();
     });
   });
@@ -258,7 +258,7 @@ describe('imported models', () => {
     router.goto('imported');
 
     await waitFor(() => {
-      const status = screen.getByRole('status');
+      const status = screen.getByLabelText('status');
       expect(status).toBeDefined();
     });
   });
@@ -328,7 +328,7 @@ describe('available models', () => {
     router.goto('available');
 
     await waitFor(() => {
-      const status = screen.getByRole('status');
+      const status = screen.getByLabelText('status');
       expect(status).toBeDefined();
     });
   });

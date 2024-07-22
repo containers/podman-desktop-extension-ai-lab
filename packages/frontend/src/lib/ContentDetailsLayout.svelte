@@ -23,7 +23,7 @@ const toggle = () => {
           aria-label={`${detailsLabel} panel`}>
           <div class="flex flex-col px-4 space-y-4 mx-auto">
             <div class="w-full flex flex-row justify-between max-lg:hidden">
-              <span class="text-base">{detailsTitle}</span>
+              <span>{detailsTitle}</span>
               <button on:click={toggle} aria-label={`hide ${detailsLabel}`}
                 ><i class="fas fa-angle-right text-[var(--pd-content-card-icon)]"></i></button>
             </div>

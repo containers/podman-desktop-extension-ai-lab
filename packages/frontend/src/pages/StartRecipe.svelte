@@ -176,7 +176,7 @@ export function goToUpPage(): void {
         <div class="space-y-6 bg-[var(--pd-content-card-bg)] m-5 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
           <div>
             <!-- selected recipe -->
-            <label for="recipe" class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+            <label for="recipe" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
               >Recipe</label>
 
             <div
@@ -184,7 +184,7 @@ export function goToUpPage(): void {
               <span aria-label="Recipe name">{recipe.name}</span>
               {#if localPath}
                 <div
-                  class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md p-2 mb-2 flex flex-row w-full h-min text-xs text-nowrap items-center">
+                  class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md p-2 mb-2 flex flex-row w-full h-min text-sm text-nowrap items-center">
                   <Fa class="mr-2" icon={faFolder} />
                   <span aria-label="Recipe local path" class="overflow-x-hidden text-ellipsis max-w-full">
                     {localPath.path}
@@ -194,9 +194,8 @@ export function goToUpPage(): void {
             </div>
 
             <!-- model form -->
-            <label
-              for="select-model"
-              class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]">Model</label>
+            <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+              >Model</label>
             <Select
               inputAttributes={{ 'aria-label': 'Select Model' }}
               name="select-model"
@@ -215,6 +214,9 @@ export function goToUpPage(): void {
               --border-hover="1px solid var(--pd-input-field-hover-stroke)"
               --list-border="1px solid var(--pd-input-field-focused-bg)"
               --border-focused="var(--pd-input-field-focused-bg)"
+              --font-size="12px"
+              --clear-icon-width="16px"
+              --chevron-icon-width="16px"
               placeholder="Select model to use"
               class="!bg-[var(--pd-content-bg)] !text-[var(--pd-content-card-text)]"
               items={models.map(model => ({ ...model, value: model.id, label: model.name }))}

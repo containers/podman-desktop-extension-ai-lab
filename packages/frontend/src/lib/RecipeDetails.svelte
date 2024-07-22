@@ -45,7 +45,7 @@ const deleteLocalClone = () => {
 
 <div class="flex flex-col w-full space-y-4 rounded-md bg-[var(--pd-content-bg)] p-4">
   <div class="flex flex-col w-full space-y-2 w-[45px]">
-    <div class="text-base">Repository</div>
+    <div class="text-lg">Repository</div>
     <div class="cursor-pointer flex flex-col w-full space-y-2 text-nowrap">
       <button on:click={onClickRepository}>
         <div class="flex flex-row p-0 m-0 bg-transparent items-center space-x-2">
@@ -61,7 +61,7 @@ const deleteLocalClone = () => {
               <span>Local clone</span>
             </div>
           </button>
-          <Button title="Delete local clone" on:click={deleteLocalClone} icon={faTrash} />
+          <Button title="Delete local clone" class="text-sm" on:click={deleteLocalClone} icon={faTrash} />
         </div>
       {/if}
     </div>

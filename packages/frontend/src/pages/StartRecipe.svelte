@@ -1,19 +1,11 @@
 <script lang="ts">
-import {
-  faCheckCircle,
-  faDownload,
-  faFolder,
-  faRocket,
-  faUpRightFromSquare,
-  faWarning,
-} from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faRocket, faUpRightFromSquare, faWarning } from '@fortawesome/free-solid-svg-icons';
 import { catalog } from '/@/stores/catalog';
 import Fa from 'svelte-fa';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 import { localRepositories } from '/@/stores/localRepositories';
-import Select from 'svelte-select';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import { Button, FormPage } from '@podman-desktop/ui-svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';

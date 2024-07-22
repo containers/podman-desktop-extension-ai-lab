@@ -28,6 +28,7 @@ import { router } from 'tinro';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '/@/utils/connectionUtils';
 import ContainerConnectionStatusInfo from '/@/lib/notification/ContainerConnectionStatusInfo.svelte';
+import ModelSelect from '/@/lib/ModelSelect.svelte';
 
 export let recipeId: string;
 
@@ -195,49 +196,12 @@ export function goToUpPage(): void {
 
             <!-- model form -->
             <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Model</label>
-            <Select
-              inputAttributes={{ 'aria-label': 'Select Model' }}
-              name="select-model"
+            >Model</label>
+            <ModelSelect
+              bind:value={value}
               disabled={loading}
-              value={value}
-              on:change={e => (value = e.detail)}
-              --item-color={'var(--pd-dropdown-item-text)'}
-              --item-is-active-color={'var(--pd-dropdown-item-text)'}
-              --item-hover-color="var(--pd-dropdown-item-hover-text)"
-              --item-active-background="var(--pd-input-field-hover-stroke)"
-              --item-is-active-bg="var(--pd-input-field-hover-stroke)"
-              --background={'var(--pd-dropdown-bg)'}
-              --list-background={'var(--pd-dropdown-bg)'}
-              --item-hover-bg="var(--pd-dropdown-item-hover-bg)"
-              --border="1px solid var(--pd-input-field-focused-bg)"
-              --border-hover="1px solid var(--pd-input-field-hover-stroke)"
-              --list-border="1px solid var(--pd-input-field-focused-bg)"
-              --border-focused="var(--pd-input-field-focused-bg)"
-              --font-size="12px"
-              --clear-icon-width="16px"
-              --chevron-icon-width="16px"
-              placeholder="Select model to use"
-              class="!bg-[var(--pd-content-bg)] !text-[var(--pd-content-card-text)]"
-              items={models.map(model => ({ ...model, value: model.id, label: model.name }))}
-              showChevron>
-              <div slot="item" let:item>
-                <div class="flex items-center">
-                  <div class="grow">
-                    <span>{item.name}</span>
-                    {#if recipe.recommended?.includes(item.id)}
-                      <i class="fas fa-star fa-xs" title="Recommended model"></i>
-                    {/if}
-                  </div>
-
-                  {#if item.file !== undefined}
-                    <Fa icon={faCheckCircle} />
-                  {:else}
-                    <Fa icon={faDownload} />
-                  {/if}
-                </div>
-              </div>
-            </Select>
+              recommended={recipe.recommended}
+              models={models.map(model => ({ ...model, value: model.id, label: model.name }))} />
             {#if value && value.file === undefined}
               <div class="text-gray-800 text-sm flex items-center">
                 <Fa class="mr-2" icon={faWarning} />

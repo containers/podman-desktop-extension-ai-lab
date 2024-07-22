@@ -12,11 +12,12 @@ import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
+import ModelSelect from '/@/lib/ModelSelect.svelte';
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
 $: availModels = $modelsInfo.filter(model => !model.file);
-let modelId: string | undefined = undefined;
+let model: ModelInfo | undefined = undefined;
 let submitted: boolean = false;
 let playgroundName: string;
 let errorMsg: string | undefined = undefined;
@@ -29,8 +30,8 @@ let trackingId: string | undefined = undefined;
 let trackedTasks: Task[] = [];
 
 $: {
-  if (!modelId && localModels.length > 0) {
-    modelId = localModels[0].id;
+  if (!model && localModels.length > 0) {
+    model = localModels[0];
   }
 }
 
@@ -49,7 +50,6 @@ function onNameInput(event: Event) {
 
 async function submit() {
   errorMsg = undefined;
-  const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
   // disable submit button
   submitted = true;
@@ -145,18 +145,9 @@ export function goToUpPage(): void {
             aria-label="playgroundName" />
 
           <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
-          <select
-            required
-            disabled={submitted}
-            id="providerChoice"
-            bind:value={modelId}
-            class="border rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
-            name="providerChoice">
-            {#each localModels as model}
-              <option class="my-1" value={model.id}>{model.name}</option>
-            {/each}
-          </select>
+          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+            >Model</label>
+          <ModelSelect models={localModels} disabled={submitted} bind:value={model} />
           {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">
               <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
@@ -192,7 +183,7 @@ export function goToUpPage(): void {
               title="Create playground"
               inProgress={submitted}
               on:click={submit}
-              disabled={!modelId}
+              disabled={!model}
               icon={faPlusCircle}>
               Create playground
             </Button>

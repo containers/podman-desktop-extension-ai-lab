@@ -15,6 +15,7 @@ import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnecti
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
+import ModelSelect from '/@/lib/ModelSelect.svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];
@@ -22,8 +23,8 @@ $: localModels = $modelsInfo.filter(model => model.file);
 
 // The containerPort is the bind value to form input
 let containerPort: number | undefined = undefined;
-// The modelId is the bind value to form input
-let modelId: string | undefined = undefined;
+// The model is the bind value to ModelSelect form
+let model: ModelInfo | undefined = undefined;
 // If the creation of a new inference service fail
 let errorMsg: string | undefined = undefined;
 
@@ -44,10 +45,16 @@ $: available = containerId && $inferenceServers.some(server => server.container.
 $: loading = trackingId !== undefined && !error;
 
 let connectionInfo: ContainerConnectionInfo | undefined;
-$: if (localModels && modelId) {
-  checkContainerConnectionStatus(localModels, modelId, 'inference')
+$: if (localModels && model) {
+  checkContainerConnectionStatus(localModels, model.id, 'inference')
     .then(value => (connectionInfo = value))
     .catch((e: unknown) => console.log(String(e)));
+}
+
+$: {
+  if (!model && localModels.length > 0) {
+    model = localModels[0];
+  }
 }
 
 const onContainerPortInput = (event: Event): void => {
@@ -63,7 +70,6 @@ const onContainerPortInput = (event: Event): void => {
 // Submit method when the form is valid
 const submit = async () => {
   errorMsg = undefined;
-  const model: ModelInfo | undefined = localModels.find(model => model.id === modelId);
   if (model === undefined) throw new Error('model id not valid.');
   if (containerPort === undefined) throw new Error('invalid container port');
 
@@ -116,7 +122,7 @@ onMount(async () => {
 
   const queryModelId = router.location.query.get('model-id');
   if (queryModelId !== undefined && typeof queryModelId === 'string') {
-    modelId = queryModelId;
+    model = localModels.find(mModel => mModel.id === queryModelId);
   }
 
   tasks.subscribe(tasks => {
@@ -161,19 +167,9 @@ export function goToUpPage(): void {
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
-          <select
-            required
-            bind:value={modelId}
-            disabled={loading}
-            aria-label="Model select"
-            id="model-select"
-            class="border rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white"
-            name="Model select">
-            {#each localModels as model}
-              <option class="my-1" value={model.id}>{model.name}</option>
-            {/each}
-          </select>
+          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+            >Model</label>
+          <ModelSelect models={localModels} disabled={loading} bind:value={model} />
           {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">
               <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
@@ -211,7 +207,7 @@ export function goToUpPage(): void {
                 title="Create service"
                 inProgress={loading}
                 on:click={submit}
-                disabled={!modelId || !containerPort}
+                disabled={!model || !containerPort}
                 icon={faPlusCircle}>
                 Create service
               </Button>

@@ -18,7 +18,7 @@
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/svelte';
-import { expect, test, vi } from 'vitest';
+import { expect, test, vi, beforeEach } from 'vitest';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { writable } from 'svelte/store';
@@ -53,6 +53,10 @@ vi.mock('/@/stores/modelsInfo', async () => {
   return {
     modelsInfo: vi.fn(),
   };
+});
+
+beforeEach(() => {
+  window.HTMLElement.prototype.scrollIntoView = function () {};
 });
 
 test('should display error message if createPlayground fails', async () => {

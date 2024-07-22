@@ -4,6 +4,7 @@ import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
 import {
+  faArrowUpRightFromSquare,
   faBuildingColumns,
   faCheck,
   faCopy,
@@ -11,7 +12,7 @@ import {
   faMicrochip,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceType  } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -196,10 +197,18 @@ export function goToUpPage(): void {
               <div class="bg-[var(--pd-content-card-bg)] rounded-md w-full px-4 pt-2 pb-4 mt-2">
                 <span class="text-sm text-[var(--pd-content-card-text)]">Server</span>
                 <div class="flex flex-row gap-4">
-                  <div
-                    class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
-                    http://localhost:{service.connection.port}/v1
-                  </div>
+                  {#if service.status === 'running' && service.type === InferenceType.LLAMA_CPP}
+                    <button
+                      on:click="{() =>
+                        service &&
+                        studioClient.openURL(`http://localhost:${service.connection.port}/docs`)}"
+                      class="bg-charcoal-600 rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
+                      http://localhost:{service.connection.port}/docs
+                      <Fa class="ml-2" icon="{faArrowUpRightFromSquare}" />
+                    </button>
+                  {/if}
+
+
                   {#if 'gpu' in service.labels}
                     <Tooltip tip={service.labels['gpu']}>
                       <div

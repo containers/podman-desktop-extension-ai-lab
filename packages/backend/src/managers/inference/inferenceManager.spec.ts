@@ -88,7 +88,7 @@ const inferenceProviderRegistryMock = {
 } as unknown as InferenceProviderRegistry;
 
 const catalogManager = {
-  onCatalogUpdate: vi.fn(),
+  onUpdate: vi.fn(),
 } as unknown as CatalogManager;
 
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {

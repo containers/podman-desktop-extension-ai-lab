@@ -23,7 +23,7 @@ import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Messages } from '@shared/Messages';
-import { type Disposable, type Event, EventEmitter, type Webview } from '@podman-desktop/api';
+import { type Disposable, type Event, EventEmitter, type Webview, window } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
@@ -37,7 +37,8 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   readonly onUpdate: Event<ApplicationCatalog> = this._onUpdate.event;
 
   private catalog: ApplicationCatalog;
-  #disposables: Disposable[];
+  #jsonWatcher: JsonWatcher<ApplicationCatalog> | undefined;
+  #notification: Disposable | undefined;
 
   constructor(
     webview: Webview,
@@ -51,8 +52,6 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       models: [],
       recipes: [],
     };
-
-    this.#disposables = [];
   }
 
   /**
@@ -60,16 +59,14 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
    */
   init(): void {
     // Creating a json watcher
-    const jsonWatcher: JsonWatcher<unknown> = new JsonWatcher(this.getUserCatalogPath(), {
+    this.#jsonWatcher = new JsonWatcher(this.getUserCatalogPath(), {
       version: CatalogFormat.CURRENT,
       recipes: [],
       models: [],
       categories: [],
     });
-    jsonWatcher.onContentUpdated(content => this.onUserCatalogUpdate(content));
-    jsonWatcher.init();
-
-    this.#disposables.push(jsonWatcher);
+    this.#jsonWatcher.onContentUpdated(content => this.onUserCatalogUpdate(content));
+    this.#jsonWatcher.init();
   }
 
   private loadDefaultCatalog(): void {
@@ -91,6 +88,15 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
 
     if (userCatalogFormat !== CatalogFormat.CURRENT) {
       this.loadDefaultCatalog();
+      if (!this.#notification) {
+        this.#notification = window.showNotification({
+          type: 'error',
+          title: 'Incompatible user-catalog',
+          body: `The catalog is using an older version of the catalog incompatible with current version ${CatalogFormat.CURRENT}.`,
+          markdownActions:
+            ':button[See migration guide]{href=https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/MIGRATION.md title="Migration guide"}',
+        });
+      }
       console.error(
         `the user-catalog provided is using version ${userCatalogFormat} expected ${CatalogFormat.CURRENT}. You can follow the migration guide.`,
       );
@@ -100,8 +106,19 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     // merging default catalog with user catalog
     try {
       this.catalog = merge(sanitize(defaultCatalog), sanitize({ ...content, version: userCatalogFormat }));
+
+      // reset notification if everything went smoothly
+      this.#notification?.dispose();
+      this.#notification = undefined;
     } catch (err: unknown) {
-      console.warn(err);
+      if (!this.#notification) {
+        this.#notification = window.showNotification({
+          type: 'error',
+          title: 'Error loading the user catalog',
+          body: `Something went wrong while trying to load the user catalog: ${String(err)}`,
+        });
+      }
+      console.error(err);
       this.loadDefaultCatalog();
     }
 
@@ -114,7 +131,8 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   }
 
   dispose(): void {
-    this.#disposables.forEach(watcher => watcher.dispose());
+    this.#jsonWatcher?.dispose();
+    this.#notification?.dispose();
   }
 
   public getCatalog(): ApplicationCatalog {

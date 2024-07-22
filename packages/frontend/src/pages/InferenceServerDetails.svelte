@@ -199,12 +199,11 @@ export function goToUpPage(): void {
                 <div class="flex flex-row gap-4">
                   {#if service.status === 'running' && service.type === InferenceType.LLAMA_CPP}
                     <button
-                      on:click="{() =>
-                        service &&
-                        studioClient.openURL(`http://localhost:${service.connection.port}/docs`)}"
+                      on:click={() =>
+                        service && studioClient.openURL(`http://localhost:${service.connection.port}/docs`)}
                       class="bg-charcoal-600 rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
                       http://localhost:{service.connection.port}/docs
-                      <Fa class="ml-2" icon="{faArrowUpRightFromSquare}" />
+                      <Fa class="ml-2" icon={faArrowUpRightFromSquare} />
                     </button>
                   {/if}
 

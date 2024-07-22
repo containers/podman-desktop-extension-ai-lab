@@ -54,6 +54,7 @@ vi.mock('../stores/snippetLanguages', () => ({
 vi.mock('../utils/client', () => {
   return {
     studioClient: {
+      openURL: vi.fn(),
       createSnippet: vi.fn(),
       copyToClipboard: vi.fn(),
       telemetryLogUsage: vi.fn(),
@@ -123,8 +124,12 @@ test('ensure address is displayed', async () => {
     containerId: 'dummyContainerId',
   });
 
-  const address = screen.getByText('http://localhost:9999/v1');
+  const address = screen.getByText('http://localhost:9999/docs');
   expect(address).toBeDefined();
+
+  await fireEvent.click(address);
+
+  expect(studioClient.openURL).toHaveBeenCalledWith('http://localhost:9999/docs');
 });
 
 test('language select must have the mocked snippet languages', async () => {

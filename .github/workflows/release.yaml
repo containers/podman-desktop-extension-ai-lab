@@ -143,6 +143,9 @@ jobs:
       - name: Run Build
         run: npx yarn build
 
+      - name: Prepare node_modules for prod
+        run: npx yarn install --frozen-lockfile --network-timeout 180000 --prod
+
       - name: Login to ghcr.io
         run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
 

@@ -201,7 +201,7 @@ export function goToUpPage(): void {
                     <button
                       on:click={() =>
                         service && studioClient.openURL(`http://localhost:${service.connection.port}/docs`)}
-                      class="bg-charcoal-600 rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
+                      class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
                       http://localhost:{service.connection.port}/docs
                       <Fa class="ml-2" icon={faArrowUpRightFromSquare} />
                     </button>

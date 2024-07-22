@@ -21,9 +21,9 @@ import os from 'os';
 import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
-import { env, process as coreProcess, Disposable } from '@podman-desktop/api';
+import { env, process as coreProcess } from '@podman-desktop/api';
 import type { RunResult, TelemetryLogger, Webview } from '@podman-desktop/api';
-import type { CatalogManager, catalogUpdateHandle } from './catalogManager';
+import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';
 import { TaskRegistry } from '../registries/TaskRegistry';
@@ -178,10 +178,8 @@ test('getModelsInfo should get models in local directory', async () => {
           { id: 'model-id-2', name: 'model-id-2-model' } as ModelInfo,
         ];
       },
-      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
-        return Disposable.create(() => {});
-      },
-    } as CatalogManager,
+      onUpdate: vi.fn(),
+    } as unknown as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
@@ -229,10 +227,8 @@ test('getModelsInfo should return an empty array if the models folder does not e
       getModels(): ModelInfo[] {
         return [];
       },
-      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
-        return Disposable.create(() => {});
-      },
-    } as CatalogManager,
+      onUpdate: vi.fn(),
+    } as unknown as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
@@ -271,10 +267,8 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
       getModels(): ModelInfo[] {
         return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
       },
-      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
-        return Disposable.create(() => {});
-      },
-    } as CatalogManager,
+      onUpdate: vi.fn(),
+    } as unknown as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
@@ -331,10 +325,8 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
       getModels(): ModelInfo[] {
         return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
       },
-      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
-        return Disposable.create(() => {});
-      },
-    } as CatalogManager,
+      onUpdate: vi.fn(),
+    } as unknown as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
@@ -373,10 +365,8 @@ test('loadLocalModels should post a message with the message on disk and on cata
           },
         ] as ModelInfo[];
       },
-      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
-        return Disposable.create(() => {});
-      },
-    } as CatalogManager,
+      onUpdate: vi.fn(),
+    } as unknown as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
@@ -425,10 +415,8 @@ test('deleteModel deletes the model folder', async () => {
           },
         ] as ModelInfo[];
       },
-      onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
-        return Disposable.create(() => {});
-      },
-    } as CatalogManager,
+      onUpdate: vi.fn(),
+    } as unknown as CatalogManager,
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
@@ -491,10 +479,8 @@ describe('deleting models', () => {
             },
           ] as ModelInfo[];
         },
-        onCatalogUpdate(_listener: catalogUpdateHandle): Disposable {
-          return Disposable.create(() => {});
-        },
-      } as CatalogManager,
+        onUpdate: vi.fn(),
+      } as unknown as CatalogManager,
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
@@ -870,7 +856,7 @@ describe('getModelMetadata', () => {
             file: undefined,
           } as unknown as ModelInfo,
         ],
-        onCatalogUpdate: vi.fn(),
+        onUpdate: vi.fn(),
       } as unknown as CatalogManager,
       telemetryLogger,
       taskRegistry,
@@ -910,7 +896,7 @@ describe('getModelMetadata', () => {
             },
           } as unknown as ModelInfo,
         ],
-        onCatalogUpdate: vi.fn(),
+        onUpdate: vi.fn(),
       } as unknown as CatalogManager,
       telemetryLogger,
       taskRegistry,

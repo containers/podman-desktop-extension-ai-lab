@@ -23,20 +23,20 @@ import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Messages } from '@shared/Messages';
-import { Disposable, type Webview } from '@podman-desktop/api';
+import { type Disposable, type Event, EventEmitter, type Webview } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { InferenceType } from '@shared/src/models/IInference';
 import { CatalogFormat, merge, sanitize } from '../utils/catalogUtils';
 
-export type catalogUpdateHandle = () => void;
-
 export const USER_CATALOG = 'user-catalog.json';
 
 export class CatalogManager extends Publisher<ApplicationCatalog> implements Disposable {
+  private readonly _onUpdate = new EventEmitter<ApplicationCatalog>();
+  readonly onUpdate: Event<ApplicationCatalog> = this._onUpdate.event;
+
   private catalog: ApplicationCatalog;
-  #catalogUpdateListeners: catalogUpdateHandle[];
   #disposables: Disposable[];
 
   constructor(
@@ -52,7 +52,6 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       recipes: [],
     };
 
-    this.#catalogUpdateListeners = [];
     this.#disposables = [];
   }
 
@@ -111,14 +110,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
 
   override notify() {
     super.notify();
-    this.#catalogUpdateListeners.forEach(listener => listener());
-  }
-
-  onCatalogUpdate(listener: catalogUpdateHandle): Disposable {
-    this.#catalogUpdateListeners.push(listener);
-    return Disposable.create(() => {
-      this.#catalogUpdateListeners.splice(this.#catalogUpdateListeners.indexOf(listener), 1);
-    });
+    this._onUpdate.fire(this.getCatalog());
   }
 
   dispose(): void {

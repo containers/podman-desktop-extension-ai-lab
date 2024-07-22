@@ -110,6 +110,7 @@ export class LlamaCppPython extends InferenceProvider {
 
           user = '0';
 
+          entrypoint = '/usr/bin/sh';
           cmd = [
             '-c',
             '/usr/bin/ln -s /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
@@ -130,7 +131,6 @@ export class LlamaCppPython extends InferenceProvider {
         Count: -1, // -1: all
       });
 
-      entrypoint = '/usr/bin/sh';
       envs.push(`GPU_LAYERS=${config.gpuLayers}`);
     }
 

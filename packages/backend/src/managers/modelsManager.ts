@@ -57,7 +57,7 @@ export class ModelsManager implements Disposable {
   }
 
   init() {
-    const disposable = this.catalogManager.onCatalogUpdate(() => {
+    const disposable = this.catalogManager.onUpdate(() => {
       this.loadLocalModels().catch((err: unknown) => {
         console.error(`Something went wrong when loading local models`, err);
       });

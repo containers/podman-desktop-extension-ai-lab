@@ -45,9 +45,11 @@ export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> implem
   }
 
   init(): void {
-    this.#catalogEventDisposable = this.catalogManager.onCatalogUpdate(() => {
-      this.loadLocalRecipeRepositories(this.catalogManager.getRecipes());
+    this.#catalogEventDisposable = this.catalogManager.onUpdate(({ recipes }) => {
+      this.loadLocalRecipeRepositories(recipes);
     });
+
+    this.loadLocalRecipeRepositories(this.catalogManager.getRecipes());
   }
 
   register(localRepository: LocalRepository): Disposable {

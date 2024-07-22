@@ -146,10 +146,21 @@ describe('getVMType', () => {
     } as unknown as RunResult);
 
     const manager = new PodmanConnection();
-    await expect(() => manager.getVMType()).rejects.toThrowError('podman machine list provided an empty array');
+    await expect(() => manager.getVMType('machine')).rejects.toThrowError(
+      'podman machine list provided an empty array',
+    );
   });
 
-  test('malformed response should return UNKNOWN', async () => {
+  test('empty array should return UNKNOWN when no name is provided', async () => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: '[]',
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection();
+    expect(await manager.getVMType()).toBe(VMType.UNKNOWN);
+  });
+
+  test('malformed response should throw an error', async () => {
     vi.mocked(process.exec).mockResolvedValue({
       stdout: '{}',
     } as unknown as RunResult);

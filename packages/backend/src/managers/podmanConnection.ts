@@ -110,7 +110,9 @@ export class PodmanConnection implements Disposable {
 
     const parsed: unknown = JSON.parse(stdout);
     if (!Array.isArray(parsed)) throw new Error('podman machine list provided a malformed response');
-    if (parsed.length === 0) throw new Error('podman machine list provided an empty array');
+    if (parsed.length === 0 && name) throw new Error('podman machine list provided an empty array');
+    // On Linux we might not have any machine
+    if (parsed.length === 0) return VMType.UNKNOWN;
     if (parsed.length > 1 && !name)
       throw new Error('name need to be provided when more than one podman machine is configured.');
 

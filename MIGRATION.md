@@ -3,7 +3,7 @@
 ## ApplicationCatalog
 
 Before **Podman AI Lab** `v1.2.0` the [user-catalog](./PACKAGING-GUIDE.md#applicationcatalog) were not versioned. 
-Started from `v1.2.0` all user-catalog require to have a `version` property.
+Starting from `v1.2.0` all user-catalog require to have a `version` property.
 
 The list of catalog versions can be found in [packages/backend/src/utils/catalogUtils.ts](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/utils/catalogUtils.ts)
 
@@ -11,9 +11,9 @@ The catalog has its own version number, as we may not require to update it with 
 
 ## `None` to Catalog `1.0`
 
-None represents any catalog version prior to the first versioning. 
+`None` represents any catalog version prior to the first versioning. 
 
-Version `1.0` of the catalog add an important property to models `backend`, defining the type of framework required by the model to run (E.g. LLamaCPP, WhisperCPP).
+Version `1.0` of the catalog adds an important property to models `backend`, defining the type of framework required by the model to run (E.g. LLamaCPP, WhisperCPP).
 
 ### Changelog
 

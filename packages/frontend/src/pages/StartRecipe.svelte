@@ -173,16 +173,18 @@ export function goToUpPage(): void {
 
       {#if recipe}
         <!-- form -->
-        <div class="space-y-6 bg-charcoal-800 m-5 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
+        <div class="space-y-6 bg-[var(--pd-content-card-bg)] m-5 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
           <div>
             <!-- selected recipe -->
-            <label for="recipe" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Recipe</label>
+            <label for="recipe" class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]"
+              >Recipe</label>
 
-            <div class="py-2 px-4 rounded-lg w-full flex flex-col bg-charcoal-900 border-charcoal-900 text-white">
+            <div
+              class="py-2 px-4 rounded-lg w-full flex flex-col bg-[var(--pd-content-bg)] text-[var(--pd-content-card-text)]">
               <span aria-label="Recipe name">{recipe.name}</span>
               {#if localPath}
                 <div
-                  class="bg-charcoal-600 max-w-full rounded-md p-2 mb-2 flex flex-row w-full h-min text-xs text-nowrap items-center">
+                  class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md p-2 mb-2 flex flex-row w-full h-min text-xs text-nowrap items-center">
                   <Fa class="mr-2" icon={faFolder} />
                   <span aria-label="Recipe local path" class="overflow-x-hidden text-ellipsis max-w-full">
                     {localPath.path}
@@ -192,27 +194,29 @@ export function goToUpPage(): void {
             </div>
 
             <!-- model form -->
-            <label for="select-model" class="pt-4 block mb-2 text-sm font-bold text-gray-400">Model</label>
+            <label
+              for="select-model"
+              class="pt-4 block mb-2 text-sm font-bold text-[var(--pd-content-card-header-text)]">Model</label>
             <Select
               inputAttributes={{ 'aria-label': 'Select Model' }}
               name="select-model"
               disabled={loading}
               value={value}
               on:change={e => (value = e.detail)}
-              --item-color={'var(--pd-input-field-focused-text)'}
-              --item-is-active-color={'var(--pd-input-field-focused-text)'}
-              --item-hover-color="var(--pd-input-field-focused-text)"
+              --item-color={'var(--pd-dropdown-item-text)'}
+              --item-is-active-color={'var(--pd-dropdown-item-text)'}
+              --item-hover-color="var(--pd-dropdown-item-hover-text)"
               --item-active-background="var(--pd-input-field-hover-stroke)"
               --item-is-active-bg="var(--pd-input-field-hover-stroke)"
-              --background={'var(--pd-input-field-focused-bg)'}
-              --list-background={'var(--pd-input-field-focused-bg)'}
-              --item-hover-bg="var(--pd-action-button-hover-bg)"
+              --background={'var(--pd-dropdown-bg)'}
+              --list-background={'var(--pd-dropdown-bg)'}
+              --item-hover-bg="var(--pd-dropdown-item-hover-bg)"
               --border="1px solid var(--pd-input-field-focused-bg)"
               --border-hover="1px solid var(--pd-input-field-hover-stroke)"
               --list-border="1px solid var(--pd-input-field-focused-bg)"
               --border-focused="var(--pd-input-field-focused-bg)"
               placeholder="Select model to use"
-              class="!bg-charcoal-900 !text-white !border-charcoal-900"
+              class="!bg-[var(--pd-content-bg)] !text-[var(--pd-content-card-text)]"
               items={models.map(model => ({ ...model, value: model.id, label: model.name }))}
               showChevron>
               <div slot="item" let:item>
@@ -220,7 +224,7 @@ export function goToUpPage(): void {
                   <div class="grow">
                     <span>{item.name}</span>
                     {#if recipe.recommended?.includes(item.id)}
-                      <i class="fas fa-star fa-xs text-gray-900" title="Recommended model"></i>
+                      <i class="fas fa-star fa-xs" title="Recommended model"></i>
                     {/if}
                   </div>
 

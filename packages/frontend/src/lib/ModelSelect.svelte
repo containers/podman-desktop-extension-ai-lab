@@ -15,15 +15,11 @@ export let recommended: string[] | undefined = undefined;
  */
 export let models: ModelInfo[];
 
-let sorted: ModelInfo[];
-
-/**
- * Put the recommended models at the top
- */
-$: {
-  sorted = models.toSorted((a, b) => {
-    return (recommended?.includes(a.id) ? 0 : 1) - (recommended?.includes(b.id) ? 0 : 1);
-  });
+function getModelSortingScore(modelInfo: ModelInfo): number {
+  let score: number = 0;
+  if (modelInfo.file) score -= 1;
+  if (recommended?.includes(modelInfo.id)) score -= 1;
+  return score;
 }
 
 /**
@@ -63,7 +59,9 @@ $: {
   --border-focused="var(--pd-input-field-focused-bg)"
   placeholder="Select model to use"
   class="!bg-[var(--pd-content-bg)] !text-[var(--pd-content-card-text)]"
-  items={sorted.map(model => ({ ...model, value: model.id, label: model.name }))}
+  items={models
+    .toSorted((a, b) => getModelSortingScore(a) - getModelSortingScore(b))
+    .map(model => ({ ...model, value: model.id, label: model.name }))}
   showChevron>
   <div slot="item" let:item>
     <div class="flex items-center">

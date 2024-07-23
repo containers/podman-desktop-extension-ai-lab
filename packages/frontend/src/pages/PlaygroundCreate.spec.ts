@@ -56,7 +56,7 @@ vi.mock('/@/stores/modelsInfo', async () => {
 });
 
 beforeEach(() => {
-  window.HTMLElement.prototype.scrollIntoView = function () {};
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
 });
 
 test('should display error message if createPlayground fails', async () => {

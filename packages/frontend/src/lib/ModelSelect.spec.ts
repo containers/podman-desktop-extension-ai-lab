@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { beforeEach, test, expect } from 'vitest';
+import { beforeEach, vi, test, expect } from 'vitest';
 import { render, fireEvent, within } from '@testing-library/svelte';
 import ModelSelect from '/@/lib/ModelSelect.svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -39,9 +39,15 @@ const fakeRemoteModel: ModelInfo = {
   name: 'Dummy Model 2',
 } as unknown as ModelInfo;
 
+const fakeRecommendedRemoteModel: ModelInfo = {
+  id: 'dummy-model-3',
+  backend: InferenceType.LLAMA_CPP,
+  name: 'Dummy Model 3',
+} as unknown as ModelInfo;
+
 beforeEach(() => {
   // mock scrollIntoView
-  window.HTMLElement.prototype.scrollIntoView = function () {};
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
 });
 
 test('ModelSelect should list all models provided', async () => {
@@ -84,12 +90,12 @@ test('ModelSelect should set star icon next to recommended model', async () => {
   expect(within(items[1]).queryByTitle('Recommended model')).toBeNull();
 });
 
-test('recommended models should be displayed first', async () => {
+test('models should be sorted', async () => {
   const { container } = render(ModelSelect, {
     value: undefined,
     disabled: undefined,
-    models: [fakeRemoteModel, fakeRecommendedModel],
-    recommended: [fakeRecommendedModel.id],
+    models: [fakeRemoteModel, fakeRecommendedRemoteModel, fakeRecommendedModel],
+    recommended: [fakeRecommendedModel.id, fakeRecommendedRemoteModel.id],
   });
 
   // first get the select input
@@ -99,7 +105,8 @@ test('recommended models should be displayed first', async () => {
   // get all options available
   const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
-  expect(items.length).toBe(2);
+  expect(items.length).toBe(3);
   expect(items[0]).toHaveTextContent(fakeRecommendedModel.name);
-  expect(items[1]).toHaveTextContent(fakeRemoteModel.name);
+  expect(items[1]).toHaveTextContent(fakeRecommendedRemoteModel.name);
+  expect(items[2]).toHaveTextContent(fakeRemoteModel.name);
 });

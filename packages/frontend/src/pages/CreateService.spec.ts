@@ -93,7 +93,7 @@ beforeEach(() => {
     { container: { containerId: 'dummyContainerId' } } as InferenceServer,
   ]);
 
-  window.HTMLElement.prototype.scrollIntoView = function () {};
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
 });
 
 test('create button should be disabled when no model id provided', async () => {

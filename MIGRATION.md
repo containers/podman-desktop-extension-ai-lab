@@ -2,8 +2,8 @@
 
 ## ApplicationCatalog
 
-Before **Podman AI Lab** `v1.2.0` the [user-catalog](./PACKAGING-GUIDE.md#applicationcatalog) were not versioned. 
-Starting from `v1.2.0` all user-catalog require to have a `version` property.
+Before **Podman AI Lab** `v1.2.0` the [user-catalog](./PACKAGING-GUIDE.md#applicationcatalog) was not versioned. 
+Starting from `v1.2.0` the user-catalog require to have a `version` property.
 
 The list of catalog versions can be found in [packages/backend/src/utils/catalogUtils.ts](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/utils/catalogUtils.ts)
 

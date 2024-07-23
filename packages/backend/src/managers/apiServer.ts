@@ -6,15 +6,16 @@ import * as OpenApiValidator from 'express-openapi-validator';
 import type { HttpError, OpenApiRequest } from 'express-openapi-validator/dist/framework/types';
 import path from 'node:path';
 import http from 'node:http';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync } from 'fs';
 import { getFreeRandomPort } from '../utils/ports';
 import * as podmanDesktopApi from '@podman-desktop/api';
+import { readFile } from 'fs/promises';
 
 const DEFAULT_PORT = 10434;
 const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
 
 export class ApiServer implements Disposable {
-  #listener?: Server;
+  listener?: Server;
 
   constructor(private extensionContext: podmanDesktopApi.ExtensionContext) {}
 
@@ -62,13 +63,13 @@ export class ApiServer implements Disposable {
         .then((randomPort: number) => {
           console.warn(`port ${DEFAULT_PORT} in use, using ${randomPort} for API server`);
           listeningOn = randomPort;
-          this.#listener = server.listen(randomPort);
+          this.listener = server.listen(randomPort);
         })
         .catch((e: unknown) => {
           console.error('unable to get a free port for the api server', e);
         });
     });
-    this.#listener = server.listen(DEFAULT_PORT);
+    this.listener = server.listen(DEFAULT_PORT);
   }
 
   displayApiInfo(port: number): void {
@@ -113,33 +114,45 @@ export class ApiServer implements Disposable {
   }
 
   dispose(): void {
-    this.#listener?.close();
+    this.listener?.close();
   }
 
   getSpec(_req: Request, res: Response): void {
-    try {
-      const spec = this.getSpecFile();
-      const content = readFileSync(spec, 'utf-8');
-      res.status(200).type('application/yaml').send(content);
-    } catch (err: unknown) {
+    const doErr = (err: unknown) => {
       res.status(500).json({
         message: 'unable to get spec',
         errors: [err],
       });
+    };
+    try {
+      const spec = this.getSpecFile();
+      readFile(spec, 'utf-8')
+        .then(content => {
+          res.status(200).type('application/yaml').send(content);
+        })
+        .catch((err: unknown) => doErr(err));
+    } catch (err: unknown) {
+      doErr(err);
     }
   }
 
   getVersion(_req: Request, res: Response): void {
-    try {
-      const pkg = this.getPackageFile();
-      const content = readFileSync(pkg, 'utf-8');
-      const json = JSON.parse(content);
-      res.status(200).json({ version: `v${json.version}` });
-    } catch (err: unknown) {
+    const doErr = (err: unknown) => {
       res.status(500).json({
         message: 'unable to get version',
         errors: [err],
       });
+    };
+    try {
+      const pkg = this.getPackageFile();
+      readFile(pkg, 'utf-8')
+        .then(content => {
+          const json = JSON.parse(content);
+          res.status(200).json({ version: `v${json.version}` });
+        })
+        .catch((err: unknown) => doErr(err));
+    } catch (err: unknown) {
+      doErr(err);
     }
   }
 }

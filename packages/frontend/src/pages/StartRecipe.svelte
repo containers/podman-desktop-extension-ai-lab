@@ -188,7 +188,7 @@ export function goToUpPage(): void {
 
             <!-- model form -->
             <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-            >Model</label>
+              >Model</label>
             <ModelSelect
               bind:value={value}
               disabled={loading}

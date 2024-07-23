@@ -15,6 +15,17 @@ export let recommended: string[] | undefined = undefined;
  */
 export let models: ModelInfo[];
 
+let sorted: ModelInfo[];
+
+/**
+ * Put the recommended models at the top
+ */
+$: {
+  sorted = models.toSorted((a, b) => {
+    return (recommended?.includes(a.id) ? 0 : 1) - (recommended?.includes(b.id) ? 0 : 1);
+  });
+}
+
 /**
  * Current value selected
  */
@@ -52,7 +63,7 @@ $: {
   --border-focused="var(--pd-input-field-focused-bg)"
   placeholder="Select model to use"
   class="!bg-[var(--pd-content-bg)] !text-[var(--pd-content-card-text)]"
-  items={models.map(model => ({ ...model, value: model.id, label: model.name }))}
+  items={sorted.map(model => ({ ...model, value: model.id, label: model.name }))}
   showChevron>
   <div slot="item" let:item>
     <div class="flex items-center">

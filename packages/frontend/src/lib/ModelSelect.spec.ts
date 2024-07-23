@@ -69,7 +69,7 @@ test('ModelSelect should set star icon next to recommended model', async () => {
     value: undefined,
     disabled: undefined,
     models: [fakeRecommendedModel, fakeRemoteModel],
-    recommended: [fakeRemoteModel.id],
+    recommended: [fakeRecommendedModel.id],
   });
 
   // first get the select input
@@ -80,6 +80,26 @@ test('ModelSelect should set star icon next to recommended model', async () => {
   const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
   expect(items.length).toBe(2);
-  expect(within(items[0]).queryByTitle('Recommended model')).toBeNull();
-  expect(within(items[1]).getByTitle('Recommended model')).toBeDefined();
+  expect(within(items[0]).getByTitle('Recommended model')).toBeDefined();
+  expect(within(items[1]).queryByTitle('Recommended model')).toBeNull();
+});
+
+test('recommended models should be displayed first', async () => {
+  const { container } = render(ModelSelect, {
+    value: undefined,
+    disabled: undefined,
+    models: [fakeRemoteModel, fakeRecommendedModel],
+    recommended: [fakeRecommendedModel.id],
+  });
+
+  // first get the select input
+  const input = within(container).getByLabelText('Select Model');
+  await fireEvent.pointerUp(input); // they are using the pointer up event instead of click.
+
+  // get all options available
+  const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
+  // ensure we have two options
+  expect(items.length).toBe(2);
+  expect(items[0]).toHaveTextContent(fakeRecommendedModel.name);
+  expect(items[1]).toHaveTextContent(fakeRemoteModel.name);
 });

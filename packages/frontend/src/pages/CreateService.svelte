@@ -167,8 +167,7 @@ export function goToUpPage(): void {
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-            >Model</label>
+          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
           <ModelSelect models={localModels} disabled={loading} bind:value={model} />
           {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">

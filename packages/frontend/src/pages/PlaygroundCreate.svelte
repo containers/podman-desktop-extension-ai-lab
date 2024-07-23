@@ -145,8 +145,7 @@ export function goToUpPage(): void {
             aria-label="playgroundName" />
 
           <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-            >Model</label>
+          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
           <ModelSelect models={localModels} disabled={submitted} bind:value={model} />
           {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">

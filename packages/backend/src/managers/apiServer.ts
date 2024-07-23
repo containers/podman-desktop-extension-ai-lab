@@ -1,3 +1,21 @@
+/**********************************************************************
+ * Copyright (C) 2024 Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ***********************************************************************/
+
 import type { Disposable } from '@podman-desktop/api';
 import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
@@ -15,9 +33,13 @@ const DEFAULT_PORT = 10434;
 const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
 
 export class ApiServer implements Disposable {
-  listener?: Server;
+  #listener?: Server;
 
   constructor(private extensionContext: podmanDesktopApi.ExtensionContext) {}
+
+  protected getListener(): Server | undefined {
+    return this.#listener;
+  }
 
   async init(): Promise<void> {
     const app = express();
@@ -63,13 +85,13 @@ export class ApiServer implements Disposable {
         .then((randomPort: number) => {
           console.warn(`port ${DEFAULT_PORT} in use, using ${randomPort} for API server`);
           listeningOn = randomPort;
-          this.listener = server.listen(randomPort);
+          this.#listener = server.listen(randomPort);
         })
         .catch((e: unknown) => {
           console.error('unable to get a free port for the api server', e);
         });
     });
-    this.listener = server.listen(DEFAULT_PORT);
+    this.#listener = server.listen(DEFAULT_PORT);
   }
 
   displayApiInfo(port: number): void {
@@ -114,7 +136,7 @@ export class ApiServer implements Disposable {
   }
 
   dispose(): void {
-    this.listener?.close();
+    this.#listener?.close();
   }
 
   getSpec(_req: Request, res: Response): void {

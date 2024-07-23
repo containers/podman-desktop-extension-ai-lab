@@ -21,7 +21,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import content from '../tests/ai-test.json';
 import userContent from '../tests/ai-user-test.json';
-import { type Webview, EventEmitter } from '@podman-desktop/api';
+import { type Webview, EventEmitter, window } from '@podman-desktop/api';
 import { CatalogManager } from './catalogManager';
 
 import type { Stats } from 'node:fs';
@@ -62,6 +62,7 @@ vi.mock('@podman-desktop/api', async () => {
     EventEmitter: vi.fn(),
     window: {
       withProgress: mocks.withProgressMock,
+      showNotification: vi.fn(),
     },
     ProgressLocation: {
       TASK_WIDGET: 'TASK_WIDGET',
@@ -82,6 +83,22 @@ beforeEach(async () => {
   vi.resetAllMocks();
 
   const appUserDirectory = '.';
+
+  vi.mock('node:fs');
+
+  // mock EventEmitter logic
+  vi.mocked(EventEmitter).mockImplementation(() => {
+    const listeners: ((value: unknown) => void)[] = [];
+    return {
+      event: vi.fn().mockImplementation(callback => {
+        listeners.push(callback);
+      }),
+      fire: vi.fn().mockImplementation((content: unknown) => {
+        listeners.forEach(listener => listener(content));
+      }),
+    } as unknown as EventEmitter<unknown>;
+  });
+
   // Creating CatalogManager
   catalogManager = new CatalogManager(
     {
@@ -89,19 +106,6 @@ beforeEach(async () => {
     } as unknown as Webview,
     appUserDirectory,
   );
-
-  vi.mock('node:fs');
-
-  const listeners: ((value: unknown) => void)[] = [];
-
-  vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn().mockImplementation(callback => {
-      listeners.push(callback);
-    }),
-    fire: vi.fn().mockImplementation((content: unknown) => {
-      listeners.forEach(listener => listener(content));
-    }),
-  } as unknown as EventEmitter<unknown>);
 });
 
 describe('invalid user catalog', () => {
@@ -262,4 +266,37 @@ test('catalog should use user items in favour of default', async () => {
 
 test('default catalog should have latest version', () => {
   expect(version).toBe(CatalogFormat.CURRENT);
+});
+
+test('wrong catalog version should create a notification', () => {
+  catalogManager['onUserCatalogUpdate']({ version: CatalogFormat.UNKNOWN });
+
+  expect(window.showNotification).toHaveBeenCalledWith(
+    expect.objectContaining({
+      title: 'Incompatible user-catalog',
+    }),
+  );
+});
+
+test('malformed catalog should create a notification', async () => {
+  vi.mocked(existsSync).mockReturnValue(false);
+  vi.spyOn(path, 'resolve').mockReturnValue('path');
+
+  catalogManager['onUserCatalogUpdate']({
+    version: CatalogFormat.CURRENT,
+    models: [
+      {
+        fakeProperty: 'hello',
+      },
+    ],
+    recipes: [],
+    categories: [],
+  });
+
+  expect(window.showNotification).toHaveBeenCalledWith(
+    expect.objectContaining({
+      title: 'Error loading the user catalog',
+      body: 'Something went wrong while trying to load the user catalog: Error: invalid model format',
+    }),
+  );
 });

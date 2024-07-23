@@ -3679,10 +3679,10 @@ postcss@^8.4.23, postcss@^8.4.39:
     picocolors "^1.0.1"
     source-map-js "^1.2.0"
 
-postman-code-generators@^1.11.0:
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/postman-code-generators/-/postman-code-generators-1.11.0.tgz#a45920507932da96eca8422780f95ca2e85c1183"
-  integrity sha512-A2pZ4J5ZyRvQYxSbLt+GVjo6dKawGiEJdvwePDbA6iC6RhmXIWfFAJXe1ImDFoTGohK5quJhMkFkoz+ks9VO+Q==
+postman-code-generators@^1.12.0:
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/postman-code-generators/-/postman-code-generators-1.12.0.tgz#c2d5f814e9b843d3f531a934e32716e65092479c"
+  integrity sha512-J+X5e2ciOIwkuZW4UhDEfMItVtx3ZpTFLcVzSmJaeYQDj6k/0Eduo6VQiGMq575527uzyMNabivwtJa3g5Rqow==
   dependencies:
     async "3.2.2"
     detect-package-manager "3.0.2"

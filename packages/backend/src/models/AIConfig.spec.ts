@@ -18,7 +18,7 @@
 
 import { expect, test, describe, vi } from 'vitest';
 import fs from 'fs';
-import { type AIConfig, parseYamlFile } from './AIConfig';
+import { type AIConfig, AIConfigFormat, parseYamlFile } from './AIConfig';
 
 // Define mock file paths and contents
 const mockYamlPath = '/path/to/mock.yml';
@@ -40,11 +40,22 @@ wrong:
 `);
     expect(() => {
       parseYamlFile(mockYamlPath, defaultArch);
-    }).toThrowError('AIConfig has bad formatting: missing application property');
+    }).toThrowError('malformed configuration file: missing version');
+  });
+
+  test('version mismatch', () => {
+    readFileSync.mockReturnValue(`
+version: unknown
+application: true
+`);
+    expect(() => {
+      parseYamlFile(mockYamlPath, defaultArch);
+    }).toThrowError('malformed configuration file: version not supported, got unknown expected v1.0.');
   });
 
   test('application primitive', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application: true
 `);
     expect(() => {
@@ -54,6 +65,7 @@ application: true
 
   test('containers not an array', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application:
   containers:
     name: container1
@@ -70,6 +82,7 @@ application:
 
   test('containers object', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application:
   containers: true
 `);
@@ -80,6 +93,7 @@ application:
 
   test('should use architecture as string', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application:
   containers:
     - name: container1
@@ -89,6 +103,7 @@ application:
 `);
 
     const expectedConfig: AIConfig = {
+      version: AIConfigFormat.CURRENT,
       application: {
         containers: [
           {
@@ -108,6 +123,7 @@ application:
 
   test('should use all architectures', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application:
   containers:
     - name: container1
@@ -117,6 +133,7 @@ application:
 `);
 
     const expectedConfig: AIConfig = {
+      version: AIConfigFormat.CURRENT,
       application: {
         containers: [
           {
@@ -136,6 +153,7 @@ application:
 
   test('should put the default architecture', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application:
   containers:
     - name: container1
@@ -144,6 +162,7 @@ application:
 `);
 
     const expectedConfig: AIConfig = {
+      version: AIConfigFormat.CURRENT,
       application: {
         containers: [
           {
@@ -163,6 +182,7 @@ application:
 
   test('should use the image provided in the config', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application:
   containers:
     - name: container1
@@ -172,6 +192,7 @@ application:
 `);
 
     const expectedConfig: AIConfig = {
+      version: AIConfigFormat.CURRENT,
       application: {
         containers: [
           {
@@ -192,6 +213,7 @@ application:
 
   test('ports should always be a final number', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application:
   containers:
     - name: container1
@@ -201,6 +223,7 @@ application:
 `);
 
     const expectedConfig: AIConfig = {
+      version: AIConfigFormat.CURRENT,
       application: {
         containers: [
           {
@@ -221,6 +244,7 @@ application:
 
   test('should use gpu env', () => {
     readFileSync.mockReturnValue(`
+version: ${AIConfigFormat.CURRENT}
 application:
   containers:
     - name: container1
@@ -235,6 +259,7 @@ application:
 `);
 
     const expectedConfig: AIConfig = {
+      version: AIConfigFormat.CURRENT,
       application: {
         containers: [
           {

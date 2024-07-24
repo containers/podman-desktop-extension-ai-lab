@@ -5,12 +5,12 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import ServiceColumnModelName from '/@/lib/table/service/ServiceColumnModelName.svelte';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faRocket, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
 import { Button } from '@podman-desktop/ui-svelte';
-import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow, NavPage, EmptyScreen } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<InferenceServer>[] = [
   new TableColumn<InferenceServer>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),
@@ -58,23 +58,14 @@ function createNewService() {
       {#if data?.length > 0}
         <Table kind="service" data={data} columns={columns} row={row} bind:selectedItemsNumber={selectedItemsNumber} />
       {:else}
-        <div class="text-[var(--pd-details-body-text)]">
-          <div role="status">
-            There is no model service. You can <a
-              href={'javascript:void(0);'}
-              class="underline"
-              role="button"
-              title="Create a new Model Service"
-              on:click={createNewService}>create one now</a
-            >.
+        <EmptyScreen
+          icon={faRocket}
+          title="No model service running"
+          message="A model service offers a configurable endpoint via an OpenAI-compatible web server, facilitating a seamless integration of AI capabilities into existing applications. Upon initialization, effortlessly access detailed service information and generate code snippets in multiple programming languages to ease application integration.">
+          <div class="flex gap-2 justify-center">
+            <Button type="link" on:click={() => createNewService()}>Create service</Button>
           </div>
-          <p>
-            A model service offers a configurable endpoint via an OpenAI-compatible web server, facilitating a seamless
-            integration of AI capabilities into existing applications. Upon initialization, effortlessly access detailed
-            service information and generate code snippets in multiple programming languages to ease application
-            integration.
-          </p>
-        </div>
+        </EmptyScreen>
       {/if}
     </div>
   </svelte:fragment>

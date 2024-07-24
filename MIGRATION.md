@@ -1,11 +1,12 @@
 # Migration guide
 
-## ApplicationCatalog
+## ℹ️ ApplicationCatalog
 
 Before **Podman AI Lab** `v1.2.0` the [user-catalog](./PACKAGING-GUIDE.md#applicationcatalog) was not versioned.
 Starting from `v1.2.0` the user-catalog require to have a `version` property.
 
-> :information: The `user-catalog.json` file can be found in `~/.local/share/containers/podman-desktop/extensions-storage/redhat.ai-lab`.
+> [!NOTE]  
+> The `user-catalog.json` file can be found in `~/.local/share/containers/podman-desktop/extensions-storage/redhat.ai-lab`.
 
 The list of catalog versions can be found in [packages/backend/src/utils/catalogUtils.ts](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/utils/catalogUtils.ts)
 
@@ -17,11 +18,12 @@ The catalog has its own version number, as we may not require to update it with 
 
 Version `1.0` of the catalog adds an important property to models `backend`, defining the type of framework required by the model to run (E.g. LLamaCPP, WhisperCPP).
 
-### How to migrate
+### 🛠️ How to migrate
 
 You can either delete any existing `user-catalog` by deleting the `~/.local/share/containers/podman-desktop/extensions-storage/redhat.ai-lab/user-catalog.json`.
 
-> :warning: this will remove the models you have imported from the catalog. You can import it again.
+> [!WARNING]  
+> This will remove the models you have imported from the catalog. You will be able to import it again afterward.
 
 If you want to keep the data, you can migrate it by updating certain properties.
 

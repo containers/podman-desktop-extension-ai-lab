@@ -5,7 +5,7 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import ServiceColumnModelName from '/@/lib/table/service/ServiceColumnModelName.svelte';
-import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
@@ -51,7 +51,7 @@ function createNewService() {
       <Button title="Delete selected items" on:click={deleteSelected} icon={faTrash}
         >Delete {selectedItemsNumber} selected items</Button>
     {/if}
-    <Button icon={faPlus} title="Create a new model service" on:click={() => createNewService()}
+    <Button icon={faPlusCircle} title="Create a new model service" on:click={() => createNewService()}
       >New Model Service</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">

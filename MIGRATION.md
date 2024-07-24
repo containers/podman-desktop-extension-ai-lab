@@ -34,6 +34,9 @@ Value accepted can be `llama-cpp`, `whisper-cpp`, `none`.
 
 Moreover, the `models` property has been changed to `recommended`.
 
+> [!TIP]
+> Before Podman AI Lab version v1.2 recipes uses the `models` property to list the models compatible. Now all models using the same `backend` could be used. We introduced `recommended` to highlight certain models. 
+
 **Example**
 
 ```diff
@@ -60,6 +63,9 @@ Moreover, the `models` property has been changed to `recommended`.
 
 The model object has also the new property `backend`, which define which framework is required.
 We increase the security by adding a new optional `sha256` property.
+
+> [!TIP]
+> To get the sha256 of a model, you can use the `sha256sum [model-file]` command in a terminal.
 
 **Example**
 

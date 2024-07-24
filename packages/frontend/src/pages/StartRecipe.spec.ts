@@ -145,7 +145,7 @@ beforeEach(() => {
   vi.mocked(studioClient.requestPullApplication).mockResolvedValue('fake-tracking-id');
 
   // mock scrollIntoView
-  window.HTMLElement.prototype.scrollIntoView = function () {};
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
 });
 
 test('Recipe name should be visible', async () => {

@@ -252,6 +252,8 @@ export class PlaygroundV2Manager implements Disposable {
         // process stream async
         this.processStream(conversation.id, response).catch((err: unknown) => {
           console.error('Something went wrong while processing stream', err);
+        }).finally(() => {
+          this.cancellationTokenRegistry.delete(cancelTokenId);
         });
       })
       .catch((err: unknown) => {
@@ -262,7 +264,6 @@ export class PlaygroundV2Manager implements Disposable {
         });
       })
       .finally(() => {
-        this.cancellationTokenRegistry.delete(cancelTokenId);
         this.telemetry.logUsage('playground.submit', telemetry);
       });
     return cancelTokenId;

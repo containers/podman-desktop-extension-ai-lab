@@ -29,7 +29,12 @@ export interface ContainerConfig {
   ports?: number[];
   image?: string;
 }
+
+export enum AIConfigFormat {
+  CURRENT = 'v1.0',
+}
 export interface AIConfig {
+  version: AIConfigFormat;
   application: {
     containers: ContainerConfig[];
   };
@@ -57,8 +62,16 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
     throw new Error('malformed configuration file.');
   }
 
+  if (!('version' in aiLabConfig) || typeof aiLabConfig.version !== 'string')
+    throw new Error('malformed configuration file: missing version');
+
+  if (aiLabConfig.version !== AIConfigFormat.CURRENT)
+    throw new Error(
+      `malformed configuration file: version not supported, got ${aiLabConfig.version} expected ${AIConfigFormat.CURRENT}.`,
+    );
+
   if (!('application' in aiLabConfig)) {
-    throw new Error('AIConfig has bad formatting: missing application property');
+    throw new Error('malformed configuration file: missing application property');
   }
 
   const application: unknown = aiLabConfig['application'];
@@ -73,6 +86,7 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
   const containers: unknown[] = application['containers'];
 
   return {
+    version: AIConfigFormat.CURRENT,
     application: {
       containers: containers.map(container => {
         if (!container || typeof container !== 'object') throw new Error('containers array malformed');

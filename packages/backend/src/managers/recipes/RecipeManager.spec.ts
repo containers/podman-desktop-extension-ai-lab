@@ -25,7 +25,7 @@ import { containerEngine } from '@podman-desktop/api';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { Stats } from 'node:fs';
 import { existsSync, statSync } from 'node:fs';
-import { parseYamlFile } from '../../models/AIConfig';
+import { AIConfigFormat, parseYamlFile } from '../../models/AIConfig';
 import { goarch } from '../../utils/arch';
 
 const taskRegistryMock = {
@@ -55,6 +55,9 @@ const recipeMock: Recipe = {
 };
 
 vi.mock('../../models/AIConfig', () => ({
+  AIConfigFormat: {
+    CURRENT: 'current',
+  },
   parseYamlFile: vi.fn(),
 }));
 
@@ -90,6 +93,7 @@ beforeEach(() => {
   } as unknown as Stats);
 
   vi.mocked(parseYamlFile).mockReturnValue({
+    version: AIConfigFormat.CURRENT,
     application: {
       containers: [
         {

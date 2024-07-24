@@ -13,7 +13,7 @@ const columns = [
   new TableColumn<{}>('', { width: '40px', renderer: PlaygroundColumnIcon }),
   new TableColumn<Conversation>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
   new TableColumn<Conversation>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
-  new TableColumn<Conversation>('Actions', { width: '40px', renderer: ConversationColumnAction, align: 'center' }),
+  new TableColumn<Conversation>('Actions', { width: '80px', renderer: ConversationColumnAction, align: 'right' }),
 ];
 const row = new TableRow<Conversation>({});
 

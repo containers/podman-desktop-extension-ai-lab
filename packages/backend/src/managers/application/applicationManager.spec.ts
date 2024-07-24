@@ -106,7 +106,6 @@ const remoteModelMock: ModelInfo = {
   id: 'model-test',
   name: 'Test Model',
   description: 'test model description',
-  hw: 'cpu',
   url: 'http://test-repository.test',
 };
 

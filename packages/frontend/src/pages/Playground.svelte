@@ -174,7 +174,6 @@ export function goToUpPage(): void {
           <div class="text-sm" aria-label="Model name">
             <a href="/model/{model.id}">{model.name}</a>
           </div>
-          <Badge icon={faMicrochip} content={model.hw} background="bg-[var(--pd-label-bg)]" />
         {/if}
       </div>
     </svelte:fragment>

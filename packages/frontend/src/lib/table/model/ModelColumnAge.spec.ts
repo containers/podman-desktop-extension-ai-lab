@@ -29,7 +29,6 @@ test('Expect simple column styling', async () => {
   const object: ModelInfo = {
     id: 'my-model',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',

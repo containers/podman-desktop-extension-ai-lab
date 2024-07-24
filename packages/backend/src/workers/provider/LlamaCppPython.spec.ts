@@ -59,7 +59,6 @@ const DummyModel: ModelInfo = {
   },
   properties: {},
   description: 'dummy-desc',
-  hw: 'dummy-hardware',
 };
 
 const DummyProviderContainerConnection: ProviderContainerConnection = {

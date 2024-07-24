@@ -46,7 +46,6 @@ test('Expect remote model to have NONE title', async () => {
   const object: ModelInfo = {
     id: 'model-downloaded-id',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',
@@ -67,7 +66,6 @@ test('Expect downloaded model to have DOWNLOADED title', async () => {
   const object: ModelInfo = {
     id: 'model-downloaded-id',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',
@@ -94,7 +92,6 @@ test('Expect in used model to have USED title', async () => {
   const object: ModelInfo = {
     id: 'model-in-used-id',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',

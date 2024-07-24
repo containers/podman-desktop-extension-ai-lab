@@ -192,7 +192,6 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
           id: local.path,
           name: local.name,
           description: `Model imported from ${local.path}`,
-          hw: 'CPU',
           file: {
             path: path.dirname(local.path),
             file: path.basename(local.path),

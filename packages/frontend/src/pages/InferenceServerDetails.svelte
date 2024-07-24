@@ -136,6 +136,13 @@ export function goToUpPage(): void {
       {/if}
     </div>
   </svelte:fragment>
+  <svelte:fragment slot="subtitle">
+    <div class="flex gap-x-2 items-center text-[var(--pd-content-sub-header)]">
+      {#if service}
+        <span class="text-xs">{service.container.containerId}</span>
+      {/if}
+    </div>
+  </svelte:fragment>
   <svelte:fragment slot="actions">
     {#if service !== undefined}
       <ServiceAction detailed object={service} />

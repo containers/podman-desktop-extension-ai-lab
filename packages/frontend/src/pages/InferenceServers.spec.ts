@@ -54,10 +54,8 @@ beforeEach(() => {
 
 test('no inference servers should display a status message', async () => {
   render(InferenceServers);
-  const status = screen.getByRole('status');
-  expect(status).toBeInTheDocument();
-  expect(status.textContent).toContain('There is no model service. ');
-
+  const title = screen.getByText('No model service running');
+  expect(title).toBeInTheDocument();
   const table = screen.queryByRole('table');
   expect(table).toBeNull();
 });

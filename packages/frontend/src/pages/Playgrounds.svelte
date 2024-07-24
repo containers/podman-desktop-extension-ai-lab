@@ -5,10 +5,10 @@ import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.s
 import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
 import { conversations } from '/@/stores/conversations';
 import PlaygroundColumnIcon from '/@/lib/table/playground/PlaygroundColumnIcon.svelte';
-import { Button } from '@podman-desktop/ui-svelte';
+import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
-import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faMessage, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const columns = [
   new TableColumn<{}>('', { width: '40px', renderer: PlaygroundColumnIcon }),
@@ -21,10 +21,6 @@ const row = new TableRow<Conversation>({});
 function createNewPlayground() {
   router.goto('/playground/create');
 }
-
-const openServicesPage = () => {
-  router.goto('/services');
-};
 </script>
 
 <NavPage title="Playground Environments" searchEnabled={false}>
@@ -36,30 +32,14 @@ const openServicesPage = () => {
       {#if $conversations.length > 0}
         <Table kind="playground" data={$conversations} columns={columns} row={row}></Table>
       {:else}
-        <div class="mt-4 px-5 text-[var(--pd-details-body-text)]">
-          <div role="status">
-            There is no playground environment. You can <a
-              href={'javascript:void(0);'}
-              class="underline"
-              role="button"
-              title="Create a new Playground environment"
-              on:click={createNewPlayground}>create one now</a
-            >.
+        <EmptyScreen
+          icon={faMessage}
+          title="No Playground Environment"
+          message="Playground environments allow for experimenting with available models in a local environment. An intuitive user prompt helps in exploring the capabilities and accuracy of various models and aids in finding the best model for the use case at hand.">
+          <div class="flex gap-2 justify-center">
+            <Button type="link" on:click={() => createNewPlayground()}>Create playground</Button>
           </div>
-          <p>
-            Playground environments allow for experimenting with available models in a local environment. An intuitive
-            user prompt helps in exploring the capabilities and accuracy of various models and aids in finding the best
-            model for the use case at hand.
-          </p>
-          <p>
-            Once started, each playground ships with a generic chat client to interact with the model service. The <button
-              class="underline"
-              title="Open the Services page"
-              on:click={openServicesPage}>Services</button>
-            page allows for accessing running model services and provides further details and code snippets to interact with
-            them.
-          </p>
-        </div>
+        </EmptyScreen>
       {/if}
     </div>
   </svelte:fragment>

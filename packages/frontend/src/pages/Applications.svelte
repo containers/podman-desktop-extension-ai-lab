@@ -1,7 +1,7 @@
 <script lang="ts">
-import { NavPage, EmptyScreen } from '@podman-desktop/ui-svelte';
+import { NavPage, EmptyScreen, Button } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
-import { faRocket } from '@fortawesome/free-solid-svg-icons';
+import { faServer } from '@fortawesome/free-solid-svg-icons';
 import TasksBanner from '/@/lib/progress/TasksBanner.svelte';
 import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';
 
@@ -21,10 +21,13 @@ const openApplicationCatalog = () => {
       <ApplicationTable>
         <svelte:fragment slot="empty-screen">
           <EmptyScreen
-            icon={faRocket}
+            icon={faServer}
             title="No application running"
-            message="There is no AI App running"
-            onClick={openApplicationCatalog} />
+            message="There is no AI App running. You can go to Recipes page to start an application.">
+            <div class="flex gap-2 justify-center">
+              <Button type="link" on:click={() => openApplicationCatalog()}>Recipes</Button>
+            </div>
+          </EmptyScreen>
         </svelte:fragment>
       </ApplicationTable>
     </div>

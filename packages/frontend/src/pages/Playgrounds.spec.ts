@@ -83,8 +83,8 @@ test('should display There is no playground yet', async () => {
   mocks.conversationSubscribeMock.mockResolvedValue([]);
   render(Playgrounds);
 
-  const status = screen.getByRole('status');
-  expect(status).toBeDefined();
+  const title = screen.getByText('No Playground Environment');
+  expect(title).toBeDefined();
 });
 
 test('should display one model', async () => {

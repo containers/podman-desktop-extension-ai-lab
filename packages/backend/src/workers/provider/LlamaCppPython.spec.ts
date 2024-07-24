@@ -16,15 +16,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, describe, test, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { LLAMA_CPP_INFERENCE_IMAGE, LlamaCppPython, SECOND } from './LlamaCppPython';
+import { LLAMA_CPP_CPU, LLAMA_CPP_CUDA, LlamaCppPython, SECOND } from './LlamaCppPython';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 import type { ContainerProviderConnection, ImageInfo, ProviderContainerConnection } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
+import type { GPUManager } from '../../managers/GPUManager';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
+import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
+import { GPUVendor } from '@shared/src/models/IGPUInfo';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -42,6 +45,10 @@ const taskRegistry: TaskRegistry = {
   createTask: vi.fn(),
   updateTask: vi.fn(),
 } as unknown as TaskRegistry;
+
+const gpuManager: GPUManager = {
+  collectGPUs: vi.fn(),
+} as unknown as GPUManager;
 
 const DummyModel: ModelInfo = {
   name: 'dummy model',
@@ -69,12 +76,21 @@ const DummyImageInfo: ImageInfo = {
 } as unknown as ImageInfo;
 
 const podmanConnection: PodmanConnection = {
-  getVMType: vi.fn().mockResolvedValue(VMType.WSL),
+  getVMType: vi.fn(),
 } as unknown as PodmanConnection;
+
+const configurationRegistry: ConfigurationRegistry = {
+  getExtensionConfiguration: vi.fn(),
+} as unknown as ConfigurationRegistry;
 
 beforeEach(() => {
   vi.resetAllMocks();
 
+  vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+    experimentalGPU: false,
+    modelsPath: 'model-path',
+  });
+  vi.mocked(podmanConnection.getVMType).mockResolvedValue(VMType.WSL);
   vi.mocked(getProviderContainerConnection).mockReturnValue(DummyProviderContainerConnection);
   vi.mocked(getImageInfo).mockResolvedValue(DummyImageInfo);
   vi.mocked(taskRegistry.createTask).mockReturnValue({ id: 'dummy-task-id', name: '', labels: {}, state: 'loading' });
@@ -84,13 +100,13 @@ beforeEach(() => {
 });
 
 test('LlamaCppPython being the default, it should always be enable', () => {
-  const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+  const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
   expect(provider.enabled()).toBeTruthy();
 });
 
 describe('perform', () => {
   test('config without image should use defined image', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
 
     await provider.perform({
       port: 8000,
@@ -103,13 +119,13 @@ describe('perform', () => {
     expect(getProviderContainerConnection).toHaveBeenCalledWith(undefined);
     expect(getImageInfo).toHaveBeenCalledWith(
       DummyProviderContainerConnection.connection,
-      LLAMA_CPP_INFERENCE_IMAGE,
+      LLAMA_CPP_CPU,
       expect.anything(),
     );
   });
 
   test('config without models should throw an error', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
 
     await expect(
       provider.perform({
@@ -123,7 +139,7 @@ describe('perform', () => {
   });
 
   test('config model without file should throw an error', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
 
     await expect(
       provider.perform({
@@ -141,7 +157,7 @@ describe('perform', () => {
   });
 
   test('valid config should produce expected CreateContainerOptions', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
 
     await provider.perform({
       port: 8888,
@@ -152,7 +168,7 @@ describe('perform', () => {
     });
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
-      Cmd: ['--models-path', '/models', '--context-size', '700', '--threads', '4'],
+      Cmd: [],
       Detach: true,
       Env: ['MODEL_PATH=/models/dummy-file.guff', 'HOST=0.0.0.0', 'PORT=8000'],
       ExposedPorts: {
@@ -165,7 +181,6 @@ describe('perform', () => {
       },
       HostConfig: {
         AutoRemove: false,
-        Devices: [],
         Mounts: [
           {
             Source: 'dummy-path',
@@ -173,6 +188,8 @@ describe('perform', () => {
             Type: 'bind',
           },
         ],
+        DeviceRequests: [],
+        Devices: [],
         PortBindings: {
           '8000/tcp': [
             {
@@ -190,7 +207,7 @@ describe('perform', () => {
   });
 
   test('model properties should be made uppercased', async () => {
-    const provider = new LlamaCppPython(taskRegistry, podmanConnection);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
 
     await provider.perform({
       port: 8000,
@@ -225,5 +242,42 @@ describe('perform', () => {
       Image: DummyImageInfo.Id,
       Detach: true,
     });
+  });
+
+  test('gpu experimental should collect GPU data', async () => {
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'nvidia',
+        vendor: GPUVendor.NVIDIA,
+      },
+    ]);
+
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [
+        {
+          ...DummyModel,
+          properties: {
+            basicProp: 'basicProp',
+            lotOfCamelCases: 'lotOfCamelCases',
+            lowercase: 'lowercase',
+            chatFormat: 'dummyChatFormat',
+          },
+        },
+      ],
+      providerId: undefined,
+    });
+
+    expect(gpuManager.collectGPUs).toHaveBeenCalled();
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), LLAMA_CPP_CUDA, expect.any(Function));
   });
 });

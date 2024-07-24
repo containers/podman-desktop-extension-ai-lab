@@ -49,8 +49,9 @@ Moreover, the `models` property has been changed to `recommended`.
       "hf.instructlab.granite-7b-lab-GGUF",
        "hf.instructlab.merlinite-7b-lab-GGUF"
     ]
++   "backend": "llama-cpp"
   }],
-+ "backend": "llama-cpp"
+  "models": [],
   "categories": []
 }
 ```
@@ -64,18 +65,23 @@ We increase the security by adding a new optional `sha256` property.
 
 ```diff
 {
-  "id": "hf.instructlab.granite-7b-lab-GGUF",
-  "name": "instructlab/granite-7b-lab-GGUF",
-  "description": "# InstructLab Granite 7B",
-  "hw": "CPU",
-  "registry": "Hugging Face",
-  "license": "Apache-2.0",
-  "url": "https://huggingface.co/instructlab/granite-7b-lab-GGUF/resolve/main/granite-7b-lab-Q4_K_M.gguf",
-  "memory": 4080218931,
-  "properties": {
-    "chatFormat": "openchat"
-  },
-+ "sha256": "6adeaad8c048b35ea54562c55e454cc32c63118a32c7b8152cf706b290611487",
-+ "backend": "llama-cpp"
-},
+  "version": "1.0",
+  "recipes": [],
+  "models": [{
+    "id": "hf.instructlab.granite-7b-lab-GGUF",
+    "name": "instructlab/granite-7b-lab-GGUF",
+    "description": "# InstructLab Granite 7B",
+    "hw": "CPU",
+    "registry": "Hugging Face",
+    "license": "Apache-2.0",
+    "url": "https://huggingface.co/instructlab/granite-7b-lab-GGUF/resolve/main/granite-7b-lab-Q4_K_M.gguf",
+    "memory": 4080218931,
+    "properties": {
+      "chatFormat": "openchat"
+    },
++   "sha256": "6adeaad8c048b35ea54562c55e454cc32c63118a32c7b8152cf706b290611487",
++   "backend": "llama-cpp"
+  }],
+  "categories": []
+}
 ```

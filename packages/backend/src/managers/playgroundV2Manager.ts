@@ -250,11 +250,13 @@ export class PlaygroundV2Manager implements Disposable {
       )
       .then(response => {
         // process stream async
-        this.processStream(conversation.id, response).catch((err: unknown) => {
-          console.error('Something went wrong while processing stream', err);
-        }).finally(() => {
-          this.cancellationTokenRegistry.delete(cancelTokenId);
-        });
+        this.processStream(conversation.id, response)
+          .catch((err: unknown) => {
+            console.error('Something went wrong while processing stream', err);
+          })
+          .finally(() => {
+            this.cancellationTokenRegistry.delete(cancelTokenId);
+          });
       })
       .catch((err: unknown) => {
         telemetry['errorMessage'] = `${String(err)}`;

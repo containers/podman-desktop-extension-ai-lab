@@ -55,6 +55,9 @@ const recipeMock: Recipe = {
 };
 
 vi.mock('../../models/AIConfig', () => ({
+  AIConfigFormat: {
+    CURRENT: 'current',
+  },
   parseYamlFile: vi.fn(),
 }));
 

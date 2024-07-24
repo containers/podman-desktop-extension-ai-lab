@@ -10,7 +10,6 @@ import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
-import Badge from '/@/lib/Badge.svelte';
 import { Button, DetailsPage } from '@podman-desktop/ui-svelte';
 
 export let containerId: string | undefined = undefined;

@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { faMemory, faMicrochip } from '@fortawesome/free-solid-svg-icons';
+import { faMemory } from '@fortawesome/free-solid-svg-icons';
 import { filesize } from 'filesize';
 import Badge from '../../Badge.svelte';
 export let object: ModelInfo;

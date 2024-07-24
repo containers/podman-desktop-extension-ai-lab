@@ -8,7 +8,7 @@ import PlaygroundColumnIcon from '/@/lib/table/playground/PlaygroundColumnIcon.s
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
-import { faMessage } from '@fortawesome/free-solid-svg-icons';
+import { faMessage, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const columns = [
   new TableColumn<{}>('', { width: '40px', renderer: PlaygroundColumnIcon }),
@@ -25,7 +25,7 @@ function createNewPlayground() {
 
 <NavPage title="Playground Environments" searchEnabled={false}>
   <svelte:fragment slot="additional-actions">
-    <Button on:click={() => createNewPlayground()}>New Playground</Button>
+    <Button icon={faPlusCircle} on:click={() => createNewPlayground()}>New Playground</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex min-w-full">

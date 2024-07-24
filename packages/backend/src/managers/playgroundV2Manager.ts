@@ -34,6 +34,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
 import { getRandomString } from '../utils/randomUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
+import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 
 export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;
@@ -43,6 +44,7 @@ export class PlaygroundV2Manager implements Disposable {
     private inferenceManager: InferenceManager,
     private taskRegistry: TaskRegistry,
     private telemetry: TelemetryLogger,
+    private cancellationTokenRegistry: CancellationTokenRegistry,
   ) {
     this.#conversationRegistry = new ConversationRegistry(webview);
   }
@@ -188,7 +190,7 @@ export class PlaygroundV2Manager implements Disposable {
    * @param userInput the user input
    * @param options the model configuration
    */
-  async submit(conversationId: string, userInput: string, options?: ModelOptions): Promise<void> {
+  async submit(conversationId: string, userInput: string, options?: ModelOptions): Promise<number> {
     const conversation = this.#conversationRegistry.get(conversationId);
 
     const servers = this.inferenceManager.getServers();
@@ -228,13 +230,24 @@ export class PlaygroundV2Manager implements Disposable {
       modelId: modelInfo.id,
     };
 
+    // create an abort controller
+    const abortController = new AbortController();
+    const cancelTokenId = this.cancellationTokenRegistry.createCancellationTokenSource(() => {
+      abortController.abort('cancel');
+    });
+
     client.chat.completions
-      .create({
-        messages: this.getFormattedMessages(conversation.id),
-        stream: true,
-        model: modelInfo.file.file,
-        ...options,
-      })
+      .create(
+        {
+          messages: this.getFormattedMessages(conversation.id),
+          stream: true,
+          model: modelInfo.file.file,
+          ...options,
+        },
+        {
+          signal: abortController.signal,
+        },
+      )
       .then(response => {
         // process stream async
         this.processStream(conversation.id, response).catch((err: unknown) => {
@@ -249,8 +262,10 @@ export class PlaygroundV2Manager implements Disposable {
         });
       })
       .finally(() => {
+        this.cancellationTokenRegistry.delete(cancelTokenId);
         this.telemetry.logUsage('playground.submit', telemetry);
       });
+    return cancelTokenId;
   }
 
   private async processError(conversationId: string, error: unknown): Promise<void> {

@@ -18,7 +18,7 @@ import Fa from 'svelte-fa';
 import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
-import { faCircleInfo, faMicrochip, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo, faMicrochip, faPaperPlane, faStop } from '@fortawesome/free-solid-svg-icons';
 import { Button, Tooltip, DetailsPage, StatusIcon } from '@podman-desktop/ui-svelte';
 import Badge from '../lib/Badge.svelte';
 import { router } from 'tinro';
@@ -35,6 +35,8 @@ let errorMsg = '';
 let temperature = 0.8;
 let max_tokens = -1;
 let top_p = 0.5;
+
+let cancellationTokenId: number | undefined = undefined;
 
 $: conversation = $conversations.find(conversation => conversation.id === playgroundId);
 $: messages =
@@ -63,6 +65,9 @@ function askPlayground() {
       temperature,
       max_tokens,
       top_p,
+    })
+    .then(token => {
+      cancellationTokenId = token;
     })
     .catch((err: unknown) => {
       errorMsg = String(err);
@@ -268,13 +273,21 @@ export function goToUpPage(): void {
             disabled={!sendEnabled}></textarea>
 
           <div class="flex-none text-right m-4">
-            <Button
-              inProgress={!sendEnabled}
-              disabled={!isHealthy(server?.status, server?.health?.Status)}
-              on:click={() => askPlayground()}
-              icon={faPaperPlane}
-              title={getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}
-              aria-label="Send prompt"></Button>
+            {#if !sendEnabled && cancellationTokenId !== undefined}
+              <Button
+                title="Stop"
+                icon={faStop}
+                type="danger"
+                on:click={() => cancellationTokenId && studioClient.requestCancelToken(cancellationTokenId)} />
+            {:else}
+              <Button
+                inProgress={!sendEnabled}
+                disabled={!isHealthy(server?.status, server?.health?.Status)}
+                on:click={() => askPlayground()}
+                icon={faPaperPlane}
+                title={getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}
+                aria-label="Send prompt"></Button>
+            {/if}
           </div>
         </div>
       </div>

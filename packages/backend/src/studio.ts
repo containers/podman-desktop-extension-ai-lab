@@ -280,6 +280,7 @@ export class Studio {
       this.#inferenceManager,
       this.#taskRegistry,
       this.#telemetry,
+      this.#cancellationTokenRegistry,
     );
     this.#extensionContext.subscriptions.push(this.#playgroundManager);
 

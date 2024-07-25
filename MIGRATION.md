@@ -25,12 +25,12 @@ You can either delete any existing `user-catalog` by deleting the `~/.local/shar
 > [!WARNING]  
 > This will remove the models you have imported from the catalog. You will be able to import it again afterward.
 
-If you want to keep the data, you can migrate it by updating certain properties.
+If you want to keep the data, you can migrate it by updating certain properties within the recipes and models fields.
 
 ### Recipes
 
-The recipe object has a new property `backend` which define which framework is required. 
-Value accepted can be `llama-cpp`, `whisper-cpp`, `none`.
+The recipe object has a new property `backend` which defines which framework is required. 
+Value accepted are `llama-cpp`, `whisper-cpp` and `none`.
 
 Moreover, the `models` property has been changed to `recommended`.
 
@@ -61,8 +61,8 @@ Moreover, the `models` property has been changed to `recommended`.
 
 ### Models
 
-The model object has also the new property `backend`, which define which framework is required.
-We increase the security by adding a new optional `sha256` property.
+The model object has also the new property `backend`, which defines which framework is required.
+Additionally, we have enhanced security by introducing a new optional `sha256` property.
 
 > [!TIP]
 > To get the sha256 of a model, you can use the `sha256sum [model-file]` command in a terminal.

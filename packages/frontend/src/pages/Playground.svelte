@@ -277,14 +277,15 @@ export function goToUpPage(): void {
               <Button
                 title="Stop"
                 icon={faStop}
-                type="danger"
+                type="secondary"
                 on:click={() => cancellationTokenId && studioClient.requestCancelToken(cancellationTokenId)} />
             {:else}
               <Button
                 inProgress={!sendEnabled}
-                disabled={!isHealthy(server?.status, server?.health?.Status)}
+                disabled={!isHealthy(server?.status, server?.health?.Status) || !prompt?.length}
                 on:click={() => askPlayground()}
                 icon={faPaperPlane}
+                type="secondary"
                 title={getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}
                 aria-label="Send prompt"></Button>
             {/if}

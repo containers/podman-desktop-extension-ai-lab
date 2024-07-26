@@ -34,7 +34,7 @@ import { Messages } from '@shared/Messages';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 import type { CatalogManager } from '../catalogManager';
-import type { InferenceServer} from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('@podman-desktop/api', async () => {

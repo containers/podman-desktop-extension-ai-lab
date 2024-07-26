@@ -118,6 +118,7 @@ test('Expect in used model to have USED title', async () => {
         port: 0,
       },
       health: undefined,
+      labels: {},
     },
   ]);
   render(ModelColumnIcon, { object });

@@ -69,6 +69,7 @@ test('store with inference server should display the table', async () => {
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
+      labels: {},
     },
   ] as InferenceServer[]);
   render(InferenceServers);
@@ -98,6 +99,7 @@ test('table should have checkbox', async () => {
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
+      labels: {},
     },
   ] as InferenceServer[]);
   render(InferenceServers);
@@ -118,6 +120,7 @@ test('delete button should delete selected item', async () => {
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.NONE,
+      labels: {},
     },
   ] as InferenceServer[]);
   render(InferenceServers);

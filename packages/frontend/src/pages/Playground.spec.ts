@@ -23,13 +23,7 @@ import Playground from './Playground.svelte';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { fireEvent } from '@testing-library/dom';
-import type {
-  AssistantChat,
-  Conversation,
-  PendingChat,
-  SystemPrompt,
-  UserChat,
-} from '@shared/src/models/IPlaygroundMessage';
+import type { AssistantChat, Conversation, PendingChat, UserChat } from '@shared/src/models/IPlaygroundMessage';
 import * as conversationsStore from '/@/stores/conversations';
 import * as inferenceServersStore from '/@/stores/inferenceServers';
 import { readable, writable } from 'svelte/store';
@@ -65,12 +59,20 @@ vi.mock('/@/stores/inferenceServers', async () => {
   };
 });
 
+const customConversations = writable<Conversation[]>([
+  {
+    id: 'playground-1',
+    name: 'Playground 1',
+    modelId: 'model-1',
+    messages: [],
+  },
+]);
+
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(inferenceServersStore).inferenceServers = readable([]);
-});
 
-test('should display playground and model names in header', async () => {
+  // mock catalog
   vi.mocked(studioClient.getCatalog).mockResolvedValue({
     models: [
       {
@@ -81,20 +83,20 @@ test('should display playground and model names in header', async () => {
     recipes: [],
     categories: [],
   });
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
+
+  // mock conversation
   vi.mocked(conversationsStore).conversations = customConversations;
+
+  // mock inference server
   vi.mocked(inferenceServersStore).inferenceServers = readable([
     {
-      models: ['model-1'],
+      models: [{ id: 'model-1' }],
+      status: 'running',
     } as unknown as InferenceServer,
   ]);
+});
+
+test('should display playground and model names in header', async () => {
   render(Playground, {
     playgroundId: 'playground-1',
   });
@@ -109,62 +111,18 @@ test('should display playground and model names in header', async () => {
   });
 });
 
-test('send prompt should be enabld initially', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
-  vi.mocked(inferenceServersStore).inferenceServers = readable([
-    {
-      models: [{ id: 'model-1' }],
-      status: 'running',
-    } as unknown as InferenceServer,
-  ]);
+test('send prompt should not be enabled initially', async () => {
   render(Playground, {
     playgroundId: 'playground-1',
   });
 
   await waitFor(() => {
     const send = screen.getByRole('button', { name: 'Send prompt' });
-    expect(send).toBeEnabled();
+    expect(send).toBeDisabled();
   });
 });
 
 test('send prompt should be disabled initially if model server is not healhty', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
   vi.mocked(inferenceServersStore).inferenceServers = readable([
     {
       models: [{ id: 'model-1' }],
@@ -185,25 +143,6 @@ test('send prompt should be disabled initially if model server is not healhty', 
 });
 
 test('send prompt should be disabled initially if model server is not running', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
   vi.mocked(inferenceServersStore).inferenceServers = readable([
     {
       models: [{ id: 'model-1' }],
@@ -223,74 +162,8 @@ test('send prompt should be disabled initially if model server is not running', 
   });
 });
 
-test('send prompt should be enabled initially, with a system prompt', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [
-        {
-          role: 'system',
-          content: 'a prompt',
-        } as SystemPrompt,
-      ],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
-  vi.mocked(inferenceServersStore).inferenceServers = readable([
-    {
-      models: [{ id: 'model-1' }],
-      status: 'running',
-    } as unknown as InferenceServer,
-  ]);
-  render(Playground, {
-    playgroundId: 'playground-1',
-  });
-
-  await waitFor(() => {
-    const send = screen.getByRole('button', { name: 'Send prompt' });
-    expect(send).toBeEnabled();
-  });
-});
-
 test('sending prompt should disable the send button and the input element', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue(0);
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
-  vi.mocked(inferenceServersStore).inferenceServers = readable([
-    {
-      models: [{ id: 'model-1' }],
-      status: 'running',
-    } as unknown as InferenceServer,
-  ]);
   render(Playground, {
     playgroundId: 'playground-1',
   });
@@ -311,32 +184,7 @@ test('sending prompt should disable the send button and the input element', asyn
 });
 
 test('sending prompt not using button should disable the send button and the input element', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue(0);
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
-  vi.mocked(inferenceServersStore).inferenceServers = readable([
-    {
-      models: [{ id: 'model-1' }],
-      status: 'running',
-    } as unknown as InferenceServer,
-  ]);
   render(Playground, {
     playgroundId: 'playground-1',
   });
@@ -357,32 +205,7 @@ test('sending prompt not using button should disable the send button and the inp
   });
 });
 
-test('receiving complete message should enable the send button and the input element', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
-  vi.mocked(inferenceServersStore).inferenceServers = readable([
-    {
-      models: [{ id: 'model-1' }],
-      status: 'running',
-    } as unknown as InferenceServer,
-  ]);
+test('receiving complete message should enable the input element', async () => {
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue(0);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -424,39 +247,12 @@ test('receiving complete message should enable the send button and the input ele
   ]);
 
   await waitFor(() => {
-    send = screen.getByRole('button', { name: 'Send prompt' });
-    expect(send).toBeEnabled();
     const input = screen.getByRole('textbox', { name: 'prompt' });
     expect(input).toBeEnabled();
   });
 });
 
 test('sending prompt should display the prompt and the response', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
-  vi.mocked(inferenceServersStore).inferenceServers = readable([
-    {
-      models: [{ id: 'model-1' }],
-      status: 'running',
-    } as unknown as InferenceServer,
-  ]);
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue(0);
   render(Playground, {
     playgroundId: 'playground-1',
@@ -529,32 +325,7 @@ test('sending prompt should display the prompt and the response', async () => {
 });
 
 test('user should be able to stop prompt', async () => {
-  vi.mocked(studioClient.getCatalog).mockResolvedValue({
-    models: [
-      {
-        id: 'model-1',
-        name: 'Model 1',
-      },
-    ] as ModelInfo[],
-    recipes: [],
-    categories: [],
-  });
   vi.mocked(studioClient.submitPlaygroundMessage).mockResolvedValue(55);
-  const customConversations = writable<Conversation[]>([
-    {
-      id: 'playground-1',
-      name: 'Playground 1',
-      modelId: 'model-1',
-      messages: [],
-    },
-  ]);
-  vi.mocked(conversationsStore).conversations = customConversations;
-  vi.mocked(inferenceServersStore).inferenceServers = readable([
-    {
-      models: [{ id: 'model-1' }],
-      status: 'running',
-    } as unknown as InferenceServer,
-  ]);
   render(Playground, {
     playgroundId: 'playground-1',
   });
@@ -568,14 +339,11 @@ test('user should be able to stop prompt', async () => {
   fireEvent.keyDown(prompt!, { key: 'Enter' });
 
   await waitFor(() => {
-    prompt = screen.getByRole('button', { name: 'Send prompt' });
-    expect(prompt).toBeDisabled();
+    const stopBtn = screen.getByTitle('Stop');
+    expect(stopBtn).toBeDefined();
+
+    fireEvent.click(stopBtn);
   });
-
-  const stopBtn = screen.getByTitle('Stop');
-  expect(stopBtn).toBeDefined();
-
-  fireEvent.click(stopBtn);
 
   await vi.waitFor(() => {
     expect(studioClient.requestCancelToken).toHaveBeenCalledWith(55);

@@ -28,7 +28,7 @@ import type { PodmanConnection } from '../../managers/podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import { GPUVendor } from '@shared/src/models/IGPUInfo';
-import type { InferenceServer} from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('@podman-desktop/api', () => ({

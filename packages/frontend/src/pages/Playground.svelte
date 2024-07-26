@@ -18,9 +18,8 @@ import Fa from 'svelte-fa';
 import ChatMessage from '../lib/conversation/ChatMessage.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
-import { faCircleInfo, faMicrochip, faPaperPlane, faStop } from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo, faPaperPlane, faStop } from '@fortawesome/free-solid-svg-icons';
 import { Button, Tooltip, DetailsPage, StatusIcon } from '@podman-desktop/ui-svelte';
-import Badge from '../lib/Badge.svelte';
 import { router } from 'tinro';
 import ConversationActions from '../lib/conversation/ConversationActions.svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
@@ -174,7 +173,6 @@ export function goToUpPage(): void {
           <div class="text-sm" aria-label="Model name">
             <a href="/model/{model.id}">{model.name}</a>
           </div>
-          <Badge icon={faMicrochip} content={model.hw} background="bg-[var(--pd-label-bg)]" />
         {/if}
       </div>
     </svelte:fragment>

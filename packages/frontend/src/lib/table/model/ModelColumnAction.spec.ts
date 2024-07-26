@@ -65,7 +65,6 @@ test('Expect folder and delete button in document', async () => {
   const object: ModelInfo = {
     id: 'my-model',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',
@@ -97,7 +96,6 @@ test('Expect download button in document', async () => {
   const object: ModelInfo = {
     id: 'my-model',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',
@@ -124,7 +122,6 @@ test('Expect downloadModel to be call on click', async () => {
   const object: ModelInfo = {
     id: 'my-model',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',
@@ -150,7 +147,6 @@ test('Expect router to be called when rocket icon clicked', async () => {
   const object: ModelInfo = {
     id: 'my-model',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',
@@ -178,7 +174,6 @@ test('Expect delete button to be disabled when model in use', async () => {
   const object: ModelInfo = {
     id: 'my-model',
     description: '',
-    hw: '',
     license: '',
     name: '',
     registry: '',

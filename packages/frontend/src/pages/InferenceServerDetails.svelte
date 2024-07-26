@@ -3,14 +3,13 @@ import { inferenceServers } from '/@/stores/inferenceServers';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
-import { faBuildingColumns, faCheck, faCopy, faMicrochip, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
+import { faBuildingColumns, faCheck, faCopy, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
-import Badge from '/@/lib/Badge.svelte';
 import { Button, DetailsPage } from '@podman-desktop/ui-svelte';
 
 export let containerId: string | undefined = undefined;
@@ -140,9 +139,6 @@ export function goToUpPage(): void {
     <div class="flex gap-x-2 items-center text-[var(--pd-content-sub-header)]">
       {#if service}
         <span class="text-xs">{service.container.containerId}</span>
-        {#each service.models as model}
-          <Badge icon={faMicrochip} content={model.hw} background="bg-[var(--pd-label-bg)]" />
-        {/each}
       {/if}
     </div>
   </svelte:fragment>
@@ -195,12 +191,6 @@ export function goToUpPage(): void {
                   <div
                     class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
                     http://localhost:{service.connection.port}/v1
-                  </div>
-
-                  <div
-                    class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
-                    CPU Inference
-                    <Fa class="ml-2" icon={faMicrochip} />
                   </div>
                 </div>
               </div>

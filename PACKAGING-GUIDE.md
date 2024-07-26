@@ -36,7 +36,6 @@ A model has the following attributes:
 - ```id```: a unique identifier for the model
 - ```name```: the model name
 - ```description```: a detailed description about the model
-- ```hw```: the hardware where the model is compatible. Possible values are CPU and GPU
 - ```registry```: the model registry where the model is stored
 - ```popularity```: an integer field giving the rating of the model. Can be thought as the number of stars
 - ```license```: the license under which the model is available

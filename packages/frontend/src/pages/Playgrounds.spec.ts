@@ -69,7 +69,6 @@ const initialCatalog: ApplicationCatalog = {
       id: 'model1',
       name: 'Model 1',
       description: 'Readme for model 1',
-      hw: 'CPU',
       registry: 'Hugging Face',
       license: '?',
       url: 'https://model1.example.com',

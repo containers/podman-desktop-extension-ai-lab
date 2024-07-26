@@ -29,7 +29,6 @@ test('Expect model info lower bar to be visible', async () => {
   const object: ModelInfo = {
     id: 'my-model',
     description: '',
-    hw: '',
     license: 'apache-2',
     name: 'My model',
     registry: 'registry',
@@ -61,7 +60,6 @@ test('Expect model info lower bar to be visible', async () => {
   const object: ModelInfo = {
     id: 'my-model',
     description: '',
-    hw: '',
     license: '',
     name: 'My model',
     registry: '',

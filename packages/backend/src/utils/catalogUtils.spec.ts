@@ -24,7 +24,6 @@ const validModel = {
   id: 'model-1',
   name: 'Test Model',
   description: 'A test model',
-  hw: 'hardware',
 };
 
 const validRecipe = {
@@ -46,7 +45,7 @@ describe('merge', () => {
   test('should merge catalogs correctly', () => {
     const catalogA = {
       version: CatalogFormat.CURRENT,
-      models: [{ id: 'model-1', name: 'Model A', description: 'Description A', hw: 'HW A' }],
+      models: [{ id: 'model-1', name: 'Model A', description: 'Description A' }],
       recipes: [
         {
           id: 'recipe-1',
@@ -62,7 +61,7 @@ describe('merge', () => {
 
     const catalogB = {
       version: CatalogFormat.CURRENT,
-      models: [{ id: 'model-2', name: 'Model B', description: 'Description B', hw: 'HW B' }],
+      models: [{ id: 'model-2', name: 'Model B', description: 'Description B' }],
       recipes: [
         {
           id: 'recipe-2',

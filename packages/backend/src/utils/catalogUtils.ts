@@ -129,16 +129,13 @@ export function sanitizeModel(model: unknown): ModelInfo {
     'name' in model &&
     typeof model.name === 'string' &&
     'description' in model &&
-    typeof model.description === 'string' &&
-    'hw' in model &&
-    typeof model.hw === 'string'
+    typeof model.description === 'string'
   )
     return {
       // mandatory fields
       id: model.id,
       name: model.name,
       description: model.description,
-      hw: model.hw,
       // optional fields
       registry: 'registry' in model && typeof model.registry === 'string' ? model.registry : undefined,
       license: 'license' in model && typeof model.license === 'string' ? model.license : undefined,

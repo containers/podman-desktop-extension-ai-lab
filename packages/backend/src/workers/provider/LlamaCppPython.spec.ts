@@ -20,7 +20,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { LLAMA_CPP_CPU, LLAMA_CPP_CUDA, LlamaCppPython, SECOND } from './LlamaCppPython';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
+import { getImageInfo, getProviderContainerConnection, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { ContainerProviderConnection, ImageInfo, ProviderContainerConnection } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { GPUManager } from '../../managers/GPUManager';
@@ -28,6 +28,8 @@ import type { PodmanConnection } from '../../managers/podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import { GPUVendor } from '@shared/src/models/IGPUInfo';
+import type { InferenceServer} from '@shared/src/models/IInference';
+import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -158,12 +160,28 @@ describe('perform', () => {
   test('valid config should produce expected CreateContainerOptions', async () => {
     const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
 
-    await provider.perform({
+    const server = await provider.perform({
       port: 8888,
       image: undefined,
       labels: {},
       modelsInfo: [DummyModel],
       providerId: undefined,
+    });
+
+    expect(server).toStrictEqual<InferenceServer>({
+      container: {
+        containerId: 'dummy-container-id',
+        engineId: DummyImageInfo.engineId,
+      },
+      labels: {
+        [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
+      },
+      models: [DummyModel],
+      status: 'running',
+      type: InferenceType.LLAMA_CPP,
+      connection: {
+        port: 8888,
+      },
     });
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
@@ -258,7 +276,7 @@ describe('perform', () => {
     ]);
 
     const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
-    await provider.perform({
+    const server = await provider.perform({
       port: 8000,
       image: undefined,
       labels: {},
@@ -278,5 +296,7 @@ describe('perform', () => {
 
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
     expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), LLAMA_CPP_CUDA, expect.any(Function));
+    expect('gpu' in server.labels).toBeTruthy();
+    expect(server.labels['gpu']).toBe('nvidia');
   });
 });

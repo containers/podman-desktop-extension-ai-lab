@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
 import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
@@ -28,14 +28,14 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const mocks = vi.hoisted(() => {
   return {
-    getInferenceServersMock: vi.fn(),
+    getInferenceServersMock: vi.fn<() => InferenceServer[]>(),
     getSnippetLanguagesMock: vi.fn(),
   };
 });
 
 vi.mock('../stores/inferenceServers', () => ({
   inferenceServers: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: InferenceServer[]) => void) => {
       f(mocks.getInferenceServersMock());
       return () => {};
     },
@@ -60,6 +60,28 @@ vi.mock('../utils/client', () => {
     },
   };
 });
+
+const inferenceServerMock: InferenceServer = {
+  health: {
+    Status: 'healthy',
+    Log: [],
+    FailingStreak: 0,
+  },
+  models: [
+    {
+      id: 'dummyModelId',
+      name: 'Dummy model id',
+    } as unknown as ModelInfo,
+  ],
+  connection: { port: 9999 },
+  status: 'running',
+  container: {
+    containerId: 'dummyContainerId',
+    engineId: 'dummyEngineId',
+  },
+  type: InferenceType.NONE,
+  labels: {},
+};
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -93,28 +115,7 @@ beforeEach(() => {
     },
   ] as Language[]);
 
-  mocks.getInferenceServersMock.mockReturnValue([
-    {
-      health: {
-        Status: 'healthy',
-        Log: [],
-        FailingStreak: 0,
-      },
-      models: [
-        {
-          id: 'dummyModelId',
-          name: 'Dummy model id',
-        } as unknown as ModelInfo,
-      ],
-      connection: { port: 9999 },
-      status: 'running',
-      container: {
-        containerId: 'dummyContainerId',
-        engineId: 'dummyEngineId',
-      },
-      type: InferenceType.NONE,
-    } as InferenceServer,
-  ]);
+  mocks.getInferenceServersMock.mockReturnValue([inferenceServerMock]);
 });
 
 test('ensure address is displayed', async () => {
@@ -206,4 +207,32 @@ test('ensure models to be clickable', async () => {
   const a = screen.getByText('Dummy model id');
   expect(a).toBeDefined();
   expect(a.getAttribute('href')).toBe('/model/dummyModelId');
+});
+
+describe('labels', () => {
+  test('GPU label should display GPU Inference', async () => {
+    mocks.getInferenceServersMock.mockReturnValue([
+      {
+        ...inferenceServerMock,
+        labels: {
+          gpu: 'NVIDIA',
+        },
+      },
+    ]);
+    render(InferenceServerDetails, {
+      containerId: 'dummyContainerId',
+    });
+
+    const span = screen.getByText('GPU Inference');
+    expect(span).toBeDefined();
+  });
+
+  test('no label should display CPU Inference', async () => {
+    render(InferenceServerDetails, {
+      containerId: 'dummyContainerId',
+    });
+
+    const span = screen.getByText('CPU Inference');
+    expect(span).toBeDefined();
+  });
 });

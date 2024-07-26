@@ -27,13 +27,11 @@ import type { InferenceServerConfig } from '@shared/src/models/InferenceServerCo
 import type { IWorker } from '../IWorker';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
-import type { InferenceType } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceType } from '@shared/src/models/IInference';
 
 export type BetterContainerCreateResult = ContainerCreateResult & { engineId: string };
 
-export abstract class InferenceProvider
-  implements IWorker<InferenceServerConfig, BetterContainerCreateResult>, Disposable
-{
+export abstract class InferenceProvider implements IWorker<InferenceServerConfig, InferenceServer>, Disposable {
   readonly type: InferenceType;
   readonly name: string;
 
@@ -47,7 +45,7 @@ export abstract class InferenceProvider
   }
 
   abstract enabled(): boolean;
-  abstract perform(config: InferenceServerConfig): Promise<BetterContainerCreateResult>;
+  abstract perform(config: InferenceServerConfig): Promise<InferenceServer>;
   abstract dispose(): void;
 
   protected async createContainer(

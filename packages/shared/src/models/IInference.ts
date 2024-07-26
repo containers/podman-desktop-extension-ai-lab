@@ -65,4 +65,8 @@ export interface InferenceServer {
    * The type of inference server (aka backend)
    */
   type: InferenceType;
+  /**
+   * Inference labels
+   */
+  labels: Record<string, string>;
 }

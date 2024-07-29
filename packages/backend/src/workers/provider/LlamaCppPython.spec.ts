@@ -280,17 +280,7 @@ describe('perform', () => {
       port: 8000,
       image: undefined,
       labels: {},
-      modelsInfo: [
-        {
-          ...DummyModel,
-          properties: {
-            basicProp: 'basicProp',
-            lotOfCamelCases: 'lotOfCamelCases',
-            lowercase: 'lowercase',
-            chatFormat: 'dummyChatFormat',
-          },
-        },
-      ],
+      modelsInfo: [DummyModel],
       providerId: undefined,
     });
 
@@ -298,5 +288,32 @@ describe('perform', () => {
     expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), LLAMA_CPP_CUDA, expect.any(Function));
     expect('gpu' in server.labels).toBeTruthy();
     expect(server.labels['gpu']).toBe('nvidia');
+  });
+
+  test('unknown gpu on unsupported vmtype should not provide gpu labels', async () => {
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'dummy-model',
+        vendor: GPUVendor.UNKNOWN,
+      },
+    ]);
+
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    const server = await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      providerId: undefined,
+    });
+
+    expect(gpuManager.collectGPUs).toHaveBeenCalled();
+    expect('gpu' in server.labels).toBeFalsy();
   });
 });

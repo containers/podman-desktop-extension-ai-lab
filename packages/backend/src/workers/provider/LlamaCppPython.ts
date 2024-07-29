@@ -97,10 +97,13 @@ export class LlamaCppPython extends InferenceProvider {
     let user: string | undefined = undefined;
 
     if (gpu) {
-      // mounting
-
+      let supported: boolean = false;
       switch (vmType) {
         case VMType.WSL:
+          // WSL Only support NVIDIA
+          if (gpu.vendor !== GPUVendor.NVIDIA) break;
+
+          supported = true;
           mounts.push({
             Target: '/usr/lib/wsl',
             Source: '/usr/lib/wsl',
@@ -122,6 +125,7 @@ export class LlamaCppPython extends InferenceProvider {
           ];
           break;
         case VMType.LIBKRUN:
+          supported = true;
           devices.push({
             PathOnHost: '/dev/dri',
             PathInContainer: '/dev/dri',
@@ -130,15 +134,19 @@ export class LlamaCppPython extends InferenceProvider {
           break;
       }
 
-      // adding gpu capabilities
-      deviceRequests.push({
-        Capabilities: [['gpu']],
-        Count: -1, // -1: all
-      });
+      // adding gpu capabilities in supported architectures
+      if (supported) {
+        deviceRequests.push({
+          Capabilities: [['gpu']],
+          Count: -1, // -1: all
+        });
 
-      // all gpus
-      labels['gpu'] = gpu.model;
-      envs.push(`GPU_LAYERS=${config.gpuLayers}`);
+        // label the container
+        labels['gpu'] = gpu.model;
+        envs.push(`GPU_LAYERS=${config.gpuLayers}`);
+      } else {
+        console.warn(`gpu ${gpu.model} is not supported on ${vmType}.`);
+      }
     }
 
     return {

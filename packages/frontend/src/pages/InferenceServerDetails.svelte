@@ -5,14 +5,16 @@ import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
 import {
   faArrowUpRightFromSquare,
+  faBook,
   faBuildingColumns,
   faCheck,
   faCopy,
   faFan,
   faMicrochip,
+  faPlug,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
-import type { InferenceServer, InferenceType  } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceType } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -20,6 +22,7 @@ import { onMount } from 'svelte';
 import { router } from 'tinro';
 import { Button, DetailsPage } from '@podman-desktop/ui-svelte';
 import { Tooltip } from '@podman-desktop/ui-svelte';
+import CopyButton from '/@/lib/button/CopyButton.svelte';
 
 export let containerId: string | undefined = undefined;
 
@@ -197,16 +200,27 @@ export function goToUpPage(): void {
               <div class="bg-[var(--pd-content-card-bg)] rounded-md w-full px-4 pt-2 pb-4 mt-2">
                 <span class="text-sm text-[var(--pd-content-card-text)]">Server</span>
                 <div class="flex flex-row gap-4">
-                  {#if service.status === 'running' && service.type === InferenceType.LLAMA_CPP}
-                    <button
-                      on:click={() =>
-                        service && studioClient.openURL(`http://localhost:${service.connection.port}/docs`)}
-                      class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
-                      http://localhost:{service.connection.port}/docs
-                      <Fa class="ml-2" icon={faArrowUpRightFromSquare} />
-                    </button>
-                  {/if}
+                  {#if service.status === 'running'}
+                    {#if 'docs' in service.labels}
+                      <Tooltip tip="Open swagger documentation">
+                        <button
+                          on:click={() => service && studioClient.openURL(service.labels['docs'])}
+                          class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
+                          {service.labels['docs']}
+                          <Fa class="ml-2" icon={faBook} />
+                        </button>
+                      </Tooltip>
+                    {/if}
 
+                    {#if 'api' in service.labels}
+                      <CopyButton
+                        class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
+                        content={service.labels['api']}>
+                        {service.labels['api']}
+                        <Fa class="ml-2" icon={faPlug} />
+                      </CopyButton>
+                    {/if}
+                  {/if}
 
                   {#if 'gpu' in service.labels}
                     <Tooltip tip={service.labels['gpu']}>

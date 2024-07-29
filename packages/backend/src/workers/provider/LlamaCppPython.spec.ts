@@ -175,6 +175,8 @@ describe('perform', () => {
       },
       labels: {
         [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
+        api: 'http://localhost:8888/v1',
+        docs: 'http://localhost:8888/docs',
       },
       models: [DummyModel],
       status: 'running',
@@ -218,7 +220,9 @@ describe('perform', () => {
       },
       Image: DummyImageInfo.Id,
       Labels: {
-        'ai-lab-inference-server': `["${DummyModel.id}"]`,
+        [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
+        api: 'http://localhost:8888/v1',
+        docs: 'http://localhost:8888/docs',
       },
     });
   });

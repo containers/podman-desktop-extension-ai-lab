@@ -3690,10 +3690,10 @@ postman-code-generators@^1.12.0:
     postman-collection "^4.4.0"
     shelljs "0.8.5"
 
-postman-collection@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/postman-collection/-/postman-collection-4.4.0.tgz#6acb6e3796fcd9f6ac5a94e6894185e42387d7da"
-  integrity sha512-2BGDFcUwlK08CqZFUlIC8kwRJueVzPjZnnokWPtJCd9f2J06HBQpGL7t2P1Ud1NEsK9NHq9wdipUhWLOPj5s/Q==
+postman-collection@^4.4.0, postman-collection@^4.4.1:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/postman-collection/-/postman-collection-4.4.1.tgz#72871d78db2d4c47c7a3a078ec0bd534b14ac53d"
+  integrity sha512-1oS1x+Y7gLGV3xF+EwdZtZOmZILsDTogTHdv2nssTjO+bAo7yr++nOwINT1p3A3mrDeCuEscMJmbJzil57FedQ==
   dependencies:
     "@faker-js/faker" "5.5.3"
     file-type "3.9.0"

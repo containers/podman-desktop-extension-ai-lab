@@ -155,6 +155,45 @@ test('should display one model', async () => {
   expect(name).not.toBeNull();
 });
 
+test('should display downloaded model first', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([
+    {
+      id: 'dummy-local-id',
+      name: 'dummy-local-name',
+      memory: 1024,
+      file: {
+        path: 'random',
+      },
+    },
+    {
+      id: 'dummy-id',
+      name: 'dummy-name',
+      memory: 1024,
+    },
+  ]);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
+
+  const { container } = render(Models);
+
+  const table = within(container).getByRole('table');
+  expect(table).toBeDefined();
+
+  const rows = within(table).queryAllByRole('row');
+  expect(rows.length).toBe(3);
+
+  // First row should be the headers
+  const headers = within(rows[0]).queryAllByRole('columnheader');
+  expect(headers.length > 0).toBeTruthy();
+
+  // second raw should be the model downloaded
+  const deleteBtn = within(rows[1]).getByTitle('Delete Model');
+  expect(deleteBtn).toBeDefined();
+
+  // last raw should be the remote model
+  const downloadBtn = within(rows[2]).getByTitle('Download Model');
+  expect(downloadBtn).toBeDefined();
+});
+
 describe('downloaded models', () => {
   test('should display no model in downloaded tab', async () => {
     mocks.modelsInfoSubscribeMock.mockReturnValue([

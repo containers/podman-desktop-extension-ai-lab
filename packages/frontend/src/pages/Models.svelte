@@ -20,7 +20,11 @@ import { faBookOpen, faFileImport } from '@fortawesome/free-solid-svg-icons';
 import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<ModelInfo>[] = [
-  new TableColumn<ModelInfo>('', { width: '40px', renderer: ModelColumnIcon }),
+  new TableColumn<ModelInfo>('Status', {
+    width: '60px',
+    renderer: ModelColumnIcon,
+    comparator: (a, b) => (a.file ? 0 : 1) - (b.file ? 0 : 1),
+  }),
   new TableColumn<ModelInfo>('Name', {
     width: '3fr',
     renderer: ModelColumnName,
@@ -131,7 +135,7 @@ async function importModel() {
           <!-- All models -->
           <Route path="/">
             {#if filteredModels.length > 0}
-              <Table kind="model" data={filteredModels} columns={columns} row={row}></Table>
+              <Table defaultSortColumn="Status" kind="model" data={filteredModels} columns={columns} row={row}></Table>
             {:else}
               <EmptyScreen aria-label="status" icon={faBookOpen} title="No models" message="No models available" />
             {/if}

@@ -29,6 +29,7 @@ import type {
 import { containerEngine } from '@podman-desktop/api';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 import type { TaskState } from '@shared/src/models/ITask';
+import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('../../utils/inferenceUtils', () => ({
@@ -86,7 +87,7 @@ class TestInferenceProvider extends InferenceProvider {
     };
   }
 
-  async perform(_config: InferenceServerConfig): Promise<BetterContainerCreateResult> {
+  async perform(_config: InferenceServerConfig): Promise<InferenceServer> {
     throw new Error('not implemented');
   }
   dispose(): void {}

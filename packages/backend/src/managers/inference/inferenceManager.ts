@@ -197,24 +197,13 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     );
 
     // create the inference server using the selected inference provider
-    const result = await provider.perform(config);
+    const inferenceServer = await provider.perform(config);
 
     // Adding a new inference server
-    this.#servers.set(result.id, {
-      container: {
-        engineId: result.engineId,
-        containerId: result.id,
-      },
-      connection: {
-        port: config.port,
-      },
-      status: 'running',
-      models: config.modelsInfo,
-      type: backend,
-    });
+    this.#servers.set(inferenceServer.container.containerId, inferenceServer);
 
     // Watch for container changes
-    this.watchContainerStatus(result.engineId, result.id);
+    this.watchContainerStatus(inferenceServer.container.engineId, inferenceServer.container.containerId);
 
     // Log usage
     this.telemetry.logUsage('inference.start', {
@@ -222,7 +211,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     });
 
     this.notify();
-    return result.id;
+    return inferenceServer.container.containerId;
   }
 
   /**
@@ -385,7 +374,8 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
             status: containerInfo.Status === 'running' ? 'running' : 'stopped',
             models: modelInfos,
             type: getInferenceType(modelInfos),
-          } as InferenceServer,
+            labels: containerInfo.Labels || {},
+          },
         ];
       }),
     );

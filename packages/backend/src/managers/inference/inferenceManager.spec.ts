@@ -17,14 +17,14 @@
  ***********************************************************************/
 import {
   containerEngine,
-  type Webview,
-  type TelemetryLogger,
   type ContainerInfo,
   type ContainerInspectInfo,
+  type TelemetryLogger,
+  type Webview,
 } from '@podman-desktop/api';
 import type { ContainerRegistry } from '../../registries/ContainerRegistry';
 import type { PodmanConnection } from '../podmanConnection';
-import { beforeEach, expect, describe, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { InferenceManager } from './inferenceManager';
 import type { ModelsManager } from '../modelsManager';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
@@ -34,6 +34,8 @@ import { Messages } from '@shared/Messages';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 import type { CatalogManager } from '../catalogManager';
+import type { InferenceServer } from '@shared/src/models/IInference';
+import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -195,6 +197,9 @@ describe('init Inference Manager', () => {
         models: [],
         status: 'running',
         type: expect.anything(),
+        labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+        },
       },
     ]);
   });
@@ -269,7 +274,17 @@ describe('Create Inference Server', () => {
       enabled: () => true,
       name: 'dummy-inference-provider',
       dispose: () => {},
-      perform: vi.fn().mockResolvedValue({ id: 'dummy-container-id', engineId: 'dummy-engine-id' }),
+      perform: vi.fn<() => InferenceServer>().mockResolvedValue({
+        container: {
+          containerId: 'dummy-container-id',
+          engineId: 'dummy-engine-id',
+        },
+        models: [],
+        status: 'running',
+        type: InferenceType.LLAMA_CPP,
+        connection: { port: 0 },
+        labels: {},
+      }),
     } as unknown as InferenceProvider;
     vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue(provider);
 
@@ -570,6 +585,7 @@ describe('transition statuses', () => {
           health: undefined,
           status: 'stopping',
           type: expect.anything(),
+          labels: expect.anything(),
         },
       ],
     });
@@ -585,6 +601,7 @@ describe('transition statuses', () => {
           health: undefined,
           status: 'stopped',
           type: expect.anything(),
+          labels: expect.anything(),
         },
       ],
     });
@@ -620,6 +637,7 @@ describe('transition statuses', () => {
           health: undefined,
           status: 'deleting',
           type: expect.anything(),
+          labels: expect.anything(),
         },
       ],
     });
@@ -656,6 +674,7 @@ describe('transition statuses', () => {
           health: undefined,
           status: 'starting',
           type: expect.anything(),
+          labels: expect.anything(),
         },
       ],
     });
@@ -671,6 +690,7 @@ describe('transition statuses', () => {
           health: undefined,
           status: 'running',
           type: expect.anything(),
+          labels: expect.anything(),
         },
       ],
     });

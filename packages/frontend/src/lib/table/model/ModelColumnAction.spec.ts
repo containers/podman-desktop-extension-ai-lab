@@ -200,6 +200,7 @@ test('Expect delete button to be disabled when model in use', async () => {
         port: 0,
       },
       health: undefined,
+      labels: {},
     },
   ]);
   render(ModelColumnActions, { object });

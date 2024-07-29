@@ -17,12 +17,12 @@
  ***********************************************************************/
 import type { ContainerCreateOptions, DeviceRequest, ImageInfo, MountConfig } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import { type BetterContainerCreateResult, InferenceProvider } from './InferenceProvider';
+import { InferenceProvider } from './InferenceProvider';
 import { getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
 import type { GPUManager } from '../../managers/GPUManager';
 import { GPUVendor, type IGPUInfo } from '@shared/src/models/IGPUInfo';
 import { VMType } from '@shared/src/models/IPodman';
@@ -73,6 +73,11 @@ export class LlamaCppPython extends InferenceProvider {
     if (modelInfo.file === undefined) {
       throw new Error('The model info file provided is undefined');
     }
+
+    const labels: Record<string, string> = {
+      ...config.labels,
+      [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
+    };
 
     const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
     envs.push(...getModelPropertiesForEnvironment(modelInfo));
@@ -131,6 +136,8 @@ export class LlamaCppPython extends InferenceProvider {
         Count: -1, // -1: all
       });
 
+      // all gpus
+      labels['gpu'] = gpu.model;
       envs.push(`GPU_LAYERS=${config.gpuLayers}`);
     }
 
@@ -160,16 +167,13 @@ export class LlamaCppPython extends InferenceProvider {
         Interval: SECOND * 5,
         Retries: 4 * 5,
       },
-      Labels: {
-        ...config.labels,
-        [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
-      },
+      Labels: labels,
       Env: envs,
       Cmd: cmd,
     };
   }
 
-  async perform(config: InferenceServerConfig): Promise<BetterContainerCreateResult> {
+  async perform(config: InferenceServerConfig): Promise<InferenceServer> {
     if (!this.enabled()) throw new Error('not enabled');
 
     let gpu: IGPUInfo | undefined = undefined;
@@ -201,7 +205,21 @@ export class LlamaCppPython extends InferenceProvider {
     );
 
     // Create the container
-    return this.createContainer(imageInfo.engineId, containerCreateOptions, config.labels);
+    const { engineId, id } = await this.createContainer(imageInfo.engineId, containerCreateOptions, config.labels);
+
+    return {
+      container: {
+        engineId: engineId,
+        containerId: id,
+      },
+      connection: {
+        port: config.port,
+      },
+      status: 'running',
+      models: config.modelsInfo,
+      type: InferenceType.LLAMA_CPP,
+      labels: containerCreateOptions.Labels || {},
+    };
   }
 
   protected getLlamaCppInferenceImage(vmType: VMType, gpu?: IGPUInfo): string {

@@ -4,7 +4,6 @@ import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
 import {
-  faArrowUpRightFromSquare,
   faBook,
   faBuildingColumns,
   faCheck,
@@ -14,7 +13,7 @@ import {
   faPlug,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
-import type { InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';

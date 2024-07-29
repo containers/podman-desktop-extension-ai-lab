@@ -78,7 +78,7 @@ export function getModelPropertiesForEnvironment(modelInfo: ModelInfo): string[]
     envs.push(
       ...Object.entries(modelInfo.properties).map(([key, value]) => {
         const formattedKey = key.replace(/[A-Z]/g, m => `_${m}`).toUpperCase();
-        return `MODEL_${formattedKey}=${value}`;
+        return `${formattedKey}=${value}`;
       }),
     );
   }

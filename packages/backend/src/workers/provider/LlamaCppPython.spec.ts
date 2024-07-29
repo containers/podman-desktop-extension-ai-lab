@@ -228,10 +228,10 @@ describe('perform', () => {
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
       Env: expect.arrayContaining([
-        'MODEL_BASIC_PROP=basicProp',
-        'MODEL_LOT_OF_CAMEL_CASES=lotOfCamelCases',
-        'MODEL_LOWERCASE=lowercase',
-        'MODEL_CHAT_FORMAT=dummyChatFormat',
+        'BASIC_PROP=basicProp',
+        'LOT_OF_CAMEL_CASES=lotOfCamelCases',
+        'LOWERCASE=lowercase',
+        'CHAT_FORMAT=dummyChatFormat',
       ]),
       Cmd: expect.anything(),
       HealthCheck: expect.anything(),

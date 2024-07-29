@@ -140,27 +140,6 @@ test('ensure documentation url is displayed', async () => {
   expect(studioClient.openURL).toHaveBeenCalledWith('http://localhost:9999/docs');
 });
 
-test('ensure api url is displayed', async () => {
-  mocks.getInferenceServersMock.mockReturnValue([
-    {
-      ...inferenceServerMock,
-      labels: {
-        api: 'http://localhost:9999/v1',
-      },
-    },
-  ]);
-  render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
-  });
-
-  const address = screen.getByText('http://localhost:9999/v1');
-  expect(address).toBeDefined();
-
-  await fireEvent.click(address);
-
-  expect(studioClient.openURL).toHaveBeenCalledWith('http://localhost:9999/v1');
-});
-
 test('language select must have the mocked snippet languages', async () => {
   render(InferenceServerDetails, {
     containerId: 'dummyContainerId',

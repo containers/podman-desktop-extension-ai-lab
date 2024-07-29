@@ -47,6 +47,7 @@ import { InferenceProviderRegistry } from './registries/InferenceProviderRegistr
 import { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import { RecipeManager } from './managers/recipes/RecipeManager';
 import { GPUManager } from './managers/GPUManager';
+import { WhisperCpp } from './workers/provider/WhisperCpp';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -264,6 +265,9 @@ export class Studio {
       this.#inferenceProviderRegistry.register(
         new LlamaCppPython(this.#taskRegistry, this.#podmanConnection, this.#gpuManager, this.#configurationRegistry),
       ),
+    );
+    this.#extensionContext.subscriptions.push(
+      this.#inferenceProviderRegistry.register(new WhisperCpp(this.#taskRegistry)),
     );
 
     /**

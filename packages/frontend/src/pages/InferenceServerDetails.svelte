@@ -13,7 +13,7 @@ import {
   faPlug,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -22,6 +22,8 @@ import { router } from 'tinro';
 import { Button, DetailsPage } from '@podman-desktop/ui-svelte';
 import { Tooltip } from '@podman-desktop/ui-svelte';
 import CopyButton from '/@/lib/button/CopyButton.svelte';
+import { Button, DetailsPage, Tooltip } from '@podman-desktop/ui-svelte';
+import type { RequestOptions } from '@shared/src/models/RequestOptions';
 
 export let containerId: string | undefined = undefined;
 
@@ -48,19 +50,22 @@ $: snippet;
 
 const generate = async (language: string, variant: string) => {
   copied = false;
-  snippet = await studioClient.createSnippet(
-    {
-      url: `http://localhost:${service?.connection.port || '??'}/v1/chat/completions`,
-      method: 'POST',
-      header: [
-        {
-          key: 'Content-Type',
-          value: 'application/json',
-        },
-      ],
-      body: {
-        mode: 'raw',
-        raw: `{
+
+  let options: RequestOptions | undefined;
+  switch (service?.type) {
+    case InferenceType.LLAMA_CPP:
+      options = {
+        url: `http://localhost:${service?.connection.port || '??'}/v1/chat/completions`,
+        method: 'POST',
+        header: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+        ],
+        body: {
+          mode: 'raw',
+          raw: `{
   "messages": [
     {
       "content": "You are a helpful assistant.",
@@ -72,11 +77,35 @@ const generate = async (language: string, variant: string) => {
     }
   ]
 }`,
-      },
-    },
-    language,
-    variant,
-  );
+        },
+      };
+      break;
+    case InferenceType.WHISPER_CPP:
+      options = {
+        url: `http://localhost:${service?.connection.port || '??'}/inference`,
+        method: 'POST',
+        header: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+        ],
+        body: {
+          mode: 'formdata',
+          formdata: [
+            {
+              key: 'file',
+              value: './local.mp3',
+              type: 'file',
+            },
+          ],
+        },
+      };
+      break;
+  }
+
+  if (!options) return;
+  snippet = await studioClient.createSnippet(options, language, variant);
 };
 
 $: {

@@ -94,7 +94,7 @@ Once a model is available locally, let's start an inference server
 
 ![](https://github.com/containers/podman-desktop-media/raw/ai-lab/gifs/playground.gif)
 
-4. **Start a AI application and use it from the browser**
+4. **Start an AI application and use it from the browser**
 
 ![](https://github.com/containers/podman-desktop-media/raw/ai-lab/gifs/start-ai-app.gif)
 

@@ -149,6 +149,10 @@ export class LlamaCppPython extends InferenceProvider {
       }
     }
 
+    // adding labels to inference server
+    labels['docs'] = `http://localhost:${config.port}/docs`;
+    labels['api'] = `http://localhost:${config.port}/v1`;
+
     return {
       Image: imageInfo.Id,
       Detach: true,

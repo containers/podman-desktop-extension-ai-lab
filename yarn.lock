@@ -4419,10 +4419,10 @@ symbol-tree@^3.2.4:
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.4.tgz#430637d248ba77e078883951fb9aa0eed7c63fa2"
   integrity sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==
 
-systeminformation@^5.23.1:
-  version "5.23.1"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.23.1.tgz#ebf70defa927f6a42462a440f4802d83d50e7eb5"
-  integrity sha512-r1DRobQxcm8YZGj+sc/oXhaDjjIOUGVvGnzd10MQey7F3ygu+qXV5ofWQiK7x3bSZCxFFn/BOiMak00gZgaGWQ==
+systeminformation@^5.23.2:
+  version "5.23.2"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.23.2.tgz#44825c5de57976e0dd733a5c99048cf24159512b"
+  integrity sha512-FoipTSwzZR68ZAjXZ8DRH2DFEErMAOi9JvRMsn6i/hTp6Hd4W4nM1W6a+kUyMrp/pd1SIuUzUZvvkQ21yE6Dig==
 
 tailwindcss@^3.4.7:
   version "3.4.7"

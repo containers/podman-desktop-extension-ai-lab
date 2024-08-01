@@ -70,12 +70,15 @@ export async function getImageInfo(
   callback: (event: PullEvent) => void,
 ): Promise<ImageInfo> {
   let imageInfo: ImageInfo | undefined;
+
+  const images = await containerEngine.listImages({
+    provider: connection,
+  } as ListImagesOptions);
+
+  console.log('images', images);
+
   // Get image inspect
-  imageInfo = (
-    await containerEngine.listImages({
-      provider: connection,
-    } as ListImagesOptions)
-  ).find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
+  imageInfo = images.find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
   if (!imageInfo) {
     try {
       // Pull image

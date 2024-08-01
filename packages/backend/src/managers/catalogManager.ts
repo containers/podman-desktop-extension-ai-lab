@@ -231,7 +231,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       userCatalogPath,
       JSON.stringify(
         {
-          version: CatalogFormat.CURRENT,
+          version: content.version,
           recipes: content.recipes,
           models: content.models.filter(model => model.id !== modelId),
           categories: content.categories,

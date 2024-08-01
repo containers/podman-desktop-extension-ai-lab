@@ -52,7 +52,9 @@ jobs:
         run: npx yarn build
 
       - name: Prepare node_modules for prod
-        run: npx yarn install --frozen-lockfile --network-timeout 180000 --prod
+        run: |
+          npx yarn install --frozen-lockfile --network-timeout 180000 --prod
+          (cd node_modules && rm -rf @podman-desktop @types moment @fortawesome)
 
       - name: Login to ghcr.io
         run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io

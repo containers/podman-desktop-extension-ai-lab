@@ -199,7 +199,11 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
 
   await catalogManager.removeUserModel('model1');
 
-  expect(writeFileMock).toBeCalledWith('path', expect.any(String), 'utf-8');
+  expect(writeFileMock).toBeCalledWith(
+    'path',
+    expect.stringContaining(`"version": "${CatalogFormat.CURRENT}"`),
+    'utf-8',
+  );
 });
 
 test('catalog should be the combination of user catalog and default catalog', async () => {

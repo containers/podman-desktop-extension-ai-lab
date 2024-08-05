@@ -26,7 +26,19 @@ export enum CatalogFormat {
   UNKNOWN = 'unknown',
 }
 
-export function sanitize(raw: object & { version: string }): ApplicationCatalog {
+export function sanitize(rawObject: object): ApplicationCatalog {
+  // if there is no version in the user catalog, we try to adapt it automatically to the CURRENT format
+  let raw: object & { version: string };
+  if (!('version' in rawObject)) {
+    raw = {
+      ...rawObject,
+      version: CatalogFormat.CURRENT,
+    };
+    raw = adaptToCurrent(raw);
+  } else {
+    raw = rawObject as object & { version: string };
+  }
+
   // ensure version is valid
   if (raw.version !== CatalogFormat.CURRENT) throw new Error('the catalog is using an invalid version');
 
@@ -39,6 +51,26 @@ export function sanitize(raw: object & { version: string }): ApplicationCatalog 
         ? raw.categories.map(category => sanitizeCategory(category))
         : [],
   };
+}
+
+function adaptToCurrent(raw: object & { version: string }): object & { version: string } {
+  // for recipes - assume backend is llama-cpp and copy models field as recommended
+  if ('recipes' in raw && Array.isArray(raw.recipes)) {
+    raw.recipes.forEach(recipe => {
+      recipe.backend = recipe.backend ?? 'llama-cpp';
+      recipe.recommended = recipe.recommended ?? recipe.models ?? []; // Copy models to recommended if not present
+      recipe.models = []; // Clear models to avoid duplication
+    });
+  }
+
+  // for models - assume backend is llama-cpp
+  if ('models' in raw && Array.isArray(raw.models)) {
+    raw.models.forEach(model => {
+      model.backend = model.backend ?? 'llama-cpp';
+    });
+  }
+
+  return raw;
 }
 
 /**

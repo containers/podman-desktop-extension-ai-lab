@@ -29,7 +29,7 @@ import { promises, existsSync } from 'node:fs';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import path from 'node:path';
 import { version } from '../assets/ai.json';
-import { CatalogFormat } from '../utils/catalogUtils';
+import * as catalogUtils from '../utils/catalogUtils';
 
 vi.mock('../assets/ai.json', async importOriginal => {
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -201,7 +201,7 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
 
   expect(writeFileMock).toBeCalledWith(
     'path',
-    expect.stringContaining(`"version": "${CatalogFormat.CURRENT}"`),
+    expect.stringContaining(`"version": "${catalogUtils.CatalogFormat.CURRENT}"`),
     'utf-8',
   );
 });
@@ -224,7 +224,7 @@ test('catalog should be the combination of user catalog and default catalog', as
   const catalog = catalogManager.getCatalog();
 
   expect(catalog).toEqual({
-    version: CatalogFormat.CURRENT,
+    version: catalogUtils.CatalogFormat.CURRENT,
     recipes: [...content.recipes, ...userContent.recipes],
     models: [...content.models, ...userContent.models],
     categories: [...content.categories, ...userContent.categories],
@@ -236,7 +236,7 @@ test('catalog should use user items in favour of default', async () => {
   vi.spyOn(path, 'resolve').mockReturnValue('path');
 
   const overwriteFullCatalog: ApplicationCatalog = {
-    version: CatalogFormat.CURRENT,
+    version: catalogUtils.CatalogFormat.CURRENT,
     recipes: content.recipes.map(recipe => ({
       ...recipe,
       name: 'user-recipe-overwrite',
@@ -269,11 +269,11 @@ test('catalog should use user items in favour of default', async () => {
 });
 
 test('default catalog should have latest version', () => {
-  expect(version).toBe(CatalogFormat.CURRENT);
+  expect(version).toBe(catalogUtils.CatalogFormat.CURRENT);
 });
 
 test('wrong catalog version should create a notification', () => {
-  catalogManager['onUserCatalogUpdate']({ version: CatalogFormat.UNKNOWN });
+  catalogManager['onUserCatalogUpdate']({ version: catalogUtils.CatalogFormat.UNKNOWN });
 
   expect(window.showNotification).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -287,7 +287,7 @@ test('malformed catalog should create a notification', async () => {
   vi.spyOn(path, 'resolve').mockReturnValue('path');
 
   catalogManager['onUserCatalogUpdate']({
-    version: CatalogFormat.CURRENT,
+    version: catalogUtils.CatalogFormat.CURRENT,
     models: [
       {
         fakeProperty: 'hello',
@@ -303,4 +303,13 @@ test('malformed catalog should create a notification', async () => {
       body: 'Something went wrong while trying to load the user catalog: Error: invalid model format',
     }),
   );
+});
+
+test('catalog with undefined version should call sanitize function to try converting it', () => {
+  const sanitizeSpy = vi.spyOn(catalogUtils, 'sanitize');
+  catalogManager['onUserCatalogUpdate']({
+    models: [],
+  });
+
+  expect(sanitizeSpy).toHaveBeenCalled();
 });

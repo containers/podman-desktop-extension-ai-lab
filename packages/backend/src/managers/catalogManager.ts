@@ -75,6 +75,16 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   }
 
   private onUserCatalogUpdate(content: unknown): void {
+    // if there is no version in the user catalog, we try to sanitize it
+    // most likely it can be converted automatically to the current version without showing any notification to the user
+    if (content && typeof content === 'object' && !('version' in content)) {
+      try {
+        content = sanitize(content);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     if (!content || typeof content !== 'object') {
       this.loadDefaultCatalog();
       return;

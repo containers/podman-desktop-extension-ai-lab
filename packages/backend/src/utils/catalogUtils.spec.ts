@@ -17,7 +17,15 @@
  ***********************************************************************/
 
 import { test, expect, describe } from 'vitest';
-import { CatalogFormat, isNonNullObject, merge, sanitizeCategory, sanitizeModel, sanitizeRecipe } from './catalogUtils';
+import {
+  CatalogFormat,
+  isNonNullObject,
+  merge,
+  sanitize,
+  sanitizeCategory,
+  sanitizeModel,
+  sanitizeRecipe,
+} from './catalogUtils';
 
 // Dummy data for testing
 const validModel = {
@@ -40,6 +48,80 @@ const validCategory = {
   name: 'Test Category',
   description: 'A test category',
 };
+
+describe('sanitize', () => {
+  test('should adapt object not having any version to CURRENT format', () => {
+    const raw = {
+      models: [
+        {
+          id: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          name: 'Mistral-7B-Instruct-v0.3-Q4_K_M',
+          description: 'Model imported from path\\Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          hw: 'CPU',
+          file: {
+            path: 'path',
+            file: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+            size: 4372812000,
+            creation: '2024-06-19T12:14:12.489Z',
+          },
+          memory: 4372812000,
+        },
+      ],
+    };
+    const catalog = sanitize(raw);
+    expect(catalog.version).equals(CatalogFormat.CURRENT);
+    expect(catalog.models[0].backend).equals('llama-cpp');
+    expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
+  });
+
+  test('should throw if version is different from CURRENT', () => {
+    const raw = {
+      version: '0.5',
+      models: [
+        {
+          id: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          name: 'Mistral-7B-Instruct-v0.3-Q4_K_M',
+          description: 'Model imported from path\\Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          hw: 'CPU',
+          file: {
+            path: 'path',
+            file: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+            size: 4372812000,
+            creation: '2024-06-19T12:14:12.489Z',
+          },
+          memory: 4372812000,
+        },
+      ],
+    };
+
+    expect(() => sanitize(raw)).toThrowError('the catalog is using an invalid version');
+  });
+
+  test('should return sanitized ApplicationCatalog with valid raw object', () => {
+    const raw = {
+      version: '1.0',
+      models: [
+        {
+          id: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          name: 'Mistral-7B-Instruct-v0.3-Q4_K_M',
+          description: 'Model imported from path\\Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          hw: 'CPU',
+          file: {
+            path: 'path',
+            file: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+            size: 4372812000,
+            creation: '2024-06-19T12:14:12.489Z',
+          },
+          memory: 4372812000,
+        },
+      ],
+    };
+    const catalog = sanitize(raw);
+    expect(catalog.version).equals(CatalogFormat.CURRENT);
+    expect(catalog.models[0].backend).toBeUndefined();
+    expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
+  });
+});
 
 describe('merge', () => {
   test('should merge catalogs correctly', () => {

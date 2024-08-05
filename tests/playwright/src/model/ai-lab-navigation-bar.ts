@@ -36,11 +36,11 @@ export class AILabNavigationBar {
     this.webview = webview;
     this.navigationBar = webview.getByLabel('PreferencesNavigation');
 
-    this.recipesCatalogButton = this.navigationBar.getByLabel('Recipes Catalog', { exact: true });
-    this.runningAppsButton = this.navigationBar.getByLabel('Running');
-    this.catalogButton = this.navigationBar.getByLabel('Catalog', { exact: true });
-    this.servicesButton = this.navigationBar.getByLabel('Services');
-    this.playgroundsButton = this.navigationBar.getByLabel('Playgrounds');
+    this.recipesCatalogButton = this.navigationBar.getByRole('link', { name: 'Recipes Catalog', exact: true });
+    this.runningAppsButton = this.navigationBar.getByRole('link', { name: 'Running' });
+    this.catalogButton = this.navigationBar.getByRole('link', { name: 'Catalog', exact: true });
+    this.servicesButton = this.navigationBar.getByRole('link', { name: 'Services' });
+    this.playgroundsButton = this.navigationBar.getByRole('link', { name: 'Playgrounds' });
   }
 
   async waitForLoad(): Promise<void> {
@@ -48,7 +48,6 @@ export class AILabNavigationBar {
   }
 
   async openRecipesCatalog(): Promise<AILabRecipesCatalogPage> {
-    await playExpect(this.recipesCatalogButton).toBeVisible();
     await playExpect(this.recipesCatalogButton).toBeEnabled();
     await this.recipesCatalogButton.click();
     return new AILabRecipesCatalogPage(this.page, this.webview);

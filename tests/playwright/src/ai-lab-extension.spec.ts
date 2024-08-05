@@ -98,7 +98,11 @@ describe(`AI Lab extension installation and verification`, async () => {
 });
 
 async function handleWebview(): Promise<[Page, Page]> {
-  await navigationBar.navigationLocator.getByLabel(AI_LAB_NAVBAR_EXTENSION_LABEL).click({ timeout: 5_000 });
+  const aiLabPodmanExtensionButton = navigationBar.navigationLocator.getByRole('link', {
+    name: AI_LAB_NAVBAR_EXTENSION_LABEL,
+  });
+  await playExpect(aiLabPodmanExtensionButton).toBeEnabled();
+  await aiLabPodmanExtensionButton.click();
   await page.waitForTimeout(2_000);
 
   const webView = page.getByRole('document', { name: AI_LAB_PAGE_BODY_LABEL });

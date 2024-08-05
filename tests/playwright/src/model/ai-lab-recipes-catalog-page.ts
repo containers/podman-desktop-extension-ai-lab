@@ -18,12 +18,10 @@
 
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { AILabBasePage } from './ai-lab-base-page';
 import { AILabAppDetailsPage } from './ai-lab-app-details-page';
 
-export class AILabRecipesCatalogPage {
-  readonly page: Page;
-  readonly webview: Page;
-
+export class AILabRecipesCatalogPage extends AILabBasePage {
   readonly recipesCatalogPage: Locator;
   readonly recipesCatalogContent: Locator;
   readonly recipesCatalogNaturalLanguageProcessing: Locator;
@@ -31,9 +29,8 @@ export class AILabRecipesCatalogPage {
   readonly recipesCatalogComputerVision: Locator;
 
   constructor(page: Page, webview: Page) {
-    this.page = page;
-    this.webview = webview;
-
+    super(page, webview);
+    this.heading = webview.getByRole('heading', { name: 'Recipe Catalog' });
     this.recipesCatalogPage = webview.getByRole('region', { name: 'Recipe Catalog' });
     this.recipesCatalogContent = this.recipesCatalogPage.getByRole('region', { name: 'content', exact: true }).first();
     this.recipesCatalogNaturalLanguageProcessing = this.recipesCatalogContent.getByRole('region', {
@@ -48,6 +45,7 @@ export class AILabRecipesCatalogPage {
   }
 
   async waitForLoad(): Promise<void> {
+    await playExpect(this.heading).toBeVisible();
     await playExpect(this.recipesCatalogPage).toBeVisible();
   }
 

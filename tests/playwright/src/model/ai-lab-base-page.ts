@@ -16,22 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Page } from '@playwright/test';
-import { expect as playExpect } from '@playwright/test';
-import { AILabBasePage } from './ai-lab-base-page';
-import { AILabNavigationBar } from './ai-lab-navigation-bar';
+import type { Locator, Page } from '@playwright/test';
 
-export class AILabPage extends AILabBasePage {
-  readonly navigationBar: AILabNavigationBar;
+export class AILabBasePage {
+  readonly page: Page;
+  readonly webview: Page;
+  heading: Locator;
 
   constructor(page: Page, webview: Page) {
-    super(page, webview);
-    this.heading = webview.getByLabel('Welcome to Podman AI Lab');
-    this.navigationBar = new AILabNavigationBar(this.page, this.webview);
+    this.page = page;
+    this.webview = webview;
+    this.heading = webview.getByRole('heading', { name: 'Welcome to Podman AI Lab' });
   }
 
+  // This method should be overridden in derived classes
   async waitForLoad(): Promise<void> {
-    await playExpect(this.heading).toBeVisible();
-    await this.navigationBar.waitForLoad();
+    // Default implementation (can be empty or throw an error)
+    throw new Error('Method not implemented.');
   }
 }

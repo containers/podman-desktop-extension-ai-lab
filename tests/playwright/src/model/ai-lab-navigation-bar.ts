@@ -18,13 +18,11 @@
 
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { AILabBasePage } from './ai-lab-base-page';
 import { AILabRecipesCatalogPage } from './ai-lab-recipes-catalog-page';
 
-export class AILabNavigationBar {
-  readonly page: Page;
-  readonly webview: Page;
+export class AILabNavigationBar extends AILabBasePage {
   readonly navigationBar: Locator;
-
   readonly recipesCatalogButton: Locator;
   readonly runningAppsButton: Locator;
   readonly catalogButton: Locator;
@@ -32,10 +30,8 @@ export class AILabNavigationBar {
   readonly playgroundsButton: Locator;
 
   constructor(page: Page, webview: Page) {
-    this.page = page;
-    this.webview = webview;
-    this.navigationBar = webview.getByLabel('PreferencesNavigation');
-
+    super(page, webview);
+    this.navigationBar = webview.getByRole('navigation', { name: 'PreferencesNavigation' });
     this.recipesCatalogButton = this.navigationBar.getByRole('link', { name: 'Recipes Catalog', exact: true });
     this.runningAppsButton = this.navigationBar.getByRole('link', { name: 'Running' });
     this.catalogButton = this.navigationBar.getByRole('link', { name: 'Catalog', exact: true });

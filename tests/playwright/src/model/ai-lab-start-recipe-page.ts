@@ -19,41 +19,37 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { AILabStartRecipePage } from './ai-lab-start-recipe-page';
+import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
 
-export class AILabAppDetailsPage extends AILabBasePage {
-  readonly appName: string;
+export class AILabStartRecipePage extends AILabBasePage {
+  readonly recipeStatus: Locator;
+  readonly applicationDetailsPanel: Locator;
   readonly startRecipeButton: Locator;
+  readonly openAIAppButton: Locator;
+  readonly deleteAIAppButton: Locator;
 
-  constructor(page: Page, webview: Page, appName: string) {
+  constructor(page: Page, webview: Page) {
     super(page, webview);
-    this.appName = appName;
-    this.heading = webview.getByRole('heading', { name: this.appName });
-
-    this.startRecipeButton = this.webview.getByRole('button', { name: 'Start recipe' });
+    this.heading = webview.getByLabel('Start Recipe');
+    this.recipeStatus = this.webview.getByRole('status');
+    this.applicationDetailsPanel = webview.getByLabel('application details panel');
+    this.startRecipeButton = this.webview.getByRole('button', { name: /Start(\s+([A-Za-z]+\s+)+)recipe/i });
+    this.openAIAppButton = this.applicationDetailsPanel.getByRole('button', { name: 'Open AI App' });
+    this.deleteAIAppButton = this.applicationDetailsPanel.getByRole('button', { name: 'Delete AI App' });
   }
 
   async waitForLoad(): Promise<void> {
     await playExpect(this.heading).toBeVisible();
   }
 
-  async deleteLocalClone(): Promise<void> {
-    throw new Error('Method Not implemented');
-  }
-
-  async startNewDeployment(): Promise<void> {
+  async startRecipe(): Promise<void> {
     await playExpect(this.startRecipeButton).toBeEnabled();
     await this.startRecipeButton.click();
-    const starRecipePage: AILabStartRecipePage = new AILabStartRecipePage(this.page, this.webview);
-    await starRecipePage.waitForLoad();
-    await starRecipePage.startRecipe();
-  }
-
-  async openRunningApps(): Promise<void> {
-    throw new Error('Method Not implemented');
-  }
-
-  async deleteRunningApp(_containerName: string): Promise<void> {
-    throw new Error('Method Not implemented');
+    try {
+      await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Reset');
+    } catch (error) {
+      console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
+    }
+    await playExpect(this.recipeStatus).toContainText('AI App is running', { timeout: 720_000 });
   }
 }

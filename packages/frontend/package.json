@@ -33,7 +33,7 @@
     "@types/humanize-duration": "^3.27.4",
     "@typescript-eslint/eslint-plugin": "7.0.0",
     "jsdom": "^24.1.1",
-    "postcss": "^8.4.40",
+    "postcss": "^8.4.41",
     "postcss-load-config": "^6.0.1",
     "svelte": "5.0.0-next.208",
     "svelte-fa": "^4.0.2",

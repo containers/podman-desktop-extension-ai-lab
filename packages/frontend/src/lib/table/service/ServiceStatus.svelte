@@ -47,7 +47,7 @@ function getStatus(): 'RUNNING' | 'STARTING' | 'DEGRADED' | '' {
 </script>
 
 {#if loading}
-  <Spinner />
+  <Spinner class="text-[var(--pd-table-body-text-highlight)]" />
 {:else}
   <button on:click={navigateToContainer}>
     <StatusIcon status={status} icon={ContainerIcon} />

@@ -129,7 +129,7 @@ export class LlamaCppPython extends InferenceProvider {
           devices.push({
             PathOnHost: '/dev/dri',
             PathInContainer: '/dev/dri',
-            CgroupPermissions: 'r',
+            CgroupPermissions: '',
           });
           break;
       }

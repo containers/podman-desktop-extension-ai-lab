@@ -31,7 +31,7 @@ export class AILabNavigationBar extends AILabBasePage {
 
   constructor(page: Page, webview: Page) {
     super(page, webview);
-    this.navigationBar = webview.getByRole('navigation', { name: 'PreferencesNavigation' });
+    this.navigationBar = this.webview.getByRole('navigation', { name: 'PreferencesNavigation' });
     this.recipesCatalogButton = this.navigationBar.getByRole('link', { name: 'Recipes Catalog', exact: true });
     this.runningAppsButton = this.navigationBar.getByRole('link', { name: 'Running' });
     this.catalogButton = this.navigationBar.getByRole('link', { name: 'Catalog', exact: true });

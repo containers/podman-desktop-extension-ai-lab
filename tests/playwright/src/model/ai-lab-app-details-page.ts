@@ -28,7 +28,7 @@ export class AILabAppDetailsPage extends AILabBasePage {
   constructor(page: Page, webview: Page, appName: string) {
     super(page, webview);
     this.appName = appName;
-    this.heading = webview.getByRole('heading', { name: this.appName });
+    this.heading = this.webview.getByRole('heading', { name: this.appName });
 
     this.startRecipeButton = this.webview.getByRole('button', { name: 'Start recipe' });
   }

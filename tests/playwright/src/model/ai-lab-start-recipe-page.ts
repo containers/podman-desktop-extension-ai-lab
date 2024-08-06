@@ -30,9 +30,9 @@ export class AILabStartRecipePage extends AILabBasePage {
 
   constructor(page: Page, webview: Page) {
     super(page, webview);
-    this.heading = webview.getByLabel('Start Recipe');
+    this.heading = this.webview.getByLabel('Start Recipe');
     this.recipeStatus = this.webview.getByRole('status');
-    this.applicationDetailsPanel = webview.getByLabel('application details panel');
+    this.applicationDetailsPanel = this.webview.getByLabel('application details panel');
     this.startRecipeButton = this.webview.getByRole('button', { name: /Start(\s+([A-Za-z]+\s+)+)recipe/i });
     this.openAIAppButton = this.applicationDetailsPanel.getByRole('button', { name: 'Open AI App' });
     this.deleteAIAppButton = this.applicationDetailsPanel.getByRole('button', { name: 'Delete AI App' });

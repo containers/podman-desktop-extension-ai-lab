@@ -26,7 +26,7 @@ export class AILabPage extends AILabBasePage {
 
   constructor(page: Page, webview: Page) {
     super(page, webview);
-    this.heading = webview.getByLabel('Welcome to Podman AI Lab');
+    this.heading = this.webview.getByLabel('Welcome to Podman AI Lab');
     this.navigationBar = new AILabNavigationBar(this.page, this.webview);
   }
 

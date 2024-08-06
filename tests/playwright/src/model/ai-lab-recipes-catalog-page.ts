@@ -30,8 +30,8 @@ export class AILabRecipesCatalogPage extends AILabBasePage {
 
   constructor(page: Page, webview: Page) {
     super(page, webview);
-    this.heading = webview.getByRole('heading', { name: 'Recipe Catalog' });
-    this.recipesCatalogPage = webview.getByRole('region', { name: 'Recipe Catalog' });
+    this.heading = this.webview.getByRole('heading', { name: 'Recipe Catalog' });
+    this.recipesCatalogPage = this.webview.getByRole('region', { name: 'Recipe Catalog' });
     this.recipesCatalogContent = this.recipesCatalogPage.getByRole('region', { name: 'content', exact: true }).first();
     this.recipesCatalogNaturalLanguageProcessing = this.recipesCatalogContent.getByRole('region', {
       name: 'Natural Language Processing',

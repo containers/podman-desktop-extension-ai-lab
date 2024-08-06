@@ -30,7 +30,7 @@ export class AILabNavigationBar extends AILabBasePage {
   readonly playgroundsButton: Locator;
 
   constructor(page: Page, webview: Page) {
-    super(page, webview);
+    super(page, webview, undefined);
     this.navigationBar = this.webview.getByRole('navigation', { name: 'PreferencesNavigation' });
     this.recipesCatalogButton = this.navigationBar.getByRole('link', { name: 'Recipes Catalog', exact: true });
     this.runningAppsButton = this.navigationBar.getByRole('link', { name: 'Running' });

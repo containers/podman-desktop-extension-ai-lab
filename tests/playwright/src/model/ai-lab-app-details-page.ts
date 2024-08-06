@@ -26,10 +26,8 @@ export class AILabAppDetailsPage extends AILabBasePage {
   readonly startRecipeButton: Locator;
 
   constructor(page: Page, webview: Page, appName: string) {
-    super(page, webview);
+    super(page, webview, appName);
     this.appName = appName;
-    this.heading = this.webview.getByRole('heading', { name: this.appName });
-
     this.startRecipeButton = this.webview.getByRole('button', { name: 'Start recipe' });
   }
 

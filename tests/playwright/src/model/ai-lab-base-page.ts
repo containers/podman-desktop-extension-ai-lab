@@ -18,20 +18,16 @@
 
 import type { Locator, Page } from '@playwright/test';
 
-export class AILabBasePage {
+export abstract class AILabBasePage {
   readonly page: Page;
   readonly webview: Page;
   heading: Locator;
 
-  constructor(page: Page, webview: Page) {
+  constructor(page: Page, webview: Page, heading: string | undefined) {
     this.page = page;
     this.webview = webview;
-    this.heading = webview.getByRole('heading', { name: 'Welcome to Podman AI Lab' });
+    this.heading = webview.getByRole('heading', { name: heading });
   }
 
-  // This method should be overridden in derived classes
-  async waitForLoad(): Promise<void> {
-    // Default implementation (can be empty or throw an error)
-    throw new Error('Method not implemented.');
-  }
+  abstract waitForLoad(): Promise<void>;
 }

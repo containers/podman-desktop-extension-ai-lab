@@ -29,8 +29,7 @@ export class AILabRecipesCatalogPage extends AILabBasePage {
   readonly recipesCatalogComputerVision: Locator;
 
   constructor(page: Page, webview: Page) {
-    super(page, webview);
-    this.heading = this.webview.getByRole('heading', { name: 'Recipe Catalog' });
+    super(page, webview, 'Recipe Catalog');
     this.recipesCatalogPage = this.webview.getByRole('region', { name: 'Recipe Catalog' });
     this.recipesCatalogContent = this.recipesCatalogPage.getByRole('region', { name: 'content', exact: true }).first();
     this.recipesCatalogNaturalLanguageProcessing = this.recipesCatalogContent.getByRole('region', {

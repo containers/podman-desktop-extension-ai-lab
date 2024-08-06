@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/svelte';
+import { render, within } from '@testing-library/svelte';
 import { expect, test, vi, beforeEach } from 'vitest';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -27,6 +27,31 @@ import * as tasksStore from '/@/stores/tasks';
 import * as modelsInfoStore from '/@/stores/modelsInfo';
 import type { Task } from '@shared/src/models/ITask';
 import PlaygroundCreate from './PlaygroundCreate.svelte';
+import { InferenceType } from '@shared/src/models/IInference';
+
+const dummyLlamaCppModel: ModelInfo = {
+  id: 'llama-cpp-model-id',
+  name: 'Dummy LlamaCpp model',
+  file: {
+    file: 'file',
+    path: '/tmp/path',
+  },
+  properties: {},
+  description: '',
+  backend: InferenceType.LLAMA_CPP,
+};
+
+const dummyWhisperCppModel: ModelInfo = {
+  id: 'whisper-cpp-model-id',
+  name: 'Dummy Whisper model',
+  file: {
+    file: 'file',
+    path: '/tmp/path',
+  },
+  properties: {},
+  description: '',
+  backend: InferenceType.WHISPER_CPP,
+};
 
 vi.mock('../utils/client', async () => {
   return {
@@ -57,34 +82,48 @@ vi.mock('/@/stores/modelsInfo', async () => {
 
 beforeEach(() => {
   window.HTMLElement.prototype.scrollIntoView = vi.fn();
-});
 
-test('should display error message if createPlayground fails', async () => {
   const tasksList = writable<Task[]>([]);
   vi.mocked(tasksStore).tasks = tasksList;
+});
 
-  const modelsInfoList = writable<ModelInfo[]>([
-    {
-      id: 'id',
-      file: {
-        file: 'file',
-        path: '/tmp/path',
-      },
-    } as unknown as ModelInfo,
-  ]);
+test('model should be selected by default', () => {
+  const modelsInfoList = writable<ModelInfo[]>([dummyLlamaCppModel]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
 
   vi.mocked(studioClient.requestCreatePlayground).mockRejectedValue('error creating playground');
 
-  render(PlaygroundCreate);
+  const { container } = render(PlaygroundCreate);
 
-  const errorMessage = screen.queryByLabelText('Error Message Content');
+  const model = within(container).getByText(dummyLlamaCppModel.name);
+  expect(model).toBeInTheDocument();
+});
+
+test('models with incompatible backend should not be listed', async () => {
+  const modelsInfoList = writable<ModelInfo[]>([dummyWhisperCppModel]);
+  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+
+  const { container } = render(PlaygroundCreate);
+
+  const model = within(container).queryByText(dummyWhisperCppModel.name);
+  expect(model).toBeNull();
+});
+
+test('should display error message if createPlayground fails', async () => {
+  const modelsInfoList = writable<ModelInfo[]>([dummyLlamaCppModel]);
+  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+
+  vi.mocked(studioClient.requestCreatePlayground).mockRejectedValue('error creating playground');
+
+  const { container } = render(PlaygroundCreate);
+
+  const errorMessage = within(container).queryByLabelText('Error Message Content');
   expect(errorMessage).not.toBeInTheDocument();
 
-  const createButton = screen.getByTitle('Create playground');
+  const createButton = within(container).getByTitle('Create playground');
   await userEvent.click(createButton);
 
-  const errorMessageAfterSubmit = screen.queryByLabelText('Error Message Content');
+  const errorMessageAfterSubmit = within(container).queryByLabelText('Error Message Content');
   expect(errorMessageAfterSubmit).toBeInTheDocument();
   expect(errorMessageAfterSubmit?.textContent).equal('error creating playground');
 });

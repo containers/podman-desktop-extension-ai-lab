@@ -13,9 +13,10 @@ import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 import ModelSelect from '/@/lib/ModelSelect.svelte';
+import { InferenceType } from '@shared/src/models/IInference';
 
 let localModels: ModelInfo[];
-$: localModels = $modelsInfo.filter(model => model.file);
+$: localModels = $modelsInfo.filter(model => model.file && model.backend === InferenceType.LLAMA_CPP);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;
 let submitted: boolean = false;

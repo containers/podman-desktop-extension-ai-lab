@@ -138,7 +138,7 @@ jobs:
             --vmsize 'Standard_D8s_v4' \
             --tags project=podman-desktop \
             --spot
-        # Check logs 
+        # Check logs
         podman logs -f windows-create
 
     - name: Check instance system info
@@ -150,7 +150,7 @@ jobs:
           -o ServerAliveCountMax=1200 \
           $(cat username)@$(cat host) "systeminfo"
 
-    - name: Emulate X session 
+    - name: Emulate X session
       run: |
         # use fake rdp to emulate an active x session
         podman run -d --name x-session \
@@ -252,3 +252,4 @@ jobs:
         name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}
         path: |
           results/*
+          !results/**/*.gguf

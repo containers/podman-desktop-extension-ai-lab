@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Recipe, RecipeImage } from '@shared/src/models/IRecipe';
+import type { Recipe, RecipeComponents, RecipeImage } from '@shared/src/models/IRecipe';
 import * as path from 'node:path';
 import { containerEngine, Disposable, window, ProgressLocation } from '@podman-desktop/api';
 import type {
@@ -187,7 +187,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     });
 
     // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
-    const images = await this.recipeManager.buildRecipe(connection, recipe, {
+    const recipeComponents = await this.recipeManager.buildRecipe(connection, recipe, model, {
       ...labels,
       'recipe-id': recipe.id,
       'model-id': model.id,
@@ -199,7 +199,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
 
     // create a pod containing all the containers to run the application
-    return this.createApplicationPod(connection, recipe, model, images, modelPath, {
+    return this.createApplicationPod(connection, recipe, model, recipeComponents, modelPath, {
       ...labels,
       'recipe-id': recipe.id,
       'model-id': model.id,
@@ -253,7 +253,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     connection: ContainerProviderConnection,
     recipe: Recipe,
     model: ModelInfo,
-    images: RecipeImage[],
+    components: RecipeComponents,
     modelPath: string,
     labels?: { [key: string]: string },
   ): Promise<PodInfo> {
@@ -262,7 +262,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     // create empty pod
     let podInfo: PodInfo;
     try {
-      podInfo = await this.createPod(connection, recipe, model, images);
+      podInfo = await this.createPod(connection, recipe, model, components.images);
       task.labels = {
         ...task.labels,
         'pod-id': podInfo.Id,
@@ -277,7 +277,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
 
     try {
-      await this.createContainerAndAttachToPod(connection, podInfo, images, model, modelPath);
+      await this.createContainerAndAttachToPod(connection, podInfo, components, model, modelPath);
       task.state = 'success';
     } catch (e) {
       console.error(`error when creating pod ${podInfo.Id}`, e);
@@ -294,14 +294,14 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   protected async createContainerAndAttachToPod(
     connection: ContainerProviderConnection,
     podInfo: PodInfo,
-    images: RecipeImage[],
+    components: RecipeComponents,
     modelInfo: ModelInfo,
     modelPath: string,
   ): Promise<void> {
     const vmType = connection.vmType ?? VMType.UNKNOWN;
     // temporary check to set Z flag or not - to be removed when switching to podman 5
     await Promise.all(
-      images.map(async image => {
+      components.images.map(async image => {
         let hostConfig: HostConfig | undefined = undefined;
         let envs: string[] = [];
         let healthcheck: HealthConfig | undefined = undefined;
@@ -321,12 +321,17 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
           envs = [`MODEL_PATH=/${modelName}`];
           envs.push(...getModelPropertiesForEnvironment(modelInfo));
         } else {
-          // TODO: remove static port
-          const modelService = images.find(image => image.modelService);
-          if (modelService && modelService.ports.length > 0) {
-            const endPoint = `http://localhost:${modelService.ports[0]}`;
+          if (components.inferenceServer) {
+            const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
+          } else {
+            const modelService = components.images.find(image => image.modelService);
+            if (modelService && modelService.ports.length > 0) {
+              const endPoint = `http://localhost:${modelService.ports[0]}`;
+              envs = [`MODEL_ENDPOINT=${endPoint}`];
+            }
           }
+          
         }
         if (image.ports.length > 0) {
           healthcheck = {

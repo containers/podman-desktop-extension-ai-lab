@@ -221,35 +221,7 @@ export class Studio {
     this.#localRepositoryRegistry.init();
     this.#extensionContext.subscriptions.push(this.#localRepositoryRegistry);
 
-    /**
-     * The recipe manage offer some andy methods to manage recipes, build get images etc.
-     */
-    this.#recipeManager = new RecipeManager(
-      appUserDirectory,
-      gitManager,
-      this.#taskRegistry,
-      this.#builderManager,
-      this.#localRepositoryRegistry,
-    );
-    this.#recipeManager.init();
-    this.#extensionContext.subscriptions.push(this.#recipeManager);
-
-    /**
-     * The application manager is managing the Recipes
-     */
-    this.#applicationManager = new ApplicationManager(
-      this.#taskRegistry,
-      this.#panel.webview,
-      this.#podmanConnection,
-      this.#catalogManager,
-      this.#modelsManager,
-      this.#telemetry,
-      this.#podManager,
-      this.#recipeManager,
-    );
-    this.#applicationManager.init();
-    this.#extensionContext.subscriptions.push(this.#applicationManager);
-
+    
     /**
      * GPUManager is a class responsible for detecting and storing the GPU specs
      */
@@ -285,6 +257,36 @@ export class Studio {
     );
     this.#inferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#inferenceManager);
+
+    /**
+     * The recipe manage offer some andy methods to manage recipes, build get images etc.
+     */
+    this.#recipeManager = new RecipeManager(
+      appUserDirectory,
+      gitManager,
+      this.#taskRegistry,
+      this.#builderManager,
+      this.#localRepositoryRegistry,
+      this.#inferenceManager,
+    );
+    this.#recipeManager.init();
+    this.#extensionContext.subscriptions.push(this.#recipeManager);
+
+    /**
+     * The application manager is managing the Recipes
+     */
+    this.#applicationManager = new ApplicationManager(
+      this.#taskRegistry,
+      this.#panel.webview,
+      this.#podmanConnection,
+      this.#catalogManager,
+      this.#modelsManager,
+      this.#telemetry,
+      this.#podManager,
+      this.#recipeManager,
+    );
+    this.#applicationManager.init();
+    this.#extensionContext.subscriptions.push(this.#applicationManager);
 
     /**
      * PlaygroundV2Manager handle the conversations of the Playground by using the InferenceServer available

@@ -20,7 +20,7 @@ import mustache from 'mustache';
 import pythonLangChainTemplate from '../../templates/python-langchain.mustache?raw';
 
 export async function pythonLangChainGenerator(requestOptions: RequestOptions): Promise<string> {
-  if(!requestOptions.url.endsWith('/v1/chat/completions')) return 'Incompatible generator';
+  if (!requestOptions.url.endsWith('/v1/chat/completions')) return 'Incompatible generator';
   return mustache.render(pythonLangChainTemplate, {
     endpoint: requestOptions.url.replace('chat/completions', ''),
   });

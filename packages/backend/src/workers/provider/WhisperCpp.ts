@@ -45,7 +45,9 @@ export class WhisperCpp extends InferenceProvider {
     }
 
     if (modelInfo.backend !== InferenceType.WHISPER_CPP) {
-      throw new Error(`Whisper requires models with backend type ${InferenceType.WHISPER_CPP} got ${modelInfo.backend}.`);
+      throw new Error(
+        `Whisper requires models with backend type ${InferenceType.WHISPER_CPP} got ${modelInfo.backend}.`,
+      );
     }
 
     const labels: Record<string, string> = {

@@ -36,7 +36,7 @@ async function getQuarkusLangchain4jVersion(): Promise<string> {
   return (quarkusLangchain4jVersion = content.metadata.versioning.release._text);
 }
 export async function quarkusLangchain4Jgenerator(requestOptions: RequestOptions): Promise<string> {
-  if(!requestOptions.url.endsWith('/v1/chat/completions')) return 'Incompatible generator';
+  if (!requestOptions.url.endsWith('/v1/chat/completions')) return 'Incompatible generator';
   return mustache.render(template, {
     baseUrl: requestOptions.url.substring(0, requestOptions.url.length - SUFFIX_LENGTH),
     version: await getQuarkusLangchain4jVersion(),

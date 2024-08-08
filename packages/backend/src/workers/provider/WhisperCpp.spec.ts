@@ -19,16 +19,10 @@
 import { vi, test, expect, beforeEach } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { WhisperCpp } from './WhisperCpp';
-import type { InferenceServer} from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
-import type {
-  ContainerProviderConnection,
-  ProviderContainerConnection,
-  ImageInfo,
-} from '@podman-desktop/api';
-import {
-  containerEngine,
-} from '@podman-desktop/api';
+import type { ContainerProviderConnection, ProviderContainerConnection, ImageInfo } from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
 import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
 
 vi.mock('@podman-desktop/api', () => ({
@@ -76,7 +70,7 @@ test('provider requires at least one model', async () => {
   const provider = new WhisperCpp(taskRegistry);
 
   await expect(() => {
-    return  provider.perform({
+    return provider.perform({
       port: 8888,
       labels: {},
       modelsInfo: [],
@@ -88,15 +82,17 @@ test('provider requires a downloaded model', async () => {
   const provider = new WhisperCpp(taskRegistry);
 
   await expect(() => {
-    return  provider.perform({
+    return provider.perform({
       port: 8888,
       labels: {},
-      modelsInfo: [{
-        id: 'whisper-cpp',
-        name: 'Whisper',
-        properties: {},
-        description: 'whisper desc',
-      }],
+      modelsInfo: [
+        {
+          id: 'whisper-cpp',
+          name: 'Whisper',
+          properties: {},
+          description: 'whisper desc',
+        },
+      ],
     });
   }).rejects.toThrowError('The model info file provided is undefined');
 });
@@ -105,22 +101,26 @@ test('provider requires a model with backend type Whisper', async () => {
   const provider = new WhisperCpp(taskRegistry);
 
   await expect(() => {
-    return  provider.perform({
+    return provider.perform({
       port: 8888,
       labels: {},
-      modelsInfo: [{
-        id: 'whisper-cpp',
-        name: 'Whisper',
-        properties: {},
-        description: 'whisper desc',
-        file: {
-          file: 'random-file',
-          path: 'path-to-file',
+      modelsInfo: [
+        {
+          id: 'whisper-cpp',
+          name: 'Whisper',
+          properties: {},
+          description: 'whisper desc',
+          file: {
+            file: 'random-file',
+            path: 'path-to-file',
+          },
+          backend: InferenceType.LLAMA_CPP,
         },
-        backend: InferenceType.LLAMA_CPP,
-      }],
+      ],
     });
-  }).rejects.toThrowError(`Whisper requires models with backend type ${InferenceType.WHISPER_CPP} got ${InferenceType.LLAMA_CPP}.`);
+  }).rejects.toThrowError(
+    `Whisper requires models with backend type ${InferenceType.WHISPER_CPP} got ${InferenceType.LLAMA_CPP}.`,
+  );
 });
 
 test('provider should propagate labels', async () => {
@@ -141,7 +141,7 @@ test('provider should propagate labels', async () => {
   const server: InferenceServer = await provider.perform({
     port: 8888,
     labels: {
-      'hello': 'world',
+      hello: 'world',
     },
     modelsInfo: [model],
   });
@@ -156,8 +156,8 @@ test('provider should propagate labels', async () => {
     },
     labels: {
       'ai-lab-inference-server': '["whisper-cpp"]',
-      'api': 'http://localhost:8888/inference',
-      'hello': 'world',
+      api: 'http://localhost:8888/inference',
+      hello: 'world',
     },
     models: [model],
     status: 'running',

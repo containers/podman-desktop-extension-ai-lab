@@ -20,7 +20,7 @@ import mustache from 'mustache';
 import javaOkHttpTemplate from '../../templates/java-okhttp.mustache?raw';
 
 export async function javaOkHttpGenerator(requestOptions: RequestOptions): Promise<string> {
-  if(!requestOptions.url.endsWith('/v1/chat/completions')) return 'Incompatible generator';
+  if (!requestOptions.url.endsWith('/v1/chat/completions')) return 'Incompatible generator';
   return mustache.render(javaOkHttpTemplate, {
     endpoint: requestOptions.url,
   });

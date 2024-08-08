@@ -19,10 +19,8 @@ import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
-import { Button, DetailsPage } from '@podman-desktop/ui-svelte';
-import { Tooltip } from '@podman-desktop/ui-svelte';
-import CopyButton from '/@/lib/button/CopyButton.svelte';
 import { Button, DetailsPage, Tooltip } from '@podman-desktop/ui-svelte';
+import CopyButton from '/@/lib/button/CopyButton.svelte';
 import type { RequestOptions } from '@shared/src/models/RequestOptions';
 
 export let containerId: string | undefined = undefined;

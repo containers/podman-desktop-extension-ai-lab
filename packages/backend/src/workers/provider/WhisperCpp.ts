@@ -36,10 +36,16 @@ export class WhisperCpp extends InferenceProvider {
   }
 
   override async perform(config: InferenceServerConfig): Promise<InferenceServer> {
+    if (config.modelsInfo.length === 0) throw new Error('Need at least one model info to start an inference server.');
+
     const modelInfo = config.modelsInfo[0];
 
     if (modelInfo.file === undefined) {
       throw new Error('The model info file provided is undefined');
+    }
+
+    if (modelInfo.backend !== InferenceType.WHISPER_CPP) {
+      throw new Error(`Whisper requires models with backend type ${InferenceType.WHISPER_CPP} got ${modelInfo.backend}.`);
     }
 
     const labels: Record<string, string> = {
@@ -57,6 +63,8 @@ export class WhisperCpp extends InferenceProvider {
         Type: 'bind',
       },
     ];
+
+    labels['api'] = `http://localhost:${config.port}/inference`;
 
     const containerInfo = await this.createContainer(
       imageInfo.engineId,

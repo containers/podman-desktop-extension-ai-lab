@@ -18,8 +18,8 @@ export function goToUpPage(): void {
   breadcrumbLeftPart="Models"
   breadcrumbRightPart={model?.name || ''}
   breadcrumbTitle="Go back to Models"
-  on:close={goToUpPage}
-  on:breadcrumbClick={goToUpPage}>
+  onclose={goToUpPage}
+  onbreadcrumbClick={goToUpPage}>
   <svelte:fragment slot="content">
     <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
       <div class="flex-grow p-5">

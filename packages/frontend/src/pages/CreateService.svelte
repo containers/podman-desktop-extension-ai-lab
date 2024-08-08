@@ -140,8 +140,8 @@ export function goToUpPage(): void {
   breadcrumbLeftPart="Model Services"
   breadcrumbRightPart="Creating Model service"
   breadcrumbTitle="Go back to Model Services"
-  on:close={goToUpPage}
-  on:breadcrumbClick={goToUpPage}>
+  onclose={goToUpPage}
+  onbreadcrumbClick={goToUpPage}>
   <svelte:fragment slot="icon">
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
       <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faPlus} />

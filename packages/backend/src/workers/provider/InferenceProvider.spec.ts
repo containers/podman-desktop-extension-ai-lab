@@ -108,6 +108,7 @@ beforeEach(() => {
   );
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
     id: 'dummy-container-id',
+    engineId: 'dummy-engine-id',
   });
 });
 

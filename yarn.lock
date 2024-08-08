@@ -405,20 +405,20 @@
   dependencies:
     playwright "1.45.3"
 
-"@podman-desktop/api@1.10.3":
-  version "1.10.3"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.10.3.tgz#c4c17e96aa3f70acd47162cc2d02cd0f3290fd52"
-  integrity sha512-jc5mYPsNz59e+o+1fQR67TPUWQoIuEssMtSwOgqdV/k0lSk05p5ErotrgeKT7WVXb7XxYOx0E4MtTTY5Kf7cyw==
+"@podman-desktop/api@1.12.0":
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.12.0.tgz#ce951e33923d02c4b6eeb996bd0c868c00b48c14"
+  integrity sha512-yZmrqVlXftnK8JcXab6tEdLy7h6Sf6d+lUZdrnPmzO9ec+UVDYXI3ezoEe2URdi9+e0CaK9YO0Tp0W9Kkoedkg==
 
-"@podman-desktop/tests-playwright@^1.11.1":
-  version "1.11.1"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.11.1.tgz#0d9944367853ba81df828c633c6dae4a7a954409"
-  integrity sha512-qwVOagtPopld3/LgZkGhl+HgexpCPrJ/uc1r/yR0bJk8Wiz2Ox+xGfljihav/8lAgHue0z6wI9hxgbVEmxaQnQ==
+"@podman-desktop/tests-playwright@1.12.0":
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.12.0.tgz#8f779f2ac43e40a60fba2bbdd2b03c972b4e4fdb"
+  integrity sha512-Q+uE3iZBCAKqDB3uZnFItcvsd3qwepHfnHtJnijWG7ZZKBW5frf/C1Ua93looJ/795vKVsl2aaIO3oV5mJh8sg==
 
-"@podman-desktop/ui-svelte@1.12.0-202408052012-7c3c5ee":
-  version "1.12.0-202408052012-7c3c5ee"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/ui-svelte/-/ui-svelte-1.12.0-202408052012-7c3c5ee.tgz#1b9edc5e682cb00f44b54a04444b6fa30a5c520e"
-  integrity sha512-O2SpF1jytC2Iy5rPD+uBdN5u/mxxu6topzRmKidBt+dHUtM/r6xUEdizZkY9DoLsj8NqrUDJq3+ybmbIaSfq7Q==
+"@podman-desktop/ui-svelte@1.12.0":
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/ui-svelte/-/ui-svelte-1.12.0.tgz#94fa496ff3c432e5f34a41977215bcf7ccbcdb72"
+  integrity sha512-74h5BZmSWwcp+eGd+HGe4za52WAt/uPbooZeopzvInKv0C1Kqh8SyC2R9yvzWboljqNq2K65g7mj2cjXF61qGw==
   dependencies:
     "@fortawesome/fontawesome-free" "^6.6.0"
     "@fortawesome/free-brands-svg-icons" "^6.6.0"

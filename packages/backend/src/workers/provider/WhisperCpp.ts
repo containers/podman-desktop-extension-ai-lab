@@ -55,7 +55,7 @@ export class WhisperCpp extends InferenceProvider {
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     };
 
-    const imageInfo = await this.pullImage(config.providerId, WHISPER_CPP_CPU, labels);
+    const imageInfo = await this.pullImage(config.providerId, config.image ?? WHISPER_CPP_CPU, labels);
     const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
 
     const mounts: MountConfig = [

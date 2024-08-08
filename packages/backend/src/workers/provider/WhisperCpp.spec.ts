@@ -123,6 +123,37 @@ test('provider requires a model with backend type Whisper', async () => {
   );
 });
 
+test('custom image in inference server config should overwrite default', async () => {
+  const provider = new WhisperCpp(taskRegistry);
+
+  const model = {
+    id: 'whisper-cpp',
+    name: 'Whisper',
+    properties: {},
+    description: 'whisper desc',
+    file: {
+      file: 'random-file',
+      path: 'path-to-file',
+    },
+    backend: InferenceType.WHISPER_CPP,
+  };
+
+  await provider.perform({
+    port: 8888,
+    labels: {
+      hello: 'world',
+    },
+    image: 'localhost/whisper-cpp:custom',
+    modelsInfo: [model],
+  });
+
+  expect(getImageInfo).toHaveBeenCalledWith(
+    DummyProviderContainerConnection.connection,
+    'localhost/whisper-cpp:custom',
+    expect.any(Function),
+  );
+});
+
 test('provider should propagate labels', async () => {
   const provider = new WhisperCpp(taskRegistry);
 

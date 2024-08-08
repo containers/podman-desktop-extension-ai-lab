@@ -84,7 +84,7 @@ const generate = async (language: string, variant: string) => {
         method: 'POST',
         header: [
           {
-            key: 'Content-Type',
+            key: 'Accept',
             value: 'application/json',
           },
         ],

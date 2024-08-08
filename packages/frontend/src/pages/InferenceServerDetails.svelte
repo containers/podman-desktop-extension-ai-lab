@@ -137,8 +137,8 @@ export function goToUpPage(): void {
   breadcrumbLeftPart="Model Services"
   breadcrumbRightPart="Service details"
   breadcrumbTitle="Go back to Model Services"
-  on:close={goToUpPage}
-  on:breadcrumbClick={goToUpPage}>
+  onclose={goToUpPage}
+  onbreadcrumbClick={goToUpPage}>
   <svelte:fragment slot="icon">
     <div class="mr-3">
       {#if service !== undefined}

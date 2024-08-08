@@ -160,8 +160,8 @@ export function goToUpPage(): void {
     breadcrumbLeftPart="Playgrounds"
     breadcrumbRightPart={conversation?.name}
     breadcrumbTitle="Go back to Playgrounds"
-    on:close={goToUpPage}
-    on:breadcrumbClick={goToUpPage}>
+    onclose={goToUpPage}
+    onbreadcrumbClick={goToUpPage}>
     <svelte:fragment slot="icon">
       <div class="mr-3">
         <StatusIcon icon={ContainerIcon} size={24} status={getStatusForIcon(server?.status, server?.health?.Status)} />

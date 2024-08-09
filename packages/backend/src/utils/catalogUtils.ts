@@ -29,12 +29,8 @@ export enum CatalogFormat {
 export function sanitize(rawObject: object): ApplicationCatalog {
   // if there is no version in the user catalog, we try to adapt it automatically to the CURRENT format
   let raw: object & { version: string };
-  if (!('version' in rawObject)) {
-    raw = {
-      ...rawObject,
-      version: CatalogFormat.CURRENT,
-    };
-    raw = adaptToCurrent(raw);
+  if (hasCatalogWrongFormat(rawObject)) {
+    raw = adaptToCurrent(rawObject);
   } else {
     raw = rawObject as object & { version: string };
   }
@@ -53,7 +49,11 @@ export function sanitize(rawObject: object): ApplicationCatalog {
   };
 }
 
-function adaptToCurrent(raw: object & { version: string }): object & { version: string } {
+export function hasCatalogWrongFormat(raw: object): boolean {
+  return 'recipes' in raw && Array.isArray(raw.recipes) && !!raw.recipes.find(r => 'models' in r);
+}
+
+function adaptToCurrent(raw: object): object & { version: string } {
   // for recipes - assume backend is llama-cpp and copy models field as recommended
   if ('recipes' in raw && Array.isArray(raw.recipes)) {
     raw.recipes.forEach(recipe => {
@@ -70,7 +70,10 @@ function adaptToCurrent(raw: object & { version: string }): object & { version: 
     });
   }
 
-  return raw;
+  return {
+    ...raw,
+    version: CatalogFormat.CURRENT,
+  };
 }
 
 /**

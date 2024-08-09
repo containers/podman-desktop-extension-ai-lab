@@ -52,6 +52,20 @@ const validCategory = {
 describe('sanitize', () => {
   test('should adapt object not having any version to CURRENT format', () => {
     const raw = {
+      recipes: [
+        {
+          id: 'chatbot',
+          description: 'This is a Streamlit chat demo application.',
+          name: 'ChatBot',
+          repository: 'https://github.com/containers/ai-lab-recipes',
+          ref: 'v1.1.3',
+          icon: 'natural-language-processing',
+          categories: ['natural-language-processing'],
+          basedir: 'recipes/natural_language_processing/chatbot',
+          readme: '',
+          models: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
+        },
+      ],
       models: [
         {
           id: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
@@ -77,6 +91,21 @@ describe('sanitize', () => {
   test('should throw if version is different from CURRENT', () => {
     const raw = {
       version: '0.5',
+      recipes: [
+        {
+          id: 'chatbot',
+          description: 'This is a Streamlit chat demo application.',
+          name: 'ChatBot',
+          repository: 'https://github.com/containers/ai-lab-recipes',
+          ref: 'v1.1.3',
+          icon: 'natural-language-processing',
+          categories: ['natural-language-processing'],
+          basedir: 'recipes/natural_language_processing/chatbot',
+          readme: '',
+          recommended: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
+          backend: 'llama-cpp',
+        },
+      ],
       models: [
         {
           id: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
@@ -100,6 +129,21 @@ describe('sanitize', () => {
   test('should return sanitized ApplicationCatalog with valid raw object', () => {
     const raw = {
       version: '1.0',
+      recipes: [
+        {
+          id: 'chatbot',
+          description: 'This is a Streamlit chat demo application.',
+          name: 'ChatBot',
+          repository: 'https://github.com/containers/ai-lab-recipes',
+          ref: 'v1.1.3',
+          icon: 'natural-language-processing',
+          categories: ['natural-language-processing'],
+          basedir: 'recipes/natural_language_processing/chatbot',
+          readme: '',
+          recommended: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
+          backend: 'llama-cpp',
+        },
+      ],
       models: [
         {
           id: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',

@@ -308,6 +308,20 @@ test('malformed catalog should create a notification', async () => {
 test('catalog with undefined version should call sanitize function to try converting it', () => {
   const sanitizeSpy = vi.spyOn(catalogUtils, 'sanitize');
   catalogManager['onUserCatalogUpdate']({
+    recipes: [
+      {
+        id: 'chatbot',
+        description: 'This is a Streamlit chat demo application.',
+        name: 'ChatBot',
+        repository: 'https://github.com/containers/ai-lab-recipes',
+        ref: 'v1.1.3',
+        icon: 'natural-language-processing',
+        categories: ['natural-language-processing'],
+        basedir: 'recipes/natural_language_processing/chatbot',
+        readme: '',
+        models: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
+      },
+    ],
     models: [],
   });
 

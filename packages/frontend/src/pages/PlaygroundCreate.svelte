@@ -12,7 +12,7 @@ import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
-import ModelSelect from '/@/lib/ModelSelect.svelte';
+import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { InferenceType } from '@shared/src/models/IInference';
 
 let localModels: ModelInfo[];

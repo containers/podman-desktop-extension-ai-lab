@@ -20,7 +20,7 @@ import { router } from 'tinro';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '/@/utils/connectionUtils';
 import ContainerConnectionStatusInfo from '/@/lib/notification/ContainerConnectionStatusInfo.svelte';
-import ModelSelect from '/@/lib/ModelSelect.svelte';
+import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 
 export let recipeId: string;
 

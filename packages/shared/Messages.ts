@@ -29,4 +29,5 @@ export enum Messages {
   MSG_GPUS_UPDATE = 'gpus-update',
   MSG_INFERENCE_PROVIDER_UPDATE = 'inference-provider-update',
   MSG_CONFIGURATION_UPDATE = 'configuration-update',
+  MSG_PODMAN_CONNECTION_UPDATE = 'podman-connecting-update',
 }

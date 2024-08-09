@@ -449,29 +449,25 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     });
   }
 
+  protected refresh(): void {
+    // clear existing applications
+    this.#applications.clear();
+    // collect all pods based on label
+    this.podManager
+      .getPodsWithLabels([POD_LABEL_RECIPE_ID])
+      .then(pods => {
+        pods.forEach(pod => this.adoptPod(pod));
+      })
+      .catch((err: unknown) => {
+        console.error('error during adoption of existing playground containers', err);
+      });
+    // notify
+    this.notify();
+  }
+
   init() {
-    this.podmanConnection.startupSubscribe(() => {
-      this.podManager
-        .getPodsWithLabels([POD_LABEL_RECIPE_ID])
-        .then(pods => {
-          pods.forEach(pod => this.adoptPod(pod));
-        })
-        .catch((err: unknown) => {
-          console.error('error during adoption of existing playground containers', err);
-        });
-    });
-
-    this.podmanConnection.onMachineStop(() => {
-      // Podman Machine has been stopped, we consider all recipe pods are stopped
-      for (const recipeModelIndex of this.#applications.keys()) {
-        this.taskRegistry.createTask('AI App stopped manually', 'success', {
-          'recipe-id': recipeModelIndex.recipeId,
-          'model-id': recipeModelIndex.modelId,
-        });
-      }
-
-      this.#applications.clear();
-      this.notify();
+    this.podmanConnection.onPodmanConnectionEvent(() => {
+      this.refresh();
     });
 
     this.podManager.onStartPodEvent((pod: PodInfo) => {
@@ -497,6 +493,9 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         clearTimeout(timerId);
       }),
     );
+
+    // refresh on init
+    this.refresh();
   }
 
   protected adoptPod(pod: PodInfo) {

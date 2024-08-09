@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { InferenceServer, InferenceServerStatus, InferenceType } from '@shared/src/models/IInference';
-import type { PodmanConnection } from '../podmanConnection';
+import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import { type ContainerInfo, type TelemetryLogger, type Webview } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
@@ -58,8 +58,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   init(): void {
-    this.podmanConnection.onMachineStart(this.watchMachineEvent.bind(this, 'start'));
-    this.podmanConnection.onMachineStop(this.watchMachineEvent.bind(this, 'stop'));
+    this.podmanConnection.onPodmanConnectionEvent(this.watchMachineEvent.bind(this));
     this.containerRegistry.onStartContainerEvent(this.watchContainerStart.bind(this));
     this.catalogManager.onUpdate(() => {
       this.retryableRefresh(1);
@@ -285,7 +284,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     this.#disposables.push(disposable);
   }
 
-  private watchMachineEvent(_event: 'start' | 'stop'): void {
+  private watchMachineEvent(_event: PodmanConnectionEvent): void {
     this.retryableRefresh(2);
   }
 

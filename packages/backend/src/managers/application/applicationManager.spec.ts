@@ -41,8 +41,7 @@ const webviewMock = {
 } as unknown as Webview;
 
 const podmanConnectionMock = {
-  startupSubscribe: vi.fn(),
-  onMachineStop: vi.fn(),
+  onPodmanConnectionEvent: vi.fn(),
   getVMType: vi.fn(),
 } as unknown as PodmanConnection;
 

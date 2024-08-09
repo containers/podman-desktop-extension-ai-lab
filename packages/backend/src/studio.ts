@@ -166,7 +166,7 @@ export class Studio {
     /**
      * The podman connection class is responsible for podman machine events (start/stop)
      */
-    this.#podmanConnection = new PodmanConnection();
+    this.#podmanConnection = new PodmanConnection(this.#panel.webview);
     this.#podmanConnection.init();
     this.#extensionContext.subscriptions.push(this.#podmanConnection);
 

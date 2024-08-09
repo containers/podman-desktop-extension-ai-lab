@@ -34,7 +34,7 @@ test('expect fetched version in generated payload', async () => {
           ),
         ),
     });
-    const payload = await quarkusLangchain4Jgenerator({ url: 'http://localhost:32412' });
+    const payload = await quarkusLangchain4Jgenerator({ url: 'http://localhost:32412/v1/chat/completions' });
     expect(payload).toBeDefined();
     expect(payload).toContain('<version>release-version</version>');
   } finally {

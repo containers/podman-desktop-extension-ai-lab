@@ -1,7 +1,7 @@
 <script lang="ts">
 import Select from 'svelte-select';
 
-type T = $$Generic<{ label: string, value: string }>;
+type T = $$Generic<{ label: string; value: string }>;
 export let disabled: boolean = false;
 
 export let value: T | undefined = undefined;
@@ -38,7 +38,7 @@ export let onchange: ((value: T | undefined) => void) | undefined = undefined;
   items={items}
   showChevron>
   <div slot="item" let:item>
-    <slot name="item" item="{item}" >
+    <slot name="item" item={item}>
       <div>{item.label}</div>
     </slot>
   </div>

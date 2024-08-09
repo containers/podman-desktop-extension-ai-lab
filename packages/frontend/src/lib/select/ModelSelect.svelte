@@ -40,16 +40,15 @@ $: {
 </script>
 
 <Select
-  label='Select Model'
+  label="Select Model"
   name="select-model"
   disabled={disabled}
   value={selected}
-  onchange={(nValue) => (value = nValue)}
+  onchange={nValue => (value = nValue)}
   placeholder="Select model to use"
   items={models
     .toSorted((a, b) => getModelSortingScore(a) - getModelSortingScore(b))
-    .map(model => ({ ...model, value: model.id, label: model.name }))}
->
+    .map(model => ({ ...model, value: model.id, label: model.name }))}>
   <div slot="item" let:item>
     <div class="flex items-center">
       <div class="grow">

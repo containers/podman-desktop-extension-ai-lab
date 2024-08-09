@@ -27,16 +27,18 @@ beforeEach(() => {
 });
 
 test('empty slot should use basic list', async () => {
-  const { container} = render(Select, {
+  const { container } = render(Select, {
     label: 'Select Item',
-    items: [{
-      label: 'Dummy Item 1',
-      value: 'item-1',
-    },
+    items: [
+      {
+        label: 'Dummy Item 1',
+        value: 'item-1',
+      },
       {
         label: 'Dummy Item 2',
         value: 'item-2',
-      }],
+      },
+    ],
   });
 
   // first get the select input
@@ -52,16 +54,18 @@ test('empty slot should use basic list', async () => {
 });
 
 test('defined value should have corresponding active class to item', async () => {
-  const { container} = render(Select, {
+  const { container } = render(Select, {
     label: 'Select Item',
-    items: [{
-      label: 'Dummy Item 1',
-      value: 'item-1',
-    },
+    items: [
+      {
+        label: 'Dummy Item 1',
+        value: 'item-1',
+      },
       {
         label: 'Dummy Item 2',
         value: 'item-2',
-      }],
+      },
+    ],
     value: {
       label: 'Dummy Item 2',
       value: 'item-2',
@@ -84,16 +88,18 @@ test('defined value should have corresponding active class to item', async () =>
 
 test('selecting value should call onchange callback', async () => {
   const onChangeMock = vi.fn();
-  const { container} = render(Select, {
+  const { container } = render(Select, {
     label: 'Select Item',
-    items: [{
-      label: 'Dummy Item 1',
-      value: 'item-1',
-    },
+    items: [
+      {
+        label: 'Dummy Item 1',
+        value: 'item-1',
+      },
       {
         label: 'Dummy Item 2',
         value: 'item-2',
-      }],
+      },
+    ],
     onchange: onChangeMock,
   });
 

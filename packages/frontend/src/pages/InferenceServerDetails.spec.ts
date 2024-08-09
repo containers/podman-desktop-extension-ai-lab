@@ -80,7 +80,7 @@ const inferenceServerMock: InferenceServer = {
     containerId: 'dummyContainerId',
     engineId: 'dummyEngineId',
   },
-  type: InferenceType.NONE,
+  type: InferenceType.LLAMA_CPP,
   labels: {},
 };
 
@@ -160,21 +160,78 @@ test('default render should show curl', async () => {
   expect(variantSelect.value).toBe('cURL');
 });
 
-test('on mount should call createSnippet', async () => {
-  render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
+describe('snippets', () => {
+  test('on mount should call createSnippet', async () => {
+    render(InferenceServerDetails, {
+      containerId: 'dummyContainerId',
+    });
+
+    expect(studioClient.createSnippet).toHaveBeenCalledWith(
+      {
+        body: expect.anything(),
+        header: expect.anything(),
+        url: 'http://localhost:9999/v1/chat/completions',
+        method: 'POST',
+      },
+      'curl',
+      'cURL',
+    );
   });
 
-  expect(studioClient.createSnippet).toHaveBeenCalledWith(
-    {
-      body: expect.anything(),
-      header: expect.anything(),
-      url: 'http://localhost:9999/v1/chat/completions',
-      method: 'POST',
-    },
-    'curl',
-    'cURL',
-  );
+  test('whisper-cpp inference server type should generate whisper snippet', async () => {
+    mocks.getInferenceServersMock.mockReturnValue([
+      {
+        ...inferenceServerMock,
+        type: InferenceType.WHISPER_CPP,
+      },
+    ]);
+
+    render(InferenceServerDetails, {
+      containerId: 'dummyContainerId',
+    });
+
+    expect(studioClient.createSnippet).toHaveBeenCalledWith(
+      {
+        body: {
+          mode: 'formdata',
+          formdata: [
+            {
+              key: 'file',
+              value: './local.mp3',
+              type: 'file',
+            },
+          ],
+        },
+        header: [
+          {
+            key: 'Accept',
+            value: 'application/json',
+          },
+        ],
+        url: 'http://localhost:9999/inference',
+        method: 'POST',
+      },
+      'curl',
+      'cURL',
+    );
+  });
+
+  test('copy snippet should call copyToClipboard', async () => {
+    vi.mocked(studioClient.createSnippet).mockResolvedValue('dummy generated snippet');
+    render(InferenceServerDetails, {
+      containerId: 'dummyContainerId',
+    });
+
+    await vi.waitFor(() => {
+      const copyBtn = screen.getByTitle('Copy');
+      expect(copyBtn).toBeDefined();
+      fireEvent.click(copyBtn);
+    });
+
+    await vi.waitFor(() => {
+      expect(studioClient.copyToClipboard).toHaveBeenCalledWith('dummy generated snippet');
+    });
+  });
 });
 
 test('invalid container id should redirect to services page', async () => {
@@ -184,23 +241,6 @@ test('invalid container id should redirect to services page', async () => {
   });
 
   expect(gotoSpy).toHaveBeenCalledWith('/services');
-});
-
-test('copy snippet should call copyToClipboard', async () => {
-  vi.mocked(studioClient.createSnippet).mockResolvedValue('dummy generated snippet');
-  render(InferenceServerDetails, {
-    containerId: 'dummyContainerId',
-  });
-
-  await vi.waitFor(() => {
-    const copyBtn = screen.getByTitle('Copy');
-    expect(copyBtn).toBeDefined();
-    fireEvent.click(copyBtn);
-  });
-
-  await vi.waitFor(() => {
-    expect(studioClient.copyToClipboard).toHaveBeenCalledWith('dummy generated snippet');
-  });
 });
 
 test('ensure dummyContainerId is visible', async () => {

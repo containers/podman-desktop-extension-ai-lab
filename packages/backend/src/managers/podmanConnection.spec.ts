@@ -26,7 +26,8 @@ import type {
   UnregisterContainerConnectionEvent,
   UpdateContainerConnectionEvent,
   Webview,
- containerEngine, process, provider, EventEmitter, env } from '@podman-desktop/api';
+} from '@podman-desktop/api';
+import { containerEngine, process, provider, EventEmitter, env } from '@podman-desktop/api';
 import { VMType } from '@shared/src/models/IPodman';
 import { Messages } from '@shared/Messages';
 
@@ -65,6 +66,8 @@ vi.mock('../utils/podman', () => {
 });
 
 beforeEach(() => {
+  vi.resetAllMocks();
+
   vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
   vi.mocked(provider.getContainerConnections).mockReturnValue([]);
 

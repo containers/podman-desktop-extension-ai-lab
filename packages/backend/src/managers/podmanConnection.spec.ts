@@ -26,7 +26,7 @@ import type {
   UpdateContainerConnectionEvent,
   Webview,
 } from '@podman-desktop/api';
-import { process, provider, EventEmitter } from '@podman-desktop/api';
+import { containerEngine, process, provider, EventEmitter, env } from '@podman-desktop/api';
 import { VMType } from '@shared/src/models/IPodman';
 import { Messages } from '@shared/Messages';
 
@@ -47,12 +47,20 @@ vi.mock('@podman-desktop/api', async () => {
     process: {
       exec: vi.fn(),
     },
+    containerEngine: {
+      listInfos: vi.fn(),
+    },
+    env: {
+      isLinux: vi.fn(),
+    },
+    navigation: {},
   };
 });
 
 vi.mock('../utils/podman', () => {
   return {
     getPodmanCli: vi.fn(),
+    MIN_CPUS_VALUE: 4,
   };
 });
 
@@ -443,5 +451,149 @@ describe('getVMType', () => {
 
     const manager = new PodmanConnection(webviewMock);
     expect(await manager.getVMType()).toBe(vmtype);
+  });
+});
+
+describe('checkContainerConnectionStatusAndResources', () => {
+  test('return native on Linux', async () => {
+    const manager = new PodmanConnection(webviewMock);
+    vi.mocked(env).isLinux = true;
+
+    const result = await manager.checkContainerConnectionStatusAndResources({
+      modelInfo: {
+        memoryNeeded: 10,
+        context: 'inference',
+      },
+    });
+    expect(result).toStrictEqual({
+      status: 'native',
+      canRedirect: expect.any(Boolean),
+    });
+  });
+
+  test('return noMachineInfo if there is no running podman connection', async () => {
+    const manager = new PodmanConnection(webviewMock);
+    vi.mocked(env).isLinux = false;
+
+    const result = await manager.checkContainerConnectionStatusAndResources({
+      modelInfo: {
+        memoryNeeded: 10,
+        context: 'inference',
+      },
+    });
+    expect(result).toStrictEqual({
+      status: 'no-machine',
+      canRedirect: expect.any(Boolean),
+    });
+  });
+
+  test('return noMachineInfo if we are not able to retrieve any info about the podman connection', async () => {
+    const manager = new PodmanConnection(webviewMock);
+    vi.mocked(env).isLinux = false;
+
+    vi.mocked(containerEngine.listInfos).mockResolvedValue([]);
+    const result = await manager.checkContainerConnectionStatusAndResources({
+      modelInfo: {
+        memoryNeeded: 10,
+        context: 'inference',
+      },
+    });
+    expect(result).toStrictEqual({
+      status: 'no-machine',
+      canRedirect: expect.any(Boolean),
+    });
+  });
+
+  test('return lowResourceMachineInfo if the podman connection has not enough cpus', async () => {
+    const manager = new PodmanConnection(webviewMock);
+    vi.mocked(env).isLinux = false;
+
+    vi.mocked(provider.getContainerConnections).mockReturnValue([
+      {
+        connection: {
+          type: 'podman',
+          status: () => 'started',
+          name: 'Podman Machine',
+          endpoint: {
+            socketPath: './socket-path',
+          },
+        },
+        providerId: 'podman',
+      },
+    ]);
+
+    vi.mocked(containerEngine.listInfos).mockResolvedValue([
+      {
+        engineId: 'engineId',
+        engineName: 'enginerName',
+        engineType: 'podman',
+        cpus: 3,
+        memory: 20,
+        memoryUsed: 0,
+      },
+    ]);
+
+    manager.init();
+
+    const result = await manager.checkContainerConnectionStatusAndResources({
+      modelInfo: {
+        memoryNeeded: 10,
+        context: 'inference',
+      },
+    });
+    expect(result).toStrictEqual({
+      status: 'low-resources',
+      canRedirect: expect.any(Boolean),
+      name: 'Podman Machine',
+      canEdit: false,
+      cpus: 3,
+      memoryIdle: 20,
+      cpusExpected: 4,
+      memoryExpected: 11,
+    });
+  });
+
+  test('return runningMachineInfo if the podman connection has enough resources', async () => {
+    const manager = new PodmanConnection(webviewMock);
+    vi.mocked(env).isLinux = false;
+
+    vi.mocked(provider.getContainerConnections).mockReturnValue([
+      {
+        connection: {
+          type: 'podman',
+          status: () => 'started',
+          name: 'Podman Machine',
+          endpoint: {
+            socketPath: './socket-path',
+          },
+        },
+        providerId: 'podman',
+      },
+    ]);
+
+    vi.mocked(containerEngine.listInfos).mockResolvedValue([
+      {
+        engineId: 'engineId',
+        engineName: 'enginerName',
+        engineType: 'podman',
+        cpus: 12,
+        memory: 20,
+        memoryUsed: 0,
+      },
+    ]);
+
+    manager.init();
+
+    const result = await manager.checkContainerConnectionStatusAndResources({
+      modelInfo: {
+        memoryNeeded: 10,
+        context: 'inference',
+      },
+    });
+    expect(result).toStrictEqual({
+      name: 'Podman Machine',
+      status: 'running',
+      canRedirect: expect.any(Boolean),
+    });
   });
 });

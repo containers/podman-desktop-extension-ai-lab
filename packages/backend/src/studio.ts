@@ -321,6 +321,7 @@ export class Studio {
       this.#cancellationTokenRegistry,
       this.#configurationRegistry,
       this.#recipeManager,
+      this.#podmanConnection,
     );
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);

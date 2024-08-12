@@ -24,12 +24,16 @@ import type {
   UpdateContainerConnectionEvent,
   Webview,
 } from '@podman-desktop/api';
-import { EventEmitter, process, provider } from '@podman-desktop/api';
+import { containerEngine, env, navigation, EventEmitter, process, provider } from '@podman-desktop/api';
 import type { MachineJSON } from '../utils/podman';
-import { getPodmanCli } from '../utils/podman';
+import { MIN_CPUS_VALUE, getPodmanCli } from '../utils/podman';
 import { VMType } from '@shared/src/models/IPodman';
 import { Publisher } from '../utils/Publisher';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type {
+  CheckContainerConnectionResourcesOptions,
+  ContainerConnectionInfo,
+  ContainerProviderConnectionInfo,
+} from '@shared/src/models/IContainerConnectionInfo';
 import { Messages } from '@shared/Messages';
 
 export interface PodmanConnectionEvent {
@@ -184,5 +188,102 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     }
 
     return this.parseVMType(output.VMType);
+  }
+
+  getContainerProviderConnection(connection: ContainerProviderConnectionInfo): ContainerProviderConnection {
+    const output = (this.#providers.get(connection.providerId) ?? []).find(
+      mConnection => connection.name === mConnection.name,
+    );
+    if (!output) throw new Error(`no container provider connection found for connection name ${name}`);
+    return output;
+  }
+
+  findRunningContainerProviderConnection(): ContainerProviderConnection | undefined {
+    for (const connections of Array.from(this.#providers.values())) {
+      const result = connections.find(connection => connection.status() === 'started');
+      if (result) return result;
+    }
+    return undefined;
+  }
+
+  async checkContainerConnectionStatusAndResources(
+    options: CheckContainerConnectionResourcesOptions,
+  ): Promise<ContainerConnectionInfo> {
+    // starting from podman desktop 1.10 we have the navigate functions
+    const hasNavigateFunction = !!navigation.navigateToResources;
+
+    // if we do not precise the connection and are on linux we assume native usage
+    if (env.isLinux && !options.connection) {
+      return {
+        status: 'native',
+        canRedirect: hasNavigateFunction,
+      };
+    }
+
+    let connection: ContainerProviderConnection | undefined = undefined;
+    if (options.connection) {
+      connection = this.getContainerProviderConnection(options.connection);
+    } else {
+      connection = this.findRunningContainerProviderConnection();
+    }
+
+    if (!connection) {
+      return {
+        status: 'no-machine',
+        canRedirect: hasNavigateFunction,
+      };
+    }
+
+    const engineInfos = await containerEngine.listInfos({
+      provider: connection,
+    });
+
+    if (engineInfos.length === 0) {
+      return {
+        status: 'no-machine',
+        canRedirect: hasNavigateFunction,
+      };
+    }
+
+    const engineInfo = engineInfos[0];
+    if (!engineInfo) {
+      return {
+        status: 'no-machine',
+        canRedirect: hasNavigateFunction,
+      };
+    }
+
+    const hasCpus = engineInfo.cpus !== undefined && engineInfo.cpus >= MIN_CPUS_VALUE;
+    const multiplier = options.modelInfo.context === 'recipe' ? 1.25 : 1.1;
+    const memoryExpected = options.modelInfo.memoryNeeded * multiplier;
+
+    let hasMemory: boolean = true;
+    if (engineInfo.memory !== undefined && engineInfo.memoryUsed !== undefined) {
+      hasMemory = engineInfo.memory - engineInfo.memoryUsed >= memoryExpected;
+    }
+
+    let memoryIdle: number = 0;
+    if (engineInfo.memory !== undefined && engineInfo.memoryUsed !== undefined) {
+      memoryIdle = engineInfo.memory - engineInfo.memoryUsed;
+    }
+
+    if (!hasCpus || !hasMemory) {
+      return {
+        name: connection.name,
+        cpus: engineInfo.cpus ?? 0,
+        memoryIdle: memoryIdle,
+        cpusExpected: MIN_CPUS_VALUE,
+        memoryExpected: memoryExpected,
+        status: 'low-resources',
+        canEdit: !!connection.lifecycle?.edit,
+        canRedirect: hasNavigateFunction,
+      };
+    }
+
+    return {
+      name: connection.name,
+      status: 'running',
+      canRedirect: hasNavigateFunction,
+    };
   }
 }

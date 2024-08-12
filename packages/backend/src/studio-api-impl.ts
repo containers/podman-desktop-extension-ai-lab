@@ -18,7 +18,7 @@
 
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { ApplicationManager } from './managers/application/applicationManager';
-import type { ModelCheckerInfo, ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
 
 import type { CatalogManager } from './managers/catalogManager';
@@ -43,11 +43,15 @@ import type { Language } from 'postman-code-generators';
 import type { ModelOptions } from '@shared/src/models/IModelOptions';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
-import { checkContainerConnectionStatusAndResources, getPodmanConnection } from './utils/podman';
-import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import { getPodmanConnection } from './utils/podman';
+import type {
+  CheckContainerConnectionResourcesOptions,
+  ContainerConnectionInfo,
+} from '@shared/src/models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
+import type { PodmanConnection } from './managers/podmanConnection';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -67,6 +71,7 @@ export class StudioApiImpl implements StudioAPI {
     private cancellationTokenRegistry: CancellationTokenRegistry,
     private configurationRegistry: ConfigurationRegistry,
     private recipeManager: RecipeManager,
+    private podmanConnection: PodmanConnection,
   ) {}
 
   async requestDeleteConversation(conversationId: string): Promise<void> {
@@ -501,7 +506,7 @@ export class StudioApiImpl implements StudioAPI {
     return podmanDesktopApi.env.clipboard.writeText(content);
   }
 
-  async checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo> {
-    return checkContainerConnectionStatusAndResources(modelInfo);
+  async checkContainerConnectionStatusAndResources(options: CheckContainerConnectionResourcesOptions): Promise<ContainerConnectionInfo> {
+    return this.podmanConnection.checkContainerConnectionStatusAndResources(options);
   }
 }

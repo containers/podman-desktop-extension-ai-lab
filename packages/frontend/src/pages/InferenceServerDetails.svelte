@@ -103,7 +103,12 @@ const generate = async (language: string, variant: string) => {
   }
 
   if (!options) return;
-  snippet = await studioClient.createSnippet(options, language, variant);
+
+  try {
+    snippet = await studioClient.createSnippet(options, language, variant);
+  } catch (err: unknown) {
+    snippet = `${String(err)}`;
+  }
 };
 
 $: {

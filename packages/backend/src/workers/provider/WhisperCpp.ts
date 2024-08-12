@@ -24,7 +24,8 @@ import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { MountConfig } from '@podman-desktop/api';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 
-export const WHISPER_CPP_CPU = 'ghcr.io/containers/whispercpp@sha256:6c529656529da7aba851b6ab2d0653f23b77b9ca3c11cb46db47ff6dbd6d5e7c';
+export const WHISPER_CPP_CPU =
+  'ghcr.io/containers/whispercpp@sha256:6c529656529da7aba851b6ab2d0653f23b77b9ca3c11cb46db47ff6dbd6d5e7c';
 
 export class WhisperCpp extends InferenceProvider {
   constructor(taskRegistry: TaskRegistry) {

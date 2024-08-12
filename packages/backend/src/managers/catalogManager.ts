@@ -80,6 +80,11 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     if (content && typeof content === 'object' && hasCatalogWrongFormat(content)) {
       try {
         content = sanitize(content);
+        // overwrite the catalog on disk
+        const userCatalogPath = this.getUserCatalogPath();
+        promises.writeFile(userCatalogPath, JSON.stringify(content, undefined, 2), 'utf-8').catch((err: unknown) => {
+          console.error('Something went wrong while trying to save catalog', err);
+        });
       } catch (e) {
         console.error(e);
       }

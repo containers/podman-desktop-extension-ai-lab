@@ -307,6 +307,7 @@ test('malformed catalog should create a notification', async () => {
 
 test('catalog with undefined version should call sanitize function to try converting it', () => {
   const sanitizeSpy = vi.spyOn(catalogUtils, 'sanitize');
+  const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
   catalogManager['onUserCatalogUpdate']({
     recipes: [
       {
@@ -326,4 +327,5 @@ test('catalog with undefined version should call sanitize function to try conver
   });
 
   expect(sanitizeSpy).toHaveBeenCalled();
+  expect(writeFileMock).toHaveBeenCalled();
 });

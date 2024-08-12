@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ModelCheckerInfo, ModelInfo } from './models/IModelInfo';
+import type { ModelInfo } from './models/IModelInfo';
 import type { ApplicationCatalog } from './models/IApplicationCatalog';
 import type { OpenDialogOptions, TelemetryTrustedValue, Uri } from '@podman-desktop/api';
 import type { ApplicationState } from './models/IApplicationState';
@@ -29,7 +29,10 @@ import type { CreationInferenceServerOptions } from './models/InferenceServerCon
 import type { ModelOptions } from './models/IModelOptions';
 import type { Conversation } from './models/IPlaygroundMessage';
 import type { LocalModelImportInfo } from './models/ILocalModelInfo';
-import type { ContainerConnectionInfo } from './models/IContainerConnectionInfo';
+import type {
+  CheckContainerConnectionResourcesOptions,
+  ContainerConnectionInfo,
+} from './models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
 
 export abstract class StudioAPI {
@@ -222,7 +225,9 @@ export abstract class StudioAPI {
 
   /**
    * Check if the running podman machine is running and has enough resources to execute task
-   * @param modelInfo object containing info about the model to check
+   * @param options
    */
-  abstract checkContainerConnectionStatusAndResources(modelInfo: ModelCheckerInfo): Promise<ContainerConnectionInfo>;
+  abstract checkContainerConnectionStatusAndResources(
+    options: CheckContainerConnectionResourcesOptions,
+  ): Promise<ContainerConnectionInfo>;
 }

@@ -28,7 +28,7 @@ import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { InferenceType } from '@shared/src/models/IInference';
-import { CatalogFormat, merge, sanitize } from '../utils/catalogUtils';
+import { CatalogFormat, hasCatalogWrongFormat, merge, sanitize } from '../utils/catalogUtils';
 
 export const USER_CATALOG = 'user-catalog.json';
 
@@ -75,6 +75,21 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   }
 
   private onUserCatalogUpdate(content: unknown): void {
+    // if there is no version in the user catalog, we try to sanitize it
+    // most likely it can be converted automatically to the current version without showing any notification to the user
+    if (content && typeof content === 'object' && hasCatalogWrongFormat(content)) {
+      try {
+        content = sanitize(content);
+        // overwrite the catalog on disk
+        const userCatalogPath = this.getUserCatalogPath();
+        promises.writeFile(userCatalogPath, JSON.stringify(content, undefined, 2), 'utf-8').catch((err: unknown) => {
+          console.error('Something went wrong while trying to save catalog', err);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     if (!content || typeof content !== 'object') {
       this.loadDefaultCatalog();
       return;

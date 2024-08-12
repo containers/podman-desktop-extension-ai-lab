@@ -189,7 +189,10 @@ test('expect requestPullApplication to provide a tracking id', async () => {
 
   vi.mocked(applicationManager.requestPullApplication).mockResolvedValue('dummy-tracker');
 
-  const trackingId = await studioApiImpl.requestPullApplication('recipe 1', 'model1');
+  const trackingId = await studioApiImpl.requestPullApplication({
+    modelId: 'model1',
+    recipeId: 'recipe 1',
+  });
   expect(applicationManager.requestPullApplication).toHaveBeenCalledWith(
     connectionMock,
     expect.objectContaining({

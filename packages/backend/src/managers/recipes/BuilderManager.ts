@@ -15,7 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { type BuildImageOptions, type Disposable, containerEngine } from '@podman-desktop/api';
+import {
+  type BuildImageOptions,
+  type Disposable,
+  containerEngine,
+  type ContainerProviderConnection,
+} from '@podman-desktop/api';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import type { RecipeImage, Recipe } from '@shared/src/models/IRecipe';
 import type { ContainerConfig } from '../../models/AIConfig';
@@ -44,6 +49,7 @@ export class BuilderManager implements Disposable {
   }
 
   async build(
+    connection: ContainerProviderConnection,
     recipe: Recipe,
     containers: ContainerConfig[],
     configPath: string,
@@ -86,6 +92,7 @@ export class BuilderManager implements Disposable {
 
           const imageTag = getImageTag(recipe, container);
           const buildOptions: BuildImageOptions = {
+            provider: connection,
             containerFile: container.containerfile,
             tag: imageTag,
             labels: {

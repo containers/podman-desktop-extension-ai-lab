@@ -206,6 +206,21 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     return undefined;
   }
 
+  /**
+   * This method return the ContainerProviderConnection corresponding to an engineId
+   * @param engineId
+   */
+  async getConnectionByEngineId(engineId: string): Promise<ContainerProviderConnection> {
+    const connections = Array.from(this.#providers.values()).flat();
+    for (const connection of connections) {
+      const infos = await containerEngine.listInfos({ provider: connection });
+      if (infos.length === 0) continue;
+
+      if (infos[0].engineId === engineId) return connection;
+    }
+    throw new Error('connection not found');
+  }
+
   async checkContainerConnectionStatusAndResources(
     options: CheckContainerConnectionResourcesOptions,
   ): Promise<ContainerConnectionInfo> {

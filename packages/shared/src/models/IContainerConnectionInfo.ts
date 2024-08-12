@@ -27,8 +27,8 @@ export interface ContainerProviderConnectionInfo {
 }
 
 export interface CheckContainerConnectionResourcesOptions {
-  modelInfo: ModelCheckerInfo,
-  connection?: ContainerProviderConnectionInfo,
+  modelInfo: ModelCheckerInfo;
+  connection?: ContainerProviderConnectionInfo;
 }
 
 export type ContainerConnectionInfo =

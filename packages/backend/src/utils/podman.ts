@@ -110,4 +110,3 @@ export function getPodmanConnection(connectionName: string): ProviderContainerCo
   }
   return engine;
 }
-

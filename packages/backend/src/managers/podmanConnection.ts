@@ -22,11 +22,10 @@ import type {
   Event,
   RegisterContainerConnectionEvent,
   UpdateContainerConnectionEvent,
-  Webview} from '@podman-desktop/api';
-import {
-  containerEngine, env, navigation,
- EventEmitter, process, provider } from '@podman-desktop/api';
-import type { MachineJSON} from '../utils/podman';
+  Webview,
+} from '@podman-desktop/api';
+import { containerEngine, env, navigation, EventEmitter, process, provider } from '@podman-desktop/api';
+import type { MachineJSON } from '../utils/podman';
 import { MIN_CPUS_VALUE, getPodmanCli } from '../utils/podman';
 import { VMType } from '@shared/src/models/IPodman';
 import { Publisher } from '../utils/Publisher';
@@ -192,20 +191,24 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
   }
 
   getContainerProviderConnection(connection: ContainerProviderConnectionInfo): ContainerProviderConnection {
-    const output = (this.#providers.get(connection.providerId) ?? []).find(mConnection => connection.name === mConnection.name);
-    if(!output) throw new Error(`no container provider connection found for connection name ${name}`);
+    const output = (this.#providers.get(connection.providerId) ?? []).find(
+      mConnection => connection.name === mConnection.name,
+    );
+    if (!output) throw new Error(`no container provider connection found for connection name ${name}`);
     return output;
   }
 
   findRunningContainerProviderConnection(): ContainerProviderConnection | undefined {
     for (const connections of Array.from(this.#providers.values())) {
       const result = connections.find(connection => connection.status() === 'started');
-      if(result) return result;
+      if (result) return result;
     }
     return undefined;
   }
 
-  async checkContainerConnectionStatusAndResources(options: CheckContainerConnectionResourcesOptions): Promise<ContainerConnectionInfo> {
+  async checkContainerConnectionStatusAndResources(
+    options: CheckContainerConnectionResourcesOptions,
+  ): Promise<ContainerConnectionInfo> {
     // starting from podman desktop 1.10 we have the navigate functions
     const hasNavigateFunction = !!navigation.navigateToResources;
 
@@ -218,7 +221,7 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     }
 
     let connection: ContainerProviderConnection | undefined = undefined;
-    if(options.connection) {
+    if (options.connection) {
       connection = this.getContainerProviderConnection(options.connection);
     } else {
       connection = this.findRunningContainerProviderConnection();
@@ -283,5 +286,4 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
       canRedirect: hasNavigateFunction,
     };
   }
-
 }

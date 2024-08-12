@@ -33,13 +33,14 @@ import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import type { SnippetManager } from './managers/SnippetManager';
-import type { ModelCheckerInfo, ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import path from 'node:path';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import * as podman from './utils/podman';
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
+import type { PodmanConnection } from './managers/podmanConnection';
 
 vi.mock('./ai.json', () => {
   return {
@@ -147,6 +148,7 @@ beforeEach(async () => {
     {} as unknown as CancellationTokenRegistry,
     {} as unknown as ConfigurationRegistry,
     {} as unknown as RecipeManager,
+    {} as unknown as PodmanConnection,
   );
   vi.mock('node:fs');
 
@@ -338,15 +340,4 @@ test('navigateToEditConnectionProvider should call navigation.navigateToEditProv
   await studioApiImpl.navigateToEditConnectionProvider('connection');
   await timeout(0);
   expect(navigationSpy).toHaveBeenCalledWith(connection);
-});
-
-test('checkContainerConnectionStatusAndResources should call podman.checkContainerConnectionStatusAndResources', async () => {
-  const checkContainerSpy = vi.spyOn(podman, 'checkContainerConnectionStatusAndResources');
-  const modelInfo: ModelCheckerInfo = {
-    memoryNeeded: 1000,
-    context: 'inference',
-  };
-  await studioApiImpl.checkContainerConnectionStatusAndResources(modelInfo);
-  await timeout(0);
-  expect(checkContainerSpy).toHaveBeenCalledWith(modelInfo);
 });

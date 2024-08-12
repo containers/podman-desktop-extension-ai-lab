@@ -24,10 +24,9 @@ import type {
   RunResult,
   UnregisterContainerConnectionEvent,
   UpdateContainerConnectionEvent,
-  Webview} from '@podman-desktop/api';
-import {
-  containerEngine,
-  process, provider, EventEmitter, env } from '@podman-desktop/api';
+  Webview,
+} from '@podman-desktop/api';
+import { containerEngine, process, provider, EventEmitter, env } from '@podman-desktop/api';
 import { VMType } from '@shared/src/models/IPodman';
 import { Messages } from '@shared/Messages';
 
@@ -523,14 +522,16 @@ describe('checkContainerConnectionStatusAndResources', () => {
       },
     ]);
 
-    vi.mocked(containerEngine.listInfos).mockResolvedValue([{
-      engineId: 'engineId',
-      engineName: 'enginerName',
-      engineType: 'podman',
-      cpus: 3,
-      memory: 20,
-      memoryUsed: 0,
-    }]);
+    vi.mocked(containerEngine.listInfos).mockResolvedValue([
+      {
+        engineId: 'engineId',
+        engineName: 'enginerName',
+        engineType: 'podman',
+        cpus: 3,
+        memory: 20,
+        memoryUsed: 0,
+      },
+    ]);
 
     manager.init();
 
@@ -570,14 +571,16 @@ describe('checkContainerConnectionStatusAndResources', () => {
       },
     ]);
 
-    vi.mocked(containerEngine.listInfos).mockResolvedValue([{
-      engineId: 'engineId',
-      engineName: 'enginerName',
-      engineType: 'podman',
-      cpus: 12,
-      memory: 20,
-      memoryUsed: 0,
-    }]);
+    vi.mocked(containerEngine.listInfos).mockResolvedValue([
+      {
+        engineId: 'engineId',
+        engineName: 'enginerName',
+        engineType: 'podman',
+        cpus: 12,
+        memory: 20,
+        memoryUsed: 0,
+      },
+    ]);
 
     manager.init();
 

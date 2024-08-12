@@ -227,5 +227,7 @@ export abstract class StudioAPI {
    * Check if the running podman machine is running and has enough resources to execute task
    * @param options
    */
-  abstract checkContainerConnectionStatusAndResources(options: CheckContainerConnectionResourcesOptions): Promise<ContainerConnectionInfo>;
+  abstract checkContainerConnectionStatusAndResources(
+    options: CheckContainerConnectionResourcesOptions,
+  ): Promise<ContainerConnectionInfo>;
 }

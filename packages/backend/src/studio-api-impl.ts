@@ -506,7 +506,9 @@ export class StudioApiImpl implements StudioAPI {
     return podmanDesktopApi.env.clipboard.writeText(content);
   }
 
-  async checkContainerConnectionStatusAndResources(options: CheckContainerConnectionResourcesOptions): Promise<ContainerConnectionInfo> {
+  async checkContainerConnectionStatusAndResources(
+    options: CheckContainerConnectionResourcesOptions,
+  ): Promise<ContainerConnectionInfo> {
     return this.podmanConnection.checkContainerConnectionStatusAndResources(options);
   }
 }

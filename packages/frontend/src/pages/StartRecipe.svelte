@@ -108,7 +108,10 @@ async function submit(): Promise<void> {
   if (!recipe || !value) return;
 
   loading = true;
-  trackingId = await studioClient.requestPullApplication(recipe.id, value.id);
+  trackingId = await studioClient.requestPullApplication({
+    recipeId: recipe.id,
+    modelId: value.id,
+  });
   router.location.query.set('trackingId', trackingId);
 }
 

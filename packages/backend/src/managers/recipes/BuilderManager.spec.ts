@@ -22,8 +22,9 @@ import type { ContainerConfig } from '../../models/AIConfig';
 import fs from 'node:fs';
 import { BuilderManager } from './BuilderManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import type { ImageInfo } from '@podman-desktop/api';
+import type { ContainerProviderConnection, ImageInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
+import { VMType } from '@shared/src/models/IPodman';
 
 const taskRegistry = {
   getTask: vi.fn(),
@@ -42,6 +43,11 @@ vi.mock('@podman-desktop/api', () => ({
     listImages: vi.fn(),
   },
 }));
+
+const connectionMock: ContainerProviderConnection = {
+  name: 'Podman Machine',
+  vmType: VMType.UNKNOWN,
+} as unknown as ContainerProviderConnection;
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -75,14 +81,16 @@ describe('buildImages', () => {
   test('setTaskState should be called with error if context does not exist', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
     vi.mocked(containerEngine.listImages).mockRejectedValue([]);
-    await expect(manager.build(recipe, containers, 'config')).rejects.toThrow('Context configured does not exist.');
+    await expect(manager.build(connectionMock, recipe, containers, 'config')).rejects.toThrow(
+      'Context configured does not exist.',
+    );
   });
   test('setTaskState should be called with error if buildImage executon fails', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     vi.mocked(containerEngine.buildImage).mockRejectedValue('error');
     vi.mocked(containerEngine.listImages).mockRejectedValue([]);
 
-    await expect(manager.build(recipe, containers, 'config')).rejects.toThrow(
+    await expect(manager.build(connectionMock, recipe, containers, 'config')).rejects.toThrow(
       'Something went wrong while building the image: error',
     );
     expect(taskRegistry.updateTask).toBeCalledWith({
@@ -98,7 +106,9 @@ describe('buildImages', () => {
     vi.mocked(containerEngine.buildImage).mockResolvedValue({});
     vi.mocked(containerEngine.listImages).mockResolvedValue([]);
 
-    await expect(manager.build(recipe, containers, 'config')).rejects.toThrow('no image found for container1:latest');
+    await expect(manager.build(connectionMock, recipe, containers, 'config')).rejects.toThrow(
+      'no image found for container1:latest',
+    );
     expect(taskRegistry.updateTask).toBeCalledWith({
       error: 'no image found for container1:latest',
       name: 'Building container1',
@@ -118,7 +128,7 @@ describe('buildImages', () => {
       } as unknown as ImageInfo,
     ]);
 
-    const imageInfoList = await manager.build(recipe, containers, 'config');
+    const imageInfoList = await manager.build(connectionMock, recipe, containers, 'config');
     expect(taskRegistry.updateTask).toBeCalledWith({
       name: 'Building container1',
       id: expect.any(String),
@@ -128,5 +138,13 @@ describe('buildImages', () => {
     expect(imageInfoList.length).toBe(1);
     expect(imageInfoList[0].ports.length).toBe(1);
     expect(imageInfoList[0].ports[0]).equals('8080');
+
+    expect(containerEngine.buildImage).toHaveBeenCalledWith(
+      'contextdir1',
+      expect.any(Function),
+      expect.objectContaining({
+        provider: connectionMock,
+      }),
+    );
   });
 });

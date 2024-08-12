@@ -16,7 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ProviderContainerConnection } from '@podman-desktop/api';
-import { configuration, env, provider } from '@podman-desktop/api';
+import { configuration, containerEngine, env, navigation, provider } from '@podman-desktop/api';
+import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ModelCheckerInfo } from '@shared/src/models/IModelInfo';
 
 export const MIN_CPUS_VALUE = 4;
 
@@ -51,9 +53,6 @@ export function getCustomBinaryPath(): string | undefined {
   return configuration.getConfiguration('podman').get('binary.path');
 }
 
-/**
- * @deprecated uses {@link PodmanConnection.findRunningContainerProviderConnection}
- */
 export function getFirstRunningMachineName(): string | undefined {
   // the name of the podman connection is the name of the podman machine updated to make it more user friendly,
   // so to retrieve the real machine name we need to revert the process
@@ -81,9 +80,6 @@ export function getFirstRunningMachineName(): string | undefined {
   return undefined;
 }
 
-/**
- * @deprecated uses {@link PodmanConnection.findRunningContainerProviderConnection}
- */
 export function getFirstRunningPodmanConnection(): ProviderContainerConnection | undefined {
   let engine: ProviderContainerConnection | undefined = undefined;
   try {
@@ -97,9 +93,6 @@ export function getFirstRunningPodmanConnection(): ProviderContainerConnection |
   return engine;
 }
 
-/**
- * @deprecated uses {@link PodmanConnection.getContainerProviderConnection}
- */
 export function getPodmanConnection(connectionName: string): ProviderContainerConnection {
   const engine = provider
     .getContainerConnections()
@@ -109,4 +102,73 @@ export function getPodmanConnection(connectionName: string): ProviderContainerCo
     throw new Error(`no podman connection found with name ${connectionName}`);
   }
   return engine;
+}
+
+export async function checkContainerConnectionStatusAndResources(
+  modelInfo: ModelCheckerInfo,
+): Promise<ContainerConnectionInfo> {
+  // starting from podman desktop 1.10 we have the navigate functions
+  const hasNavigateFunction = !!navigation.navigateToResources;
+
+  if (env.isLinux) {
+    return {
+      status: 'native',
+      canRedirect: hasNavigateFunction,
+    };
+  }
+
+  let connection: ProviderContainerConnection | undefined = undefined;
+  try {
+    connection = getFirstRunningPodmanConnection();
+  } catch (e) {
+    console.log(String(e));
+  }
+
+  if (!connection) {
+    return {
+      status: 'no-machine',
+      canRedirect: hasNavigateFunction,
+    };
+  }
+
+  const engineInfo = await containerEngine.info(`${connection.providerId}.${connection.connection.name}`);
+  if (!engineInfo) {
+    return {
+      status: 'no-machine',
+      canRedirect: hasNavigateFunction,
+    };
+  }
+
+  const hasCpus = engineInfo.cpus !== undefined && engineInfo.cpus >= MIN_CPUS_VALUE;
+  const multiplier = modelInfo.context === 'recipe' ? 1.25 : 1.1;
+  const memoryExpected = modelInfo.memoryNeeded * multiplier;
+
+  let hasMemory: boolean = true;
+  if (engineInfo.memory !== undefined && engineInfo.memoryUsed !== undefined) {
+    hasMemory = engineInfo.memory - engineInfo.memoryUsed >= memoryExpected;
+  }
+
+  let memoryIdle: number = 0;
+  if (engineInfo.memory !== undefined && engineInfo.memoryUsed !== undefined) {
+    memoryIdle = engineInfo.memory - engineInfo.memoryUsed;
+  }
+
+  if (!hasCpus || !hasMemory) {
+    return {
+      name: connection.connection.name,
+      cpus: engineInfo.cpus ?? 0,
+      memoryIdle: memoryIdle,
+      cpusExpected: MIN_CPUS_VALUE,
+      memoryExpected: memoryExpected,
+      status: 'low-resources',
+      canEdit: !!connection.connection.lifecycle?.edit,
+      canRedirect: hasNavigateFunction,
+    };
+  }
+
+  return {
+    name: connection.connection.name,
+    status: 'running',
+    canRedirect: hasNavigateFunction,
+  };
 }

@@ -21,12 +21,13 @@ import type { BuilderManager } from './BuilderManager';
 import type { GitManager } from '../gitManager';
 import type { LocalRepositoryRegistry } from '../../registries/LocalRepositoryRegistry';
 import { RecipeManager } from './RecipeManager';
-import { containerEngine } from '@podman-desktop/api';
+import { containerEngine, type ContainerProviderConnection } from '@podman-desktop/api';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { Stats } from 'node:fs';
 import { existsSync, statSync } from 'node:fs';
 import { AIConfigFormat, parseYamlFile } from '../../models/AIConfig';
 import { goarch } from '../../utils/arch';
+import { VMType } from '@shared/src/models/IPodman';
 
 const taskRegistryMock = {
   createTask: vi.fn(),
@@ -53,6 +54,11 @@ const recipeMock: Recipe = {
   repository: 'http://test-repository.test',
   readme: 'test recipe readme',
 };
+
+const connectionMock: ContainerProviderConnection = {
+  name: 'Podman Machine',
+  vmType: VMType.UNKNOWN,
+} as unknown as ContainerProviderConnection;
 
 vi.mock('../../models/AIConfig', () => ({
   AIConfigFormat: {
@@ -174,14 +180,14 @@ describe('buildRecipe', () => {
     const manager = await getInitializedRecipeManager();
 
     await expect(() => {
-      return manager.buildRecipe(recipeMock);
+      return manager.buildRecipe(connectionMock, recipeMock);
     }).rejects.toThrowError('build error');
   });
 
   test('labels should be propagated', async () => {
     const manager = await getInitializedRecipeManager();
 
-    await manager.buildRecipe(recipeMock, {
+    await manager.buildRecipe(connectionMock, recipeMock, {
       'test-label': 'test-value',
     });
 
@@ -191,6 +197,7 @@ describe('buildRecipe', () => {
     });
 
     expect(builderManagerMock.build).toHaveBeenCalledWith(
+      connectionMock,
       recipeMock,
       [
         {

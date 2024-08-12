@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import type { PodInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { ContainerProviderConnection, PodInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
 import { containerEngine, window } from '@podman-desktop/api';
 import type { PodmanConnection } from '../podmanConnection';
 import type { CatalogManager } from '../catalogManager';
@@ -42,7 +42,6 @@ const webviewMock = {
 
 const podmanConnectionMock = {
   onPodmanConnectionEvent: vi.fn(),
-  getVMType: vi.fn(),
 } as unknown as PodmanConnection;
 
 const catalogManagerMock = {} as unknown as CatalogManager;
@@ -118,11 +117,15 @@ const recipeImageInfoMock: RecipeImage = {
   recipeId: recipeMock.id,
 };
 
+const connectionMock: ContainerProviderConnection = {
+  name: 'Podman Machine',
+  vmType: VMType.UNKNOWN,
+} as unknown as ContainerProviderConnection;
+
 beforeEach(() => {
   vi.resetAllMocks();
 
   vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
-  vi.mocked(podmanConnectionMock.getVMType).mockResolvedValue(VMType.WSL);
   vi.mocked(recipeManager.buildRecipe).mockResolvedValue([recipeImageInfoMock]);
   vi.mocked(podManager.createPod).mockResolvedValue({ engineId: 'test-engine-id', Id: 'test-pod-id' });
   vi.mocked(podManager.getPod).mockResolvedValue({ engineId: 'test-engine-id', Id: 'test-pod-id' } as PodInfo);
@@ -155,7 +158,11 @@ function getInitializedApplicationManager(): ApplicationManager {
 describe('requestPullApplication', () => {
   test('task should be set to error if pull application raise an error', async () => {
     vi.mocked(window.withProgress).mockRejectedValue(new Error('pull application error'));
-    const trackingId = await getInitializedApplicationManager().requestPullApplication(recipeMock, remoteModelMock);
+    const trackingId = await getInitializedApplicationManager().requestPullApplication(
+      connectionMock,
+      recipeMock,
+      remoteModelMock,
+    );
 
     // ensure the task is created
     await vi.waitFor(() => {
@@ -283,7 +290,7 @@ describe('startApplication', () => {
 
 describe('pullApplication', () => {
   test('labels should be propagated', async () => {
-    await getInitializedApplicationManager().pullApplication(recipeMock, remoteModelMock, {
+    await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock, {
       'test-label': 'test-value',
     });
 
@@ -305,7 +312,7 @@ describe('pullApplication', () => {
       'model-id': remoteModelMock.id,
     });
     // build the recipe
-    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(recipeMock, {
+    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(connectionMock, recipeMock, {
       'test-label': 'test-value',
       'recipe-id': recipeMock.id,
       'model-id': remoteModelMock.id,
@@ -319,6 +326,7 @@ describe('pullApplication', () => {
 
     // a pod must have been created
     expect(podManager.createPod).toHaveBeenCalledWith({
+      provider: connectionMock,
       name: expect.any(String),
       portmappings: [],
       labels: {
@@ -352,7 +360,7 @@ describe('pullApplication', () => {
       },
     } as unknown as PodInfo);
 
-    await getInitializedApplicationManager().pullApplication(recipeMock, remoteModelMock);
+    await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock);
 
     // removing existing application should create a task to notify the user
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Removing AI App', 'loading', {
@@ -361,5 +369,41 @@ describe('pullApplication', () => {
     });
     // the remove pod should have been called
     expect(podManager.removePod).toHaveBeenCalledWith('test-engine-id', 'test-pod-id-existing');
+  });
+
+  test('qemu connection should have specific flag', async () => {
+    vi.mocked(podManager.findPodByLabelsValues).mockResolvedValue(undefined);
+
+    vi.mocked(recipeManager.buildRecipe).mockResolvedValue([
+      recipeImageInfoMock,
+      {
+        modelService: true,
+        ports: ['8888'],
+        name: 'llamacpp',
+        id: 'llamacpp',
+        appName: 'llamacpp',
+        engineId: recipeImageInfoMock.engineId,
+        recipeId: recipeMock.id,
+      },
+    ]);
+
+    await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock);
+
+    // the remove pod should have been called
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      recipeImageInfoMock.engineId,
+      expect.objectContaining({
+        HostConfig: {
+          Mounts: [
+            {
+              Mode: 'Z',
+              Source: 'downloaded-model-path',
+              Target: '/downloaded-model-path',
+              Type: 'bind',
+            },
+          ],
+        },
+      }),
+    );
   });
 });

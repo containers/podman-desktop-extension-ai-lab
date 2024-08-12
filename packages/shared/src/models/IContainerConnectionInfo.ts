@@ -16,7 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { VMType } from './IPodman';
-import type { ModelCheckerInfo } from './IModelInfo';
 
 export interface ContainerProviderConnectionInfo {
   providerId: string;
@@ -24,11 +23,6 @@ export interface ContainerProviderConnectionInfo {
   type: 'podman'; // we only support podman
   status: 'started' | 'stopped' | 'starting' | 'stopping' | 'unknown';
   vmType: VMType;
-}
-
-export interface CheckContainerConnectionResourcesOptions {
-  modelInfo: ModelCheckerInfo;
-  connection?: ContainerProviderConnectionInfo;
 }
 
 export type ContainerConnectionInfo =

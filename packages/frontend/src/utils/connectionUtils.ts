@@ -30,10 +30,8 @@ export async function checkContainerConnectionStatus(
   if (model?.memory) {
     try {
       connection = await studioClient.checkContainerConnectionStatusAndResources({
-        modelInfo: {
-          memoryNeeded: model.memory,
-          context,
-        },
+        memoryNeeded: model.memory,
+        context,
       });
     } catch (e) {
       console.log(e);

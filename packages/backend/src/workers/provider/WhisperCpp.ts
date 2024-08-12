@@ -28,7 +28,7 @@ export const WHISPER_CPP_CPU = 'ghcr.io/containers/whispercpp:latest';
 
 export class WhisperCpp extends InferenceProvider {
   constructor(taskRegistry: TaskRegistry) {
-    super(taskRegistry, InferenceType.WHISPER_CPP, 'LLama-cpp');
+    super(taskRegistry, InferenceType.WHISPER_CPP, 'Whisper-cpp');
   }
 
   override enabled(): boolean {

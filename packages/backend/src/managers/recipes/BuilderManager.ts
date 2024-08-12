@@ -141,7 +141,7 @@ export class BuilderManager implements Disposable {
     }
 
     // after image are built we return their data
-    const images = await containerEngine.listImages();
+    const images = await containerEngine.listImages({ provider: connection });
     await Promise.all(
       containers.map(async container => {
         const task = containerTasks[container.name];

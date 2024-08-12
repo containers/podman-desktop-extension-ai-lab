@@ -267,7 +267,7 @@ export class Studio {
       ),
     );
     this.#extensionContext.subscriptions.push(
-      this.#inferenceProviderRegistry.register(new WhisperCpp(this.#taskRegistry)),
+      this.#inferenceProviderRegistry.register(new WhisperCpp(this.#taskRegistry, this.#podmanConnection)),
     );
 
     /**

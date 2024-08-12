@@ -18,6 +18,7 @@
 import type {
   ContainerCreateOptions,
   ContainerCreateResult,
+  ContainerProviderConnection,
   Disposable,
   ImageInfo,
   PullEvent,
@@ -26,7 +27,7 @@ import { containerEngine } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { IWorker } from '../IWorker';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
+import { getImageInfo } from '../../utils/inferenceUtils';
 import type { InferenceServer, InferenceType } from '@shared/src/models/IInference';
 
 export type BetterContainerCreateResult = ContainerCreateResult & { engineId: string };
@@ -77,24 +78,21 @@ export abstract class InferenceProvider implements IWorker<InferenceServerConfig
 
   /**
    * This method allows to pull the image, while creating a task for the user to follow progress
-   * @param providerId
+   * @param connection
    * @param image
    * @param labels
    * @protected
    */
   protected pullImage(
-    providerId: string | undefined,
+    connection: ContainerProviderConnection,
     image: string,
     labels: { [id: string]: string },
   ): Promise<ImageInfo> {
     // Creating a task to follow pulling progress
     const pullingTask = this.taskRegistry.createTask(`Pulling ${image}.`, 'loading', labels);
 
-    // Get the provider
-    const provider = getProviderContainerConnection(providerId);
-
     // get the default image info for this provider
-    return getImageInfo(provider.connection, image, (_event: PullEvent) => {})
+    return getImageInfo(connection, image, (_event: PullEvent) => {})
       .catch((err: unknown) => {
         pullingTask.state = 'error';
         pullingTask.progress = undefined;

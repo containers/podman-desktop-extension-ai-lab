@@ -15,7 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { ContainerCreateOptions, DeviceRequest, ImageInfo, MountConfig } from '@podman-desktop/api';
+import type {
+  ContainerCreateOptions,
+  ContainerProviderConnection,
+  DeviceRequest,
+  ImageInfo,
+  MountConfig,
+} from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { InferenceProvider } from './InferenceProvider';
 import { getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
@@ -195,11 +201,20 @@ export class LlamaCppPython extends InferenceProvider {
       gpu = gpus[0];
     }
 
-    const vmType = await this.podmanConnection.getVMType();
+    let connection: ContainerProviderConnection | undefined = undefined;
+    if (config.connection) {
+      connection = this.podmanConnection.getContainerProviderConnection(config.connection);
+    } else {
+      connection = this.podmanConnection.findRunningContainerProviderConnection();
+    }
+
+    if (!connection) throw new Error('no running connection could be found');
+
+    const vmType: VMType = (connection.vmType ?? VMType.UNKNOWN) as VMType;
 
     // pull the image
     const imageInfo: ImageInfo = await this.pullImage(
-      config.providerId,
+      connection,
       config.image ?? this.getLlamaCppInferenceImage(vmType, gpu),
       config.labels,
     );
@@ -208,7 +223,7 @@ export class LlamaCppPython extends InferenceProvider {
     const containerCreateOptions: ContainerCreateOptions = await this.getContainerCreateOptions(
       config,
       imageInfo,
-      vmType,
+      connection.vmType as VMType,
       gpu,
     );
 

@@ -21,12 +21,16 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
-import type { MountConfig } from '@podman-desktop/api';
+import type { ContainerProviderConnection, MountConfig } from '@podman-desktop/api';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { whispercpp } from '../../assets/inference-images.json';
+import type { PodmanConnection } from '../../managers/podmanConnection';
 
 export class WhisperCpp extends InferenceProvider {
-  constructor(taskRegistry: TaskRegistry) {
+  constructor(
+    taskRegistry: TaskRegistry,
+    private podmanConnection: PodmanConnection,
+  ) {
     super(taskRegistry, InferenceType.WHISPER_CPP, 'Whisper-cpp');
   }
 
@@ -54,7 +58,16 @@ export class WhisperCpp extends InferenceProvider {
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     };
 
-    const imageInfo = await this.pullImage(config.providerId, config.image ?? whispercpp.default, labels);
+    let connection: ContainerProviderConnection | undefined = undefined;
+    if (config.connection) {
+      connection = this.podmanConnection.getContainerProviderConnection(config.connection);
+    } else {
+      connection = this.podmanConnection.findRunningContainerProviderConnection();
+    }
+
+    if (!connection) throw new Error('no running connection could be found');
+
+    const imageInfo = await this.pullImage(connection, config.image ?? whispercpp.default, labels);
     const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
 
     const mounts: MountConfig = [

@@ -20,20 +20,14 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { type BetterContainerCreateResult, InferenceProvider } from './InferenceProvider';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
-import type {
-  ContainerCreateOptions,
-  ContainerProviderConnection,
-  ImageInfo,
-  ProviderContainerConnection,
-} from '@podman-desktop/api';
+import type { ContainerCreateOptions, ContainerProviderConnection, ImageInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
-import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
+import { getImageInfo } from '../../utils/inferenceUtils';
 import type { TaskState } from '@shared/src/models/ITask';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 
 vi.mock('../../utils/inferenceUtils', () => ({
-  getProviderContainerConnection: vi.fn(),
   getImageInfo: vi.fn(),
   LABEL_INFERENCE_SERVER: 'ai-lab-inference-server',
 }));
@@ -43,14 +37,6 @@ vi.mock('@podman-desktop/api', () => ({
     createContainer: vi.fn(),
   },
 }));
-
-const DummyProviderContainerConnection: ProviderContainerConnection = {
-  providerId: 'dummy-provider-id',
-  connection: {
-    name: 'dummy-provider-connection',
-    type: 'podman',
-  } as unknown as ContainerProviderConnection,
-};
 
 const DummyImageInfo: ImageInfo = {
   Id: 'dummy-image-id',
@@ -62,6 +48,11 @@ const taskRegistry: TaskRegistry = {
   updateTask: vi.fn(),
 } as unknown as TaskRegistry;
 
+const connectionMock: ContainerProviderConnection = {
+  name: 'Dummy Connection',
+  type: 'podman',
+} as unknown as ContainerProviderConnection;
+
 class TestInferenceProvider extends InferenceProvider {
   constructor() {
     super(taskRegistry, InferenceType.NONE, 'test-inference-provider');
@@ -71,8 +62,8 @@ class TestInferenceProvider extends InferenceProvider {
     throw new Error('not implemented');
   }
 
-  publicPullImage(providerId: string | undefined, image: string, labels: { [id: string]: string }) {
-    return super.pullImage(providerId, image, labels);
+  publicPullImage(connection: ContainerProviderConnection, image: string, labels: { [id: string]: string }) {
+    return super.pullImage(connection, image, labels);
   }
 
   async publicCreateContainer(
@@ -96,7 +87,6 @@ class TestInferenceProvider extends InferenceProvider {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(getProviderContainerConnection).mockReturnValue(DummyProviderContainerConnection);
   vi.mocked(getImageInfo).mockResolvedValue(DummyImageInfo);
   vi.mocked(taskRegistry.createTask).mockImplementation(
     (name: string, state: TaskState, labels: { [id: string]: string } = {}) => ({
@@ -115,7 +105,7 @@ beforeEach(() => {
 describe('pullImage', () => {
   test('should create a task and mark as success on completion', async () => {
     const provider = new TestInferenceProvider();
-    await provider.publicPullImage('dummy-provider-id', 'dummy-image', {
+    await provider.publicPullImage(connectionMock, 'dummy-image', {
       key: 'value',
     });
 
@@ -138,7 +128,7 @@ describe('pullImage', () => {
     vi.mocked(getImageInfo).mockRejectedValue(new Error('dummy test error'));
 
     await expect(
-      provider.publicPullImage('dummy-provider-id', 'dummy-image', {
+      provider.publicPullImage(connectionMock, 'dummy-image', {
         key: 'value',
       }),
     ).rejects.toThrowError('dummy test error');

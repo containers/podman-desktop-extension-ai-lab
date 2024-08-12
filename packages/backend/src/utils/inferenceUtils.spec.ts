@@ -21,6 +21,7 @@ import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { InferenceServer, InferenceServerStatus } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
+import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 
 vi.mock('./ports', () => ({
   getFreeRandomPort: vi.fn(),
@@ -46,14 +47,17 @@ describe('withDefaultConfiguration', () => {
     expect(result.port).toBe(8888);
     expect(result.image).toBe(undefined);
     expect(result.labels).toStrictEqual({});
-    expect(result.providerId).toBe(undefined);
+    expect(result.connection).toBe(undefined);
   });
 
   test('expect no default values', async () => {
+    const connectionMock = {
+      name: 'Dummy Connection',
+    } as unknown as ContainerProviderConnectionInfo;
     const result = await withDefaultConfiguration({
       modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
       port: 9999,
-      providerId: 'dummyProviderId',
+      connection: connectionMock,
       image: 'random-image',
       labels: { hello: 'world' },
     });
@@ -63,7 +67,7 @@ describe('withDefaultConfiguration', () => {
     expect(result.port).toBe(9999);
     expect(result.image).toBe('random-image');
     expect(result.labels).toStrictEqual({ hello: 'world' });
-    expect(result.providerId).toBe('dummyProviderId');
+    expect(result.connection).toBe(connectionMock);
   });
 });
 

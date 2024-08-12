@@ -20,8 +20,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { LlamaCppPython, SECOND } from './LlamaCppPython';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { getImageInfo, getProviderContainerConnection, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
-import type { ContainerProviderConnection, ImageInfo, ProviderContainerConnection } from '@podman-desktop/api';
+import { getImageInfo, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
+import type { ContainerProviderConnection, ImageInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { GPUManager } from '../../managers/GPUManager';
 import type { PodmanConnection } from '../../managers/podmanConnection';
@@ -64,12 +64,14 @@ const DummyModel: ModelInfo = {
   description: 'dummy-desc',
 };
 
-const DummyProviderContainerConnection: ProviderContainerConnection = {
-  providerId: 'dummy-provider-id',
-  connection: {
-    name: 'dummy-provider-connection',
-    type: 'podman',
-  } as unknown as ContainerProviderConnection,
+const dummyConnection: ContainerProviderConnection = {
+  name: 'dummy-provider-connection',
+  type: 'podman',
+  vmType: VMType.WSL,
+  status: () => 'started',
+  endpoint: {
+    socketPath: 'dummy-socket',
+  },
 };
 
 const DummyImageInfo: ImageInfo = {
@@ -78,7 +80,7 @@ const DummyImageInfo: ImageInfo = {
 } as unknown as ImageInfo;
 
 const podmanConnection: PodmanConnection = {
-  getVMType: vi.fn(),
+  findRunningContainerProviderConnection: vi.fn(),
 } as unknown as PodmanConnection;
 
 const configurationRegistry: ConfigurationRegistry = {
@@ -92,8 +94,7 @@ beforeEach(() => {
     experimentalGPU: false,
     modelsPath: 'model-path',
   });
-  vi.mocked(podmanConnection.getVMType).mockResolvedValue(VMType.WSL);
-  vi.mocked(getProviderContainerConnection).mockReturnValue(DummyProviderContainerConnection);
+  vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue(dummyConnection);
   vi.mocked(getImageInfo).mockResolvedValue(DummyImageInfo);
   vi.mocked(taskRegistry.createTask).mockReturnValue({ id: 'dummy-task-id', name: '', labels: {}, state: 'loading' });
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
@@ -116,15 +117,11 @@ describe('perform', () => {
       image: undefined,
       labels: {},
       modelsInfo: [DummyModel],
-      providerId: undefined,
+      connection: undefined,
     });
 
-    expect(getProviderContainerConnection).toHaveBeenCalledWith(undefined);
-    expect(getImageInfo).toHaveBeenCalledWith(
-      DummyProviderContainerConnection.connection,
-      llamacpp.default,
-      expect.anything(),
-    );
+    expect(podmanConnection.findRunningContainerProviderConnection).toHaveBeenCalled();
+    expect(getImageInfo).toHaveBeenCalledWith(dummyConnection, llamacpp.default, expect.anything());
   });
 
   test('config without models should throw an error', async () => {
@@ -136,7 +133,7 @@ describe('perform', () => {
         image: undefined,
         labels: {},
         modelsInfo: [],
-        providerId: undefined,
+        connection: undefined,
       }),
     ).rejects.toThrowError('Need at least one model info to start an inference server.');
   });
@@ -154,7 +151,7 @@ describe('perform', () => {
             id: 'invalid',
           } as unknown as ModelInfo,
         ],
-        providerId: undefined,
+        connection: undefined,
       }),
     ).rejects.toThrowError('The model info file provided is undefined');
   });
@@ -167,7 +164,7 @@ describe('perform', () => {
       image: undefined,
       labels: {},
       modelsInfo: [DummyModel],
-      providerId: undefined,
+      connection: undefined,
     });
 
     expect(server).toStrictEqual<InferenceServer>({
@@ -247,7 +244,7 @@ describe('perform', () => {
           },
         },
       ],
-      providerId: undefined,
+      connection: undefined,
     });
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
@@ -287,7 +284,7 @@ describe('perform', () => {
       image: undefined,
       labels: {},
       modelsInfo: [DummyModel],
-      providerId: undefined,
+      connection: undefined,
     });
 
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
@@ -316,7 +313,7 @@ describe('perform', () => {
       image: undefined,
       labels: {},
       modelsInfo: [DummyModel],
-      providerId: undefined,
+      connection: undefined,
     });
 
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
@@ -324,6 +321,10 @@ describe('perform', () => {
   });
 
   test('LIBKRUN vmtype should uses llamacpp.vulkan image', async () => {
+    vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
+      ...dummyConnection,
+      vmType: VMType.LIBKRUN,
+    });
     vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
       experimentalGPU: true,
       modelsPath: '',
@@ -337,14 +338,13 @@ describe('perform', () => {
       },
     ]);
 
-    vi.mocked(podmanConnection.getVMType).mockResolvedValue(VMType.LIBKRUN);
     const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
     const server = await provider.perform({
       port: 8000,
       image: undefined,
       labels: {},
       modelsInfo: [DummyModel],
-      providerId: undefined,
+      connection: undefined,
     });
 
     expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.vulkan, expect.any(Function));

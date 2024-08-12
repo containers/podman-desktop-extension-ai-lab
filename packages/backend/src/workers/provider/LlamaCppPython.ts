@@ -28,11 +28,7 @@ import { GPUVendor, type IGPUInfo } from '@shared/src/models/IGPUInfo';
 import { VMType } from '@shared/src/models/IPodman';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
-
-export const LLAMA_CPP_CPU = 'ghcr.io/containers/llamacpp_python:latest';
-export const LLAMA_CPP_CUDA = 'ghcr.io/containers/llamacpp_python_cuda:latest';
-
-export const LLAMA_CPP_MAC_GPU = 'quay.io/ai-lab/llamacpp-python-vulkan:latest';
+import { llamacpp } from '../../assets/inference-images.json';
 
 export const SECOND: number = 1_000_000_000;
 
@@ -237,16 +233,15 @@ export class LlamaCppPython extends InferenceProvider {
   protected getLlamaCppInferenceImage(vmType: VMType, gpu?: IGPUInfo): string {
     switch (vmType) {
       case VMType.WSL:
-        return gpu?.vendor === GPUVendor.NVIDIA ? LLAMA_CPP_CUDA : LLAMA_CPP_CPU;
+        return gpu?.vendor === GPUVendor.NVIDIA ? llamacpp.cuda : llamacpp.default;
       case VMType.LIBKRUN:
-        return gpu ? LLAMA_CPP_MAC_GPU : LLAMA_CPP_CPU;
+        return gpu ? llamacpp.vulkan : llamacpp.default;
       // no GPU support
       case VMType.QEMU:
       case VMType.APPLEHV:
       case VMType.HYPERV:
-        return LLAMA_CPP_CPU;
       case VMType.UNKNOWN:
-        return LLAMA_CPP_CPU;
+        return llamacpp.default;
     }
   }
 }

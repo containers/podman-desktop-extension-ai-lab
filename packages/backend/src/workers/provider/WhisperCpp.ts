@@ -23,9 +23,7 @@ import type { InferenceServerConfig } from '@shared/src/models/InferenceServerCo
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { MountConfig } from '@podman-desktop/api';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
-
-export const WHISPER_CPP_CPU =
-  'ghcr.io/containers/whispercpp@sha256:6c529656529da7aba851b6ab2d0653f23b77b9ca3c11cb46db47ff6dbd6d5e7c';
+import { whispercpp } from '../../assets/inference-images.json';
 
 export class WhisperCpp extends InferenceProvider {
   constructor(taskRegistry: TaskRegistry) {
@@ -56,7 +54,7 @@ export class WhisperCpp extends InferenceProvider {
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     };
 
-    const imageInfo = await this.pullImage(config.providerId, config.image ?? WHISPER_CPP_CPU, labels);
+    const imageInfo = await this.pullImage(config.providerId, config.image ?? whispercpp.default, labels);
     const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
 
     const mounts: MountConfig = [

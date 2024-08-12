@@ -20,7 +20,7 @@ import { expect, test } from 'vitest';
 import { javaOkHttpGenerator } from './java-okhttp-snippet';
 
 test('expect return generated snippet', async () => {
-  const payload = await javaOkHttpGenerator({ url: 'http://localhost:32412' });
+  const payload = await javaOkHttpGenerator({ url: 'http://localhost:32412/v1/chat/completions' });
   expect(payload).toBeDefined();
-  expect(payload).toContain('.url("http://localhost:32412")');
+  expect(payload).toContain('.url("http://localhost:32412/v1/chat/completions")');
 });

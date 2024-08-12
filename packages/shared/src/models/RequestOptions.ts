@@ -1,3 +1,9 @@
+export interface FormParamDefinition {
+  key: string;
+  value: string;
+  type: string;
+}
+
 export interface RequestOptions {
   url: string;
   method?: string;
@@ -7,7 +13,8 @@ export interface RequestOptions {
     system?: boolean;
   }[];
   body?: {
-    mode: 'raw';
+    mode: 'raw' | 'formdata';
     raw?: string;
+    formdata?: FormParamDefinition[];
   };
 }

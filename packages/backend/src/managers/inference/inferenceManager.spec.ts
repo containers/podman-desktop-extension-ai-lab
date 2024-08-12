@@ -63,8 +63,7 @@ const containerRegistryMock = {
 } as unknown as ContainerRegistry;
 
 const podmanConnectionMock = {
-  onMachineStart: vi.fn(),
-  onMachineStop: vi.fn(),
+  onPodmanConnectionEvent: vi.fn(),
 } as unknown as PodmanConnection;
 
 const modelsManager = {

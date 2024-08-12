@@ -18,7 +18,7 @@
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { LLAMA_CPP_CPU, LLAMA_CPP_CUDA, LlamaCppPython, SECOND } from './LlamaCppPython';
+import { LlamaCppPython, SECOND } from './LlamaCppPython';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getImageInfo, getProviderContainerConnection, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { ContainerProviderConnection, ImageInfo, ProviderContainerConnection } from '@podman-desktop/api';
@@ -30,6 +30,7 @@ import type { ConfigurationRegistry } from '../../registries/ConfigurationRegist
 import { GPUVendor } from '@shared/src/models/IGPUInfo';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
+import { llamacpp } from '../../assets/inference-images.json';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -121,7 +122,7 @@ describe('perform', () => {
     expect(getProviderContainerConnection).toHaveBeenCalledWith(undefined);
     expect(getImageInfo).toHaveBeenCalledWith(
       DummyProviderContainerConnection.connection,
-      LLAMA_CPP_CPU,
+      llamacpp.default,
       expect.anything(),
     );
   });
@@ -290,7 +291,7 @@ describe('perform', () => {
     });
 
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
-    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), LLAMA_CPP_CUDA, expect.any(Function));
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.cuda, expect.any(Function));
     expect('gpu' in server.labels).toBeTruthy();
     expect(server.labels['gpu']).toBe('nvidia');
   });
@@ -320,5 +321,34 @@ describe('perform', () => {
 
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
     expect('gpu' in server.labels).toBeFalsy();
+  });
+
+  test('LIBKRUN vmtype should uses llamacpp.vulkan image', async () => {
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'dummy-model',
+        vendor: GPUVendor.APPLE,
+      },
+    ]);
+
+    vi.mocked(podmanConnection.getVMType).mockResolvedValue(VMType.LIBKRUN);
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    const server = await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      providerId: undefined,
+    });
+
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.vulkan, expect.any(Function));
+    expect(gpuManager.collectGPUs).toHaveBeenCalled();
+    expect('gpu' in server.labels).toBeTruthy();
   });
 });

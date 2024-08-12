@@ -1,6 +1,6 @@
 <script lang="ts">
 import { faCheckCircle, faDownload } from '@fortawesome/free-solid-svg-icons';
-import Select from 'svelte-select';
+import Select from './Select.svelte';
 import Fa from 'svelte-fa';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
@@ -40,29 +40,15 @@ $: {
 </script>
 
 <Select
-  inputAttributes={{ 'aria-label': 'Select Model' }}
+  label="Select Model"
   name="select-model"
   disabled={disabled}
   value={selected}
-  on:change={e => (value = e.detail)}
-  --item-color={'var(--pd-dropdown-item-text)'}
-  --item-is-active-color={'var(--pd-dropdown-item-text)'}
-  --item-hover-color="var(--pd-dropdown-item-hover-text)"
-  --item-active-background="var(--pd-input-field-hover-stroke)"
-  --item-is-active-bg="var(--pd-input-field-hover-stroke)"
-  --background={'var(--pd-dropdown-bg)'}
-  --list-background={'var(--pd-dropdown-bg)'}
-  --item-hover-bg="var(--pd-dropdown-item-hover-bg)"
-  --border="1px solid var(--pd-input-field-focused-bg)"
-  --border-hover="1px solid var(--pd-input-field-hover-stroke)"
-  --list-border="1px solid var(--pd-input-field-focused-bg)"
-  --border-focused="var(--pd-input-field-focused-bg)"
+  onchange={nValue => (value = nValue)}
   placeholder="Select model to use"
-  class="!bg-[var(--pd-content-bg)] !text-[var(--pd-content-card-text)]"
   items={models
     .toSorted((a, b) => getModelSortingScore(a) - getModelSortingScore(b))
-    .map(model => ({ ...model, value: model.id, label: model.name }))}
-  showChevron>
+    .map(model => ({ ...model, value: model.id, label: model.name }))}>
   <div slot="item" let:item>
     <div class="flex items-center">
       <div class="grow">

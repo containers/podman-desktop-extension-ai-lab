@@ -15,7 +15,7 @@ import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnecti
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
-import ModelSelect from '/@/lib/ModelSelect.svelte';
+import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];

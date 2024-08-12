@@ -23,7 +23,6 @@ COPY LICENSE /extension/
 COPY packages/backend/icon.png /extension/
 COPY README.md /extension/
 COPY api/openapi.yaml /extension/api/
-COPY node_modules/ /extension/node_modules
 
 FROM scratch
 

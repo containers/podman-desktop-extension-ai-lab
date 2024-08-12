@@ -35,6 +35,7 @@ const config = {
       '/@gen/': join(PACKAGE_ROOT, 'src-generated') + '/',
       '@shared/': join(PACKAGE_ROOT, '../shared') + '/',
     },
+    mainFields: ['module', 'jsnext:main', 'jsnext'], //https://github.com/vitejs/vite/issues/16444
   },
   build: {
     sourcemap: 'inline',
@@ -48,8 +49,6 @@ const config = {
     },
     rollupOptions: {
       external: [
-        'express',
-        'express-openapi-validator',
         '@podman-desktop/api',
         ...builtinModules.flatMap(p => [p, `node:${p}`]),
       ],

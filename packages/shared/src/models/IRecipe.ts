@@ -15,6 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { ContainerProviderConnectionInfo } from './IContainerConnectionInfo';
+
+export interface RecipePullOptions {
+  connection?: ContainerProviderConnectionInfo;
+  recipeId: string;
+  modelId: string;
+}
 
 export interface RecipeImage {
   id: string;

@@ -47,11 +47,14 @@ import { getPodmanConnection } from './utils/podman';
 import type {
   CheckContainerConnectionResourcesOptions,
   ContainerConnectionInfo,
+  ContainerProviderConnectionInfo,
 } from '@shared/src/models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
+import type { RecipePullOptions } from '@shared/src/models/IRecipe';
+import type { ContainerProviderConnection } from '@podman-desktop/api';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -203,13 +206,23 @@ export class StudioApiImpl implements StudioAPI {
     return this.recipeManager.cloneRecipe(recipe);
   }
 
-  async requestPullApplication(recipeId: string, modelId: string): Promise<string> {
-    const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === recipeId);
-    if (!recipe) throw new Error(`recipe with if ${recipeId} not found`);
+  async getContainerProviderConnection(): Promise<ContainerProviderConnectionInfo[]> {
+    return this.podmanConnection.getContainerProviderConnectionInfo();
+  }
 
-    const model = this.catalogManager.getModelById(modelId);
+  async requestPullApplication(options: RecipePullOptions): Promise<string> {
+    const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === options.recipeId);
+    if (!recipe) throw new Error(`recipe with if ${options.recipeId} not found`);
 
-    const connection = this.podmanConnection.findRunningContainerProviderConnection();
+    const model = this.catalogManager.getModelById(options.modelId);
+
+    let connection: ContainerProviderConnection | undefined = undefined;
+    if (options.connection) {
+      connection = this.podmanConnection.getContainerProviderConnection(options.connection);
+    } else {
+      connection = this.podmanConnection.findRunningContainerProviderConnection();
+    }
+
     if (!connection) throw new Error('no running container provider connection found.');
 
     return this.applicationManager.requestPullApplication(connection, recipe, model);

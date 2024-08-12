@@ -16,15 +16,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { process, EventEmitter, provider } from '@podman-desktop/api';
 import type {
+  ContainerProviderConnection,
   Disposable,
   Event,
   RegisterContainerConnectionEvent,
   UpdateContainerConnectionEvent,
   Webview,
-  ContainerProviderConnection,
 } from '@podman-desktop/api';
+import { EventEmitter, process, provider } from '@podman-desktop/api';
 import type { MachineJSON } from '../utils/podman';
 import { getPodmanCli } from '../utils/podman';
 import { VMType } from '@shared/src/models/IPodman';
@@ -151,22 +151,12 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
   }
 
   protected parseVMType(vmtype: string | undefined): VMType {
-    switch (vmtype) {
-      // mac
-      case VMType.APPLEHV:
-        return VMType.APPLEHV;
-      case VMType.QEMU:
-        return VMType.QEMU;
-      case VMType.LIBKRUN:
-        return VMType.LIBKRUN;
-      // windows
-      case VMType.HYPERV:
-        return VMType.HYPERV;
-      case VMType.WSL:
-        return VMType.WSL;
-      default:
-        return VMType.UNKNOWN;
+    if (!vmtype) return VMType.UNKNOWN;
+    const type = VMType[vmtype.toUpperCase() as keyof typeof VMType];
+    if (type === undefined) {
+      return VMType.UNKNOWN;
     }
+    return type;
   }
 
   /**

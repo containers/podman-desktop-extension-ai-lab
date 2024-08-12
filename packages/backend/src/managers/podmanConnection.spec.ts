@@ -418,6 +418,20 @@ describe('getVMType', () => {
     expect(await manager.getVMType()).toBe(VMType.WSL);
   });
 
+  test('unknown string should return UNKNOWN', async () => {
+    vi.mocked(process.exec).mockResolvedValue({
+      stdout: JSON.stringify([
+        {
+          Name: 'machine-1',
+          VMType: 'fake-content',
+        },
+      ]),
+    } as unknown as RunResult);
+
+    const manager = new PodmanConnection(webviewMock);
+    expect(await manager.getVMType()).toBe(VMType.UNKNOWN);
+  });
+
   test.each(Object.values(VMType) as string[])('%s type should be the expected result', async vmtype => {
     vi.mocked(process.exec).mockResolvedValue({
       stdout: JSON.stringify([

@@ -36,6 +36,7 @@ import type { InferenceProvider } from '../../workers/provider/InferenceProvider
 import type { CatalogManager } from '../catalogManager';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
+import { VMType } from '@shared/src/models/IPodman';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -64,6 +65,7 @@ const containerRegistryMock = {
 
 const podmanConnectionMock = {
   onPodmanConnectionEvent: vi.fn(),
+  findRunningContainerProviderConnection: vi.fn(),
 } as unknown as PodmanConnection;
 
 const modelsManager = {
@@ -126,6 +128,15 @@ beforeEach(() => {
       Health: undefined,
     },
   } as unknown as ContainerInspectInfo);
+  vi.mocked(podmanConnectionMock.findRunningContainerProviderConnection).mockReturnValue({
+    name: 'Podman Machine',
+    vmType: VMType.UNKNOWN,
+    type: 'podman',
+    status: () => 'started',
+    endpoint: {
+      socketPath: 'socket.sock',
+    },
+  });
   vi.mocked(taskRegistryMock.getTasksByLabels).mockReturnValue([]);
   vi.mocked(modelsManager.getLocalModelPath).mockReturnValue('/local/model.guff');
   vi.mocked(modelsManager.uploadModelToPodmanMachine).mockResolvedValue('/mnt/path/model.guff');

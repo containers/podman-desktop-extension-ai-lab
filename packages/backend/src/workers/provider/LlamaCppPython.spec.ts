@@ -31,6 +31,7 @@ import { GPUVendor } from '@shared/src/models/IGPUInfo';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 import { llamacpp } from '../../assets/inference-images.json';
+import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -81,6 +82,7 @@ const DummyImageInfo: ImageInfo = {
 
 const podmanConnection: PodmanConnection = {
   findRunningContainerProviderConnection: vi.fn(),
+  getContainerProviderConnection: vi.fn(),
 } as unknown as PodmanConnection;
 
 const configurationRegistry: ConfigurationRegistry = {
@@ -95,6 +97,7 @@ beforeEach(() => {
     modelsPath: 'model-path',
   });
   vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue(dummyConnection);
+  vi.mocked(podmanConnection.getContainerProviderConnection).mockReturnValue(dummyConnection);
   vi.mocked(getImageInfo).mockResolvedValue(DummyImageInfo);
   vi.mocked(taskRegistry.createTask).mockReturnValue({ id: 'dummy-task-id', name: '', labels: {}, state: 'loading' });
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
@@ -350,5 +353,28 @@ describe('perform', () => {
     expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.vulkan, expect.any(Function));
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
     expect('gpu' in server.labels).toBeTruthy();
+  });
+
+  test('provided connection should be used for pulling the image', async () => {
+    const connection: ContainerProviderConnectionInfo = {
+      name: 'Dummy Podman',
+      type: 'podman',
+      vmType: VMType.WSL,
+      status: 'started',
+      providerId: 'fakeProviderId',
+    };
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+
+    await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: connection,
+    });
+
+    expect(podmanConnection.getContainerProviderConnection).toHaveBeenCalledWith(connection);
+    expect(podmanConnection.findRunningContainerProviderConnection).not.toHaveBeenCalled();
+    expect(getImageInfo).toHaveBeenCalledWith(dummyConnection, llamacpp.default, expect.anything());
   });
 });

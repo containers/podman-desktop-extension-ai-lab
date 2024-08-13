@@ -25,6 +25,8 @@ import type { ContainerProviderConnection, ImageInfo } from '@podman-desktop/api
 import { containerEngine } from '@podman-desktop/api';
 import { getImageInfo } from '../../utils/inferenceUtils';
 import type { PodmanConnection } from '../../managers/podmanConnection';
+import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import { VMType } from '@shared/src/models/IPodman';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -55,10 +57,14 @@ const taskRegistry: TaskRegistry = {
 
 const podmanConnection: PodmanConnection = {
   findRunningContainerProviderConnection: vi.fn(),
+  getContainerProviderConnection: vi.fn(),
 } as unknown as PodmanConnection;
 
 beforeEach(() => {
+  vi.resetAllMocks();
+
   vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue(connectionMock);
+  vi.mocked(podmanConnection.getContainerProviderConnection).mockReturnValue(connectionMock);
   vi.mocked(taskRegistry.createTask).mockReturnValue({ id: 'dummy-task-id', name: '', labels: {}, state: 'loading' });
 
   vi.mocked(getImageInfo).mockResolvedValue(DummyImageInfo);
@@ -192,4 +198,41 @@ test('provider should propagate labels', async () => {
     status: 'running',
     type: InferenceType.WHISPER_CPP,
   });
+});
+
+test('provided connection should be used for pulling the image', async () => {
+  const connection: ContainerProviderConnectionInfo = {
+    name: 'Dummy Podman',
+    type: 'podman',
+    vmType: VMType.WSL,
+    status: 'started',
+    providerId: 'fakeProviderId',
+  };
+  const provider = new WhisperCpp(taskRegistry, podmanConnection);
+
+  const model = {
+    id: 'whisper-cpp',
+    name: 'Whisper',
+    properties: {},
+    description: 'whisper desc',
+    file: {
+      file: 'random-file',
+      path: 'path-to-file',
+    },
+    backend: InferenceType.WHISPER_CPP,
+  };
+
+  await provider.perform({
+    connection: connection,
+    port: 8888,
+    labels: {
+      hello: 'world',
+    },
+    image: 'localhost/whisper-cpp:custom',
+    modelsInfo: [model],
+  });
+
+  expect(getImageInfo).toHaveBeenCalledWith(connectionMock, 'localhost/whisper-cpp:custom', expect.any(Function));
+  expect(podmanConnection.getContainerProviderConnection).toHaveBeenCalledWith(connection);
+  expect(podmanConnection.findRunningContainerProviderConnection).not.toHaveBeenCalled();
 });

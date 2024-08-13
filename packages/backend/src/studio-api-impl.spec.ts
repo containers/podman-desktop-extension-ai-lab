@@ -23,7 +23,12 @@ import content from './tests/ai-test.json';
 import type { ApplicationManager } from './managers/application/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { InferenceManager } from './managers/inference/inferenceManager';
-import type { ProviderContainerConnection, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type {
+  ContainerProviderConnection,
+  ProviderContainerConnection,
+  TelemetryLogger,
+  Webview,
+} from '@podman-desktop/api';
 import { window, EventEmitter, navigation } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
@@ -102,6 +107,10 @@ let catalogManager: CatalogManager;
 let localRepositoryRegistry: LocalRepositoryRegistry;
 let applicationManager: ApplicationManager;
 
+const podmanConnectionMock: PodmanConnection = {
+  findRunningContainerProviderConnection: vi.fn(),
+} as unknown as PodmanConnection;
+
 beforeEach(async () => {
   vi.resetAllMocks();
 
@@ -148,7 +157,7 @@ beforeEach(async () => {
     {} as unknown as CancellationTokenRegistry,
     {} as unknown as ConfigurationRegistry,
     {} as unknown as RecipeManager,
-    {} as unknown as PodmanConnection,
+    podmanConnectionMock,
   );
   vi.mock('node:fs');
 
@@ -165,19 +174,34 @@ beforeEach(async () => {
 });
 
 test('expect requestPullApplication to provide a tracking id', async () => {
+  const connectionMock = {
+    name: 'Podman machine',
+  } as unknown as ContainerProviderConnection;
+  vi.mocked(podmanConnectionMock.findRunningContainerProviderConnection).mockReturnValue(connectionMock);
   vi.spyOn(catalogManager, 'getRecipes').mockReturnValue([
     {
       id: 'recipe 1',
     } as unknown as Recipe,
   ]);
   vi.spyOn(catalogManager, 'getModelById').mockReturnValue({
-    id: 'model',
+    id: 'model 1',
   } as unknown as ModelInfo);
 
   vi.mocked(applicationManager.requestPullApplication).mockResolvedValue('dummy-tracker');
 
-  const trackingId = await studioApiImpl.requestPullApplication('recipe 1', 'model1');
-  expect(applicationManager.requestPullApplication).toHaveBeenCalledOnce();
+  const trackingId = await studioApiImpl.requestPullApplication({
+    modelId: 'model1',
+    recipeId: 'recipe 1',
+  });
+  expect(applicationManager.requestPullApplication).toHaveBeenCalledWith(
+    connectionMock,
+    expect.objectContaining({
+      id: 'recipe 1',
+    }),
+    expect.objectContaining({
+      id: 'model 1',
+    }),
+  );
   expect(trackingId).toBe('dummy-tracker');
 });
 

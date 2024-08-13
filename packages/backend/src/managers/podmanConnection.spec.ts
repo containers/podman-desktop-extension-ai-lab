@@ -19,6 +19,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { PodmanConnection } from './podmanConnection';
 import type {
+  ContainerProviderConnection,
   ProviderEvent,
   RegisterContainerConnectionEvent,
   RunResult,
@@ -65,6 +66,8 @@ vi.mock('../utils/podman', () => {
 });
 
 beforeEach(() => {
+  vi.resetAllMocks();
+
   vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
   vi.mocked(provider.getContainerConnections).mockReturnValue([]);
 
@@ -595,5 +598,113 @@ describe('checkContainerConnectionStatusAndResources', () => {
       status: 'running',
       canRedirect: expect.any(Boolean),
     });
+  });
+});
+
+describe('getConnectionByEngineId', () => {
+  test('no provider should raise an error', async () => {
+    vi.mocked(provider.getContainerConnections).mockReturnValue([]);
+
+    const manager = new PodmanConnection(webviewMock);
+    manager.init();
+
+    await expect(() => manager.getConnectionByEngineId('fake engine')).rejects.toThrowError('connection not found');
+
+    expect(containerEngine.listInfos).not.toHaveBeenCalled();
+  });
+
+  test('empty listInfos response should raise an error', async () => {
+    vi.mocked(provider.getContainerConnections).mockReturnValue([
+      {
+        connection: {
+          type: 'podman',
+          status: () => 'started',
+          name: 'Podman Machine',
+          endpoint: {
+            socketPath: './socket-path',
+          },
+        },
+        providerId: 'podman',
+      },
+    ]);
+
+    vi.mocked(containerEngine.listInfos).mockResolvedValue([]);
+
+    const manager = new PodmanConnection(webviewMock);
+    manager.init();
+
+    await expect(() => manager.getConnectionByEngineId('fake engine')).rejects.toThrowError('connection not found');
+
+    expect(containerEngine.listInfos).toHaveBeenCalled();
+  });
+
+  test('invalid engineId should raise an error', async () => {
+    vi.mocked(provider.getContainerConnections).mockReturnValue([
+      {
+        connection: {
+          type: 'podman',
+          status: () => 'started',
+          name: 'Podman Machine',
+          endpoint: {
+            socketPath: './socket-path',
+          },
+        },
+        providerId: 'podman',
+      },
+    ]);
+
+    vi.mocked(containerEngine.listInfos).mockResolvedValue([
+      {
+        engineId: 'engineId',
+        engineName: 'enginerName',
+        engineType: 'podman',
+        cpus: 12,
+        memory: 20,
+        memoryUsed: 0,
+      },
+    ]);
+
+    const manager = new PodmanConnection(webviewMock);
+    manager.init();
+
+    await expect(() => manager.getConnectionByEngineId('fake engine')).rejects.toThrowError('connection not found');
+
+    expect(containerEngine.listInfos).toHaveBeenCalled();
+  });
+
+  test('valid engineId should return matching connection', async () => {
+    const connectionMock: ContainerProviderConnection = {
+      type: 'podman',
+      status: () => 'started',
+      name: 'Podman Machine',
+      endpoint: {
+        socketPath: './socket-path',
+      },
+    };
+    vi.mocked(provider.getContainerConnections).mockReturnValue([
+      {
+        connection: connectionMock,
+        providerId: 'podman',
+      },
+    ]);
+
+    vi.mocked(containerEngine.listInfos).mockResolvedValue([
+      {
+        engineId: 'engineId',
+        engineName: 'enginerName',
+        engineType: 'podman',
+        cpus: 12,
+        memory: 20,
+        memoryUsed: 0,
+      },
+    ]);
+
+    const manager = new PodmanConnection(webviewMock);
+    manager.init();
+
+    const connection = await manager.getConnectionByEngineId('engineId');
+
+    expect(containerEngine.listInfos).toHaveBeenCalled();
+    expect(connection).toBe(connectionMock);
   });
 });

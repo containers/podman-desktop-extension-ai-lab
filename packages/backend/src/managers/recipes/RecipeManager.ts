@@ -26,7 +26,7 @@ import { parseYamlFile } from '../../models/AIConfig';
 import { existsSync, statSync } from 'node:fs';
 import { goarch } from '../../utils/arch';
 import type { BuilderManager } from './BuilderManager';
-import { type Disposable } from '@podman-desktop/api';
+import type { ContainerProviderConnection, Disposable } from '@podman-desktop/api';
 import { CONFIG_FILENAME } from '../../utils/RecipeConstants';
 
 export interface AIContainers {
@@ -91,7 +91,11 @@ export class RecipeManager implements Disposable {
     });
   }
 
-  public async buildRecipe(recipe: Recipe, labels?: { [key: string]: string }): Promise<RecipeImage[]> {
+  public async buildRecipe(
+    connection: ContainerProviderConnection,
+    recipe: Recipe,
+    labels?: { [key: string]: string },
+  ): Promise<RecipeImage[]> {
     const localFolder = path.join(this.appUserDirectory, recipe.id);
 
     // load and parse the recipe configuration file and filter containers based on architecture
@@ -101,6 +105,7 @@ export class RecipeManager implements Disposable {
     });
 
     return await this.builderManager.build(
+      connection,
       recipe,
       configAndFilteredContainers.containers,
       configAndFilteredContainers.aiConfigFile.path,

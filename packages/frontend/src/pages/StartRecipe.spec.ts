@@ -291,7 +291,10 @@ test('Submit button should call requestPullApplication with proper arguments', a
   await fireEvent.click(button);
 
   await vi.waitFor(() => {
-    expect(studioClient.requestPullApplication).toHaveBeenCalledWith(fakeRecipe.id, fakeRecommendedModel.id);
+    expect(studioClient.requestPullApplication).toHaveBeenCalledWith({
+      recipeId: fakeRecipe.id,
+      modelId: fakeRecommendedModel.id,
+    });
   });
 });
 

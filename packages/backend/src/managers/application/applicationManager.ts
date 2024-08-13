@@ -27,6 +27,7 @@ import type {
   HostConfig,
   HealthConfig,
   PodContainerInfo,
+  ContainerProviderConnection,
 } from '@podman-desktop/api';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from '../modelsManager';
@@ -72,7 +73,11 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     this.#disposables = [];
   }
 
-  async requestPullApplication(recipe: Recipe, model: ModelInfo): Promise<string> {
+  async requestPullApplication(
+    connection: ContainerProviderConnection,
+    recipe: Recipe,
+    model: ModelInfo,
+  ): Promise<string> {
     // create a tracking id to put in the labels
     const trackingId: string = getRandomString();
 
@@ -87,7 +92,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
     window
       .withProgress({ location: ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` }, () =>
-        this.pullApplication(recipe, model, labels),
+        this.pullApplication(connection, recipe, model, labels),
       )
       .then(() => {
         task.state = 'success';
@@ -103,7 +108,12 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     return trackingId;
   }
 
-  async pullApplication(recipe: Recipe, model: ModelInfo, labels: Record<string, string> = {}): Promise<void> {
+  async pullApplication(
+    connection: ContainerProviderConnection,
+    recipe: Recipe,
+    model: ModelInfo,
+    labels: Record<string, string> = {},
+  ): Promise<void> {
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
       'recipe-id': recipe.id,
@@ -113,7 +123,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     const startTime = performance.now();
     try {
       // init application (git clone, models download etc.)
-      const podInfo: PodInfo = await this.initApplication(recipe, model, labels);
+      const podInfo: PodInfo = await this.initApplication(connection, recipe, model, labels);
       // start the pod
       await this.runApplication(podInfo, {
         ...labels,
@@ -147,12 +157,14 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
    * - build containers
    * - create pod
    *
+   * @param connection
    * @param recipe
    * @param model
    * @param labels
    * @private
    */
   private async initApplication(
+    connection: ContainerProviderConnection,
     recipe: Recipe,
     model: ModelInfo,
     labels: Record<string, string> = {},
@@ -175,7 +187,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     });
 
     // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
-    const images = await this.recipeManager.buildRecipe(recipe, {
+    const images = await this.recipeManager.buildRecipe(connection, recipe, {
       ...labels,
       'recipe-id': recipe.id,
       'model-id': model.id,
@@ -187,7 +199,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
 
     // create a pod containing all the containers to run the application
-    return this.createApplicationPod(recipe, model, images, modelPath, {
+    return this.createApplicationPod(connection, recipe, model, images, modelPath, {
       ...labels,
       'recipe-id': recipe.id,
       'model-id': model.id,
@@ -238,6 +250,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   protected async createApplicationPod(
+    connection: ContainerProviderConnection,
     recipe: Recipe,
     model: ModelInfo,
     images: RecipeImage[],
@@ -249,7 +262,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     // create empty pod
     let podInfo: PodInfo;
     try {
-      podInfo = await this.createPod(recipe, model, images);
+      podInfo = await this.createPod(connection, recipe, model, images);
       task.labels = {
         ...task.labels,
         'pod-id': podInfo.Id,
@@ -264,7 +277,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
 
     try {
-      await this.createContainerAndAttachToPod(podInfo, images, model, modelPath);
+      await this.createContainerAndAttachToPod(connection, podInfo, images, model, modelPath);
       task.state = 'success';
     } catch (e) {
       console.error(`error when creating pod ${podInfo.Id}`, e);
@@ -279,12 +292,13 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   protected async createContainerAndAttachToPod(
+    connection: ContainerProviderConnection,
     podInfo: PodInfo,
     images: RecipeImage[],
     modelInfo: ModelInfo,
     modelPath: string,
   ): Promise<void> {
-    const vmType = await this.podmanConnection.getVMType();
+    const vmType = connection.vmType ?? VMType.UNKNOWN;
     // temporary check to set Z flag or not - to be removed when switching to podman 5
     await Promise.all(
       images.map(async image => {
@@ -339,7 +353,12 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     );
   }
 
-  protected async createPod(recipe: Recipe, model: ModelInfo, images: RecipeImage[]): Promise<PodInfo> {
+  protected async createPod(
+    connection: ContainerProviderConnection,
+    recipe: Recipe,
+    model: ModelInfo,
+    images: RecipeImage[],
+  ): Promise<PodInfo> {
     // find the exposed port of the sample app so we can open its ports on the new pod
     const sampleAppImageInfo = images.find(image => !image.modelService);
     if (!sampleAppImageInfo) {
@@ -386,6 +405,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       labels[POD_LABEL_APP_PORTS] = appPorts.join(',');
     }
     const { engineId, Id } = await this.podManager.createPod({
+      provider: connection,
       name: getRandomName(`pod-${sampleAppImageInfo.appName}`),
       portmappings: portmappings,
       labels,
@@ -628,14 +648,14 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     }
   }
 
-  async restartApplication(recipeId: string, modelId: string): Promise<void> {
+  async restartApplication(connection: ContainerProviderConnection, recipeId: string, modelId: string): Promise<void> {
     const appPod = await this.getApplicationPod(recipeId, modelId);
     await this.removeApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
     const model = this.catalogManager.getModelById(appPod.Labels[POD_LABEL_MODEL_ID]);
 
     // init the recipe
-    const podInfo = await this.initApplication(recipe, model);
+    const podInfo = await this.initApplication(connection, recipe, model);
 
     // start the pod
     return this.runApplication(podInfo, {

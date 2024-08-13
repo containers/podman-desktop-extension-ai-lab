@@ -32,8 +32,10 @@ import type { LocalModelImportInfo } from './models/ILocalModelInfo';
 import type {
   CheckContainerConnectionResourcesOptions,
   ContainerConnectionInfo,
+  ContainerProviderConnectionInfo,
 } from './models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
+import type { RecipePullOptions } from './models/IRecipe';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -47,13 +49,17 @@ export abstract class StudioAPI {
   abstract cloneApplication(recipeId: string): Promise<void>;
 
   /**
+   * Allow the frontend to get a list of the container provider connections available.
+   * This object can be used in requestPullApplication
+   */
+  abstract getContainerProviderConnection(): Promise<ContainerProviderConnectionInfo[]>;
+  /**
    * Pull an application (clone, download model, build container, start pod)
-   * @param recipeId
-   * @param modelId
    *
    * @return a promise with a tracking id used in each task labels
+   * @param options
    */
-  abstract requestPullApplication(recipeId: string, modelId: string): Promise<string>;
+  abstract requestPullApplication(options: RecipePullOptions): Promise<string>;
   abstract requestStopApplication(recipeId: string, modelId: string): Promise<void>;
   abstract requestStartApplication(recipeId: string, modelId: string): Promise<void>;
   abstract requestRemoveApplication(recipeId: string, modelId: string): Promise<void>;

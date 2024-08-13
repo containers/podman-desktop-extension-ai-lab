@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { ProviderContainerConnection } from '@podman-desktop/api';
+import type { ContainerProviderConnection, ProviderContainerConnection } from '@podman-desktop/api';
 import { configuration, env, provider } from '@podman-desktop/api';
 
 export const MIN_CPUS_VALUE = 4;
@@ -52,49 +52,20 @@ export function getCustomBinaryPath(): string | undefined {
 }
 
 /**
- * @deprecated uses {@link PodmanConnection.findRunningContainerProviderConnection}
+ * In the ${link ContainerProviderConnection.name} property the name is not usage, and we need to transform it
+ * @param connection
  */
-export function getFirstRunningMachineName(): string | undefined {
-  // the name of the podman connection is the name of the podman machine updated to make it more user friendly,
-  // so to retrieve the real machine name we need to revert the process
-
-  // podman-machine-default -> Podman Machine
-  // podman-machine-{name} -> Podman Machine {name}
-  // {name} -> {name}
-  try {
-    const runningConnection = getFirstRunningPodmanConnection();
-    if (!runningConnection) return undefined;
-    const runningConnectionName = runningConnection.connection.name;
-    if (runningConnectionName.startsWith('Podman Machine')) {
-      const machineName = runningConnectionName.replace(/Podman Machine\s*/, 'podman-machine-');
-      if (machineName.endsWith('-')) {
-        return `${machineName}default`;
-      }
-      return machineName;
-    } else {
-      return runningConnectionName;
+export function getPodmanMachineName(connection: ContainerProviderConnection): string {
+  const runningConnectionName = connection.name;
+  if (runningConnectionName.startsWith('Podman Machine')) {
+    const machineName = runningConnectionName.replace(/Podman Machine\s*/, 'podman-machine-');
+    if (machineName.endsWith('-')) {
+      return `${machineName}default`;
     }
-  } catch (e) {
-    console.log(e);
+    return machineName;
+  } else {
+    return runningConnectionName;
   }
-
-  return undefined;
-}
-
-/**
- * @deprecated uses {@link PodmanConnection.findRunningContainerProviderConnection}
- */
-export function getFirstRunningPodmanConnection(): ProviderContainerConnection | undefined {
-  let engine: ProviderContainerConnection | undefined = undefined;
-  try {
-    engine = provider
-      .getContainerConnections()
-      .filter(connection => connection.connection.type === 'podman')
-      .find(connection => connection.connection.status() === 'started');
-  } catch (e) {
-    console.log(e);
-  }
-  return engine;
 }
 
 /**

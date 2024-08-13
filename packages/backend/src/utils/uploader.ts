@@ -16,20 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { EventEmitter, type Event } from '@podman-desktop/api';
+import { EventEmitter, type Event, type ContainerProviderConnection } from '@podman-desktop/api';
 import { WSLUploader } from '../workers/uploader/WSLUploader';
 import { getDurationSecondsSince } from './utils';
 import type { CompletionEvent, BaseEvent } from '../models/baseEvent';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getLocalModelFile } from './modelsUtils';
 import type { IWorker } from '../workers/IWorker';
+import type { UploaderOptions } from '../workers/uploader/UploaderOptions';
 
 export class Uploader {
   readonly #_onEvent = new EventEmitter<BaseEvent>();
   readonly onEvent: Event<BaseEvent> = this.#_onEvent.event;
-  readonly #workers: IWorker<ModelInfo, string>[] = [];
+  readonly #workers: IWorker<UploaderOptions, string>[] = [];
 
   constructor(
+    private connection: ContainerProviderConnection,
     private modelInfo: ModelInfo,
     private abortSignal?: AbortSignal,
   ) {
@@ -44,7 +46,7 @@ export class Uploader {
    */
   async perform(id: string): Promise<string> {
     // Find the uploader for the current operating system
-    const worker: IWorker<ModelInfo, string> | undefined = this.#workers.find(w => w.enabled());
+    const worker: IWorker<UploaderOptions, string> | undefined = this.#workers.find(w => w.enabled());
 
     // If none are found, we return the current path
     if (worker === undefined) {
@@ -62,7 +64,10 @@ export class Uploader {
       // measure performance
       const startTime = performance.now();
       // get new path
-      const remotePath = await worker.perform(this.modelInfo);
+      const remotePath = await worker.perform({
+        connection: this.connection,
+        model: this.modelInfo,
+      });
       // compute full time
       const durationSeconds = getDurationSecondsSince(startTime);
       // fire events

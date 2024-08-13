@@ -306,7 +306,7 @@ describe('pullApplication', () => {
       'model-id': remoteModelMock.id,
     });
     // upload model to podman machine
-    expect(modelsManagerMock.uploadModelToPodmanMachine).toHaveBeenCalledWith(remoteModelMock, {
+    expect(modelsManagerMock.uploadModelToPodmanMachine).toHaveBeenCalledWith(connectionMock, remoteModelMock, {
       'test-label': 'test-value',
       'recipe-id': recipeMock.id,
       'model-id': remoteModelMock.id,

@@ -54,6 +54,10 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     this.#disposables = [];
   }
 
+  getContainerProviderConnections(): ContainerProviderConnection[] {
+    return Array.from(this.#providers.values()).flat();
+  }
+
   /**
    * This method flatten the
    */
@@ -194,7 +198,7 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     const output = (this.#providers.get(connection.providerId) ?? []).find(
       mConnection => connection.name === mConnection.name,
     );
-    if (!output) throw new Error(`no container provider connection found for connection name ${name}`);
+    if (!output) throw new Error(`no container provider connection found for connection name ${connection.name}`);
     return output;
   }
 

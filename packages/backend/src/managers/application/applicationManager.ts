@@ -180,7 +180,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     });
 
     // upload model to podman machine if user system is supported
-    const modelPath = await this.modelsManager.uploadModelToPodmanMachine(model, {
+    const modelPath = await this.modelsManager.uploadModelToPodmanMachine(connection, model, {
       ...labels,
       'recipe-id': recipe.id,
       'model-id': model.id,

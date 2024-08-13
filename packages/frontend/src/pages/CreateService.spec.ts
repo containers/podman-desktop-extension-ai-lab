@@ -29,7 +29,10 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { writable } from 'svelte/store';
 import { router } from 'tinro';
 import * as connectionUtils from '../utils/connectionUtils';
-import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type {
+  ContainerConnectionInfo,
+  ContainerProviderConnectionInfo,
+} from '@shared/src/models/IContainerConnectionInfo';
 import * as path from 'node:path';
 import * as os from 'node:os';
 
@@ -53,6 +56,7 @@ const mocks = vi.hoisted(() => {
         return () => {};
       },
     },
+    getContainerConnectionInfoMock: vi.fn<() => ContainerProviderConnectionInfo[]>(),
   };
 });
 
@@ -60,6 +64,15 @@ vi.mock('../stores/inferenceServers', () => ({
   inferenceServers: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getInferenceServersMock());
+      return () => {};
+    },
+  },
+}));
+
+vi.mock('../stores/containerProviderConnections', () => ({
+  containerProviderConnections: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getContainerConnectionInfoMock());
       return () => {};
     },
   },
@@ -88,6 +101,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.modelsInfoSubscribeMock.mockReturnValue([]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
+  mocks.getContainerConnectionInfoMock.mockReturnValue([]);
 
   vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);

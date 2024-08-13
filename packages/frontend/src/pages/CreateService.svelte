@@ -12,14 +12,33 @@ import { filterByLabel } from '/@/utils/taskUtils';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
-import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type {
+  ContainerConnectionInfo,
+  ContainerProviderConnectionInfo,
+} from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '../utils/connectionUtils';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
-import ModelSelect from '/@/lib/select/ModelSelect.svelte';
+import ModelSelect from '../lib/select/ModelSelect.svelte';
+import { containerProviderConnections } from '/@/stores/containerProviderConnections';
+import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file);
+
+// The container provider connection to use
+let containerProviderConnection: ContainerProviderConnectionInfo | undefined = undefined;
+
+// Filtered connections (started)
+let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = [];
+$: startedContainerProviderConnectionInfo = $containerProviderConnections.filter(
+  connection => connection.status === 'started',
+);
+
+// Select default connection
+$: if (containerProviderConnection === undefined && startedContainerProviderConnectionInfo.length > 0) {
+  containerProviderConnection = startedContainerProviderConnectionInfo[0];
+}
 
 // The containerPort is the bind value to form input
 let containerPort: number | undefined = undefined;
@@ -78,6 +97,7 @@ const submit = async () => {
     trackingId = await studioClient.requestCreateInferenceServer({
       modelsInfo: [model],
       port: containerPort,
+      connection: containerProviderConnection,
     });
   } catch (err: unknown) {
     trackingId = undefined;
@@ -166,6 +186,15 @@ export function goToUpPage(): void {
       <!-- form -->
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
+          <!-- container provider connection input -->
+          {#if startedContainerProviderConnectionInfo.length > 1}
+            <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+              >Container engine</label>
+            <ContainerProviderConnectionSelect
+              bind:value={containerProviderConnection}
+              containerProviderConnections={startedContainerProviderConnectionInfo} />
+          {/if}
+
           <!-- model input -->
           <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
           <ModelSelect models={localModels} disabled={loading} bind:value={model} />

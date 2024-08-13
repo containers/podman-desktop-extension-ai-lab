@@ -109,8 +109,8 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     // check if model backend is supported
     const backend: InferenceType = getInferenceType([model]);
     const providers: InferenceProvider[] = this.inferenceProviderRegistry
-        .getByType(backend)
-        .filter(provider => provider.enabled());
+      .getByType(backend)
+      .filter(provider => provider.enabled());
     if (providers.length === 0) {
       throw new Error('no enabled provider could be found.');
     }

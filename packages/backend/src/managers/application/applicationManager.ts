@@ -331,7 +331,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
               envs = [`MODEL_ENDPOINT=${endPoint}`];
             }
           }
-          
         }
         if (image.ports.length > 0) {
           healthcheck = {

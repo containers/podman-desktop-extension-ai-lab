@@ -221,7 +221,6 @@ export class Studio {
     this.#localRepositoryRegistry.init();
     this.#extensionContext.subscriptions.push(this.#localRepositoryRegistry);
 
-    
     /**
      * GPUManager is a class responsible for detecting and storing the GPU specs
      */

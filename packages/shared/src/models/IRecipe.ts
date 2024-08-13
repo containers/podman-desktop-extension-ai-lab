@@ -23,7 +23,7 @@ export interface RecipePullOptions {
   modelId: string;
 }
 
-import type { InferenceServer } from "./IInference";
+import type { InferenceServer } from './IInference';
 
 export interface RecipeComponents {
   images: RecipeImage[];

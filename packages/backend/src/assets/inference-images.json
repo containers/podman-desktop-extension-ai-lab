@@ -5,6 +5,6 @@
   "llamacpp": {
     "default": "ghcr.io/containers/llamacpp_python@sha256:b2402f52b757fb2a1cc2b3075f9fb1cb4082a81fbae37631499895619728fdd3",
     "cuda": "ghcr.io/containers/llamacpp_python_cuda@sha256:eda2f13b0fa5b14e0b05414156f48fbf1f4a6a50517169bec25b83dc66f18f20",
-    "vulkan": "quay.io/ai-lab/llamacpp-python-vulkan@sha256:7e7d15086ec33d0547125a0afb479d91246a67b6d0681ae17260ea7665c333a0"
+    "vulkan": "quay.io/ai-lab/llamacpp-python-vulkan@sha256:e061dc2ed25f0f04bb502f08fee2902174f1f05b8da035964195968b9d6790e3"
   }
 }

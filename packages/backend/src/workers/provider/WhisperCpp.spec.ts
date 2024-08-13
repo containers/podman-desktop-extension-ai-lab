@@ -21,9 +21,12 @@ import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { WhisperCpp } from './WhisperCpp';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
-import type { ContainerProviderConnection, ProviderContainerConnection, ImageInfo } from '@podman-desktop/api';
+import type { ContainerProviderConnection, ImageInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
-import { getImageInfo, getProviderContainerConnection } from '../../utils/inferenceUtils';
+import { getImageInfo } from '../../utils/inferenceUtils';
+import type { PodmanConnection } from '../../managers/podmanConnection';
+import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import { VMType } from '@shared/src/models/IPodman';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -37,13 +40,10 @@ vi.mock('../../utils/inferenceUtils', () => ({
   LABEL_INFERENCE_SERVER: 'ai-lab-inference-server',
 }));
 
-const DummyProviderContainerConnection: ProviderContainerConnection = {
-  providerId: 'dummy-provider-id',
-  connection: {
-    name: 'dummy-provider-connection',
-    type: 'podman',
-  } as unknown as ContainerProviderConnection,
-};
+const connectionMock: ContainerProviderConnection = {
+  name: 'dummy-provider-connection',
+  type: 'podman',
+} as unknown as ContainerProviderConnection;
 
 const DummyImageInfo: ImageInfo = {
   Id: 'dummy-image-id',
@@ -55,8 +55,16 @@ const taskRegistry: TaskRegistry = {
   updateTask: vi.fn(),
 } as unknown as TaskRegistry;
 
+const podmanConnection: PodmanConnection = {
+  findRunningContainerProviderConnection: vi.fn(),
+  getContainerProviderConnection: vi.fn(),
+} as unknown as PodmanConnection;
+
 beforeEach(() => {
-  vi.mocked(getProviderContainerConnection).mockReturnValue(DummyProviderContainerConnection);
+  vi.resetAllMocks();
+
+  vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue(connectionMock);
+  vi.mocked(podmanConnection.getContainerProviderConnection).mockReturnValue(connectionMock);
   vi.mocked(taskRegistry.createTask).mockReturnValue({ id: 'dummy-task-id', name: '', labels: {}, state: 'loading' });
 
   vi.mocked(getImageInfo).mockResolvedValue(DummyImageInfo);
@@ -67,7 +75,7 @@ beforeEach(() => {
 });
 
 test('provider requires at least one model', async () => {
-  const provider = new WhisperCpp(taskRegistry);
+  const provider = new WhisperCpp(taskRegistry, podmanConnection);
 
   await expect(() => {
     return provider.perform({
@@ -79,7 +87,7 @@ test('provider requires at least one model', async () => {
 });
 
 test('provider requires a downloaded model', async () => {
-  const provider = new WhisperCpp(taskRegistry);
+  const provider = new WhisperCpp(taskRegistry, podmanConnection);
 
   await expect(() => {
     return provider.perform({
@@ -98,7 +106,7 @@ test('provider requires a downloaded model', async () => {
 });
 
 test('provider requires a model with backend type Whisper', async () => {
-  const provider = new WhisperCpp(taskRegistry);
+  const provider = new WhisperCpp(taskRegistry, podmanConnection);
 
   await expect(() => {
     return provider.perform({
@@ -124,7 +132,7 @@ test('provider requires a model with backend type Whisper', async () => {
 });
 
 test('custom image in inference server config should overwrite default', async () => {
-  const provider = new WhisperCpp(taskRegistry);
+  const provider = new WhisperCpp(taskRegistry, podmanConnection);
 
   const model = {
     id: 'whisper-cpp',
@@ -147,15 +155,11 @@ test('custom image in inference server config should overwrite default', async (
     modelsInfo: [model],
   });
 
-  expect(getImageInfo).toHaveBeenCalledWith(
-    DummyProviderContainerConnection.connection,
-    'localhost/whisper-cpp:custom',
-    expect.any(Function),
-  );
+  expect(getImageInfo).toHaveBeenCalledWith(connectionMock, 'localhost/whisper-cpp:custom', expect.any(Function));
 });
 
 test('provider should propagate labels', async () => {
-  const provider = new WhisperCpp(taskRegistry);
+  const provider = new WhisperCpp(taskRegistry, podmanConnection);
 
   const model = {
     id: 'whisper-cpp',
@@ -194,4 +198,41 @@ test('provider should propagate labels', async () => {
     status: 'running',
     type: InferenceType.WHISPER_CPP,
   });
+});
+
+test('provided connection should be used for pulling the image', async () => {
+  const connection: ContainerProviderConnectionInfo = {
+    name: 'Dummy Podman',
+    type: 'podman',
+    vmType: VMType.WSL,
+    status: 'started',
+    providerId: 'fakeProviderId',
+  };
+  const provider = new WhisperCpp(taskRegistry, podmanConnection);
+
+  const model = {
+    id: 'whisper-cpp',
+    name: 'Whisper',
+    properties: {},
+    description: 'whisper desc',
+    file: {
+      file: 'random-file',
+      path: 'path-to-file',
+    },
+    backend: InferenceType.WHISPER_CPP,
+  };
+
+  await provider.perform({
+    connection: connection,
+    port: 8888,
+    labels: {
+      hello: 'world',
+    },
+    image: 'localhost/whisper-cpp:custom',
+    modelsInfo: [model],
+  });
+
+  expect(getImageInfo).toHaveBeenCalledWith(connectionMock, 'localhost/whisper-cpp:custom', expect.any(Function));
+  expect(podmanConnection.getContainerProviderConnection).toHaveBeenCalledWith(connection);
+  expect(podmanConnection.findRunningContainerProviderConnection).not.toHaveBeenCalled();
 });

@@ -20,8 +20,6 @@ import {
   type ContainerProviderConnection,
   type ImageInfo,
   type ListImagesOptions,
-  provider,
-  type ProviderContainerConnection,
   type PullEvent,
 } from '@podman-desktop/api';
 import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
@@ -30,33 +28,6 @@ import { type InferenceServer, InferenceType } from '@shared/src/models/IInferen
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
-
-/**
- * Return container connection provider
- */
-export function getProviderContainerConnection(providerId?: string): ProviderContainerConnection {
-  // Get started providers
-  const providers = provider
-    .getContainerConnections()
-    .filter(connection => connection.connection.status() === 'started');
-
-  if (providers.length === 0) throw new Error('no engine started could be find.');
-
-  let output: ProviderContainerConnection | undefined = undefined;
-
-  // If we expect a specific engine
-  if (providerId !== undefined) {
-    output = providers.find(engine => engine.providerId === providerId);
-  } else {
-    // Have a preference for a podman engine
-    output = providers.find(engine => engine.connection.type === 'podman');
-    if (output === undefined) {
-      output = providers[0];
-    }
-  }
-  if (output === undefined) throw new Error('cannot find any started container provider.');
-  return output;
-}
 
 /**
  * Given an image name, it will return the ImageInspectInfo corresponding. Will raise an error if not found.
@@ -107,7 +78,7 @@ export async function withDefaultConfiguration(
     image: options.image,
     labels: options.labels || {},
     modelsInfo: options.modelsInfo,
-    providerId: options.providerId,
+    connection: options.connection,
     inferenceProvider: options.inferenceProvider,
     gpuLayers: options.gpuLayers !== undefined ? options.gpuLayers : -1,
   };

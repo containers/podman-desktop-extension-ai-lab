@@ -126,7 +126,7 @@ beforeEach(() => {
   vi.resetAllMocks();
 
   vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
-  vi.mocked(recipeManager.buildRecipe).mockResolvedValue([recipeImageInfoMock]);
+  vi.mocked(recipeManager.buildRecipe).mockResolvedValue({ images: [recipeImageInfoMock] });
   vi.mocked(podManager.createPod).mockResolvedValue({ engineId: 'test-engine-id', Id: 'test-pod-id' });
   vi.mocked(podManager.getPod).mockResolvedValue({ engineId: 'test-engine-id', Id: 'test-pod-id' } as PodInfo);
   vi.mocked(podManager.getPodsWithLabels).mockResolvedValue([]);
@@ -312,7 +312,7 @@ describe('pullApplication', () => {
       'model-id': remoteModelMock.id,
     });
     // build the recipe
-    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(connectionMock, recipeMock, {
+    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(connectionMock, recipeMock, remoteModelMock, {
       'test-label': 'test-value',
       'recipe-id': recipeMock.id,
       'model-id': remoteModelMock.id,
@@ -374,18 +374,20 @@ describe('pullApplication', () => {
   test('qemu connection should have specific flag', async () => {
     vi.mocked(podManager.findPodByLabelsValues).mockResolvedValue(undefined);
 
-    vi.mocked(recipeManager.buildRecipe).mockResolvedValue([
-      recipeImageInfoMock,
-      {
-        modelService: true,
-        ports: ['8888'],
-        name: 'llamacpp',
-        id: 'llamacpp',
-        appName: 'llamacpp',
-        engineId: recipeImageInfoMock.engineId,
-        recipeId: recipeMock.id,
-      },
-    ]);
+    vi.mocked(recipeManager.buildRecipe).mockResolvedValue({
+      images: [
+        recipeImageInfoMock,
+        {
+          modelService: true,
+          ports: ['8888'],
+          name: 'llamacpp',
+          id: 'llamacpp',
+          appName: 'llamacpp',
+          engineId: recipeImageInfoMock.engineId,
+          recipeId: recipeMock.id,
+        },
+      ],
+    });
 
     await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock);
 

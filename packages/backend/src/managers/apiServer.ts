@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { Disposable } from '@podman-desktop/api';
-import type { NextFunction, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import express from 'express';
 import type { Server } from 'http';
 import path from 'node:path';

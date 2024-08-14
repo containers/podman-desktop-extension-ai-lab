@@ -63,7 +63,7 @@
     "@huggingface/gguf": "^0.1.7",
     "isomorphic-git": "^1.27.1",
     "mustache": "^4.2.0",
-    "openai": "^4.55.4",
+    "openai": "^4.55.5",
     "postman-code-generators": "^1.12.0",
     "postman-collection": "^4.5.0",
     "semver": "^7.6.3",

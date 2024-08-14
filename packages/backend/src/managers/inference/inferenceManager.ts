@@ -105,7 +105,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
    * return the first inference server which is using the specific model
    * it throws if the model backend is not currently supported
    */
-  public getServerByModel(model: ModelInfo): InferenceServer | undefined {
+  public findServerByModel(model: ModelInfo): InferenceServer | undefined {
     // check if model backend is supported
     const backend: InferenceType = getInferenceType([model]);
     const providers: InferenceProvider[] = this.inferenceProviderRegistry

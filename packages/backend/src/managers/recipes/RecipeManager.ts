@@ -109,7 +109,7 @@ export class RecipeManager implements Disposable {
     if (recipe.backend && recipe.backend === model.backend) {
       let task: Task | undefined;
       try {
-        inferenceServer = this.inferenceManager.getServerByModel(model);
+        inferenceServer = this.inferenceManager.findServerByModel(model);
         task = this.taskRegistry.createTask('Starting Inference server', 'loading', labels);
         if (!inferenceServer) {
           const inferenceContainerId = await this.inferenceManager.createInferenceServer(

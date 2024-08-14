@@ -102,6 +102,22 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
+   * return the first inference server which is using the specific model
+   * it throws if the model backend is not currently supported
+   */
+  public findServerByModel(model: ModelInfo): InferenceServer | undefined {
+    // check if model backend is supported
+    const backend: InferenceType = getInferenceType([model]);
+    const providers: InferenceProvider[] = this.inferenceProviderRegistry
+      .getByType(backend)
+      .filter(provider => provider.enabled());
+    if (providers.length === 0) {
+      throw new Error('no enabled provider could be found.');
+    }
+    return this.getServers().find(s => s.models.some(m => m.id === model.id));
+  }
+
+  /**
    * Creating an inference server can be heavy task (pulling image, uploading model to WSL etc.)
    * The frontend cannot wait endlessly, therefore we provide a method returning a tracking identifier
    * that can be used to fetch the tasks

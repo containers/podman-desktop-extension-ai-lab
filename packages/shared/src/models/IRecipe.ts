@@ -23,6 +23,13 @@ export interface RecipePullOptions {
   modelId: string;
 }
 
+import type { InferenceServer } from './IInference';
+
+export interface RecipeComponents {
+  images: RecipeImage[];
+  inferenceServer?: InferenceServer;
+}
+
 export interface RecipeImage {
   id: string;
   engineId: string;

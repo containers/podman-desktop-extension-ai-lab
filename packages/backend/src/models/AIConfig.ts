@@ -28,6 +28,7 @@ export interface ContainerConfig {
   gpu_env: string[];
   ports?: number[];
   image?: string;
+  backend?: string[];
 }
 
 export enum AIConfigFormat {
@@ -130,6 +131,7 @@ export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
               ? container['ports'].map(port => parseInt(port))
               : [],
           image: 'image' in container && isString(container['image']) ? container['image'] : undefined,
+          backend: 'backend' in container && Array.isArray(container['backend']) ? container['backend'] : undefined,
         };
       }),
     },

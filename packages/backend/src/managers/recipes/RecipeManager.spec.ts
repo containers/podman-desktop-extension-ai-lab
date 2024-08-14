@@ -28,6 +28,8 @@ import { existsSync, statSync } from 'node:fs';
 import { AIConfigFormat, parseYamlFile } from '../../models/AIConfig';
 import { goarch } from '../../utils/arch';
 import { VMType } from '@shared/src/models/IPodman';
+import type { InferenceManager } from '../inference/inferenceManager';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const taskRegistryMock = {
   createTask: vi.fn(),
@@ -46,6 +48,8 @@ const localRepositoriesMock = {
   register: vi.fn(),
 } as unknown as LocalRepositoryRegistry;
 
+const inferenceManagerMock = {} as unknown as InferenceManager;
+
 const recipeMock: Recipe = {
   id: 'recipe-test',
   name: 'Test Recipe',
@@ -59,6 +63,12 @@ const connectionMock: ContainerProviderConnection = {
   name: 'Podman Machine',
   vmType: VMType.UNKNOWN,
 } as unknown as ContainerProviderConnection;
+
+const modelInfoMock: ModelInfo = {
+  id: 'modelId',
+  name: 'Model',
+  description: 'model to test',
+} as unknown as ModelInfo;
 
 vi.mock('../../models/AIConfig', () => ({
   AIConfigFormat: {
@@ -123,6 +133,7 @@ async function getInitializedRecipeManager(): Promise<RecipeManager> {
     taskRegistryMock,
     builderManagerMock,
     localRepositoriesMock,
+    inferenceManagerMock,
   );
   manager.init();
   return manager;
@@ -180,14 +191,14 @@ describe('buildRecipe', () => {
     const manager = await getInitializedRecipeManager();
 
     await expect(() => {
-      return manager.buildRecipe(connectionMock, recipeMock);
+      return manager.buildRecipe(connectionMock, recipeMock, modelInfoMock);
     }).rejects.toThrowError('build error');
   });
 
   test('labels should be propagated', async () => {
     const manager = await getInitializedRecipeManager();
 
-    await manager.buildRecipe(connectionMock, recipeMock, {
+    await manager.buildRecipe(connectionMock, recipeMock, modelInfoMock, {
       'test-label': 'test-value',
     });
 

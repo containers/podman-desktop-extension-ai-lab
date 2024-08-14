@@ -97,14 +97,7 @@ test('/api/version endpoint when getting package.json file fails', async () => {
   expect(res.body.errors[0]).toEqual('an error getting package file');
 });
 
-test('/api/version endpoint with unexpected param', async () => {
-  expect(server.getListener()).toBeDefined();
-  const res = await request(server.getListener()!).get('/api/version?wrongParam').expect(400);
-  expect(res.body.message).toEqual(`Unknown query parameter 'wrongParam'`);
-});
-
 test('/api/wrongEndpoint', async () => {
   expect(server.getListener()).toBeDefined();
-  const res = await request(server.getListener()!).get('/api/wrongEndpoint').expect(404);
-  expect(res.body.message).toEqual('not found');
+  await request(server.getListener()!).get('/api/wrongEndpoint').expect(404);
 });

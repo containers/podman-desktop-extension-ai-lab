@@ -250,12 +250,10 @@ export class LlamaCppPython extends InferenceProvider {
       case VMType.WSL:
         return gpu?.vendor === GPUVendor.NVIDIA ? llamacpp.cuda : llamacpp.default;
       case VMType.LIBKRUN:
+      case VMType.LIBKRUN_LABEL:
         return gpu ? llamacpp.vulkan : llamacpp.default;
       // no GPU support
-      case VMType.QEMU:
-      case VMType.APPLEHV:
-      case VMType.HYPERV:
-      case VMType.UNKNOWN:
+      default:
         return llamacpp.default;
     }
   }

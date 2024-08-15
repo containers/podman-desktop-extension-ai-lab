@@ -156,7 +156,7 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
 
   protected parseVMType(vmtype: string | undefined): VMType {
     if (!vmtype) return VMType.UNKNOWN;
-    const type = VMType[vmtype.toUpperCase() as keyof typeof VMType];
+    const type = Object.values(VMType).find(s => s === vmtype);
     if (type === undefined) {
       return VMType.UNKNOWN;
     }

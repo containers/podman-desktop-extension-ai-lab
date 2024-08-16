@@ -127,6 +127,7 @@ export class LlamaCppPython extends InferenceProvider {
           ];
           break;
         case VMType.LIBKRUN:
+        case VMType.LIBKRUN_LABEL:
           supported = true;
           devices.push({
             PathOnHost: '/dev/dri',

@@ -4,7 +4,7 @@
   },
   "llamacpp": {
     "default": "ghcr.io/containers/llamacpp_python@sha256:b2402f52b757fb2a1cc2b3075f9fb1cb4082a81fbae37631499895619728fdd3",
-    "cuda": "ghcr.io/containers/llamacpp_python_cuda@sha256:eda2f13b0fa5b14e0b05414156f48fbf1f4a6a50517169bec25b83dc66f18f20",
-    "vulkan": "quay.io/ai-lab/llamacpp-python-vulkan@sha256:e061dc2ed25f0f04bb502f08fee2902174f1f05b8da035964195968b9d6790e3"
+    "cuda": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat-cuda@sha256:023e07b729aef9d91e75f8bd57f92b3291670bc362e3aed79bff0cd050074eef",
+    "vulkan": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat-vulkan@sha256:9d53e2513d63235849bb293c4b1303e2e0aff9695eabacc03fa20e5055d84146"
   }
 }

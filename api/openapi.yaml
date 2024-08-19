@@ -37,3 +37,65 @@ paths:
                     type: string
                 required:
                 - version
+  /api/tags:
+    get:
+      operationId: getModels
+      tags:
+        - models
+      description: List models that are available locally
+      summary: List models that are available locally
+      responses:
+        '200':
+          description: The models were successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+
+components:
+  schemas:
+    ListResponse:
+      type: object
+      description: Response from a list request
+      properties:
+        models:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListModelResponse'
+
+    ListModelResponse:
+      type: object
+      description: Response from a list request
+      properties:
+        name:
+          type: string
+        model:
+          type: string
+        modified_at:
+          type: string
+          format: date-time
+        size:
+          type: integer
+        digest:
+          type: string
+        details:
+          $ref: '#/components/schemas/ModelDetails'
+
+    ModelDetails:
+      type: object
+      description: Details about a model
+      properties:
+        parent_model:
+          type: string
+        format:
+          type: string
+        family:
+          type: string
+        families:
+          type: array
+          items:
+            type: string
+        parameter_size:
+          type: string
+        quantization_level:
+          type: string

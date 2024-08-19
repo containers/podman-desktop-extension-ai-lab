@@ -90,24 +90,22 @@ export class ApiServer implements Disposable {
     apiStatusBarItem.show();
   }
 
-  getSpecFile(): string {
+  private getFile(filepath: string): string {
     // when plugin is installed, the file is placed in the plugin directory (~/.local/share/containers/podman-desktop/plugins/<pluginname>/)
-    const prodFile = path.join(__dirname, '../api/openapi.yaml');
+    const prodFile = path.join(__dirname, filepath);
     if (existsSync(prodFile)) {
       return prodFile;
     }
     // return dev file
-    return path.join(__dirname, '../../../api/openapi.yaml');
+    return path.join(__dirname, '..', '..', filepath);
+  }
+
+  getSpecFile(): string {
+    return this.getFile('../api/openapi.yaml');
   }
 
   getPackageFile(): string {
-    // when plugin is installed, the file is placed in the plugin directory (~/.local/share/containers/podman-desktop/plugins/<pluginname>/)
-    const prodFile = path.join(__dirname, '../package.json');
-    if (existsSync(prodFile)) {
-      return prodFile;
-    }
-    // return dev file
-    return path.join(__dirname, '../../../package.json');
+    return this.getFile('../package.json');
   }
 
   dispose(): void {

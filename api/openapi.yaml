@@ -1,0 +1,39 @@
+openapi: 3.0.0
+info:
+  title: Podman Desktop AI Lab API
+  description: API for interacting with the Podman Desktop AI Lab service.
+  version: 0.0.1
+servers:
+  - url: http://{host}:{port}
+    description: Podman Desktop AI Lab API server
+    variables:
+      host:
+        default: 127.0.0.1
+      port:
+        default: '10434'
+
+tags:
+  - name: server
+    description: Server information
+
+paths:
+  /api/version:
+    get:
+      operationId: getServerVersion
+      tags:
+        - server
+      description: Return the Podman Desktop AI Lab API server version
+      summary: Return the Podman Desktop AI Lab API server version
+      responses:
+        '200':
+          description: The Podman Desktop AI Lab API server version was successfully fetched
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  version:
+                    type: string
+                required:
+                - version

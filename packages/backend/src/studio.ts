@@ -48,6 +48,7 @@ import { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import { RecipeManager } from './managers/recipes/RecipeManager';
 import { GPUManager } from './managers/GPUManager';
 import { WhisperCpp } from './workers/provider/WhisperCpp';
+import { ApiServer } from './managers/apiServer';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -326,6 +327,10 @@ export class Studio {
     );
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);
+
+    const apiServer = new ApiServer(this.#extensionContext);
+    await apiServer.init();
+    this.#extensionContext.subscriptions.push(apiServer);
   }
 
   public async deactivate(): Promise<void> {

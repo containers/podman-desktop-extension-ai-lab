@@ -35,6 +35,7 @@ const config = {
       '/@gen/': join(PACKAGE_ROOT, 'src-generated') + '/',
       '@shared/': join(PACKAGE_ROOT, '../shared') + '/',
     },
+    mainFields: ['module', 'jsnext:main', 'jsnext'], //https://github.com/vitejs/vite/issues/16444
   },
   build: {
     sourcemap: 'inline',

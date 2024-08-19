@@ -77,6 +77,9 @@ vi.mock('@podman-desktop/api', async () => {
         },
         onDidChangeViewState: vi.fn(),
       }),
+      createStatusBarItem: () => ({
+        show: vi.fn(),
+      }),
     },
     env: {
       createTelemetryLogger: () => ({

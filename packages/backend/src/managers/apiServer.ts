@@ -23,15 +23,18 @@ import type { Server } from 'http';
 import path from 'node:path';
 import http from 'node:http';
 import { existsSync } from 'fs';
-import { getFreeRandomPort } from '../utils/ports';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { readFile } from 'fs/promises';
 import type { ModelsManager } from './modelsManager';
 import type { components } from '../../src-generated/openapi';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
+import { getFreeRandomPort } from '../utils/ports';
 
-const DEFAULT_PORT = 10434;
 const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
+const SHOW_API_ERROR_COMMAND = 'ai-lab.show-api-error';
+
+export const PREFERENCE_RANDOM_PORT = 0;
 
 type ListModelResponse = components['schemas']['ListModelResponse'];
 
@@ -52,6 +55,7 @@ export class ApiServer implements Disposable {
   constructor(
     private extensionContext: podmanDesktopApi.ExtensionContext,
     private modelsManager: ModelsManager,
+    private configurationRegistry: ConfigurationRegistry,
   ) {}
 
   protected getListener(): Server | undefined {
@@ -72,22 +76,25 @@ export class ApiServer implements Disposable {
     app.use('/spec', this.getSpec.bind(this));
 
     const server = http.createServer(app);
-    let listeningOn = DEFAULT_PORT;
+    let listeningOn = this.configurationRegistry.getExtensionConfiguration().apiPort;
     server.on('listening', () => {
       this.displayApiInfo(listeningOn);
     });
     server.on('error', () => {
+      this.displayApiError(listeningOn);
+    });
+    if (listeningOn === PREFERENCE_RANDOM_PORT) {
       getFreeRandomPort('0.0.0.0')
         .then((randomPort: number) => {
-          console.warn(`port ${DEFAULT_PORT} in use, using ${randomPort} for API server`);
           listeningOn = randomPort;
-          this.#listener = server.listen(randomPort);
+          this.#listener = server.listen(listeningOn);
         })
         .catch((e: unknown) => {
           console.error('unable to get a free port for the api server', e);
         });
-    });
-    this.#listener = server.listen(DEFAULT_PORT);
+    } else {
+      this.#listener = server.listen(listeningOn);
+    }
   }
 
   displayApiInfo(port: number): void {
@@ -105,6 +112,23 @@ export class ApiServer implements Disposable {
         if (result === 'Copy') {
           await podmanDesktopApi.env.clipboard.writeText(address);
         }
+      }),
+      apiStatusBarItem,
+    );
+    apiStatusBarItem.show();
+  }
+
+  displayApiError(port: number): void {
+    const apiStatusBarItem = podmanDesktopApi.window.createStatusBarItem();
+    apiStatusBarItem.text = `AI Lab API listening error`;
+    apiStatusBarItem.command = SHOW_API_ERROR_COMMAND;
+    this.extensionContext.subscriptions.push(
+      podmanDesktopApi.commands.registerCommand(SHOW_API_ERROR_COMMAND, async () => {
+        const address = `http://localhost:${port}`;
+        await podmanDesktopApi.window.showErrorMessage(
+          `AI Lab API failed to listen on\n${address}\nYou can change the port in the Preferences then restart the extension.`,
+          'OK',
+        );
       }),
       apiStatusBarItem,
     );

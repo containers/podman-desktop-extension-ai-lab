@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { ApiServer } from './apiServer';
+import { ApiServer, PREFERENCE_RANDOM_PORT } from './apiServer';
 import request from 'supertest';
 import type * as podmanDesktopApi from '@podman-desktop/api';
 import path from 'path';
@@ -25,6 +25,7 @@ import type { Server } from 'http';
 import type { ModelsManager } from './modelsManager';
 import type { EventEmitter } from 'node:events';
 import { once } from 'node:events';
+import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 
 class TestApiServer extends ApiServer {
   public override getListener(): Server | undefined {
@@ -40,12 +41,20 @@ const modelsManager = {
   getModelsInfo: vi.fn(),
 } as unknown as ModelsManager;
 
+const configurationRegistry = {
+  getExtensionConfiguration: () => {
+    return {
+      apiPort: PREFERENCE_RANDOM_PORT,
+    };
+  },
+} as unknown as ConfigurationRegistry;
 beforeEach(async () => {
-  server = new TestApiServer(extensionContext, modelsManager);
+  server = new TestApiServer(extensionContext, modelsManager, configurationRegistry);
   vi.spyOn(server, 'displayApiInfo').mockReturnValue();
   vi.spyOn(server, 'getSpecFile').mockReturnValue(path.join(__dirname, '../../../../api/openapi.yaml'));
   vi.spyOn(server, 'getPackageFile').mockReturnValue(path.join(__dirname, '../../../../package.json'));
   await server.init();
+  await new Promise(resolve => setTimeout(resolve, 0)); // wait for random port to be set
 });
 
 afterEach(async () => {

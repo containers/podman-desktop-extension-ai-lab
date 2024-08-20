@@ -328,7 +328,7 @@ export class Studio {
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);
 
-    const apiServer = new ApiServer(this.#extensionContext, this.#modelsManager);
+    const apiServer = new ApiServer(this.#extensionContext, this.#modelsManager, this.#configurationRegistry);
     await apiServer.init();
     this.#extensionContext.subscriptions.push(apiServer);
   }

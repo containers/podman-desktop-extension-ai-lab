@@ -26,14 +26,33 @@ import { existsSync } from 'fs';
 import { getFreeRandomPort } from '../utils/ports';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { readFile } from 'fs/promises';
+import type { ModelsManager } from './modelsManager';
+import type { components } from '../../src-generated/openapi';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const DEFAULT_PORT = 10434;
 const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
 
+type ListModelResponse = components['schemas']['ListModelResponse'];
+
+function asListModelResponse(model: ModelInfo): ListModelResponse {
+  return {
+    model: model.id,
+    name: model.name,
+    digest: model.sha256,
+    size: model.file?.size,
+    modified_at: model.file?.creation?.toISOString(),
+    details: {},
+  };
+}
+
 export class ApiServer implements Disposable {
   #listener?: Server;
 
-  constructor(private extensionContext: podmanDesktopApi.ExtensionContext) {}
+  constructor(
+    private extensionContext: podmanDesktopApi.ExtensionContext,
+    private modelsManager: ModelsManager,
+  ) {}
 
   protected getListener(): Server | undefined {
     return this.#listener;
@@ -47,6 +66,8 @@ export class ApiServer implements Disposable {
 
     // declare routes
     router.get('/version', this.getVersion.bind(this));
+    router.get('/tags', this.getModels.bind(this));
+    app.get('/', (_res, res) => res.sendStatus(200)); //required for the ollama client to work against us
     app.use('/api', router);
     app.use('/spec', this.getSpec.bind(this));
 
@@ -146,6 +167,24 @@ export class ApiServer implements Disposable {
           res.status(200).json({ version: `v${json.version}` });
         })
         .catch((err: unknown) => doErr(err));
+    } catch (err: unknown) {
+      doErr(err);
+    }
+  }
+
+  getModels(_req: Request, res: Response): void {
+    const doErr = (err: unknown) => {
+      res.status(500).json({
+        message: 'unable to get models',
+        errors: [err],
+      });
+    };
+    try {
+      const models = this.modelsManager
+        .getModelsInfo()
+        .filter(model => this.modelsManager.isModelOnDisk(model.id))
+        .map(model => asListModelResponse(model));
+      res.status(200).json({ models: models });
     } catch (err: unknown) {
       doErr(err);
     }

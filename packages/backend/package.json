@@ -52,12 +52,14 @@
     }
   },
   "scripts": {
-    "build": "vite build",
+    "generate": "yarn openapi-typescript ../../api/openapi.yaml -o src-generated/openapi.ts",
+    "build": "yarn generate && vite build",
     "test": "vitest run --coverage",
     "test:watch": "vitest watch --coverage",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "format:fix": "prettier --write \"src/**/*.ts\"",
-    "watch": "vite --mode development build -w"
+    "watch": "yarn generate && vite --mode development build -w",
+    "typecheck": "yarn generate && tsc --noEmit"
   },
   "dependencies": {
     "@huggingface/gguf": "^0.1.9",
@@ -79,6 +81,7 @@
     "@types/node": "^20",
     "@types/postman-collection": "^3.5.10",
     "@types/supertest": "^6.0.2",
+    "openapi-typescript": "^7.3.0",
     "supertest": "^7.0.0",
     "vitest": "^2.0.5"
   }

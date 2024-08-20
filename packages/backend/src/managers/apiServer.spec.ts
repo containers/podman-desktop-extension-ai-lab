@@ -22,6 +22,9 @@ import request from 'supertest';
 import type * as podmanDesktopApi from '@podman-desktop/api';
 import path from 'path';
 import type { Server } from 'http';
+import type { ModelsManager } from './modelsManager';
+import type { EventEmitter } from 'node:events';
+import { once } from 'node:events';
 
 class TestApiServer extends ApiServer {
   public override getListener(): Server | undefined {
@@ -33,16 +36,21 @@ const extensionContext = {} as unknown as podmanDesktopApi.ExtensionContext;
 
 let server: TestApiServer;
 
+const modelsManager = {
+  getModelsInfo: vi.fn(),
+} as unknown as ModelsManager;
+
 beforeEach(async () => {
-  server = new TestApiServer(extensionContext);
+  server = new TestApiServer(extensionContext, modelsManager);
   vi.spyOn(server, 'displayApiInfo').mockReturnValue();
   vi.spyOn(server, 'getSpecFile').mockReturnValue(path.join(__dirname, '../../../../api/openapi.yaml'));
   vi.spyOn(server, 'getPackageFile').mockReturnValue(path.join(__dirname, '../../../../package.json'));
   await server.init();
 });
 
-afterEach(() => {
+afterEach(async () => {
   server.dispose();
+  await once(server.getListener() as EventEmitter, 'close');
 });
 
 test('/spec endpoint', async () => {
@@ -100,4 +108,22 @@ test('/api/version endpoint when getting package.json file fails', async () => {
 test('/api/wrongEndpoint', async () => {
   expect(server.getListener()).toBeDefined();
   await request(server.getListener()!).get('/api/wrongEndpoint').expect(404);
+});
+
+test('/', async () => {
+  expect(server.getListener()).toBeDefined();
+  await request(server.getListener()!).get('/').expect(200);
+});
+
+test('/api/tags', async () => {
+  expect(server.getListener()).toBeDefined();
+  vi.mocked(modelsManager.getModelsInfo).mockReturnValue([]);
+  await request(server.getListener()!).get('/api/tags').expect(200);
+});
+
+test('/api/tags returns error', async () => {
+  expect(server.getListener()).toBeDefined();
+  vi.mocked(modelsManager.getModelsInfo).mockRejectedValue({});
+  const res = await request(server.getListener()!).get('/api/tags').expect(500);
+  expect(res.body.message).toEqual('unable to get models');
 });

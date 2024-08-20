@@ -25,7 +25,7 @@
     "test:e2e": "cd tests/playwright && npm run test:e2e",
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
-    "typecheck:backend": "tsc --noEmit --project packages/backend",
+    "typecheck:backend": "yarn --cwd packages/backend typecheck",
     "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
   "resolutions": {

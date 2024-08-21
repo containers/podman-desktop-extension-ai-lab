@@ -24,6 +24,13 @@
           "type": "boolean",
           "default": false,
           "description": "Experimental GPU support for inference servers"
+        },
+        "ai-lab.apiPort": {
+          "type": "number",
+          "default": 10434,
+          "minimum": 1024,
+          "maximum": 65535,
+          "description": "Port on which the API is listening (requires restart of extension)"
         }
       }
     },

@@ -21,7 +21,9 @@ import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfig
 import { Messages } from '@shared/Messages';
 import path from 'node:path';
 
-const CONFIGURATION_SECTIONS: string[] = ['ai-lab.models.path', 'ai-lab.experimentalGPU'];
+const CONFIGURATION_SECTIONS: string[] = ['ai-lab.models.path', 'ai-lab.experimentalGPU', 'ai-lab.apiPort'];
+
+const API_PORT_DEFAULT = 10434;
 
 export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> implements Disposable {
   #configuration: Configuration;
@@ -40,6 +42,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
     return {
       modelsPath: this.getModelsPath(),
       experimentalGPU: this.#configuration.get<boolean>('experimentalGPU') ?? false,
+      apiPort: this.#configuration.get<number>('apiPort') ?? API_PORT_DEFAULT,
     };
   }
 

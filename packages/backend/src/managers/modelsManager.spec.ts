@@ -811,7 +811,7 @@ describe('downloadModel', () => {
       };
     });
 
-    void manager.requestDownloadModel({
+    await manager.requestDownloadModel({
       id: 'id',
       url: 'url',
       name: 'name',

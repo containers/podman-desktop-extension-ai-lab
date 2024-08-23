@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, test, expect, beforeEach } from 'vitest';
+import { vi, test, expect, beforeEach, assert } from 'vitest';
 import { Downloader } from './downloader';
 import { EventEmitter } from '@podman-desktop/api';
 import { createWriteStream, promises, type WriteStream } from 'node:fs';
@@ -158,7 +158,7 @@ test('perform download successfully', async () => {
   downloader.onEvent(listenerMock);
 
   // perform download logic
-  void downloader.perform('followUpId');
+  downloader.perform('followUpId').catch((error: unknown) => assert.fail('unable to download' + error));
 
   // wait for listener to be registered
   await vi.waitFor(() => {

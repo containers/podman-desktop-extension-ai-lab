@@ -67,6 +67,11 @@ on:
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
         type: 'string'
         required: true
+      azure_vm_size:
+        default: 'Standard_D8s_v4'
+        description: 'Azure VM size'
+        type: 'string'
+        required: true
 
 jobs:
   windows:
@@ -135,10 +140,10 @@ jobs:
             --conn-details-output '/workspace' \
             --windows-version '${{ matrix.windows-version }}' \
             --windows-featurepack '${{ matrix.windows-featurepack }}' \
-            --vmsize 'Standard_D8s_v4' \
+            --vmsize '${{ github.event.inputs.azure_vm_size }}' \
             --tags project=podman-desktop \
             --spot
-        # Check logs 
+        # Check logs
         podman logs -f windows-create
 
     - name: Check instance system info
@@ -150,7 +155,7 @@ jobs:
           -o ServerAliveCountMax=1200 \
           $(cat username)@$(cat host) "systeminfo"
 
-    - name: Emulate X session 
+    - name: Emulate X session
       run: |
         # use fake rdp to emulate an active x session
         podman run -d --name x-session \

@@ -66,7 +66,7 @@ vi.mock('@podman-desktop/api', async () => {
     },
     EventEmitter: vi.fn(),
     Uri: class {
-      static joinPath = () => ({ fsPath: '.' });
+      static readonly joinPath = () => ({ fsPath: '.' });
     },
     window: {
       createWebviewPanel: () => ({

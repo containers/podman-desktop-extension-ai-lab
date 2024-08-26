@@ -54,6 +54,9 @@
     "@typescript-eslint/no-misused-promises": "error",
     "@typescript-eslint/prefer-optional-chain": "error",
     "no-null/no-null": "error",
+    "sonarjs/no-empty-function": "off",
+    "sonarjs/deprecation": "off",
+    "sonarjs/todo-tag": "off",
 
   /**
    * Having a semicolon helps the optimizer interpret your code correctly.

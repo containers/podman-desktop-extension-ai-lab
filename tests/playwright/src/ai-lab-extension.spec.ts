@@ -18,7 +18,7 @@
 
 import type { Page } from '@playwright/test';
 import type { DashboardPage, ExtensionsPage, Runner } from '@podman-desktop/tests-playwright';
-import { NavigationBar, expect as playExpect, test, RunnerOptions } from '@podman-desktop/tests-playwright';
+import { NavigationBar, expect as playExpect, test, RunnerOptions, waitForPodmanMachineStartup } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 import type { AILabAppDetailsPage } from './model/ai-lab-app-details-page';
@@ -48,6 +48,8 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 
   await welcomePage.handleWelcomePage(true);
   navigationBar = new NavigationBar(page);
+  await waitForPodmanMachineStartup(page);
+  await runner.screenshot('ai-lab-tests-dashboard-podman-machine.png');
 });
 
 test.afterAll(async ({ runner }) => {

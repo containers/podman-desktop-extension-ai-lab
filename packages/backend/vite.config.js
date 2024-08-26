@@ -18,6 +18,7 @@
 
 import {join} from 'path';
 import {builtinModules} from 'module';
+import replace from '@rollup/plugin-replace';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -59,6 +60,18 @@ const config = {
     emptyOutDir: true,
     reportCompressedSize: false,
   },
+  plugins: [
+    // This is to apply the patch https://github.com/JS-DevTools/ono/pull/20
+    // can be removed when the patch is merged
+    replace({
+      delimiters: ['', ''],
+      preventAssignment: true,
+      values: {
+        'if (typeof module === "object" && typeof module.exports === "object") {':
+          'if (typeof module === "object" && typeof module.exports === "object" && typeof module.exports.default === "object") {',
+      },
+    }),
+  ],
 };
 
 export default config;

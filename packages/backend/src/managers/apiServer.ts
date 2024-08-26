@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { Disposable } from '@podman-desktop/api';
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import type { Server } from 'http';
 import path from 'node:path';
@@ -30,6 +30,8 @@ import type { components } from '../../src-generated/openapi';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 import { getFreeRandomPort } from '../utils/ports';
+import * as OpenApiValidator from 'express-openapi-validator';
+import type { HttpError, OpenApiRequest } from 'express-openapi-validator/dist/framework/types';
 
 const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
 const SHOW_API_ERROR_COMMAND = 'ai-lab.show-api-error';
@@ -67,6 +69,29 @@ export class ApiServer implements Disposable {
 
     const router = express.Router();
     router.use(express.json());
+
+    // validate requests / responses based on openapi spec
+    router.use(
+      OpenApiValidator.middleware({
+        apiSpec: this.getSpecFile(),
+        validateRequests: true,
+        validateResponses: {
+          onError: (error, body, req) => {
+            console.error(`Response body fails validation: `, error);
+            console.error(`Emitted from:`, req.originalUrl);
+            console.error(body);
+          },
+        },
+      }),
+    );
+
+    router.use((err: HttpError, _req: OpenApiRequest, res: Response, _next: NextFunction) => {
+      // format errors from validator
+      res.status(err.status || 500).json({
+        message: err.message,
+        errors: err.errors,
+      });
+    });
 
     // declare routes
     router.get('/version', this.getVersion.bind(this));

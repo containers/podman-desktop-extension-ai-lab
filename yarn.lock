@@ -20,7 +20,7 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@apidevtools/json-schema-ref-parser@^11.6.4":
+"@apidevtools/json-schema-ref-parser@^11.7.0":
   version "11.7.0"
   resolved "https://registry.yarnpkg.com/@apidevtools/json-schema-ref-parser/-/json-schema-ref-parser-11.7.0.tgz#228d72018a0e7cbee744b677eaa01a8968f302d9"
   integrity sha512-pRrmXMCwnmrkS3MLgAIW5dXRzeTv6GLjkjb4HmxNnvAKXN1Nfzp4KmGADBQvlVUcqi+a5D+hfGDLLnd5NnYxog==
@@ -1293,7 +1293,7 @@ ajv@^6.12.4:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^8.0.0, ajv@^8.15.0:
+ajv@^8.0.0, ajv@^8.17.1:
   version "8.17.1"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.17.1.tgz#37d9a5c776af6bc92d7f4f9510eba4c0a60d11a6"
   integrity sha512-B/gBuNg5SiMTrPkC+A2+cW0RszwxYmn6VYxB/inlBStS5nx6xHIt/ehKRhIMhqusl7a8LjQoZnjCs5vhwxOQ1g==
@@ -2538,14 +2538,14 @@ execa@^8.0.1:
     signal-exit "^4.1.0"
     strip-final-newline "^3.0.0"
 
-express-openapi-validator@^5.3.1:
-  version "5.3.1"
-  resolved "https://registry.yarnpkg.com/express-openapi-validator/-/express-openapi-validator-5.3.1.tgz#82c1f08f7e3f349a90d719102f72f7288b2ee52f"
-  integrity sha512-Mlo3N1yvaZJlIs/nX0ig4xSu4g1CmLK/InRuqrXPmiqijfHa5qx/5ng92kq2dfTKd77XE7e9sPJqkI79asqNlQ==
+express-openapi-validator@^5.3.3:
+  version "5.3.3"
+  resolved "https://registry.yarnpkg.com/express-openapi-validator/-/express-openapi-validator-5.3.3.tgz#c07f7052f3752c8da29cf6de55ca72accc95237f"
+  integrity sha512-WolpeQTubIlPOjKZiMmFL+pvztAq4bpL/ylvKjs2v7JN/8qC2J2k21MuYcz0o5vQBt4cdIg2cZ2I1Ik2R3FG6w==
   dependencies:
-    "@apidevtools/json-schema-ref-parser" "^11.6.4"
+    "@apidevtools/json-schema-ref-parser" "^11.7.0"
     "@types/multer" "^1.4.11"
-    ajv "^8.15.0"
+    ajv "^8.17.1"
     ajv-draft-04 "^1.0.0"
     ajv-formats "^2.1.1"
     content-type "^1.0.5"

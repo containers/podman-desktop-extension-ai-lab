@@ -41,10 +41,11 @@ export async function initWebview(extensionUri: Uri): Promise<WebviewPanel> {
 
   // replace links with webView Uri links
   // in the content <script type="module" crossorigin src="./index-RKnfBG18.js"></script> replace src with webview.asWebviewUri
+  // eslint-disable-next-line sonarjs/slow-regex
   const scriptLink = indexHtml.match(/<script.*?src="(.*?)".*?>/g);
   if (scriptLink) {
     scriptLink.forEach(link => {
-      const src = link.match(/src="(.*?)"/);
+      const src = RegExp(/src="(.*?)"/).exec(link);
       if (src) {
         const webviewSrc = panel.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', src[1]));
         if (!webviewSrc) throw new Error('undefined webviewSrc');
@@ -54,10 +55,11 @@ export async function initWebview(extensionUri: Uri): Promise<WebviewPanel> {
   }
 
   // and now replace for css file as well
+  // eslint-disable-next-line sonarjs/slow-regex
   const cssLink = indexHtml.match(/<link.*?href="(.*?)".*?>/g);
   if (cssLink) {
     cssLink.forEach(link => {
-      const href = link.match(/href="(.*?)"/);
+      const href = RegExp(/href="(.*?)"/).exec(link);
       if (href) {
         const webviewHref = panel.webview.asWebviewUri(Uri.joinPath(extensionUri, 'media', href[1]));
         if (!webviewHref)

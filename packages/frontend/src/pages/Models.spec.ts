@@ -225,6 +225,7 @@ describe('downloaded models', () => {
           path: 'dummy',
         },
         memory: 1024,
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols
         url: 'http://url',
       },
     ]);
@@ -250,6 +251,7 @@ describe('downloaded models', () => {
           path: 'dummy',
         },
         memory: 1024,
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols
         url: 'http://url',
       },
       {
@@ -260,6 +262,7 @@ describe('downloaded models', () => {
           path: 'dummy',
         },
         memory: 1024,
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols
         url: 'http://url',
       },
       {

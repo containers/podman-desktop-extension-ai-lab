@@ -209,6 +209,7 @@ test('First recommended model should be selected as default model', async () => 
 function getSelectedOption<T>(container: HTMLElement): T | undefined {
   const input = container.querySelector('input[name="select-model"][type="hidden"]');
   if (!input) throw new Error('input not found');
+  // eslint-disable-next-line sonarjs/different-types-comparison
   if ((input as HTMLInputElement).value === undefined) return undefined;
   return JSON.parse((input as HTMLInputElement).value);
 }

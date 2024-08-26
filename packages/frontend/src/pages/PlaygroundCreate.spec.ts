@@ -34,6 +34,7 @@ const dummyLlamaCppModel: ModelInfo = {
   name: 'Dummy LlamaCpp model',
   file: {
     file: 'file',
+    // eslint-disable-next-line sonarjs/publicly-writable-directories
     path: '/tmp/path',
   },
   properties: {},
@@ -46,6 +47,7 @@ const dummyWhisperCppModel: ModelInfo = {
   name: 'Dummy Whisper model',
   file: {
     file: 'file',
+    // eslint-disable-next-line sonarjs/publicly-writable-directories
     path: '/tmp/path',
   },
   properties: {},

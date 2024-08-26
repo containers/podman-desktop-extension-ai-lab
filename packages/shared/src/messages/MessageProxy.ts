@@ -105,7 +105,7 @@ export class RpcExtension implements Disposable {
     });
   }
 
-  registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: { new (...args: any[]): T }, instance: T) {
+  registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: new (...args: any[]) => T, instance: T) {
     const methodNames = Object.getOwnPropertyNames(classType.prototype).filter(
       name => name !== 'constructor' && typeof instance[name as keyof T] === 'function',
     );
@@ -142,6 +142,7 @@ export class RpcBrowser {
   }
 
   init() {
+    // eslint-disable-next-line sonarjs/post-message
     this.window.addEventListener('message', (event: MessageEvent) => {
       const message = event.data;
       if (isMessageResponse(message)) {

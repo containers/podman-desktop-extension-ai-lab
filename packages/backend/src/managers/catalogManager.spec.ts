@@ -194,7 +194,7 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
 
   const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
 
-  const updatedCatalog: ApplicationCatalog = Object.assign({}, userContent);
+  const updatedCatalog: ApplicationCatalog = { ...userContent };
   updatedCatalog.models = updatedCatalog.models.filter(m => m.id !== 'model1');
 
   await catalogManager.removeUserModel('model1');

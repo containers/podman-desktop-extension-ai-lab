@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 export const getRandomString = (): string => {
+  // eslint-disable-next-line sonarjs/pseudo-random
   return (Math.random() + 1).toString(36).substring(7);
 };
 

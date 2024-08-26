@@ -28,10 +28,8 @@ test('expect fetched version in generated payload', async () => {
   try {
     global.fetch = vi.fn().mockResolvedValue({
       text: () =>
-        new Promise(resolve =>
-          resolve(
-            '<metadata><groupId>io.quarkiverse.langchain4j</groupId><artifactId>quarkus-langchain4j-core</artifactId><versioning><latest>latest-version</latest><release>release-version</release></versioning></metadata>',
-          ),
+        Promise.resolve(
+          '<metadata><groupId>io.quarkiverse.langchain4j</groupId><artifactId>quarkus-langchain4j-core</artifactId><versioning><latest>latest-version</latest><release>release-version</release></versioning></metadata>',
         ),
     });
     const payload = await quarkusLangchain4Jgenerator({ url: 'http://localhost:32412/v1/chat/completions' });

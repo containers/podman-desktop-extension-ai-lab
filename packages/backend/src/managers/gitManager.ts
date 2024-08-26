@@ -263,7 +263,7 @@ export class GitManager {
       })
     )
       .map(c => c.oid)
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
     const localCommits = (
       await git.log({
         fs,
@@ -272,7 +272,7 @@ export class GitManager {
       })
     )
       .map(c => c.oid)
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
 
     let behind = 0;
     let ahead = 0;

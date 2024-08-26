@@ -348,6 +348,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
         () => {
           this.retryableRefresh(retry - 1);
         },
+        // eslint-disable-next-line sonarjs/pseudo-random
         2000 + Math.random() * 1000,
       );
     });

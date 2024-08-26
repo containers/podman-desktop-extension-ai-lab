@@ -305,7 +305,7 @@ export class PlaygroundV2Manager implements Disposable {
 
     for await (const chunk of stream) {
       this.#conversationRegistry.appendChoice(conversationId, messageId, {
-        content: chunk.choices[0]?.delta?.content || '',
+        content: chunk.choices[0]?.delta?.content ?? '',
       });
     }
 

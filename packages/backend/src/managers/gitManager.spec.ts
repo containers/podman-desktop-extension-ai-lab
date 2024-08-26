@@ -249,7 +249,7 @@ describe('isRepositoryUpToDate', () => {
         url: 'other-repo',
       },
     ]);
-    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', undefined);
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo');
     expect(result.ok).toBeFalsy();
     expect(result.error).toBe(
       'The local repository does not have remote repo configured. Remotes: origin other-repo (fetch)',
@@ -272,7 +272,7 @@ describe('isRepositoryUpToDate', () => {
     ]);
     mocks.currentBranchMock.mockResolvedValue(undefined);
 
-    const result = await gitmanager.isRepositoryUpToDate('target', 'repo', undefined);
+    const result = await gitmanager.isRepositoryUpToDate('target', 'repo');
     expect(result.ok).toBeFalsy();
     expect(result.error).toBe('The local repository is detached.');
   });

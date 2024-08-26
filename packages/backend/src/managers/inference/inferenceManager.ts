@@ -18,7 +18,7 @@
 import type { InferenceServer, InferenceServerStatus, InferenceType } from '@shared/src/models/IInference';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
-import { type ContainerInfo, type TelemetryLogger, type Webview } from '@podman-desktop/api';
+import type { ContainerInfo, TelemetryLogger, Webview, ContainerProviderConnection } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerStart } from '../../registries/ContainerRegistry';
 import { getInferenceType, isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
@@ -198,10 +198,19 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       provider = providers[0];
     }
 
+    let connection: ContainerProviderConnection | undefined = undefined;
+    if (config.connection) {
+      connection = this.podmanConnection.getContainerProviderConnection(config.connection);
+    } else {
+      connection = this.podmanConnection.findRunningContainerProviderConnection();
+    }
+
+    if (!connection) throw new Error('cannot find running container provider connection');
+
     // upload models to podman machine if user system is supported
     config.modelsInfo = await Promise.all(
       config.modelsInfo.map(modelInfo =>
-        this.modelsManager.uploadModelToPodmanMachine(modelInfo, config.labels).then(path => ({
+        this.modelsManager.uploadModelToPodmanMachine(connection, modelInfo, config.labels).then(path => ({
           ...modelInfo,
           file: {
             path: dirname(path),

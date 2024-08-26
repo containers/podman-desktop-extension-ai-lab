@@ -17,28 +17,33 @@
  ***********************************************************************/
 
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { getFirstRunningMachineName, getPodmanCli } from '../../utils/podman';
+import { getPodmanCli, getPodmanMachineName } from '../../utils/podman';
 import { getLocalModelFile, getRemoteModelFile, isModelUploaded, MACHINE_BASE_FOLDER } from '../../utils/modelsUtils';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { WindowsWorker } from '../WindowsWorker';
+import { VMType } from '@shared/src/models/IPodman';
+import type { UploaderOptions } from './UploaderOptions';
 
-export class WSLUploader extends WindowsWorker<ModelInfo, string> {
-  async perform(modelInfo: ModelInfo): Promise<string> {
-    const localPath = getLocalModelFile(modelInfo);
+export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
+  async perform(options: UploaderOptions): Promise<string> {
+    const localPath = getLocalModelFile(options.model);
+
+    // ensure the connection type is WSL
+    if (options.connection.vmType !== VMType.WSL) {
+      console.warn('cannot upload on non-WSL machine');
+      return localPath;
+    }
+
+    // the connection name cannot be used as it is
+    const machineName = getPodmanMachineName(options.connection);
 
     const driveLetter = localPath.charAt(0);
     const convertToMntPath = localPath
       .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
       .replace(/\\/g, '/');
 
-    const machineName = getFirstRunningMachineName();
-
-    if (!machineName) {
-      throw new Error('No podman machine is running');
-    }
     // check if model already loaded on the podman machine
-    const existsRemote = await isModelUploaded(machineName, modelInfo);
-    const remoteFile = getRemoteModelFile(modelInfo);
+    const existsRemote = await isModelUploaded(machineName, options.model);
+    const remoteFile = getRemoteModelFile(options.model);
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {

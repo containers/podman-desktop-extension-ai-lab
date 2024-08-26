@@ -22,12 +22,8 @@ import * as podmanDesktopApi from '@podman-desktop/api';
 import { beforeEach } from 'node:test';
 import { Uploader } from './uploader';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-
-const mocks = vi.hoisted(() => {
-  return {
-    execMock: vi.fn(),
-  };
-});
+import type { ContainerProviderConnection } from '@podman-desktop/api';
+import { VMType } from '@shared/src/models/IPodman';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -35,7 +31,7 @@ vi.mock('@podman-desktop/api', async () => {
       isWindows: false,
     },
     process: {
-      exec: mocks.execMock,
+      exec: vi.fn(),
     },
     EventEmitter: vi.fn().mockImplementation(() => {
       return {
@@ -44,7 +40,18 @@ vi.mock('@podman-desktop/api', async () => {
     }),
   };
 });
-const uploader = new Uploader({
+
+const connectionMock: ContainerProviderConnection = {
+  name: 'machine2',
+  type: 'podman',
+  status: () => 'started',
+  vmType: VMType.WSL,
+  endpoint: {
+    socketPath: 'socket.sock',
+  },
+};
+
+const uploader = new Uploader(connectionMock, {
   id: 'dummyModelId',
   file: {
     file: 'dummyFile.guff',

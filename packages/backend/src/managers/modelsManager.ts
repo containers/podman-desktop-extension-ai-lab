@@ -19,7 +19,7 @@
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'node:fs';
 import * as path from 'node:path';
-import { type Webview, fs as apiFs, type Disposable, env } from '@podman-desktop/api';
+import { type Webview, fs as apiFs, type Disposable, env, type ContainerProviderConnection } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -31,11 +31,13 @@ import type { BaseEvent } from '../models/baseEvent';
 import { isCompletionEvent, isProgressEvent } from '../models/baseEvent';
 import { Uploader } from '../utils/uploader';
 import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/modelsUtils';
-import { getFirstRunningMachineName } from '../utils/podman';
+import { getPodmanMachineName } from '../utils/podman';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { hasValidSha } from '../utils/sha';
 import type { GGUFParseOutput } from '@huggingface/gguf';
 import { gguf } from '@huggingface/gguf';
+import type { PodmanConnection } from './podmanConnection';
+import { VMType } from '@shared/src/models/IPodman';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
@@ -51,6 +53,7 @@ export class ModelsManager implements Disposable {
     private telemetry: podmanDesktopApi.TelemetryLogger,
     private taskRegistry: TaskRegistry,
     private cancellationTokenRegistry: CancellationTokenRegistry,
+    private podmanConnection: PodmanConnection,
   ) {
     this.#models = new Map();
     this.#disposables = [];
@@ -219,17 +222,22 @@ export class ModelsManager implements Disposable {
       return;
     }
 
-    const machineName = getFirstRunningMachineName();
-    if (!machineName) {
-      console.warn('No podman machine is running');
-      return;
+    // get all container provider connections
+    const connections = this.podmanConnection.getContainerProviderConnections();
+
+    // iterate over all connections
+    for (const connection of connections) {
+      // ignore non-wsl machines
+      if (connection.vmType !== VMType.WSL) continue;
+      // Get the corresponding machine name
+      const machineName = getPodmanMachineName(connection);
+
+      // check if model already loaded on the podman machine
+      const existsRemote = await isModelUploaded(machineName, modelInfo);
+      if (!existsRemote) return;
+
+      await deleteRemoteModel(machineName, modelInfo);
     }
-
-    // check if model already loaded on the podman machine
-    const existsRemote = await isModelUploaded(machineName, modelInfo);
-    if (!existsRemote) return;
-
-    return deleteRemoteModel(machineName, modelInfo);
   }
 
   /**
@@ -412,13 +420,18 @@ export class ModelsManager implements Disposable {
     return downloader.getTarget();
   }
 
-  async uploadModelToPodmanMachine(model: ModelInfo, labels?: { [key: string]: string }): Promise<string> {
-    this.taskRegistry.createTask(`Copying model ${model.name} to Podman Machine`, 'loading', {
+  async uploadModelToPodmanMachine(
+    connection: ContainerProviderConnection,
+    model: ModelInfo,
+    labels?: { [key: string]: string },
+  ): Promise<string> {
+    this.taskRegistry.createTask(`Copying model ${model.name} to ${connection.name}`, 'loading', {
       ...labels,
       'model-uploading': model.id,
+      connection: connection.name,
     });
 
-    const uploader = new Uploader(model);
+    const uploader = new Uploader(connection, model);
     uploader.onEvent(event => this.onDownloadUploadEvent(event, 'upload'), this);
 
     // perform download

@@ -20,6 +20,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { PodmanConnection } from './podmanConnection';
 import type {
   ContainerProviderConnection,
+  ProviderContainerConnection,
   ProviderEvent,
   RegisterContainerConnectionEvent,
   RunResult,
@@ -106,20 +107,18 @@ describe('podman connection initialization', () => {
 
   test('init should fetch all container connections', () => {
     const statusMock = vi.fn().mockReturnValue('started');
-
-    vi.mocked(provider.getContainerConnections).mockReturnValue([
-      {
-        connection: {
-          type: 'podman',
-          status: statusMock,
-          name: 'Podman Machine',
-          endpoint: {
-            socketPath: './socket-path',
-          },
+    const providerContainerConnection: ProviderContainerConnection = {
+      connection: {
+        type: 'podman',
+        status: statusMock,
+        name: 'Podman Machine',
+        endpoint: {
+          socketPath: './socket-path',
         },
-        providerId: 'podman',
       },
-    ]);
+      providerId: 'podman',
+    };
+    vi.mocked(provider.getContainerConnections).mockReturnValue([providerContainerConnection]);
 
     const manager = new PodmanConnection(webviewMock);
     manager.init();
@@ -134,6 +133,7 @@ describe('podman connection initialization', () => {
       },
     ]);
 
+    expect(manager.getContainerProviderConnections()).toStrictEqual([providerContainerConnection.connection]);
     expect(statusMock).toHaveBeenCalled();
   });
 });

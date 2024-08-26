@@ -22,7 +22,7 @@ import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
 import { env, process as coreProcess } from '@podman-desktop/api';
-import type { RunResult, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { RunResult, TelemetryLogger, Webview, ContainerProviderConnection } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';
@@ -31,6 +31,9 @@ import type { CancellationTokenRegistry } from '../registries/CancellationTokenR
 import * as sha from '../utils/sha';
 import type { GGUFParseOutput } from '@huggingface/gguf';
 import { gguf } from '@huggingface/gguf';
+import type { PodmanConnection } from './podmanConnection';
+import { VMType } from '@shared/src/models/IPodman';
+import { getPodmanMachineName } from '../utils/podman';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -42,7 +45,6 @@ const mocks = vi.hoisted(() => {
     getTargetMock: vi.fn(),
     getDownloaderCompleter: vi.fn(),
     isCompletionEventMock: vi.fn(),
-    getFirstRunningMachineNameMock: vi.fn(),
     getPodmanCliMock: vi.fn(),
   };
 });
@@ -52,8 +54,8 @@ vi.mock('@huggingface/gguf', () => ({
 }));
 
 vi.mock('../utils/podman', () => ({
-  getFirstRunningMachineName: mocks.getFirstRunningMachineNameMock,
   getPodmanCli: mocks.getPodmanCliMock,
+  getPodmanMachineName: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', () => {
@@ -91,6 +93,10 @@ vi.mock('../utils/downloader', () => ({
     getTarget = mocks.getTargetMock;
   },
 }));
+
+const podmanConnectionMock = {
+  getContainerProviderConnections: vi.fn(),
+} as unknown as PodmanConnection;
 
 const cancellationTokenRegistryMock = {
   createCancellationTokenSource: vi.fn(),
@@ -183,6 +189,7 @@ test('getModelsInfo should get models in local directory', async () => {
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
+    podmanConnectionMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -232,6 +239,7 @@ test('getModelsInfo should return an empty array if the models folder does not e
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
+    podmanConnectionMock,
   );
   manager.init();
   manager.getLocalModelsFromDisk();
@@ -272,6 +280,7 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
+    podmanConnectionMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -330,6 +339,7 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
+    podmanConnectionMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -370,6 +380,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
+    podmanConnectionMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -420,6 +431,7 @@ test('deleteModel deletes the model folder', async () => {
     telemetryLogger,
     taskRegistry,
     cancellationTokenRegistryMock,
+    podmanConnectionMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -484,6 +496,7 @@ describe('deleting models', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
     manager.init();
     await manager.loadLocalModels();
@@ -550,6 +563,7 @@ describe('deleting models', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
@@ -557,14 +571,36 @@ describe('deleting models', () => {
     expect(removeUserModelMock).toBeCalledWith('model-id-1');
   });
 
-  test('deleting on windows should check if models is uploaded', async () => {
-    vi.mocked(env).isWindows = true;
-    vi.mocked(coreProcess.exec).mockResolvedValue({} as unknown as RunResult);
-    mocks.getFirstRunningMachineNameMock.mockReturnValue('dummyMachine');
+  test('deleting on windows should check for all connections', async () => {
+    vi.mocked(coreProcess.exec).mockResolvedValue({} as RunResult);
     mocks.getPodmanCliMock.mockReturnValue('dummyCli');
+    vi.mocked(env).isWindows = true;
+    const connections: ContainerProviderConnection[] = [
+      {
+        name: 'Machine 1',
+        type: 'podman',
+        vmType: VMType.HYPERV,
+        endpoint: {
+          socketPath: '',
+        },
+        status: () => 'started',
+      },
+      {
+        name: 'Machine 2',
+        type: 'podman',
+        vmType: VMType.WSL,
+        endpoint: {
+          socketPath: '',
+        },
+        status: () => 'started',
+      },
+    ];
+    vi.mocked(podmanConnectionMock.getContainerProviderConnections).mockReturnValue(connections);
+    vi.mocked(getPodmanMachineName).mockReturnValue('machine-2');
 
     const rmSpy = vi.spyOn(fs.promises, 'rm');
     rmSpy.mockResolvedValue(undefined);
+
     const manager = new ModelsManager(
       '/home/user/aistudio',
       {
@@ -587,61 +623,23 @@ describe('deleting models', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
 
     await manager.loadLocalModels();
+    // delete the model
     await manager.deleteModel('model-id-1');
-    expect(coreProcess.exec).toHaveBeenNthCalledWith(1, 'dummyCli', [
+
+    expect(podmanConnectionMock.getContainerProviderConnections).toHaveBeenCalledOnce();
+
+    expect(coreProcess.exec).toHaveBeenCalledWith('dummyCli', [
       'machine',
       'ssh',
-      'dummyMachine',
-      'stat',
-      '/home/user/ai-lab/models/dummyFile',
-    ]);
-    expect(coreProcess.exec).toHaveBeenNthCalledWith(2, 'dummyCli', [
-      'machine',
-      'ssh',
-      'dummyMachine',
+      'machine-2',
       'rm',
       '-f',
       '/home/user/ai-lab/models/dummyFile',
     ]);
-  });
-
-  test('deleting on windows should check if models is uploaded', async () => {
-    vi.mocked(env).isWindows = false;
-
-    const rmSpy = vi.spyOn(fs.promises, 'rm');
-    rmSpy.mockResolvedValue(undefined);
-    const manager = new ModelsManager(
-      '/home/user/aistudio',
-      {
-        postMessage: vi.fn().mockResolvedValue(undefined),
-      } as unknown as Webview,
-      {
-        getModels: () => {
-          return [
-            {
-              id: 'model-id-1',
-              url: 'model-url',
-              file: {
-                file: 'dummyFile',
-                path: 'dummyPath',
-              },
-            },
-          ] as ModelInfo[];
-        },
-      } as CatalogManager,
-      telemetryLogger,
-      taskRegistry,
-      cancellationTokenRegistryMock,
-    );
-
-    await manager.loadLocalModels();
-    await manager.deleteModel('model-id-1');
-    expect(coreProcess.exec).not.toHaveBeenCalled();
-    expect(mocks.getFirstRunningMachineNameMock).not.toHaveBeenCalled();
-    expect(mocks.getPodmanCliMock).not.toHaveBeenCalled();
   });
 });
 
@@ -659,6 +657,7 @@ describe('downloadModel', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
@@ -693,6 +692,7 @@ describe('downloadModel', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -724,6 +724,7 @@ describe('downloadModel', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
     vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -754,6 +755,7 @@ describe('downloadModel', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
@@ -790,6 +792,7 @@ describe('downloadModel', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
@@ -837,6 +840,7 @@ describe('getModelMetadata', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
 
     await expect(() => manager.getModelMetadata('unknown-model-id')).rejects.toThrowError(
@@ -861,6 +865,7 @@ describe('getModelMetadata', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
 
     manager.init();
@@ -901,6 +906,7 @@ describe('getModelMetadata', () => {
       telemetryLogger,
       taskRegistry,
       cancellationTokenRegistryMock,
+      podmanConnectionMock,
     );
 
     manager.init();

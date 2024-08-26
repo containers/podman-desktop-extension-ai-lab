@@ -41,7 +41,7 @@ export class AILabStartRecipePage extends AILabBasePage {
     await playExpect(this.heading).toBeVisible();
   }
 
-  async startRecipe(): Promise<void> {
+  async startRecipe(timeout: number = 720_000): Promise<void> {
     await playExpect(this.startRecipeButton).toBeEnabled();
     await this.startRecipeButton.click();
     try {
@@ -49,6 +49,6 @@ export class AILabStartRecipePage extends AILabBasePage {
     } catch (error) {
       console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
     }
-    await playExpect(this.recipeStatus).toContainText('AI App is running', { timeout: 720_000 });
+    await playExpect(this.recipeStatus).toContainText('AI App is running', { timeout: timeout });
   }
 }

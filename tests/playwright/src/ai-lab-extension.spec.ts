@@ -89,7 +89,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         AI_LAB_AI_APP_NAME,
       );
       await chatBotApp.waitForLoad();
-      await chatBotApp.startNewDeployment();
+      await chatBotApp.startNewDeployment(720_000);
     });
   });
 });

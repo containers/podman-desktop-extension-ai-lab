@@ -70,7 +70,7 @@
     "typecheck": "yarn generate && tsc --noEmit"
   },
   "dependencies": {
-    "@huggingface/gguf": "^0.1.9",
+    "@huggingface/gguf": "^0.1.10",
     "express": "^4.19.2",
     "express-openapi-validator": "^5.3.3",
     "isomorphic-git": "^1.27.1",

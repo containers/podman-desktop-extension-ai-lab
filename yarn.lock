@@ -303,10 +303,10 @@
   dependencies:
     "@fortawesome/fontawesome-common-types" "6.6.0"
 
-"@huggingface/gguf@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@huggingface/gguf/-/gguf-0.1.9.tgz#85c3e45ba060723569f32cb3398e8544aab4af8f"
-  integrity sha512-zL0l4S75CRL5OazBdQ+cmR0/G9T4v7SxrDC9Mxbbw+ZdgGtNa33VIdvPWXkqkl4G3LVrwpKpQKVbJOiIEByJKA==
+"@huggingface/gguf@^0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@huggingface/gguf/-/gguf-0.1.10.tgz#37ccbb7b25e1855e4cc11f692a3888c9ef59b00b"
+  integrity sha512-9/kXfur8ji+/2zY+JwtSzgvH6icAG06xfalQvjcemCaBGcpOpH8G2vJqUWpWbGwpiwINuI1gb1sN4nGdNq6kcQ==
 
 "@humanwhocodes/config-array@^0.11.14":
   version "0.11.14"

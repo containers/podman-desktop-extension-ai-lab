@@ -660,34 +660,34 @@ test('getBehindAhead', async () => {
       if (ref === 'main') {
         resolve([
           {
-            oid: 1,
+            oid: '1',
           },
           {
-            oid: 6,
+            oid: '6',
           },
           {
-            oid: 2,
+            oid: '2',
           },
           {
-            oid: 3,
+            oid: '3',
           },
         ]);
       } else if (ref === 'origin/main') {
         resolve([
           {
-            oid: 1,
+            oid: '1',
           },
           {
-            oid: 4,
+            oid: '4',
           },
           {
-            oid: 2,
+            oid: '2',
           },
           {
-            oid: 5,
+            oid: '5',
           },
           {
-            oid: 3,
+            oid: '3',
           },
         ]);
       } else {

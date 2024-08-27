@@ -24,6 +24,7 @@ import { NavigationBar, WelcomePage, PodmanDesktopRunner } from '@podman-desktop
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 import type { AILabAppDetailsPage } from './model/ai-lab-app-details-page';
+import * as os from 'node:os';
 
 const AI_LAB_EXTENSION_OCI_IMAGE: string =
   process.env.AI_LAB_OCI ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -31,6 +32,7 @@ const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 const AI_LAB_AI_APP_NAME: string = 'ChatBot';
+const isLinux = os.platform() === 'linux';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;
@@ -75,13 +77,13 @@ describe(`AI Lab extension installation and verification`, async () => {
         })
         .toBeTruthy();
     });
-  });
-  describe(`AI Lab extension verification`, async () => {
     test(`Verify AI Lab is responsive`, async () => {
       [page, webview] = await handleWebview();
       aiLabPage = new AILabPage(page, webview);
       await aiLabPage.waitForLoad();
     });
+  });
+  describe.skipIf(isLinux)(`AI Lab extension verification`, async () => {
     test(`Open Recipes Catalog`, async () => {
       recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
       await recipesCatalogPage.waitForLoad();

@@ -30,6 +30,8 @@ import { writable } from 'svelte/store';
 import { router } from 'tinro';
 import * as connectionUtils from '../utils/connectionUtils';
 import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import * as path from 'node:path';
+import * as os from 'node:os';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -288,8 +290,7 @@ test('should display connectionInfo message if there is no running connection', 
       id: 'id',
       file: {
         file: 'file',
-        // eslint-disable-next-line sonarjs/publicly-writable-directories
-        path: '/tmp/path',
+        path: path.resolve(os.tmpdir(), 'path'),
       },
     } as unknown as ModelInfo,
   ]);
@@ -320,8 +321,7 @@ test('should display connectionInfo message if there is a podman connection with
       id: 'id',
       file: {
         file: 'file',
-        // eslint-disable-next-line sonarjs/publicly-writable-directories
-        path: '/tmp/path',
+        path: path.resolve(os.tmpdir(), 'path'),
       },
     } as unknown as ModelInfo,
   ]);
@@ -347,8 +347,7 @@ test('there should be NO banner if there is a running podman connection having e
       id: 'id',
       file: {
         file: 'file',
-        // eslint-disable-next-line sonarjs/publicly-writable-directories
-        path: '/tmp/path',
+        path: path.resolve(os.tmpdir(), 'path'),
       },
     } as unknown as ModelInfo,
   ]);

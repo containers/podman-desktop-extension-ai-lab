@@ -28,14 +28,15 @@ import * as modelsInfoStore from '/@/stores/modelsInfo';
 import type { Task } from '@shared/src/models/ITask';
 import PlaygroundCreate from './PlaygroundCreate.svelte';
 import { InferenceType } from '@shared/src/models/IInference';
+import * as path from 'node:path';
+import * as os from 'node:os';
 
 const dummyLlamaCppModel: ModelInfo = {
   id: 'llama-cpp-model-id',
   name: 'Dummy LlamaCpp model',
   file: {
     file: 'file',
-    // eslint-disable-next-line sonarjs/publicly-writable-directories
-    path: '/tmp/path',
+    path: path.resolve(os.tmpdir(), 'path'),
   },
   properties: {},
   description: '',
@@ -47,8 +48,7 @@ const dummyWhisperCppModel: ModelInfo = {
   name: 'Dummy Whisper model',
   file: {
     file: 'file',
-    // eslint-disable-next-line sonarjs/publicly-writable-directories
-    path: '/tmp/path',
+    path: path.resolve(os.tmpdir(), 'path'),
   },
   properties: {},
   description: '',

@@ -48,12 +48,12 @@ on:
         type: string
         required: true
       podman_remote_url:
-        default: 'https://github.com/containers/podman/releases/download/v5.0.3/podman-remote-release-windows_amd64.zip'
+        default: 'https://github.com/containers/podman/releases/download/v5.2.0/podman-remote-release-windows_amd64.zip'
         description: 'podman remote zip'
         type: string
         required: true
       podman_version:
-        default: '5.0.3'
+        default: '5.2.0'
         description: 'Podman folder version in archive'
         type: 'string'
         required: true
@@ -109,7 +109,7 @@ jobs:
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
-        DEFAULT_VERSION: "${{ env.PD_PODMAN_VERSION || '5.0.3' }}"
+        DEFAULT_VERSION: "${{ env.PD_PODMAN_VERSION || '5.2.0' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_VERSION/podman-remote-release-windows_amd64.zip"
         DEFAULT_AZURE_VM_SIZE: 'Standard_D8s_v4'
       run: |

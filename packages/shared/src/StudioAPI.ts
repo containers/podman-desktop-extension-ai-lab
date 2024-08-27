@@ -18,7 +18,7 @@
 
 import type { ModelInfo } from './models/IModelInfo';
 import type { ApplicationCatalog } from './models/IApplicationCatalog';
-import type { OpenDialogOptions, TelemetryTrustedValue, Uri } from '@podman-desktop/api';
+import type { OpenDialogOptions, Uri } from '@podman-desktop/api';
 import type { ApplicationState } from './models/IApplicationState';
 import type { Task } from './models/ITask';
 import type { LocalRepository } from './models/ILocalRepository';
@@ -95,8 +95,8 @@ export abstract class StudioAPI {
   abstract navigateToResources(): Promise<void>;
   abstract navigateToEditConnectionProvider(connectionName: string): Promise<void>;
 
-  abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
-  abstract telemetryLogError(eventName: string, data?: Record<string, unknown | TelemetryTrustedValue>): Promise<void>;
+  abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown>): Promise<void>;
+  abstract telemetryLogError(eventName: string, data?: Record<string, unknown>): Promise<void>;
 
   abstract getLocalRepositories(): Promise<LocalRepository[]>;
 

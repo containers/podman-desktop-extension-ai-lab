@@ -93,7 +93,7 @@ export class StudioApiImpl implements StudioAPI {
 
   async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
     try {
-      return this.playgroundV2.requestCreatePlayground(name, model);
+      return await this.playgroundV2.requestCreatePlayground(name, model);
     } catch (err: unknown) {
       console.error('Something went wrong while trying to create playground environment', err);
       throw err;
@@ -421,17 +421,11 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async telemetryLogUsage(
-    eventName: string,
-    data?: Record<string, unknown | podmanDesktopApi.TelemetryTrustedValue>,
-  ): Promise<void> {
+  async telemetryLogUsage(eventName: string, data?: Record<string, unknown>): Promise<void> {
     this.telemetry.logUsage(eventName, data);
   }
 
-  async telemetryLogError(
-    eventName: string,
-    data?: Record<string, unknown | podmanDesktopApi.TelemetryTrustedValue>,
-  ): Promise<void> {
+  async telemetryLogError(eventName: string, data?: Record<string, unknown>): Promise<void> {
     this.telemetry.logError(eventName, data);
   }
 

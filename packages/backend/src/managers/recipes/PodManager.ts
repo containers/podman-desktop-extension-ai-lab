@@ -39,8 +39,6 @@ export class PodManager implements Disposable {
   private readonly _onRemovePodEvent = new EventEmitter<PodEvent>();
   readonly onRemovePodEvent: Event<PodEvent> = this._onRemovePodEvent.event;
 
-  constructor() {}
-
   dispose(): void {
     this.#eventDisposable?.dispose();
   }
@@ -86,6 +84,7 @@ export class PodManager implements Disposable {
 
     return pods.find(pod => {
       const labels = pod.Labels;
+      // eslint-disable-next-line sonarjs/different-types-comparison
       if (labels === undefined) return false;
 
       for (const [key, value] of Object.entries(requestedLabels)) {

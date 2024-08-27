@@ -45,6 +45,7 @@ export class BuilderManager implements Disposable {
    * On dispose, the builder will abort all current build.
    */
   dispose(): void {
+    // eslint-disable-next-line sonarjs/array-callback-without-return
     Array.from(this.controller.values()).every(controller => controller.abort('disposing builder manager'));
   }
 

@@ -24,7 +24,7 @@ import { type PathLike, promises } from 'node:fs';
 vi.mock('@podman-desktop/api', async () => {
   return {
     Uri: class {
-      static joinPath = () => ({ fsPath: '.' });
+      static readonly joinPath = () => ({ fsPath: '.' });
     },
     window: {
       createWebviewPanel: () => ({

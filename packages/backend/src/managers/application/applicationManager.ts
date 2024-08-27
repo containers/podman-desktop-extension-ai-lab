@@ -320,16 +320,14 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
           };
           envs = [`MODEL_PATH=/${modelName}`];
           envs.push(...getModelPropertiesForEnvironment(modelInfo));
+        } else if (components.inferenceServer) {
+          const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
+          envs = [`MODEL_ENDPOINT=${endPoint}`];
         } else {
-          if (components.inferenceServer) {
-            const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
+          const modelService = components.images.find(image => image.modelService);
+          if (modelService && modelService.ports.length > 0) {
+            const endPoint = `http://localhost:${modelService.ports[0]}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
-          } else {
-            const modelService = components.images.find(image => image.modelService);
-            if (modelService && modelService.ports.length > 0) {
-              const endPoint = `http://localhost:${modelService.ports[0]}`;
-              envs = [`MODEL_ENDPOINT=${endPoint}`];
-            }
           }
         }
         if (image.ports.length > 0) {
@@ -644,6 +642,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
       remoteTask.state = 'success';
       remoteTask.name = `AI App Removed`;
+      // eslint-disable-next-line sonarjs/no-ignored-exceptions
     } catch (err: unknown) {
       remoteTask.error = 'error removing the pod. Please try to remove the pod manually';
       remoteTask.name = 'Error stopping AI App';

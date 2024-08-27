@@ -67,6 +67,7 @@ export class ApiServer implements Disposable {
   async init(): Promise<void> {
     const app = express();
 
+    // eslint-disable-next-line sonarjs/new-cap
     const router = express.Router();
     router.use(express.json());
 
@@ -182,32 +183,27 @@ export class ApiServer implements Disposable {
     this.#listener?.close();
   }
 
+  private doErr(res: Response, message: string, err: unknown) {
+    res.status(500).json({
+      message,
+      errors: [err instanceof Error ? err.message : err],
+    });
+  }
+
   getSpec(_req: Request, res: Response): void {
-    const doErr = (err: unknown) => {
-      res.status(500).json({
-        message: 'unable to get spec',
-        errors: [err],
-      });
-    };
     try {
       const spec = this.getSpecFile();
       readFile(spec, 'utf-8')
         .then(content => {
           res.status(200).type('application/yaml').send(content);
         })
-        .catch((err: unknown) => doErr(err));
+        .catch((err: unknown) => this.doErr(res, 'unable to get spec', err));
     } catch (err: unknown) {
-      doErr(err);
+      this.doErr(res, 'unable to get spec', err);
     }
   }
 
   getVersion(_req: Request, res: Response): void {
-    const doErr = (err: unknown) => {
-      res.status(500).json({
-        message: 'unable to get version',
-        errors: [err],
-      });
-    };
     try {
       const pkg = this.getPackageFile();
       readFile(pkg, 'utf-8')
@@ -215,19 +211,13 @@ export class ApiServer implements Disposable {
           const json = JSON.parse(content);
           res.status(200).json({ version: `v${json.version}` });
         })
-        .catch((err: unknown) => doErr(err));
+        .catch((err: unknown) => this.doErr(res, 'unable to get version', err));
     } catch (err: unknown) {
-      doErr(err);
+      this.doErr(res, 'unable to get version', err);
     }
   }
 
   getModels(_req: Request, res: Response): void {
-    const doErr = (err: unknown) => {
-      res.status(500).json({
-        message: 'unable to get models',
-        errors: [err],
-      });
-    };
     try {
       const models = this.modelsManager
         .getModelsInfo()
@@ -235,7 +225,7 @@ export class ApiServer implements Disposable {
         .map(model => asListModelResponse(model));
       res.status(200).json({ models: models });
     } catch (err: unknown) {
-      doErr(err);
+      this.doErr(res, 'unable to get models', err);
     }
   }
 }

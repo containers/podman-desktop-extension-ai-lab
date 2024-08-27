@@ -74,13 +74,13 @@ export async function withDefaultConfiguration(
   if (options.modelsInfo.length === 0) throw new Error('modelsInfo need to contain at least one element.');
 
   return {
-    port: options.port || (await getFreeRandomPort('0.0.0.0')),
+    port: options.port ?? (await getFreeRandomPort('0.0.0.0')),
     image: options.image,
     labels: options.labels || {},
     modelsInfo: options.modelsInfo,
     connection: options.connection,
     inferenceProvider: options.inferenceProvider,
-    gpuLayers: options.gpuLayers !== undefined ? options.gpuLayers : -1,
+    gpuLayers: options.gpuLayers ?? -1,
   };
 }
 

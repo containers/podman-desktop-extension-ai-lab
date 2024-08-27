@@ -81,7 +81,7 @@ test('/spec endpoint when spec file is not found', async () => {
 test('/spec endpoint when getting spec file fails', async () => {
   expect(server.getListener()).toBeDefined();
   vi.spyOn(server, 'getSpecFile').mockImplementation(() => {
-    throw 'an error getting spec file';
+    throw new Error('an error getting spec file');
   });
   const res = await request(server.getListener()!).get('/spec').expect(500);
   expect(res.body.message).toEqual('unable to get spec');
@@ -107,7 +107,7 @@ test('/api/version endpoint when package.json file is not found', async () => {
 test('/api/version endpoint when getting package.json file fails', async () => {
   expect(server.getListener()).toBeDefined();
   vi.spyOn(server, 'getPackageFile').mockImplementation(() => {
-    throw 'an error getting package file';
+    throw new Error('an error getting package file');
   });
   const res = await request(server.getListener()!).get('/api/version').expect(500);
   expect(res.body.message).toEqual('unable to get version');

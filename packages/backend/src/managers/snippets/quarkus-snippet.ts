@@ -33,6 +33,7 @@ async function getQuarkusLangchain4jVersion(): Promise<string> {
   }
   const response = await fetch(METADATA_URL, { redirect: 'follow' });
   const content = JSON.parse(xmljs.xml2json(await response.text(), { compact: true }));
+  // eslint-disable-next-line sonarjs/no-nested-assignment
   return (quarkusLangchain4jVersion = content.metadata.versioning.release._text);
 }
 export async function quarkusLangchain4Jgenerator(requestOptions: RequestOptions): Promise<string> {

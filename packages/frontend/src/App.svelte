@@ -21,6 +21,7 @@ import Playground from './pages/Playground.svelte';
 import PlaygroundCreate from './pages/PlaygroundCreate.svelte';
 import ImportModels from './pages/ImportModel.svelte';
 import StartRecipe from '/@/pages/StartRecipe.svelte';
+import TuneSessions from './pages/TuneSessions.svelte';
 
 router.mode.hash();
 
@@ -64,6 +65,11 @@ onMount(() => {
         {:else}
           <Playground playgroundId={meta.params.id} />
         {/if}
+      </Route>
+
+      <!-- Tune with InstructLab -->
+      <Route path="/tune">
+        <TuneSessions />
       </Route>
 
       <!-- Preferences -->

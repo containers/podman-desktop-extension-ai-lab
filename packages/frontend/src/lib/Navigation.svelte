@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { TinroRouteMeta } from 'tinro';
 import Fa from 'svelte-fa';
-import { faBookOpen, faBrain, faMessage, faRocket, faServer } from '@fortawesome/free-solid-svg-icons';
+import { faBookOpen, faBrain, faGaugeHigh, faMessage, faRocket, faServer } from '@fortawesome/free-solid-svg-icons';
 import { SettingsNavItem } from '@podman-desktop/ui-svelte';
 
 export let meta: TinroRouteMeta;
@@ -29,5 +29,11 @@ export let meta: TinroRouteMeta;
     <SettingsNavItem icon={faBookOpen} title="Catalog" selected={meta.url === '/models'} href="/models" />
     <SettingsNavItem icon={faRocket} title="Services" selected={meta.url === '/services'} href="/services" />
     <SettingsNavItem icon={faMessage} title="Playgrounds" selected={meta.url === '/playgrounds'} href="/playgrounds" />
+
+    <!-- Tuning -->
+    <div class="pl-3 mt-2 ml-[4px]">
+      <span class="text-[color:var(--pd-secondary-nav-header-text)]">TUNING</span>
+    </div>
+    <SettingsNavItem icon={faGaugeHigh} title="Tune with InstructLab" selected={meta.url === '/tune'} href="/tune" />
   </div>
 </nav>

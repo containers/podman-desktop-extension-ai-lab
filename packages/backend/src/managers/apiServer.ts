@@ -51,6 +51,8 @@ function asListModelResponse(model: ModelInfo): ListModelResponse {
   };
 }
 
+const LISTENING_ADDRESS = '127.0.0.1';
+
 export class ApiServer implements Disposable {
   #listener?: Server;
 
@@ -110,16 +112,16 @@ export class ApiServer implements Disposable {
       this.displayApiError(listeningOn);
     });
     if (listeningOn === PREFERENCE_RANDOM_PORT) {
-      getFreeRandomPort('0.0.0.0')
+      getFreeRandomPort(LISTENING_ADDRESS)
         .then((randomPort: number) => {
           listeningOn = randomPort;
-          this.#listener = server.listen(listeningOn);
+          this.#listener = server.listen(listeningOn, LISTENING_ADDRESS);
         })
         .catch((e: unknown) => {
           console.error('unable to get a free port for the api server', e);
         });
     } else {
-      this.#listener = server.listen(listeningOn);
+      this.#listener = server.listen(listeningOn, LISTENING_ADDRESS);
     }
   }
 

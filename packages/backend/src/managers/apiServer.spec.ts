@@ -26,6 +26,7 @@ import type { ModelsManager } from './modelsManager';
 import type { EventEmitter } from 'node:events';
 import { once } from 'node:events';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
+import type { AddressInfo } from 'node:net';
 
 class TestApiServer extends ApiServer {
   public override getListener(): Server | undefined {
@@ -142,4 +143,9 @@ test('/api/tags returns error', async () => {
   vi.mocked(modelsManager.getModelsInfo).mockRejectedValue({});
   const res = await request(server.getListener()!).get('/api/tags').expect(500);
   expect(res.body.message).toEqual('unable to get models');
+});
+
+test('verify listening on localhost', async () => {
+  expect(server.getListener()).toBeDefined();
+  expect((server.getListener()?.address() as AddressInfo).address).toEqual('127.0.0.1');
 });

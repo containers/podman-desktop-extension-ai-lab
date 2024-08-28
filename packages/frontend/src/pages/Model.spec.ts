@@ -42,7 +42,7 @@ const model: ModelInfo = {
  name: 'Model 1',
  properties: {},
  description: '',
-}
+};
 
 test('should display model information', async () => {
   vi.mocked(studioClient.getCatalog).mockResolvedValue({
@@ -57,7 +57,7 @@ test('should display model information', async () => {
   });
 
   await vi.waitFor(() => {
-    const elements = screen.getAllByText(model.name)
+    const elements = screen.getAllByText(model.name);
     expect(elements.length).toBeGreaterThan(0);
   });
 });

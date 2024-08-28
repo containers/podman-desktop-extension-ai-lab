@@ -4,3 +4,4 @@ __mocks__
 coverage
 packages/backend/media/**
 src-generated
+node_modules

@@ -9,8 +9,7 @@ import { faRocket, faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-ico
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
-import { Button } from '@podman-desktop/ui-svelte';
-import { Table, TableColumn, TableRow, NavPage, EmptyScreen } from '@podman-desktop/ui-svelte';
+import { Button, Table, TableColumn, TableRow, NavPage, EmptyScreen } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<InferenceServer>[] = [
   new TableColumn<InferenceServer>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),

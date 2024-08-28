@@ -10,14 +10,12 @@ import { onMount } from 'svelte';
 import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
 import ModelColumnAge from '../lib/table/model/ModelColumnAge.svelte';
 import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
-import { EmptyScreen, Tab } from '@podman-desktop/ui-svelte';
+import { EmptyScreen, Tab, Button, Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
 import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
 import { router } from 'tinro';
-import { Button } from '@podman-desktop/ui-svelte';
 import { faBookOpen, faFileImport } from '@fortawesome/free-solid-svg-icons';
-import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 
 const columns: TableColumn<ModelInfo>[] = [
   new TableColumn<ModelInfo>('Status', {

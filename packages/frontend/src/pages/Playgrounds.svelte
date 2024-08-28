@@ -5,8 +5,7 @@ import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.s
 import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
 import { conversations } from '/@/stores/conversations';
 import PlaygroundColumnIcon from '/@/lib/table/playground/PlaygroundColumnIcon.svelte';
-import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
-import { Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
+import { Button, EmptyScreen, Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 import { faMessage, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 

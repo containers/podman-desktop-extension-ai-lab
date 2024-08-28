@@ -38,10 +38,10 @@ vi.mock('../utils/client', async () => {
 });
 
 const model: ModelInfo = {
- id: 'model1',
- name: 'Model 1',
- properties: {},
- description: '',
+  id: 'model1',
+  name: 'Model 1',
+  properties: {},
+  description: '',
 };
 
 test('should display model information', async () => {

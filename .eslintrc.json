@@ -41,7 +41,7 @@
     "node_modules/**",
     "**/dist/**"
   ],
-  "plugins": ["@typescript-eslint", "sonarjs", "etc", "redundant-undefined", "no-null"],
+  "plugins": ["@typescript-eslint", "sonarjs", "etc", "redundant-undefined", "no-null", "import"],
   "rules": {
     "eqeqeq": "error",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
@@ -90,6 +90,16 @@
     "etc/no-commented-out-code": "error",
     "etc/no-deprecated": "off",
     "redundant-undefined/redundant-undefined": "error",
-    "import/no-extraneous-dependencies": "error"
+    "import/no-extraneous-dependencies": "error",
+    "import/no-restricted-paths": ["error", {
+      "zones": [{
+        "target": "./packages/backend/**/*",
+        "from": ["./packages/frontend/**/*"]
+      },
+        {
+          "target": "./packages/frontend/**/*",
+          "from": ["./packages/backend/**/*"]
+        }]
+    }]
   }
 }

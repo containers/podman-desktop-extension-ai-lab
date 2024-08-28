@@ -26,6 +26,7 @@ import { InferenceType } from '@shared/src/models/IInference';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { Task } from '@shared/src/models/ITask';
 import { router } from 'tinro';
+import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -37,6 +38,8 @@ const mocks = vi.hoisted(() => {
     getLocalRepositoriesMock: vi.fn(),
     // catalog store
     getCatalogMock: vi.fn(),
+    // containerProviderConnectionInfo store
+    getContainerConnectionInfoMock: vi.fn<() => ContainerProviderConnectionInfo[]>(),
   };
 });
 
@@ -45,6 +48,15 @@ vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getLocalRepositoriesMock());
+      return () => {};
+    },
+  },
+}));
+
+vi.mock('../stores/containerProviderConnections', () => ({
+  containerProviderConnections: {
+    subscribe: (f: (msg: any) => void) => {
+      f(mocks.getContainerConnectionInfoMock());
       return () => {};
     },
   },
@@ -134,6 +146,9 @@ beforeEach(() => {
   mocks.getCatalogMock.mockReturnValue({
     recipes: [fakeRecipe],
   });
+
+  // mock no ContainerConnectionInfo
+  mocks.getContainerConnectionInfoMock.mockReturnValue([]);
 
   mocks.getModelsInfoMock.mockReturnValue([fakeRecommendedModel, fakeRemoteModel]);
 

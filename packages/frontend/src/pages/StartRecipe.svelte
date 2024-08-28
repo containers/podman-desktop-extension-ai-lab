@@ -17,15 +17,34 @@ import { tasks } from '/@/stores/tasks';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
-import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type {
+  ContainerConnectionInfo,
+  ContainerProviderConnectionInfo,
+} from '@shared/src/models/IContainerConnectionInfo';
 import { checkContainerConnectionStatus } from '/@/utils/connectionUtils';
+import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ContainerConnectionStatusInfo from '/@/lib/notification/ContainerConnectionStatusInfo.svelte';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
+import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 
 export let recipeId: string;
 
 let recipe: Recipe | undefined;
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
+
+// The container provider connection to use
+let containerProviderConnection: ContainerProviderConnectionInfo | undefined = undefined;
+
+// Filtered connections (started)
+let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = [];
+$: startedContainerProviderConnectionInfo = $containerProviderConnections.filter(
+  connection => connection.status === 'started',
+);
+
+// Select default connection
+$: if (containerProviderConnection === undefined && startedContainerProviderConnectionInfo.length > 0) {
+  containerProviderConnection = startedContainerProviderConnectionInfo[0];
+}
 
 // recipe local path
 let localPath: LocalRepository | undefined = undefined;
@@ -111,6 +130,7 @@ async function submit(): Promise<void> {
   trackingId = await studioClient.requestPullApplication({
     recipeId: recipe.id,
     modelId: value.id,
+    connection: containerProviderConnection,
   });
   router.location.query.set('trackingId', trackingId);
 }
@@ -188,6 +208,15 @@ export function goToUpPage(): void {
                 </div>
               {/if}
             </div>
+
+            <!-- container provider connection input -->
+            {#if startedContainerProviderConnectionInfo.length > 1}
+              <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+                >Container engine</label>
+              <ContainerProviderConnectionSelect
+                bind:value={containerProviderConnection}
+                containerProviderConnections={startedContainerProviderConnectionInfo} />
+            {/if}
 
             <!-- model form -->
             <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"

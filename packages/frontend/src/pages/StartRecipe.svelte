@@ -17,15 +17,11 @@ import { tasks } from '/@/stores/tasks';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
-import type {
-  ContainerConnectionInfo,
-  ContainerProviderConnectionInfo,
-} from '@shared/src/models/IContainerConnectionInfo';
-import { checkContainerConnectionStatus } from '/@/utils/connectionUtils';
+import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
-import ContainerConnectionStatusInfo from '/@/lib/notification/ContainerConnectionStatusInfo.svelte';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
+import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
 
 export let recipeId: string;
 
@@ -135,13 +131,6 @@ async function submit(): Promise<void> {
   router.location.query.set('trackingId', trackingId);
 }
 
-let connectionInfo: ContainerConnectionInfo | undefined;
-$: if (value) {
-  checkContainerConnectionStatus(models, value.id, 'recipe')
-    .then(value => (connectionInfo = value))
-    .catch((e: unknown) => console.error(String(e)));
-}
-
 onMount(() => {
   // Fetch any trackingId we could recover from query
   const query = router.location.query.get('trackingId');
@@ -174,9 +163,12 @@ export function goToUpPage(): void {
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
       <!-- warning machine resources -->
-      {#if connectionInfo}
+      {#if containerProviderConnection}
         <div class="mx-5">
-          <ContainerConnectionStatusInfo connectionInfo={connectionInfo} />
+          <ContainerConnectionWrapper
+            checkContext="recipe"
+            model={value}
+            containerProviderConnection={containerProviderConnection} />
         </div>
       {/if}
 

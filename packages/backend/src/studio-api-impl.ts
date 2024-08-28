@@ -46,7 +46,7 @@ import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { getPodmanConnection } from './utils/podman';
 import type {
   CheckContainerConnectionResourcesOptions,
-  ContainerConnectionInfo,
+  ContainerConnectionResourceInfo,
   ContainerProviderConnectionInfo,
 } from '@shared/src/models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
@@ -528,7 +528,7 @@ export class StudioApiImpl implements StudioAPI {
 
   async checkContainerConnectionStatusAndResources(
     options: CheckContainerConnectionResourcesOptions,
-  ): Promise<ContainerConnectionInfo> {
+  ): Promise<ContainerConnectionResourceInfo> {
     return this.podmanConnection.checkContainerConnectionStatusAndResources(options);
   }
 }

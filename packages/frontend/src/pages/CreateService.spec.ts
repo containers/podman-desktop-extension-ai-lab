@@ -17,9 +17,9 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { vi, beforeEach, test, expect } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { studioClient } from '/@/utils/client';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
 import type { Task } from '@shared/src/models/ITask';
 import userEvent from '@testing-library/user-event';
@@ -28,13 +28,13 @@ import * as modelsInfoStore from '/@/stores/modelsInfo';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { writable } from 'svelte/store';
 import { router } from 'tinro';
-import * as connectionUtils from '../utils/connectionUtils';
 import type {
-  ContainerConnectionInfo,
+  ContainerConnectionResourceInfo,
   ContainerProviderConnectionInfo,
 } from '@shared/src/models/IContainerConnectionInfo';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { VMType } from '@shared/src/models/IPodman';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -94,15 +94,47 @@ vi.mock('../utils/client', async () => ({
   studioClient: {
     requestCreateInferenceServer: vi.fn(),
     getHostFreePort: vi.fn(),
+    checkContainerConnectionStatusAndResources: vi.fn(),
   },
 }));
+
+const noMachineConnectionInfo: ContainerConnectionResourceInfo = {
+  status: 'no-machine',
+  canRedirect: true,
+};
+
+const runningMachineConnectionInfo: ContainerConnectionResourceInfo = {
+  name: 'Podman machine',
+  status: 'running',
+  canRedirect: true,
+};
+
+const lowResourceMachineConnectionInfo: ContainerConnectionResourceInfo = {
+  name: 'Podman Machine',
+  canEdit: true,
+  canRedirect: true,
+  cpus: 12,
+  cpusExpected: 10,
+  memoryExpected: 10,
+  memoryIdle: 5,
+  status: 'low-resources',
+};
+
+const containerProviderConnection: ContainerProviderConnectionInfo = {
+  name: 'Dummy connainter connection provider',
+  status: 'started',
+  type: 'podman',
+  vmType: VMType.QEMU,
+  providerId: 'podman',
+};
 
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.modelsInfoSubscribeMock.mockReturnValue([]);
   mocks.tasksSubscribeMock.mockReturnValue([]);
-  mocks.getContainerConnectionInfoMock.mockReturnValue([]);
+  mocks.getContainerConnectionInfoMock.mockReturnValue([containerProviderConnection]);
 
+  vi.mocked(studioClient.checkContainerConnectionStatusAndResources).mockResolvedValue(runningMachineConnectionInfo);
   vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
   mocks.getInferenceServersMock.mockReturnValue([
@@ -157,6 +189,7 @@ test('button click should call createInferenceServer', async () => {
   expect(vi.mocked(studioClient.requestCreateInferenceServer)).toHaveBeenCalledWith({
     modelsInfo: [{ id: 'random', file: true }],
     port: 8888,
+    connection: containerProviderConnection,
   });
 });
 
@@ -295,10 +328,7 @@ test('should display error message if createService fails', async () => {
 });
 
 test('should display connectionInfo message if there is no running connection', async () => {
-  const connectionInfo: ContainerConnectionInfo = {
-    status: 'no-machine',
-    canRedirect: true,
-  };
+  vi.mocked(studioClient.checkContainerConnectionStatusAndResources).mockResolvedValue(noMachineConnectionInfo);
   const modelsInfoList = writable<ModelInfo[]>([
     {
       id: 'id',
@@ -306,30 +336,23 @@ test('should display connectionInfo message if there is no running connection', 
         file: 'file',
         path: path.resolve(os.tmpdir(), 'path'),
       },
+      memory: 10,
     } as unknown as ModelInfo,
   ]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
   router.location.query.set('model-id', 'id');
-  vi.spyOn(connectionUtils, 'checkContainerConnectionStatus').mockResolvedValue(connectionInfo);
   render(CreateService);
 
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  const banner = screen.getByLabelText('Container connection info banner');
-  expect(banner).toBeInTheDocument();
+  await vi.waitFor(() => {
+    const banner = screen.getByLabelText('Container connection info banner');
+    expect(banner).toBeInTheDocument();
+  });
 });
 
 test('should display connectionInfo message if there is a podman connection with low resources', async () => {
-  const connectionInfo: ContainerConnectionInfo = {
-    name: 'Podman Machine',
-    canEdit: true,
-    canRedirect: true,
-    cpus: 12,
-    cpusExpected: 10,
-    memoryExpected: 10,
-    memoryIdle: 5,
-    status: 'low-resources',
-  };
+  vi.mocked(studioClient.checkContainerConnectionStatusAndResources).mockResolvedValue(
+    lowResourceMachineConnectionInfo,
+  );
   const modelsInfoList = writable<ModelInfo[]>([
     {
       id: 'id',
@@ -337,25 +360,20 @@ test('should display connectionInfo message if there is a podman connection with
         file: 'file',
         path: path.resolve(os.tmpdir(), 'path'),
       },
+      memory: 10,
     } as unknown as ModelInfo,
   ]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
   router.location.query.set('model-id', 'id');
-  vi.spyOn(connectionUtils, 'checkContainerConnectionStatus').mockResolvedValue(connectionInfo);
   render(CreateService);
 
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  const banner = screen.getByLabelText('Container connection info banner');
-  expect(banner).toBeInTheDocument();
+  await vi.waitFor(() => {
+    const banner = screen.getByLabelText('Container connection info banner');
+    expect(banner).toBeInTheDocument();
+  });
 });
 
 test('there should be NO banner if there is a running podman connection having enough resources', async () => {
-  const connectionInfo: ContainerConnectionInfo = {
-    name: 'Podman machine',
-    status: 'running',
-    canRedirect: true,
-  };
   const modelsInfoList = writable<ModelInfo[]>([
     {
       id: 'id',
@@ -363,15 +381,15 @@ test('there should be NO banner if there is a running podman connection having e
         file: 'file',
         path: path.resolve(os.tmpdir(), 'path'),
       },
+      memory: 10,
     } as unknown as ModelInfo,
   ]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
   router.location.query.set('model-id', 'id');
-  vi.spyOn(connectionUtils, 'checkContainerConnectionStatus').mockResolvedValue(connectionInfo);
   render(CreateService);
 
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  const banner = screen.queryByLabelText('Container connection info banner');
-  expect(banner).not.toBeInTheDocument();
+  await vi.waitFor(() => {
+    const banner = screen.queryByLabelText('Container connection info banner');
+    expect(banner).not.toBeInTheDocument();
+  });
 });

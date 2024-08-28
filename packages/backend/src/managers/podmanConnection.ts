@@ -31,7 +31,7 @@ import { VMType } from '@shared/src/models/IPodman';
 import { Publisher } from '../utils/Publisher';
 import type {
   CheckContainerConnectionResourcesOptions,
-  ContainerConnectionInfo,
+  ContainerConnectionResourceInfo,
   ContainerProviderConnectionInfo,
 } from '@shared/src/models/IContainerConnectionInfo';
 import { Messages } from '@shared/Messages';
@@ -227,7 +227,7 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
 
   async checkContainerConnectionStatusAndResources(
     options: CheckContainerConnectionResourcesOptions,
-  ): Promise<ContainerConnectionInfo> {
+  ): Promise<ContainerConnectionResourceInfo> {
     // starting from podman desktop 1.10 we have the navigate functions
     const hasNavigateFunction = !!navigation.navigateToResources;
 
@@ -273,8 +273,9 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     }
 
     const hasCpus = engineInfo.cpus !== undefined && engineInfo.cpus >= MIN_CPUS_VALUE;
-    const multiplier = options.modelInfo.context === 'recipe' ? 1.25 : 1.1;
-    const memoryExpected = options.modelInfo.memoryNeeded * multiplier;
+    const multiplier = options.context === 'recipe' ? 1.25 : 1.1;
+
+    const memoryExpected = options.model.memory * multiplier;
 
     let hasMemory: boolean = true;
     if (engineInfo.memory !== undefined && engineInfo.memoryUsed !== undefined) {

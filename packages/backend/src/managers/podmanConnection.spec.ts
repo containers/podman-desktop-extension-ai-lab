@@ -31,6 +31,7 @@ import type {
 import { containerEngine, process, provider, EventEmitter, env } from '@podman-desktop/api';
 import { VMType } from '@shared/src/models/IPodman';
 import { Messages } from '@shared/Messages';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 const webviewMock = {
   postMessage: vi.fn(),
@@ -457,16 +458,22 @@ describe('getVMType', () => {
   });
 });
 
+const modelMock: ModelInfo & { memory: number } = {
+  name: 'dummy',
+  memory: 10,
+  description: '',
+  id: 'dummy-id',
+  properties: {},
+};
+
 describe('checkContainerConnectionStatusAndResources', () => {
   test('return native on Linux', async () => {
     const manager = new PodmanConnection(webviewMock);
     vi.mocked(env).isLinux = true;
 
     const result = await manager.checkContainerConnectionStatusAndResources({
-      modelInfo: {
-        memoryNeeded: 10,
-        context: 'inference',
-      },
+      model: modelMock,
+      context: 'inference',
     });
     expect(result).toStrictEqual({
       status: 'native',
@@ -479,10 +486,8 @@ describe('checkContainerConnectionStatusAndResources', () => {
     vi.mocked(env).isLinux = false;
 
     const result = await manager.checkContainerConnectionStatusAndResources({
-      modelInfo: {
-        memoryNeeded: 10,
-        context: 'inference',
-      },
+      model: modelMock,
+      context: 'inference',
     });
     expect(result).toStrictEqual({
       status: 'no-machine',
@@ -496,10 +501,8 @@ describe('checkContainerConnectionStatusAndResources', () => {
 
     vi.mocked(containerEngine.listInfos).mockResolvedValue([]);
     const result = await manager.checkContainerConnectionStatusAndResources({
-      modelInfo: {
-        memoryNeeded: 10,
-        context: 'inference',
-      },
+      model: modelMock,
+      context: 'inference',
     });
     expect(result).toStrictEqual({
       status: 'no-machine',
@@ -539,10 +542,8 @@ describe('checkContainerConnectionStatusAndResources', () => {
     manager.init();
 
     const result = await manager.checkContainerConnectionStatusAndResources({
-      modelInfo: {
-        memoryNeeded: 10,
-        context: 'inference',
-      },
+      model: modelMock,
+      context: 'inference',
     });
     expect(result).toStrictEqual({
       status: 'low-resources',
@@ -588,10 +589,8 @@ describe('checkContainerConnectionStatusAndResources', () => {
     manager.init();
 
     const result = await manager.checkContainerConnectionStatusAndResources({
-      modelInfo: {
-        memoryNeeded: 10,
-        context: 'inference',
-      },
+      model: modelMock,
+      context: 'inference',
     });
     expect(result).toStrictEqual({
       name: 'Podman Machine',

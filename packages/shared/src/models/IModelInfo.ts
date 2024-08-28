@@ -40,8 +40,3 @@ export interface ModelInfo {
 }
 
 export type ModelCheckerContext = 'inference' | 'recipe';
-
-export interface ModelCheckerInfo {
-  memoryNeeded: number;
-  context: ModelCheckerContext;
-}

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { VMType } from './IPodman';
-import type { ModelCheckerInfo } from './IModelInfo';
+import type { ModelCheckerContext, ModelInfo } from './IModelInfo';
 
 export interface ContainerProviderConnectionInfo {
   providerId: string;
@@ -27,11 +27,12 @@ export interface ContainerProviderConnectionInfo {
 }
 
 export interface CheckContainerConnectionResourcesOptions {
-  modelInfo: ModelCheckerInfo;
+  model: ModelInfo & { memory: number };
+  context: ModelCheckerContext;
   connection?: ContainerProviderConnectionInfo;
 }
 
-export type ContainerConnectionInfo =
+export type ContainerConnectionResourceInfo =
   | RunningContainerConnection
   | LowResourcesContainerConnection
   | NoContainerConnection

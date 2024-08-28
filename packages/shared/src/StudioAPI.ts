@@ -31,7 +31,7 @@ import type { Conversation } from './models/IPlaygroundMessage';
 import type { LocalModelImportInfo } from './models/ILocalModelInfo';
 import type {
   CheckContainerConnectionResourcesOptions,
-  ContainerConnectionInfo,
+  ContainerConnectionResourceInfo,
   ContainerProviderConnectionInfo,
 } from './models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
@@ -235,5 +235,5 @@ export abstract class StudioAPI {
    */
   abstract checkContainerConnectionStatusAndResources(
     options: CheckContainerConnectionResourcesOptions,
-  ): Promise<ContainerConnectionInfo>;
+  ): Promise<ContainerConnectionResourceInfo>;
 }

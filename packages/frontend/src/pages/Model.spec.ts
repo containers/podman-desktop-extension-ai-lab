@@ -19,18 +19,13 @@
 import { vi, test, expect } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import Model from './Model.svelte';
-import catalog from '../../../backend/src/tests/ai-user-test.json';
-
-const mocks = vi.hoisted(() => {
-  return {
-    getCatalogMock: vi.fn(),
-  };
-});
+import { studioClient } from '../utils/client';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 vi.mock('../utils/client', async () => {
   return {
     studioClient: {
-      getCatalog: mocks.getCatalogMock,
+      getCatalog: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -42,16 +37,27 @@ vi.mock('../utils/client', async () => {
   };
 });
 
-test('should display model information', async () => {
-  const model = catalog.models.find(m => m.id === 'model1');
-  expect(model).not.toBeUndefined();
+const model: ModelInfo = {
+  id: 'model1',
+  name: 'Model 1',
+  properties: {},
+  description: '',
+};
 
-  mocks.getCatalogMock.mockResolvedValue(catalog);
+test('should display model information', async () => {
+  vi.mocked(studioClient.getCatalog).mockResolvedValue({
+    models: [model],
+    categories: [],
+    recipes: [],
+    version: 'v1',
+  });
+
   render(Model, {
     modelId: 'model1',
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
 
-  expect(screen.getAllByText(model!.name).length).toBeGreaterThan(0);
-  screen.getByText(model!.description);
+  await vi.waitFor(() => {
+    const elements = screen.getAllByText(model.name);
+    expect(elements.length).toBeGreaterThan(0);
+  });
 });

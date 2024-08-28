@@ -1,7 +1,6 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { faDownload, faRocket, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faRocket, faTrash, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '../../button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
@@ -19,7 +18,7 @@ function deleteModel() {
 }
 
 function openModelFolder() {
-  if (object && object.file) {
+  if (object?.file) {
     studioClient.openFile(object.file.path);
   }
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { studioClient } from '/@/utils/client';
-import { DetailsPage, Tab } from '@podman-desktop/ui-svelte';
+import { DetailsPage, Tab, Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import Card from '/@/lib/Card.svelte';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import { getIcon } from '/@/utils/categoriesUtils';
@@ -9,7 +9,6 @@ import RecipeDetails from '/@/lib/RecipeDetails.svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 import { router } from 'tinro';
 import { faRocket } from '@fortawesome/free-solid-svg-icons';
-import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import Fa from 'svelte-fa';
 import Route from '/@/Route.svelte';
 import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';

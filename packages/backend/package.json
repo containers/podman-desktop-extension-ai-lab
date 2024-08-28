@@ -75,7 +75,7 @@
     "express-openapi-validator": "^5.3.3",
     "isomorphic-git": "^1.27.1",
     "mustache": "^4.2.0",
-    "openai": "^4.56.0",
+    "openai": "^4.56.1",
     "postman-code-generators": "^1.12.0",
     "postman-collection": "^4.5.0",
     "semver": "^7.6.3",

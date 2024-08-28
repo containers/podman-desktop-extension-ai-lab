@@ -26,7 +26,7 @@ import type { ModelsManager } from './modelsManager';
 import type { EventEmitter } from 'node:events';
 import { once } from 'node:events';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
-import { AddressInfo } from 'node:net';
+import type { AddressInfo } from 'node:net';
 
 class TestApiServer extends ApiServer {
   public override getListener(): Server | undefined {

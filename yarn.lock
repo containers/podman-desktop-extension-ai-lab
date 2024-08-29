@@ -5627,10 +5627,10 @@ openai@^4.56.1:
     formdata-node "^4.3.2"
     node-fetch "^2.6.7"
 
-openapi-typescript@^7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-7.3.0.tgz#046845f7ae3225410c54f280469cfe5a0f2e0020"
-  integrity sha512-EkljRjYWOPwGXiK++uI9MkGv2Y7uhbkZbi9V1z3r3EpmWVO6aFTHXSLNvxIWo6UT6LCTYgEYkUB3BWQjwwXthg==
+openapi-typescript@^7.3.2:
+  version "7.3.2"
+  resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-7.3.2.tgz#dd00983a22cb084da3096f20f16674674ac30ffc"
+  integrity sha512-bNHPVlTrzRRD+7RBARjcbRrLDvNOLMNV6uHXDCneH9iQsm7WUoccvBtMaG8Y8eZ1GeFsQvnXZteNXt46snBJZQ==
   dependencies:
     "@redocly/openapi-core" "^1.16.0"
     ansi-colors "^4.1.3"

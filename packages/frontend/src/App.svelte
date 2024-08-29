@@ -22,16 +22,24 @@ import PlaygroundCreate from './pages/PlaygroundCreate.svelte';
 import ImportModels from './pages/ImportModel.svelte';
 import StartRecipe from '/@/pages/StartRecipe.svelte';
 import TuneSessions from './pages/TuneSessions.svelte';
+import { configuration } from './stores/extensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 
 router.mode.hash();
 
 let isMounted = false;
+
+let experimentalTuning: boolean = false;
 
 onMount(() => {
   // Load router state on application startup
   const state = getRouterState();
   router.goto(state.url);
   isMounted = true;
+
+  configuration.subscribe((val: ExtensionConfiguration | undefined) => {
+    experimentalTuning = val?.experimentalTuning ?? false;
+  });
 });
 </script>
 
@@ -66,12 +74,12 @@ onMount(() => {
           <Playground playgroundId={meta.params.id} />
         {/if}
       </Route>
-
-      <!-- Tune with InstructLab -->
-      <Route path="/tune">
-        <TuneSessions />
-      </Route>
-
+      {#if experimentalTuning}
+        <!-- Tune with InstructLab -->
+        <Route path="/tune">
+          <TuneSessions />
+        </Route>
+      {/if}
       <!-- Preferences -->
       <Route path="/preferences">
         <Preferences />

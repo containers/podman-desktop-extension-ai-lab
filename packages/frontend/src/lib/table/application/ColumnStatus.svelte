@@ -3,6 +3,7 @@ import { getApplicationStatus } from '../../../pages/applications';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import PodIcon from '../../images/PodIcon.svelte';
 import { Spinner, StatusIcon } from '@podman-desktop/ui-svelte';
+
 export let object: ApplicationState;
 
 let status: string;

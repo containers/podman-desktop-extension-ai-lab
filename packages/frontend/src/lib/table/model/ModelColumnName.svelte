@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { router } from 'tinro';
+
 export let object: ModelInfo;
 
 function openDetails() {

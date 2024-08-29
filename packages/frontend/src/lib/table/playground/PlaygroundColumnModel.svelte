@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
+
 export let object: Conversation;
 import { catalog } from '/@/stores/catalog';
 

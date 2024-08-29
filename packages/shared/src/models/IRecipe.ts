@@ -17,13 +17,13 @@
  ***********************************************************************/
 import type { ContainerProviderConnectionInfo } from './IContainerConnectionInfo';
 
+import type { InferenceServer } from './IInference';
+
 export interface RecipePullOptions {
   connection?: ContainerProviderConnectionInfo;
   recipeId: string;
   modelId: string;
 }
-
-import type { InferenceServer } from './IInference';
 
 export interface RecipeComponents {
   images: RecipeImage[];

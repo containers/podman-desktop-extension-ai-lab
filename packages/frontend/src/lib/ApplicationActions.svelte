@@ -13,6 +13,7 @@ import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import { router } from 'tinro';
 import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import FlatMenu from './FlatMenu.svelte';
+
 export let object: ApplicationState | undefined;
 export let recipeId: string;
 export let modelId: string;

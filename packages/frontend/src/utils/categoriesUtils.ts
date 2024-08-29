@@ -19,6 +19,7 @@
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 
 import { faAlignLeft, faEdit, faImages, faQuestion } from '@fortawesome/free-solid-svg-icons';
+
 export const getIcon = (scope: string | undefined): IconDefinition => {
   switch (scope) {
     case 'natural-language-processing':

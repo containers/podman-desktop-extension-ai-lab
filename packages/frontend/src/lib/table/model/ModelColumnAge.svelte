@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { humanizeAge } from '/@/utils/dimensions';
+
 export let object: ModelInfo;
 </script>
 

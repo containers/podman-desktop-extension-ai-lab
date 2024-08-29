@@ -2,6 +2,7 @@
 import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
 import { DropdownMenu } from '@podman-desktop/ui-svelte';
+
 export let title: string;
 export let icon: IconDefinition;
 export let hidden = false;

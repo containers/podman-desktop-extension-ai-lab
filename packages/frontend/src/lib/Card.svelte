@@ -2,6 +2,7 @@
 import Fa from 'svelte-fa';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import { createEventDispatcher } from 'svelte';
+
 const dispatch = createEventDispatcher();
 
 export let title: string | undefined = undefined;

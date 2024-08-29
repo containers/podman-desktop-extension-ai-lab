@@ -6,6 +6,7 @@ import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
+
 export let object: ModelInfo;
 
 let inUse: boolean = false;

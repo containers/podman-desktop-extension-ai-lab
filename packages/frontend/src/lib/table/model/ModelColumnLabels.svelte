@@ -3,6 +3,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { faMemory } from '@fortawesome/free-solid-svg-icons';
 import { filesize } from 'filesize';
 import Badge from '../../Badge.svelte';
+
 export let object: ModelInfo;
 </script>
 

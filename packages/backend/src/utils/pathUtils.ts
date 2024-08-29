@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import path from 'path';
+import path from 'node:path';
 
 export function getParentDirectory(filePath: string): string {
   // Normalize the path to handle different platform-specific separators

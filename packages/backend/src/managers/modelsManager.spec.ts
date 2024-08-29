@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { type MockInstance, beforeEach, describe, expect, test, vi } from 'vitest';
-import os from 'os';
+import os from 'node:os';
 import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';

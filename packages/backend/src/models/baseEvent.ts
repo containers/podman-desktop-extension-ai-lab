@@ -30,6 +30,7 @@ export interface CompletionEvent extends BaseEvent {
 export interface ProgressEvent extends BaseEvent {
   status: 'progress';
   value: number;
+  total: number;
 }
 
 export const isCompletionEvent = (value: unknown): value is CompletionEvent => {

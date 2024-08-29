@@ -32,6 +32,8 @@ import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry'
 import { getFreeRandomPort } from '../utils/ports';
 import * as OpenApiValidator from 'express-openapi-validator';
 import type { HttpError, OpenApiRequest } from 'express-openapi-validator/dist/framework/types';
+import type { CatalogManager } from './catalogManager';
+import { isProgressEvent } from '../models/baseEvent';
 
 const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
 const SHOW_API_ERROR_COMMAND = 'ai-lab.show-api-error';
@@ -59,6 +61,7 @@ export class ApiServer implements Disposable {
   constructor(
     private extensionContext: podmanDesktopApi.ExtensionContext,
     private modelsManager: ModelsManager,
+    private catalogManager: CatalogManager,
     private configurationRegistry: ConfigurationRegistry,
   ) {}
 
@@ -99,6 +102,7 @@ export class ApiServer implements Disposable {
     // declare routes
     router.get('/version', this.getVersion.bind(this));
     router.get('/tags', this.getModels.bind(this));
+    router.post('/pull', this.pullModel.bind(this));
     app.get('/', (_res, res) => res.sendStatus(200)); //required for the ollama client to work against us
     app.use('/api', router);
     app.use('/spec', this.getSpec.bind(this));
@@ -229,5 +233,62 @@ export class ApiServer implements Disposable {
     } catch (err: unknown) {
       this.doErr(res, 'unable to get models', err);
     }
+  }
+
+  private writeJSONline(res: Response, obj: unknown) {
+    res.write(JSON.stringify(obj) + '\n');
+  }
+
+  pullModel(req: Request, res: Response): void {
+    const modelName = req.body['model'] || req.body['name'];
+    let modelInfo: ModelInfo;
+
+    this.writeJSONline(res, { status: 'pulling manifest' });
+
+    try {
+      modelInfo = this.catalogManager.getModelByName(modelName);
+    } catch {
+      this.writeJSONline(res, { error: 'pull model manifest: file does not exist' });
+      res.end();
+      return;
+    }
+
+    if (this.modelsManager.isModelOnDisk(modelInfo.id)) {
+      this.writeJSONline(res, {
+        status: 'success',
+      });
+      res.end();
+      return;
+    }
+
+    const abortController = new AbortController();
+    const downloader = this.modelsManager.createDownloader(modelInfo, abortController.signal);
+
+    downloader.onEvent(event => {
+      if (isProgressEvent(event) && event.id === modelName) {
+        this.writeJSONline(res, {
+          status: `pulling ${modelInfo.sha256}`,
+          digest: `sha256:${modelInfo.sha256}`,
+          total: event.total,
+          completed: Math.round((event.total * event.value) / 100),
+        });
+      }
+    }, this);
+
+    downloader
+      .perform(modelName)
+      .then(() => {
+        this.writeJSONline(res, {
+          status: 'success',
+        });
+      })
+      .catch((err: unknown) => {
+        this.writeJSONline(res, {
+          error: String(err),
+        });
+      })
+      .finally(() => {
+        res.end();
+      });
   }
 }

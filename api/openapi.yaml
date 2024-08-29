@@ -51,6 +51,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListResponse'
+  /api/pull:
+    post:
+      operationId: pullModel
+      tags:
+        - models
+      description: | 
+        Download a model from the Podman AI Lab catalog.
+      summary: |
+        Download a model from the Podman AI Lab Catalog.
+      requestBody:
+        required: true
+        description: Request to pull a model
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PullRequest'
+      responses:
+        '200':
+          description: Model was successfully pulled
+          content:
+            application/x-ndjson:
+              schema:
+                $ref: '#/components/schemas/ProgressResponse'
+
 
 components:
   schemas:
@@ -99,3 +123,40 @@ components:
           type: string
         quantization_level:
           type: string
+
+    PullRequest:
+      type: object
+      description: Request to pull a model
+      properties:
+        model:
+          type: string
+          description: The name of the model to pull
+          example: instructlab/granite-7b-lab-GGUF
+        insecure:
+          type: boolean
+          description: |
+            allow insecure connections to the catalog.
+        stream:
+          type: boolean
+          description: |
+            If false the response will be returned as a single response object, 
+            rather than a stream of objects
+      required: 
+        - model
+
+    ProgressResponse:
+      type: object
+      description: The response returned from various streaming endpoints
+      properties:
+        status:
+          type: string
+          description: The status of the request
+        digest:
+          type: string
+          description: The SHA256 digest of the blob
+        total:
+          type: integer
+          description: The total size of the task
+        completed:
+          type: integer
+          description: The completed size of the task

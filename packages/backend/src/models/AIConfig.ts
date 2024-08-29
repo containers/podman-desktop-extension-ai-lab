@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import * as jsYaml from 'js-yaml';
-import fs from 'fs';
+import fs from 'node:fs';
 
 export interface ContainerConfig {
   name: string;

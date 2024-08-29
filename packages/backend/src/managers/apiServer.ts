@@ -19,12 +19,12 @@
 import type { Disposable } from '@podman-desktop/api';
 import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
-import type { Server } from 'http';
+import type { Server } from 'node:http';
 import path from 'node:path';
 import http from 'node:http';
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 import type { ModelsManager } from './modelsManager';
 import type { components } from '../../src-generated/openapi';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';

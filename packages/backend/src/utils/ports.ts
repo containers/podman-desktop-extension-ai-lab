@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import * as net from 'net';
+import * as net from 'node:net';
 
 export async function getFreeRandomPort(address: string): Promise<number> {
   const server = net.createServer();

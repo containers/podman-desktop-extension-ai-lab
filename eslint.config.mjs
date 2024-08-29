@@ -210,7 +210,6 @@ export default [
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       'import/newline-after-import': 'off',
-      'unicorn/prefer-node-protocol': 'off',
       'svelte/valid-compile': 'off',
       'import/no-extraneous-dependencies': 'off',
       'import/first': 'off',

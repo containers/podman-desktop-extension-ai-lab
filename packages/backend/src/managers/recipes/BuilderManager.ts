@@ -27,7 +27,7 @@ import type { ContainerConfig } from '../../models/AIConfig';
 import type { Task } from '@shared/src/models/ITask';
 import path from 'node:path';
 import { getParentDirectory } from '../../utils/pathUtils';
-import fs from 'fs';
+import fs from 'node:fs';
 import { getImageTag } from '../../utils/imagesUtils';
 import {
   IMAGE_LABEL_APP_PORTS,

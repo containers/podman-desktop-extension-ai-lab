@@ -273,8 +273,9 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     }
 
     const hasCpus = engineInfo.cpus !== undefined && engineInfo.cpus >= MIN_CPUS_VALUE;
-    const multiplier = options.modelInfo.context === 'recipe' ? 1.25 : 1.1;
-    const memoryExpected = options.modelInfo.memoryNeeded * multiplier;
+    const multiplier = options.context === 'recipe' ? 1.25 : 1.1;
+
+    const memoryExpected = options.model.memory * multiplier;
 
     let hasMemory: boolean = true;
     if (engineInfo.memory !== undefined && engineInfo.memoryUsed !== undefined) {

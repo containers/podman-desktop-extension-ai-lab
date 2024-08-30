@@ -11,16 +11,12 @@ import type { Task } from '@shared/src/models/ITask';
 import { filterByLabel } from '/@/utils/taskUtils';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
-import ContainerConnectionStatusInfo from '../lib/notification/ContainerConnectionStatusInfo.svelte';
-import type {
-  ContainerConnectionInfo,
-  ContainerProviderConnectionInfo,
-} from '@shared/src/models/IContainerConnectionInfo';
-import { checkContainerConnectionStatus } from '../utils/connectionUtils';
+import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 import ModelSelect from '../lib/select/ModelSelect.svelte';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
+import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
 
 // List of the models available locally
 let localModels: ModelInfo[];
@@ -62,13 +58,6 @@ let containerId: string | undefined = undefined;
 $: available = containerId && $inferenceServers.some(server => server.container.containerId);
 
 $: loading = trackingId !== undefined && !error;
-
-let connectionInfo: ContainerConnectionInfo | undefined;
-$: if (localModels && model) {
-  checkContainerConnectionStatus(localModels, model.id, 'inference')
-    .then(value => (connectionInfo = value))
-    .catch((e: unknown) => console.log(String(e)));
-}
 
 $: {
   if (!model && localModels.length > 0) {
@@ -170,9 +159,9 @@ export function goToUpPage(): void {
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
       <!-- warning machine resources -->
-      {#if connectionInfo}
+      {#if containerProviderConnection}
         <div class="mx-5">
-          <ContainerConnectionStatusInfo connectionInfo={connectionInfo} />
+          <ContainerConnectionWrapper model={model} containerProviderConnection={containerProviderConnection} />
         </div>
       {/if}
 

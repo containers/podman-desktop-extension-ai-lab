@@ -1697,14 +1697,6 @@
   resolved "https://registry.yarnpkg.com/@types/cookiejar/-/cookiejar-2.1.5.tgz#14a3e83fa641beb169a2dd8422d91c3c345a9a78"
   integrity sha512-he+DHOWReW0nghN24E1WUqM0efK4kI9oTqDm6XmK8ZPe2djZ90BSNdGnIyCLzCPw7/pogPlGbzI2wHGGmi4O/Q==
 
-"@types/eslint@8.56.10":
-  version "8.56.10"
-  resolved "https://registry.yarnpkg.com/@types/eslint/-/eslint-8.56.10.tgz#eb2370a73bf04a901eeba8f22595c7ee0f7eb58d"
-  integrity sha512-Shavhk87gCtY2fhXDctcfS3e6FdxWkCx1iUZ9eEUbh7rTqlZT0/IzOkCOVt0fCjcFuZ9FPYfuezTBImfHCDBGQ==
-  dependencies:
-    "@types/estree" "*"
-    "@types/json-schema" "*"
-
 "@types/estree@*", "@types/estree@1.0.5", "@types/estree@^1.0.0", "@types/estree@^1.0.1", "@types/estree@^1.0.5":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.5.tgz#a6ce3e556e00fd9895dd872dd172ad0d4bd687f4"
@@ -1750,7 +1742,7 @@
   resolved "https://registry.yarnpkg.com/@types/js-yaml/-/js-yaml-4.0.9.tgz#cd82382c4f902fed9691a2ed79ec68c5898af4c2"
   integrity sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==
 
-"@types/json-schema@*", "@types/json-schema@^7.0.12", "@types/json-schema@^7.0.15", "@types/json-schema@^7.0.9":
+"@types/json-schema@^7.0.12", "@types/json-schema@^7.0.15", "@types/json-schema@^7.0.9":
   version "7.0.15"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.15.tgz#596a1747233694d50f6ad8a7869fcb6f56cf5841"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
@@ -3648,10 +3640,10 @@ eslint-plugin-simple-import-sort@^12.1.1:
   resolved "https://registry.yarnpkg.com/eslint-plugin-simple-import-sort/-/eslint-plugin-simple-import-sort-12.1.1.tgz#e64bfdaf91c5b98a298619aa634a9f7aa43b709e"
   integrity sha512-6nuzu4xwQtE3332Uz0to+TxDQYRLTKRESSc2hefVT48Zc8JthmN23Gx9lnYhu0FtkRSL1oxny3kJ2aveVhmOVA==
 
-eslint-plugin-sonarjs@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-sonarjs/-/eslint-plugin-sonarjs-2.0.1.tgz#a1904db954f9eb841f29b3033cdccec989e9f3b9"
-  integrity sha512-hkiM2yJakXsEzdBhCzCvjd0DfdVL7w1JFSFYp08KEzlwu7SZtP5QKbDU7Hf8VI3Jkve3/py/yUGuT46+juSk6Q==
+eslint-plugin-sonarjs@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-sonarjs/-/eslint-plugin-sonarjs-2.0.2.tgz#7c97bc44973670cb305e1da2e9535b8cdec72792"
+  integrity sha512-0JUYTlUDk/up3mS0rFP9vHCRvhIYNTy06m99IPFeyMDUWL8u0ebz+nFPYn6OWDBTIEfbvQ/Xe0PdjWO8w0WD0Q==
   dependencies:
     "@babel/core" "7.24.3"
     "@babel/eslint-parser" "7.24.1"
@@ -3660,7 +3652,6 @@ eslint-plugin-sonarjs@^2.0.1:
     "@babel/preset-flow" "7.24.1"
     "@babel/preset-react" "7.24.1"
     "@eslint-community/regexpp" "4.10.0"
-    "@types/eslint" "8.56.10"
     "@typescript-eslint/eslint-plugin" "7.16.1"
     "@typescript-eslint/utils" "^7.16.1"
     builtin-modules "3.3.0"
@@ -3675,7 +3666,7 @@ eslint-plugin-sonarjs@^2.0.1:
     minimatch "^9.0.3"
     scslre "0.3.0"
     semver "7.6.0"
-    typescript "5.4.3"
+    typescript "*"
     vue-eslint-parser "9.4.3"
 
 eslint-plugin-svelte@^2.43.0:
@@ -7313,12 +7304,7 @@ typescript-eslint@^8.3.0:
     "@typescript-eslint/parser" "8.3.0"
     "@typescript-eslint/utils" "8.3.0"
 
-typescript@5.4.3:
-  version "5.4.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.3.tgz#5c6fedd4c87bee01cd7a528a30145521f8e0feff"
-  integrity sha512-KrPd3PKaCLr78MalgiwJnA25Nm8HAmdwN3mYUYZgG/wizIo9EainNVQI9/yDavtVFRN2h3k8uf3GLHuhDMgEHg==
-
-typescript@5.5.4, typescript@^5.0.3, typescript@^5.5.4:
+typescript@*, typescript@5.5.4, typescript@^5.0.3, typescript@^5.5.4:
   version "5.5.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.5.4.tgz#d9852d6c82bad2d2eda4fd74a5762a8f5909e9ba"
   integrity sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==

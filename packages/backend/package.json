@@ -32,6 +32,12 @@
           "minimum": 1024,
           "maximum": 65535,
           "description": "Port on which the API is listening (requires restart of extension)"
+        },
+        "ai-lab.experimentalTuning": {
+          "type": "boolean",
+          "default": false,
+          "description": "Display InstructLab Tuning screens (experimental)",
+          "hidden": true
         }
       }
     },

@@ -11,7 +11,7 @@ import Preferences from '/@/pages/Preferences.svelte';
 import Models from '/@/pages/Models.svelte';
 import Recipe from '/@/pages/Recipe.svelte';
 import Model from './pages/Model.svelte';
-import { onMount } from 'svelte';
+import { onDestroy, onMount } from 'svelte';
 import { getRouterState } from '/@/utils/client';
 import CreateService from '/@/pages/CreateService.svelte';
 import Services from '/@/pages/InferenceServers.svelte';
@@ -21,16 +21,31 @@ import Playground from './pages/Playground.svelte';
 import PlaygroundCreate from './pages/PlaygroundCreate.svelte';
 import ImportModels from './pages/ImportModel.svelte';
 import StartRecipe from '/@/pages/StartRecipe.svelte';
+import TuneSessions from './pages/TuneSessions.svelte';
+import { configuration } from './stores/extensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { Unsubscriber } from 'svelte/store';
 
 router.mode.hash();
 
 let isMounted = false;
+
+let experimentalTuning: boolean = false;
+let cfgUnsubscribe: Unsubscriber;
 
 onMount(() => {
   // Load router state on application startup
   const state = getRouterState();
   router.goto(state.url);
   isMounted = true;
+
+  cfgUnsubscribe = configuration.subscribe((val: ExtensionConfiguration | undefined) => {
+    experimentalTuning = val?.experimentalTuning ?? false;
+  });
+});
+
+onDestroy(() => {
+  cfgUnsubscribe?.();
 });
 </script>
 
@@ -65,7 +80,12 @@ onMount(() => {
           <Playground playgroundId={meta.params.id} />
         {/if}
       </Route>
-
+      {#if experimentalTuning}
+        <!-- Tune with InstructLab -->
+        <Route path="/tune">
+          <TuneSessions />
+        </Route>
+      {/if}
       <!-- Preferences -->
       <Route path="/preferences">
         <Preferences />

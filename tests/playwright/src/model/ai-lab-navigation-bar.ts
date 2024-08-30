@@ -28,6 +28,7 @@ export class AILabNavigationBar extends AILabBasePage {
   readonly catalogButton: Locator;
   readonly servicesButton: Locator;
   readonly playgroundsButton: Locator;
+  readonly tuneButton: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, undefined);
@@ -37,6 +38,7 @@ export class AILabNavigationBar extends AILabBasePage {
     this.catalogButton = this.navigationBar.getByRole('link', { name: 'Catalog', exact: true });
     this.servicesButton = this.navigationBar.getByRole('link', { name: 'Services' });
     this.playgroundsButton = this.navigationBar.getByRole('link', { name: 'Playgrounds' });
+    this.tuneButton = this.navigationBar.getByRole('link', { name: 'Tune with InstructLab' });
   }
 
   async waitForLoad(): Promise<void> {

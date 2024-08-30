@@ -21,7 +21,12 @@ import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfig
 import { Messages } from '@shared/Messages';
 import path from 'node:path';
 
-const CONFIGURATION_SECTIONS: string[] = ['ai-lab.models.path', 'ai-lab.experimentalGPU', 'ai-lab.apiPort'];
+const CONFIGURATION_SECTIONS: string[] = [
+  'ai-lab.models.path',
+  'ai-lab.experimentalGPU',
+  'ai-lab.apiPort',
+  'ai-lab.experimentalTuning',
+];
 
 const API_PORT_DEFAULT = 10434;
 
@@ -43,6 +48,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
       modelsPath: this.getModelsPath(),
       experimentalGPU: this.#configuration.get<boolean>('experimentalGPU') ?? false,
       apiPort: this.#configuration.get<number>('apiPort') ?? API_PORT_DEFAULT,
+      experimentalTuning: this.#configuration.get<boolean>('experimentalTuning') ?? false,
     };
   }
 

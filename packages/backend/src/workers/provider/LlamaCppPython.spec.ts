@@ -96,6 +96,7 @@ beforeEach(() => {
     experimentalGPU: false,
     modelsPath: 'model-path',
     apiPort: 10434,
+    experimentalTuning: false,
   });
   vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue(dummyConnection);
   vi.mocked(podmanConnection.getContainerProviderConnection).mockReturnValue(dummyConnection);
@@ -273,6 +274,7 @@ describe('perform', () => {
       experimentalGPU: true,
       modelsPath: '',
       apiPort: 10434,
+      experimentalTuning: false,
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -303,6 +305,7 @@ describe('perform', () => {
       experimentalGPU: true,
       modelsPath: '',
       apiPort: 10434,
+      experimentalTuning: false,
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -335,6 +338,7 @@ describe('perform', () => {
       experimentalGPU: true,
       modelsPath: '',
       apiPort: 10434,
+      experimentalTuning: false,
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([

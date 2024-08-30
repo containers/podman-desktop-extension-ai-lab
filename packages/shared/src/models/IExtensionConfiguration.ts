@@ -20,4 +20,5 @@ export interface ExtensionConfiguration {
   experimentalGPU: boolean;
   modelsPath: string;
   apiPort: number;
+  experimentalTuning: boolean;
 }

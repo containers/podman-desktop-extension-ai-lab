@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ApiServer, PREFERENCE_RANDOM_PORT } from './apiServer';
 import request from 'supertest';
 import type * as podmanDesktopApi from '@podman-desktop/api';
@@ -163,92 +163,122 @@ test('/api/pull returns an error if no body is passed', async () => {
   await request(server.getListener()!).post('/api/pull').expect(415);
 });
 
-test('/api/pull returns an error if the model is not known', async () => {
-  expect(server.getListener()).toBeDefined();
-  vi.mocked(catalogManager.getModelByName).mockImplementation(() => {
-    throw new Error('model unknown');
+describe.each([undefined, true, false])('/api/pull endpoint, stream is %o', stream => {
+  test('/api/pull returns an error if the model is not known', async () => {
+    expect(server.getListener()).toBeDefined();
+    vi.mocked(catalogManager.getModelByName).mockImplementation(() => {
+      throw new Error('model unknown');
+    });
+    const req = request(server.getListener()!).post('/api/pull').send({ model: 'unknown-model-name', stream });
+    if (stream === false) {
+      const res = await req.expect(500).expect('Content-Type', 'application/json; charset=utf-8');
+      expect(res.body.error).toEqual('pull model manifest: file does not exist');
+    } else {
+      const res = await req.expect(200);
+      const lines = res.text.split('\n');
+      expect(lines.length).toEqual(3);
+      expect(lines[0]).toEqual('{"status":"pulling manifest"}');
+      expect(lines[1]).toEqual('{"error":"pull model manifest: file does not exist"}');
+      expect(lines[2]).toEqual('');
+    }
   });
-  const res = await request(server.getListener()!).post('/api/pull').send({ model: 'unknown-model-name' }).expect(200);
-  const lines = res.text.split('\n');
-  expect(lines.length).toEqual(3);
-  expect(lines[0]).toEqual('{"status":"pulling manifest"}');
-  expect(lines[1]).toEqual('{"error":"pull model manifest: file does not exist"}');
-  expect(lines[2]).toEqual('');
-});
 
-test('/api/pull returns success if model already downloaded', async () => {
-  expect(server.getListener()).toBeDefined();
-  vi.mocked(catalogManager.getModelByName).mockReturnValue({
-    id: 'modelId',
-    name: 'model-name',
-    description: 'a description',
+  test('/api/pull returns success if model already downloaded', async () => {
+    expect(server.getListener()).toBeDefined();
+    vi.mocked(catalogManager.getModelByName).mockReturnValue({
+      id: 'modelId',
+      name: 'model-name',
+      description: 'a description',
+    });
+    vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(true);
+    const req = request(server.getListener()!).post('/api/pull').send({ model: 'model-name', stream });
+    if (stream === false) {
+      const res = await req.expect(200).expect('Content-Type', 'application/json; charset=utf-8');
+      expect(res.body.status).toEqual('success');
+    } else {
+      const res = await req.expect(200).expect('transfer-encoding', 'chunked');
+      const lines = res.text.split('\n');
+      expect(lines.length).toEqual(3);
+      expect(lines[0]).toEqual('{"status":"pulling manifest"}');
+      expect(lines[1]).toEqual('{"status":"success"}');
+      expect(lines[2]).toEqual('');
+    }
   });
-  vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(true);
-  const res = await request(server.getListener()!).post('/api/pull').send({ model: 'model-name' }).expect(200);
-  const lines = res.text.split('\n');
-  expect(lines.length).toEqual(3);
-  expect(lines[0]).toEqual('{"status":"pulling manifest"}');
-  expect(lines[1]).toEqual('{"status":"success"}');
-  expect(lines[2]).toEqual('');
-});
 
-test('/api/pull downloads model and returns success', async () => {
-  expect(server.getListener()).toBeDefined();
-  vi.mocked(catalogManager.getModelByName).mockReturnValue({
-    id: 'modelId',
-    name: 'model-name',
-    description: 'a description',
-    sha256: '123456',
+  test('/api/pull downloads model and returns success', async () => {
+    expect(server.getListener()).toBeDefined();
+    vi.mocked(catalogManager.getModelByName).mockReturnValue({
+      id: 'modelId',
+      name: 'model-name',
+      description: 'a description',
+      sha256: '123456',
+    });
+    vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(false);
+    vi.mocked(modelsManager.createDownloader).mockReturnValue({
+      perform: async (_name: string) => {},
+      onEvent: (listener: (e: ProgressEvent) => void) => {
+        listener({
+          status: 'progress',
+          id: 'model-name',
+          total: 100000,
+          value: 100000,
+        });
+      },
+    } as unknown as Downloader);
+    const req = request(server.getListener()!).post('/api/pull').send({ model: 'model-name', stream });
+    if (stream === false) {
+      const res = await req.expect(200).expect('Content-Type', 'application/json; charset=utf-8');
+      expect(res.body.status).toEqual('success');
+    } else {
+      const res = await req.expect(200).expect('transfer-encoding', 'chunked');
+      const lines = res.text.split('\n');
+      expect(lines.length).toEqual(4);
+      expect(lines[0]).toEqual('{"status":"pulling manifest"}');
+      expect(lines[1]).toEqual(
+        '{"status":"pulling 123456","digest":"sha256:123456","total":100000,"completed":100000000}',
+      );
+      expect(lines[2]).toEqual('{"status":"success"}');
+      expect(lines[3]).toEqual('');
+    }
   });
-  vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(false);
-  vi.mocked(modelsManager.createDownloader).mockReturnValue({
-    perform: async (_name: string) => {},
-    onEvent: (listener: (e: ProgressEvent) => void) => {
-      listener({
-        status: 'progress',
-        id: 'model-name',
-        total: 100000,
-        value: 100000,
-      });
-    },
-  } as unknown as Downloader);
-  const res = await request(server.getListener()!).post('/api/pull').send({ model: 'model-name' }).expect(200);
-  const lines = res.text.split('\n');
-  expect(lines.length).toEqual(4);
-  expect(lines[0]).toEqual('{"status":"pulling manifest"}');
-  expect(lines[1]).toEqual('{"status":"pulling 123456","digest":"sha256:123456","total":100000,"completed":100000000}');
-  expect(lines[2]).toEqual('{"status":"success"}');
-  expect(lines[3]).toEqual('');
-});
 
-test('/api/pull should return an error if an error occurs during download', async () => {
-  expect(server.getListener()).toBeDefined();
-  vi.mocked(catalogManager.getModelByName).mockReturnValue({
-    id: 'modelId',
-    name: 'model-name',
-    description: 'a description',
-    sha256: '123456',
+  test('/api/pull should return an error if an error occurs during download', async () => {
+    expect(server.getListener()).toBeDefined();
+    vi.mocked(catalogManager.getModelByName).mockReturnValue({
+      id: 'modelId',
+      name: 'model-name',
+      description: 'a description',
+      sha256: '123456',
+    });
+    vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(false);
+    vi.mocked(modelsManager.createDownloader).mockReturnValue({
+      perform: async (_name: string) => {
+        await new Promise(resolve => setTimeout(resolve, 0)); // wait for random port to be set
+        throw new Error('an error');
+      },
+      onEvent: (listener: (e: ProgressEvent) => void) => {
+        listener({
+          status: 'progress',
+          id: 'model-name',
+          total: 100000,
+          value: 100000,
+        });
+      },
+    } as unknown as Downloader);
+    const req = request(server.getListener()!).post('/api/pull').send({ model: 'model-name', stream });
+    if (stream === false) {
+      const res = await req.expect(500).expect('Content-Type', 'application/json; charset=utf-8');
+      expect(res.body.error).toEqual('Error: an error');
+    } else {
+      const res = await req.expect(200).expect('transfer-encoding', 'chunked');
+      const lines = res.text.split('\n');
+      expect(lines.length).toEqual(4);
+      expect(lines[0]).toEqual('{"status":"pulling manifest"}');
+      expect(lines[1]).toEqual(
+        '{"status":"pulling 123456","digest":"sha256:123456","total":100000,"completed":100000000}',
+      );
+      expect(lines[2]).toEqual('{"error":"Error: an error"}');
+      expect(lines[3]).toEqual('');
+    }
   });
-  vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(false);
-  vi.mocked(modelsManager.createDownloader).mockReturnValue({
-    perform: async (_name: string) => {
-      await new Promise(resolve => setTimeout(resolve, 0)); // wait for random port to be set
-      throw new Error('an error');
-    },
-    onEvent: (listener: (e: ProgressEvent) => void) => {
-      listener({
-        status: 'progress',
-        id: 'model-name',
-        total: 100000,
-        value: 100000,
-      });
-    },
-  } as unknown as Downloader);
-  const res = await request(server.getListener()!).post('/api/pull').send({ model: 'model-name' }).expect(200);
-  const lines = res.text.split('\n');
-  expect(lines.length).toEqual(4);
-  expect(lines[0]).toEqual('{"status":"pulling manifest"}');
-  expect(lines[1]).toEqual('{"status":"pulling 123456","digest":"sha256:123456","total":100000,"completed":100000000}');
-  expect(lines[2]).toEqual('{"error":"Error: an error"}');
-  expect(lines[3]).toEqual('');
 });

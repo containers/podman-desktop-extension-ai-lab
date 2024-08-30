@@ -235,28 +235,47 @@ export class ApiServer implements Disposable {
     }
   }
 
-  private writeJSONline(res: Response, obj: unknown) {
-    res.write(JSON.stringify(obj) + '\n');
+  private streamLine(res: Response, obj: unknown, stream: boolean) {
+    if (stream) {
+      res.write(JSON.stringify(obj) + '\n');
+    }
+  }
+
+  private sendResult(res: Response, obj: unknown, code: number, stream: boolean) {
+    if (stream) {
+      this.streamLine(res, obj, stream);
+    } else {
+      res.status(code).json(obj);
+    }
   }
 
   pullModel(req: Request, res: Response): void {
     const modelName = req.body['model'] || req.body['name'];
+    let stream: boolean = true;
+    if ('stream' in req.body) {
+      stream = req.body['stream'];
+    }
     let modelInfo: ModelInfo;
 
-    this.writeJSONline(res, { status: 'pulling manifest' });
+    this.streamLine(res, { status: 'pulling manifest' }, stream);
 
     try {
       modelInfo = this.catalogManager.getModelByName(modelName);
     } catch {
-      this.writeJSONline(res, { error: 'pull model manifest: file does not exist' });
+      this.sendResult(res, { error: 'pull model manifest: file does not exist' }, 500, stream);
       res.end();
       return;
     }
 
     if (this.modelsManager.isModelOnDisk(modelInfo.id)) {
-      this.writeJSONline(res, {
-        status: 'success',
-      });
+      this.sendResult(
+        res,
+        {
+          status: 'success',
+        },
+        200,
+        stream,
+      );
       res.end();
       return;
     }
@@ -264,28 +283,44 @@ export class ApiServer implements Disposable {
     const abortController = new AbortController();
     const downloader = this.modelsManager.createDownloader(modelInfo, abortController.signal);
 
-    downloader.onEvent(event => {
-      if (isProgressEvent(event) && event.id === modelName) {
-        this.writeJSONline(res, {
-          status: `pulling ${modelInfo.sha256}`,
-          digest: `sha256:${modelInfo.sha256}`,
-          total: event.total,
-          completed: Math.round((event.total * event.value) / 100),
-        });
-      }
-    }, this);
+    if (stream) {
+      downloader.onEvent(event => {
+        if (isProgressEvent(event) && event.id === modelName) {
+          this.streamLine(
+            res,
+            {
+              status: `pulling ${modelInfo.sha256}`,
+              digest: `sha256:${modelInfo.sha256}`,
+              total: event.total,
+              completed: Math.round((event.total * event.value) / 100),
+            },
+            stream,
+          );
+        }
+      }, this);
+    }
 
     downloader
       .perform(modelName)
       .then(() => {
-        this.writeJSONline(res, {
-          status: 'success',
-        });
+        this.sendResult(
+          res,
+          {
+            status: 'success',
+          },
+          200,
+          stream,
+        );
       })
       .catch((err: unknown) => {
-        this.writeJSONline(res, {
-          error: String(err),
-        });
+        this.sendResult(
+          res,
+          {
+            error: String(err),
+          },
+          500,
+          stream,
+        );
       })
       .finally(() => {
         res.end();

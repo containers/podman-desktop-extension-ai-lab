@@ -1833,7 +1833,7 @@
   resolved "https://registry.yarnpkg.com/@types/pug/-/pug-2.0.10.tgz#52f8dbd6113517aef901db20b4f3fca543b88c1f"
   integrity sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==
 
-"@types/qs@*":
+"@types/qs@*", "@types/qs@^6.9.7":
   version "6.9.15"
   resolved "https://registry.yarnpkg.com/@types/qs/-/qs-6.9.15.tgz#adde8a060ec9c305a82de1babc1056e73bd64dce"
   integrity sha512-uXHQKES6DQKKCLh441Xv/dwxOq1TVS3JPUMlEqoEglvlhR6Mxnlew/Xq/LRVHpLyk7iK3zODe1qYHIMltO7XGg==
@@ -5614,18 +5614,20 @@ ono@^7.1.3:
   dependencies:
     "@jsdevtools/ono" "7.1.3"
 
-openai@^4.56.2:
-  version "4.56.2"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-4.56.2.tgz#51e3caab4b368eba4050f37597b0f111e24b815f"
-  integrity sha512-5VIG9ktyKm3WhJ24Qmp362DYQswZl7PLRF5CeJS95vCWp1Lm78AdlKUKOajCqNtAhXP+2XPRGmbcF4XAslWXDg==
+openai@^4.57.0:
+  version "4.57.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.57.0.tgz#c1c735e9bbccf1fc42fdcfc9676643cad56258fe"
+  integrity sha512-JnwBSIYqiZ3jYjB5f2in8hQ0PRA092c6m+/6dYB0MzK0BEbn+0dioxZsPLBm5idJbg9xzLNOiGVm2OSuhZ+BdQ==
   dependencies:
     "@types/node" "^18.11.18"
     "@types/node-fetch" "^2.6.4"
+    "@types/qs" "^6.9.7"
     abort-controller "^3.0.0"
     agentkeepalive "^4.2.1"
     form-data-encoder "1.7.2"
     formdata-node "^4.3.2"
     node-fetch "^2.6.7"
+    qs "^6.10.3"
 
 openapi-typescript@^7.3.2:
   version "7.3.2"
@@ -6067,10 +6069,10 @@ qs@6.11.0:
   dependencies:
     side-channel "^1.0.4"
 
-qs@^6.11.0:
-  version "6.12.3"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.12.3.tgz#e43ce03c8521b9c7fd7f1f13e514e5ca37727754"
-  integrity sha512-AWJm14H1vVaO/iNZ4/hO+HyaTehuy9nRqVdkTqlJt0HWvBiBIEXFmb4C0DGeYo3Xes9rrEW+TxHsaigCbN5ICQ==
+qs@^6.10.3, qs@^6.11.0:
+  version "6.13.0"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.13.0.tgz#6ca3bd58439f7e245655798997787b0d88a51906"
+  integrity sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==
   dependencies:
     side-channel "^1.0.6"
 

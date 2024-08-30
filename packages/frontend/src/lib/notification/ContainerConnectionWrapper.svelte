@@ -1,6 +1,6 @@
 <script lang="ts">
 import type {
-  ContainerConnectionResourceInfo,
+  ContainerConnectionInfo,
   ContainerProviderConnectionInfo,
 } from '@shared/src/models/IContainerConnectionInfo';
 import type { ModelCheckerContext, ModelInfo } from '@shared/src/models/IModelInfo';
@@ -11,7 +11,7 @@ export let containerProviderConnection: ContainerProviderConnectionInfo | undefi
 export let model: ModelInfo | undefined = undefined;
 export let checkContext: ModelCheckerContext = 'inference';
 
-let connectionInfo: ContainerConnectionResourceInfo | undefined;
+let connectionInfo: ContainerConnectionInfo | undefined;
 $: if (typeof model?.memory === 'number' && containerProviderConnection) {
   studioClient
     .checkContainerConnectionStatusAndResources({

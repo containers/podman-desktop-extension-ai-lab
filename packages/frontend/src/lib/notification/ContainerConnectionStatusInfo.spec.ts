@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import ContainerConnectionStatusInfo from './ContainerConnectionStatusInfo.svelte';
-import type { ContainerConnectionResourceInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { studioClient } from '/@/utils/client';
 import { filesize } from 'filesize';
 import userEvent from '@testing-library/user-event';
@@ -39,7 +39,7 @@ beforeEach(() => {
 });
 
 test('should not show anything if there is no title or description', async () => {
-  const connectionInfo: ContainerConnectionResourceInfo = {
+  const connectionInfo: ContainerConnectionInfo = {
     name: 'Podman machine',
     status: 'running',
     canRedirect: true,
@@ -52,7 +52,7 @@ test('should not show anything if there is no title or description', async () =>
 
 test('should show no running machine banner if there is no running machine', async () => {
   const navigateMock = vi.spyOn(studioClient, 'navigateToResources');
-  const noMachineInfo: ContainerConnectionResourceInfo = {
+  const noMachineInfo: ContainerConnectionInfo = {
     status: 'no-machine',
     canRedirect: true,
   };
@@ -77,7 +77,7 @@ test('should show no running machine banner if there is no running machine', asy
 });
 
 test('should show no running machine banner if there is no running machine and no action if canRedirect is disabled', async () => {
-  const noMachineInfo: ContainerConnectionResourceInfo = {
+  const noMachineInfo: ContainerConnectionInfo = {
     status: 'no-machine',
     canRedirect: false,
   };
@@ -99,7 +99,7 @@ test('should show no running machine banner if there is no running machine and n
 
 test('should show lowResourcesMachine banner if the running machine has not enough resources and both canEdit and canRedirect are true', async () => {
   const navigateMock = vi.spyOn(studioClient, 'navigateToEditConnectionProvider');
-  const connectionInfo: ContainerConnectionResourceInfo = {
+  const connectionInfo: ContainerConnectionInfo = {
     name: 'Podman Machine',
     canEdit: true,
     canRedirect: true,
@@ -133,7 +133,7 @@ test('should show lowResourcesMachine banner if the running machine has not enou
 
 test('should show lowResourcesMachine banner if the running machine has not enough cpus and both canEdit and canRedirect are true', async () => {
   const navigateMock = vi.spyOn(studioClient, 'navigateToEditConnectionProvider');
-  const connectionInfo: ContainerConnectionResourceInfo = {
+  const connectionInfo: ContainerConnectionInfo = {
     name: 'Podman Machine',
     canEdit: true,
     canRedirect: true,
@@ -167,7 +167,7 @@ test('should show lowResourcesMachine banner if the running machine has not enou
 
 test('should show lowResourcesMachine banner if the running machine has not enough memory and both canEdit and canRedirect are true', async () => {
   const navigateMock = vi.spyOn(studioClient, 'navigateToEditConnectionProvider');
-  const connectionInfo: ContainerConnectionResourceInfo = {
+  const connectionInfo: ContainerConnectionInfo = {
     name: 'Podman Machine',
     canEdit: true,
     canRedirect: true,
@@ -200,7 +200,7 @@ test('should show lowResourcesMachine banner if the running machine has not enou
 });
 
 test('should show lowResourcesMachine banner without action if the running machine has not enough resources but canEdit is false', async () => {
-  const connectionInfo: ContainerConnectionResourceInfo = {
+  const connectionInfo: ContainerConnectionInfo = {
     name: 'Podman Machine',
     canEdit: false,
     canRedirect: true,
@@ -229,7 +229,7 @@ test('should show lowResourcesMachine banner without action if the running machi
 });
 
 test('should show lowResourcesMachine banner without action if the running machine has not enough resources but canRedirect is false', async () => {
-  const connectionInfo: ContainerConnectionResourceInfo = {
+  const connectionInfo: ContainerConnectionInfo = {
     name: 'Podman Machine',
     canEdit: true,
     canRedirect: false,

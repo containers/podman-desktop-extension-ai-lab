@@ -32,7 +32,7 @@ export interface CheckContainerConnectionResourcesOptions {
   connection?: ContainerProviderConnectionInfo;
 }
 
-export type ContainerConnectionResourceInfo =
+export type ContainerConnectionInfo =
   | RunningContainerConnection
   | LowResourcesContainerConnection
   | NoContainerConnection

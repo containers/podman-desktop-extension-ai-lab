@@ -29,7 +29,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { writable } from 'svelte/store';
 import { router } from 'tinro';
 import type {
-  ContainerConnectionResourceInfo,
+  ContainerConnectionInfo,
   ContainerProviderConnectionInfo,
 } from '@shared/src/models/IContainerConnectionInfo';
 import * as path from 'node:path';
@@ -98,18 +98,18 @@ vi.mock('../utils/client', async () => ({
   },
 }));
 
-const noMachineConnectionInfo: ContainerConnectionResourceInfo = {
+const noMachineConnectionInfo: ContainerConnectionInfo = {
   status: 'no-machine',
   canRedirect: true,
 };
 
-const runningMachineConnectionInfo: ContainerConnectionResourceInfo = {
+const runningMachineConnectionInfo: ContainerConnectionInfo = {
   name: 'Podman machine',
   status: 'running',
   canRedirect: true,
 };
 
-const lowResourceMachineConnectionInfo: ContainerConnectionResourceInfo = {
+const lowResourceMachineConnectionInfo: ContainerConnectionInfo = {
   name: 'Podman Machine',
   canEdit: true,
   canRedirect: true,

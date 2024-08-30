@@ -3,17 +3,17 @@ import Fa from 'svelte-fa';
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { filesize } from 'filesize';
 import { studioClient } from '/@/utils/client';
-import type { ContainerConnectionResourceInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { Button } from '@podman-desktop/ui-svelte';
 
-export let connectionInfo: ContainerConnectionResourceInfo;
+export let connectionInfo: ContainerConnectionInfo;
 
 let title: string | undefined = '';
 let description: string | undefined = '';
 let actionName: string | undefined = '';
 $: updateTitleDescription(connectionInfo);
 
-function updateTitleDescription(connectionInfo: ContainerConnectionResourceInfo) {
+function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
   if (connectionInfo.status === 'native') {
     return;
   }

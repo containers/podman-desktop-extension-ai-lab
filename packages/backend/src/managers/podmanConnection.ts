@@ -31,7 +31,7 @@ import { VMType } from '@shared/src/models/IPodman';
 import { Publisher } from '../utils/Publisher';
 import type {
   CheckContainerConnectionResourcesOptions,
-  ContainerConnectionResourceInfo,
+  ContainerConnectionInfo,
   ContainerProviderConnectionInfo,
 } from '@shared/src/models/IContainerConnectionInfo';
 import { Messages } from '@shared/Messages';
@@ -227,7 +227,7 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
 
   async checkContainerConnectionStatusAndResources(
     options: CheckContainerConnectionResourcesOptions,
-  ): Promise<ContainerConnectionResourceInfo> {
+  ): Promise<ContainerConnectionInfo> {
     // starting from podman desktop 1.10 we have the navigate functions
     const hasNavigateFunction = !!navigation.navigateToResources;
 

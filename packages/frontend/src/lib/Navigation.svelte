@@ -3,17 +3,23 @@ import type { TinroRouteMeta } from 'tinro';
 import Fa from 'svelte-fa';
 import { faBookOpen, faBrain, faGaugeHigh, faMessage, faRocket, faServer } from '@fortawesome/free-solid-svg-icons';
 import { SettingsNavItem } from '@podman-desktop/ui-svelte';
-import { onMount } from 'svelte';
+import { onDestroy, onMount } from 'svelte';
 import { configuration } from '../stores/extensionConfiguration';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { Unsubscriber } from 'svelte/store';
 
 export let meta: TinroRouteMeta;
 let experimentalTuning: boolean = false;
+let cfgUnsubscribe: Unsubscriber;
 
 onMount(() => {
-  configuration.subscribe((val: ExtensionConfiguration | undefined) => {
+  cfgUnsubscribe = configuration.subscribe((val: ExtensionConfiguration | undefined) => {
     experimentalTuning = val?.experimentalTuning ?? false;
   });
+});
+
+onDestroy(() => {
+  cfgUnsubscribe?.();
 });
 </script>
 

@@ -5629,10 +5629,10 @@ openai@^4.57.0:
     node-fetch "^2.6.7"
     qs "^6.10.3"
 
-openapi-typescript@^7.3.2:
-  version "7.3.2"
-  resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-7.3.2.tgz#dd00983a22cb084da3096f20f16674674ac30ffc"
-  integrity sha512-bNHPVlTrzRRD+7RBARjcbRrLDvNOLMNV6uHXDCneH9iQsm7WUoccvBtMaG8Y8eZ1GeFsQvnXZteNXt46snBJZQ==
+openapi-typescript@^7.3.3:
+  version "7.3.3"
+  resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-7.3.3.tgz#51bbdc849bb936b8a2d24503e0436f29fb33931f"
+  integrity sha512-NkUBI8fr5mg/3s001UPfUiBpKmHtSjkvFQO/IipCrQal5d5nGFoev1OXdxr7J9PHTswrAqU2hKdpoCL6OnammA==
   dependencies:
     "@redocly/openapi-core" "^1.16.0"
     ansi-colors "^4.1.3"

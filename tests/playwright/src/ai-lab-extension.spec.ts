@@ -17,9 +17,8 @@
  ***********************************************************************/
 
 import type { Page } from '@playwright/test';
-import { expect as playExpect } from '@playwright/test';
-import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
-import type { DashboardPage, ExtensionsPage, RunnerTestContext } from '@podman-desktop/tests-playwright';
+import { expect as playExpect, test } from '@playwright/test';
+import type { DashboardPage, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import { NavigationBar, WelcomePage, PodmanDesktopRunner } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
@@ -44,7 +43,7 @@ let navigationBar: NavigationBar;
 let dashboardPage: DashboardPage;
 let extensionsPage: ExtensionsPage;
 
-beforeAll(async () => {
+test.beforeAll(async () => {
   pdRunner = new PodmanDesktopRunner({ customFolder: 'ai-lab-tests-pd', autoUpdate: false, autoCheckUpdate: false });
   page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('ai-lab-e2e');
@@ -53,16 +52,12 @@ beforeAll(async () => {
   navigationBar = new NavigationBar(page);
 });
 
-beforeEach<RunnerTestContext>(async ctx => {
-  ctx.pdRunner = pdRunner;
-});
-
-afterAll(async () => {
+test.afterAll(async () => {
   await pdRunner.close();
 });
 
-describe(`AI Lab extension installation and verification`, async () => {
-  describe(`AI Lab extension installation`, async () => {
+test.describe.serial(`AI Lab extension installation and verification`, () => {
+  test.describe.serial(`AI Lab extension installation`, () => {
     test(`Open Settings -> Extensions page`, async () => {
       dashboardPage = await navigationBar.openDashboard();
       await playExpect(dashboardPage.mainPage).toBeVisible();
@@ -83,12 +78,14 @@ describe(`AI Lab extension installation and verification`, async () => {
       await aiLabPage.waitForLoad();
     });
   });
-  describe.skipIf(isLinux)(`AI Lab extension verification`, async () => {
+  test.describe.serial(`AI Lab extension verification`, () => {
+    test.skip(isLinux, `Skipping AI App deployment on Linux`);
     test(`Open Recipes Catalog`, async () => {
       recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
       await recipesCatalogPage.waitForLoad();
     });
-    test(`Install ChatBot example app`, { timeout: 780_000 }, async () => {
+    test(`Install ChatBot example app`, async () => {
+      test.setTimeout(780_000);
       const chatBotApp: AILabAppDetailsPage = await recipesCatalogPage.openRecipesCatalogApp(
         recipesCatalogPage.recipesCatalogNaturalLanguageProcessing,
         AI_LAB_AI_APP_NAME,

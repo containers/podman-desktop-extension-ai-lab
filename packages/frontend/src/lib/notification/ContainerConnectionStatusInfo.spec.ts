@@ -36,6 +36,8 @@ vi.mock('/@/utils/client', async () => {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.mocked(studioClient.navigateToResources).mockReturnValue(Promise.resolve());
+  vi.mocked(studioClient.navigateToEditConnectionProvider).mockReturnValue(Promise.resolve());
 });
 
 test('should not show anything if there is no title or description', async () => {

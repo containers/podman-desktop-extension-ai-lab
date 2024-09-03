@@ -85,7 +85,7 @@ afterUpdate(() => {
   }
   const latest = conversation.messages[conversation.messages.length - 1];
   if (isUserChat(latest) || (isAssistantChat(latest) && isPendingChat(latest))) {
-    scrollToBottom(scrollable);
+    scrollToBottom(scrollable).catch(err => console.error(`Error scrolling to bottom:`, err));
   }
 });
 

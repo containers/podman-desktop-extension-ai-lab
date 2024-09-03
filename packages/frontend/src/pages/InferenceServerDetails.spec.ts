@@ -222,10 +222,10 @@ describe('snippets', () => {
       containerId: 'dummyContainerId',
     });
 
-    await vi.waitFor(() => {
+    await vi.waitFor(async () => {
       const copyBtn = screen.getByTitle('Copy');
       expect(copyBtn).toBeDefined();
-      fireEvent.click(copyBtn);
+      await fireEvent.click(copyBtn);
     });
 
     await vi.waitFor(() => {

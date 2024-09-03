@@ -29,9 +29,12 @@ export const conversations: Readable<Conversation[]> = readable<Conversation[]>(
     set(msg);
   });
   // Initialize the store manually
-  studioClient.getPlaygroundConversations().then(state => {
-    set(state);
-  });
+  studioClient
+    .getPlaygroundConversations()
+    .then(state => {
+      set(state);
+    })
+    .catch((err: unknown) => console.error(`Error getting playground conversations:`, err));
   return () => {
     sub.unsubscribe();
   };

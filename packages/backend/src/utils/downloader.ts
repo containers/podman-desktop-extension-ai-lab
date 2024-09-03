@@ -94,11 +94,10 @@ export class Downloader {
    * @protected
    */
   protected getRedirect(location: string): string {
-    if(URL.canParse(location))
-      return location;
+    if (URL.canParse(location)) return location;
 
     const origin = new URL(this.url).origin;
-    if(URL.canParse(location, origin)) return new URL(location, origin).href;
+    if (URL.canParse(location, origin)) return new URL(location, origin).href;
 
     console.warn(`malformed location: cannot parse ${location}`);
     return location;

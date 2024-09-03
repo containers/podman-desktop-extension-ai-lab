@@ -188,7 +188,6 @@ test('perform download successfully', async () => {
   expect(promises.rm).not.toHaveBeenCalled();
 });
 
-
 class DownloaderTest extends Downloader {
   public override getRedirect(location: string): string {
     return super.getRedirect(location);
@@ -209,4 +208,3 @@ test('redirect should concat base url and location if not parsable', () => {
   const result = downloader.getRedirect('/world');
   expect(result).toBe('https://example.com/world');
 });
-

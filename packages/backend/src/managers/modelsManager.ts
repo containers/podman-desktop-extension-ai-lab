@@ -39,6 +39,7 @@ import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
+import { anonymiseModel } from '../utils/telemetry-utils';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
@@ -200,7 +201,7 @@ export class ModelsManager implements Disposable {
       }
       await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
 
-      this.telemetry.logUsage('model.delete', { 'model.id': modelId });
+      this.telemetry.logUsage('model.delete', { 'model.id': anonymiseModel(model) });
       model.file = model.state = undefined;
     } catch (err: unknown) {
       this.telemetry.logError('model.delete', {
@@ -452,7 +453,7 @@ export class ModelsManager implements Disposable {
 
     const before = performance.now();
     const data: Record<string, unknown> = {
-      'model-id': model.url ? modelId : 'imported', // filter imported models
+      'model-id': anonymiseModel(model), // filter imported models
     };
 
     try {

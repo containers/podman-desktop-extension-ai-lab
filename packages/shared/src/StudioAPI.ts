@@ -36,6 +36,7 @@ import type {
 } from './models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
 import type { RecipePullOptions } from './models/IRecipe';
+import type { InstructlabSession } from './models/IInstructlab';
 
 export abstract class StudioAPI {
   abstract ping(): Promise<string>;
@@ -236,4 +237,9 @@ export abstract class StudioAPI {
   abstract checkContainerConnectionStatusAndResources(
     options: CheckContainerConnectionResourcesOptions,
   ): Promise<ContainerConnectionInfo>;
+
+  /**
+   * Get sessions of InstructLab tuning
+   */
+  abstract getIsntructlabSessions(): Promise<InstructlabSession[]>;
 }

@@ -49,6 +49,7 @@ import { RecipeManager } from './managers/recipes/RecipeManager';
 import { GPUManager } from './managers/GPUManager';
 import { WhisperCpp } from './workers/provider/WhisperCpp';
 import { ApiServer } from './managers/apiServer';
+import { InstructlabManager } from './managers/instructlab/instructlabManager';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -82,6 +83,7 @@ export class Studio {
   #inferenceProviderRegistry: InferenceProviderRegistry | undefined;
   #configurationRegistry: ConfigurationRegistry | undefined;
   #gpuManager: GPUManager | undefined;
+  #instructlabManager: InstructlabManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -259,6 +261,9 @@ export class Studio {
     this.#inferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#inferenceManager);
 
+    /** The InstructLab tunning sessions manager */
+    this.#instructlabManager = new InstructlabManager();
+
     /**
      * The recipe manage offer some andy methods to manage recipes, build get images etc.
      */
@@ -325,6 +330,7 @@ export class Studio {
       this.#configurationRegistry,
       this.#recipeManager,
       this.#podmanConnection,
+      this.#instructlabManager,
     );
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);

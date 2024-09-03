@@ -51,7 +51,11 @@ onDestroy(() => {
       <div class="pl-3 mt-2 ml-[4px]">
         <span class="text-[color:var(--pd-secondary-nav-header-text)]">TUNING</span>
       </div>
-      <SettingsNavItem icon={faGaugeHigh} title="Tune with InstructLab" selected={meta.url === '/tune'} href="/tune" />
+      <SettingsNavItem
+        icon={faGaugeHigh}
+        title="Tune with InstructLab"
+        selected={meta.url.startsWith('/tune')}
+        href="/tune" />
     {/if}
   </div>
 </nav>

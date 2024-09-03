@@ -55,6 +55,8 @@ import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
 import type { RecipePullOptions } from '@shared/src/models/IRecipe';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
+import type { InstructlabManager } from './managers/instructlab/instructlabManager';
+import type { InstructlabSession } from '@shared/src/models/IInstructlab';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -75,6 +77,7 @@ export class StudioApiImpl implements StudioAPI {
     private configurationRegistry: ConfigurationRegistry,
     private recipeManager: RecipeManager,
     private podmanConnection: PodmanConnection,
+    private instructlabManager: InstructlabManager,
   ) {}
 
   async requestDeleteConversation(conversationId: string): Promise<void> {
@@ -530,5 +533,9 @@ export class StudioApiImpl implements StudioAPI {
     options: CheckContainerConnectionResourcesOptions,
   ): Promise<ContainerConnectionInfo> {
     return this.podmanConnection.checkContainerConnectionStatusAndResources(options);
+  }
+
+  async getIsntructlabSessions(): Promise<InstructlabSession[]> {
+    return this.instructlabManager.getSessions();
   }
 }

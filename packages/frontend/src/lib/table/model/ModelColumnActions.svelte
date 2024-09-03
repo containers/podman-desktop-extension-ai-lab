@@ -20,7 +20,9 @@ function deleteModel() {
 
 function openModelFolder() {
   if (object?.file) {
-    studioClient.openFile(object.file.path);
+    studioClient
+      .openFile(object.file.path)
+      .catch(err => console.error(`Error opening file ${object?.file?.path}:`, err));
   }
 }
 

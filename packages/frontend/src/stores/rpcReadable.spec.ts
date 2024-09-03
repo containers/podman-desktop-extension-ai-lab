@@ -57,8 +57,8 @@ beforeEach(() => {
 });
 
 test('check updater is called once at subscription', async () => {
-  const rpcWritable = RPCReadable<string[]>([], [], () => {
-    studioClient.getModelsInfo();
+  const rpcWritable = RPCReadable<string[]>([], [], async () => {
+    await studioClient.getModelsInfo();
     return Promise.resolve(['']);
   });
   rpcWritable.subscribe(_ => {});
@@ -67,11 +67,11 @@ test('check updater is called once at subscription', async () => {
 
 test('check updater is called twice if there is one event fired', async () => {
   const rpcWritable = RPCReadable<string[]>([], ['event'], () => {
-    studioClient.getModelsInfo();
+    studioClient.getModelsInfo().catch((err: unknown) => console.error(err));
     return Promise.resolve(['']);
   });
   rpcWritable.subscribe(_ => {});
-  rpcBrowser.invoke('event');
+  rpcBrowser.invoke('event').catch((err: unknown) => console.error(err));
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
   expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);
@@ -82,10 +82,10 @@ test('check updater is called only twice because of the debouncer if there is mo
     return studioClient.getModelsInfo();
   });
   rpcWritable.subscribe(_ => {});
-  rpcBrowser.invoke('event2');
-  rpcBrowser.invoke('event2');
-  rpcBrowser.invoke('event2');
-  rpcBrowser.invoke('event2');
+  rpcBrowser.invoke('event2').catch((err: unknown) => console.error(err));
+  rpcBrowser.invoke('event2').catch((err: unknown) => console.error(err));
+  rpcBrowser.invoke('event2').catch((err: unknown) => console.error(err));
+  rpcBrowser.invoke('event2').catch((err: unknown) => console.error(err));
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
   expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);

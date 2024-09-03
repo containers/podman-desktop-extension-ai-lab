@@ -24,7 +24,7 @@ import { type InferenceServerStatus, InferenceType } from '@shared/src/models/II
 
 vi.mock('../../../utils/client', async () => ({
   studioClient: {
-    navigateToContainer: vi.fn(),
+    navigateToContainer: vi.fn().mockReturnValue(Promise.resolve()),
   },
 }));
 

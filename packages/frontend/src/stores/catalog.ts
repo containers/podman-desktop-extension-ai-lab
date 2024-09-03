@@ -33,9 +33,12 @@ export const catalog: Readable<ApplicationCatalog> = readable<ApplicationCatalog
     set(msg);
   });
   // Initialize the store manually
-  studioClient.getCatalog().then(state => {
-    set(state);
-  });
+  studioClient
+    .getCatalog()
+    .then(state => {
+      set(state);
+    })
+    .catch((err: unknown) => console.error('Error getting catalog:', err));
   return () => {
     sub.unsubscribe();
   };

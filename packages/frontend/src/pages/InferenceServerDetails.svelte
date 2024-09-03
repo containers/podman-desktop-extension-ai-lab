@@ -39,7 +39,9 @@ $: selectedVariant;
 const onLanguageChange = (): void => {
   if (variants.length > 0) {
     selectedVariant = variants[0].key;
-    generate(selectedLanguage, selectedVariant);
+    generate(selectedLanguage, selectedVariant).catch(err =>
+      console.error(`Error generating snippet for language ${selectedLanguage} variant ${selectedVariant}:`, err),
+    );
   }
 };
 
@@ -113,7 +115,9 @@ const generate = async (language: string, variant: string) => {
 
 $: {
   if (!snippet && service) {
-    generate('curl', 'cURL');
+    generate('curl', 'cURL').catch(err =>
+      console.error(`Error generating snippet for language curl variant cURL:`, err),
+    );
   }
 }
 
@@ -122,11 +126,13 @@ let code: HTMLElement;
 $: {
   if (code) {
     code.addEventListener('copy', event => {
-      studioClient.telemetryLogUsage('snippet.copy', {
-        cpyButton: false,
-        language: selectedLanguage,
-        variant: selectedVariant,
-      });
+      studioClient
+        .telemetryLogUsage('snippet.copy', {
+          cpyButton: false,
+          language: selectedLanguage,
+          variant: selectedVariant,
+        })
+        .catch(err => console.error(`Error reporting telemetry:`, err));
     });
   }
 }
@@ -139,11 +145,13 @@ function copySnippet(): void {
     .copyToClipboard(snippet)
     .then(() => {
       copied = true;
-      studioClient.telemetryLogUsage('snippet.copy', {
-        cpyButton: true,
-        language: selectedLanguage,
-        variant: selectedVariant,
-      });
+      studioClient
+        .telemetryLogUsage('snippet.copy', {
+          cpyButton: true,
+          language: selectedLanguage,
+          variant: selectedVariant,
+        })
+        .catch(err => console.error(`Error reporting telemetry:`, err));
     })
     .catch((err: unknown) => {
       console.error('Something went wrong while trying to copy language snippet.', err);

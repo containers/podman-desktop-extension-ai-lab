@@ -24,7 +24,9 @@ $: categories = $catalog.categories;
 let recipeTelemetry: string | undefined = undefined;
 $: if (recipe && recipe.id !== recipeTelemetry) {
   recipeTelemetry = recipe.id;
-  studioClient.telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name });
+  studioClient
+    .telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name })
+    .catch(err => console.error(`Error reporting telemetry:`, err));
 }
 
 export function goToUpPage(): void {

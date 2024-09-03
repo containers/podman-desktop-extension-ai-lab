@@ -102,6 +102,8 @@ beforeEach(() => {
   mocks.getLocalRepositoriesMock.mockReturnValue([]);
   const tasksList = writable<Task[]>([]);
   vi.mocked(tasksStore).tasks = tasksList;
+  mocks.openFileMock.mockReturnValue(Promise.resolve());
+  mocks.requestDeleteLocalRepositoryMock.mockReturnValue(Promise.resolve());
 });
 
 test('button vs code should be visible if local repository is not empty', async () => {

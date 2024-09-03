@@ -27,9 +27,12 @@ export const applicationStates: Readable<ApplicationState[]> = readable<Applicat
     set(msg);
   });
   // Initialize the store manually
-  studioClient.getApplicationsState().then(state => {
-    set(state);
-  });
+  studioClient
+    .getApplicationsState()
+    .then(state => {
+      set(state);
+    })
+    .catch((err: unknown) => console.error(`Error getting applications state:`, err));
   return () => {
     sub.unsubscribe();
   };

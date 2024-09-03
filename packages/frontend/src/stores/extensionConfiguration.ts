@@ -29,9 +29,12 @@ export const configuration: Readable<ExtensionConfiguration | undefined> = reada
       set(msg);
     });
     // Initialize the store manually
-    studioClient.getExtensionConfiguration().then(state => {
-      set(state);
-    });
+    studioClient
+      .getExtensionConfiguration()
+      .then(state => {
+        set(state);
+      })
+      .catch((err: unknown) => console.error(`Error getting extension configuration:`, err));
     return () => {
       sub.unsubscribe();
     };

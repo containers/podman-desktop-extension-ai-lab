@@ -171,6 +171,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.getLocalRepositoriesMock.mockReturnValue([]);
   mocks.getTasksMock.mockReturnValue([]);
+  mocks.telemetryLogUsageMock.mockReturnValue(Promise.resolve());
 });
 
 test('should display recipe information', async () => {

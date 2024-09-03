@@ -22,15 +22,30 @@ const openServicesPage = () => {
 };
 
 const openGithub = () => {
-  studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab');
+  studioClient
+    .openURL('https://github.com/containers/podman-desktop-extension-ai-lab')
+    .catch(err =>
+      console.error('Error opening URL https://github.com/containers/podman-desktop-extension-ai-lab :', err),
+    );
 };
 
 const openIssuesPage = () => {
-  studioClient.openURL('https://github.com/containers/podman-desktop-extension-ai-lab/issues');
+  studioClient
+    .openURL('https://github.com/containers/podman-desktop-extension-ai-lab/issues')
+    .catch(err =>
+      console.error('Error opening URL https://github.com/containers/podman-desktop-extension-ai-lab/issues :', err),
+    );
 };
 
 const openDiscussionsPage = () => {
-  studioClient.openURL('https://github.com/containers/podman-desktop/discussions');
+  studioClient
+    .openURL('https://github.com/containers/podman-desktop/discussions')
+    .catch(err =>
+      console.error(
+        'Error opening URL https://github.com/containers/podman-desktop-extension-ai-lab/discussions :',
+        err,
+      ),
+    );
 };
 </script>
 

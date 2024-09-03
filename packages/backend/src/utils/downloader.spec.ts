@@ -158,7 +158,7 @@ test('perform download successfully', async () => {
   downloader.onEvent(listenerMock);
 
   // perform download logic
-  void downloader.perform('followUpId');
+  downloader.perform('followUpId').catch((err: unknown) => console.error(err));
 
   // wait for listener to be registered
   await vi.waitFor(() => {

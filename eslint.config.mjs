@@ -205,7 +205,6 @@ export default [
 
       // disabled as code in this project is not yet compliant:
       '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',

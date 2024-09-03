@@ -7,7 +7,9 @@ import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 export let object: InferenceServer;
 
 function navigateToContainer() {
-  studioClient.navigateToContainer(object.container.containerId);
+  studioClient
+    .navigateToContainer(object.container.containerId)
+    .catch(err => console.error(`Error navigating to container ${object.container.containerId}:`, err));
 }
 
 let status: string;

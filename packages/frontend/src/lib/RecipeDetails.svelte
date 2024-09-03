@@ -26,19 +26,21 @@ const onClickRepository = () => {
 
 const openVSCode = () => {
   if (localPath) {
-    studioClient.openVSCode(localPath.sourcePath, recipe?.id);
+    studioClient.openVSCode(localPath.sourcePath, recipe?.id).catch(err => console.error('Error opening VSCode:', err));
   }
 };
 
 const openLocalClone = () => {
   if (localPath) {
-    studioClient.openFile(localPath.path);
+    studioClient.openFile(localPath.path).catch(err => console.error('Error opening local clone:', err));
   }
 };
 
 const deleteLocalClone = () => {
   if (localPath) {
-    studioClient.requestDeleteLocalRepository(localPath.path);
+    studioClient
+      .requestDeleteLocalRepository(localPath.path)
+      .catch(err => console.error(`Error deleting local repository ${localPath.path}:`, err));
   }
 };
 </script>

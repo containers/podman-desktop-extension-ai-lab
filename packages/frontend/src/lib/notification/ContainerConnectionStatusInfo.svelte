@@ -65,11 +65,13 @@ function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
 function executeCommand() {
   if (connectionInfo.canRedirect) {
     if (connectionInfo.status === 'low-resources' && connectionInfo.canEdit) {
-      studioClient.navigateToEditConnectionProvider(connectionInfo.name);
+      studioClient
+        .navigateToEditConnectionProvider(connectionInfo.name)
+        .catch(err => console.error(`Error navigating to connection ${connectionInfo.name}:`, err));
       return;
     }
     if (connectionInfo.status == 'no-machine') {
-      studioClient.navigateToResources();
+      studioClient.navigateToResources().catch(err => console.error(`Error navigating to resources:`, err));
     }
   }
 }

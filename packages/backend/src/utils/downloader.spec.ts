@@ -187,3 +187,26 @@ test('perform download successfully', async () => {
   });
   expect(promises.rm).not.toHaveBeenCalled();
 });
+
+
+class DownloaderTest extends Downloader {
+  public override getRedirect(location: string): string {
+    return super.getRedirect(location);
+  }
+}
+
+const SITE_EXAMPLE = 'https://example.com/hello';
+const SITE_DUMMY = 'https://dummy.com/world';
+
+test('redirect should use location if parsable', () => {
+  const downloader = new DownloaderTest(SITE_EXAMPLE, '/home/file.guff');
+  const result = downloader.getRedirect(SITE_DUMMY);
+  expect(result).toBe(SITE_DUMMY);
+});
+
+test('redirect should concat base url and location if not parsable', () => {
+  const downloader = new DownloaderTest(SITE_EXAMPLE, '/home/file.guff');
+  const result = downloader.getRedirect('/world');
+  expect(result).toBe('https://example.com/world');
+});
+

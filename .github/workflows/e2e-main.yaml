@@ -63,9 +63,15 @@ jobs:
           ref: main
           path: podman-desktop
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
 
       - name: Update podman
         run: |
@@ -106,18 +112,18 @@ jobs:
 
       - name: Ensure getting current HEAD version of the test framework
         working-directory: ./podman-desktop-extension-ai-lab/tests/playwright
-        run: yarn add -D @podman-desktop/tests-playwright@next
+        run: pnpm add -D @podman-desktop/tests-playwright@next
 
-      - name: Execute yarn in AI Lab Extension
+      - name: Execute pnpm in AI Lab Extension
         working-directory: ./podman-desktop-extension-ai-lab
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-ai-lab
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
           AI_LAB_CI_RUN: true
-        run: yarn test:e2e
+        run: pnpm test:e2e
 
       - uses: actions/upload-artifact@v4
         if: always()

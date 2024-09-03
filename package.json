@@ -11,8 +11,8 @@
     "npm": ">=10.2.3"
   },
   "scripts": {
-    "build": "concurrently \"yarn --cwd packages/frontend build\" \"yarn --cwd packages/backend build\"",
-    "watch": "concurrently \"yarn --cwd packages/frontend watch\" \"yarn --cwd packages/backend watch\"",
+    "build": "concurrently \"cd packages/frontend && npm run build\" \"cd packages/backend && npm run build\"",
+    "watch": "concurrently \"cd packages/frontend && npm run watch\" \"cd packages/backend && npm run watch\"",
     "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
     "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
     "lint:check": "eslint . --cache",
@@ -25,7 +25,7 @@
     "test:e2e": "cd tests/playwright && npm run test:e2e",
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
-    "typecheck:backend": "yarn --cwd packages/backend typecheck",
+    "typecheck:backend": "cd packages/backend && npm run typecheck",
     "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
   "resolutions": {
@@ -68,5 +68,6 @@
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
-  }
+  },
+  "packageManager": "pnpm@9.7.1+sha512.faf344af2d6ca65c4c5c8c2224ea77a81a5e8859cbc4e06b1511ddce2f0151512431dd19e6aff31f2c6a8f5f2aced9bd2273e1fed7dd4de1868984059d2c4247"
 }

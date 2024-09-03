@@ -55,7 +55,7 @@ export class PlaygroundV2Manager implements Disposable {
     const conversation = this.#conversationRegistry.get(conversationId);
     this.telemetry.logUsage('playground.delete', {
       totalMessages: conversation.messages.length,
-      modelId: isAbsolute(conversation.modelId)?IMPORTED_PLACEHOLDER:conversation.modelId,
+      modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
     });
     this.#conversationRegistry.deleteConversation(conversationId);
   }
@@ -153,10 +153,10 @@ export class PlaygroundV2Manager implements Disposable {
     } as SystemPrompt);
 
     const conversation = this.#conversationRegistry.get(conversationId);
-    if(!conversation) return;
+    if (!conversation) return;
 
     this.telemetry.logUsage('playground.system-prompt.create', {
-      modelId: isAbsolute(conversation.modelId)?IMPORTED_PLACEHOLDER:conversation.modelId,
+      modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
     });
   }
 
@@ -172,7 +172,7 @@ export class PlaygroundV2Manager implements Disposable {
     if (content === undefined || content.length === 0) {
       this.#conversationRegistry.removeMessage(conversationId, conversation.messages[0].id);
       this.telemetry.logUsage('playground.system-prompt.delete', {
-        modelId: isAbsolute(conversation.modelId)?IMPORTED_PLACEHOLDER:conversation.modelId,
+        modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
       });
       return;
     }
@@ -184,7 +184,7 @@ export class PlaygroundV2Manager implements Disposable {
         content,
       });
       this.telemetry.logUsage('playground.system-prompt.update', {
-        modelId: isAbsolute(conversation.modelId)?IMPORTED_PLACEHOLDER:conversation.modelId,
+        modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
       });
     } else {
       throw new Error('Cannot change system prompt on started conversation.');
@@ -318,7 +318,7 @@ export class PlaygroundV2Manager implements Disposable {
     this.#conversationRegistry.completeMessage(conversationId, messageId);
     this.telemetry.logUsage('playground.message.complete', {
       duration: Date.now() - start,
-      modelId: isAbsolute(conversation.modelId)?IMPORTED_PLACEHOLDER:conversation.modelId,
+      modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
     });
   }
 

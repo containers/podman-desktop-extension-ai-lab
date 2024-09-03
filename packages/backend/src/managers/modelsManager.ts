@@ -340,7 +340,7 @@ export class ModelsManager implements Disposable {
     });
   }
 
-  private createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader {
+  public createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader {
     if (!model.url) {
       throw new Error(`model ${model.id} does not have url defined.`);
     }

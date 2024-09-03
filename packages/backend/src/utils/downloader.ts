@@ -133,6 +133,7 @@ export class Downloader {
             id: this.requestedIdentifier,
             status: 'progress',
             value: progressValue,
+            total: totalFileSize,
           } as ProgressEvent);
         }
       });

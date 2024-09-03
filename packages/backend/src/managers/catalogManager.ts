@@ -166,6 +166,14 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     return model;
   }
 
+  public getModelByName(modelName: string): ModelInfo {
+    const model = this.getModels().find(m => modelName === m.name);
+    if (!model) {
+      throw new Error(`No model found having name ${modelName}`);
+    }
+    return model;
+  }
+
   public getRecipes(): Recipe[] {
     return this.catalog.recipes;
   }

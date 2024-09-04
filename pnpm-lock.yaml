@@ -50,7 +50,7 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3(eslint@9.9.1)(typescript@5.5.4)
       eslint-plugin-import:
-        specifier: ^2.29.1
+        specifier: ^2.30.0
         version: 2.30.0(@typescript-eslint/parser@8.4.0(eslint@9.9.1)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.3)(eslint@9.9.1)
       eslint-plugin-no-null:
         specifier: ^1.0.2
@@ -92,7 +92,7 @@ importers:
         specifier: ^8.4.0
         version: 8.4.0(eslint@9.9.1)(typescript@5.5.4)
       vite:
-        specifier: ^5.4.2
+        specifier: ^5.4.3
         version: 5.4.3
       vitest:
         specifier: ^2.0.5
@@ -4450,7 +4450,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.6.0
+      semver: 7.6.3
       ts-api-utils: 1.3.0(typescript@5.5.4)
     optionalDependencies:
       typescript: 5.5.4
@@ -4465,7 +4465,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.6.0
+      semver: 7.6.3
       ts-api-utils: 1.3.0(typescript@5.5.4)
     optionalDependencies:
       typescript: 5.5.4
@@ -6786,7 +6786,7 @@ snapshots:
       espree: 9.6.1
       esquery: 1.6.0
       lodash: 4.17.21
-      semver: 7.6.0
+      semver: 7.6.3
     transitivePeerDependencies:
       - supports-color
 

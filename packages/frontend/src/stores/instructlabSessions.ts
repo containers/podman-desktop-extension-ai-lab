@@ -17,11 +17,11 @@
  ***********************************************************************/
 import { RPCReadable } from '/@/stores/rpcReadable';
 import { Messages } from '@shared/Messages';
-import { studioClient } from '/@/utils/client';
-import type { InstructlabSession } from '@shared/src/models/IInstructlab';
+import { instructlabClient } from '/@/utils/client';
+import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
 
 export const instructlabSessions = RPCReadable<InstructlabSession[]>(
   [],
   [Messages.MSG_INSTRUCTLAB_SESSIONS_UPDATE],
-  studioClient.getIsntructlabSessions,
+  instructlabClient.getIsntructlabSessions,
 );

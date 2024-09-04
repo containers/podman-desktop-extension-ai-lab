@@ -16,27 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
+import type { InstructlabManager } from './managers/instructlab/instructlabManager';
 import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
 
-export class InstructlabManager {
-  public getSessions(): InstructlabSession[] {
-    return [
-      {
-        name: 'session 1',
-        model: 'model-a',
-        targetModel: 'model-a-1',
-        repository: '/a1',
-        status: 'fine-tuned',
-        createdTime: new Date(new Date().getTime() - 6 * 24 * 60 * 60 * 1000).getTime() / 1000, // 6 days ago
-      },
-      {
-        name: 'session 2',
-        model: 'model-a',
-        targetModel: 'model-a-2',
-        repository: '/a2',
-        status: 'generating-instructions',
-        createdTime: new Date(new Date().getTime() - 4 * 60 * 60 * 1000).getTime() / 1000, // 4 hours ago
-      },
-    ];
+export class InstructlabApiImpl implements InstructlabAPI {
+  constructor(private instructlabManager: InstructlabManager) {}
+
+  async getIsntructlabSessions(): Promise<InstructlabSession[]> {
+    return this.instructlabManager.getSessions();
   }
 }

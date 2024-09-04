@@ -19,12 +19,14 @@
 import type { StudioAPI } from '@shared/src/StudioAPI';
 import { RpcBrowser } from '@shared/src/messages/MessageProxy';
 import type { RouterState } from '/@/models/IRouterState';
+import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
 
 export const RECENT_CATEGORY_ID = 'recent-category';
 const podmanDesktopApi = acquirePodmanDesktopApi();
 export const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);
 
 export const studioClient: StudioAPI = rpcBrowser.getProxy<StudioAPI>();
+export const instructlabClient: InstructlabAPI = rpcBrowser.getProxy<InstructlabAPI>();
 
 export const saveRouterState = (state: RouterState) => {
   podmanDesktopApi.setState(state);

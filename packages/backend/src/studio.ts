@@ -50,6 +50,7 @@ import { GPUManager } from './managers/GPUManager';
 import { WhisperCpp } from './workers/provider/WhisperCpp';
 import { ApiServer } from './managers/apiServer';
 import { InstructlabManager } from './managers/instructlab/instructlabManager';
+import { InstructlabApiImpl } from './instructlab-api-impl';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -64,6 +65,7 @@ export class Studio {
    */
   #rpcExtension: RpcExtension | undefined;
   #studioApi: StudioApiImpl | undefined;
+  #instructlabApi: InstructlabApiImpl | undefined;
 
   #localRepositoryRegistry: LocalRepositoryRegistry | undefined;
   #catalogManager: CatalogManager | undefined;
@@ -330,7 +332,6 @@ export class Studio {
       this.#configurationRegistry,
       this.#recipeManager,
       this.#podmanConnection,
-      this.#instructlabManager,
     );
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);
@@ -343,6 +344,10 @@ export class Studio {
     );
     await apiServer.init();
     this.#extensionContext.subscriptions.push(apiServer);
+
+    this.#instructlabApi = new InstructlabApiImpl(this.#instructlabManager);
+    // Register the instance
+    this.#rpcExtension.registerInstance<InstructlabApiImpl>(InstructlabApiImpl, this.#instructlabApi);
   }
 
   public async deactivate(): Promise<void> {

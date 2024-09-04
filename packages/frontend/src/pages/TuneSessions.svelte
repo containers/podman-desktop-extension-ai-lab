@@ -3,7 +3,7 @@ import { faGaugeHigh, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { Button, EmptyScreen, NavPage, Tab, Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { instructlabSessions } from '../stores/instructlabSessions';
-import type { InstructlabSession } from '@shared/src/models/IInstructlab';
+import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
 import InstructlabColumnName from '../lib/table/instructlab/InstructlabColumnName.svelte';
 import InstructlabColumnModelName from '../lib/table/instructlab/InstructlabColumnModelName.svelte';
 import InstructlabColumnRepository from '../lib/table/instructlab/InstructlabColumnRepository.svelte';

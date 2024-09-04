@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { InstructlabSession, InstructlabSessionStatus } from '@shared/src/models/IInstructlab';
+import type { InstructlabSession, InstructlabSessionStatus } from '@shared/src/models/instructlab/IInstructlabSession';
 
 export let object: InstructlabSession;
 

@@ -20,7 +20,7 @@ import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor, within } from '@testing-library/svelte';
 import { router } from 'tinro';
 import TuneSessions from './TuneSessions.svelte';
-import type { InstructlabSession } from '@shared/src/models/IInstructlab';
+import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
 
 const mocks = vi.hoisted(() => ({
   instructlabSessionsListMock: vi.fn(),

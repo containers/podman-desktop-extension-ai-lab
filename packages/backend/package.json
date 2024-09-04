@@ -98,7 +98,7 @@
     "@types/node": "^20",
     "@types/postman-collection": "^3.5.10",
     "@types/supertest": "^6.0.2",
-    "openapi-typescript": "^7.3.3",
+    "openapi-typescript": "^7.4.0",
     "supertest": "^7.0.0",
     "vitest": "^2.0.5"
   }

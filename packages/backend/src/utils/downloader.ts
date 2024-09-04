@@ -89,17 +89,17 @@ export class Downloader {
 
   /**
    * This file takes as argument a location, either a full url or a path
-   * if a path is provided, the base url will be used as origin.
+   * if a path is provided, the url will be used as origin.
+   * @param url
    * @param location
    * @protected
    */
-  protected getRedirect(location: string): string {
+  protected getRedirect(url :string, location: string): string {
     if (URL.canParse(location)) return location;
 
-    const origin = new URL(this.url).origin;
+    const origin = new URL(url).origin;
     if (URL.canParse(location, origin)) return new URL(location, origin).href;
 
-    console.warn(`malformed location: cannot parse ${location}`);
     return location;
   }
 
@@ -117,8 +117,7 @@ export class Downloader {
     https.get(url, { signal: this.abortSignal }, resp => {
       // Determine the total size
       if (resp.headers.location) {
-        const redirect = this.getRedirect(resp.headers.location);
-        console.warn(`follow redirect to ${redirect}`);
+        const redirect = this.getRedirect(url, resp.headers.location);
         this.followRedirects(redirect, callback);
         return;
       }

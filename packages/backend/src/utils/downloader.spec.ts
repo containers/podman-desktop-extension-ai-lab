@@ -189,8 +189,8 @@ test('perform download successfully', async () => {
 });
 
 class DownloaderTest extends Downloader {
-  public override getRedirect(location: string): string {
-    return super.getRedirect(location);
+  public override getRedirect(url :string, location: string): string {
+    return super.getRedirect(url, location);
   }
 }
 
@@ -199,12 +199,12 @@ const SITE_DUMMY = 'https://dummy.com/world';
 
 test('redirect should use location if parsable', () => {
   const downloader = new DownloaderTest(SITE_EXAMPLE, '/home/file.guff');
-  const result = downloader.getRedirect(SITE_DUMMY);
+  const result = downloader.getRedirect(SITE_EXAMPLE, SITE_DUMMY);
   expect(result).toBe(SITE_DUMMY);
 });
 
 test('redirect should concat base url and location if not parsable', () => {
   const downloader = new DownloaderTest(SITE_EXAMPLE, '/home/file.guff');
-  const result = downloader.getRedirect('/world');
+  const result = downloader.getRedirect(SITE_EXAMPLE, '/world');
   expect(result).toBe('https://example.com/world');
 });

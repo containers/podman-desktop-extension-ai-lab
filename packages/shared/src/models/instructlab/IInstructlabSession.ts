@@ -21,7 +21,7 @@ export type InstructlabSessionStatus = 'fine-tuned' | 'generating-instructions';
 export interface InstructlabSession {
   name: string;
 
-  model: string;
+  modelId: string;
 
   targetModel: string;
 

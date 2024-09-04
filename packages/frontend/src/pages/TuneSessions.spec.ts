@@ -21,9 +21,11 @@ import { screen, render, waitFor, within } from '@testing-library/svelte';
 import { router } from 'tinro';
 import TuneSessions from './TuneSessions.svelte';
 import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 
 const mocks = vi.hoisted(() => ({
   instructlabSessionsListMock: vi.fn(),
+  getCatalogMock: vi.fn(),
 }));
 
 vi.mock('../stores/instructlabSessions', () => ({
@@ -37,7 +39,9 @@ vi.mock('../stores/instructlabSessions', () => ({
 
 vi.mock('/@/utils/client', async () => {
   return {
-    studioClient: {},
+    studioClient: {
+      getCatalog: mocks.getCatalogMock,
+    },
     rpcBrowser: {
       subscribe: () => {
         return {
@@ -62,7 +66,7 @@ test('should display sessions', async () => {
   const sessions: InstructlabSession[] = [
     {
       name: 'session 1',
-      model: 'model1',
+      modelId: 'model1',
       targetModel: 'model1-target',
       repository: '/repo1',
       status: 'fine-tuned',
@@ -70,7 +74,7 @@ test('should display sessions', async () => {
     },
     {
       name: 'session 2',
-      model: 'model2',
+      modelId: 'model2',
       targetModel: 'model2-target',
       repository: '/repo2',
       status: 'generating-instructions',
@@ -78,6 +82,12 @@ test('should display sessions', async () => {
     },
   ];
   mocks.instructlabSessionsListMock.mockReturnValue(sessions);
+  const catalog: ApplicationCatalog = {
+    recipes: [],
+    models: [],
+    categories: [],
+  };
+  mocks.getCatalogMock.mockResolvedValue(catalog);
   render(TuneSessions);
 
   const table = screen.getByRole('table');

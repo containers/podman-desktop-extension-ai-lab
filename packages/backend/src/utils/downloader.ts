@@ -94,7 +94,7 @@ export class Downloader {
    * @param location
    * @protected
    */
-  protected getRedirect(url :string, location: string): string {
+  protected getRedirect(url: string, location: string): string {
     if (URL.canParse(location)) return location;
 
     const origin = new URL(url).origin;

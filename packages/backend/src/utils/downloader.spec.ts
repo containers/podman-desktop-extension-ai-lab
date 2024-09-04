@@ -189,7 +189,7 @@ test('perform download successfully', async () => {
 });
 
 class DownloaderTest extends Downloader {
-  public override getRedirect(url :string, location: string): string {
+  public override getRedirect(url: string, location: string): string {
     return super.getRedirect(url, location);
   }
 }

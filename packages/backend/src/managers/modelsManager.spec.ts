@@ -34,6 +34,8 @@ import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import { getPodmanMachineName } from '../utils/podman';
+import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
+import { Uploader } from '../utils/uploader';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -48,6 +50,10 @@ const mocks = vi.hoisted(() => {
     getPodmanCliMock: vi.fn(),
   };
 });
+
+vi.mock('../utils/uploader', () => ({
+  Uploader: vi.fn(),
+}));
 
 vi.mock('@huggingface/gguf', () => ({
   gguf: vi.fn(),
@@ -109,9 +115,21 @@ const telemetryLogger = {
   logError: mocks.logErrorMock,
 } as unknown as TelemetryLogger;
 
+const configurationRegistryMock: ConfigurationRegistry = {
+  getExtensionConfiguration: vi.fn(),
+} as unknown as ConfigurationRegistry;
+
 beforeEach(() => {
   vi.resetAllMocks();
   taskRegistry = new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview);
+
+  vi.mocked(configurationRegistryMock.getExtensionConfiguration).mockReturnValue({
+    modelUploadDisabled: false,
+    modelsPath: '~/downloads',
+    experimentalTuning: false,
+    apiPort: 0,
+    experimentalGPU: false,
+  });
 
   mocks.isCompletionEventMock.mockReturnValue(true);
 });
@@ -190,6 +208,7 @@ test('getModelsInfo should get models in local directory', async () => {
     taskRegistry,
     cancellationTokenRegistryMock,
     podmanConnectionMock,
+    configurationRegistryMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -240,6 +259,7 @@ test('getModelsInfo should return an empty array if the models folder does not e
     taskRegistry,
     cancellationTokenRegistryMock,
     podmanConnectionMock,
+    configurationRegistryMock,
   );
   manager.init();
   manager.getLocalModelsFromDisk();
@@ -281,6 +301,7 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
     taskRegistry,
     cancellationTokenRegistryMock,
     podmanConnectionMock,
+    configurationRegistryMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -340,6 +361,7 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
     taskRegistry,
     cancellationTokenRegistryMock,
     podmanConnectionMock,
+    configurationRegistryMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -381,6 +403,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
     taskRegistry,
     cancellationTokenRegistryMock,
     podmanConnectionMock,
+    configurationRegistryMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -432,6 +455,7 @@ test('deleteModel deletes the model folder', async () => {
     taskRegistry,
     cancellationTokenRegistryMock,
     podmanConnectionMock,
+    configurationRegistryMock,
   );
   manager.init();
   await manager.loadLocalModels();
@@ -497,6 +521,7 @@ describe('deleting models', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
     manager.init();
     await manager.loadLocalModels();
@@ -564,6 +589,7 @@ describe('deleting models', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
@@ -624,6 +650,7 @@ describe('deleting models', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
 
     await manager.loadLocalModels();
@@ -658,6 +685,7 @@ describe('downloadModel', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
@@ -693,6 +721,7 @@ describe('downloadModel', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -725,6 +754,7 @@ describe('downloadModel', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
     vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -756,6 +786,7 @@ describe('downloadModel', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
@@ -793,6 +824,7 @@ describe('downloadModel', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
@@ -841,6 +873,7 @@ describe('getModelMetadata', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
 
     await expect(() => manager.getModelMetadata('unknown-model-id')).rejects.toThrowError(
@@ -866,6 +899,7 @@ describe('getModelMetadata', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
 
     manager.init();
@@ -907,6 +941,7 @@ describe('getModelMetadata', () => {
       taskRegistry,
       cancellationTokenRegistryMock,
       podmanConnectionMock,
+      configurationRegistryMock,
     );
 
     manager.init();
@@ -925,5 +960,82 @@ describe('getModelMetadata', () => {
     expect(gguf).toHaveBeenCalledWith(path.join('dummy-path', 'random'), {
       allowLocalFile: true,
     });
+  });
+});
+
+const connectionMock: ContainerProviderConnection = {
+  name: 'dummy-connection',
+  type: 'podman',
+  vmType: undefined,
+} as unknown as ContainerProviderConnection;
+
+const modelMock: ModelInfo = {
+  id: 'test-model-id',
+  url: 'dummy-url',
+  file: {
+    file: 'random',
+    path: 'dummy-path',
+  },
+} as unknown as ModelInfo;
+
+describe('uploadModelToPodmanMachine', () => {
+  test('uploader should be used', async () => {
+    const performMock = vi.fn().mockResolvedValue('uploader-result');
+    vi.mocked(Uploader).mockReturnValue({
+      onEvent: vi.fn(),
+      perform: performMock,
+    } as unknown as Uploader);
+
+    const manager = new ModelsManager(
+      'appdir',
+      {
+        postMessage: vi.fn(),
+      } as unknown as Webview,
+      {
+        onUpdate: vi.fn(),
+        getModels: () => [],
+      } as unknown as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+      cancellationTokenRegistryMock,
+      podmanConnectionMock,
+      configurationRegistryMock,
+    );
+
+    manager.init();
+    const result = await manager.uploadModelToPodmanMachine(connectionMock, modelMock);
+    expect(result).toBe('uploader-result');
+    expect(performMock).toHaveBeenCalledWith(modelMock.id);
+  });
+
+  test('upload should be skipped when configuration disable it', async () => {
+    vi.mocked(configurationRegistryMock.getExtensionConfiguration).mockReturnValue({
+      // disable upload
+      modelUploadDisabled: true,
+      modelsPath: '~/downloads',
+      experimentalTuning: false,
+      apiPort: 0,
+      experimentalGPU: false,
+    });
+
+    const manager = new ModelsManager(
+      'appdir',
+      {
+        postMessage: vi.fn(),
+      } as unknown as Webview,
+      {
+        onUpdate: vi.fn(),
+        getModels: () => [],
+      } as unknown as CatalogManager,
+      telemetryLogger,
+      taskRegistry,
+      cancellationTokenRegistryMock,
+      podmanConnectionMock,
+      configurationRegistryMock,
+    );
+
+    manager.init();
+    await manager.uploadModelToPodmanMachine(connectionMock, modelMock);
+    expect(Uploader).not.toHaveBeenCalled();
   });
 });

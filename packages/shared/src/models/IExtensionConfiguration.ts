@@ -21,4 +21,5 @@ export interface ExtensionConfiguration {
   modelsPath: string;
   apiPort: number;
   experimentalTuning: boolean;
+  modelUploadDisabled: boolean;
 }

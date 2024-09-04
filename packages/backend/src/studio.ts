@@ -212,6 +212,7 @@ export class Studio {
       this.#taskRegistry,
       this.#cancellationTokenRegistry,
       this.#podmanConnection,
+      this.#configurationRegistry,
     );
     this.#modelsManager.init();
     this.#extensionContext.subscriptions.push(this.#modelsManager);

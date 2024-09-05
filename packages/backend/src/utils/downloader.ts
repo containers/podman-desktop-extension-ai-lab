@@ -87,6 +87,22 @@ export class Downloader {
     });
   }
 
+  /**
+   * This file takes as argument a location, either a full url or a path
+   * if a path is provided, the url will be used as origin.
+   * @param url
+   * @param location
+   * @protected
+   */
+  protected getRedirect(url: string, location: string): string {
+    if (URL.canParse(location)) return location;
+
+    const origin = new URL(url).origin;
+    if (URL.canParse(location, origin)) return new URL(location, origin).href;
+
+    return location;
+  }
+
   private followRedirects(url: string, callback: (message: { ok?: boolean; error?: string }) => void): void {
     const tmpFile = `${this.target}.tmp`;
 
@@ -101,7 +117,8 @@ export class Downloader {
     https.get(url, { signal: this.abortSignal }, resp => {
       // Determine the total size
       if (resp.headers.location) {
-        this.followRedirects(resp.headers.location, callback);
+        const redirect = this.getRedirect(url, resp.headers.location);
+        this.followRedirects(redirect, callback);
         return;
       }
 

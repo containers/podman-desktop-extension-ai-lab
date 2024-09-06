@@ -3918,10 +3918,10 @@ execa@^8.0.1:
     signal-exit "^4.1.0"
     strip-final-newline "^3.0.0"
 
-express-openapi-validator@^5.3.4:
-  version "5.3.4"
-  resolved "https://registry.yarnpkg.com/express-openapi-validator/-/express-openapi-validator-5.3.4.tgz#adc250ce03a0944d65afbe671d74f87b21e2e672"
-  integrity sha512-dMKWa077fgtG9PuYJJDbiPGMb6EPSTkp/yZdj1YOGgZ4Or6sMs3Mb/20ASygS6LMA1WyvnbD9udYNDImZeWaxA==
+express-openapi-validator@^5.3.5:
+  version "5.3.5"
+  resolved "https://registry.yarnpkg.com/express-openapi-validator/-/express-openapi-validator-5.3.5.tgz#5d7a3414b1327a559ecae12aa7b20a2fb40ba7bf"
+  integrity sha512-C5lYJjRVOoP7kGYrGNaEoIFqA6dzb7iMJ9s4+OSJIMl6S8HT8cp/GObf8JrxNsiTYPNXMQv2fyLpwoBDRsDy9w==
   dependencies:
     "@apidevtools/json-schema-ref-parser" "^11.7.0"
     "@types/multer" "^1.4.11"

@@ -82,7 +82,7 @@ onDestroy(() => {
       </Route>
       {#if experimentalTuning}
         <!-- Tune with InstructLab -->
-        <Route path="/tune">
+        <Route path="/tune/*">
           <TuneSessions />
         </Route>
       {/if}

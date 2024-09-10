@@ -49,6 +49,8 @@ import { RecipeManager } from './managers/recipes/RecipeManager';
 import { GPUManager } from './managers/GPUManager';
 import { WhisperCpp } from './workers/provider/WhisperCpp';
 import { ApiServer } from './managers/apiServer';
+import { InstructlabManager } from './managers/instructlab/instructlabManager';
+import { InstructlabApiImpl } from './instructlab-api-impl';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -63,6 +65,7 @@ export class Studio {
    */
   #rpcExtension: RpcExtension | undefined;
   #studioApi: StudioApiImpl | undefined;
+  #instructlabApi: InstructlabApiImpl | undefined;
 
   #localRepositoryRegistry: LocalRepositoryRegistry | undefined;
   #catalogManager: CatalogManager | undefined;
@@ -82,6 +85,7 @@ export class Studio {
   #inferenceProviderRegistry: InferenceProviderRegistry | undefined;
   #configurationRegistry: ConfigurationRegistry | undefined;
   #gpuManager: GPUManager | undefined;
+  #instructlabManager: InstructlabManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -259,6 +263,9 @@ export class Studio {
     this.#inferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#inferenceManager);
 
+    /** The InstructLab tunning sessions manager */
+    this.#instructlabManager = new InstructlabManager();
+
     /**
      * The recipe manage offer some andy methods to manage recipes, build get images etc.
      */
@@ -337,6 +344,10 @@ export class Studio {
     );
     await apiServer.init();
     this.#extensionContext.subscriptions.push(apiServer);
+
+    this.#instructlabApi = new InstructlabApiImpl(this.#instructlabManager);
+    // Register the instance
+    this.#rpcExtension.registerInstance<InstructlabApiImpl>(InstructlabApiImpl, this.#instructlabApi);
   }
 
   public async deactivate(): Promise<void> {

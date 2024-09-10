@@ -66,14 +66,14 @@
     }
   },
   "scripts": {
-    "generate": "yarn openapi-typescript ../../api/openapi.yaml -o src-generated/openapi.ts",
-    "build": "yarn generate && vite build",
+    "generate": "npx openapi-typescript ../../api/openapi.yaml -o src-generated/openapi.ts",
+    "build": "npm run generate && vite build",
     "test": "vitest run --coverage",
     "test:watch": "vitest watch --coverage",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "format:fix": "prettier --write \"src/**/*.ts\"",
-    "watch": "yarn generate && vite --mode development build -w",
-    "typecheck": "yarn generate && tsc --noEmit"
+    "watch": "npm run generate && npx vite --mode development build -w",
+    "typecheck": "npm run generate && tsc --noEmit"
   },
   "dependencies": {
     "@huggingface/gguf": "^0.1.10",

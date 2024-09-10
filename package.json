@@ -30,7 +30,8 @@
   },
   "resolutions": {
     "string-width": "^4.2.0",
-    "wrap-ansi": "^7.0.0"
+    "wrap-ansi": "^7.0.0",
+    "postman-code-generators": "1.10.1"
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.1",

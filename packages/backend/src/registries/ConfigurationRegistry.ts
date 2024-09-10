@@ -26,7 +26,7 @@ const CONFIGURATION_SECTIONS: string[] = [
   'ai-lab.experimentalGPU',
   'ai-lab.apiPort',
   'ai-lab.experimentalTuning',
-  'ai-lab.windows.disableWSLUpload',
+  'ai-lab.modelUploadDisabled',
 ];
 
 const API_PORT_DEFAULT = 10434;

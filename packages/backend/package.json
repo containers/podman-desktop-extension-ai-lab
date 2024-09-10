@@ -24,7 +24,7 @@
         "ai-lab.modelUploadDisabled": {
           "type": "boolean",
           "default": false,
-          "description": "Disable the model Upload to the podman machine",
+          "description": "Disable the model upload to the podman machine",
           "hidden": true
         },
         "ai-lab.experimentalGPU": {

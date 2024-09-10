@@ -35,7 +35,6 @@
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.1",
-    "@tsconfig/svelte": "^5.0.4",
     "@typescript-eslint/eslint-plugin": "^8.4.0",
     "@typescript-eslint/parser": "^8.4.0",
     "@vitest/coverage-v8": "^2.0.5",
@@ -55,7 +54,6 @@
     "globals": "^15.9.0",
     "prettier": "^3.3.3",
     "prettier-plugin-svelte": "^3.2.6",
-    "svelte": "5.0.0-next.243",
     "svelte-check": "^3.8.6",
     "svelte-eslint-parser": "^0.41.0",
     "typescript": "5.6.2",

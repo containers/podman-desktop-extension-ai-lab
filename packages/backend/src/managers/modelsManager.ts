@@ -38,6 +38,7 @@ import type { GGUFParseOutput } from '@huggingface/gguf';
 import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
+import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
@@ -54,6 +55,7 @@ export class ModelsManager implements Disposable {
     private taskRegistry: TaskRegistry,
     private cancellationTokenRegistry: CancellationTokenRegistry,
     private podmanConnection: PodmanConnection,
+    private configurationRegistry: ConfigurationRegistry,
   ) {
     this.#models = new Map();
     this.#disposables = [];
@@ -425,6 +427,12 @@ export class ModelsManager implements Disposable {
     model: ModelInfo,
     labels?: { [key: string]: string },
   ): Promise<string> {
+    // ensure the model upload is not disabled
+    if (this.configurationRegistry.getExtensionConfiguration().modelUploadDisabled) {
+      console.warn('The model upload is disabled, this may cause the inference server to take a few minutes to start.');
+      return getLocalModelFile(model);
+    }
+
     this.taskRegistry.createTask(`Copying model ${model.name} to ${connection.name}`, 'loading', {
       ...labels,
       'model-uploading': model.id,

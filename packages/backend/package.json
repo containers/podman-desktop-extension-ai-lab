@@ -21,6 +21,12 @@
           "default": "",
           "description": "Custom path where to download models. Note: The extension must be restarted for changes to take effect. (Default is blank)"
         },
+        "ai-lab.modelUploadDisabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable the model upload to the podman machine",
+          "hidden": true
+        },
         "ai-lab.experimentalGPU": {
           "type": "boolean",
           "default": false,

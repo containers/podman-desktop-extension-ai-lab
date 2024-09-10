@@ -35,8 +35,7 @@ import { withDefaultConfiguration } from '../utils/inferenceUtils';
 import { getRandomString } from '../utils/randomUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
-import { anonymiseModel, IMPORTED_PLACEHOLDER } from '../utils/telemetry-utils';
-import { isAbsolute } from 'node:path';
+import { getHash } from '../utils/sha';
 
 export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;
@@ -55,7 +54,7 @@ export class PlaygroundV2Manager implements Disposable {
     const conversation = this.#conversationRegistry.get(conversationId);
     this.telemetry.logUsage('playground.delete', {
       totalMessages: conversation.messages.length,
-      modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
+      modelId: getHash(conversation.modelId),
     });
     this.#conversationRegistry.deleteConversation(conversationId);
   }
@@ -68,7 +67,7 @@ export class PlaygroundV2Manager implements Disposable {
 
     const telemetry: Record<string, unknown> = {
       hasName: !!name,
-      modelId: anonymiseModel(model),
+      modelId: getHash(model.id),
     };
     this.createPlayground(name, model, trackingId)
       .then((playgroundId: string) => {
@@ -151,12 +150,8 @@ export class PlaygroundV2Manager implements Disposable {
       id: this.#conversationRegistry.getUniqueId(),
       timestamp: Date.now(),
     } as SystemPrompt);
-
-    const conversation = this.#conversationRegistry.get(conversationId);
-    if (!conversation) return;
-
     this.telemetry.logUsage('playground.system-prompt.create', {
-      modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
+      modelId: getHash(this.#conversationRegistry.get(conversationId).modelId),
     });
   }
 
@@ -172,7 +167,7 @@ export class PlaygroundV2Manager implements Disposable {
     if (content === undefined || content.length === 0) {
       this.#conversationRegistry.removeMessage(conversationId, conversation.messages[0].id);
       this.telemetry.logUsage('playground.system-prompt.delete', {
-        modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
+        modelId: getHash(conversation.modelId),
       });
       return;
     }
@@ -184,7 +179,7 @@ export class PlaygroundV2Manager implements Disposable {
         content,
       });
       this.telemetry.logUsage('playground.system-prompt.update', {
-        modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
+        modelId: getHash(conversation.modelId),
       });
     } else {
       throw new Error('Cannot change system prompt on started conversation.');
@@ -233,7 +228,7 @@ export class PlaygroundV2Manager implements Disposable {
       conversationId: conversationId,
       ...options,
       promptLength: userInput.length,
-      modelId: anonymiseModel(modelInfo),
+      modelId: getHash(modelInfo.id),
     };
 
     // create an abort controller
@@ -318,7 +313,7 @@ export class PlaygroundV2Manager implements Disposable {
     this.#conversationRegistry.completeMessage(conversationId, messageId);
     this.telemetry.logUsage('playground.message.complete', {
       duration: Date.now() - start,
-      modelId: isAbsolute(conversation.modelId) ? IMPORTED_PLACEHOLDER : conversation.modelId,
+      modelId: getHash(conversation.modelId),
     });
   }
 

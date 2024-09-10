@@ -33,13 +33,12 @@ import { Uploader } from '../utils/uploader';
 import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/modelsUtils';
 import { getPodmanMachineName } from '../utils/podman';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
-import { hasValidSha } from '../utils/sha';
+import { getHash, hasValidSha } from '../utils/sha';
 import type { GGUFParseOutput } from '@huggingface/gguf';
 import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
-import { anonymiseModel } from '../utils/telemetry-utils';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
@@ -201,7 +200,7 @@ export class ModelsManager implements Disposable {
       }
       await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
 
-      this.telemetry.logUsage('model.delete', { 'model.id': anonymiseModel(model) });
+      this.telemetry.logUsage('model.delete', { 'model.id': getHash(modelId) });
       model.file = model.state = undefined;
     } catch (err: unknown) {
       this.telemetry.logError('model.delete', {
@@ -453,7 +452,7 @@ export class ModelsManager implements Disposable {
 
     const before = performance.now();
     const data: Record<string, unknown> = {
-      'model-id': anonymiseModel(model), // filter imported models
+      'model-id': getHash(modelId),
     };
 
     try {

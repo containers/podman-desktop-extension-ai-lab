@@ -135,7 +135,7 @@ export function goToUpPage(): void {
               class="w-full cursor-pointer flex-col px-4 py-8 border-2 border-dashed rounded flex justify-center items-center">
               <Fa size="1.1x" class="cursor-pointer text-[var(--pd-link)]" icon={faFileImport} />
               <span>Drag & Drop or <strong class="text-[var(--pd-link)]">Choose file</strong> to import</span>
-              <span class="opacity-50 text-sm">Supported format: .guff, .bin</span>
+              <span class="opacity-50 text-sm">Supported formats: .gguf, .bin</span>
             </button>
           {:else}
             <!-- showing path -->

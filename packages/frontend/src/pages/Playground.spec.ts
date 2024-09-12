@@ -83,6 +83,7 @@ beforeEach(() => {
     recipes: [],
     categories: [],
   });
+  vi.mocked(studioClient.requestCancelToken).mockResolvedValue(undefined);
 
   // mock conversation
   vi.mocked(conversationsStore).conversations = customConversations;

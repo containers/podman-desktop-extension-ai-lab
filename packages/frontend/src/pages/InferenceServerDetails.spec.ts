@@ -89,6 +89,7 @@ beforeEach(() => {
 
   vi.mocked(studioClient.copyToClipboard).mockResolvedValue(undefined);
   vi.mocked(studioClient.telemetryLogUsage).mockResolvedValue(undefined);
+  vi.mocked(studioClient.openURL).mockResolvedValue(true);
 
   mocks.getSnippetLanguagesMock.mockReturnValue([
     {

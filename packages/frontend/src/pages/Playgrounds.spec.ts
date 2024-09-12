@@ -27,7 +27,7 @@ const mocks = vi.hoisted(() => {
   return {
     conversationSubscribeMock: vi.fn(),
     conversationsQueriesMock: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.conversationSubscribeMock());
         return (): void => {};
       },

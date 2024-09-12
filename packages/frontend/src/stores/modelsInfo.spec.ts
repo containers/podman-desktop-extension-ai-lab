@@ -35,7 +35,7 @@ vi.mock('../utils/client', async () => {
       const f = subscriber.get(msgId);
       f();
     },
-    subscribe: (msgId: string, f: (msg: any) => void): unknown => {
+    subscribe: (msgId: string, f: (msg: unknown) => void): unknown => {
       subscriber.set(msgId, f);
       return {
         unsubscribe: (): void => {

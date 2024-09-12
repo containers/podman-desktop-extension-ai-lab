@@ -41,7 +41,7 @@ const mocks = vi.hoisted(() => {
     // models store
     modelsInfoSubscribeMock: vi.fn(),
     modelsInfoQueriesMock: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.modelsInfoSubscribeMock());
         return (): void => {};
       },
@@ -51,7 +51,7 @@ const mocks = vi.hoisted(() => {
     // tasks store
     tasksSubscribeMock: vi.fn(),
     tasksQueriesMock: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.tasksSubscribeMock());
         return (): void => {};
       },
@@ -62,7 +62,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('../stores/inferenceServers', () => ({
   inferenceServers: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.getInferenceServersMock());
       return (): void => {};
     },
@@ -71,7 +71,7 @@ vi.mock('../stores/inferenceServers', () => ({
 
 vi.mock('../stores/containerProviderConnections', () => ({
   containerProviderConnections: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.getContainerConnectionInfoMock());
       return (): void => {};
     },

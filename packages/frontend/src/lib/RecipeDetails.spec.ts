@@ -66,7 +66,7 @@ vi.mock('/@/stores/catalog', async () => {
 
 vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.getLocalRepositoriesMock());
       return (): void => {};
     },

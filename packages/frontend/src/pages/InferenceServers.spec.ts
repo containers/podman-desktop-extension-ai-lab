@@ -27,7 +27,7 @@ import { router } from 'tinro';
 const mocks = vi.hoisted(() => ({
   inferenceServersSubscribeMock: vi.fn(),
   inferenceServersMock: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.inferenceServersSubscribeMock());
       return (): void => {};
     },

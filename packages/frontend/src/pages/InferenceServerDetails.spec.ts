@@ -44,7 +44,7 @@ vi.mock('../stores/inferenceServers', () => ({
 
 vi.mock('../stores/snippetLanguages', () => ({
   snippetLanguages: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.getSnippetLanguagesMock());
       return (): void => {};
     },

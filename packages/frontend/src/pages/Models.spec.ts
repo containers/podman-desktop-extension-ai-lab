@@ -30,13 +30,13 @@ const mocks = vi.hoisted(() => {
     modelsInfoSubscribeMock: vi.fn(),
     tasksSubscribeMock: vi.fn(),
     modelsInfoQueriesMock: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.modelsInfoSubscribeMock());
         return (): void => {};
       },
     },
     tasksQueriesMock: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.tasksSubscribeMock());
         return (): void => {};
       },

@@ -39,7 +39,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('../stores/tasks', () => ({
   tasks: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.getTasksMock());
       return (): void => {};
     },
@@ -48,7 +48,7 @@ vi.mock('../stores/tasks', () => ({
 
 vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.getLocalRepositoriesMock());
       return (): void => {};
     },

@@ -27,7 +27,7 @@ vi.mock('../utils/client', async () => ({
 
 vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f([]);
       return (): void => {};
     },

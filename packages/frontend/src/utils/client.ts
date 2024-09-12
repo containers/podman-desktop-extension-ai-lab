@@ -42,4 +42,6 @@ export const getRouterState = (): RouterState => {
   return { url: '/' };
 };
 
-(window as any).studioClient = studioClient;
+Object.defineProperty(window, 'studioClient', {
+  value: studioClient,
+});

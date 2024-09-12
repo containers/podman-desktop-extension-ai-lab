@@ -36,7 +36,7 @@ const mocks = vi.hoisted(() => {
 vi.mock('../../stores/tasks', async () => {
   return {
     tasks: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.getTasksMock());
         return (): void => {};
       },

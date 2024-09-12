@@ -46,7 +46,7 @@ const mocks = vi.hoisted(() => {
 // Mock LocalRepository store
 vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.getLocalRepositoriesMock());
       return (): void => {};
     },
@@ -55,7 +55,7 @@ vi.mock('../stores/localRepositories', () => ({
 
 vi.mock('../stores/containerProviderConnections', () => ({
   containerProviderConnections: {
-    subscribe: (f: (msg: any) => void) => {
+    subscribe: (f: (msg: unknown) => void) => {
       f(mocks.getContainerConnectionInfoMock());
       return (): void => {};
     },
@@ -66,7 +66,7 @@ vi.mock('../stores/containerProviderConnections', () => ({
 vi.mock('../stores/modelsInfo', async () => {
   return {
     modelsInfo: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.getModelsInfoMock());
         return (): void => {};
       },
@@ -77,7 +77,7 @@ vi.mock('../stores/modelsInfo', async () => {
 vi.mock('../stores/tasks', async () => {
   return {
     tasks: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.getTasksMock());
         return (): void => {};
       },
@@ -88,7 +88,7 @@ vi.mock('../stores/tasks', async () => {
 vi.mock('/@/stores/catalog', async () => {
   return {
     catalog: {
-      subscribe: (f: (msg: any) => void) => {
+      subscribe: (f: (msg: unknown) => void) => {
         f(mocks.getCatalogMock());
         return (): void => {};
       },

@@ -38,7 +38,7 @@ $: {
   }
 }
 
-function handleOnChange(nValue: ModelInfo): void {
+function handleOnChange(nValue: (ModelInfo & { label: string; value: string }) | undefined): void {
   value = nValue;
 }
 </script>

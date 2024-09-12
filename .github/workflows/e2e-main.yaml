@@ -73,7 +73,9 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          cache-dependency-path: |
+            podman-desktop/pnpm-lock.yaml
+            podman-desktop-extension-ai-lab/pnpm-lock.yaml
 
       - name: Update podman
         run: |

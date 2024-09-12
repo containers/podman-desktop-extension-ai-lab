@@ -54,7 +54,7 @@ export class LlamaCppPython extends InferenceProvider {
     super(taskRegistry, InferenceType.LLAMA_CPP, 'LLama-cpp');
   }
 
-  dispose() {}
+  dispose(): void {}
 
   public enabled = (): boolean => true;
 

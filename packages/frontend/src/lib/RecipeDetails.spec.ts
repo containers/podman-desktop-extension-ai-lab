@@ -43,9 +43,9 @@ vi.mock('../utils/client', async () => {
       requestDeleteLocalRepository: mocks.requestDeleteLocalRepositoryMock,
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },
@@ -68,7 +68,7 @@ vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getLocalRepositoriesMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));

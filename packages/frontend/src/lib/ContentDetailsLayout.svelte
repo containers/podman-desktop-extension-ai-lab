@@ -3,7 +3,7 @@ export let detailsTitle: string;
 export let detailsLabel: string;
 let open: boolean = true;
 
-const toggle = () => {
+const toggle = (): void => {
   open = !open;
 };
 </script>

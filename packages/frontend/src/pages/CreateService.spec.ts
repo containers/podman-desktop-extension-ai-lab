@@ -43,7 +43,7 @@ const mocks = vi.hoisted(() => {
     modelsInfoQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.modelsInfoSubscribeMock());
-        return () => {};
+        return (): void => {};
       },
     },
     // server store
@@ -53,7 +53,7 @@ const mocks = vi.hoisted(() => {
     tasksQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.tasksSubscribeMock());
-        return () => {};
+        return (): void => {};
       },
     },
     getContainerConnectionInfoMock: vi.fn<() => ContainerProviderConnectionInfo[]>(),
@@ -64,7 +64,7 @@ vi.mock('../stores/inferenceServers', () => ({
   inferenceServers: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getInferenceServersMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -73,7 +73,7 @@ vi.mock('../stores/containerProviderConnections', () => ({
   containerProviderConnections: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getContainerConnectionInfoMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -207,7 +207,7 @@ test('tasks should be displayed after requestCreateInferenceServer', async () =>
   vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
     listener = f;
     listener([]);
-    return () => {};
+    return (): void => {};
   });
 
   render(CreateService);
@@ -255,7 +255,7 @@ test('form should be disabled when loading', async () => {
   vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
     listener = f;
     listener([]);
-    return () => {};
+    return (): void => {};
   });
 
   render(CreateService);
@@ -303,7 +303,7 @@ test('should display error message if createService fails', async () => {
   vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
     listener = f;
     listener([]);
-    return () => {};
+    return (): void => {};
   });
 
   vi.mocked(studioClient.requestCreateInferenceServer).mockRejectedValue('error creating service');

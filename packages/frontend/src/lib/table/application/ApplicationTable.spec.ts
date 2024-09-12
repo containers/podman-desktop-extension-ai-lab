@@ -29,7 +29,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('../../../stores/application-states', () => ({
   applicationStates: {
-    subscribe: (fn: (items: ApplicationState[]) => void) => {
+    subscribe: (fn: (items: ApplicationState[]) => void): unknown => {
       fn(mocks.getApplicationStates());
       return vi.fn();
     },
@@ -38,7 +38,7 @@ vi.mock('../../../stores/application-states', () => ({
 
 vi.mock('../../../stores/catalog', () => ({
   catalog: {
-    subscribe: (fn: (item: ApplicationCatalog) => void) => {
+    subscribe: (fn: (item: ApplicationCatalog) => void): unknown => {
       fn({ categories: [], models: [], recipes: [] });
       return vi.fn();
     },

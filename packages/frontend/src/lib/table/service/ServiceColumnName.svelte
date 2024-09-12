@@ -4,7 +4,7 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 
 export let object: InferenceServer;
 
-function openDetails() {
+function openDetails(): void {
   router.goto(`/service/${object.container.containerId}`);
 }
 </script>
@@ -12,6 +12,6 @@ function openDetails() {
 <button
   title="Open service details"
   class="text-[var(--pd-table-body-text-highlight)] w-full text-ellipsis overflow-hidden"
-  on:click={() => openDetails()}>
+  on:click={openDetails}>
   {object.container.containerId}
 </button>

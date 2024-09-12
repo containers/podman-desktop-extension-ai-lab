@@ -37,6 +37,10 @@ $: {
     selected = { ...value, label: value.name, value: value.id };
   }
 }
+
+function handleOnChange(nValue: ModelInfo): void {
+  value = nValue;
+}
 </script>
 
 <Select
@@ -44,7 +48,7 @@ $: {
   name="select-model"
   disabled={disabled}
   value={selected}
-  onchange={nValue => (value = nValue)}
+  onchange={handleOnChange}
   placeholder="Select model to use"
   items={models
     .toSorted((a, b) => getModelSortingScore(a) - getModelSortingScore(b))

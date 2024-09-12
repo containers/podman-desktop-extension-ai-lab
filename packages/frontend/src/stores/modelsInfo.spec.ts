@@ -31,14 +31,14 @@ const mocks = vi.hoisted(() => {
 vi.mock('../utils/client', async () => {
   const subscriber = new Map();
   const rpcBrowser = {
-    invoke: (msgId: string, _: unknown[]) => {
+    invoke: (msgId: string, _: unknown[]): void => {
       const f = subscriber.get(msgId);
       f();
     },
-    subscribe: (msgId: string, f: (msg: any) => void) => {
+    subscribe: (msgId: string, f: (msg: any) => void): unknown => {
       subscriber.set(msgId, f);
       return {
-        unsubscribe: () => {
+        unsubscribe: (): void => {
           subscriber.clear();
         },
       };

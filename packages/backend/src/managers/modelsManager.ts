@@ -61,7 +61,7 @@ export class ModelsManager implements Disposable {
     this.#disposables = [];
   }
 
-  init() {
+  init(): void {
     const disposable = this.catalogManager.onUpdate(() => {
       this.loadLocalModels().catch((err: unknown) => {
         console.error(`Something went wrong when loading local models`, err);
@@ -80,10 +80,10 @@ export class ModelsManager implements Disposable {
     this.#disposables.forEach(d => d.dispose());
   }
 
-  async loadLocalModels() {
+  async loadLocalModels(): Promise<void> {
     this.#models.clear();
     this.catalogManager.getModels().forEach(m => this.#models.set(m.id, m));
-    const reloadLocalModels = async () => {
+    const reloadLocalModels = async (): Promise<void> => {
       this.getLocalModelsFromDisk();
       await this.sendModelsInfo();
     };
@@ -98,11 +98,11 @@ export class ModelsManager implements Disposable {
     await reloadLocalModels();
   }
 
-  getModelsInfo() {
+  getModelsInfo(): ModelInfo[] {
     return [...this.#models.values()];
   }
 
-  async sendModelsInfo() {
+  async sendModelsInfo(): Promise<void> {
     const models = this.getModelsInfo();
     await this.webview.postMessage({
       id: Messages.MSG_NEW_MODELS_STATE,

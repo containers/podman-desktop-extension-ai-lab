@@ -94,13 +94,13 @@ onMount(() => {
     filterModels();
   });
 
-  return () => {
+  return (): void => {
     tasksUnsubscribe();
     localModelsUnsubscribe();
   };
 });
 
-async function importModel() {
+async function importModel(): Promise<void> {
   router.goto('/models/import');
 }
 </script>

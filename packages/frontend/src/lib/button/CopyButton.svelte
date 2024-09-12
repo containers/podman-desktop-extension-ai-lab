@@ -25,10 +25,14 @@ function copy(content: string): void {
 function reset(): void {
   status = 'idle';
 }
+
+function handleClick(): void {
+  copy(content);
+}
 </script>
 
 <Tooltip bottom tip={status === 'idle' ? 'Copy' : 'Copied'}>
-  <button onmouseleave={reset} onclick={() => copy(content)} class={`${classes} cursor-copy`}>
+  <button onmouseleave={reset} onclick={handleClick} class={`${classes} cursor-copy`}>
     {#if children}
       {@render children()}
     {/if}

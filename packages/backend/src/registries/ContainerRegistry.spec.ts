@@ -38,10 +38,10 @@ vi.mock('@podman-desktop/api', async () => {
 
 beforeEach(() => {
   const listeners: ((value: unknown) => void)[] = [];
-  const eventSubscriber = (listener: (value: unknown) => void) => {
+  const eventSubscriber = (listener: (value: unknown) => void): void => {
     listeners.push(listener);
   };
-  const fire = (value: unknown) => {
+  const fire = (value: unknown): void => {
     listeners.forEach(listener => listener(value));
   };
   vi.mocked(EventEmitter).mockReturnValue({
@@ -122,7 +122,7 @@ test('ContainerRegistry subscriber disposed should not be called', () => {
   });
 
   mocks.DisposableCreateMock.mockImplementation(callback => ({
-    dispose: () => callback(),
+    dispose: (): void => callback(),
   }));
 
   // Create the ContainerRegistry and init

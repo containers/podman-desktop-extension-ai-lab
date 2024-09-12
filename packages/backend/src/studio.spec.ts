@@ -51,14 +51,14 @@ vi.mock('../package.json', () => ({
 vi.mock('@podman-desktop/api', async () => {
   return {
     configuration: {
-      getConfiguration: () => ({
+      getConfiguration: (): unknown => ({
         get: vi.fn(),
       }),
       onDidChangeConfiguration: vi.fn(),
     },
     version: '1.8.0',
     fs: {
-      createFileSystemWatcher: () => ({
+      createFileSystemWatcher: (): unknown => ({
         onDidCreate: vi.fn(),
         onDidDelete: vi.fn(),
         onDidChange: vi.fn(),
@@ -66,10 +66,10 @@ vi.mock('@podman-desktop/api', async () => {
     },
     EventEmitter: vi.fn(),
     Uri: class {
-      static readonly joinPath = () => ({ fsPath: '.' });
+      static readonly joinPath = (): unknown => ({ fsPath: '.' });
     },
     window: {
-      createWebviewPanel: () => ({
+      createWebviewPanel: (): unknown => ({
         webview: {
           html: '',
           onDidReceiveMessage: vi.fn(),
@@ -77,12 +77,12 @@ vi.mock('@podman-desktop/api', async () => {
         },
         onDidChangeViewState: vi.fn(),
       }),
-      createStatusBarItem: () => ({
+      createStatusBarItem: (): unknown => ({
         show: vi.fn(),
       }),
     },
     env: {
-      createTelemetryLogger: () => ({
+      createTelemetryLogger: (): unknown => ({
         logUsage: vi.fn(),
         logError: mocks.logErrorMock,
       }),

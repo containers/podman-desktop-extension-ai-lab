@@ -20,37 +20,37 @@ export let modelId: string;
 export let dropdownMenu = false;
 export let enableGoToRecipeAction = false;
 
-function deleteApplication() {
+function deleteApplication(): void {
   studioClient.requestRemoveApplication(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to delete AI App: ${String(err)}.`);
   });
 }
 
-function startApplication() {
+function startApplication(): void {
   studioClient.requestStartApplication(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to start AI App: ${String(err)}.`);
   });
 }
 
-function stopApplication() {
+function stopApplication(): void {
   studioClient.requestStopApplication(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to delete AI App: ${String(err)}.`);
   });
 }
 
-function restartApplication() {
+function restartApplication(): void {
   studioClient.requestRestartApplication(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to restart AI App: ${String(err)}.`);
   });
 }
 
-function openApplication() {
+function openApplication(): void {
   studioClient.requestOpenApplication(recipeId, modelId).catch(err => {
     console.error(`Something went wrong while trying to open AI App: ${String(err)}.`);
   });
 }
 
-function redirectToRecipe() {
+function redirectToRecipe(): void {
   router.goto(`/recipe/${recipeId}`);
 }
 
@@ -70,26 +70,26 @@ $: {
 
 {#if object?.pod !== undefined}
   {#if exited}
-    <ListItemButtonIcon icon={faPlay} onClick={() => startApplication()} title="Start AI App" />
+    <ListItemButtonIcon icon={faPlay} onClick={startApplication} title="Start AI App" />
   {:else}
-    <ListItemButtonIcon icon={faStop} onClick={() => stopApplication()} title="Stop AI App" />
-    <ListItemButtonIcon icon={faArrowUpRightFromSquare} onClick={() => openApplication()} title="Open AI App" />
+    <ListItemButtonIcon icon={faStop} onClick={stopApplication} title="Stop AI App" />
+    <ListItemButtonIcon icon={faArrowUpRightFromSquare} onClick={openApplication} title="Open AI App" />
   {/if}
 
   <svelte:component this={actionsStyle}>
     <ListItemButtonIcon
       icon={faRotateForward}
-      onClick={() => restartApplication()}
+      onClick={restartApplication}
       title="Restart AI App"
       menu={dropdownMenu} />
 
     <ListItemButtonIcon
       icon={faBookOpen}
-      onClick={() => redirectToRecipe()}
+      onClick={redirectToRecipe}
       title="Open Recipe"
       hidden={!enableGoToRecipeAction}
       menu={dropdownMenu} />
 
-    <ListItemButtonIcon icon={faTrash} onClick={() => deleteApplication()} title="Delete AI App" menu={dropdownMenu} />
+    <ListItemButtonIcon icon={faTrash} onClick={deleteApplication} title="Delete AI App" menu={dropdownMenu} />
   </svelte:component>
 {/if}

@@ -17,7 +17,7 @@ const columns: TableColumn<InferenceServer>[] = [
   new TableColumn<InferenceServer>('Model', { renderer: ServiceColumnModelName, align: 'left' }),
   new TableColumn<InferenceServer>('Actions', { width: '80px', renderer: ServiceAction, align: 'right' }),
 ];
-const row = new TableRow<InferenceServer>({ selectable: _service => true });
+const row = new TableRow<InferenceServer>({ selectable: (_service): boolean => true });
 
 let data: (InferenceServer & { selected?: boolean })[];
 
@@ -29,7 +29,7 @@ onMount(() => {
 
 let selectedItemsNumber: number;
 
-const deleteSelected = () => {
+const deleteSelected = (): void => {
   studioClient
     .requestDeleteInferenceServer(
       ...data.filter(service => service.selected).map(service => service.container.containerId),
@@ -39,7 +39,7 @@ const deleteSelected = () => {
     });
 };
 
-function createNewService() {
+function createNewService(): void {
   router.goto('/service/create');
 }
 </script>
@@ -50,7 +50,7 @@ function createNewService() {
       <Button title="Delete selected items" on:click={deleteSelected} icon={faTrash}
         >Delete {selectedItemsNumber} selected items</Button>
     {/if}
-    <Button icon={faPlusCircle} title="Create a new model service" on:click={() => createNewService()}
+    <Button icon={faPlusCircle} title="Create a new model service" on:click={createNewService}
       >New Model Service</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
@@ -63,7 +63,7 @@ function createNewService() {
           title="No model service running"
           message="A model service offers a configurable endpoint via an OpenAI-compatible web server, facilitating a seamless integration of AI capabilities into existing applications. Upon initialization, effortlessly access detailed service information and generate code snippets in multiple programming languages to ease application integration.">
           <div class="flex gap-2 justify-center">
-            <Button type="link" on:click={() => createNewService()}>Create service</Button>
+            <Button type="link" on:click={createNewService}>Create service</Button>
           </div>
         </EmptyScreen>
       {/if}

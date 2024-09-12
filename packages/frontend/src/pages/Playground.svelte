@@ -56,7 +56,7 @@ $: {
   }
 }
 $: server = $inferenceServers.find(is => conversation && is.models.map(mi => mi.id).includes(conversation?.modelId));
-function askPlayground() {
+function askPlayground(): void {
   errorMsg = '';
   sendEnabled = false;
   studioClient
@@ -89,18 +89,18 @@ afterUpdate(() => {
   }
 });
 
-function requestFocus(element: HTMLElement) {
+function requestFocus(element: HTMLElement): void {
   element.focus();
 }
 
-function handleKeydown(e: KeyboardEvent) {
+function handleKeydown(e: KeyboardEvent): void {
   if (e.key === 'Enter') {
     askPlayground();
     e.preventDefault();
   }
 }
 
-async function scrollToBottom(element: Element) {
+async function scrollToBottom(element: Element): Promise<void> {
   element.scroll?.({ top: element.scrollHeight, behavior: 'smooth' });
 }
 
@@ -151,6 +151,14 @@ function getSendPromptTitle(sendEnabled: boolean, status?: string, health?: stri
 
 export function goToUpPage(): void {
   router.goto('/playgrounds');
+}
+
+function handleOnClick(): void {
+  if (cancellationTokenId) {
+    studioClient
+      .requestCancelToken(cancellationTokenId)
+      .catch(err => console.error(`Error request cancel token ${cancellationTokenId}`, err));
+  }
 }
 </script>
 
@@ -272,16 +280,12 @@ export function goToUpPage(): void {
 
           <div class="flex-none text-right m-4">
             {#if !sendEnabled && cancellationTokenId !== undefined}
-              <Button
-                title="Stop"
-                icon={faStop}
-                type="secondary"
-                on:click={() => cancellationTokenId && studioClient.requestCancelToken(cancellationTokenId)} />
+              <Button title="Stop" icon={faStop} type="secondary" on:click={handleOnClick} />
             {:else}
               <Button
                 inProgress={!sendEnabled}
                 disabled={!isHealthy(server?.status, server?.health?.Status) || !prompt?.length}
-                on:click={() => askPlayground()}
+                on:click={askPlayground}
                 icon={faPaperPlane}
                 type="secondary"
                 title={getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}

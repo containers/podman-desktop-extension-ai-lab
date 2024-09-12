@@ -61,7 +61,7 @@ export class RpcExtension implements Disposable {
     this.#webviewDisposable?.dispose();
   }
 
-  init() {
+  init(): void {
     this.#webviewDisposable = this.webview.onDidReceiveMessage(async (message: unknown) => {
       if (!isMessageRequest(message)) {
         console.error('Received incompatible message.', message);
@@ -105,7 +105,7 @@ export class RpcExtension implements Disposable {
     });
   }
 
-  registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: new (...args: any[]) => T, instance: T) {
+  registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: new (...args: any[]) => T, instance: T): void {
     const methodNames = Object.getOwnPropertyNames(classType.prototype).filter(
       name => name !== 'constructor' && typeof instance[name as keyof T] === 'function',
     );
@@ -116,7 +116,7 @@ export class RpcExtension implements Disposable {
     });
   }
 
-  register(channel: string, method: (body: any) => Promise<any>) {
+  register(channel: string, method: (body: any) => Promise<any>): void {
     this.methods.set(channel, method);
   }
 }
@@ -141,7 +141,7 @@ export class RpcBrowser {
     this.init();
   }
 
-  init() {
+  init(): void {
     // eslint-disable-next-line sonarjs/post-message
     this.window.addEventListener('message', (event: MessageEvent) => {
       const message = event.data;
@@ -220,7 +220,7 @@ export class RpcBrowser {
   subscribe(msgId: string, f: (msg: any) => void): Subscriber {
     this.subscribers.set(msgId, f);
     return {
-      unsubscribe: () => {
+      unsubscribe: (): void => {
         this.subscribers.delete(msgId);
       },
     };

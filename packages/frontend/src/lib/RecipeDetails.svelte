@@ -16,7 +16,7 @@ $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 
 $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipeId);
 
-const onClickRepository = () => {
+const onClickRepository = (): void => {
   if (!recipe) return;
 
   studioClient.openURL(recipe.repository).catch((err: unknown) => {
@@ -24,19 +24,19 @@ const onClickRepository = () => {
   });
 };
 
-const openVSCode = () => {
+const openVSCode = (): void => {
   if (localPath) {
     studioClient.openVSCode(localPath.sourcePath, recipe?.id).catch(err => console.error('Error opening VSCode:', err));
   }
 };
 
-const openLocalClone = () => {
+const openLocalClone = (): void => {
   if (localPath) {
     studioClient.openFile(localPath.path).catch(err => console.error('Error opening local clone:', err));
   }
 };
 
-const deleteLocalClone = () => {
+const deleteLocalClone = (): void => {
   if (localPath) {
     studioClient
       .requestDeleteLocalRepository(localPath.path)

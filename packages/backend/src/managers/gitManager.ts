@@ -28,7 +28,7 @@ export interface GitCloneInfo {
 }
 
 export class GitManager {
-  async cloneRepository(gitCloneInfo: GitCloneInfo) {
+  async cloneRepository(gitCloneInfo: GitCloneInfo): Promise<void> {
     // clone repo
     await git.clone({
       fs,

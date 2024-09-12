@@ -38,9 +38,9 @@ vi.mock('../utils/client', async () => {
       requestCancelToken: vi.fn(),
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },

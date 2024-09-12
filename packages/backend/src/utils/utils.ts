@@ -46,7 +46,7 @@ export async function isEndpointAlive(endPoint: string): Promise<boolean> {
   });
 }
 
-export function getDurationSecondsSince(startTimeMs: number) {
+export function getDurationSecondsSince(startTimeMs: number): number {
   return Math.round((performance.now() - startTimeMs) / 1000);
 }
 

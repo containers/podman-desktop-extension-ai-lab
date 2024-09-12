@@ -36,20 +36,20 @@ $: {
   }
 }
 
-function openModelsPage() {
+function openModelsPage(): void {
   router.goto(`/models`);
 }
 
 // Navigate to the new created playground environment
-const openPlaygroundPage = (playgroundId: string) => {
+const openPlaygroundPage = (playgroundId: string): void => {
   router.goto(`/playground/${playgroundId}`);
 };
 
-function onNameInput(event: Event) {
+function onNameInput(event: Event): void {
   playgroundName = (event.target as HTMLInputElement).value || '';
 }
 
-async function submit() {
+async function submit(): Promise<void> {
   errorMsg = undefined;
   if (model === undefined) throw new Error('model id not valid.');
   // disable submit button
@@ -66,7 +66,7 @@ async function submit() {
 }
 
 // Utility method to filter the tasks properly based on the tracking Id
-const processTasks = (tasks: Task[]) => {
+const processTasks = (tasks: Task[]): void => {
   if (!trackingId) {
     trackedTasks = [];
     return;

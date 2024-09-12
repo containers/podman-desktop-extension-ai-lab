@@ -32,7 +32,7 @@ vi.mock('../stores/instructlabSessions', () => ({
   instructlabSessions: {
     subscribe: (f: (msg: InstructlabSession[]) => void) => {
       f(mocks.instructlabSessionsListMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -43,9 +43,9 @@ vi.mock('/@/utils/client', async () => {
       getCatalog: mocks.getCatalogMock,
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },

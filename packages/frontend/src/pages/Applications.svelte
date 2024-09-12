@@ -5,7 +5,7 @@ import { faServer } from '@fortawesome/free-solid-svg-icons';
 import TasksBanner from '/@/lib/progress/TasksBanner.svelte';
 import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';
 
-const openApplicationCatalog = () => {
+const openApplicationCatalog = (): void => {
   router.goto('/recipes');
 };
 </script>
@@ -25,7 +25,7 @@ const openApplicationCatalog = () => {
             title="No application running"
             message="There is no AI App running. You can go to Recipes page to start an application.">
             <div class="flex gap-2 justify-center">
-              <Button type="link" on:click={() => openApplicationCatalog()}>Recipes</Button>
+              <Button type="link" on:click={openApplicationCatalog}>Recipes</Button>
             </div>
           </EmptyScreen>
         </svelte:fragment>

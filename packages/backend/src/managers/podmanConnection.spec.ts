@@ -20,6 +20,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { PodmanConnection } from './podmanConnection';
 import type {
   ContainerProviderConnection,
+  ProviderConnectionStatus,
   ProviderContainerConnection,
   ProviderEvent,
   RegisterContainerConnectionEvent,
@@ -518,7 +519,7 @@ describe('checkContainerConnectionStatusAndResources', () => {
       {
         connection: {
           type: 'podman',
-          status: () => 'started',
+          status: (): ProviderConnectionStatus => 'started',
           name: 'Podman Machine',
           endpoint: {
             socketPath: './socket-path',
@@ -565,7 +566,7 @@ describe('checkContainerConnectionStatusAndResources', () => {
       {
         connection: {
           type: 'podman',
-          status: () => 'started',
+          status: (): ProviderConnectionStatus => 'started',
           name: 'Podman Machine',
           endpoint: {
             socketPath: './socket-path',
@@ -617,7 +618,7 @@ describe('getConnectionByEngineId', () => {
       {
         connection: {
           type: 'podman',
-          status: () => 'started',
+          status: (): ProviderConnectionStatus => 'started',
           name: 'Podman Machine',
           endpoint: {
             socketPath: './socket-path',
@@ -642,7 +643,7 @@ describe('getConnectionByEngineId', () => {
       {
         connection: {
           type: 'podman',
-          status: () => 'started',
+          status: (): ProviderConnectionStatus => 'started',
           name: 'Podman Machine',
           endpoint: {
             socketPath: './socket-path',

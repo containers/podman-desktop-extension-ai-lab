@@ -84,7 +84,7 @@ const getFirstRecommended = (): (ModelInfo & { label: string; value: string }) |
   return { ...model, label: model.name, value: model.id };
 };
 
-const processTasks = (tasks: Task[]) => {
+const processTasks = (tasks: Task[]): void => {
   if (trackingId === undefined) {
     trackedTasks = [];
     return;
@@ -145,6 +145,10 @@ onMount(() => {
 
 export function goToUpPage(): void {
   router.goto('/recipes');
+}
+
+function handleOnClick(): void {
+  router.goto(`/recipe/${recipeId}/running`);
 }
 </script>
 
@@ -230,12 +234,7 @@ export function goToUpPage(): void {
           <footer>
             <div class="w-full flex flex-col">
               {#if completed}
-                <Button
-                  icon={faUpRightFromSquare}
-                  title="Open details"
-                  on:click={() => router.goto(`/recipe/${recipeId}/running`)}>
-                  Open details
-                </Button>
+                <Button icon={faUpRightFromSquare} title="Open details" on:click={handleOnClick}>Open details</Button>
               {:else}
                 <Button
                   title="Start {recipe.name} recipe"

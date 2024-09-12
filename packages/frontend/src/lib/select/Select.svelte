@@ -10,6 +10,11 @@ export let placeholder: string | undefined = undefined;
 export let label: string | undefined = undefined;
 export let name: string | undefined = undefined;
 export let onchange: ((value: T | undefined) => void) | undefined = undefined;
+
+function handleOnChange(e: CustomEvent<T | undefined>): void {
+  value = e.detail;
+  onchange?.(value);
+}
 </script>
 
 <Select
@@ -17,10 +22,7 @@ export let onchange: ((value: T | undefined) => void) | undefined = undefined;
   name={name}
   disabled={disabled}
   value={value}
-  on:change={e => {
-    value = e.detail;
-    onchange?.(value);
-  }}
+  on:change={handleOnChange}
   --item-color={'var(--pd-dropdown-item-text)'}
   --item-is-active-color={'var(--pd-dropdown-item-text)'}
   --item-hover-color="var(--pd-dropdown-item-hover-text)"

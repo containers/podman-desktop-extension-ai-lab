@@ -68,7 +68,7 @@ vi.mock('@podman-desktop/api', async () => {
       TASK_WIDGET: 'TASK_WIDGET',
     },
     fs: {
-      createFileSystemWatcher: () => ({
+      createFileSystemWatcher: (): unknown => ({
         onDidCreate: vi.fn(),
         onDidDelete: vi.fn(),
         onDidChange: vi.fn(),

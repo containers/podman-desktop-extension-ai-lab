@@ -83,7 +83,7 @@ vi.mock('@podman-desktop/api', async () => {
       TASK_WIDGET: 'TASK_WIDGET',
     },
     fs: {
-      createFileSystemWatcher: () => ({
+      createFileSystemWatcher: (): unknown => ({
         onDidCreate: vi.fn(),
         onDidDelete: vi.fn(),
         onDidChange: vi.fn(),
@@ -247,7 +247,13 @@ describe.each([{ os: 'windows' }, { os: 'linux' }, { os: 'macos' }])('verify ope
     mocks.uriFileMock.mockImplementation((path: string) => {
       return {
         path: path,
-        with: (change?: { scheme?: string; authority?: string; path?: string; query?: string; fragment?: string }) => {
+        with: (change?: {
+          scheme?: string;
+          authority?: string;
+          path?: string;
+          query?: string;
+          fragment?: string;
+        }): unknown => {
           return {
             path: path,
             ...change,

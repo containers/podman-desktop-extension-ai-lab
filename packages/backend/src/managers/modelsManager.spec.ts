@@ -76,7 +76,7 @@ vi.mock('@podman-desktop/api', () => {
       exec: vi.fn(),
     },
     fs: {
-      createFileSystemWatcher: () => ({
+      createFileSystemWatcher: (): unknown => ({
         onDidCreate: vi.fn(),
         onDidDelete: vi.fn(),
         onDidChange: vi.fn(),
@@ -91,7 +91,7 @@ vi.mock('@podman-desktop/api', () => {
 vi.mock('../utils/downloader', () => ({
   isCompletionEvent: mocks.isCompletionEventMock,
   Downloader: class {
-    get completed() {
+    get completed(): boolean {
       return mocks.getDownloaderCompleter();
     }
     onEvent = mocks.onEventDownloadMock;
@@ -136,23 +136,23 @@ beforeEach(() => {
 
 const dirent = [
   {
-    isDirectory: () => true,
+    isDirectory: (): boolean => true,
     path: '/home/user/appstudio-dir',
     name: 'model-id-1',
   },
   {
-    isDirectory: () => true,
+    isDirectory: (): boolean => true,
     path: '/home/user/appstudio-dir',
     name: 'model-id-2',
   },
   {
-    isDirectory: () => false,
+    isDirectory: (): boolean => false,
     path: '/home/user/appstudio-dir',
     name: 'other-file-should-be-ignored.txt',
   },
 ] as fs.Dirent[];
 
-function mockFiles(now: Date) {
+function mockFiles(now: Date): void {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const existsSyncSpy = vi.spyOn(fs, 'existsSync');
   existsSyncSpy.mockImplementation((path: PathLike) => {

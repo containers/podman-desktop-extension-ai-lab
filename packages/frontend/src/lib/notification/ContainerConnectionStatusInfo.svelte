@@ -13,7 +13,7 @@ let description: string | undefined = '';
 let actionName: string | undefined = '';
 $: updateTitleDescription(connectionInfo);
 
-function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
+function updateTitleDescription(connectionInfo: ContainerConnectionInfo): void {
   if (connectionInfo.status === 'native') {
     return;
   }
@@ -62,7 +62,7 @@ function updateTitleDescription(connectionInfo: ContainerConnectionInfo) {
   actionName = undefined;
 }
 
-function executeCommand() {
+function executeCommand(): void {
   if (connectionInfo.canRedirect) {
     if (connectionInfo.status === 'low-resources' && connectionInfo.canEdit) {
       studioClient

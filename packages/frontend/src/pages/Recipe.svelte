@@ -13,6 +13,7 @@ import Fa from 'svelte-fa';
 import Route from '/@/Route.svelte';
 import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';
 import TasksBanner from '/@/lib/progress/TasksBanner.svelte';
+import type { ApplicationState } from '@shared/src/models/IApplicationState';
 
 export let recipeId: string;
 
@@ -31,6 +32,14 @@ $: if (recipe && recipe.id !== recipeTelemetry) {
 
 export function goToUpPage(): void {
   router.goto('/recipes');
+}
+
+function handleOnClick(): void {
+  router.goto(`/recipe/${recipeId}/start`);
+}
+
+function getFilter(items: ApplicationState[]): ApplicationState[] {
+  return items.filter(item => item.recipeId === recipeId);
 }
 </script>
 
@@ -51,8 +60,7 @@ export function goToUpPage(): void {
     <Tab title="Running" url="/recipe/{recipeId}/running" selected={$router.path === `/recipe/${recipeId}/running`} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
-    <Button on:click={() => router.goto(`/recipe/${recipeId}/start`)} icon={faRocket} aria-label="Start recipe"
-      >Start</Button>
+    <Button on:click={handleOnClick} icon={faRocket} aria-label="Start recipe">Start</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="bg-[var(--pd-content-bg)] h-full overflow-y-auto">
@@ -69,7 +77,7 @@ export function goToUpPage(): void {
       <Route path="/running">
         <TasksBanner title="Pulling recipes" labels={{ 'recipe-pulling': recipeId }} />
         <div class="flex w-full h-full">
-          <ApplicationTable filter={items => items.filter(item => item.recipeId === recipeId)}>
+          <ApplicationTable filter={getFilter}>
             <svelte:fragment slot="empty-screen">
               <EmptyScreen icon={faRocket} title="No application running" message="There is no AI App running" />
             </svelte:fragment>

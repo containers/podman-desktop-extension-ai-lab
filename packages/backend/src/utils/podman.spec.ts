@@ -19,6 +19,7 @@
 import { beforeEach, expect, test, describe, vi } from 'vitest';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import * as utils from '../utils/podman';
+import type { ProviderConnectionStatus } from '@podman-desktop/api';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -40,7 +41,7 @@ vi.mock('@podman-desktop/api', () => {
       isLinux: false,
     },
     configuration: {
-      getConfiguration: () => config,
+      getConfiguration: (): unknown => config,
     },
     containerEngine: {
       info: vi.fn(),
@@ -87,7 +88,7 @@ describe('getPodmanConnection', () => {
       {
         connection: {
           name: 'Podman Machine',
-          status: () => 'started',
+          status: (): ProviderConnectionStatus => 'started',
           endpoint: {
             socketPath: '/endpoint.sock',
           },
@@ -103,7 +104,7 @@ describe('getPodmanConnection', () => {
       {
         connection: {
           name: 'Podman Machine',
-          status: () => 'started',
+          status: (): ProviderConnectionStatus => 'started',
           endpoint: {
             socketPath: '/endpoint.sock',
           },

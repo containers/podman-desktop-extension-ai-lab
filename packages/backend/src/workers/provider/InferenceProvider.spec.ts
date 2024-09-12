@@ -62,7 +62,11 @@ class TestInferenceProvider extends InferenceProvider {
     throw new Error('not implemented');
   }
 
-  publicPullImage(connection: ContainerProviderConnection, image: string, labels: { [id: string]: string }) {
+  publicPullImage(
+    connection: ContainerProviderConnection,
+    image: string,
+    labels: { [id: string]: string },
+  ): Promise<ImageInfo> {
     return super.pullImage(connection, image, labels);
   }
 

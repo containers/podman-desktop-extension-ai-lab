@@ -109,7 +109,7 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     this.notify();
   }
 
-  private listen() {
+  private listen(): void {
     // capture unregister event
     this.#disposables.push(
       provider.onDidUnregisterContainerConnection(() => {

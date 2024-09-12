@@ -43,7 +43,7 @@ vi.mock('../../../stores/inferenceServers', () => ({
   inferenceServers: {
     subscribe: (f: (msg: InferenceServer[]) => void) => {
       f(mocks.getInferenceServersMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));

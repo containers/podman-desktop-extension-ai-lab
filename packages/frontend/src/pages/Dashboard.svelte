@@ -5,23 +5,23 @@ import { studioClient } from '/@/utils/client';
 import DashboardBanner from '/@/lib/images/DashboardBanner.svelte';
 import { Button, NavPage } from '@podman-desktop/ui-svelte';
 
-const openRecipesCatalog = () => {
+const openRecipesCatalog = (): void => {
   router.goto('/recipes');
 };
 
-const openModelsPage = () => {
+const openModelsPage = (): void => {
   router.goto('/models');
 };
 
-const openPlaygroundsPage = () => {
+const openPlaygroundsPage = (): void => {
   router.goto('/playgrounds');
 };
 
-const openServicesPage = () => {
+const openServicesPage = (): void => {
   router.goto('/services');
 };
 
-const openGithub = () => {
+const openGithub = (): void => {
   studioClient
     .openURL('https://github.com/containers/podman-desktop-extension-ai-lab')
     .catch(err =>
@@ -29,7 +29,7 @@ const openGithub = () => {
     );
 };
 
-const openIssuesPage = () => {
+const openIssuesPage = (): void => {
   studioClient
     .openURL('https://github.com/containers/podman-desktop-extension-ai-lab/issues')
     .catch(err =>
@@ -37,7 +37,7 @@ const openIssuesPage = () => {
     );
 };
 
-const openDiscussionsPage = () => {
+const openDiscussionsPage = (): void => {
   studioClient
     .openURL('https://github.com/containers/podman-desktop/discussions')
     .catch(err =>

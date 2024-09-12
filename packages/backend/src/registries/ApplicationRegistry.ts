@@ -47,7 +47,7 @@ export class ApplicationRegistry<T extends RecipeModelIndex> {
     this.#applications.set(this.hash(recipeModel), value);
   }
 
-  clear() {
+  clear(): void {
     this.#applications.clear();
   }
 

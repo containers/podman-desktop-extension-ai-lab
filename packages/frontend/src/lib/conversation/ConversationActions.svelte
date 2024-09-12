@@ -7,7 +7,7 @@ import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 export let conversation: Conversation;
 export let detailed: boolean = false;
 
-function deleteConversation() {
+function deleteConversation(): void {
   studioClient.requestDeleteConversation(conversation.id).catch((err: unknown) => {
     console.error('Something went wrong while trying to delete conversation', err);
   });

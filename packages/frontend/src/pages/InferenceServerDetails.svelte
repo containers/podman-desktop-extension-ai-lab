@@ -48,7 +48,7 @@ const onLanguageChange = (): void => {
 let snippet: string | undefined = undefined;
 $: snippet;
 
-const generate = async (language: string, variant: string) => {
+const generate = async (language: string, variant: string): Promise<void> => {
   copied = false;
 
   let options: RequestOptions | undefined;
@@ -170,6 +170,20 @@ onMount(() => {
 export function goToUpPage(): void {
   router.goto('/services');
 }
+
+function handleOnClick(): void {
+  if (service) {
+    studioClient
+      .openURL(service.labels['docs'])
+      .catch(err => console.error(`Error opening URL: ${service?.labels['docs']}`, err));
+  }
+}
+
+function handleOnChange(): void {
+  generate(selectedLanguage, selectedVariant).catch(err =>
+    console.log(`Error generating language=${selectedLanguage} variant=${selectedVariant}`, err),
+  );
+}
 </script>
 
 <DetailsPage
@@ -243,7 +257,7 @@ export function goToUpPage(): void {
                     {#if 'docs' in service.labels}
                       <Tooltip tip="Open swagger documentation">
                         <button
-                          on:click={() => service && studioClient.openURL(service.labels['docs'])}
+                          on:click={handleOnClick}
                           class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
                           {service.labels['docs']}
                           <Fa class="ml-2" icon={faBook} />
@@ -303,7 +317,7 @@ export function goToUpPage(): void {
                       aria-label="snippet language variant"
                       id="variants"
                       bind:value={selectedVariant}
-                      on:change={() => generate(selectedLanguage, selectedVariant)}
+                      on:change={handleOnChange}
                       disabled={variants.length === 1}
                       class="border ml-1 text-sm rounded-lg bg-[var(--pd-action-button-details-bg)] block p-1 border-[var(--pd-action-button-details-bg)] placeholder-gray-700 text-[var(--pd-action-button-details-text)]"
                       name="variants">

@@ -189,7 +189,7 @@ export class ApiServer implements Disposable {
     this.#listener?.close();
   }
 
-  private doErr(res: Response, message: string, err: unknown) {
+  private doErr(res: Response, message: string, err: unknown): void {
     res.status(500).json({
       message,
       errors: [err instanceof Error ? err.message : err],
@@ -235,13 +235,13 @@ export class ApiServer implements Disposable {
     }
   }
 
-  private streamLine(res: Response, obj: unknown, stream: boolean) {
+  private streamLine(res: Response, obj: unknown, stream: boolean): void {
     if (stream) {
       res.write(JSON.stringify(obj) + '\n');
     }
   }
 
-  private sendResult(res: Response, obj: unknown, code: number, stream: boolean) {
+  private sendResult(res: Response, obj: unknown, code: number, stream: boolean): void {
     if (stream) {
       this.streamLine(res, obj, stream);
     } else {

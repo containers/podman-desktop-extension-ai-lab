@@ -41,7 +41,7 @@ vi.mock('../stores/tasks', () => ({
   tasks: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getTasksMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -50,7 +50,7 @@ vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getLocalRepositoriesMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -66,9 +66,9 @@ vi.mock('../utils/client', async () => {
       getModelsInfo: mocks.getModelsInfo,
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },

@@ -38,7 +38,7 @@ vi.mock('../../stores/tasks', async () => {
     tasks: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.getTasksMock());
-        return () => {};
+        return (): void => {};
       },
     },
   };

@@ -31,7 +31,7 @@ const buttonDisabledClass =
 $: handleClick =
   enabled && !inProgress
     ? onClick
-    : () => {
+    : (): void => {
         console.log('==> 1');
       };
 $: styleClass = detailed

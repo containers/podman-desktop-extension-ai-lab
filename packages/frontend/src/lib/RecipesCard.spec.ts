@@ -29,7 +29,7 @@ vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
     subscribe: (f: (msg: any) => void) => {
       f([]);
-      return () => {};
+      return (): void => {};
     },
   },
 }));

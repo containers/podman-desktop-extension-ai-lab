@@ -12,7 +12,7 @@ let editing: boolean = false;
 let error: string | undefined;
 let disabled: boolean = conversation.messages.some(isUserChat);
 
-const onButtonClick = () => {
+const onButtonClick = (): void => {
   if (editing) {
     if (systemPrompt !== undefined && systemPrompt.length > 1) {
       error = undefined;
@@ -27,7 +27,7 @@ const onButtonClick = () => {
   editing = !editing;
 };
 
-const onClear = () => {
+const onClear = (): void => {
   systemPrompt = undefined;
   editing = false;
   error = undefined;
@@ -40,7 +40,7 @@ const onClear = () => {
   }
 };
 
-const onChange = () => {
+const onChange = (): void => {
   error = undefined;
 };
 

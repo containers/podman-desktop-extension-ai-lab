@@ -5,7 +5,7 @@ export let href: string = '';
 export let title: string | undefined = undefined;
 export let text: string = '';
 
-const onClick = () => {
+const onClick = (): void => {
   studioClient.openURL(href).catch(err => console.error(`Error opening link ${href}:`, err));
 };
 </script>

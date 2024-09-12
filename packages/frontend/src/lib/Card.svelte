@@ -14,6 +14,10 @@ export let href: string | undefined = undefined;
 export let icon: IconDefinition | undefined = undefined;
 
 export let primaryBackground: string = 'bg-charcoal-800';
+
+function handleClick(): void {
+  dispatch('click');
+}
 </script>
 
 <a class="no-underline" href={href}>
@@ -22,7 +26,7 @@ export let primaryBackground: string = 'bg-charcoal-800';
       <div class="flex flex-row items-start">
         {#if icon}
           <button
-            on:click={() => dispatch('click')}
+            on:click={handleClick}
             class="{primaryBackground} rounded-full min-w-7 min-h-7 w-7 h-7 flex items-center justify-center mr-3">
             <Fa size="1x" class="text-purple-500 cursor-pointer" icon={icon} />
           </button>

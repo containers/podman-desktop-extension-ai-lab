@@ -67,7 +67,7 @@ export class TaskRegistry {
    * @param task The task to update.
    * @throws Error if the task with the specified ID does not exist.
    */
-  updateTask(task: Task) {
+  updateTask(task: Task): void {
     if (!this.tasks.has(task.id)) throw new Error(`Task with id ${task.id} does not exist.`);
     this.tasks.set(task.id, {
       ...task,
@@ -80,7 +80,7 @@ export class TaskRegistry {
    * Deletes a task by its ID.
    * @param taskId The ID of the task to delete.
    */
-  delete(taskId: string) {
+  delete(taskId: string): void {
     this.deleteAll([taskId]);
   }
 
@@ -88,7 +88,7 @@ export class TaskRegistry {
    * Deletes multiple tasks by their IDs.
    * @param taskIds The IDs of the tasks to delete.
    */
-  deleteAll(taskIds: string[]) {
+  deleteAll(taskIds: string[]): void {
     taskIds.forEach(taskId => this.tasks.delete(taskId));
     this.notify();
   }
@@ -137,7 +137,7 @@ export class TaskRegistry {
     this.deleteAll(this.getTasksByLabels(labels).map(task => task.id));
   }
 
-  private notify() {
+  private notify(): void {
     this.webview
       .postMessage({
         id: Messages.MSG_TASKS_UPDATE,

@@ -94,6 +94,14 @@ async function onFile(event: DragEvent): Promise<void> {
 export function goToUpPage(): void {
   router.goto('/models');
 }
+
+function handleDragOver(): void {
+  dragging = true;
+}
+
+function handleDragLeave(): void {
+  dragging = false;
+}
 </script>
 
 <FormPage
@@ -130,8 +138,8 @@ export function goToUpPage(): void {
               class:border-gray-800={!dragging}
               on:click={requestExplorerModal}
               on:drop|preventDefault={onFile}
-              on:dragover|preventDefault={() => (dragging = true)}
-              on:dragleave|preventDefault={() => (dragging = false)}
+              on:dragover|preventDefault={handleDragOver}
+              on:dragleave|preventDefault={handleDragLeave}
               class="w-full cursor-pointer flex-col px-4 py-8 border-2 border-dashed rounded flex justify-center items-center">
               <Fa size="1.1x" class="cursor-pointer text-[var(--pd-link)]" icon={faFileImport} />
               <span>Drag & Drop or <strong class="text-[var(--pd-link)]">Choose file</strong> to import</span>
@@ -147,7 +155,6 @@ export function goToUpPage(): void {
               >Name</label>
             <Input
               bind:value={localModel.name}
-              on:input={event => {}}
               name="name"
               aria-label="model importing name"
               placeholder="Model Name displayed"

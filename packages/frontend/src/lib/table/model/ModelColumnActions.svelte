@@ -12,13 +12,13 @@ export let object: ModelInfo;
 let inUse: boolean = false;
 $: inUse;
 
-function deleteModel() {
+function deleteModel(): void {
   studioClient.requestRemoveLocalModel(object.id).catch(err => {
     console.error(`Something went wrong while trying to delete model ${String(err)}.`);
   });
 }
 
-function openModelFolder() {
+function openModelFolder(): void {
   if (object?.file) {
     studioClient
       .openFile(object.file.path)
@@ -26,7 +26,7 @@ function openModelFolder() {
   }
 }
 
-function downloadModel() {
+function downloadModel(): void {
   if (object && object.file === undefined) {
     studioClient.downloadModel(object.id).catch((err: unknown) => {
       console.error(`Something went wrong while trying to download model ${object.id}`, err);
@@ -34,7 +34,7 @@ function downloadModel() {
   }
 }
 
-function createModelService() {
+function createModelService(): void {
   router.goto('/service/create');
   router.location.query.replace({ 'model-id': object.id });
 }
@@ -51,12 +51,8 @@ onMount(() => {
     icon={faRocket}
     title="Create Model Service"
     enabled={!object.state}
-    onClick={() => createModelService()} />
-  <ListItemButtonIcon
-    icon={faFolderOpen}
-    onClick={() => openModelFolder()}
-    title="Open Model Folder"
-    enabled={!object.state} />
+    onClick={createModelService} />
+  <ListItemButtonIcon icon={faFolderOpen} onClick={openModelFolder} title="Open Model Folder" enabled={!object.state} />
   <ListItemButtonIcon icon={faTrash} onClick={deleteModel} title="Delete Model" enabled={!inUse && !object.state} />
 {:else}
   <ListItemButtonIcon icon={faDownload} onClick={downloadModel} title="Download Model" enabled={!object.state} />

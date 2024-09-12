@@ -13,7 +13,7 @@ import InstructlabColumnStatus from '../lib/table/instructlab/InstructlabColumnS
 import { router } from 'tinro';
 import Route from '../Route.svelte';
 
-function start() {}
+function start(): void {}
 
 const columns: TableColumn<InstructlabSession>[] = [
   new TableColumn<InstructlabSession>('Name', { width: '120px', renderer: InstructlabColumnName, align: 'left' }),
@@ -52,7 +52,7 @@ onMount(() => {
     <Tab title="Completed" url="/tune/completed" selected={$router.path === '/tune/completed'} />
   </svelte:fragment>
   <svelte:fragment slot="additional-actions">
-    <Button icon={faPlusCircle} on:click={() => start()}>Start Fine Tuning</Button>
+    <Button icon={faPlusCircle} on:click={start}>Start Fine Tuning</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex min-w-full">
@@ -67,7 +67,7 @@ onMount(() => {
             title="No InstructLab Session"
             message="Create InstructLab session to improve trained models with specialized knowledges and skills tuning">
             <div class="flex gap-2 justify-center">
-              <Button type="link" on:click={() => start()}>Create InstructLab Session</Button>
+              <Button type="link" on:click={start}>Create InstructLab Session</Button>
             </div>
           </EmptyScreen>
         {/if}
@@ -84,7 +84,7 @@ onMount(() => {
             title="No Running InstructLab Session"
             message="Create InstructLab session to improve trained models with specialized knowledges and skills tuning">
             <div class="flex gap-2 justify-center">
-              <Button type="link" on:click={() => start()}>Create InstructLab Session</Button>
+              <Button type="link" on:click={start}>Create InstructLab Session</Button>
             </div>
           </EmptyScreen>
         {/if}
@@ -101,7 +101,7 @@ onMount(() => {
             title="No Completed InstructLab Session"
             message="Create InstructLab session to improve trained models with specialized knowledges and skills tuning">
             <div class="flex gap-2 justify-center">
-              <Button type="link" on:click={() => start()}>Create InstructLab Session</Button>
+              <Button type="link" on:click={start}>Create InstructLab Session</Button>
             </div>
           </EmptyScreen>
         {/if}

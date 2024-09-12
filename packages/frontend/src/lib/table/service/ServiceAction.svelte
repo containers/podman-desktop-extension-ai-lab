@@ -7,19 +7,19 @@ import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 export let object: InferenceServer;
 export let detailed: boolean = false;
 
-function stopInferenceServer() {
+function stopInferenceServer(): void {
   studioClient.stopInferenceServer(object.container.containerId).catch((err: unknown) => {
     console.error('Something went wrong while trying to stop inference server', err);
   });
 }
 
-function startInferenceServer() {
+function startInferenceServer(): void {
   studioClient.startInferenceServer(object.container.containerId).catch((err: unknown) => {
     console.error('Something went wrong while trying to start inference server', err);
   });
 }
 
-function deleteInferenceServer() {
+function deleteInferenceServer(): void {
   studioClient.requestDeleteInferenceServer(object.container.containerId).catch((err: unknown) => {
     console.error('Something went wrong while trying to delete inference server', err);
   });

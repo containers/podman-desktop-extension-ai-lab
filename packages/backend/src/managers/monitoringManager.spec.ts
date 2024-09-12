@@ -98,7 +98,7 @@ test('expect webview to be notified when statsContainer call back', async () => 
   let mCallback: ((stats: ContainerStatsInfo) => void) | undefined;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
-    return { dispose: () => {} };
+    return { dispose: (): void => {} };
   });
 
   await manager.monitor('randomContainerId', 'dummyEngineId');
@@ -135,7 +135,7 @@ test('expect stats to cumulate', async () => {
   let mCallback: ((stats: ContainerStatsInfo) => void) | undefined;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
-    return { dispose: () => {} };
+    return { dispose: (): void => {} };
   });
 
   await manager.monitor('randomContainerId', 'dummyEngineId');
@@ -160,7 +160,7 @@ test('expect old stats to be removed', async () => {
   let mCallback: ((stats: ContainerStatsInfo) => void) | undefined;
   vi.mocked(containerEngine.statsContainer).mockImplementation(async (_engineId, _id, callback) => {
     mCallback = callback;
-    return { dispose: () => {} };
+    return { dispose: (): void => {} };
   });
 
   await manager.monitor('randomContainerId', 'dummyEngineId');

@@ -487,7 +487,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     this.notify();
   }
 
-  init() {
+  init(): void {
     this.podmanConnection.onPodmanConnectionEvent(() => {
       this.refresh();
     });
@@ -499,7 +499,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       this.forgetPodById(podId);
     });
 
-    const ticker = () => {
+    const ticker = (): void => {
       this.checkPodsHealth()
         .catch((err: unknown) => {
           console.error('error getting pods statuses', err);
@@ -520,7 +520,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     this.refresh();
   }
 
-  protected adoptPod(pod: PodInfo) {
+  protected adoptPod(pod: PodInfo): void {
     if (!pod.Labels) {
       return;
     }
@@ -545,7 +545,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     this.updateApplicationState(recipeId, modelId, state);
   }
 
-  protected forgetPodById(podId: string) {
+  protected forgetPodById(podId: string): void {
     const app = Array.from(this.#applications.values()).find(p => p.pod.Id === podId);
     if (!app) {
       return;

@@ -37,7 +37,7 @@ vi.mock('../stores/inferenceServers', () => ({
   inferenceServers: {
     subscribe: (f: (msg: InferenceServer[]) => void) => {
       f(mocks.getInferenceServersMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -46,7 +46,7 @@ vi.mock('../stores/snippetLanguages', () => ({
   snippetLanguages: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getSnippetLanguagesMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -89,6 +89,7 @@ beforeEach(() => {
 
   vi.mocked(studioClient.copyToClipboard).mockResolvedValue(undefined);
   vi.mocked(studioClient.telemetryLogUsage).mockResolvedValue(undefined);
+  vi.mocked(studioClient.openURL).mockResolvedValue(true);
 
   mocks.getSnippetLanguagesMock.mockReturnValue([
     {

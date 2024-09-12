@@ -47,7 +47,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    * @param conversationId
    * @param messageId
    */
-  removeMessage(conversationId: string, messageId: string) {
+  removeMessage(conversationId: string, messageId: string): void {
     const conversation: Conversation = this.get(conversationId);
 
     conversation.messages = conversation.messages.filter(message => message.id !== messageId);
@@ -60,7 +60,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    * @param messageId
    * @param message
    */
-  update(conversationId: string, messageId: string, message: Partial<ChatMessage>) {
+  update(conversationId: string, messageId: string, message: Partial<ChatMessage>): void {
     const conversation: Conversation = this.get(conversationId);
 
     const messageIndex = conversation.messages.findIndex(message => message.id === messageId);

@@ -28,9 +28,9 @@ vi.mock('../utils/client', async () => {
       getCatalog: vi.fn(),
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },

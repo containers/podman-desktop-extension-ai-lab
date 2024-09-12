@@ -25,7 +25,7 @@ vi.mock('@podman-desktop/api', () => {
   return {
     EventEmitter: vi.fn(),
     fs: {
-      createFileSystemWatcher: () => ({
+      createFileSystemWatcher: (): unknown => ({
         onDidCreate: vi.fn(),
         onDidDelete: vi.fn(),
         onDidChange: vi.fn(),

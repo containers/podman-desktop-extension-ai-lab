@@ -29,7 +29,7 @@ const mocks = vi.hoisted(() => {
     conversationsQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.conversationSubscribeMock());
-        return () => {};
+        return (): void => {};
       },
     },
   };
@@ -41,9 +41,9 @@ vi.mock('/@/utils/client', async () => {
       getCatalog: vi.fn(),
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },

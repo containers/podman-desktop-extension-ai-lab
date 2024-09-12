@@ -61,9 +61,9 @@ vi.mock('../utils/client', async () => {
       requestCreatePlayground: vi.fn(),
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },

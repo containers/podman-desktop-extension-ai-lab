@@ -31,7 +31,7 @@ const webviewMock = {
 vi.mock('@podman-desktop/api', async () => {
   return {
     configuration: {
-      getConfiguration: () => fakeConfiguration,
+      getConfiguration: (): unknown => fakeConfiguration,
       onDidChangeConfiguration: vi.fn(),
     },
   };

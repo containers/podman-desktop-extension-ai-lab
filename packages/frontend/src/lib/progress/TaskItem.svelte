@@ -6,7 +6,7 @@ import { studioClient } from '/@/utils/client';
 
 export let task: Task;
 
-const cancel = () => {
+const cancel = (): void => {
   if (task.cancellationToken !== undefined) {
     studioClient.requestCancelToken(task.cancellationToken).catch((err: unknown) => {
       console.error('Something went wrong while trying to cancel token', err);

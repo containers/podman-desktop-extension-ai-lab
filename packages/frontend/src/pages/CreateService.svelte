@@ -76,7 +76,7 @@ const onContainerPortInput = (event: Event): void => {
 };
 
 // Submit method when the form is valid
-const submit = async () => {
+const submit = async (): Promise<void> => {
   errorMsg = undefined;
   if (model === undefined) throw new Error('model id not valid.');
   if (containerPort === undefined) throw new Error('invalid container port');
@@ -96,17 +96,17 @@ const submit = async () => {
 };
 
 // Navigate to the list of models
-const openModelsPage = () => {
+const openModelsPage = (): void => {
   router.goto(`/models`);
 };
 
 // Navigate to the new created service
-const openServiceDetails = () => {
+const openServiceDetails = (): void => {
   router.goto(`/service/${containerId}`);
 };
 
 // Utility method to filter the tasks properly based on the tracking Id
-const processTasks = (tasks: Task[]) => {
+const processTasks = (tasks: Task[]): void => {
   if (trackingId === undefined) {
     trackedTasks = [];
     return;

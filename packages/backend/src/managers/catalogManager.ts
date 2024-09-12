@@ -140,7 +140,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     this.notify();
   }
 
-  override notify() {
+  override notify(): void {
     super.notify();
     this._onUpdate.fire(this.getCatalog());
   }

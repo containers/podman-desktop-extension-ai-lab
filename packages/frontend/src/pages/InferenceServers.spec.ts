@@ -29,7 +29,7 @@ const mocks = vi.hoisted(() => ({
   inferenceServersMock: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.inferenceServersSubscribeMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));

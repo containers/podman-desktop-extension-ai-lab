@@ -38,9 +38,9 @@ vi.mock('../utils/client', async () => {
       requestCancelToken: vi.fn(),
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },
@@ -83,6 +83,7 @@ beforeEach(() => {
     recipes: [],
     categories: [],
   });
+  vi.mocked(studioClient.requestCancelToken).mockResolvedValue(undefined);
 
   // mock conversation
   vi.mocked(conversationsStore).conversations = customConversations;

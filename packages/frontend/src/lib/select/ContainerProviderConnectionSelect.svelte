@@ -20,6 +20,10 @@ $: {
     selected = { ...value, label: value.name, value: value.name };
   }
 }
+
+function handleOnChange(nValue: ContainerProviderConnectionInfo | undefined): void {
+  value = nValue;
+}
 </script>
 
 <Select
@@ -27,7 +31,7 @@ $: {
   name="select-container-engine"
   disabled={disabled}
   bind:value={selected}
-  onchange={nValue => (value = nValue)}
+  onchange={handleOnChange}
   placeholder="Select container provider to use"
   items={containerProviderConnections.map(containerProviderConnection => ({
     ...containerProviderConnection,

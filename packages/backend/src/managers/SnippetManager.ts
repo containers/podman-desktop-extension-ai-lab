@@ -77,7 +77,7 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
     });
   }
 
-  init() {
+  init(): void {
     this.#languages = getLanguageList();
     this.addVariant('java', 'Quarkus Langchain4J', quarkusLangchain4Jgenerator);
     this.addVariant('java', 'OkHttp', javaOkHttpGenerator);

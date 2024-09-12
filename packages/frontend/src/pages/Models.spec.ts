@@ -32,13 +32,13 @@ const mocks = vi.hoisted(() => {
     modelsInfoQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.modelsInfoSubscribeMock());
-        return () => {};
+        return (): void => {};
       },
     },
     tasksQueriesMock: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.tasksSubscribeMock());
-        return () => {};
+        return (): void => {};
       },
     },
     getModelsInfoMock: vi.fn().mockResolvedValue([]),
@@ -50,7 +50,7 @@ vi.mock('../stores/inferenceServers', () => ({
   inferenceServers: {
     subscribe: (f: (msg: InferenceServer[]) => void) => {
       f([]);
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -62,9 +62,9 @@ vi.mock('/@/utils/client', async () => {
       getPullingStatuses: mocks.getPullingStatusesMock,
     },
     rpcBrowser: {
-      subscribe: () => {
+      subscribe: (): unknown => {
         return {
-          unsubscribe: () => {},
+          unsubscribe: (): void => {},
         };
       },
     },

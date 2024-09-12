@@ -12,6 +12,10 @@ export let recipe: Recipe;
 
 let localPath: LocalRepository | undefined = undefined;
 $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
+
+function handleClick(): void {
+  router.goto(`/recipe/${recipe.id}`);
+}
 </script>
 
 <div class="no-underline">
@@ -53,7 +57,7 @@ $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
       </div>
 
       <!-- more details -->
-      <button on:click={() => router.goto(`/recipe/${recipe.id}`)}>
+      <button on:click={handleClick}>
         <div class="flex flex-row items-center text-[var(--pd-link)]">
           <Fa class="mr-2" icon={faArrowUpRightFromSquare} />
           <span> More details </span>

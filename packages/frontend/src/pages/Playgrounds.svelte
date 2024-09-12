@@ -17,14 +17,14 @@ const columns = [
 ];
 const row = new TableRow<Conversation>({});
 
-function createNewPlayground() {
+function createNewPlayground(): void {
   router.goto('/playground/create');
 }
 </script>
 
 <NavPage title="Playground Environments" searchEnabled={false}>
   <svelte:fragment slot="additional-actions">
-    <Button icon={faPlusCircle} on:click={() => createNewPlayground()}>New Playground</Button>
+    <Button icon={faPlusCircle} on:click={createNewPlayground}>New Playground</Button>
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex min-w-full">
@@ -36,7 +36,7 @@ function createNewPlayground() {
           title="No Playground Environment"
           message="Playground environments allow for experimenting with available models in a local environment. An intuitive user prompt helps in exploring the capabilities and accuracy of various models and aids in finding the best model for the use case at hand.">
           <div class="flex gap-2 justify-center">
-            <Button type="link" on:click={() => createNewPlayground()}>Create playground</Button>
+            <Button type="link" on:click={createNewPlayground}>Create playground</Button>
           </div>
         </EmptyScreen>
       {/if}

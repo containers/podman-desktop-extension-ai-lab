@@ -48,7 +48,7 @@ vi.mock('../stores/localRepositories', () => ({
   localRepositories: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getLocalRepositoriesMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -57,7 +57,7 @@ vi.mock('../stores/containerProviderConnections', () => ({
   containerProviderConnections: {
     subscribe: (f: (msg: any) => void) => {
       f(mocks.getContainerConnectionInfoMock());
-      return () => {};
+      return (): void => {};
     },
   },
 }));
@@ -68,7 +68,7 @@ vi.mock('../stores/modelsInfo', async () => {
     modelsInfo: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.getModelsInfoMock());
-        return () => {};
+        return (): void => {};
       },
     },
   };
@@ -79,7 +79,7 @@ vi.mock('../stores/tasks', async () => {
     tasks: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.getTasksMock());
-        return () => {};
+        return (): void => {};
       },
     },
   };
@@ -90,7 +90,7 @@ vi.mock('/@/stores/catalog', async () => {
     catalog: {
       subscribe: (f: (msg: any) => void) => {
         f(mocks.getCatalogMock());
-        return () => {};
+        return (): void => {};
       },
     },
   };

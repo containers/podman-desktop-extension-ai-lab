@@ -53,7 +53,7 @@ $: models = $modelsInfo.filter(
 );
 
 // Hold the selected model
-let value: (ModelInfo & { label: string; value: string }) | undefined = undefined;
+let value: ModelInfo | undefined = undefined;
 
 $: {
   // let's select a default model
@@ -75,13 +75,13 @@ let loading: boolean = false;
 // All tasks are successful (not any in error)
 let completed: boolean = false;
 
-const getFirstRecommended = (): (ModelInfo & { label: string; value: string }) | undefined => {
+const getFirstRecommended = (): ModelInfo | undefined => {
   if (!recipe || !models) return undefined;
   const recommended = recipe.recommended && recipe.recommended.length > 0 ? recipe.recommended[0] : undefined;
 
   const model = models.find(model => model.id === recommended);
   if (!model) return undefined;
-  return { ...model, label: model.name, value: model.id };
+  return model;
 };
 
 const processTasks = (tasks: Task[]): void => {
@@ -116,7 +116,7 @@ function populateModelFromTasks(): void {
   const model = models.find(model => model.id === modelId);
   if (!model) return;
 
-  value = { ...model, label: model.name, value: model.id };
+  value = model;
 }
 
 async function submit(): Promise<void> {
@@ -217,11 +217,7 @@ function handleOnClick(): void {
             <!-- model form -->
             <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
               >Model</label>
-            <ModelSelect
-              bind:value={value}
-              disabled={loading}
-              recommended={recipe.recommended}
-              models={models.map(model => ({ ...model, value: model.id, label: model.name }))} />
+            <ModelSelect bind:value={value} disabled={loading} recommended={recipe.recommended} models={models} />
             {#if value && value.file === undefined}
               <div class="text-gray-800 text-sm flex items-center">
                 <Fa class="mr-2" icon={faWarning} />

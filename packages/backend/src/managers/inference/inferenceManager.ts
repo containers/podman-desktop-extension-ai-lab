@@ -32,6 +32,7 @@ import type { InferenceProviderRegistry } from '../../registries/InferenceProvid
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CatalogManager } from '../catalogManager';
+import { getHash } from '../../utils/sha';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -231,7 +232,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
 
     // Log usage
     this.telemetry.logUsage('inference.start', {
-      models: config.modelsInfo.map(model => model.id),
+      models: config.modelsInfo.map(model => getHash(model.id)),
     });
 
     this.notify();

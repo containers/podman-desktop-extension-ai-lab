@@ -485,7 +485,7 @@ test('deleteModel deletes the model folder', async () => {
       },
     ],
   });
-  expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.delete', { 'model.id': 'model-id-1' });
+  expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.delete', { 'model.id': expect.any(String) });
 });
 
 describe('deleting models', () => {

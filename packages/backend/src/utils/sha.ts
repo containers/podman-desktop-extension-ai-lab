@@ -27,3 +27,7 @@ export async function hasValidSha(filePath: string, expectedSha: string): Promis
   const actualSha = checkSum.digest('hex');
   return actualSha === expectedSha;
 }
+
+export function getHash(content: string): string {
+  return crypto.createHash('sha512').update(content).digest('hex');
+}

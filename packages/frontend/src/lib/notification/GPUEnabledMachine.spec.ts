@@ -46,7 +46,7 @@ test('should show navigation to resources', async () => {
   const descriptionDiv = screen.getByLabelText('description');
   expect(descriptionDiv).toBeInTheDocument();
   expect(descriptionDiv.textContent).equals(
-    `The selected Podman machine is not GPU enabled. On MacOS, you can run GPU workloads using the krunkit environment. Do you want to create a GPU enabled machine ?`,
+    `The selected Podman machine is not GPU enabled. On MacOS, you can run GPU workloads using the krunkit\n        environment. Do you want to create a GPU enabled machine ?`,
   );
 
   const btnUpdate = screen.queryByRole('button', { name: 'Create GPU enabled machine' });

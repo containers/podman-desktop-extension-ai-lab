@@ -95,6 +95,14 @@ vi.mock('../utils/client', async () => ({
     requestCreateInferenceServer: vi.fn(),
     getHostFreePort: vi.fn(),
     checkContainerConnectionStatusAndResources: vi.fn(),
+    getExtensionConfiguration: vi.fn(),
+  },
+  rpcBrowser: {
+    subscribe: (): unknown => {
+      return {
+        unsubscribe: (): void => {},
+      };
+    },
   },
 }));
 
@@ -140,6 +148,13 @@ beforeEach(() => {
   mocks.getInferenceServersMock.mockReturnValue([
     { container: { containerId: 'dummyContainerId' } } as InferenceServer,
   ]);
+  vi.mocked(studioClient.getExtensionConfiguration).mockResolvedValue({
+    experimentalGPU: false,
+    apiPort: 0,
+    experimentalTuning: false,
+    modelsPath: '',
+    modelUploadDisabled: false,
+  });
 
   window.HTMLElement.prototype.scrollIntoView = vi.fn();
 });

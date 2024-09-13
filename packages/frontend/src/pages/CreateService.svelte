@@ -120,7 +120,7 @@ const processTasks = (tasks: Task[]): void => {
   // hint: we do not need to display them as the TasksProgress component will
   error = trackedTasks.find(task => task.error)?.error !== undefined;
 
-  const task: Task | undefined = trackedTasks.find(task => 'containerId' in (task.labels || {}));
+  const task: Task | undefined = trackedTasks.find(task => 'containerId' in (task.labels ?? {}));
   if (task === undefined) return;
 
   containerId = task.labels?.['containerId'];

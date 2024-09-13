@@ -242,7 +242,7 @@ export class LlamaCppPython extends InferenceProvider {
       status: 'running',
       models: config.modelsInfo,
       type: InferenceType.LLAMA_CPP,
-      labels: containerCreateOptions.Labels || {},
+      labels: containerCreateOptions.Labels ?? {},
     };
   }
 

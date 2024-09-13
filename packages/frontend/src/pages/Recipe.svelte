@@ -44,9 +44,9 @@ function getFilter(items: ApplicationState[]): ApplicationState[] {
 </script>
 
 <DetailsPage
-  title={recipe?.name || ''}
+  title={recipe?.name ?? ''}
   breadcrumbLeftPart="Recipes"
-  breadcrumbRightPart={recipe?.name || ''}
+  breadcrumbRightPart={recipe?.name ?? ''}
   breadcrumbTitle="Go back to Recipes"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
@@ -88,9 +88,9 @@ function getFilter(items: ApplicationState[]): ApplicationState[] {
   </svelte:fragment>
   <svelte:fragment slot="subtitle">
     <div class="mt-2">
-      {#each recipe?.categories || [] as categoryId}
+      {#each recipe?.categories ?? [] as categoryId}
         <Card
-          title={categories.find(category => category.id === categoryId)?.name || '?'}
+          title={categories.find(category => category.id === categoryId)?.name ?? '?'}
           classes="bg-[var(--pd-label-bg)] p-1 text-xs w-fit" />
       {/each}
     </div>

@@ -31,7 +31,7 @@ let selectedLanguage: string = 'curl';
 $: selectedLanguage;
 
 let variants: LanguageVariant[] = [];
-$: variants = $snippetLanguages.find(language => language.key === selectedLanguage)?.variants || [];
+$: variants = $snippetLanguages.find(language => language.key === selectedLanguage)?.variants ?? [];
 
 let selectedVariant: string = 'cURL';
 $: selectedVariant;

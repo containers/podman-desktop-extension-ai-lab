@@ -151,7 +151,7 @@ export class RpcBrowser {
           return;
         }
 
-        const { resolve, reject } = this.promises.get(message.id) || {};
+        const { resolve, reject } = this.promises.get(message.id) ?? {};
 
         if (message.status === 'error') {
           reject?.(message.error);
@@ -205,7 +205,7 @@ export class RpcBrowser {
     // Add some timeout
     if (!noTimeoutChannels.includes(channel)) {
       setTimeout(() => {
-        const { reject } = this.promises.get(requestId) || {};
+        const { reject } = this.promises.get(requestId) ?? {};
         if (!reject) return;
         reject(new Error('Timeout'));
         this.promises.delete(requestId);

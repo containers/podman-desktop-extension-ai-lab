@@ -30,7 +30,7 @@ function handleOnChange(nValue: ContainerProviderConnectionInfo | undefined): vo
   label="Select Container Engine"
   name="select-container-engine"
   disabled={disabled}
-  bind:value={selected}
+  value={selected}
   onchange={handleOnChange}
   placeholder="Select container provider to use"
   items={containerProviderConnections.map(containerProviderConnection => ({

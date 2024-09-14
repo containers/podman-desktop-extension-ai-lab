@@ -204,7 +204,6 @@ export default [
       ],
 
       // disabled as code in this project is not yet compliant:
-      '@typescript-eslint/no-empty-object-type': 'off',
       'svelte/valid-compile': 'off',
       'no-undef': 'off',
     },

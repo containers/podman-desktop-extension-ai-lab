@@ -15,7 +15,7 @@ function openDetails(): void {
     aria-label="Model Name">
     {object.name}
   </div>
-  {#if object.registry || object.license}
+  {#if object.registry ?? object.license}
     <span class="text-sm text-[var(--pd-table-body-text)]" aria-label="Model Info"
       >{object.registry} - {object.license}</span>
   {/if}

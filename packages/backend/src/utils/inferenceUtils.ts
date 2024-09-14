@@ -76,7 +76,7 @@ export async function withDefaultConfiguration(
   return {
     port: options.port ?? (await getFreeRandomPort('0.0.0.0')),
     image: options.image,
-    labels: options.labels || {},
+    labels: options.labels ?? {},
     modelsInfo: options.modelsInfo,
     connection: options.connection,
     inferenceProvider: options.inferenceProvider,

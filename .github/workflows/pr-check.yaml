@@ -69,7 +69,7 @@ jobs:
           fi
 
   e2e-pr-check:
-    name: e2e tests ubuntu gh runner
+    name: e2e tests smoke
     runs-on: ubuntu-24.04
     env:
       SKIP_INSTALLATION: true
@@ -145,4 +145,4 @@ jobs:
         if: always()
         with:
           name: e2e-pr-check
-          path: ./**/tests/output/
+          path: ./**/tests/**/output/

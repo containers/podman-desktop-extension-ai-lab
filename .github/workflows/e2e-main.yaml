@@ -120,7 +120,6 @@ jobs:
         working-directory: ./podman-desktop-extension-ai-lab
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
-          AI_LAB_CI_RUN: true
         run: pnpm test:e2e
 
       - uses: actions/upload-artifact@v4

@@ -35,7 +35,7 @@ $: if (typeof model?.memory === 'number' && containerProviderConnection) {
       connectionInfo = undefined;
       console.error(err);
     });
-  if (fromStore(configuration)?.current?.experimentalGPU && !shouldRecommendGPU(containerProviderConnection)) {
+  if (fromStore(configuration)?.current?.experimentalGPU && shouldRecommendGPU(containerProviderConnection)) {
     gpuWarningRequired = true;
   }
 } else {
@@ -43,7 +43,7 @@ $: if (typeof model?.memory === 'number' && containerProviderConnection) {
 }
 </script>
 
-{#if !gpuWarningRequired}
+{#if gpuWarningRequired}
   <GPUEnabledMachine />
 {/if}
 {#if connectionInfo}

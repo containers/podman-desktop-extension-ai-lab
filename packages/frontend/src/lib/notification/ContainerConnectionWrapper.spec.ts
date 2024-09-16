@@ -29,6 +29,14 @@ import { VMType } from '@shared/src/models/IPodman';
 vi.mock('../../utils/client', async () => ({
   studioClient: {
     checkContainerConnectionStatusAndResources: vi.fn(),
+    getExtensionConfiguration: vi.fn(),
+  },
+  rpcBrowser: {
+    subscribe: (): unknown => {
+      return {
+        unsubscribe: (): void => {},
+      };
+    },
   },
 }));
 
@@ -54,6 +62,13 @@ beforeEach(() => {
     name: 'Podman',
     canRedirect: false,
     status: 'running',
+  });
+  vi.mocked(studioClient.getExtensionConfiguration).mockResolvedValue({
+    experimentalGPU: false,
+    apiPort: 0,
+    experimentalTuning: false,
+    modelsPath: '',
+    modelUploadDisabled: false,
   });
 });
 

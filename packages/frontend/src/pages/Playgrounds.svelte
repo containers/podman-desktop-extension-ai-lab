@@ -10,7 +10,7 @@ import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 import { faMessage, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const columns = [
-  new TableColumn<{}>('', { width: '40px', renderer: PlaygroundColumnIcon }),
+  new TableColumn<unknown>('', { width: '40px', renderer: PlaygroundColumnIcon }),
   new TableColumn<Conversation>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
   new TableColumn<Conversation>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
   new TableColumn<Conversation>('Actions', { width: '80px', renderer: ConversationColumnAction, align: 'right' }),

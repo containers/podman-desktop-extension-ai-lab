@@ -54,7 +54,7 @@ test.afterAll(async ({ runner }) => {
   await runner.close();
 });
 
-test.describe.serial(`AI Lab extension installation and verification`, () => {
+test.describe.serial(`AI Lab extension installation and verification`, { tag: '@smoke' }, () => {
   test.describe.serial(`AI Lab extension installation`, () => {
     test(`Open Settings -> Extensions page`, async () => {
       dashboardPage = await navigationBar.openDashboard();

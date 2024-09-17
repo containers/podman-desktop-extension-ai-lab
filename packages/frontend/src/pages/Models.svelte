@@ -120,9 +120,9 @@ async function importModel(): Promise<void> {
       {#if !loading}
         {#if pullingTasks.length > 0}
           <div class="w-full px-5">
-            <Card classes="bg-charcoal-800 mt-4">
+            <Card classes="bg-[var(--pd-content-card-bg)] mt-4">
               <div slot="content" class="font-normal p-2 w-full">
-                <div class=" mb-2">Downloading models</div>
+                <div class="text-[var(--pd-content-card-title)] mb-2">Downloading models</div>
                 <TasksProgress tasks={pullingTasks} />
               </div>
             </Card>

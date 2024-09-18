@@ -37,7 +37,7 @@ const isRouterState = (value: unknown): value is RouterState => {
 
 export async function getRouterState(): Promise<RouterState> {
   const route: string | undefined = await studioClient.readRoute();
-  if(route) {
+  if (route) {
     return {
       url: route,
     };

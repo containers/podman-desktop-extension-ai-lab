@@ -57,8 +57,8 @@ vi.mock('./utils/client', async () => ({
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(getRouterState).mockResolvedValue({ url: '/'});
-  vi.mocked(rpcBrowser.subscribe).mockReturnValue({unsubscribe: vi.fn()});
+  vi.mocked(getRouterState).mockResolvedValue({ url: '/' });
+  vi.mocked(rpcBrowser.subscribe).mockReturnValue({ unsubscribe: vi.fn() });
   vi.mocked(configuration.subscribe).mockReturnValue(vi.fn());
 });
 

@@ -92,11 +92,16 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     });
 
     window
-      .withProgress({ location: ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.`, details: {
-        routeId: RECIPE_START_ROUTE,
-          routeArgs: [recipe.id, trackingId],
-        } }, () =>
-        this.pullApplication(connection, recipe, model, labels),
+      .withProgress(
+        {
+          location: ProgressLocation.TASK_WIDGET,
+          title: `Pulling ${recipe.name}.`,
+          details: {
+            routeId: RECIPE_START_ROUTE,
+            routeArgs: [recipe.id, trackingId],
+          },
+        },
+        () => this.pullApplication(connection, recipe, model, labels),
       )
       .then(() => {
         task.state = 'success';

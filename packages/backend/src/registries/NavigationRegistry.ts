@@ -31,26 +31,22 @@ export class NavigationRegistry implements Disposable {
   constructor(private panel: WebviewPanel) {}
 
   init(): void {
-    if(!navigation.register) {
+    if (!navigation.register) {
       console.warn('this version of podman-desktop do not support task actions: some feature will not be available.');
       return;
     }
-        
+
     // register the recipes start navigation and command
     this.#disposables.push(
       commands.registerCommand(RECIPE_START_NAVIGATE_COMMAND, this.navigateToRecipeStart.bind(this)),
     );
-    this.#disposables.push(
-      navigation.register(RECIPE_START_ROUTE, RECIPE_START_NAVIGATE_COMMAND),
-    );
+    this.#disposables.push(navigation.register(RECIPE_START_ROUTE, RECIPE_START_NAVIGATE_COMMAND));
 
     // register the inference create navigation and command
     this.#disposables.push(
       commands.registerCommand(INFERENCE_CREATE_NAVIGATE_COMMAND, this.navigateToInferenceCreate.bind(this)),
     );
-    this.#disposables.push(
-      navigation.register(INFERENCE_CREATE_ROUTE, INFERENCE_CREATE_NAVIGATE_COMMAND),
-    );
+    this.#disposables.push(navigation.register(INFERENCE_CREATE_ROUTE, INFERENCE_CREATE_NAVIGATE_COMMAND));
   }
 
   /**

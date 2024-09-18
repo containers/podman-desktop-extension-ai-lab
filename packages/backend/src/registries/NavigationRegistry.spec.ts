@@ -50,7 +50,7 @@ describe('incompatible podman-desktop', () => {
   });
 
   afterAll(() => {
-    if(!register) return;
+    if (!register) return;
     navigation.register = register;
   });
 

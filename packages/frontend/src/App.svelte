@@ -40,15 +40,18 @@ onMount(async () => {
   router.goto(state.url);
   isMounted = true;
 
-  unsubscribers.push(configuration.subscribe((val: ExtensionConfiguration | undefined) => {
-    experimentalTuning = val?.experimentalTuning ?? false;
-  }));
+  unsubscribers.push(
+    configuration.subscribe((val: ExtensionConfiguration | undefined) => {
+      experimentalTuning = val?.experimentalTuning ?? false;
+    }),
+  );
 
-  unsubscribers.push(rpcBrowser.subscribe(Messages.MSG_NAVIGATION_ROUTE_UPDATE, location => {
-    router.goto(location);
-  }).unsubscribe);
+  unsubscribers.push(
+    rpcBrowser.subscribe(Messages.MSG_NAVIGATION_ROUTE_UPDATE, location => {
+      router.goto(location);
+    }).unsubscribe,
+  );
 });
-
 
 onDestroy(() => {
   unsubscribers.forEach(unsubscriber => unsubscriber());

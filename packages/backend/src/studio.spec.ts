@@ -91,6 +91,9 @@ vi.mock('@podman-desktop/api', async () => {
       onEvent: vi.fn(),
       listContainers: mocks.listContainers,
     },
+    navigation: {
+      register: vi.fn(),
+    },
     provider: {
       onDidRegisterContainerConnection: vi.fn(),
       onDidUpdateContainerConnection: vi.fn(),

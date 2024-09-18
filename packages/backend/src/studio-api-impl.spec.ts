@@ -46,6 +46,7 @@ import * as podman from './utils/podman';
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
+import type { NavigationRegistry } from './registries/NavigationRegistry';
 
 vi.mock('./ai.json', () => {
   return {
@@ -158,6 +159,7 @@ beforeEach(async () => {
     {} as unknown as ConfigurationRegistry,
     {} as unknown as RecipeManager,
     podmanConnectionMock,
+    {} as unknown as NavigationRegistry,
   );
   vi.mock('node:fs');
 

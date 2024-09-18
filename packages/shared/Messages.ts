@@ -31,4 +31,5 @@ export enum Messages {
   MSG_CONFIGURATION_UPDATE = 'configuration-update',
   MSG_PODMAN_CONNECTION_UPDATE = 'podman-connecting-update',
   MSG_INSTRUCTLAB_SESSIONS_UPDATE = 'instructlab-sessions-update',
+  MSG_NAVIGATION_ROUTE_UPDATE = 'navigation-route-update',
 }

@@ -51,6 +51,7 @@ import { WhisperCpp } from './workers/provider/WhisperCpp';
 import { ApiServer } from './managers/apiServer';
 import { InstructlabManager } from './managers/instructlab/instructlabManager';
 import { InstructlabApiImpl } from './instructlab-api-impl';
+import { NavigationRegistry } from './registries/NavigationRegistry';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -85,6 +86,7 @@ export class Studio {
   #inferenceProviderRegistry: InferenceProviderRegistry | undefined;
   #configurationRegistry: ConfigurationRegistry | undefined;
   #gpuManager: GPUManager | undefined;
+  #navigationRegistry: NavigationRegistry | undefined;
   #instructlabManager: InstructlabManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
@@ -136,6 +138,14 @@ export class Studio {
     this.#panel.onDidChangeViewState((e: WebviewPanelOnDidChangeViewStateEvent) => {
       this.#telemetry?.logUsage(e.webviewPanel.visible ? 'opened' : 'closed');
     });
+
+    /**
+     * The navigation registry is used
+     * to register and managed the routes of the extension
+     */
+    this.#navigationRegistry = new NavigationRegistry(this.#panel);
+    this.#navigationRegistry.init();
+    this.#extensionContext.subscriptions.push(this.#navigationRegistry);
 
     /**
      * Cancellation token registry store the tokens used to cancel a task
@@ -333,6 +343,7 @@ export class Studio {
       this.#configurationRegistry,
       this.#recipeManager,
       this.#podmanConnection,
+      this.#navigationRegistry,
     );
     // Register the instance
     this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);

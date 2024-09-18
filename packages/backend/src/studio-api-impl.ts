@@ -55,6 +55,7 @@ import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
 import type { RecipePullOptions } from '@shared/src/models/IRecipe';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
+import type { NavigationRegistry } from './registries/NavigationRegistry';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -75,7 +76,12 @@ export class StudioApiImpl implements StudioAPI {
     private configurationRegistry: ConfigurationRegistry,
     private recipeManager: RecipeManager,
     private podmanConnection: PodmanConnection,
+    private navigationRegistry: NavigationRegistry,
   ) {}
+
+  async readRoute(): Promise<string | undefined> {
+    return this.navigationRegistry.readRoute();
+  }
 
   async requestDeleteConversation(conversationId: string): Promise<void> {
     // Do not wait on the promise as the api would probably timeout before the user answer.

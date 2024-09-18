@@ -52,6 +52,7 @@ import {
   POD_LABEL_RECIPE_ID,
 } from '../../utils/RecipeConstants';
 import { VMType } from '@shared/src/models/IPodman';
+import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
   #applications: ApplicationRegistry<ApplicationState>;
@@ -91,7 +92,10 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     });
 
     window
-      .withProgress({ location: ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.` }, () =>
+      .withProgress({ location: ProgressLocation.TASK_WIDGET, title: `Pulling ${recipe.name}.`, details: {
+        routeId: RECIPE_START_ROUTE,
+          routeArgs: [recipe.id, trackingId],
+        } }, () =>
         this.pullApplication(connection, recipe, model, labels),
       )
       .then(() => {

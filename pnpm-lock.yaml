@@ -264,13 +264,13 @@ importers:
         version: 1.47.1
       '@podman-desktop/tests-playwright':
         specifier: 1.12.0
-        version: 1.12.0(@playwright/test@1.47.1)(electron@32.1.0)
+        version: 1.12.0(@playwright/test@1.47.1)(electron@32.1.1)
       '@types/node':
         specifier: ^20
         version: 20.16.5
       electron:
-        specifier: ^32.1.0
-        version: 32.1.0
+        specifier: ^32.1.1
+        version: 32.1.1
       typescript:
         specifier: ^5.6.2
         version: 5.6.2
@@ -2271,8 +2271,8 @@ packages:
   electron-to-chromium@1.5.23:
     resolution: {integrity: sha512-mBhODedOXg4v5QWwl21DjM5amzjmI1zw9EPrPK/5Wx7C8jt33bpZNrC7OhHUG3pxRtbLpr3W2dXT+Ph1SsfRZA==}
 
-  electron@32.1.0:
-    resolution: {integrity: sha512-4etE3K6vPUkHihf7nvawngbB5+jLuUJgZh31f9ki1Gfveo0qwNDkLv/doabw+4zFFWKUXI+uFUpyOpL5+RwS+Q==}
+  electron@32.1.1:
+    resolution: {integrity: sha512-NlWvG6kXOJbZbELmzP3oV7u50I3NHYbCeh+AkUQ9vGyP7b74cFMx9HdTzejODeztW1jhr3SjIBbUZzZ45zflfQ==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -5802,10 +5802,10 @@ snapshots:
 
   '@podman-desktop/api@1.12.0': {}
 
-  '@podman-desktop/tests-playwright@1.12.0(@playwright/test@1.47.1)(electron@32.1.0)':
+  '@podman-desktop/tests-playwright@1.12.0(@playwright/test@1.47.1)(electron@32.1.1)':
     dependencies:
       '@playwright/test': 1.47.1
-      electron: 32.1.0
+      electron: 32.1.1
 
   '@podman-desktop/ui-svelte@1.12.0(svelte-fa@4.0.2(svelte@5.0.0-next.251))(svelte@5.0.0-next.251)':
     dependencies:
@@ -7001,7 +7001,7 @@ snapshots:
 
   electron-to-chromium@1.5.23: {}
 
-  electron@32.1.0:
+  electron@32.1.1:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 20.16.5

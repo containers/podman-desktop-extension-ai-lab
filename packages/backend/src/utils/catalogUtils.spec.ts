@@ -19,6 +19,7 @@
 import { test, expect, describe } from 'vitest';
 import {
   CatalogFormat,
+  hasCatalogWrongFormat,
   isNonNullObject,
   merge,
   sanitize,
@@ -82,6 +83,7 @@ describe('sanitize', () => {
         },
       ],
     };
+    expect(hasCatalogWrongFormat(raw)).toBeTruthy();
     const catalog = sanitize(raw);
     expect(catalog.version).equals(CatalogFormat.CURRENT);
     expect(catalog.models[0].backend).equals('llama-cpp');
@@ -123,6 +125,7 @@ describe('sanitize', () => {
       ],
     };
 
+    expect(hasCatalogWrongFormat(raw)).toBeFalsy();
     expect(() => sanitize(raw)).toThrowError('the catalog is using an invalid version');
   });
 
@@ -160,6 +163,7 @@ describe('sanitize', () => {
         },
       ],
     };
+    expect(hasCatalogWrongFormat(raw)).toBeFalsy();
     const catalog = sanitize(raw);
     expect(catalog.version).equals(CatalogFormat.CURRENT);
     expect(catalog.models[0].backend).toBeUndefined();

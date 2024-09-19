@@ -84,7 +84,7 @@
   "dependencies": {
     "@huggingface/gguf": "^0.1.10",
     "express": "^4.21.0",
-    "express-openapi-validator": "^5.3.6",
+    "express-openapi-validator": "^5.3.7",
     "isomorphic-git": "^1.27.1",
     "js-yaml": "^4.1.0",
     "mustache": "^4.2.0",

@@ -50,7 +50,9 @@ export function sanitize(rawObject: object): ApplicationCatalog {
 }
 
 export function hasCatalogWrongFormat(raw: object): boolean {
-  return 'recipes' in raw && Array.isArray(raw.recipes) && !!raw.recipes.find(r => 'models' in r);
+  return (
+    !('version' in raw) || ('recipes' in raw && Array.isArray(raw.recipes) && raw.recipes.find(r => 'models' in r))
+  );
 }
 
 function adaptToCurrent(raw: object): object & { version: string } {
@@ -59,7 +61,7 @@ function adaptToCurrent(raw: object): object & { version: string } {
     raw.recipes.forEach(recipe => {
       recipe.backend = recipe.backend ?? 'llama-cpp';
       recipe.recommended = recipe.recommended ?? recipe.models ?? []; // Copy models to recommended if not present
-      recipe.models = []; // Clear models to avoid duplication
+      delete recipe.models; // Clear models to avoid duplication
     });
   }
 

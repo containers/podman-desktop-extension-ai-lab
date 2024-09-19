@@ -51,7 +51,7 @@ export function sanitize(rawObject: object): ApplicationCatalog {
 
 export function hasCatalogWrongFormat(raw: object): boolean {
   return (
-    !('version' in raw) || ('recipes' in raw && Array.isArray(raw.recipes) && raw.recipes.find(r => 'models' in r))
+    !('version' in raw) || ('recipes' in raw && Array.isArray(raw.recipes) && !!raw.recipes.find(r => 'models' in r))
   );
 }
 

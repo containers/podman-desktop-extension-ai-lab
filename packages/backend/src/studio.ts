@@ -316,6 +316,8 @@ export class Studio {
       this.#taskRegistry,
       this.#telemetry,
       this.#cancellationTokenRegistry,
+      this.#configurationRegistry,
+      this.#podmanConnection,
     );
     this.#extensionContext.subscriptions.push(this.#playgroundManager);
 

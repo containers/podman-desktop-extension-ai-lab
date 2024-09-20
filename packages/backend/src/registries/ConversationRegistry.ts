@@ -25,14 +25,36 @@ import type {
   Message,
   PendingChat,
 } from '@shared/src/models/IPlaygroundMessage';
-import type { Disposable, Webview } from '@podman-desktop/api';
+import {
+  type Disposable,
+  type Webview,
+  type ContainerCreateOptions,
+  containerEngine,
+  type ContainerProviderConnection,
+  type ImageInfo,
+  type PullEvent,
+} from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
+import type { ConfigurationRegistry } from './ConfigurationRegistry';
+import path from 'node:path';
+import fs from 'node:fs';
+import type { InferenceServer } from '@shared/src/models/IInference';
+import { getFreeRandomPort } from '../utils/ports';
+import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../utils/utils';
+import { getImageInfo } from '../utils/inferenceUtils';
+import type { TaskRegistry } from './TaskRegistry';
+import type { PodmanConnection } from '../managers/podmanConnection';
 
 export class ConversationRegistry extends Publisher<Conversation[]> implements Disposable {
   #conversations: Map<string, Conversation>;
   #counter: number;
 
-  constructor(webview: Webview) {
+  constructor(
+    webview: Webview,
+    private configurationRegistry: ConfigurationRegistry,
+    private taskRegistry: TaskRegistry,
+    private podmanConnection: PodmanConnection,
+  ) {
     super(webview, Messages.MSG_CONVERSATIONS_UPDATE, () => this.getAll());
     this.#conversations = new Map<string, Conversation>();
     this.#counter = 0;
@@ -76,13 +98,32 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     this.notify();
   }
 
-  deleteConversation(id: string): void {
+  async deleteConversation(id: string): Promise<void> {
+    const conversation = this.get(id);
+    if (conversation.container) {
+      await containerEngine.stopContainer(conversation.container?.engineId, conversation.container?.containerId);
+    }
+    await fs.promises.rm(path.join(this.configurationRegistry.getConversationsPath(), id), {
+      recursive: true,
+      force: true,
+    });
     this.#conversations.delete(id);
     this.notify();
   }
 
-  createConversation(name: string, modelId: string): string {
+  async createConversation(name: string, modelId: string): Promise<string> {
     const conversationId = this.getUniqueId();
+    const conversationFolder = path.join(this.configurationRegistry.getConversationsPath(), conversationId);
+    await fs.promises.mkdir(conversationFolder, {
+      recursive: true,
+    });
+    //WARNING: this will not work in production mode but didn't find how to embed binary assets
+    //this code get an initialized database so that default user is not admin thus did not get the initial
+    //welcome modal dialog
+    await fs.promises.copyFile(
+      path.join(__dirname, '..', 'src', 'assets', 'webui.db'),
+      path.join(conversationFolder, 'webui.db'),
+    );
     this.#conversations.set(conversationId, {
       name: name,
       modelId: modelId,
@@ -91,6 +132,77 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     });
     this.notify();
     return conversationId;
+  }
+
+  async startConversationContainer(server: InferenceServer, trackingId: string, conversationId: string): Promise<void> {
+    const conversation = this.get(conversationId);
+    const port = await getFreeRandomPort('127.0.0.1');
+    const connection = await this.podmanConnection.getConnectionByEngineId(server.container.engineId);
+    await this.pullImage(connection, 'ghcr.io/open-webui/open-webui:main', {
+      trackingId: trackingId,
+    });
+    const inferenceServerContainer = await containerEngine.inspectContainer(
+      server.container.engineId,
+      server.container.containerId,
+    );
+    const options: ContainerCreateOptions = {
+      Env: [
+        'DEFAULT_LOCALE=en-US',
+        'WEBUI_AUTH=false',
+        'ENABLE_OLLAMA_API=false',
+        `OPENAI_API_BASE_URL=http://${inferenceServerContainer.NetworkSettings.IPAddress}:8000/v1`,
+        'OPENAI_API_KEY=sk_dummy',
+        `WEBUI_URL=http://localhost:${port}`,
+        `DEFAULT_MODELS=/models/${server.models[0].file?.file}`,
+      ],
+      Image: 'ghcr.io/open-webui/open-webui:main',
+      HostConfig: {
+        AutoRemove: true,
+        Mounts: [
+          {
+            Source: path.join(this.configurationRegistry.getConversationsPath(), conversationId),
+            Target: '/app/backend/data',
+            Type: 'bind',
+          },
+        ],
+        PortBindings: {
+          '8080/tcp': [
+            {
+              HostPort: `${port}`,
+            },
+          ],
+        },
+        SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
+      },
+    };
+    const c = await containerEngine.createContainer(server.container.engineId, options);
+    conversation.container = { engineId: c.engineId, containerId: c.id, port };
+  }
+
+  protected pullImage(
+    connection: ContainerProviderConnection,
+    image: string,
+    labels: { [id: string]: string },
+  ): Promise<ImageInfo> {
+    // Creating a task to follow pulling progress
+    const pullingTask = this.taskRegistry.createTask(`Pulling ${image}.`, 'loading', labels);
+
+    // get the default image info for this provider
+    return getImageInfo(connection, image, (_event: PullEvent) => {})
+      .catch((err: unknown) => {
+        pullingTask.state = 'error';
+        pullingTask.progress = undefined;
+        pullingTask.error = `Something went wrong while pulling ${image}: ${String(err)}`;
+        throw err;
+      })
+      .then(imageInfo => {
+        pullingTask.state = 'success';
+        pullingTask.progress = undefined;
+        return imageInfo;
+      })
+      .finally(() => {
+        this.taskRegistry.updateTask(pullingTask);
+      });
   }
 
   /**

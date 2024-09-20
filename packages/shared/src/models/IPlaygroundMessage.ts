@@ -57,6 +57,11 @@ export interface Conversation {
   messages: Message[];
   modelId: string;
   name: string;
+  container?: {
+    engineId: string;
+    containerId: string;
+    port: number;
+  };
 }
 
 export interface Choice {

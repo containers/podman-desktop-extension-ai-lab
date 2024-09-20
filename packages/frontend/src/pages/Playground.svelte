@@ -40,7 +40,6 @@ function getStatusForIcon(status?: string, health?: string): string {
 export function goToUpPage(): void {
   router.goto('/playgrounds');
 }
-
 </script>
 
 {#if conversation}

@@ -35,9 +35,9 @@ $: if (typeof model?.memory === 'number' && containerProviderConnection) {
       connectionInfo = undefined;
       console.error(err);
     });
-  if (fromStore(configuration)?.current?.experimentalGPU && shouldRecommendGPU(containerProviderConnection)) {
-    gpuWarningRequired = true;
-  }
+  gpuWarningRequired = !!(
+    fromStore(configuration)?.current?.experimentalGPU && shouldRecommendGPU(containerProviderConnection)
+  );
 } else {
   connectionInfo = undefined;
 }

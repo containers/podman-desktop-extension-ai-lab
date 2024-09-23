@@ -97,7 +97,7 @@
   },
   "devDependencies": {
     "@podman-desktop/api": "1.12.0",
-    "@rollup/plugin-replace": "^5.0.7",
+    "@rollup/plugin-replace": "^6.0.1",
     "@types/express": "^4.17.21",
     "@types/js-yaml": "^4.0.9",
     "@types/mustache": "^4.2.5",

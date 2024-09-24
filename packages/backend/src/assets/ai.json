@@ -303,6 +303,19 @@
       },
       "sha256": "893ae2442b36b2e8e1134ccbf8c0d9bd670648d0964509202ab30c9cbb3d2114",
       "backend": "none"
+    },
+    {
+      "id": "hf.MaziyarPanahi.Mistral-7B-Instruct-v0.3.Q4_K_M",
+      "name": "MaziyarPanahi/Mistral-7B-Instruct-v0.3.Q4_K_M",
+      "description": "# [MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF](https://huggingface.co/MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF)\n- Model creator: [mistralai](https://huggingface.co/mistralai)\n- Original model: [mistralai/Mistral-7B-Instruct-v0.3](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3)\n\n## Description\n[MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF](https://huggingface.co/MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF) contains GGUF format model files for [mistralai/Mistral-7B-Instruct-v0.3](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3).",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
+      "properties": {
+        "chatFormat": "chatml-function-calling"
+      },
+      "memory": 4372811936,
+      "backend": "llama-cpp"
     }
   ],
   "categories": [

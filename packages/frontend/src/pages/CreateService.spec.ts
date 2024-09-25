@@ -225,7 +225,9 @@ test('tasks should be displayed after requestCreateInferenceServer', async () =>
     return (): void => {};
   });
 
-  render(CreateService);
+  render(CreateService, {
+    trackingId: 'dummyTrackingId',
+  });
 
   // wait for listener to be defined
   await vi.waitFor(() => {
@@ -273,7 +275,9 @@ test('form should be disabled when loading', async () => {
     return (): void => {};
   });
 
-  render(CreateService);
+  render(CreateService, {
+    trackingId: 'dummyTrackingId',
+  });
 
   // wait for listener to be defined
   await vi.waitFor(() => {

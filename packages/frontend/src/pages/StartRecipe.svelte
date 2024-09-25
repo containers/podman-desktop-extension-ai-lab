@@ -22,8 +22,12 @@ import { containerProviderConnections } from '/@/stores/containerProviderConnect
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
+import { get } from 'svelte/store';
 
 export let recipeId: string;
+// The tracking id is a unique identifier provided by the
+// backend when calling requestPullApplication
+export let trackingId: string | undefined = undefined;
 
 let recipe: Recipe | undefined;
 $: recipe = $catalog.recipes.find(r => r.id === recipeId);
@@ -61,10 +65,6 @@ $: {
     value = getFirstRecommended();
   }
 }
-
-// The tracking id is a unique identifier provided by the
-// backend when calling requestPullApplication
-let trackingId: string | undefined = undefined;
 
 // The trackedTasks are the tasks linked to the trackingId
 let trackedTasks: Task[];
@@ -123,7 +123,7 @@ async function submit(): Promise<void> {
   if (!recipe || !value) return;
 
   loading = true;
-  trackingId = await studioClient.requestPullApplication({
+  const trackingId = await studioClient.requestPullApplication({
     recipeId: recipe.id,
     modelId: value.id,
     connection: containerProviderConnection,
@@ -131,13 +131,15 @@ async function submit(): Promise<void> {
   router.location.query.set('trackingId', trackingId);
 }
 
-onMount(() => {
-  // Fetch any trackingId we could recover from query
-  const query = router.location.query.get('trackingId');
-  if (typeof query === 'string' && query.length > 0) {
-    trackingId = query;
-  }
+$: if (typeof trackingId === 'string' && trackingId.length > 0) {
+  refreshTasks();
+}
 
+function refreshTasks(): void {
+  processTasks(get(tasks));
+}
+
+onMount(() => {
   return tasks.subscribe(tasks => {
     processTasks(tasks);
   });

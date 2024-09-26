@@ -17,6 +17,11 @@ import ModelSelect from '../lib/select/ModelSelect.svelte';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
+import { get } from 'svelte/store';
+
+// The tracking id is a unique identifier provided by the
+// backend when calling requestCreateInferenceServer
+export let trackingId: string | undefined = undefined;
 
 // List of the models available locally
 let localModels: ModelInfo[];
@@ -42,10 +47,6 @@ let containerPort: number | undefined = undefined;
 let model: ModelInfo | undefined = undefined;
 // If the creation of a new inference service fail
 let errorMsg: string | undefined = undefined;
-
-// The tracking id is a unique identifier provided by the
-// backend when calling requestCreateInferenceServer
-let trackingId: string | undefined = undefined;
 // The trackedTasks are the tasks linked to the trackingId
 let trackedTasks: Task[];
 
@@ -83,13 +84,13 @@ const submit = async (): Promise<void> => {
 
   try {
     error = false;
-    trackingId = await studioClient.requestCreateInferenceServer({
+    const trackingId = await studioClient.requestCreateInferenceServer({
       modelsInfo: [model],
       port: containerPort,
       connection: containerProviderConnection,
     });
+    router.location.query.set('trackingId', trackingId);
   } catch (err: unknown) {
-    trackingId = undefined;
     console.error('Something wrong while trying to create the inference server.', err);
     errorMsg = String(err);
   }
@@ -124,15 +125,36 @@ const processTasks = (tasks: Task[]): void => {
   if (task === undefined) return;
 
   containerId = task.labels?.['containerId'];
+
+  // if we re-open the page, we might need to restore the model selected
+  populateModelFromTasks();
 };
+
+// This method uses the trackedTasks to restore the selected value of model
+// It is useful when the page has been restored
+function populateModelFromTasks(): void {
+  const task = trackedTasks.find(
+    task => task.labels && 'model-id' in task.labels && typeof task.labels['model-id'] === 'string',
+  );
+  const modelId = task?.labels?.['model-id'];
+  if (!modelId) return;
+
+  const mModel = localModels.find(model => model.id === modelId);
+  if (!mModel) return;
+
+  model = mModel;
+}
+
+$: if (typeof trackingId === 'string' && trackingId.length > 0) {
+  refreshTasks();
+}
+
+function refreshTasks(): void {
+  processTasks(get(tasks));
+}
 
 onMount(async () => {
   containerPort = await studioClient.getHostFreePort();
-
-  const queryModelId = router.location.query.get('model-id');
-  if (queryModelId !== undefined && typeof queryModelId === 'string') {
-    model = localModels.find(mModel => mModel.id === queryModelId);
-  }
 
   tasks.subscribe(tasks => {
     processTasks(tasks);

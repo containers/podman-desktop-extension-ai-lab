@@ -94,7 +94,7 @@ onDestroy(() => {
       <!-- Recipes -->
       <Route path="/recipe/:id/*" firstmatch let:meta>
         <Route path="/start">
-          <StartRecipe recipeId={meta.params.id} />
+          <StartRecipe recipeId={meta.params.id} trackingId={meta.query.trackingId} />
         </Route>
         <Route path="/*">
           <Recipe recipeId={meta.params.id} />
@@ -122,7 +122,7 @@ onDestroy(() => {
 
       <Route path="/service/:id/*" let:meta>
         {#if meta.params.id === 'create'}
-          <CreateService />
+          <CreateService trackingId={meta.query.trackingId} />
         {:else}
           <ServiceDetails containerId={meta.params.id} />
         {/if}

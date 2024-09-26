@@ -357,6 +357,7 @@ test('Completed task should make the open details button visible', async () => {
 
   const { container } = render(StartRecipe, {
     recipeId: 'dummy-recipe-id',
+    trackingId: 'fake-tracking-id',
   });
 
   await vi.waitFor(() => {
@@ -380,6 +381,7 @@ test('trackingId in router query should use it to display related tasks', () => 
 
   render(StartRecipe, {
     recipeId: 'dummy-recipe-id',
+    trackingId: 'fake-tracking-id',
   });
   const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
   expect(button).toBeDisabled();

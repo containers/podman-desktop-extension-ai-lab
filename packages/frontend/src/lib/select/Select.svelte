@@ -15,6 +15,11 @@ function handleOnChange(e: CustomEvent<T | undefined>): void {
   value = e.detail;
   onchange?.(value);
 }
+
+function handleOnClear(): void {
+  value = undefined;
+  onchange?.(value);
+}
 </script>
 
 <Select
@@ -22,6 +27,7 @@ function handleOnChange(e: CustomEvent<T | undefined>): void {
   name={name}
   disabled={disabled}
   value={value}
+  on:clear={handleOnClear}
   on:change={handleOnChange}
   --item-color={'var(--pd-dropdown-item-text)'}
   --item-is-active-color={'var(--pd-dropdown-item-text)'}

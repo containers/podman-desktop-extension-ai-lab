@@ -121,3 +121,38 @@ test('selecting value should call onchange callback', async () => {
     });
   });
 });
+
+test('clearing value should call onchange callback with undefined', async () => {
+  const onChangeMock = vi.fn();
+  const { container } = render(Select, {
+    label: 'Select Item',
+    items: [
+      {
+        label: 'Dummy Item 1',
+        value: 'item-1',
+      },
+      {
+        label: 'Dummy Item 2',
+        value: 'item-2',
+      },
+    ],
+    value: {
+      label: 'Dummy Item 2',
+      value: 'item-2',
+    },
+    onchange: onChangeMock,
+  });
+
+  // get clear HTMLElement
+  const clear = container.querySelector('button[class~="clear-select"]');
+  // ensure we have two options
+  expect(clear).not.toBeNull();
+  if (!clear) throw new Error('clear is null');
+
+  await fireEvent.click(clear);
+
+  await vi.waitFor(() => {
+    expect(onChangeMock).toHaveBeenCalledWith(undefined);
+    expect(onChangeMock).toHaveBeenCalledOnce();
+  });
+});

@@ -75,8 +75,8 @@ importers:
         specifier: ^3.3.3
         version: 3.3.3
       prettier-plugin-svelte:
-        specifier: ^3.2.6
-        version: 3.2.6(prettier@3.3.3)(svelte@5.0.0-next.259)
+        specifier: ^3.2.7
+        version: 3.2.7(prettier@3.3.3)(svelte@5.0.0-next.259)
       svelte-check:
         specifier: ^4.0.2
         version: 4.0.2(svelte@5.0.0-next.259)(typescript@5.6.2)
@@ -1114,6 +1114,7 @@ packages:
 
   '@faker-js/faker@5.5.3':
     resolution: {integrity: sha512-R11tGE6yIFwqpaIqcfkcg7AICXzFg14+5h5v0TfF/9+RMDL6jhzCy/pxHVOfbALGdtVYdt6JdR21tuxEgl34dw==}
+    deprecated: Please update to a maintained version.
 
   '@floating-ui/core@1.6.7':
     resolution: {integrity: sha512-yDzVT/Lm101nQ5TCVeK65LtdN7Tj4Qpr9RTXJ2vPFLqtLxwOrpoxAHAJI8J3yYWUc40J0BDBheaitK5SJmno2g==}
@@ -3763,8 +3764,8 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier-plugin-svelte@3.2.6:
-    resolution: {integrity: sha512-Y1XWLw7vXUQQZmgv1JAEiLcErqUniAF2wO7QJsw8BVMvpLET2dI5WpEIEJx1r11iHVdSMzQxivyfrH9On9t2IQ==}
+  prettier-plugin-svelte@3.2.7:
+    resolution: {integrity: sha512-/Dswx/ea0lV34If1eDcG3nulQ63YNr5KPDfMsjbdtpSWOxKKJ7nAc2qlVuYwEvCr4raIuredNoR7K4JCkmTGaQ==}
     peerDependencies:
       prettier: ^3.0.0
       svelte: ^3.2.0 || ^4.0.0-next.0 || ^5.0.0-next.0
@@ -6428,14 +6429,6 @@ snapshots:
       chai: 5.1.1
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.1(@vitest/spy@2.1.1)(vite@5.4.8(@types/node@20.16.5))':
-    dependencies:
-      '@vitest/spy': 2.1.1
-      estree-walker: 3.0.3
-      magic-string: 0.30.11
-    optionalDependencies:
-      vite: 5.4.8(@types/node@20.16.5)
-
   '@vitest/mocker@2.1.1(@vitest/spy@2.1.1)(vite@5.4.8(@types/node@20.16.8))':
     dependencies:
       '@vitest/spy': 2.1.1
@@ -8726,7 +8719,7 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-svelte@3.2.6(prettier@3.3.3)(svelte@5.0.0-next.259):
+  prettier-plugin-svelte@3.2.7(prettier@3.3.3)(svelte@5.0.0-next.259):
     dependencies:
       prettier: 3.3.3
       svelte: 5.0.0-next.259
@@ -9624,7 +9617,7 @@ snapshots:
   vitest@2.1.1(@types/node@20.16.5)(jsdom@25.0.1):
     dependencies:
       '@vitest/expect': 2.1.1
-      '@vitest/mocker': 2.1.1(@vitest/spy@2.1.1)(vite@5.4.8(@types/node@20.16.5))
+      '@vitest/mocker': 2.1.1(@vitest/spy@2.1.1)(vite@5.4.8(@types/node@20.16.8))
       '@vitest/pretty-format': 2.1.1
       '@vitest/runner': 2.1.1
       '@vitest/snapshot': 2.1.1

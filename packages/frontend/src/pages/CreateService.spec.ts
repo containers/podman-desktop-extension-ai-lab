@@ -441,10 +441,9 @@ test('model-id query should be used to select default model', async () => {
 
   await vi.waitFor(() => {
     expect(studioClient.requestCreateInferenceServer).toHaveBeenCalledWith({
-      modelsInfo: [expect.objectContaining({id: 'model-id-2'})],
+      modelsInfo: [expect.objectContaining({ id: 'model-id-2' })],
       port: 8888,
       connection: containerProviderConnection,
     });
   });
 });
-

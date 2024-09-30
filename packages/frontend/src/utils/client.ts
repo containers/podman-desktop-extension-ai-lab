@@ -21,7 +21,6 @@ import { RpcBrowser } from '@shared/src/messages/MessageProxy';
 import type { RouterState } from '/@/models/IRouterState';
 import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
 
-export const RECENT_CATEGORY_ID = 'recent-category';
 const podmanDesktopApi = acquirePodmanDesktopApi();
 export const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);
 
@@ -36,11 +35,18 @@ const isRouterState = (value: unknown): value is RouterState => {
   return typeof value === 'object' && !!value && 'url' in value;
 };
 
-export const getRouterState = (): RouterState => {
+export async function getRouterState(): Promise<RouterState> {
+  const route: string | undefined = await studioClient.readRoute();
+  if (route) {
+    return {
+      url: route,
+    };
+  }
+
   const state = podmanDesktopApi.getState();
   if (isRouterState(state)) return state;
   return { url: '/' };
-};
+}
 
 Object.defineProperty(window, 'studioClient', {
   value: studioClient,

@@ -12,6 +12,18 @@
   },
   "main": "./dist/extension.cjs",
   "contributes": {
+    "commands": [
+      {
+        "command": "ai-lab.navigation.inference.start",
+        "title": "AI Lab: navigate to inference start page",
+        "hidden": true
+      },
+      {
+        "command": "ai-lab.navigation.recipe.start",
+        "title": "AI Lab: navigate to recipe start page",
+        "hidden": true
+      }
+    ],
     "configuration": {
       "title": "AI Lab",
       "properties": {
@@ -96,7 +108,7 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
-    "@podman-desktop/api": "1.12.0",
+    "@podman-desktop/api": "1.13.0-202409181313-78725a6565",
     "@rollup/plugin-replace": "^6.0.1",
     "@types/express": "^4.17.21",
     "@types/js-yaml": "^4.0.9",

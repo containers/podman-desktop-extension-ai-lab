@@ -12,7 +12,7 @@ import Models from '/@/pages/Models.svelte';
 import Recipe from '/@/pages/Recipe.svelte';
 import Model from './pages/Model.svelte';
 import { onDestroy, onMount } from 'svelte';
-import { getRouterState } from '/@/utils/client';
+import { getRouterState, rpcBrowser } from '/@/utils/client';
 import CreateService from '/@/pages/CreateService.svelte';
 import Services from '/@/pages/InferenceServers.svelte';
 import ServiceDetails from '/@/pages/InferenceServerDetails.svelte';
@@ -25,27 +25,36 @@ import TuneSessions from './pages/TuneSessions.svelte';
 import { configuration } from './stores/extensionConfiguration';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
+import { Messages } from '@shared/Messages';
 
 router.mode.hash();
 
 let isMounted = false;
 
 let experimentalTuning: boolean = false;
-let cfgUnsubscribe: Unsubscriber;
+const unsubscribers: Unsubscriber[] = [];
 
-onMount(() => {
+onMount(async () => {
   // Load router state on application startup
-  const state = getRouterState();
+  const state = await getRouterState();
   router.goto(state.url);
   isMounted = true;
 
-  cfgUnsubscribe = configuration.subscribe((val: ExtensionConfiguration | undefined) => {
-    experimentalTuning = val?.experimentalTuning ?? false;
-  });
+  unsubscribers.push(
+    configuration.subscribe((val: ExtensionConfiguration | undefined) => {
+      experimentalTuning = val?.experimentalTuning ?? false;
+    }),
+  );
+
+  unsubscribers.push(
+    rpcBrowser.subscribe(Messages.MSG_NAVIGATION_ROUTE_UPDATE, location => {
+      router.goto(location);
+    }).unsubscribe,
+  );
 });
 
 onDestroy(() => {
-  cfgUnsubscribe?.();
+  unsubscribers.forEach(unsubscriber => unsubscriber());
 });
 </script>
 

@@ -23,10 +23,12 @@ import type {
   RegisterContainerConnectionEvent,
   UpdateContainerConnectionEvent,
   Webview,
+  RunResult,
+  RunOptions,
+  ProviderContainerConnection,
 } from '@podman-desktop/api';
-import { containerEngine, env, navigation, EventEmitter, process, provider } from '@podman-desktop/api';
-import type { MachineJSON } from '../utils/podman';
-import { MIN_CPUS_VALUE, getPodmanCli } from '../utils/podman';
+import { containerEngine, env, navigation, EventEmitter, process, provider, extensions } from '@podman-desktop/api';
+import { getPodmanMachineName, type MachineJSON, MIN_CPUS_VALUE, getPodmanCli } from '../utils/podman';
 import { VMType } from '@shared/src/models/IPodman';
 import { Publisher } from '../utils/Publisher';
 import type {
@@ -38,6 +40,10 @@ import { Messages } from '@shared/Messages';
 
 export interface PodmanConnectionEvent {
   status: 'stopped' | 'started' | 'unregister' | 'register';
+}
+
+export interface PodmanRunOptions extends RunOptions {
+  connection?: ProviderContainerConnection;
 }
 
 export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[]> implements Disposable {
@@ -52,6 +58,71 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     super(webview, Messages.MSG_PODMAN_CONNECTION_UPDATE, () => this.getContainerProviderConnectionInfo());
     this.#providers = new Map();
     this.#disposables = [];
+  }
+
+  /**
+   * Execute the podman cli with the arguments provided
+   *
+   * @example
+   * ```
+   * const result = await podman.execute(connection, ['machine', 'ls', '--format=json']);
+   * ```
+   * @param connection
+   * @param args
+   * @param options
+   */
+  execute(connection: ContainerProviderConnection, args: string[], options?: RunOptions): Promise<RunResult> {
+    const podman = extensions.getExtension('podman-desktop.podman');
+    if (!podman) {
+      console.warn('cannot find podman extension api');
+      return this.executeLegacy(args, options);
+    }
+
+    const podmanApi: {
+      exec(args: string[], options?: PodmanRunOptions): Promise<RunResult>;
+    } = podman.exports;
+
+    return podmanApi.exec(args, {
+      ...options,
+      connection: this.getProviderContainerConnection(connection),
+    });
+  }
+
+  /**
+   * Execute a command inside the podman machine
+   *
+   * @example
+   * ```
+   * const result = await podman.executeSSH(connection, ['ls', '/dev']);
+   * ```
+   * @param connection
+   * @param args
+   * @param options
+   */
+  executeSSH(connection: ContainerProviderConnection, args: string[], options?: RunOptions): Promise<RunResult> {
+    return this.execute(connection, ['machine', 'ssh', this.getNameLegacyCompatibility(connection), ...args], options);
+  }
+
+  /**
+   * Before 1.13, the podman extension was not exposing any api.
+   *
+   * Therefore, to support old version we need to get the podman executable ourself
+   * @deprecated
+   */
+  protected executeLegacy(args: string[], options?: RunOptions): Promise<RunResult> {
+    return process.exec(getPodmanCli(), [...args], options);
+  }
+
+  /**
+   * Before 1.13, the {@link ContainerProviderConnection.name} field was used as friendly user
+   * field also.
+   *
+   * Therefore, we could have `Podman Machine Default` as name, where the real machine was `podman-machine-default`.
+   * @param connection
+   * @deprecated
+   */
+  protected getNameLegacyCompatibility(connection: ContainerProviderConnection): string {
+    return getPodmanMachineName(connection);
   }
 
   getContainerProviderConnections(): ContainerProviderConnection[] {
@@ -92,11 +163,27 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     this.#disposables.forEach(disposable => disposable.dispose());
   }
 
+  /**
+   * This method allow us to get the ProviderContainerConnection given a ContainerProviderConnection
+   * @param connection
+   * @protected
+   */
+  protected getProviderContainerConnection(connection: ContainerProviderConnection): ProviderContainerConnection {
+    const providers: ProviderContainerConnection[] = provider.getContainerConnections();
+
+    const podmanProvider = providers
+      .filter(({ connection }) => connection.type === 'podman')
+      .find(provider => provider.connection.name === connection.name);
+    if (!podmanProvider) throw new Error(`cannot find podman provider with connection name ${connection.name}`);
+
+    return podmanProvider;
+  }
+
   protected refreshProviders(): void {
     // clear all providers
     this.#providers.clear();
 
-    const providers = provider.getContainerConnections();
+    const providers: ProviderContainerConnection[] = provider.getContainerConnections();
 
     // register the podman container connection
     providers

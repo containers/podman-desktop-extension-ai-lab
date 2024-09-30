@@ -5,9 +5,9 @@ import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 
 interface Props {
   trackingId?: string;
-  tasks: Task[],
+  tasks: Task[];
   class?: string;
-  onChange?: (tasks: Task[]) => void,
+  onChange?: (tasks: Task[]) => void;
 }
 let { trackingId, tasks, onChange, class: classes }: Props = $props();
 
@@ -31,4 +31,3 @@ $effect(() => {
     <TasksProgress tasks={trackedTasks} />
   </div>
 {/if}
-

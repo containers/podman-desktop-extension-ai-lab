@@ -22,7 +22,7 @@ import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionW
 import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
 
 interface Props {
-  recipeId: string,
+  recipeId: string;
   // The tracking id is a unique identifier provided by the
   // backend when calling requestPullApplication
   trackingId?: string;
@@ -35,15 +35,15 @@ let recipe: Recipe | undefined = $derived($catalog.recipes.find(r => r.id === re
 // The container provider connection to use
 let containerProviderConnection: ContainerProviderConnectionInfo | undefined = $state(undefined);
 // Filtered connections (started)
-let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = $derived($containerProviderConnections.filter(
-  connection => connection.status === 'started',
-));
+let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = $derived(
+  $containerProviderConnections.filter(connection => connection.status === 'started'),
+);
 // recipe local path
 let localPath: LocalRepository | undefined = $derived(findLocalRepositoryByRecipeId($localRepositories, recipe?.id));
 // Filter all models based on backend property
-let models: ModelInfo[] = $derived($modelsInfo.filter(
-  model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE),
-));
+let models: ModelInfo[] = $derived(
+  $modelsInfo.filter(model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE)),
+);
 // Hold the selected model
 let model: ModelInfo | undefined = $state(undefined);
 // loading state
@@ -145,7 +145,7 @@ function handleOnClick(): void {
       {/if}
 
       <!-- tasks tracked -->
-      <TrackedTasks onChange={processTasks} class="mx-5 mt-5" trackingId={trackingId} tasks={$tasks}/>
+      <TrackedTasks onChange={processTasks} class="mx-5 mt-5" trackingId={trackingId} tasks={$tasks} />
 
       {#if recipe}
         <!-- form -->

@@ -19,7 +19,7 @@ import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
 
 interface Props {
   // The tracking id is a unique identifier provided by the
-// backend when calling requestCreateInferenceServer
+  // backend when calling requestCreateInferenceServer
   trackingId?: string;
 }
 
@@ -32,9 +32,9 @@ let localModels: ModelInfo[] = $derived($modelsInfo.filter(model => model.file))
 let containerProviderConnection: ContainerProviderConnectionInfo | undefined = $state(undefined);
 
 // Filtered connections (started)
-let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = $derived($containerProviderConnections.filter(
-  connection => connection.status === 'started',
-));
+let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = $derived(
+  $containerProviderConnections.filter(connection => connection.status === 'started'),
+);
 
 // The containerPort is the bind value to form input
 let containerPort: number | undefined = $state(undefined);
@@ -134,11 +134,14 @@ function populateModelFromTasks(trackedTasks: Task[]): void {
 }
 
 onMount(() => {
-  studioClient.getHostFreePort().then((port) => {
-    containerPort = port;
-  }).catch((err: unknown) => {
-    console.error(err);
-  });
+  studioClient
+    .getHostFreePort()
+    .then(port => {
+      containerPort = port;
+    })
+    .catch((err: unknown) => {
+      console.error(err);
+    });
 
   // we might have a query parameter, then we should use it
   const queryModelId = router.location.query.get('model-id');
@@ -169,12 +172,14 @@ export function goToUpPage(): void {
       <!-- warning machine resources -->
       {#if containerProviderConnection}
         <div class="mx-5">
-          <ContainerConnectionWrapper model={$state.snapshot(model)} containerProviderConnection={$state.snapshot(containerProviderConnection)} />
+          <ContainerConnectionWrapper
+            model={$state.snapshot(model)}
+            containerProviderConnection={$state.snapshot(containerProviderConnection)} />
         </div>
       {/if}
 
       <!-- tasks tracked -->
-      <TrackedTasks onChange={processTasks} class="mx-5 mt-5" trackingId={trackingId} tasks={$tasks}/>
+      <TrackedTasks onChange={processTasks} class="mx-5 mt-5" trackingId={trackingId} tasks={$tasks} />
 
       <!-- form -->
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">

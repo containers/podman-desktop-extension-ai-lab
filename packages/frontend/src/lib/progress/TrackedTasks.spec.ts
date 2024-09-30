@@ -38,14 +38,16 @@ test('empty task should not have any content', async () => {
 
 test('task without matching trackingId should not have any content', async () => {
   const { queryByRole } = render(TrackedTasks, {
-    tasks: [{
-      id: 'dummy-id',
-      name: 'Hello World',
-      state: 'loading',
-      labels: {
-        trackingId: 'dummyTrackingId',
+    tasks: [
+      {
+        id: 'dummy-id',
+        name: 'Hello World',
+        state: 'loading',
+        labels: {
+          trackingId: 'dummyTrackingId',
+        },
       },
-    }],
+    ],
     trackingId: 'notMatching',
   });
 
@@ -55,14 +57,16 @@ test('task without matching trackingId should not have any content', async () =>
 
 test('task with matching trackingId should be visible', () => {
   const { getByRole } = render(TrackedTasks, {
-    tasks: [{
-      id: 'dummy-id',
-      name: 'Hello World',
-      state: 'loading',
-      labels: {
-        trackingId: 'dummyTrackingId',
+    tasks: [
+      {
+        id: 'dummy-id',
+        name: 'Hello World',
+        state: 'loading',
+        labels: {
+          trackingId: 'dummyTrackingId',
+        },
       },
-    }],
+    ],
     trackingId: 'dummyTrackingId',
   });
 
@@ -73,7 +77,27 @@ test('task with matching trackingId should be visible', () => {
 test('onChange should provide task with matching trackingId', () => {
   const onChangeMock = vi.fn();
   render(TrackedTasks, {
-    tasks: [{
+    tasks: [
+      {
+        id: 'dummy-id',
+        name: 'Hello World',
+        state: 'loading',
+        labels: {
+          trackingId: 'dummyTrackingId',
+        },
+      },
+      {
+        id: 'dummy-id-2',
+        name: 'Hello World 2',
+        state: 'loading',
+      },
+    ],
+    trackingId: 'dummyTrackingId',
+    onChange: onChangeMock,
+  });
+
+  expect(onChangeMock).toHaveBeenCalledWith([
+    {
       id: 'dummy-id',
       name: 'Hello World',
       state: 'loading',
@@ -81,21 +105,5 @@ test('onChange should provide task with matching trackingId', () => {
         trackingId: 'dummyTrackingId',
       },
     },
-      {
-        id: 'dummy-id-2',
-        name: 'Hello World 2',
-        state: 'loading',
-      }],
-    trackingId: 'dummyTrackingId',
-    onChange: onChangeMock,
-  });
-
-  expect(onChangeMock).toHaveBeenCalledWith([{
-    id: 'dummy-id',
-    name: 'Hello World',
-    state: 'loading',
-    labels: {
-      trackingId: 'dummyTrackingId',
-    },
-  }]);
+  ]);
 });

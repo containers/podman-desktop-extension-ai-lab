@@ -24,6 +24,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getLocalModelFile } from './modelsUtils';
 import type { IWorker } from '../workers/IWorker';
 import type { UploaderOptions } from '../workers/uploader/UploaderOptions';
+import type { PodmanConnection } from '../managers/podmanConnection';
 
 export class Uploader {
   readonly #_onEvent = new EventEmitter<BaseEvent>();
@@ -31,11 +32,12 @@ export class Uploader {
   readonly #workers: IWorker<UploaderOptions, string>[] = [];
 
   constructor(
+    podman: PodmanConnection,
     private connection: ContainerProviderConnection,
     private modelInfo: ModelInfo,
     private abortSignal?: AbortSignal,
   ) {
-    this.#workers = [new WSLUploader()];
+    this.#workers = [new WSLUploader(podman)];
   }
 
   /**

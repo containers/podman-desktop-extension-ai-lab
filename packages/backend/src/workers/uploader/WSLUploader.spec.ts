@@ -21,6 +21,7 @@ import { WSLUploader } from './WSLUploader';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { configuration, env, process, type ContainerProviderConnection, type RunResult } from '@podman-desktop/api';
 import { VMType } from '@shared/src/models/IPodman';
+import type { PodmanConnection } from '../../managers/podmanConnection';
 
 vi.mock('@podman-desktop/api', () => ({
   env: {
@@ -34,6 +35,10 @@ vi.mock('@podman-desktop/api', () => ({
   },
 }));
 
+const podmanConnectionMock: PodmanConnection = {
+  executeSSH: vi.fn(),
+} as unknown as PodmanConnection;
+
 const connectionMock: ContainerProviderConnection = {
   name: 'machine2',
   type: 'podman',
@@ -44,10 +49,16 @@ const connectionMock: ContainerProviderConnection = {
   },
 };
 
-const wslUploader = new WSLUploader();
+const wslUploader = new WSLUploader(podmanConnectionMock);
 
 beforeEach(() => {
   vi.resetAllMocks();
+
+  vi.mocked(podmanConnectionMock.executeSSH).mockResolvedValue({
+    stderr: '',
+    stdout: '',
+    command: '',
+  } as RunResult);
 
   vi.mocked(configuration.getConfiguration).mockReturnValue({
     get: () => 'podman.exe',
@@ -98,7 +109,7 @@ describe('upload', () => {
   });
 
   test('copy model if not exists on podman machine', async () => {
-    vi.mocked(process.exec).mockRejectedValueOnce('error');
+    vi.mocked(podmanConnectionMock.executeSSH).mockRejectedValueOnce('error');
     await wslUploader.perform({
       connection: connectionMock,
       model: {
@@ -106,25 +117,16 @@ describe('upload', () => {
         file: { path: 'C:\\Users\\podman\\folder', file: 'dummy.guff' },
       } as unknown as ModelInfo,
     });
-    expect(process.exec).toBeCalledWith('podman.exe', [
-      'machine',
-      'ssh',
-      'machine2',
+    expect(podmanConnectionMock.executeSSH).toBeCalledWith(connectionMock, [
       'stat',
       '/home/user/ai-lab/models/dummy.guff',
     ]);
-    expect(process.exec).toBeCalledWith('podman.exe', [
-      'machine',
-      'ssh',
-      'machine2',
+    expect(podmanConnectionMock.executeSSH).toBeCalledWith(connectionMock, [
       'mkdir',
       '-p',
       '/home/user/ai-lab/models/',
     ]);
-    expect(process.exec).toBeCalledWith('podman.exe', [
-      'machine',
-      'ssh',
-      'machine2',
+    expect(podmanConnectionMock.executeSSH).toBeCalledWith(connectionMock, [
       'cp',
       '/mnt/c/Users/podman/folder/dummy.guff',
       '/home/user/ai-lab/models/dummy.guff',
@@ -132,7 +134,6 @@ describe('upload', () => {
   });
 
   test('do not copy model if it exists on podman machine', async () => {
-    vi.mocked(process.exec).mockResolvedValue({} as RunResult);
     await wslUploader.perform({
       connection: connectionMock,
       model: {
@@ -140,13 +141,10 @@ describe('upload', () => {
         file: { path: 'C:\\Users\\podman\\folder', file: 'dummy.guff' },
       } as unknown as ModelInfo,
     });
-    expect(process.exec).toBeCalledWith('podman.exe', [
-      'machine',
-      'ssh',
-      'machine2',
+    expect(podmanConnectionMock.executeSSH).toBeCalledWith(connectionMock, [
       'stat',
       '/home/user/ai-lab/models/dummy.guff',
     ]);
-    expect(process.exec).toBeCalledTimes(1);
+    expect(podmanConnectionMock.executeSSH).toBeCalledTimes(1);
   });
 });

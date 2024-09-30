@@ -156,6 +156,12 @@ function refreshTasks(): void {
 onMount(async () => {
   containerPort = await studioClient.getHostFreePort();
 
+  // we might have a query parameter, then we should use it
+  const queryModelId = router.location.query.get('model-id');
+  if (queryModelId !== undefined && typeof queryModelId === 'string') {
+    model = localModels.find(mModel => mModel.id === queryModelId);
+  }
+
   tasks.subscribe(tasks => {
     processTasks(tasks);
   });

@@ -359,7 +359,6 @@ test('should display connectionInfo message if there is no running connection', 
     } as unknown as ModelInfo,
   ]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
-  router.location.query.set('model-id', 'id');
   render(CreateService);
 
   await vi.waitFor(() => {
@@ -383,7 +382,6 @@ test('should display connectionInfo message if there is a podman connection with
     } as unknown as ModelInfo,
   ]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
-  router.location.query.set('model-id', 'id');
   render(CreateService);
 
   await vi.waitFor(() => {
@@ -404,11 +402,48 @@ test('there should be NO banner if there is a running podman connection having e
     } as unknown as ModelInfo,
   ]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
-  router.location.query.set('model-id', 'id');
   render(CreateService);
 
   await vi.waitFor(() => {
     const banner = screen.queryByLabelText('Container connection info banner');
     expect(banner).not.toBeInTheDocument();
+  });
+});
+
+test('model-id query should be used to select default model', async () => {
+  const modelsInfoList = writable<ModelInfo[]>([
+    {
+      id: 'model-id-1',
+      file: {
+        file: 'file',
+        path: '/path',
+      },
+    } as unknown as ModelInfo,
+    {
+      id: 'model-id-2',
+      file: {
+        file: 'file',
+        path: '/path',
+      },
+    } as unknown as ModelInfo,
+  ]);
+  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+  router.location.query.set('model-id', 'model-id-2');
+
+  render(CreateService);
+  const createBtn = screen.getByTitle('Create service');
+
+  await vi.waitFor(() => {
+    expect(createBtn).toBeEnabled();
+  });
+
+  await fireEvent.click(createBtn);
+
+  await vi.waitFor(() => {
+    expect(studioClient.requestCreateInferenceServer).toHaveBeenCalledWith({
+      modelsInfo: [expect.objectContaining({ id: 'model-id-2' })],
+      port: 8888,
+      connection: containerProviderConnection,
+    });
   });
 });

@@ -50,16 +50,14 @@ let available: boolean = $derived(!!containerId && $inferenceServers.some(server
 // loading state
 let loading = $derived(trackingId !== undefined && !errorMsg);
 
-// Select default model
 $effect(() => {
+  // Select default model
   if (!model && localModels.length > 0) {
     model = localModels[0];
   }
-});
 
-// Select default connection
-$effect(() => {
-  if (containerProviderConnection === undefined && startedContainerProviderConnectionInfo.length > 0) {
+  // Select default connection
+  if (!containerProviderConnection && startedContainerProviderConnectionInfo.length > 0) {
     containerProviderConnection = startedContainerProviderConnectionInfo[0];
   }
 });

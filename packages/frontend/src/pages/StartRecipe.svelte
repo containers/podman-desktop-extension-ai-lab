@@ -51,15 +51,12 @@ let loading = $state(false);
 // All tasks are successful (not any in error)
 let completed: boolean = $state(false);
 
-// Select default connection
 $effect(() => {
-  if (containerProviderConnection === undefined && startedContainerProviderConnectionInfo.length > 0) {
+  // Select default connection
+  if (!containerProviderConnection && startedContainerProviderConnectionInfo.length > 0) {
     containerProviderConnection = startedContainerProviderConnectionInfo[0];
   }
-});
-
-// Select default model
-$effect(() => {
+  // Select default model
   if (!model && recipe && models.length > 0) {
     model = getFirstRecommended();
   }

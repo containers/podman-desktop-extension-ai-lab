@@ -235,15 +235,14 @@ export class ApiServer implements Disposable {
     }
   }
 
-  private streamLine(res: Response, obj: unknown, stream: boolean): void {
-    if (stream) {
-      res.write(JSON.stringify(obj) + '\n');
-    }
+  private streamLine(res: Response, obj: unknown): void {
+    res.write(JSON.stringify(obj) + '\n');
   }
 
   private sendResult(res: Response, obj: unknown, code: number, stream: boolean): void {
+    // eslint-disable-next-line sonarjs/no-selector-parameter
     if (stream) {
-      this.streamLine(res, obj, stream);
+      this.streamLine(res, obj);
     } else {
       res.status(code).json(obj);
     }
@@ -257,7 +256,9 @@ export class ApiServer implements Disposable {
     }
     let modelInfo: ModelInfo;
 
-    this.streamLine(res, { status: 'pulling manifest' }, stream);
+    if (stream) {
+      this.streamLine(res, { status: 'pulling manifest' });
+    }
 
     try {
       modelInfo = this.catalogManager.getModelByName(modelName);
@@ -286,16 +287,12 @@ export class ApiServer implements Disposable {
     if (stream) {
       downloader.onEvent(event => {
         if (isProgressEvent(event) && event.id === modelName) {
-          this.streamLine(
-            res,
-            {
-              status: `pulling ${modelInfo.sha256}`,
-              digest: `sha256:${modelInfo.sha256}`,
-              total: event.total,
-              completed: Math.round((event.total * event.value) / 100),
-            },
-            stream,
-          );
+          this.streamLine(res, {
+            status: `pulling ${modelInfo.sha256}`,
+            digest: `sha256:${modelInfo.sha256}`,
+            total: event.total,
+            completed: Math.round((event.total * event.value) / 100),
+          });
         }
       }, this);
     }

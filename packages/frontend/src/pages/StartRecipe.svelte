@@ -12,68 +12,55 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { InferenceType } from '@shared/src/models/IInference';
 import { studioClient } from '/@/utils/client';
 import type { Task } from '@shared/src/models/ITask';
-import { filterByLabel } from '/@/utils/taskUtils';
 import { tasks } from '/@/stores/tasks';
-import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
-import { onMount } from 'svelte';
 import { router } from 'tinro';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
-import { get } from 'svelte/store';
+import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
 
-export let recipeId: string;
-// The tracking id is a unique identifier provided by the
-// backend when calling requestPullApplication
-export let trackingId: string | undefined = undefined;
+interface Props {
+  recipeId: string;
+  // The tracking id is a unique identifier provided by the
+  // backend when calling requestPullApplication
+  trackingId?: string;
+}
 
-let recipe: Recipe | undefined;
-$: recipe = $catalog.recipes.find(r => r.id === recipeId);
+let { recipeId, trackingId }: Props = $props();
+
+let recipe: Recipe | undefined = $derived($catalog.recipes.find(r => r.id === recipeId));
 
 // The container provider connection to use
-let containerProviderConnection: ContainerProviderConnectionInfo | undefined = undefined;
-
+let containerProviderConnection: ContainerProviderConnectionInfo | undefined = $state(undefined);
 // Filtered connections (started)
-let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = [];
-$: startedContainerProviderConnectionInfo = $containerProviderConnections.filter(
-  connection => connection.status === 'started',
+let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = $derived(
+  $containerProviderConnections.filter(connection => connection.status === 'started'),
 );
-
-// Select default connection
-$: if (containerProviderConnection === undefined && startedContainerProviderConnectionInfo.length > 0) {
-  containerProviderConnection = startedContainerProviderConnectionInfo[0];
-}
-
 // recipe local path
-let localPath: LocalRepository | undefined = undefined;
-$: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe?.id);
-
+let localPath: LocalRepository | undefined = $derived(findLocalRepositoryByRecipeId($localRepositories, recipe?.id));
 // Filter all models based on backend property
-let models: ModelInfo[] = [];
-$: models = $modelsInfo.filter(
-  model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE),
+let models: ModelInfo[] = $derived(
+  $modelsInfo.filter(model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE)),
 );
-
 // Hold the selected model
-let value: ModelInfo | undefined = undefined;
-
-$: {
-  // let's select a default model
-  if (value === undefined && recipe && models.length > 0) {
-    value = getFirstRecommended();
-  }
-}
-
-// The trackedTasks are the tasks linked to the trackingId
-let trackedTasks: Task[];
-
-// Some tasks are running
-let loading: boolean = false;
-
+let model: ModelInfo | undefined = $state(undefined);
+// loading state
+let loading = $state(false);
 // All tasks are successful (not any in error)
-let completed: boolean = false;
+let completed: boolean = $state(false);
+
+$effect(() => {
+  // Select default connection
+  if (!containerProviderConnection && startedContainerProviderConnectionInfo.length > 0) {
+    containerProviderConnection = startedContainerProviderConnectionInfo[0];
+  }
+  // Select default model
+  if (!model && recipe && models.length > 0) {
+    model = getFirstRecommended();
+  }
+});
 
 const getFirstRecommended = (): ModelInfo | undefined => {
   if (!recipe || !models) return undefined;
@@ -84,66 +71,42 @@ const getFirstRecommended = (): ModelInfo | undefined => {
   return model;
 };
 
-const processTasks = (tasks: Task[]): void => {
-  if (trackingId === undefined) {
-    trackedTasks = [];
-    return;
-  }
+const processTasks = (trackedTasks: Task[]): void => {
+  // if one task is in loading we are still loading
+  loading = !!trackingId && trackedTasks.some(task => task.state === 'loading');
 
-  trackedTasks = filterByLabel(tasks, {
-    trackingId: trackingId,
-  });
-
-  // if any task is still in loading state - we are not yet finished
-  loading = trackedTasks.some(task => task.state === 'loading');
-
-  // if all task are successful
-  completed = trackedTasks.every(task => task.state === 'success');
+  // if all task are successful we are successful
+  completed = !!trackingId && trackedTasks.every(task => task.state === 'success');
 
   // if we re-open the page, we might need to restore the model selected
-  populateModelFromTasks();
+  populateModelFromTasks(trackedTasks);
 };
 
 // This method uses the trackedTasks to restore the selected value of model
 // It is useful when the page has been restored
-function populateModelFromTasks(): void {
+function populateModelFromTasks(trackedTasks: Task[]): void {
   const task = trackedTasks.find(
     task => task.labels && 'model-id' in task.labels && typeof task.labels['model-id'] === 'string',
   );
   const modelId = task?.labels?.['model-id'];
   if (!modelId) return;
 
-  const model = models.find(model => model.id === modelId);
-  if (!model) return;
+  const nModel = models.find(model => model.id === modelId);
+  if (!nModel) return;
 
-  value = model;
+  model = nModel;
 }
 
 async function submit(): Promise<void> {
-  if (!recipe || !value) return;
+  if (!recipe || !model) return;
 
-  loading = true;
   const trackingId = await studioClient.requestPullApplication({
-    recipeId: recipe.id,
-    modelId: value.id,
-    connection: containerProviderConnection,
+    recipeId: $state.snapshot(recipe.id),
+    modelId: $state.snapshot(model.id),
+    connection: $state.snapshot(containerProviderConnection),
   });
   router.location.query.set('trackingId', trackingId);
 }
-
-$: if (typeof trackingId === 'string' && trackingId.length > 0) {
-  refreshTasks();
-}
-
-function refreshTasks(): void {
-  processTasks(get(tasks));
-}
-
-onMount(() => {
-  return tasks.subscribe(tasks => {
-    processTasks(tasks);
-  });
-});
 
 export function goToUpPage(): void {
   router.goto('/recipes');
@@ -173,17 +136,13 @@ function handleOnClick(): void {
         <div class="mx-5">
           <ContainerConnectionWrapper
             checkContext="recipe"
-            model={value}
-            containerProviderConnection={containerProviderConnection} />
+            model={$state.snapshot(model)}
+            containerProviderConnection={$state.snapshot(containerProviderConnection)} />
         </div>
       {/if}
 
       <!-- tasks tracked -->
-      {#if trackedTasks?.length > 0}
-        <div class="mx-5 mt-5" role="status">
-          <TasksProgress tasks={trackedTasks} />
-        </div>
-      {/if}
+      <TrackedTasks onChange={processTasks} class="mx-5 mt-5" trackingId={trackingId} tasks={$tasks} />
 
       {#if recipe}
         <!-- form -->
@@ -219,8 +178,8 @@ function handleOnClick(): void {
             <!-- model form -->
             <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
               >Model</label>
-            <ModelSelect bind:value={value} disabled={loading} recommended={recipe.recommended} models={models} />
-            {#if value && value.file === undefined}
+            <ModelSelect bind:value={model} disabled={loading} recommended={recipe.recommended} models={models} />
+            {#if model && model.file === undefined}
               <div class="text-gray-800 text-sm flex items-center">
                 <Fa class="mr-2" icon={faWarning} />
                 <span role="alert"
@@ -238,7 +197,7 @@ function handleOnClick(): void {
                   title="Start {recipe.name} recipe"
                   inProgress={loading}
                   on:click={submit}
-                  disabled={!value || loading}
+                  disabled={!model || loading}
                   icon={faRocket}>
                   Start {recipe.name} recipe
                 </Button>

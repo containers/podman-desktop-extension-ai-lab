@@ -8,8 +8,6 @@ import { onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
 import { tasks } from '/@/stores/tasks';
 import type { Task } from '@shared/src/models/ITask';
-import { filterByLabel } from '/@/utils/taskUtils';
-import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
@@ -17,54 +15,52 @@ import ModelSelect from '../lib/select/ModelSelect.svelte';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
-import { get } from 'svelte/store';
+import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
 
-// The tracking id is a unique identifier provided by the
-// backend when calling requestCreateInferenceServer
-export let trackingId: string | undefined = undefined;
-
-// List of the models available locally
-let localModels: ModelInfo[];
-$: localModels = $modelsInfo.filter(model => model.file);
-
-// The container provider connection to use
-let containerProviderConnection: ContainerProviderConnectionInfo | undefined = undefined;
-
-// Filtered connections (started)
-let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = [];
-$: startedContainerProviderConnectionInfo = $containerProviderConnections.filter(
-  connection => connection.status === 'started',
-);
-
-// Select default connection
-$: if (containerProviderConnection === undefined && startedContainerProviderConnectionInfo.length > 0) {
-  containerProviderConnection = startedContainerProviderConnectionInfo[0];
+interface Props {
+  // The tracking id is a unique identifier provided by the
+  // backend when calling requestCreateInferenceServer
+  trackingId?: string;
 }
 
+let { trackingId }: Props = $props();
+
+// List of the models available locally
+let localModels: ModelInfo[] = $derived($modelsInfo.filter(model => model.file));
+
+// The container provider connection to use
+let containerProviderConnection: ContainerProviderConnectionInfo | undefined = $state(undefined);
+
+// Filtered connections (started)
+let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = $derived(
+  $containerProviderConnections.filter(connection => connection.status === 'started'),
+);
+
 // The containerPort is the bind value to form input
-let containerPort: number | undefined = undefined;
+let containerPort: number | undefined = $state(undefined);
 // The model is the bind value to ModelSelect form
-let model: ModelInfo | undefined = undefined;
+let model: ModelInfo | undefined = $state(undefined);
 // If the creation of a new inference service fail
-let errorMsg: string | undefined = undefined;
-// The trackedTasks are the tasks linked to the trackingId
-let trackedTasks: Task[];
-
-// has an error been raised
-let error: boolean = false;
-
+let errorMsg: string | undefined = $state(undefined);
 // The containerId will be included in the tasks when the creation
 // process will be completed
-let containerId: string | undefined = undefined;
-$: available = containerId && $inferenceServers.some(server => server.container.containerId);
+let containerId: string | undefined = $state(undefined);
+// available means the server is started
+let available: boolean = $derived(!!containerId && $inferenceServers.some(server => server.container.containerId));
+// loading state
+let loading = $derived(trackingId !== undefined && !errorMsg);
 
-$: loading = trackingId !== undefined && !error;
-
-$: {
+$effect(() => {
+  // Select default model
   if (!model && localModels.length > 0) {
     model = localModels[0];
   }
-}
+
+  // Select default connection
+  if (!containerProviderConnection && startedContainerProviderConnectionInfo.length > 0) {
+    containerProviderConnection = startedContainerProviderConnectionInfo[0];
+  }
+});
 
 const onContainerPortInput = (event: Event): void => {
   const raw = (event.target as HTMLInputElement).value;
@@ -83,11 +79,10 @@ const submit = async (): Promise<void> => {
   if (containerPort === undefined) throw new Error('invalid container port');
 
   try {
-    error = false;
     const trackingId = await studioClient.requestCreateInferenceServer({
-      modelsInfo: [model],
-      port: containerPort,
-      connection: containerProviderConnection,
+      modelsInfo: [$state.snapshot(model)],
+      port: $state.snapshot(containerPort),
+      connection: $state.snapshot(containerProviderConnection),
     });
     router.location.query.set('trackingId', trackingId);
   } catch (err: unknown) {
@@ -107,19 +102,10 @@ const openServiceDetails = (): void => {
 };
 
 // Utility method to filter the tasks properly based on the tracking Id
-const processTasks = (tasks: Task[]): void => {
-  if (trackingId === undefined) {
-    trackedTasks = [];
-    return;
-  }
-
-  trackedTasks = filterByLabel(tasks, {
-    trackingId: trackingId,
-  });
-
+const processTasks = (trackedTasks: Task[]): void => {
   // Check for errors
   // hint: we do not need to display them as the TasksProgress component will
-  error = trackedTasks.find(task => task.error)?.error !== undefined;
+  errorMsg = trackedTasks.find(task => task.error)?.error;
 
   const task: Task | undefined = trackedTasks.find(task => 'containerId' in (task.labels ?? {}));
   if (task === undefined) return;
@@ -127,12 +113,12 @@ const processTasks = (tasks: Task[]): void => {
   containerId = task.labels?.['containerId'];
 
   // if we re-open the page, we might need to restore the model selected
-  populateModelFromTasks();
+  populateModelFromTasks(trackedTasks);
 };
 
 // This method uses the trackedTasks to restore the selected value of model
 // It is useful when the page has been restored
-function populateModelFromTasks(): void {
+function populateModelFromTasks(trackedTasks: Task[]): void {
   const task = trackedTasks.find(
     task => task.labels && 'model-id' in task.labels && typeof task.labels['model-id'] === 'string',
   );
@@ -145,26 +131,21 @@ function populateModelFromTasks(): void {
   model = mModel;
 }
 
-$: if (typeof trackingId === 'string' && trackingId.length > 0) {
-  refreshTasks();
-}
-
-function refreshTasks(): void {
-  processTasks(get(tasks));
-}
-
-onMount(async () => {
-  containerPort = await studioClient.getHostFreePort();
+onMount(() => {
+  studioClient
+    .getHostFreePort()
+    .then(port => {
+      containerPort = port;
+    })
+    .catch((err: unknown) => {
+      console.error(err);
+    });
 
   // we might have a query parameter, then we should use it
   const queryModelId = router.location.query.get('model-id');
   if (queryModelId !== undefined && typeof queryModelId === 'string') {
     model = localModels.find(mModel => mModel.id === queryModelId);
   }
-
-  tasks.subscribe(tasks => {
-    processTasks(tasks);
-  });
 });
 
 export function goToUpPage(): void {
@@ -189,16 +170,14 @@ export function goToUpPage(): void {
       <!-- warning machine resources -->
       {#if containerProviderConnection}
         <div class="mx-5">
-          <ContainerConnectionWrapper model={model} containerProviderConnection={containerProviderConnection} />
+          <ContainerConnectionWrapper
+            model={$state.snapshot(model)}
+            containerProviderConnection={$state.snapshot(containerProviderConnection)} />
         </div>
       {/if}
 
       <!-- tasks tracked -->
-      {#if trackedTasks?.length > 0}
-        <div class="mx-5 mt-5" role="status">
-          <TasksProgress tasks={trackedTasks} />
-        </div>
-      {/if}
+      <TrackedTasks onChange={processTasks} class="mx-5 mt-5" trackingId={trackingId} tasks={$tasks} />
 
       <!-- form -->
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">

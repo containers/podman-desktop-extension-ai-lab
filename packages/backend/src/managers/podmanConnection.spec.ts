@@ -20,6 +20,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { PodmanConnection } from './podmanConnection';
 import type {
   ContainerProviderConnection,
+  Extension,
   ProviderConnectionStatus,
   ProviderContainerConnection,
   ProviderEvent,
@@ -29,10 +30,11 @@ import type {
   UpdateContainerConnectionEvent,
   Webview,
 } from '@podman-desktop/api';
-import { containerEngine, process, provider, EventEmitter, env } from '@podman-desktop/api';
+import { containerEngine, extensions, process, provider, EventEmitter, env } from '@podman-desktop/api';
 import { VMType } from '@shared/src/models/IPodman';
 import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { getPodmanCli, getPodmanMachineName } from '../utils/podman';
 
 const webviewMock = {
   postMessage: vi.fn(),
@@ -51,6 +53,9 @@ vi.mock('@podman-desktop/api', async () => {
     process: {
       exec: vi.fn(),
     },
+    extensions: {
+      getExtension: vi.fn(),
+    },
     containerEngine: {
       listInfos: vi.fn(),
     },
@@ -64,6 +69,7 @@ vi.mock('@podman-desktop/api', async () => {
 vi.mock('../utils/podman', () => {
   return {
     getPodmanCli: vi.fn(),
+    getPodmanMachineName: vi.fn(),
     MIN_CPUS_VALUE: 4,
   };
 });
@@ -73,6 +79,8 @@ beforeEach(() => {
 
   vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
   vi.mocked(provider.getContainerConnections).mockReturnValue([]);
+  vi.mocked(getPodmanCli).mockReturnValue('podman-executable');
+  vi.mocked(getPodmanMachineName).mockImplementation(connection => connection.name);
 
   const listeners: ((value: unknown) => void)[] = [];
 
@@ -84,6 +92,151 @@ beforeEach(() => {
       listeners.forEach(listener => listener(content));
     }),
   } as unknown as EventEmitter<unknown>);
+});
+
+const providerContainerConnectionMock: ProviderContainerConnection = {
+  connection: {
+    type: 'podman',
+    status: () => 'started',
+    name: 'Podman Machine',
+    endpoint: {
+      socketPath: './socket-path',
+    },
+  },
+  providerId: 'podman',
+};
+
+describe('execute', () => {
+  test('execute should get the podman extension from api', async () => {
+    vi.mocked(extensions.getExtension).mockReturnValue(undefined);
+    const manager = new PodmanConnection(webviewMock);
+    await manager.execute(providerContainerConnectionMock.connection, ['ls']);
+    expect(extensions.getExtension).toHaveBeenCalledWith('podman-desktop.podman');
+  });
+
+  test('execute should call getPodmanCli if extension not available', async () => {
+    vi.mocked(extensions.getExtension).mockReturnValue(undefined);
+    const manager = new PodmanConnection(webviewMock);
+    await manager.execute(providerContainerConnectionMock.connection, ['ls']);
+
+    expect(getPodmanCli).toHaveBeenCalledOnce();
+    expect(process.exec).toHaveBeenCalledWith('podman-executable', ['ls'], undefined);
+  });
+
+  test('options should be propagated to process execution when provided', async () => {
+    vi.mocked(extensions.getExtension).mockReturnValue(undefined);
+    const manager = new PodmanConnection(webviewMock);
+    await manager.execute(providerContainerConnectionMock.connection, ['ls'], {
+      isAdmin: true,
+    });
+
+    expect(getPodmanCli).toHaveBeenCalledOnce();
+    expect(process.exec).toHaveBeenCalledWith('podman-executable', ['ls'], {
+      isAdmin: true,
+    });
+  });
+
+  test('execute should use extension exec if available', async () => {
+    vi.mocked(provider.getContainerConnections).mockReturnValue([providerContainerConnectionMock]);
+    const podmanAPI = {
+      exec: vi.fn(),
+    };
+    vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
+    const manager = new PodmanConnection(webviewMock);
+    await manager.execute(providerContainerConnectionMock.connection, ['ls']);
+
+    expect(getPodmanCli).not.toHaveBeenCalledOnce();
+    expect(podmanAPI.exec).toHaveBeenCalledWith(['ls'], {
+      connection: providerContainerConnectionMock,
+    });
+  });
+
+  test('an error should be throw if the provided container connection do not exists', async () => {
+    vi.mocked(provider.getContainerConnections).mockReturnValue([]);
+    const podmanAPI = {
+      exec: vi.fn(),
+    };
+    vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
+    const manager = new PodmanConnection(webviewMock);
+
+    await expect(async () => {
+      await manager.execute(providerContainerConnectionMock.connection, ['ls'], {
+        isAdmin: true,
+      });
+    }).rejects.toThrowError('cannot find podman provider with connection name Podman Machine');
+  });
+
+  test('execute should propagate options to extension exec if available', async () => {
+    vi.mocked(provider.getContainerConnections).mockReturnValue([providerContainerConnectionMock]);
+    const podmanAPI = {
+      exec: vi.fn(),
+    };
+    vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
+    const manager = new PodmanConnection(webviewMock);
+    await manager.execute(providerContainerConnectionMock.connection, ['ls'], {
+      isAdmin: true,
+    });
+
+    expect(getPodmanCli).not.toHaveBeenCalledOnce();
+    expect(podmanAPI.exec).toHaveBeenCalledWith(['ls'], {
+      isAdmin: true,
+      connection: providerContainerConnectionMock,
+    });
+  });
+});
+
+describe('executeSSH', () => {
+  test('executeSSH should call getPodmanCli if extension not available', async () => {
+    vi.mocked(extensions.getExtension).mockReturnValue(undefined);
+    const manager = new PodmanConnection(webviewMock);
+    await manager.executeSSH(providerContainerConnectionMock.connection, ['ls']);
+
+    expect(getPodmanCli).toHaveBeenCalledOnce();
+    expect(process.exec).toHaveBeenCalledWith(
+      'podman-executable',
+      ['machine', 'ssh', providerContainerConnectionMock.connection.name, 'ls'],
+      undefined,
+    );
+  });
+
+  test('executeSSH should use extension exec if available', async () => {
+    vi.mocked(provider.getContainerConnections).mockReturnValue([providerContainerConnectionMock]);
+    const podmanAPI = {
+      exec: vi.fn(),
+    };
+    vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
+    const manager = new PodmanConnection(webviewMock);
+    await manager.executeSSH(providerContainerConnectionMock.connection, ['ls']);
+
+    expect(getPodmanCli).not.toHaveBeenCalledOnce();
+    expect(podmanAPI.exec).toHaveBeenCalledWith(
+      ['machine', 'ssh', providerContainerConnectionMock.connection.name, 'ls'],
+      {
+        connection: providerContainerConnectionMock,
+      },
+    );
+  });
+
+  test('executeSSH should propagate options to extension exec if available', async () => {
+    vi.mocked(provider.getContainerConnections).mockReturnValue([providerContainerConnectionMock]);
+    const podmanAPI = {
+      exec: vi.fn(),
+    };
+    vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
+    const manager = new PodmanConnection(webviewMock);
+    await manager.executeSSH(providerContainerConnectionMock.connection, ['ls'], {
+      isAdmin: true,
+    });
+
+    expect(getPodmanCli).not.toHaveBeenCalledOnce();
+    expect(podmanAPI.exec).toHaveBeenCalledWith(
+      ['machine', 'ssh', providerContainerConnectionMock.connection.name, 'ls'],
+      {
+        isAdmin: true,
+        connection: providerContainerConnectionMock,
+      },
+    );
+  });
 });
 
 describe('podman connection initialization', () => {

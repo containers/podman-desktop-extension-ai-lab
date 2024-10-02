@@ -100,7 +100,7 @@
     "isomorphic-git": "^1.27.1",
     "js-yaml": "^4.1.0",
     "mustache": "^4.2.0",
-    "openai": "^4.66.1",
+    "openai": "^4.67.1",
     "postman-code-generators": "^1.13.0",
     "postman-collection": "^4.5.0",
     "semver": "^7.6.3",

@@ -43,7 +43,7 @@ jobs:
 
       - name: Execute pnpm
         run: |
-          npm uninstall -g yarn
+          corepack disable yarn
           pnpm install
 
       - name: Run linter
@@ -122,7 +122,7 @@ jobs:
       - name: Install pnpm deps and build Podman Desktop
         working-directory: ./podman-desktop
         run: |
-          npm unistall -g yarn
+          corepack disable yarn
           pnpm install --frozen-lockfile
           pnpm test:e2e:build
 

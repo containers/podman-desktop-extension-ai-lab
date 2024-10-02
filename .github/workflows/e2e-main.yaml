@@ -102,7 +102,9 @@ jobs:
 
       - name: Execute pnpm
         working-directory: ./podman-desktop
-        run: pnpm install --frozen-lockfile
+        run: |
+          npm uninstall - yarn
+          pnpm install --frozen-lockfile
 
       - name: Build Podman Desktop for E2E tests
         working-directory: ./podman-desktop

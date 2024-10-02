@@ -131,7 +131,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Execute yarn
-        run: pnpm install
+        run: |
+          npm uninstall -g yarn
+          pnpm install
 
       - name: Run Build
         run: pnpm build

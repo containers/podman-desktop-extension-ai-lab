@@ -42,7 +42,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Execute pnpm
-        run: pnpm install
+        run: |
+          npm uninstall -g yarn
+          pnpm install
 
       - name: Run linter
         run: pnpm lint:check
@@ -120,6 +122,7 @@ jobs:
       - name: Install pnpm deps and build Podman Desktop
         working-directory: ./podman-desktop
         run: |
+          npm unistall -g yarn
           pnpm install --frozen-lockfile
           pnpm test:e2e:build
 

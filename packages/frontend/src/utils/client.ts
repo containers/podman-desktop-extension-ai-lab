@@ -24,8 +24,8 @@ import { InstructlabAPI } from '@shared/src/InstructlabAPI';
 const podmanDesktopApi = acquirePodmanDesktopApi();
 export const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);
 
-export const studioClient: StudioAPI = rpcBrowser.getProxy<StudioAPI>(StudioAPI.CHANNEL);
-export const instructlabClient: InstructlabAPI = rpcBrowser.getProxy<InstructlabAPI>(InstructlabAPI.CHANNEL);
+export const studioClient: StudioAPI = rpcBrowser.getProxy<StudioAPI>(StudioAPI);
+export const instructlabClient: InstructlabAPI = rpcBrowser.getProxy<InstructlabAPI>(InstructlabAPI);
 
 export const saveRouterState = (state: RouterState): void => {
   podmanDesktopApi.setState(state);

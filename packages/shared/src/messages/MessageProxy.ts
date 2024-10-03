@@ -176,7 +176,7 @@ export class RpcBrowser {
     });
   }
 
-  getProxy<T>(prefix: string): T {
+  getProxy<T>(classType: { CHANNEL: string }): T {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const thisRef = this;
     const proxyHandler: ProxyHandler<object> = {
@@ -184,7 +184,7 @@ export class RpcBrowser {
         if (typeof prop === 'string') {
           return (...args: unknown[]) => {
             const channel = prop.toString();
-            return thisRef.invoke(`${prefix}-${channel}`, ...args);
+            return thisRef.invoke(`${classType.CHANNEL}-${channel}`, ...args);
           };
         }
         return Reflect.get(target, prop, receiver);

@@ -110,7 +110,7 @@ test('Test register instance with async', async () => {
 
   rpcExtension.registerInstance(Dummy, new Dummy());
 
-  const proxy = rpcBrowser.getProxy<Dummy>(Dummy.CHANNEL);
+  const proxy = rpcBrowser.getProxy<Dummy>(Dummy);
   expect(await proxy.ping()).toBe('pong');
 });
 
@@ -136,10 +136,10 @@ test('Conflicts should be avoided with class CHANNEL', async () => {
   rpcExtension.registerInstance(Foo, new Foo());
   rpcExtension.registerInstance(Bar, new Bar());
 
-  const fooProxy = rpcBrowser.getProxy<Foo>(Foo.CHANNEL);
+  const fooProxy = rpcBrowser.getProxy<Foo>(Foo);
   expect(await fooProxy.ping()).toBe('foo');
 
-  const barProxy = rpcBrowser.getProxy<Bar>(Bar.CHANNEL);
+  const barProxy = rpcBrowser.getProxy<Bar>(Bar);
   expect(await barProxy.ping()).toBe('bar');
 });
 

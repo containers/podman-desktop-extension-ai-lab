@@ -38,6 +38,7 @@ import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
 import type { RecipePullOptions } from './models/IRecipe';
 
 export abstract class StudioAPI {
+  public static readonly CHANNEL: string = 'StudioAPI';
   abstract ping(): Promise<string>;
   abstract getCatalog(): Promise<ApplicationCatalog>;
 

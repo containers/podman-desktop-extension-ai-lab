@@ -43,6 +43,13 @@ export interface ISubscribedMessage {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type UnaryRPC = (...args: any[]) => Promise<unknown>;
 
+// Define an interface to ensure the static `CHANNEL` property exists on the class
+interface Channel<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): T;
+  CHANNEL: string;
+}
+
 export function isMessageRequest(content: unknown): content is IMessageRequest {
   return !!content && typeof content === 'object' && 'id' in content && 'channel' in content;
 }
@@ -105,14 +112,14 @@ export class RpcExtension implements Disposable {
     });
   }
 
-  registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: new (...args: any[]) => T, instance: T): void {
+  registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: Channel<T>, instance: T): void {
     const methodNames = Object.getOwnPropertyNames(classType.prototype).filter(
       name => name !== 'constructor' && typeof instance[name as keyof T] === 'function',
     );
 
     methodNames.forEach(name => {
       const method = (instance[name as keyof T] as any).bind(instance);
-      this.register(name, method);
+      this.register(`${classType.CHANNEL}-${name}`, method);
     });
   }
 
@@ -169,7 +176,7 @@ export class RpcBrowser {
     });
   }
 
-  getProxy<T>(): T {
+  getProxy<T>(prefix: string): T {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const thisRef = this;
     const proxyHandler: ProxyHandler<object> = {
@@ -177,7 +184,7 @@ export class RpcBrowser {
         if (typeof prop === 'string') {
           return (...args: unknown[]) => {
             const channel = prop.toString();
-            return thisRef.invoke(channel, ...args);
+            return thisRef.invoke(`${prefix}-${channel}`, ...args);
           };
         }
         return Reflect.get(target, prop, receiver);

@@ -98,6 +98,7 @@ test('Test register channel multiple arguments', async () => {
 
 test('Test register instance with async', async () => {
   class Dummy {
+    public static readonly CHANNEL: string = 'dummy';
     async ping(): Promise<string> {
       return 'pong';
     }
@@ -109,8 +110,37 @@ test('Test register instance with async', async () => {
 
   rpcExtension.registerInstance(Dummy, new Dummy());
 
-  const proxy = rpcBrowser.getProxy<Dummy>();
+  const proxy = rpcBrowser.getProxy<Dummy>(Dummy.CHANNEL);
   expect(await proxy.ping()).toBe('pong');
+});
+
+test('Conflicts should be avoided with class CHANNEL', async () => {
+  class Foo {
+    public static readonly CHANNEL: string = 'foo';
+    async ping(): Promise<string> {
+      return 'foo';
+    }
+  }
+
+  class Bar {
+    public static readonly CHANNEL: string = 'bar';
+    async ping(): Promise<string> {
+      return 'bar';
+    }
+  }
+
+  const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
+  const rpcBrowser = new RpcBrowser(window, api);
+
+  rpcExtension.registerInstance(Foo, new Foo());
+  rpcExtension.registerInstance(Bar, new Bar());
+
+  const fooProxy = rpcBrowser.getProxy<Foo>(Foo.CHANNEL);
+  expect(await fooProxy.ping()).toBe('foo');
+
+  const barProxy = rpcBrowser.getProxy<Bar>(Bar.CHANNEL);
+  expect(await barProxy.ping()).toBe('bar');
 });
 
 test('Test raising exception', async () => {

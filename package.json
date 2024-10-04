@@ -35,7 +35,7 @@
     "postman-code-generators": "1.10.1"
   },
   "devDependencies": {
-    "@eslint/compat": "^1.1.1",
+    "@eslint/compat": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^8.8.0",
     "@typescript-eslint/parser": "^8.8.0",
     "@vitest/coverage-v8": "^2.0.5",

@@ -120,7 +120,7 @@ beforeEach(() => {
   mocks.getInferenceServersMock.mockReturnValue([inferenceServerMock]);
 });
 
-test('ensure documentation url is displayed', async () => {
+test('ensure documentation button is displayed', async () => {
   mocks.getInferenceServersMock.mockReturnValue([
     {
       ...inferenceServerMock,
@@ -129,11 +129,11 @@ test('ensure documentation url is displayed', async () => {
       },
     },
   ]);
-  render(InferenceServerDetails, {
+  const { getByRole } = render(InferenceServerDetails, {
     containerId: 'dummyContainerId',
   });
 
-  const address = screen.getByText('http://localhost:9999/docs');
+  const address = getByRole('link', { name: 'swagger documentation' });
   expect(address).toBeDefined();
 
   await fireEvent.click(address);

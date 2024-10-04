@@ -6493,6 +6493,14 @@ snapshots:
     optionalDependencies:
       vite: 5.4.8(@types/node@20.16.10)
 
+  '@vitest/mocker@2.1.1(@vitest/spy@2.1.1)(vite@5.4.8(@types/node@20.16.5))':
+    dependencies:
+      '@vitest/spy': 2.1.1
+      estree-walker: 3.0.3
+      magic-string: 0.30.11
+    optionalDependencies:
+      vite: 5.4.8(@types/node@20.16.5)
+
   '@vitest/pretty-format@2.1.1':
     dependencies:
       tinyrainbow: 1.2.0
@@ -9720,7 +9728,7 @@ snapshots:
   vitest@2.1.1(@types/node@20.16.5)(jsdom@25.0.1):
     dependencies:
       '@vitest/expect': 2.1.1
-      '@vitest/mocker': 2.1.1(@vitest/spy@2.1.1)(vite@5.4.8(@types/node@20.16.10))
+      '@vitest/mocker': 2.1.1(@vitest/spy@2.1.1)(vite@5.4.8(@types/node@20.16.5))
       '@vitest/pretty-format': 2.1.1
       '@vitest/runner': 2.1.1
       '@vitest/snapshot': 2.1.1

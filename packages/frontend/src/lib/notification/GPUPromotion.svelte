@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Button, Checkbox } from '@podman-desktop/ui-svelte';
+import { Button } from '@podman-desktop/ui-svelte';
 import { studioClient } from '/@/utils/client';
 import { configuration } from '/@/stores/extensionConfiguration';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
@@ -34,8 +34,8 @@ const content =
         <div class="flex flex-col">
           <Button class="w-auto ml-1 text-gray-500" on:click={enableGPUSupport} aria-label="Enable GPU support"
             >Enable GPU support</Button>
-          <Checkbox class="w-auto ml-1 text-gray-500" on:click={hideGPUPromotionBanner} aria-label={actionName}
-            >{actionName}</Checkbox>
+          <Button class="w-auto ml-1 text-gray-500" on:click={hideGPUPromotionBanner} aria-label={actionName}
+            >{actionName}</Button>
         </div>
       </div>
     </div>

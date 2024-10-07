@@ -66,7 +66,7 @@ test('should show banner if gpu support if off and gpu promotion on', async () =
   expect(btnUpdate).toBeInTheDocument();
 
   // eslint-disable-next-line quotes
-  const btnHide = screen.queryByRole('checkbox', { name: "Don't display anymore" });
+  const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
   expect(btnHide).toBeInTheDocument();
 });
 
@@ -85,7 +85,7 @@ test('should not show banner if gpu support if on and gpu promotion on', async (
   expect(btnUpdate).not.toBeInTheDocument();
 
   // eslint-disable-next-line quotes
-  const btnHide = screen.queryByRole('checkbox', { name: "Don't display anymore" });
+  const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
   expect(btnHide).not.toBeInTheDocument();
 });
 
@@ -105,6 +105,6 @@ test('should not show banner if gpu support if off and gpu promotion off', async
   expect(btnUpdate).not.toBeInTheDocument();
 
   // eslint-disable-next-line quotes
-  const btnHide = screen.queryByRole('checkbox', { name: "Don't display anymore" });
+  const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
   expect(btnHide).not.toBeInTheDocument();
 });

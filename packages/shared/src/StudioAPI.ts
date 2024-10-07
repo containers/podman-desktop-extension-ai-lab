@@ -177,6 +177,7 @@ export abstract class StudioAPI {
    * Get the extension configuration (preferences)
    */
   abstract getExtensionConfiguration(): Promise<ExtensionConfiguration>;
+  abstract updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void>;
 
   /**
    * Return the list of supported languages to generate code from.

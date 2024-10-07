@@ -27,6 +27,7 @@ const CONFIGURATION_SECTIONS: string[] = [
   'ai-lab.apiPort',
   'ai-lab.experimentalTuning',
   'ai-lab.modelUploadDisabled',
+  'ai-lab.showGPUPromotion',
 ];
 
 const API_PORT_DEFAULT = 10434;
@@ -51,7 +52,30 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
       apiPort: this.#configuration.get<number>('apiPort') ?? API_PORT_DEFAULT,
       experimentalTuning: this.#configuration.get<boolean>('experimentalTuning') ?? false,
       modelUploadDisabled: this.#configuration.get<boolean>('modelUploadDisabled') ?? false,
+      showGPUPromotion: this.#configuration.get<boolean>('showGPUPromotion') ?? true,
     };
+  }
+
+  async updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void> {
+    if (update.modelsPath !== undefined) {
+      await this.#configuration.update('models.path', update.modelsPath);
+    }
+    if (update.experimentalGPU !== undefined) {
+      await this.#configuration.update('experimentalGPU', update.experimentalGPU);
+    }
+    if (update.apiPort !== undefined) {
+      await this.#configuration.update('apiPort', update.apiPort);
+    }
+    if (update.experimentalTuning !== undefined) {
+      await this.#configuration.update('experimentalTuning', update.experimentalTuning);
+    }
+    if (update.modelUploadDisabled !== undefined) {
+      await this.#configuration.update('modelUploadDisabled', update.modelUploadDisabled);
+    }
+    if (update.showGPUPromotion !== undefined) {
+      await this.#configuration.update('showGPUPromotion', update.showGPUPromotion);
+    }
+    this.notify(); //https://github.com/containers/podman-desktop/issues/9194
   }
 
   private getModelsPath(): string {

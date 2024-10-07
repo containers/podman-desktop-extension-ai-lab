@@ -154,6 +154,7 @@ beforeEach(() => {
     experimentalTuning: false,
     modelsPath: '',
     modelUploadDisabled: false,
+    showGPUPromotion: false,
   });
 
   window.HTMLElement.prototype.scrollIntoView = vi.fn();

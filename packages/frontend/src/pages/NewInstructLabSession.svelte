@@ -138,6 +138,7 @@ function submit(): void {}
               class:border-[var(--pd-content-card-border-selected)]={trainingType === 'knowledge'}
               class:border-[var(--pd-content-card-border)]={trainingType !== 'knowledge'}>
               <button
+                title="Use Knowledge"
                 class="flex flex-row align-middle items-center"
                 onclick={setTrainingType.bind(undefined, 'knowledge')}>
                 <div
@@ -172,6 +173,7 @@ function submit(): void {}
                   </div>
                 {/each}
                 <Button
+                  title="Select knowledge file"
                   type="link"
                   disabled={trainingType !== 'knowledge'}
                   class={trainingType !== 'knowledge' ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent ' : ''}
@@ -196,6 +198,7 @@ function submit(): void {}
               class:border-[var(--pd-content-card-border-selected)]={trainingType === 'skills'}
               class:border-[var(--pd-content-card-border)]={trainingType !== 'skills'}>
               <button
+                title="Use Skills"
                 class="flex flex-row align-middle items-center"
                 onclick={setTrainingType.bind(undefined, 'skills')}>
                 <div
@@ -229,6 +232,7 @@ function submit(): void {}
                   </div>
                 {/each}
                 <Button
+                  title="Select skill file"
                   on:click={addSkills}
                   disabled={trainingType !== 'skills'}
                   icon={faPlusCircle} type="link"

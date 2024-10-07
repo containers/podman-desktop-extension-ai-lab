@@ -30,5 +30,3 @@ onMount(() => {
 {:else}
   <StatusIcon status={status} icon={ModelWhite} />
 {/if}
-
-

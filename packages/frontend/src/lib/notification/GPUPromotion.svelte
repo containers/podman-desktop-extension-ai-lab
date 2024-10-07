@@ -31,11 +31,10 @@ const content =
         <div class="flex-grow">
           <MarkdownRenderer source={content} />
         </div>
-        <div class="flex flex-col">
-          <Button class="w-auto ml-1 text-gray-500" on:click={enableGPUSupport} aria-label="Enable GPU support"
+        <div class="flex flex-col space-y-1">
+          <Button class="w-auto ml-1" on:click={enableGPUSupport} aria-label="Enable GPU support"
             >Enable GPU support</Button>
-          <Button class="w-auto ml-1 text-gray-500" on:click={hideGPUPromotionBanner} aria-label={actionName}
-            >{actionName}</Button>
+          <Button class="w-auto ml-1" on:click={hideGPUPromotionBanner} aria-label={actionName}>{actionName}</Button>
         </div>
       </div>
     </div>

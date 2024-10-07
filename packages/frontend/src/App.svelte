@@ -26,6 +26,7 @@ import { configuration } from './stores/extensionConfiguration';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
 import { Messages } from '@shared/Messages';
+import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 
 router.mode.hash();
 
@@ -60,6 +61,7 @@ onDestroy(() => {
 
 <Route path="/*" isAppMounted={isMounted} let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-[var(--pd-content-bg)] text-base">
+    <GPUPromotion />
     <div class="flex flex-row w-full h-full overflow-hidden">
       <Navigation meta={meta} />
 

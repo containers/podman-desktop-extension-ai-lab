@@ -9,8 +9,8 @@ import { studioClient } from '/@/utils/client';
 import { Uri } from '@shared/src/uri/Uri';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
-let skills_files: string[] = $state([]);
-let knowledge_files: string[] = $state([]);
+let skillsFiles: string[] = $state([]);
+let knowledgeFiles: string[] = $state([]);
 
 let valid: boolean = $state(false);
 
@@ -21,7 +21,7 @@ let trainingType: 'knowledge' | 'skills' = $state('knowledge');
 
 $effect(() => {
   console.log(model);
-  valid = (skills_files.length > 0 || knowledge_files.length > 0) && !!model && sessionName.length > 0;
+  valid = (skillsFiles.length > 0 || knowledgeFiles.length > 0) && !!model && sessionName.length > 0;
 });
 
 function goToUpPage(): void {
@@ -48,28 +48,28 @@ async function requestExplorerModal(title: string): Promise<Uri[]> {
 
 async function addSkills(): Promise<void> {
   const files = await requestExplorerModal('Select skills');
-  skills_files.push(...files.map(file => file.path));
+  skillsFiles.push(...files.map(file => file.path));
 }
 
 function removeKnowledge(file: string): void {
-  knowledge_files = knowledge_files.toSpliced(knowledge_files.indexOf(file), 1);
+  knowledgeFiles = knowledgeFiles.toSpliced(knowledgeFiles.indexOf(file), 1);
 }
 function removeSkills(file: string): void {
-  skills_files = skills_files.toSpliced(skills_files.indexOf(file), 1);
+  skillsFiles = skillsFiles.toSpliced(skillsFiles.indexOf(file), 1);
 }
 
 async function addKnowledge(): Promise<void> {
   const files = await requestExplorerModal('Select knowledge');
-  knowledge_files.push(...files.map(file => file.path));
+  knowledgeFiles.push(...files.map(file => file.path));
 }
 
 function setTrainingType(type: 'knowledge' | 'skills'): void {
   switch (trainingType) {
     case 'knowledge':
-      skills_files = [];
+      skillsFiles = [];
       break;
     case 'skills':
-      knowledge_files = [];
+      knowledgeFiles = [];
       break;
   }
   trainingType = type;
@@ -151,19 +151,14 @@ function submit(): void {}
 
               <!-- files list -->
               <div class="flex flex-col">
-                {#each knowledge_files as file (file)}
+                {#each knowledgeFiles as file (file)}
                   <div
                     class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md px-2 py-1 mb-2 flex flex-row w-min h-min text-sm text-nowrap items-center">
                     <Fa class="mr-2" icon={faFile} />
                     <span class="overflow-x-hidden text-ellipsis max-w-full">
                       {file}
                     </span>
-                    <Button
-                      on:click={function (): void {
-                        removeKnowledge(file);
-                      }}
-                      icon={faMinusCircle}
-                      type="link" />
+                    <Button on:click={removeKnowledge.bind(undefined, file)} icon={faMinusCircle} type="link" />
                   </div>
                 {/each}
                 <Button
@@ -212,19 +207,14 @@ function submit(): void {}
               </button>
               <!-- files list -->
               <div class="flex flex-col">
-                {#each skills_files as file (file)}
+                {#each skillsFiles as file (file)}
                   <div
                     class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md px-2 py-1 mb-2 flex flex-row w-min h-min text-sm text-nowrap items-center">
                     <Fa class="mr-2" icon={faFile} />
                     <span class="overflow-x-hidden text-ellipsis max-w-full">
                       {file}
                     </span>
-                    <Button
-                      on:click={function (): void {
-                        removeSkills(file);
-                      }}
-                      icon={faMinusCircle}
-                      type="link" />
+                    <Button on:click={removeSkills.bind(undefined, file)} icon={faMinusCircle} type="link" />
                   </div>
                 {/each}
                 <Button

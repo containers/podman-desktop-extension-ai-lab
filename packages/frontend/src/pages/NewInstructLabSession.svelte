@@ -1,13 +1,7 @@
 <script lang="ts">
 import { router } from 'tinro';
 import { FormPage, Input, Button, Link } from '@podman-desktop/ui-svelte';
-import {
-  faFile,
-  faPlus,
-  faPlusCircle,
-  faMinusCircle,
-  faCircleCheck,
-} from '@fortawesome/free-solid-svg-icons';
+import { faFile, faPlus, faPlusCircle, faMinusCircle, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { modelsInfo } from '/@/stores/modelsInfo';
@@ -124,7 +118,7 @@ function submit(): void {}
               >Session name</label>
             <Input bind:value={sessionName} class="grow" name="session-name" aria-label="session name" />
             <span class="text-[var(--pd-table-body-text)]"
-            >Name of the session to be able to easily find it in your list of sessions.</span>
+              >Name of the session to be able to easily find it in your list of sessions.</span>
           </div>
 
           <!-- file(s) input -->
@@ -176,7 +170,9 @@ function submit(): void {}
                   title="Select knowledge file"
                   type="link"
                   disabled={trainingType !== 'knowledge'}
-                  class={trainingType !== 'knowledge' ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent ' : ''}
+                  class={trainingType !== 'knowledge'
+                    ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent '
+                    : ''}
                   on:click={addKnowledge}
                   icon={faPlusCircle}>Add knowledge to use</Button>
                 <span
@@ -235,9 +231,11 @@ function submit(): void {}
                   title="Select skill file"
                   on:click={addSkills}
                   disabled={trainingType !== 'skills'}
-                  icon={faPlusCircle} type="link"
-                  class={trainingType !== 'skills' ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent ' : ''}
-                  >Add skill to use</Button>
+                  icon={faPlusCircle}
+                  type="link"
+                  class={trainingType !== 'skills'
+                    ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent '
+                    : ''}>Add skill to use</Button>
                 <span
                   class:text-[var(--pd-input-field-disabled-text)]={trainingType !== 'skills'}
                   class:text-[var(--pd-table-body-text)]={trainingType === 'skills'}>

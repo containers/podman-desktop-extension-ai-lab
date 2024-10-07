@@ -42,9 +42,7 @@ vi.mock('../stores/modelsInfo', async () => {
 });
 
 vi.mock('../utils/client', async () => ({
-  studioClient: {
-
-  },
+  studioClient: {},
 }));
 
 beforeEach(() => {
@@ -82,4 +80,3 @@ test('expect knowledge to be disabled if user select skills', async () => {
   expect(selectKnowledgeFile).toBeDefined();
   expect(selectKnowledgeFile).toBeDisabled();
 });
-

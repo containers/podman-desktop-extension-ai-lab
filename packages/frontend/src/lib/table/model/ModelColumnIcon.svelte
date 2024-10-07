@@ -5,6 +5,7 @@ import { onMount } from 'svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 
 import { StatusIcon } from '@podman-desktop/ui-svelte';
+import RemoteModel from '/@/lib/icons/RemoteModel.svelte';
 
 export let object: ModelInfo;
 
@@ -22,4 +23,12 @@ onMount(() => {
 });
 </script>
 
-<StatusIcon status={status} icon={ModelWhite} />
+{#if status === 'NONE'}
+  <div role="status" title="NONE">
+    <RemoteModel class="text-[var(--pd-status-not-running)]" size={'28'} />
+  </div>
+{:else}
+  <StatusIcon status={status} icon={ModelWhite} />
+{/if}
+
+

@@ -117,8 +117,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       openai:
-        specifier: ^4.67.1
-        version: 4.67.1
+        specifier: ^4.67.2
+        version: 4.67.2
       postman-code-generators:
         specifier: 1.10.1
         version: 1.10.1
@@ -3550,8 +3550,8 @@ packages:
   ono@7.1.3:
     resolution: {integrity: sha512-9jnfVriq7uJM4o5ganUY54ntUm+5EK21EGaQ5NWnkWg3zz5ywbbonlBguRcnmF1/HDiIe3zxNxXcO1YPBmPcQQ==}
 
-  openai@4.67.1:
-    resolution: {integrity: sha512-2YbRFy6qaYRJabK2zLMn4txrB2xBy0KP5g/eoqeSPTT31mIJMnkT75toagvfE555IKa2RdrzJrZwdDsUipsAMw==}
+  openai@4.67.2:
+    resolution: {integrity: sha512-u4FJFGXgqEHrCYcD5jAD4nHj6JCiicH+/dskQY7qka9R6hOw29R0kOz7GwcA9k2JKcLf86lzAWPtPagPbO8KnQ==}
     hasBin: true
     peerDependencies:
       zod: ^3.23.8
@@ -8561,7 +8561,7 @@ snapshots:
     dependencies:
       '@jsdevtools/ono': 7.1.3
 
-  openai@4.67.1:
+  openai@4.67.2:
     dependencies:
       '@types/node': 18.19.50
       '@types/node-fetch': 2.6.11

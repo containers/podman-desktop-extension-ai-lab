@@ -4,7 +4,8 @@ import { studioClient } from '/@/utils/client';
 import { configuration } from '/@/stores/extensionConfiguration';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 
-const actionName = 'Don\'t display anymore';
+// eslint-disable-next-line quotes
+const actionName = "Don't display anymore";
 
 function hideGPUPromotionBanner(): void {
   studioClient.updateExtensionConfiguration({ showGPUPromotion: false }).catch(console.error);

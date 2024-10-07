@@ -26,7 +26,7 @@ import { configuration } from './stores/extensionConfiguration';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
 import { Messages } from '@shared/Messages';
-import StartInstructLabSession from '/@/pages/StartInstructLabSession.svelte';
+import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 
 router.mode.hash();
 
@@ -94,7 +94,7 @@ onDestroy(() => {
         <!-- Tune with InstructLab -->
         <Route path="/tune/*" firstmatch>
           <Route path="/start">
-            <StartInstructLabSession />
+            <NewInstructLabSession />
           </Route>
           <Route path="/*">
             <TuneSessions />

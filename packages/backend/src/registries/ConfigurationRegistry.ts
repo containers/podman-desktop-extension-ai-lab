@@ -50,7 +50,8 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
       experimentalGPU: this.#configuration.get<boolean>('experimentalGPU') ?? false,
       apiPort: this.#configuration.get<number>('apiPort') ?? API_PORT_DEFAULT,
       experimentalTuning: this.#configuration.get<boolean>('experimentalTuning') ?? false,
-      modelUploadDisabled: this.#configuration.get<boolean>('modelUploadDisabled') ?? false,
+      modelUploadDisabled:
+        this.#configuration.get<boolean>('modelUploadDisabled') ?? process.env.AI_LAB_MODEL_UPLOAD_DISABLED === 'true',
     };
   }
 

@@ -296,6 +296,15 @@ describe('perform', () => {
       connection: undefined,
     });
 
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Cmd: [
+          '-c',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
+        ],
+      }),
+    );
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
     expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.cuda, expect.any(Function));
     expect('gpu' in server.labels).toBeTruthy();

@@ -123,7 +123,7 @@ export class LlamaCppPython extends InferenceProvider {
           entrypoint = '/usr/bin/sh';
           cmd = [
             '-c',
-            '/usr/bin/ln -s /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
+            '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
           ];
           break;
         case VMType.LIBKRUN:

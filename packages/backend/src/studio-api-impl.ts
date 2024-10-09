@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { StudioAPI } from '@shared/src/StudioAPI';
+import type { StudioAPI } from '@shared/src/StudioAPI';
 import type { ApplicationManager } from './managers/application/applicationManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
@@ -61,7 +61,7 @@ interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
 }
 
-export class StudioApiImpl extends StudioAPI {
+export class StudioApiImpl implements StudioAPI {
   constructor(
     private applicationManager: ApplicationManager,
     private catalogManager: CatalogManager,
@@ -77,9 +77,7 @@ export class StudioApiImpl extends StudioAPI {
     private recipeManager: RecipeManager,
     private podmanConnection: PodmanConnection,
     private navigationRegistry: NavigationRegistry,
-  ) {
-    super();
-  }
+  ) {}
 
   async readRoute(): Promise<string | undefined> {
     return this.navigationRegistry.readRoute();

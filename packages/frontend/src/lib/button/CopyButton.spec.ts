@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { expect, test, vi, beforeEach } from 'vitest';
+import { expect, test, vi, beforeEach, describe } from 'vitest';
 
 import { render, within, fireEvent, waitFor } from '@testing-library/svelte';
 import CopyButton from '/@/lib/button/CopyButton.svelte';
@@ -47,5 +47,87 @@ test('clicking on the content should call copyToClipboard', async () => {
 
   await waitFor(() => {
     expect(studioClient.copyToClipboard).toHaveBeenCalledWith('dummy-content');
+  });
+});
+
+describe('tooltips properties should be propagated', () => {
+  test('top property', async () => {
+    const { container } = render(CopyButton, {
+      content: 'dummy-content',
+      top: true,
+    });
+
+    const toolTip = container.querySelector('.tooltip.top');
+    expect(toolTip).toBeDefined();
+  });
+
+  test('topLeft property', async () => {
+    const { container } = render(CopyButton, {
+      content: 'dummy-content',
+      topLeft: true,
+    });
+
+    const toolTip = container.querySelector('.tooltip.top-left');
+    expect(toolTip).toBeDefined();
+  });
+
+  test('topRight property', async () => {
+    const { container } = render(CopyButton, {
+      content: 'dummy-content',
+      topRight: true,
+    });
+
+    const toolTip = container.querySelector('.tooltip.top-right');
+    expect(toolTip).toBeDefined();
+  });
+
+  test('right property', async () => {
+    const { container } = render(CopyButton, {
+      content: 'dummy-content',
+      right: true,
+    });
+
+    const toolTip = container.querySelector('.tooltip.right');
+    expect(toolTip).toBeDefined();
+  });
+
+  test('bottom property', async () => {
+    const { container } = render(CopyButton, {
+      content: 'dummy-content',
+      bottom: true,
+    });
+
+    const toolTip = container.querySelector('.tooltip.bottom');
+    expect(toolTip).toBeDefined();
+  });
+
+  test('bottomLeft property', async () => {
+    const { container } = render(CopyButton, {
+      content: 'dummy-content',
+      bottomLeft: true,
+    });
+
+    const toolTip = container.querySelector('.tooltip.bottom-left');
+    expect(toolTip).toBeDefined();
+  });
+
+  test('bottomRight property', async () => {
+    const { container } = render(CopyButton, {
+      content: 'dummy-content',
+      bottomLeft: true,
+    });
+
+    const toolTip = container.querySelector('.tooltip.bottom-right');
+    expect(toolTip).toBeDefined();
+  });
+
+  test('left property', async () => {
+    const { container } = render(CopyButton, {
+      content: 'dummy-content',
+      left: true,
+    });
+
+    const toolTip = container.querySelector('.tooltip.left');
+    expect(toolTip).toBeDefined();
   });
 });

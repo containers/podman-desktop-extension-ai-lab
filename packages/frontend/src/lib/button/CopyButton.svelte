@@ -1,13 +1,14 @@
 <script lang="ts">
 import { Tooltip } from '@podman-desktop/ui-svelte';
 import { studioClient } from '/@/utils/client';
-import type { Snippet } from 'svelte';
+import type { ComponentProps } from 'svelte';
 
-let {
-  content,
-  class: classes,
-  children,
-}: { class: string | undefined; content: string; children: Snippet | undefined } = $props();
+interface Props extends Omit<ComponentProps<Tooltip>, 'tip'> {
+  class?: string;
+  content: string;
+}
+
+let { content, class: classes, children, ...restProps }: Props = $props();
 let status: 'idle' | 'copied' = $state('idle');
 
 function copy(content: string): void {
@@ -31,7 +32,7 @@ function handleClick(): void {
 }
 </script>
 
-<Tooltip bottom tip={status === 'idle' ? 'Copy' : 'Copied'}>
+<Tooltip {...restProps} tip={status === 'idle' ? 'Copy' : 'Copied'}>
   <button onmouseleave={reset} onclick={handleClick} class={`${classes} cursor-copy`}>
     {#if children}
       {@render children()}

@@ -231,6 +231,7 @@ function handleOnChange(): void {
                         <!-- API URL -->
                         {#if 'api' in service.labels}
                           <CopyButton
+                            top
                             class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
                             content={service.labels['api']}>
                             {service.labels['api']}

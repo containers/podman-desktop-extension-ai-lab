@@ -106,7 +106,7 @@ export class RpcExtension implements Disposable {
   }
 
   registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: { name: string; prototype: T }, instance: T): void {
-    const methodNames = Object.getOwnPropertyNames(classType.prototype).filter(
+    const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
       name => name !== 'constructor' && typeof instance[name as keyof T] === 'function',
     );
 
@@ -170,6 +170,7 @@ export class RpcBrowser {
   }
 
   getProxy<T>(classType: { name: string; prototype: T }): T {
+    console.log('get proxy', classType);
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const thisRef = this;
     const proxyHandler: ProxyHandler<object> = {

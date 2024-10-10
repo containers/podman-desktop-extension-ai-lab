@@ -83,8 +83,6 @@ function openInstructLabDocumentation(): void {
       console.error(err);
     });
 }
-
-function submit(): void {}
 </script>
 
 <FormPage
@@ -157,7 +155,11 @@ function submit(): void {}
                     <span class="overflow-x-hidden text-ellipsis max-w-full">
                       {file}
                     </span>
-                    <Button on:click={removeKnowledge.bind(undefined, file)} icon={faMinusCircle} type="link" />
+                    <Button
+                      title="Remove {file}"
+                      on:click={removeKnowledge.bind(undefined, file)}
+                      icon={faMinusCircle}
+                      type="link" />
                   </div>
                 {/each}
                 <Button
@@ -213,11 +215,15 @@ function submit(): void {}
                     <span class="overflow-x-hidden text-ellipsis max-w-full">
                       {file}
                     </span>
-                    <Button on:click={removeSkills.bind(undefined, file)} icon={faMinusCircle} type="link" />
+                    <Button
+                      title="Remove {file}"
+                      on:click={removeSkills.bind(undefined, file)}
+                      icon={faMinusCircle}
+                      type="link" />
                   </div>
                 {/each}
                 <Button
-                  title="Select skill file"
+                  title="Select skills file"
                   on:click={addSkills}
                   disabled={trainingType !== 'skills'}
                   icon={faPlusCircle}
@@ -238,7 +244,7 @@ function submit(): void {}
         </div>
         <footer>
           <div class="w-full flex flex-col">
-            <Button title="Start session" inProgress={false} on:click={submit} disabled={!valid} icon={faPlusCircle}>
+            <Button title="Start session" inProgress={false} disabled={!valid} icon={faPlusCircle}>
               Start session
             </Button>
           </div>

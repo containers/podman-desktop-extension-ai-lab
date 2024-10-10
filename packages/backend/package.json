@@ -108,7 +108,7 @@
     "js-yaml": "^4.1.0",
     "mustache": "^4.2.0",
     "openai": "^4.67.3",
-    "postman-code-generators": "^1.13.0",
+    "postman-code-generators": "^1.14.0",
     "postman-collection": "^4.5.0",
     "semver": "^7.6.3",
     "systeminformation": "^5.23.5",

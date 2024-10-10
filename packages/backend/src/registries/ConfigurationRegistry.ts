@@ -22,12 +22,12 @@ import { Messages } from '@shared/Messages';
 import path from 'node:path';
 
 const CONFIGURATION_SECTIONS: string[] = [
-  'ai-lab.models.path',
-  'ai-lab.experimentalGPU',
-  'ai-lab.apiPort',
-  'ai-lab.experimentalTuning',
-  'ai-lab.modelUploadDisabled',
-  'ai-lab.showGPUPromotion',
+  'models.path',
+  'experimentalGPU',
+  'apiPort',
+  'experimentalTuning',
+  'modelUploadDisabled',
+  'showGPUPromotion',
 ];
 
 const API_PORT_DEFAULT = 10434;
@@ -56,24 +56,17 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
     };
   }
 
+  private getFieldName(section: string): keyof Partial<ExtensionConfiguration> {
+    return section.replace(/\.(\w)/, (match, char) => char.toUpperCase()) as keyof Partial<ExtensionConfiguration>;
+  }
+
   async updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void> {
-    if (update.modelsPath !== undefined) {
-      await this.#configuration.update('models.path', update.modelsPath);
-    }
-    if (update.experimentalGPU !== undefined) {
-      await this.#configuration.update('experimentalGPU', update.experimentalGPU);
-    }
-    if (update.apiPort !== undefined) {
-      await this.#configuration.update('apiPort', update.apiPort);
-    }
-    if (update.experimentalTuning !== undefined) {
-      await this.#configuration.update('experimentalTuning', update.experimentalTuning);
-    }
-    if (update.modelUploadDisabled !== undefined) {
-      await this.#configuration.update('modelUploadDisabled', update.modelUploadDisabled);
-    }
-    if (update.showGPUPromotion !== undefined) {
-      await this.#configuration.update('showGPUPromotion', update.showGPUPromotion);
+    for (const section of CONFIGURATION_SECTIONS) {
+      const fieldName = this.getFieldName(section);
+      const value = update[fieldName];
+      if (value) {
+        await this.#configuration.update(section, value);
+      }
     }
     this.notify(); //https://github.com/containers/podman-desktop/issues/9194
   }
@@ -92,7 +85,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
 
   init(): void {
     this.#configurationDisposable = configuration.onDidChangeConfiguration(event => {
-      if (CONFIGURATION_SECTIONS.some(section => event.affectsConfiguration(section))) {
+      if (CONFIGURATION_SECTIONS.some(section => event.affectsConfiguration(`ai-lab.${section}`))) {
         this.notify();
       }
     });

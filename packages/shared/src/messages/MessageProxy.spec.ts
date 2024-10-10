@@ -109,7 +109,49 @@ test('Test register instance with async', async () => {
 
   rpcExtension.registerInstance(Dummy, new Dummy());
 
-  const proxy = rpcBrowser.getProxy<Dummy>();
+  const proxy = rpcBrowser.getProxy<Dummy>(Dummy);
+  expect(await proxy.ping()).toBe('pong');
+});
+
+test('Test register instance and implemented abstract classes', async () => {
+  abstract class Foo {
+    abstract ping(): Promise<'pong'>;
+  }
+
+  class Dummy implements Foo {
+    async ping(): Promise<'pong'> {
+      return 'pong';
+    }
+  }
+
+  const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
+  const rpcBrowser = new RpcBrowser(window, api);
+
+  rpcExtension.registerInstance(Foo, new Dummy());
+
+  const proxy = rpcBrowser.getProxy<Foo>(Foo);
+  expect(await proxy.ping()).toBe('pong');
+});
+
+test('Test register instance and extended abstract classes', async () => {
+  abstract class Foo {
+    abstract ping(): Promise<'pong'>;
+  }
+
+  class Dummy extends Foo {
+    override async ping(): Promise<'pong'> {
+      return 'pong';
+    }
+  }
+
+  const rpcExtension = new RpcExtension(webview);
+  rpcExtension.init();
+  const rpcBrowser = new RpcBrowser(window, api);
+
+  rpcExtension.registerInstance(Foo, new Dummy());
+
+  const proxy = rpcBrowser.getProxy<Foo>(Foo);
   expect(await proxy.ping()).toBe('pong');
 });
 

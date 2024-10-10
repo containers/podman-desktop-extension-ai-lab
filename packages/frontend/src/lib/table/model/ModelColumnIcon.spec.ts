@@ -127,3 +127,23 @@ test('Expect in used model to have USED title', async () => {
   expect(role).toBeDefined();
   expect(role.title).toBe('USED');
 });
+
+test('Expect non-downloaded model to have NONE title', async () => {
+  const object: ModelInfo = {
+    id: 'model-downloaded-id',
+    description: '',
+    license: '',
+    name: '',
+    registry: '',
+    url: '',
+    memory: 1000,
+  };
+
+  mocks.getInferenceServersMock.mockReturnValue([]);
+
+  render(ModelColumnIcon, { object });
+
+  const role = screen.getByRole('status');
+  expect(role).toBeDefined();
+  expect(role.title).toBe('NONE');
+});

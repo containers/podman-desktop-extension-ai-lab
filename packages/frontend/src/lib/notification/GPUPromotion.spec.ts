@@ -18,7 +18,7 @@
 
 import '@testing-library/jest-dom/vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import { studioClient } from '/@/utils/client';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
@@ -28,7 +28,7 @@ import { configuration } from '/@/stores/extensionConfiguration';
 vi.mock('/@/utils/client', async () => {
   return {
     studioClient: {
-      navigateToResources: vi.fn(),
+      updateExtensionConfiguration: vi.fn(),
     },
   };
 });
@@ -51,7 +51,7 @@ const mockConfiguration: Writable<ExtensionConfiguration> = writable({
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(studioClient.navigateToResources).mockResolvedValue(undefined);
+  vi.mocked(studioClient.updateExtensionConfiguration).mockResolvedValue(undefined);
   vi.mocked(configuration).subscribe.mockImplementation(run => mockConfiguration.subscribe(run));
 });
 
@@ -111,4 +111,52 @@ test('should not show banner if gpu support if off and gpu promotion off', async
   // eslint-disable-next-line quotes
   const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
   expect(btnHide).not.toBeInTheDocument();
+});
+
+test('click enable should call client', async () => {
+  mockConfiguration.set({
+    experimentalGPU: false,
+    showGPUPromotion: true,
+    modelUploadDisabled: false,
+    modelsPath: '',
+    experimentalTuning: false,
+    apiPort: -1,
+  });
+  render(GPUPromotion);
+
+  // eslint-disable-next-line quotes
+  const btnUpdate = screen.queryByRole('button', { name: 'Enable GPU support' });
+  expect(btnUpdate).toBeInTheDocument();
+
+  // eslint-disable-next-line quotes
+  const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
+  expect(btnHide).toBeInTheDocument();
+
+  await fireEvent.click(btnUpdate!);
+
+  expect(studioClient.updateExtensionConfiguration).toHaveBeenCalledWith({ experimentalGPU: true });
+});
+
+test('click hide should call client', async () => {
+  mockConfiguration.set({
+    experimentalGPU: false,
+    showGPUPromotion: true,
+    modelUploadDisabled: false,
+    modelsPath: '',
+    experimentalTuning: false,
+    apiPort: -1,
+  });
+  render(GPUPromotion);
+
+  // eslint-disable-next-line quotes
+  const btnUpdate = screen.queryByRole('button', { name: 'Enable GPU support' });
+  expect(btnUpdate).toBeInTheDocument();
+
+  // eslint-disable-next-line quotes
+  const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
+  expect(btnHide).toBeInTheDocument();
+
+  await fireEvent.click(btnHide!);
+
+  expect(studioClient.updateExtensionConfiguration).toHaveBeenCalledWith({ showGPUPromotion: false });
 });

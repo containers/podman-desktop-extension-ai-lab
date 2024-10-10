@@ -45,6 +45,8 @@ import { getImageInfo } from '../utils/inferenceUtils';
 import type { TaskRegistry } from './TaskRegistry';
 import type { PodmanConnection } from '../managers/podmanConnection';
 
+const OPEN_WEBUI_IMAGE = 'ghcr.io/open-webui/open-webui:dev';
+
 export class ConversationRegistry extends Publisher<Conversation[]> implements Disposable {
   #conversations: Map<string, Conversation>;
   #counter: number;
@@ -138,7 +140,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     const conversation = this.get(conversationId);
     const port = await getFreeRandomPort('127.0.0.1');
     const connection = await this.podmanConnection.getConnectionByEngineId(server.container.engineId);
-    await this.pullImage(connection, 'ghcr.io/open-webui/open-webui:main', {
+    await this.pullImage(connection, OPEN_WEBUI_IMAGE, {
       trackingId: trackingId,
     });
     const inferenceServerContainer = await containerEngine.inspectContainer(
@@ -155,7 +157,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
         `WEBUI_URL=http://localhost:${port}`,
         `DEFAULT_MODELS=/models/${server.models[0].file?.file}`,
       ],
-      Image: 'ghcr.io/open-webui/open-webui:main',
+      Image: OPEN_WEBUI_IMAGE,
       HostConfig: {
         AutoRemove: true,
         Mounts: [

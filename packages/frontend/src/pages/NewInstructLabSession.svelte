@@ -20,7 +20,6 @@ let model: ModelInfo | undefined = $state(undefined);
 let trainingType: 'knowledge' | 'skills' = $state('knowledge');
 
 $effect(() => {
-  console.log(model);
   valid = (skillsFiles.length > 0 || knowledgeFiles.length > 0) && !!model && sessionName.length > 0;
 });
 

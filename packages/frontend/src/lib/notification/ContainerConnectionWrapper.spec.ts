@@ -69,6 +69,7 @@ beforeEach(() => {
     experimentalTuning: false,
     modelsPath: '',
     modelUploadDisabled: false,
+    showGPUPromotion: false,
   });
 });
 

@@ -22,4 +22,5 @@ export interface ExtensionConfiguration {
   apiPort: number;
   experimentalTuning: boolean;
   modelUploadDisabled: boolean;
+  showGPUPromotion: boolean;
 }

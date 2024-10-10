@@ -22,11 +22,12 @@ import { Messages } from '@shared/Messages';
 import path from 'node:path';
 
 const CONFIGURATION_SECTIONS: string[] = [
-  'ai-lab.models.path',
-  'ai-lab.experimentalGPU',
-  'ai-lab.apiPort',
-  'ai-lab.experimentalTuning',
-  'ai-lab.modelUploadDisabled',
+  'models.path',
+  'experimentalGPU',
+  'apiPort',
+  'experimentalTuning',
+  'modelUploadDisabled',
+  'showGPUPromotion',
 ];
 
 const API_PORT_DEFAULT = 10434;
@@ -51,7 +52,23 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
       apiPort: this.#configuration.get<number>('apiPort') ?? API_PORT_DEFAULT,
       experimentalTuning: this.#configuration.get<boolean>('experimentalTuning') ?? false,
       modelUploadDisabled: this.#configuration.get<boolean>('modelUploadDisabled') ?? false,
+      showGPUPromotion: this.#configuration.get<boolean>('showGPUPromotion') ?? true,
     };
+  }
+
+  private getFieldName(section: string): keyof Partial<ExtensionConfiguration> {
+    return section.replace(/\.(\w)/, (match, char) => char.toUpperCase()) as keyof Partial<ExtensionConfiguration>;
+  }
+
+  async updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void> {
+    for (const section of CONFIGURATION_SECTIONS) {
+      const fieldName = this.getFieldName(section);
+      const value = update[fieldName];
+      if (value !== undefined) {
+        await this.#configuration.update(section, value);
+      }
+    }
+    this.notify(); //https://github.com/containers/podman-desktop/issues/9194
   }
 
   private getModelsPath(): string {
@@ -68,7 +85,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
 
   init(): void {
     this.#configurationDisposable = configuration.onDidChangeConfiguration(event => {
-      if (CONFIGURATION_SECTIONS.some(section => event.affectsConfiguration(section))) {
+      if (CONFIGURATION_SECTIONS.some(section => event.affectsConfiguration(`ai-lab.${section}`))) {
         this.notify();
       }
     });

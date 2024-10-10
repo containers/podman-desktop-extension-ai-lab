@@ -122,6 +122,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.configurationRegistry.getExtensionConfiguration();
   }
 
+  async updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void> {
+    return this.configurationRegistry.updateExtensionConfiguration(update);
+  }
+
   async getSnippetLanguages(): Promise<Language[]> {
     return this.snippetManager.getLanguageList();
   }

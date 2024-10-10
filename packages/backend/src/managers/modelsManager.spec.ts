@@ -129,6 +129,7 @@ beforeEach(() => {
     experimentalTuning: false,
     apiPort: 0,
     experimentalGPU: false,
+    showGPUPromotion: false,
   });
 
   mocks.isCompletionEventMock.mockReturnValue(true);
@@ -1016,6 +1017,7 @@ describe('uploadModelToPodmanMachine', () => {
       experimentalTuning: false,
       apiPort: 0,
       experimentalGPU: false,
+      showGPUPromotion: false,
     });
 
     const manager = new ModelsManager(

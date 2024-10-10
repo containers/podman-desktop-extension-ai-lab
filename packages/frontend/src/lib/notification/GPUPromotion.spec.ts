@@ -22,6 +22,8 @@ import { render, screen } from '@testing-library/svelte';
 import { studioClient } from '/@/utils/client';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
+import { type Writable, writable } from 'svelte/store';
+import { configuration } from '/@/stores/extensionConfiguration';
 
 vi.mock('/@/utils/client', async () => {
   return {
@@ -31,28 +33,30 @@ vi.mock('/@/utils/client', async () => {
   };
 });
 
-const mocks = vi.hoisted(() => {
-  return {
-    getConfigurationMock: vi.fn<() => ExtensionConfiguration>(),
-  };
-});
-
 vi.mock('../../stores/extensionConfiguration', () => ({
   configuration: {
-    subscribe: (f: (msg: ExtensionConfiguration) => void) => {
-      f(mocks.getConfigurationMock());
-      return (): void => {};
-    },
+    subscribe: vi.fn(),
+    unsubscribe: vi.fn(),
   },
 }));
+
+const mockConfiguration: Writable<ExtensionConfiguration> = writable({
+  experimentalGPU: false,
+  modelsPath: '',
+  apiPort: -1,
+  modelUploadDisabled: false,
+  experimentalTuning: false,
+  showGPUPromotion: false,
+});
 
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(studioClient.navigateToResources).mockResolvedValue(undefined);
+  vi.mocked(configuration).subscribe.mockImplementation(run => mockConfiguration.subscribe(run));
 });
 
 test('should show banner if gpu support if off and gpu promotion on', async () => {
-  mocks.getConfigurationMock.mockReturnValue({
+  mockConfiguration.set({
     experimentalGPU: false,
     showGPUPromotion: true,
     modelUploadDisabled: false,
@@ -71,7 +75,7 @@ test('should show banner if gpu support if off and gpu promotion on', async () =
 });
 
 test('should not show banner if gpu support if on and gpu promotion on', async () => {
-  mocks.getConfigurationMock.mockReturnValue({
+  mockConfiguration.set({
     experimentalGPU: true,
     showGPUPromotion: true,
     modelUploadDisabled: false,
@@ -90,7 +94,7 @@ test('should not show banner if gpu support if on and gpu promotion on', async (
 });
 
 test('should not show banner if gpu support if off and gpu promotion off', async () => {
-  mocks.getConfigurationMock.mockReturnValue({
+  mockConfiguration.set({
     experimentalGPU: false,
     showGPUPromotion: false,
     modelUploadDisabled: false,

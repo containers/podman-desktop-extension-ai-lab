@@ -22,10 +22,11 @@ import { ConfigurationRegistry } from './ConfigurationRegistry';
 const fakeConfiguration = {
   get: vi.fn(),
   has: vi.fn(),
+  update: vi.fn(),
 } as unknown as Configuration;
 
 const webviewMock = {
-  postMessage: vi.fn(),
+  postMessage: vi.fn().mockResolvedValue(true),
 } as unknown as Webview;
 
 vi.mock('@podman-desktop/api', async () => {
@@ -57,4 +58,14 @@ test('dispose should dispose listener', () => {
 
   registry.dispose();
   expect(disposeMock).toHaveBeenCalled();
+});
+
+test('update should trigger configuration update', async () => {
+  const registry = new ConfigurationRegistry(webviewMock, 'appdir');
+  vi.mocked(fakeConfiguration.has).mockReturnValue(true);
+  vi.mocked(fakeConfiguration.update).mockResolvedValue(undefined);
+
+  registry.init();
+  await registry.updateExtensionConfiguration({ modelsPath: '' });
+  expect(fakeConfiguration.update).toHaveBeenCalledWith('models.path', '');
 });

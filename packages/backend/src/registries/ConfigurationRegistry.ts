@@ -64,7 +64,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
     for (const section of CONFIGURATION_SECTIONS) {
       const fieldName = this.getFieldName(section);
       const value = update[fieldName];
-      if (value) {
+      if (value !== undefined) {
         await this.#configuration.update(section, value);
       }
     }

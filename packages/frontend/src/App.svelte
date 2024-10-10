@@ -26,6 +26,7 @@ import { configuration } from './stores/extensionConfiguration';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
 import { Messages } from '@shared/Messages';
+import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 
 router.mode.hash();
 
@@ -63,79 +64,83 @@ onDestroy(() => {
     <div class="flex flex-row w-full h-full overflow-hidden">
       <Navigation meta={meta} />
 
-      <!-- Dashboard -->
-      <Route path="/">
-        <Dashboard />
-      </Route>
+      <div class="flex flex-col w-full h-full">
+        <GPUPromotion />
 
-      <!-- Recipes Catalog -->
-      <Route path="/recipes">
-        <Recipes />
-      </Route>
+        <!-- Dashboard -->
+        <Route path="/">
+          <Dashboard />
+        </Route>
 
-      <!-- Applications -->
-      <Route path="/applications">
-        <Applications />
-      </Route>
+        <!-- Recipes Catalog -->
+        <Route path="/recipes">
+          <Recipes />
+        </Route>
 
-      <!-- Playgrounds -->
-      <Route path="/playgrounds">
-        <Playgrounds />
-      </Route>
-      <Route path="/playground/:id/*" let:meta>
-        {#if meta.params.id === 'create'}
-          <PlaygroundCreate />
-        {:else}
-          <Playground playgroundId={meta.params.id} />
+        <!-- Applications -->
+        <Route path="/applications">
+          <Applications />
+        </Route>
+
+        <!-- Playgrounds -->
+        <Route path="/playgrounds">
+          <Playgrounds />
+        </Route>
+        <Route path="/playground/:id/*" let:meta>
+          {#if meta.params.id === 'create'}
+            <PlaygroundCreate />
+          {:else}
+            <Playground playgroundId={meta.params.id} />
+          {/if}
+        </Route>
+        {#if experimentalTuning}
+          <!-- Tune with InstructLab -->
+          <Route path="/tune/*">
+            <TuneSessions />
+          </Route>
         {/if}
-      </Route>
-      {#if experimentalTuning}
-        <!-- Tune with InstructLab -->
-        <Route path="/tune/*">
-          <TuneSessions />
+        <!-- Preferences -->
+        <Route path="/preferences">
+          <Preferences />
         </Route>
-      {/if}
-      <!-- Preferences -->
-      <Route path="/preferences">
-        <Preferences />
-      </Route>
 
-      <!-- Recipes -->
-      <Route path="/recipe/:id/*" firstmatch let:meta>
-        <Route path="/start">
-          <StartRecipe recipeId={meta.params.id} trackingId={meta.query.trackingId} />
+        <!-- Recipes -->
+        <Route path="/recipe/:id/*" firstmatch let:meta>
+          <Route path="/start">
+            <StartRecipe recipeId={meta.params.id} trackingId={meta.query.trackingId} />
+          </Route>
+          <Route path="/*">
+            <Recipe recipeId={meta.params.id} />
+          </Route>
         </Route>
-        <Route path="/*">
-          <Recipe recipeId={meta.params.id} />
+
+        <!-- Models -->
+        <Route path="/models/*" firstmatch>
+          <Route path="/import">
+            <ImportModels />
+          </Route>
+          <Route path="/*">
+            <Models />
+          </Route>
         </Route>
-      </Route>
 
-      <!-- Models -->
-      <Route path="/models/*" firstmatch>
-        <Route path="/import">
-          <ImportModels />
+        <Route path="/model/:id/*" let:meta>
+          <Model modelId={meta.params.id} />
         </Route>
-        <Route path="/*">
-          <Models />
+
+        <!-- services -->
+        <Route path="/services/*">
+          <Services />
         </Route>
-      </Route>
 
-      <Route path="/model/:id/*" let:meta>
-        <Model modelId={meta.params.id} />
-      </Route>
-
-      <!-- services -->
-      <Route path="/services/*">
-        <Services />
-      </Route>
-
-      <Route path="/service/:id/*" let:meta>
-        {#if meta.params.id === 'create'}
-          <CreateService trackingId={meta.query.trackingId} />
-        {:else}
-          <ServiceDetails containerId={meta.params.id} />
-        {/if}
-      </Route>
+        <Route path="/service/:id/*" let:meta>
+          {#if meta.params.id === 'create'}
+            <CreateService trackingId={meta.query.trackingId} />
+          {:else}
+            <ServiceDetails containerId={meta.params.id} />
+          {/if}
+        </Route>
+      </div>
     </div>
   </main>
 </Route>

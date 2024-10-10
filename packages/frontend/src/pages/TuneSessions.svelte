@@ -13,7 +13,9 @@ import InstructlabColumnStatus from '../lib/table/instructlab/InstructlabColumnS
 import { router } from 'tinro';
 import Route from '../Route.svelte';
 
-function start(): void {}
+function start(): void {
+  router.goto('/tune/start');
+}
 
 const columns: TableColumn<InstructlabSession>[] = [
   new TableColumn<InstructlabSession>('Name', { width: '120px', renderer: InstructlabColumnName, align: 'left' }),

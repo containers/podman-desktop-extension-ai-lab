@@ -99,15 +99,19 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         test.setTimeout(120_000);
         const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
         await aiRunningAppsPage.waitForLoad();
+        // eslint-disable-next-line sonarjs/no-nested-functions
         await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
+        // eslint-disable-next-line sonarjs/no-nested-functions
         await playExpect
           .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
           .toBe('RUNNING');
         await aiRunningAppsPage.stopApp(appName);
+        // eslint-disable-next-line sonarjs/no-nested-functions
         await playExpect
           .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
           .toBe('UNKNOWN');
         await aiRunningAppsPage.deleteAIApp(appName);
+        // eslint-disable-next-line sonarjs/no-nested-functions
         await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 30_000 }).toBeFalsy();
       });
     });

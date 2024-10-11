@@ -240,10 +240,10 @@ function handleOnChange(): void {
                         {/if}
 
                         <!-- Documentation URL -->
-                        <div class="grow">
+                        <div class="grow text-[var(--pd-label-text)]">
                           {#if 'docs' in service.labels}
+                            Access
                             <Tooltip tip="Open swagger documentation">
-                              Access
                               <Link
                                 aria-label="swagger documentation"
                                 on:click={openLink.bind(undefined, service.labels['docs'])}>

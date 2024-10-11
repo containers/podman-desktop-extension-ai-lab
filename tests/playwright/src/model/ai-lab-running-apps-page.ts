@@ -22,10 +22,8 @@ import { AILabBasePage } from './ai-lab-base-page';
 import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
 
 export class AiRunningAppsPage extends AILabBasePage {
-  readonly appTable: Locator;
   constructor(page: Page, webview: Page) {
     super(page, webview, 'AI Apps');
-    this.appTable = this.webview.getByRole('table', { name: 'AI Apps' });
   }
 
   async waitForLoad(): Promise<void> {
@@ -36,7 +34,6 @@ export class AiRunningAppsPage extends AILabBasePage {
     const rows = await this.getAllTableRows();
     for (const row of rows) {
       const appNameCellCount = await row.getByRole('cell').nth(3).getByText(appName).count();
-      console.log(`Checking cell with for app name: ${appNameCellCount}`);
       if (appNameCellCount) {
         return row;
       }
@@ -86,8 +83,6 @@ export class AiRunningAppsPage extends AILabBasePage {
   }
 
   private async getAllTableRows(): Promise<Locator[]> {
-    const results = await this.webview.getByRole('row').all();
-    console.log(`Found ${results.length} rows`);
-    return results;
+    return await this.webview.getByRole('row').all();
   }
 }

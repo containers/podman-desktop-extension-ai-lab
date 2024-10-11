@@ -27,7 +27,7 @@ export class AiModelServicePage extends AILabBasePage {
   readonly toggleAllCheckbox: Locator;
 
   constructor(page: Page, webview: Page) {
-    super(page, webview, 'Model Service');
+    super(page, webview, 'Model Services');
     this.additionalActions = this.webview.getByRole('group', { name: 'additionalActions' });
     this.deleteSelectedItems = this.additionalActions.getByRole('button', { name: 'Delete' });
     this.toggleAllCheckbox = this.webview.getByRole('checkbox').and(this.webview.getByLabel('Toggle all'));

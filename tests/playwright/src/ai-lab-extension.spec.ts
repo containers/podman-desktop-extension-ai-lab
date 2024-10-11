@@ -87,7 +87,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
       test(`Install ${appName} example app`, async () => {
         test.setTimeout(780_000);
-        const chatBotApp: AILabAppDetailsPage = await recipesCatalogPage.openRecipesCatalogApp(
+        const chatBotApp = await recipesCatalogPage.openRecipesCatalogApp(
           recipesCatalogPage.recipesCatalogNaturalLanguageProcessing,
           appName,
         );
@@ -96,7 +96,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test.afterEach(`Stop Ai App example app`, async () => {
-        test.setTimeout(120_000);
+        test.setTimeout(150_000);
         const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
         await aiRunningAppsPage.waitForLoad();
         // eslint-disable-next-line sonarjs/no-nested-functions
@@ -113,6 +113,14 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await aiRunningAppsPage.deleteAIApp(appName);
         // eslint-disable-next-line sonarjs/no-nested-functions
         await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 30_000 }).toBeFalsy();
+
+        const modelServicePage = await aiLabPage.navigationBar.openServices();
+        await modelServicePage.waitForLoad();
+        await modelServicePage.deleteAllCurrentModels();
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 })
+          .toBe(0);
       });
     });
   });

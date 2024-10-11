@@ -16,7 +16,7 @@ function enableGPUSupport(): void {
 }
 
 const content =
-  'GPU support is not enabled. Podman AI Lab supports GPU on Windows on MacOS.\n\nThis greatly enhance the developer experience when running inference servers. We recommend you to enable it.';
+  'GPU support is not enabled. Podman AI Lab supports GPU on Windows on MacOS.\n\nThis greatly enhances the developer experience when running inference servers. We recommend you to enable it.';
 </script>
 
 {#if $configuration?.showGPUPromotion && !$configuration?.experimentalGPU}

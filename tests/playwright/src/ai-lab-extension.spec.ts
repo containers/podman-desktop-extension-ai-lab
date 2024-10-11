@@ -76,29 +76,40 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       await aiLabPage.waitForLoad();
     });
   });
-  test.describe.serial(`AI Lab extension verification`, () => {
-    test.skip(isLinux, `Skipping AI App deployment on Linux`);
-    test.beforeEach(`Open Recipes Catalog`, async () => {
-      recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
-      await recipesCatalogPage.waitForLoad();
-    });
-    test(`Install ChatBot example app`, async () => {
-      test.setTimeout(780_000);
-      const chatBotApp: AILabAppDetailsPage = await recipesCatalogPage.openRecipesCatalogApp(
-        recipesCatalogPage.recipesCatalogNaturalLanguageProcessing,
-        AI_LAB_AI_APP_NAME,
-      );
-      await chatBotApp.waitForLoad();
-      await chatBotApp.startNewDeployment();
-    });
-    test(`Install Code generation example app`, async () => {
-      test.setTimeout(780_000);
-      const codeGenApp = await recipesCatalogPage.openRecipesCatalogApp(
-        recipesCatalogPage.recipesCatalogNaturalLanguageProcessing,
-        'Code Generation',
-      );
-      await codeGenApp.waitForLoad();
-      await codeGenApp.startNewDeployment();
+
+  [AI_LAB_AI_APP_NAME, 'Code Generation'].forEach(appName => {
+    test.describe.serial(`AI Lab extension verification`, () => {
+      test.skip(isLinux, `Skipping AI App deployment on Linux`);
+      test.beforeEach(`Open Recipes Catalog`, async () => {
+        recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
+        await recipesCatalogPage.waitForLoad();
+      });
+
+      test(`Install ${appName} example app`, async () => {
+        test.setTimeout(780_000);
+        const chatBotApp: AILabAppDetailsPage = await recipesCatalogPage.openRecipesCatalogApp(
+          recipesCatalogPage.recipesCatalogNaturalLanguageProcessing,
+          appName,
+        );
+        await chatBotApp.waitForLoad();
+        await chatBotApp.startNewDeployment();
+      });
+
+      test.afterEach(`Stop Ai App example app`, async () => {
+        test.setTimeout(120_000);
+        const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
+        await aiRunningAppsPage.waitForLoad();
+        await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
+        await playExpect
+          .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
+          .toBe('RUNNING');
+        await aiRunningAppsPage.stopApp(appName);
+        await playExpect
+          .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
+          .toBe('UNKNOWN');
+        await aiRunningAppsPage.deleteAIApp(appName);
+        await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 30_000 }).toBeFalsy();
+      });
     });
   });
 });

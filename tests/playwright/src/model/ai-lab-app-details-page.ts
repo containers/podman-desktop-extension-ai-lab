@@ -42,7 +42,7 @@ export class AILabAppDetailsPage extends AILabBasePage {
   async startNewDeployment(): Promise<void> {
     await playExpect(this.startRecipeButton).toBeEnabled();
     await this.startRecipeButton.click();
-    const starRecipePage: AILabStartRecipePage = new AILabStartRecipePage(this.page, this.webview);
+    const starRecipePage = new AILabStartRecipePage(this.page, this.webview);
     await starRecipePage.waitForLoad();
     await starRecipePage.startRecipe();
   }

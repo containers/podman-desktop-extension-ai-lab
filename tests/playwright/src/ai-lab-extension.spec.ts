@@ -78,7 +78,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
   });
   test.describe.serial(`AI Lab extension verification`, () => {
     test.skip(isLinux, `Skipping AI App deployment on Linux`);
-    test(`Open Recipes Catalog`, async () => {
+    test.beforeEach(`Open Recipes Catalog`, async () => {
       recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
       await recipesCatalogPage.waitForLoad();
     });
@@ -90,6 +90,15 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       );
       await chatBotApp.waitForLoad();
       await chatBotApp.startNewDeployment();
+    });
+    test(`Install Code generation example app`, async () => {
+      test.setTimeout(780_000);
+      const codeGenApp = await recipesCatalogPage.openRecipesCatalogApp(
+        recipesCatalogPage.recipesCatalogNaturalLanguageProcessing,
+        'Code Generation',
+      );
+      await codeGenApp.waitForLoad();
+      await codeGenApp.startNewDeployment();
     });
   });
 });

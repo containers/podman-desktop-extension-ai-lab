@@ -29,7 +29,7 @@ export class AILabStartRecipePage extends AILabBasePage {
   readonly deleteAIAppButton: Locator;
 
   constructor(page: Page, webview: Page) {
-    super(page, webview, 'Start Recipe');
+    super(page, webview, 'Start recipe');
     this.recipeStatus = this.webview.getByRole('status');
     this.applicationDetailsPanel = this.webview.getByLabel('application details panel');
     this.startRecipeButton = this.webview.getByRole('button', { name: /Start(\s+([a-z]+\s+)+)recipe/i });

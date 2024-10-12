@@ -64,7 +64,8 @@ export class AILabStartRecipePage extends AILabBasePage {
       return 100;
     }
 
-    const progressString = content.match(/(\d+)%/);
+    const regex = new RegExp(/(\d+)%/);
+    const progressString = regex.exec(content);
     const progress = progressString ? parseInt(progressString[1]) : 0;
     console.log(`Model download progress: ${progress}%`);
     return progress;

@@ -17,9 +17,8 @@
  ***********************************************************************/
 
 import type { Page } from '@playwright/test';
-import type { ExtensionsPage, Runner } from '@podman-desktop/tests-playwright';
+import type { NavigationBar, ExtensionsPage, Runner } from '@podman-desktop/tests-playwright';
 import {
-  NavigationBar,
   expect as playExpect,
   test,
   RunnerOptions,

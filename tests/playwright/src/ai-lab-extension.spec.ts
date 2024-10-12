@@ -77,7 +77,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
 
-  [AI_LAB_AI_APP_NAME, 'Code Generation'].forEach(appName => {
+  ['Object Detection', AI_LAB_AI_APP_NAME, 'Code Generation'].forEach(appName => {
     test.describe.serial(`AI Lab extension verification`, () => {
       test.skip(isLinux, `Skipping AI App deployment on Linux`);
       test.beforeEach(`Open Recipes Catalog`, async () => {
@@ -87,12 +87,9 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
       test(`Install ${appName} example app`, async () => {
         test.setTimeout(1_500_000);
-        const chatBotApp = await recipesCatalogPage.openRecipesCatalogApp(
-          recipesCatalogPage.recipesCatalogNaturalLanguageProcessing,
-          appName,
-        );
-        await chatBotApp.waitForLoad();
-        await chatBotApp.startNewDeployment();
+        const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
+        await demoApp.waitForLoad();
+        await demoApp.startNewDeployment();
       });
 
       test.afterEach(`Stop ${appName} app`, async () => {

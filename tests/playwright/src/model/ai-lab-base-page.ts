@@ -26,7 +26,7 @@ export abstract class AILabBasePage {
   constructor(page: Page, webview: Page, heading: string | undefined) {
     this.page = page;
     this.webview = webview;
-    this.heading = webview.getByRole('heading', { name: heading, exact: true });
+    this.heading = webview.getByRole('heading', { name: heading, exact: true }).first();
   }
 
   abstract waitForLoad(): Promise<void>;

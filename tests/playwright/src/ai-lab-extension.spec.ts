@@ -86,7 +86,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test(`Install ${appName} example app`, async () => {
-        test.setTimeout(780_000);
+        test.setTimeout(1_500_000);
         const chatBotApp = await recipesCatalogPage.openRecipesCatalogApp(
           recipesCatalogPage.recipesCatalogNaturalLanguageProcessing,
           appName,

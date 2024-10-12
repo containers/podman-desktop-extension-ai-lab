@@ -18,10 +18,9 @@
 
 import type { Page } from '@playwright/test';
 import type { DashboardPage, ExtensionsPage, Runner } from '@podman-desktop/tests-playwright';
-import { NavigationBar, expect as playExpect, test, RunnerOptions } from '@podman-desktop/tests-playwright';
+import { NavigationBar, expect as playExpect, test, RunnerOptions, isLinux } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
-import type { AILabAppDetailsPage } from './model/ai-lab-app-details-page';
 import * as os from 'node:os';
 
 const AI_LAB_EXTENSION_OCI_IMAGE: string =
@@ -30,7 +29,6 @@ const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 const AI_LAB_AI_APP_NAME: string = 'ChatBot';
-const isLinux = os.platform() === 'linux';
 
 let webview: Page;
 let aiLabPage: AILabPage;

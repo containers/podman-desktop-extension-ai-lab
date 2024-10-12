@@ -95,7 +95,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await chatBotApp.startNewDeployment();
       });
 
-      test.afterEach(`Stop Ai App example app`, async () => {
+      test.afterEach(`Stop ${appName} app`, async () => {
         test.setTimeout(150_000);
         const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
         await aiRunningAppsPage.waitForLoad();

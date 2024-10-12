@@ -21,7 +21,6 @@ import type { DashboardPage, ExtensionsPage, Runner } from '@podman-desktop/test
 import { NavigationBar, expect as playExpect, test, RunnerOptions, isLinux } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
-import * as os from 'node:os';
 
 const AI_LAB_EXTENSION_OCI_IMAGE: string =
   process.env.AI_LAB_OCI ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';

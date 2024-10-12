@@ -43,7 +43,7 @@ export class AiRunningAppsPage extends AILabBasePage {
 
   async getCurrentStatusForApp(appName: string): Promise<string> {
     const row = await this.getRowForApp(appName);
-    return `${await row.getByRole('cell').nth(1).getByRole('status').getAttribute('title')}`;
+    return `${await row.getByRole('cell').nth(1).getByRole('status').getAttribute('title', { timeout: 60_000 })}`;
   }
 
   async stopApp(appName: string): Promise<void> {

@@ -44,6 +44,8 @@ export class AiModelServicePage extends AILabBasePage {
   }
 
   async deleteAllCurrentModels(): Promise<void> {
+    if (!(await this.toggleAllCheckbox.count())) return;
+
     await this.checkAllModelsForDeletion();
     await playExpect(this.deleteSelectedItems).toBeEnabled();
     await this.deleteSelectedItems.click();

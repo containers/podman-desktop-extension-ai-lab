@@ -42,7 +42,7 @@ let recipesCatalogPage: AILabRecipesCatalogPage;
 let extensionsPage: ExtensionsPage;
 
 test.use({
-  runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd' }),
+  runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd', customOutputFolder: 'output' }),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   runner.setVideoAndTraceName('ai-lab-e2e');

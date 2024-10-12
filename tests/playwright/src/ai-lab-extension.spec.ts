@@ -17,8 +17,15 @@
  ***********************************************************************/
 
 import type { Page } from '@playwright/test';
-import type { DashboardPage, ExtensionsPage, Runner } from '@podman-desktop/tests-playwright';
-import { NavigationBar, expect as playExpect, test, RunnerOptions, isLinux } from '@podman-desktop/tests-playwright';
+import type { ExtensionsPage, Runner } from '@podman-desktop/tests-playwright';
+import {
+  NavigationBar,
+  expect as playExpect,
+  test,
+  RunnerOptions,
+  isLinux,
+  waitForPodmanMachineStartup,
+} from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 
@@ -33,8 +40,6 @@ let webview: Page;
 let aiLabPage: AILabPage;
 let recipesCatalogPage: AILabRecipesCatalogPage;
 
-let navigationBar: NavigationBar;
-let dashboardPage: DashboardPage;
 let extensionsPage: ExtensionsPage;
 
 test.use({
@@ -42,9 +47,8 @@ test.use({
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   runner.setVideoAndTraceName('ai-lab-e2e');
-
   await welcomePage.handleWelcomePage(true);
-  navigationBar = new NavigationBar(page);
+  await waitForPodmanMachineStartup(page);
 });
 
 test.afterAll(async ({ runner }) => {
@@ -53,8 +57,8 @@ test.afterAll(async ({ runner }) => {
 
 test.describe.serial(`AI Lab extension installation and verification`, { tag: '@smoke' }, () => {
   test.describe.serial(`AI Lab extension installation`, () => {
-    test(`Open Settings -> Extensions page`, async () => {
-      dashboardPage = await navigationBar.openDashboard();
+    test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
+      const dashboardPage = await navigationBar.openDashboard();
       await playExpect(dashboardPage.mainPage).toBeVisible();
       extensionsPage = await navigationBar.openExtensions();
       await playExpect(extensionsPage.header).toBeVisible();
@@ -67,8 +71,8 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         })
         .toBeTruthy();
     });
-    test(`Verify AI Lab is responsive`, async ({ runner, page }) => {
-      [page, webview] = await handleWebview(runner, page);
+    test(`Verify AI Lab is responsive`, async ({ runner, page, navigationBar }) => {
+      [page, webview] = await handleWebview(runner, page, navigationBar);
       aiLabPage = new AILabPage(page, webview);
       await aiLabPage.waitForLoad();
     });
@@ -123,7 +127,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
   });
 });
 
-async function handleWebview(runner: Runner, page: Page): Promise<[Page, Page]> {
+async function handleWebview(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<[Page, Page]> {
   const aiLabPodmanExtensionButton = navigationBar.navigationLocator.getByRole('link', {
     name: AI_LAB_NAVBAR_EXTENSION_LABEL,
   });

@@ -51,6 +51,7 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 });
 
 test.afterAll(async ({ runner }) => {
+  test.setTimeout(120_000);
   await runner.close();
 });
 

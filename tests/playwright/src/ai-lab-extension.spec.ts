@@ -52,7 +52,11 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 
 test.afterAll(async ({ runner }) => {
   test.setTimeout(120_000);
-  await runner.close();
+  try {
+    await cleanupServiceModels(aiLabPage);
+  } finally {
+    await runner.close();
+  }
 });
 
 test.describe.serial(`AI Lab extension installation and verification`, { tag: '@smoke' }, () => {
@@ -111,18 +115,18 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await aiRunningAppsPage.deleteAIApp(appName);
         // eslint-disable-next-line sonarjs/no-nested-functions
         await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 30_000 }).toBeFalsy();
-
-        const modelServicePage = await aiLabPage.navigationBar.openServices();
-        await modelServicePage.waitForLoad();
-        await modelServicePage.deleteAllCurrentModels();
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 })
-          .toBe(0);
+        await cleanupServiceModels(aiLabPage);
       });
     });
   });
 });
+
+async function cleanupServiceModels(aiLabPage: AILabPage): Promise<void> {
+  const modelServicePage = await aiLabPage.navigationBar.openServices();
+  await modelServicePage.waitForLoad();
+  await modelServicePage.deleteAllCurrentModels();
+  await playExpect.poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 }).toBe(0);
+}
 
 async function handleWebview(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<[Page, Page]> {
   const aiLabPodmanExtensionButton = navigationBar.navigationLocator.getByRole('link', {

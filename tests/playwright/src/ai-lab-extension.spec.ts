@@ -98,22 +98,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
       test.afterEach(`Stop ${appName} app`, async () => {
         test.setTimeout(150_000);
-        const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
-        await aiRunningAppsPage.waitForLoad();
-        // eslint-disable-next-line sonarjs/no-nested-functions
-        await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
-          .toBe('RUNNING');
-        await aiRunningAppsPage.stopApp(appName);
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
-          .toBe('UNKNOWN');
-        await aiRunningAppsPage.deleteAIApp(appName);
-        // eslint-disable-next-line sonarjs/no-nested-functions
-        await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 30_000 }).toBeFalsy();
+        await stopAndDeleteApp(aiLabPage, appName);
         await cleanupServiceModels(aiLabPage);
       });
     });
@@ -125,6 +110,21 @@ async function cleanupServiceModels(aiLabPage: AILabPage): Promise<void> {
   await modelServicePage.waitForLoad();
   await modelServicePage.deleteAllCurrentModels();
   await playExpect.poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 }).toBe(0);
+}
+
+async function stopAndDeleteApp(aiLabPage: AILabPage, appName: string): Promise<void> {
+  const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
+  await aiRunningAppsPage.waitForLoad();
+  await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
+  await playExpect
+    .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
+    .toBe('RUNNING');
+  await aiRunningAppsPage.stopApp(appName);
+  await playExpect
+    .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
+    .toBe('UNKNOWN');
+  await aiRunningAppsPage.deleteAIApp(appName);
+  await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 60_000 }).toBeFalsy();
 }
 
 async function handleWebview(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<[Page, Page]> {

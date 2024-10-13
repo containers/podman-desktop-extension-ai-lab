@@ -63,6 +63,7 @@ export class Uploader {
     try {
       // measure performance
       const startTime = performance.now();
+      console.log(`Uploading model to podman machine started at ${startTime}`);
       // get new path
       const remotePath = await worker.perform({
         connection: this.connection,
@@ -78,6 +79,7 @@ export class Uploader {
         duration: durationSeconds,
       } as CompletionEvent);
 
+      console.log(`Completed in ${durationSeconds} seconds!`)
       // return the new path on the podman machine
       return remotePath;
     } catch (err) {

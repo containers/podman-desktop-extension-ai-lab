@@ -33,7 +33,6 @@ const AI_LAB_EXTENSION_OCI_IMAGE: string =
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
-const AI_LAB_AI_APP_NAME: string = 'ChatBot';
 
 let webview: Page;
 let aiLabPage: AILabPage;

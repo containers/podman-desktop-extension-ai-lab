@@ -79,7 +79,7 @@ export class Uploader {
         duration: durationSeconds,
       } as CompletionEvent);
 
-      console.log(`Completed in ${durationSeconds} seconds!`)
+      console.log(`Completed in ${durationSeconds} seconds!`);
       // return the new path on the podman machine
       return remotePath;
     } catch (err) {

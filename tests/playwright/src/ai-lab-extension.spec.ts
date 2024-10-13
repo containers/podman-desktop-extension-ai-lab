@@ -82,7 +82,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
 
-  ['Object Detection', AI_LAB_AI_APP_NAME, 'Code Generation'].forEach(appName => {
+  ['ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Audio to Text', 'Object Detection'].forEach(appName => {
     test.describe.serial(`AI Lab extension verification`, () => {
       test.skip(isLinux, `Skipping AI App deployment on Linux`);
       test.beforeEach(`Open Recipes Catalog`, async () => {

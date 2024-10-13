@@ -36,9 +36,6 @@ const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 
 let webview: Page;
 let aiLabPage: AILabPage;
-let recipesCatalogPage: AILabRecipesCatalogPage;
-
-let extensionsPage: ExtensionsPage;
 
 test.use({
   runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd', customOutputFolder: 'output' }),
@@ -52,7 +49,7 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 test.afterAll(async ({ runner }) => {
   test.setTimeout(120_000);
   try {
-    await cleanupServiceModels(aiLabPage);
+    await cleanupServiceModels();
   } finally {
     await runner.close();
   }
@@ -60,6 +57,8 @@ test.afterAll(async ({ runner }) => {
 
 test.describe.serial(`AI Lab extension installation and verification`, { tag: '@smoke' }, () => {
   test.describe.serial(`AI Lab extension installation`, () => {
+    let extensionsPage: ExtensionsPage;
+
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
       const dashboardPage = await navigationBar.openDashboard();
       await playExpect(dashboardPage.mainPage).toBeVisible();
@@ -83,6 +82,8 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
   ['ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Audio to Text', 'Object Detection'].forEach(appName => {
     test.describe.serial(`AI Lab extension verification`, () => {
+      let recipesCatalogPage: AILabRecipesCatalogPage;
+
       test.skip(isLinux, `Skipping AI App deployment on Linux`);
       test.beforeEach(`Open Recipes Catalog`, async () => {
         recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
@@ -98,21 +99,21 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
       test.afterEach(`Stop ${appName} app`, async () => {
         test.setTimeout(150_000);
-        await stopAndDeleteApp(aiLabPage, appName);
-        await cleanupServiceModels(aiLabPage);
+        await stopAndDeleteApp(appName);
+        await cleanupServiceModels();
       });
     });
   });
 });
 
-async function cleanupServiceModels(aiLabPage: AILabPage): Promise<void> {
+async function cleanupServiceModels(): Promise<void> {
   const modelServicePage = await aiLabPage.navigationBar.openServices();
   await modelServicePage.waitForLoad();
   await modelServicePage.deleteAllCurrentModels();
   await playExpect.poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 }).toBe(0);
 }
 
-async function stopAndDeleteApp(aiLabPage: AILabPage, appName: string): Promise<void> {
+async function stopAndDeleteApp(appName: string): Promise<void> {
   const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
   await aiRunningAppsPage.waitForLoad();
   await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();

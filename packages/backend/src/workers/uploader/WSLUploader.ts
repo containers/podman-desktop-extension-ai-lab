@@ -25,7 +25,6 @@ import type { UploaderOptions } from './UploaderOptions';
 
 export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
   async perform(options: UploaderOptions): Promise<string> {
-    console.log('Uploading model to WSL machine');
     const localPath = getLocalModelFile(options.model);
 
     // ensure the connection type is WSL
@@ -36,7 +35,6 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
 
     // the connection name cannot be used as it is
     const machineName = getPodmanMachineName(options.connection);
-    console.log(`Using machine ${machineName}`);
 
     const driveLetter = localPath.charAt(0);
     const convertToMntPath = localPath
@@ -45,9 +43,7 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
 
     // check if model already loaded on the podman machine
     const existsRemote = await isModelUploaded(machineName, options.model);
-    console.log(`Model exists remotely: ${existsRemote}`);
     const remoteFile = getRemoteModelFile(options.model);
-    console.log(`Remote file: ${remoteFile}`);
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {
@@ -69,7 +65,6 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
       ]);
     }
 
-    console.log('Finished execution');
     return remoteFile;
   }
 }

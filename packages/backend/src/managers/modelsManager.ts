@@ -443,7 +443,6 @@ export class ModelsManager implements Disposable {
     uploader.onEvent(event => this.onDownloadUploadEvent(event, 'upload'), this);
 
     // perform download
-    console.log(`Uploading model ${model.name} to ${connection.name}`);
     return uploader.perform(model.id);
   }
 

@@ -98,6 +98,7 @@ test('Test register channel multiple arguments', async () => {
 
 test('Test register instance with async', async () => {
   class Dummy {
+    static readonly CHANNEL: string = 'dummy';
     async ping(): Promise<string> {
       return 'pong';
     }
@@ -115,6 +116,7 @@ test('Test register instance with async', async () => {
 
 test('Test register instance and implemented abstract classes', async () => {
   abstract class Foo {
+    static readonly CHANNEL: string = 'dummy';
     abstract ping(): Promise<'pong'>;
   }
 
@@ -136,6 +138,7 @@ test('Test register instance and implemented abstract classes', async () => {
 
 test('Test register instance and extended abstract classes', async () => {
   abstract class Foo {
+    static readonly CHANNEL: string = 'dummy';
     abstract ping(): Promise<'pong'>;
   }
 

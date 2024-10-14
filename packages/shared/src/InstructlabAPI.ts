@@ -19,6 +19,7 @@
 import type { InstructlabSession } from './models/instructlab/IInstructlabSession';
 
 export abstract class InstructlabAPI {
+  static readonly CHANNEL: string = 'InstructlabAPI';
   /**
    * Get sessions of InstructLab tuning
    */

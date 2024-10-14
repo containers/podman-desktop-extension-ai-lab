@@ -59,7 +59,6 @@ export default defineConfig({
     },
   },
   build: {
-    minify: true,
     sourcemap: true,
     outDir: '../backend/media',
     assetsDir: '.',

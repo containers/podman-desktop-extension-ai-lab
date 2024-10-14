@@ -4,13 +4,12 @@ import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';
 import ServiceAction from '/@/lib/table/service/ServiceAction.svelte';
 import Fa from 'svelte-fa';
 import {
-  faBook,
+  faArrowUpRightFromSquare,
   faBuildingColumns,
   faCheck,
   faCopy,
   faFan,
   faMicrochip,
-  faPlug,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
 import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
@@ -19,9 +18,10 @@ import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
-import { Button, DetailsPage, Tooltip } from '@podman-desktop/ui-svelte';
+import { Button, DetailsPage, Tooltip, Link } from '@podman-desktop/ui-svelte';
 import CopyButton from '/@/lib/button/CopyButton.svelte';
 import type { RequestOptions } from '@shared/src/models/RequestOptions';
+import { filesize } from 'filesize';
 
 export let containerId: string | undefined = undefined;
 
@@ -171,12 +171,8 @@ export function goToUpPage(): void {
   router.goto('/services');
 }
 
-function handleOnClick(): void {
-  if (service) {
-    studioClient
-      .openURL(service.labels['docs'])
-      .catch(err => console.error(`Error opening URL: ${service?.labels['docs']}`, err));
-  }
+function openLink(url: string): void {
+  studioClient.openURL(url).catch(err => console.error(`Error opening URL: ${url}`, err));
 }
 
 function handleOnChange(): void {
@@ -218,84 +214,124 @@ function handleOnChange(): void {
         <div class="min-w-full min-h-full flex-1">
           <div class="mt-4 px-5 space-y-5">
             {#if service !== undefined}
-              <!-- models info -->
-              <div class="bg-[var(--pd-content-card-bg)] rounded-md w-full px-4 pt-2 pb-4">
-                <div>
-                  <span class="text-sm text-[var(--pd-content-card-text)]">Models</span>
-                  <div
-                    class="w-full bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md px-2 py-1 flex flex-col gap-y-4">
-                    {#each service.models as model}
-                      <div class="flex flex-row gap-2 items-center">
-                        <div class="grow text-sm" aria-label="Model name">
-                          <a href="/model/{model.id}">{model.name}</a>
-                        </div>
-                        <div>
-                          <div
-                            class="bg-[var(--pd-content-card-bg)] rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
-                            <Fa class="mr-2" icon={faScaleBalanced} />
-                            {model.license}
-                          </div>
-                        </div>
-                        <div>
-                          <div
-                            class="bg-[var(--pd-content-card-bg)] rounded-md p-2 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
-                            <Fa class="mr-2" icon={faBuildingColumns} />
-                            {model.registry}
-                          </div>
-                        </div>
-                      </div>
-                    {/each}
-                  </div>
+              <!-- Inference Server -->
+              <div>
+                <!-- title -->
+                <div class="flex flex-row">
+                  <span class="text-base grow text-[var(--pd-content-card-text)]">Inference Server</span>
                 </div>
-              </div>
 
-              <!-- server details -->
-              <div class="bg-[var(--pd-content-card-bg)] rounded-md w-full px-4 pt-2 pb-4 mt-2">
-                <span class="text-sm text-[var(--pd-content-card-text)]">Server</span>
-                <div class="flex flex-row gap-4">
+                <!-- inference server details content -->
+                <div class="bg-[var(--pd-content-card-bg)] rounded-md w-full px-4 pt-3 pb-4 mt-2 flex flex-col gap-y-4">
+                  <!-- endpoint URL -->
                   {#if service.status === 'running'}
-                    {#if 'docs' in service.labels}
-                      <Tooltip tip="Open swagger documentation">
-                        <button
-                          on:click={handleOnClick}
-                          class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center underline">
-                          {service.labels['docs']}
-                          <Fa class="ml-2" icon={faBook} />
-                        </button>
-                      </Tooltip>
-                    {/if}
+                    <div class="flex flex-col gap-y-2">
+                      <span class="text-sm text-[var(--pd-content-card-text)]">Inference Endpoint URL</span>
+                      <div class="flex items-center gap-x-4">
+                        <!-- API URL -->
+                        {#if 'api' in service.labels}
+                          <CopyButton
+                            top
+                            class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
+                            content={service.labels['api']}>
+                            {service.labels['api']}
+                            <Fa class="ml-2" icon={faCopy} />
+                          </CopyButton>
+                        {/if}
 
-                    {#if 'api' in service.labels}
-                      <CopyButton
-                        class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
-                        content={service.labels['api']}>
-                        {service.labels['api']}
-                        <Fa class="ml-2" icon={faPlug} />
-                      </CopyButton>
-                    {/if}
-                  {/if}
+                        <!-- Documentation URL -->
+                        <div class="grow text-[var(--pd-label-text)]">
+                          {#if 'docs' in service.labels}
+                            Access
+                            <Tooltip tip="Open swagger documentation">
+                              <Link
+                                aria-label="swagger documentation"
+                                on:click={openLink.bind(undefined, service.labels['docs'])}>
+                                swagger documentation
+                              </Link>
+                            </Tooltip>
+                          {/if}
+                        </div>
 
-                  {#if 'gpu' in service.labels}
-                    <Tooltip tip={service.labels['gpu']}>
-                      <div
-                        class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
-                        GPU Inference
-                        <Fa spin={service.status === 'running'} class="ml-2" icon={faFan} />
+                        {#if 'gpu' in service.labels}
+                          <Tooltip left tip={service.labels['gpu']}>
+                            <div
+                              class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
+                              GPU Inference
+                              <Fa spin={service.status === 'running'} class="ml-2" icon={faFan} />
+                            </div>
+                          </Tooltip>
+                        {:else}
+                          <div
+                            class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
+                            CPU Inference
+                            <Fa class="ml-2" icon={faMicrochip} />
+                          </div>
+                        {/if}
                       </div>
-                    </Tooltip>
-                  {:else}
-                    <div
-                      class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
-                      CPU Inference
-                      <Fa class="ml-2" icon={faMicrochip} />
                     </div>
                   {/if}
+
+                  <!-- models -->
+                  <div class="flex flex-col gap-y-2">
+                    <span class="text-sm text-[var(--pd-content-card-text)]">
+                      {service.models.length > 1 ? 'Models' : 'Model'}
+                    </span>
+                    <div>
+                      {#each service.models as model}
+                        <div>
+                          <div
+                            class="w-full bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md px-2 py-1 flex flex-col gap-y-4">
+                            <div class="flex flex-row gap-2 items-center">
+                              <div class="grow text-sm" aria-label="Model name">
+                                <a href="/model/{model.id}" class="flex items-center">
+                                  {model.name}
+                                  <Fa class="ml-2" icon={faArrowUpRightFromSquare} />
+                                </a>
+                              </div>
+                              <div>
+                                <div
+                                  class="bg-[var(--pd-content-card-bg)] rounded-md px-2 py-1 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
+                                  <Fa class="mr-2" icon={faScaleBalanced} />
+                                  {model.license}
+                                </div>
+                              </div>
+                              <div>
+                                <div
+                                  class="bg-[var(--pd-content-card-bg)] rounded-md px-2 py-1 flex flex-row w-min h-min text-xs text-charcoal-100 text-nowrap items-center">
+                                  <Fa class="mr-2" icon={faBuildingColumns} />
+                                  {model.registry}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <table class="w-full text-[var(--pd-label-text)] ml-4 mt-2">
+                            <tbody>
+                              {#if model.file?.size}
+                                <tr>
+                                  <td>Size</td>
+                                  <td>{filesize(model.file.size)}</td>
+                                </tr>
+                              {/if}
+                              {#if model.file}
+                                <tr>
+                                  <td>File path</td>
+                                  <td>{model.file.path}</td>
+                                </tr>
+                              {/if}
+                            </tbody>
+                          </table>
+                        </div>
+                      {/each}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <!-- code client -->
               <div>
-                <div class="flex flex-row">
+                <div class="flex flex-row items-center">
                   <span class="text-base grow text-[var(--pd-content-card-text)]">Client code</span>
 
                   <!-- language choice -->

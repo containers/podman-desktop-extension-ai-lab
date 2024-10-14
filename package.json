@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.0",
-    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/eslint-plugin": "^8.9.0",
     "@typescript-eslint/parser": "^8.8.1",
     "@vitest/coverage-v8": "^2.0.5",
     "autoprefixer": "^10.4.20",
@@ -58,8 +58,8 @@
     "svelte-check": "^4.0.5",
     "svelte-eslint-parser": "^0.41.1",
     "typescript": "5.6.3",
-    "typescript-eslint": "^8.8.1",
-    "vite": "^5.4.8",
+    "typescript-eslint": "^8.9.0",
+    "vite": "^5.4.9",
     "vitest": "^2.0.5"
   },
   "workspaces": {

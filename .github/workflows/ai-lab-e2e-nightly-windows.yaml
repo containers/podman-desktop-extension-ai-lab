@@ -48,13 +48,8 @@ on:
         type: string
         required: true
       podman_remote_url:
-        default: 'https://github.com/containers/podman/releases/download/v5.2.0/podman-remote-release-windows_amd64.zip'
-        description: 'podman remote zip'
-        type: string
-        required: true
-      podman_version:
-        default: '5.2.0'
-        description: 'Podman folder version in archive'
+        default: 'https://github.com/containers/podman/releases/download/v5.2.4/podman-5.2.4-setup.exe'
+        description: 'podman remote setup exe'
         type: string
         required: true
       podman_options:
@@ -65,6 +60,11 @@ on:
       env_vars:
         default: 'TEST_PODMAN_MACHINE=true'
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
+        type: string
+        required: true
+      pde2e_image_version:
+        default: 'v0.0.2-windows'
+        description: 'PDE2E runner, builder, podman image versions'
         type: string
         required: true
       azure_vm_size:
@@ -86,7 +86,8 @@ jobs:
       contents: read
       checks: write
     env:
-      QENVS_VERSION: v0.6.3
+      MAPT_VERSION: v0.6.8
+      MAPT_IMAGE: quay.io/redhat-developer/mapt
     strategy:
       fail-fast: false
       matrix:
@@ -114,16 +115,16 @@ jobs:
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
-        DEFAULT_VERSION: "${{ env.PD_PODMAN_VERSION || '5.2.0' }}"
-        DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_VERSION/podman-remote-release-windows_amd64.zip"
+        DEFAULT_URL: "https://github.com/containers/podman/releases/download/v5.2.4/podman-5.2.4-setup.exe"
+        DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.2-windows'
         DEFAULT_AZURE_VM_SIZE: 'Standard_D8as_v5'
       run: |
         echo "FORK=${{ github.event.inputs.fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
         echo "BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
         echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
         echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
-        echo "PODMAN_VERSION=${{ github.event.inputs.podman_version || env.DEFAULT_VERSION }}" >> $GITHUB_ENV
         echo "PODMAN_URL=${{ github.event.inputs.podman_remote_url || env.DEFAULT_URL }}" >> $GITHUB_ENV
+        ecgo "PDE2E_IMAGE_VERSION=${{ github.event.inputs.pde2e_image_version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
         echo "EXT_TESTS=${{ github.event.inputs.ext_tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
         echo "${{ github.event.inputs.podman_options || env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
@@ -140,7 +141,7 @@ jobs:
           -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
           -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
           -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
-          quay.io/rhqp/qenvs:${{ env.QENVS_VERSION }} azure \
+          ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION }} azure \
             windows create \
             --project-name 'windows-desktop' \
             --backed-url 'file:///workspace' \
@@ -186,10 +187,9 @@ jobs:
           -e OUTPUT_FOLDER=/data \
           -e DEBUG=true \
           -v $PWD:/data:z \
-          quay.io/odockal/pde2e-podman:v0.0.1-windows  \
+          quay.io/odockal/pde2e-podman:${{ env.PDE2E_IMAGE_VERSION }} \
             pd-e2e/podman.ps1 \
               -downloadUrl ${{ env.PODMAN_URL }} \
-              -version ${{ env.PODMAN_VERSION }} \
               -targetFolder pd-e2e \
               -resultsFolder results \
               -initialize 0 \
@@ -210,7 +210,7 @@ jobs:
           -e OUTPUT_FOLDER=/data \
           -e DEBUG=true \
           -v $PWD:/data:z \
-          quay.io/odockal/pde2e-runner:v0.0.1-windows  \
+          quay.io/odockal/pde2e-runner:${{ env.PDE2E_IMAGE_VERSION }} \
               pd-e2e/runner.ps1 \
                 -targetFolder pd-e2e \
                 -resultsFolder results \

@@ -24,6 +24,8 @@ import {
   RunnerOptions,
   isLinux,
   waitForPodmanMachineStartup,
+  deletePodmanMachineFromCLI,
+  createPodmanMachineFromCLI,
 } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
@@ -40,9 +42,13 @@ test.use({
   runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd', customOutputFolder: 'output' }),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
+  test.setTimeout(180_000);
   runner.setVideoAndTraceName('ai-lab-e2e');
   await welcomePage.handleWelcomePage(true);
   await waitForPodmanMachineStartup(page);
+  await deletePodmanMachineFromCLI('podman-machine-default');
+  await createPodmanMachineFromCLI();
+  await waitForPodmanMachineStartup(page, 120_000);
 });
 
 test.afterAll(async ({ runner }) => {

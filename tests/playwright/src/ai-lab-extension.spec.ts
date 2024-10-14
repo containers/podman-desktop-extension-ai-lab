@@ -24,8 +24,6 @@ import {
   RunnerOptions,
   isLinux,
   waitForPodmanMachineStartup,
-  deletePodmanMachineFromCLI,
-  createPodmanMachineFromCLI,
 } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';

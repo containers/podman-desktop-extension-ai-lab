@@ -27,7 +27,7 @@ import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfig
 import type { Unsubscriber } from 'svelte/store';
 import { Messages } from '@shared/Messages';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
-import NewInstructLabSession from '/@/pages/StartInstructLabSession.svelte';
+import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 
 router.mode.hash();
 

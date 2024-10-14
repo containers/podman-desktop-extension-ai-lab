@@ -167,8 +167,8 @@ function openInstructLabDocumentation(): void {
                   type="link"
                   disabled={trainingType !== 'knowledge'}
                   class={trainingType !== 'knowledge'
-                    ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent '
-                    : ''}
+                    ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent w-min'
+                    : 'w-min'}
                   on:click={addKnowledge}
                   icon={faPlusCircle}>Add knowledge to use</Button>
                 <span
@@ -229,8 +229,8 @@ function openInstructLabDocumentation(): void {
                   icon={faPlusCircle}
                   type="link"
                   class={trainingType !== 'skills'
-                    ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent '
-                    : ''}>Add skill to use</Button>
+                    ? 'text-[var(--pd-input-field-disabled-text)] hover:bg-transparent w-min'
+                    : 'w-min'}>Add skill to use</Button>
                 <span
                   class:text-[var(--pd-input-field-disabled-text)]={trainingType !== 'skills'}
                   class:text-[var(--pd-table-body-text)]={trainingType === 'skills'}>

@@ -105,14 +105,17 @@ export class RpcExtension implements Disposable {
     });
   }
 
-  registerInstance<T extends Record<keyof T, UnaryRPC>>(classType: new (...args: any[]) => T, instance: T): void {
-    const methodNames = Object.getOwnPropertyNames(classType.prototype).filter(
+  registerInstance<T extends Record<keyof T, UnaryRPC>>(
+    classType: { CHANNEL: string; prototype: T },
+    instance: T,
+  ): void {
+    const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
       name => name !== 'constructor' && typeof instance[name as keyof T] === 'function',
     );
 
     methodNames.forEach(name => {
       const method = (instance[name as keyof T] as any).bind(instance);
-      this.register(name, method);
+      this.register(`${classType.CHANNEL}-${name}`, method);
     });
   }
 
@@ -169,7 +172,7 @@ export class RpcBrowser {
     });
   }
 
-  getProxy<T>(): T {
+  getProxy<T>(classType: { CHANNEL: string; prototype: T }): T {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const thisRef = this;
     const proxyHandler: ProxyHandler<object> = {
@@ -177,7 +180,7 @@ export class RpcBrowser {
         if (typeof prop === 'string') {
           return (...args: unknown[]) => {
             const channel = prop.toString();
-            return thisRef.invoke(channel, ...args);
+            return thisRef.invoke(`${classType.CHANNEL}-${channel}`, ...args);
           };
         }
         return Reflect.get(target, prop, receiver);

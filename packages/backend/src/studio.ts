@@ -52,6 +52,8 @@ import { ApiServer } from './managers/apiServer';
 import { InstructlabManager } from './managers/instructlab/instructlabManager';
 import { InstructlabApiImpl } from './instructlab-api-impl';
 import { NavigationRegistry } from './registries/NavigationRegistry';
+import { StudioAPI } from '@shared/src/StudioAPI';
+import { InstructlabAPI } from '@shared/src/InstructlabAPI';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -346,7 +348,7 @@ export class Studio {
       this.#navigationRegistry,
     );
     // Register the instance
-    this.#rpcExtension.registerInstance<StudioApiImpl>(StudioApiImpl, this.#studioApi);
+    this.#rpcExtension.registerInstance<StudioAPI>(StudioAPI, this.#studioApi);
 
     const apiServer = new ApiServer(
       this.#extensionContext,
@@ -359,7 +361,7 @@ export class Studio {
 
     this.#instructlabApi = new InstructlabApiImpl(this.#instructlabManager);
     // Register the instance
-    this.#rpcExtension.registerInstance<InstructlabApiImpl>(InstructlabApiImpl, this.#instructlabApi);
+    this.#rpcExtension.registerInstance<InstructlabAPI>(InstructlabAPI, this.#instructlabApi);
   }
 
   public async deactivate(): Promise<void> {

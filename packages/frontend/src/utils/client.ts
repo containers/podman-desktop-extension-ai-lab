@@ -16,16 +16,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { StudioAPI } from '@shared/src/StudioAPI';
+import { StudioAPI } from '@shared/src/StudioAPI';
 import { RpcBrowser } from '@shared/src/messages/MessageProxy';
 import type { RouterState } from '/@/models/IRouterState';
-import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
+import { InstructlabAPI } from '@shared/src/InstructlabAPI';
 
 const podmanDesktopApi = acquirePodmanDesktopApi();
 export const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);
 
-export const studioClient: StudioAPI = rpcBrowser.getProxy<StudioAPI>();
-export const instructlabClient: InstructlabAPI = rpcBrowser.getProxy<InstructlabAPI>();
+export const studioClient: StudioAPI = rpcBrowser.getProxy<StudioAPI>(StudioAPI);
+export const instructlabClient: InstructlabAPI = rpcBrowser.getProxy<InstructlabAPI>(InstructlabAPI);
 
 export const saveRouterState = (state: RouterState): void => {
   podmanDesktopApi.setState(state);

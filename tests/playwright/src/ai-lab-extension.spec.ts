@@ -28,8 +28,7 @@ import {
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 
-const AI_LAB_EXTENSION_OCI_IMAGE: string =
-  process.env.AI_LAB_OCI ?? 'quay.io/vlazar/ai-lab-custom:v0.0.7';
+const AI_LAB_EXTENSION_OCI_IMAGE: string = process.env.AI_LAB_OCI ?? 'quay.io/vlazar/ai-lab-custom:v0.0.7';
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';

@@ -29,6 +29,7 @@ vi.mock('/@/utils/client', async () => {
   return {
     studioClient: {
       updateExtensionConfiguration: vi.fn(),
+      telemetryLogUsage: vi.fn(),
     },
   };
 });
@@ -52,6 +53,7 @@ const mockConfiguration: Writable<ExtensionConfiguration> = writable({
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(studioClient.updateExtensionConfiguration).mockResolvedValue(undefined);
+  vi.mocked(studioClient.telemetryLogUsage).mockResolvedValue(undefined);
   vi.mocked(configuration).subscribe.mockImplementation(run => mockConfiguration.subscribe(run));
 });
 
@@ -72,6 +74,7 @@ test('should show banner if gpu support if off and gpu promotion on', async () =
   // eslint-disable-next-line quotes
   const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
   expect(btnHide).toBeInTheDocument();
+  expect(studioClient.telemetryLogUsage).toHaveBeenCalledWith('gpuPromotionBanner', { action: 'show' });
 });
 
 test('should not show banner if gpu support if on and gpu promotion on', async () => {
@@ -91,6 +94,7 @@ test('should not show banner if gpu support if on and gpu promotion on', async (
   // eslint-disable-next-line quotes
   const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
   expect(btnHide).not.toBeInTheDocument();
+  expect(studioClient.telemetryLogUsage).not.toHaveBeenCalled();
 });
 
 test('should not show banner if gpu support if off and gpu promotion off', async () => {
@@ -111,6 +115,7 @@ test('should not show banner if gpu support if off and gpu promotion off', async
   // eslint-disable-next-line quotes
   const btnHide = screen.queryByRole('button', { name: "Don't display anymore" });
   expect(btnHide).not.toBeInTheDocument();
+  expect(studioClient.telemetryLogUsage).not.toHaveBeenCalled();
 });
 
 test('click enable should call client', async () => {
@@ -135,6 +140,8 @@ test('click enable should call client', async () => {
   await fireEvent.click(btnUpdate!);
 
   expect(studioClient.updateExtensionConfiguration).toHaveBeenCalledWith({ experimentalGPU: true });
+  expect(studioClient.telemetryLogUsage).toHaveBeenNthCalledWith(1, 'gpuPromotionBanner', { action: 'show' });
+  expect(studioClient.telemetryLogUsage).toHaveBeenNthCalledWith(2, 'gpuPromotionBanner', { action: 'enable' });
 });
 
 test('click hide should call client', async () => {
@@ -159,4 +166,6 @@ test('click hide should call client', async () => {
   await fireEvent.click(btnHide!);
 
   expect(studioClient.updateExtensionConfiguration).toHaveBeenCalledWith({ showGPUPromotion: false });
+  expect(studioClient.telemetryLogUsage).toHaveBeenNthCalledWith(1, 'gpuPromotionBanner', { action: 'show' });
+  expect(studioClient.telemetryLogUsage).toHaveBeenNthCalledWith(2, 'gpuPromotionBanner', { action: 'hide' });
 });

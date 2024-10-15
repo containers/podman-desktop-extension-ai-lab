@@ -1,7 +1,7 @@
 {
   "name": "frontend-app",
   "displayName": "UI for AI Lab",
-  "version": "1.3.0-next",
+  "version": "1.3.0",
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {

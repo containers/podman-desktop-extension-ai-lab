@@ -124,7 +124,7 @@ jobs:
         echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
         echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
         echo "PODMAN_URL=${{ github.event.inputs.podman_remote_url || env.DEFAULT_URL }}" >> $GITHUB_ENV
-        ecgo "PDE2E_IMAGE_VERSION=${{ github.event.inputs.pde2e_image_version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
+        echo "PDE2E_IMAGE_VERSION=${{ github.event.inputs.pde2e_image_version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
         echo "EXT_TESTS=${{ github.event.inputs.ext_tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
         echo "${{ github.event.inputs.podman_options || env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV

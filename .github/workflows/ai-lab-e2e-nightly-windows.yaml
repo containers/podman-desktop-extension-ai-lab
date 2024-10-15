@@ -183,6 +183,7 @@ jobs:
           -e TARGET_HOST_USERNAME=$(cat username) \
           -e TARGET_HOST_KEY_PATH=/data/id_rsa \
           -e TARGET_FOLDER=pd-e2e \
+          -e TARGET_CLEANUP=false \
           -e TARGET_RESULTS=results \
           -e OUTPUT_FOLDER=/data \
           -e DEBUG=true \

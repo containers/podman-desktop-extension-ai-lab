@@ -47,11 +47,8 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 
 test.afterAll(async ({ runner }) => {
   test.setTimeout(120_000);
-  try {
-    await cleanupServiceModels();
-  } finally {
-    await runner.close();
-  }
+  await cleanupServiceModels();
+  await runner.close();
 });
 
 test.describe.serial(`AI Lab extension installation and verification`, { tag: '@smoke' }, () => {
@@ -76,10 +73,9 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
   ['ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Audio to Text', 'Object Detection'].forEach(appName => {
     test.describe.serial(`AI Lab extension verification`, () => {
-      test.skip(isLinux, `Skipping AI App deployment on Linux`);
-
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
+      test.skip(isLinux, `Skipping AI App deployment on Linux`);
       test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
         aiLabPage = new AILabPage(page, webview);
@@ -97,7 +93,6 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test.afterEach(`Stop ${appName} app`, async ({ navigationBar }) => {
-        test.skip(isLinux, `Skipping AI App deployment on Linux`);
         test.setTimeout(150_000);
         await stopAndDeleteApp(appName);
         await cleanupServiceModels();
@@ -108,10 +103,14 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 });
 
 async function cleanupServiceModels(): Promise<void> {
-  const modelServicePage = await aiLabPage.navigationBar.openServices();
-  await modelServicePage.waitForLoad();
-  await modelServicePage.deleteAllCurrentModels();
-  await playExpect.poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 }).toBe(0);
+  try {
+    const modelServicePage = await aiLabPage.navigationBar.openServices();
+    await modelServicePage.waitForLoad();
+    await modelServicePage.deleteAllCurrentModels();
+    await playExpect.poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 }).toBe(0);
+  } catch (error) {
+    console.log(`Error while cleaning up service models: ${error}`);
+  }
 }
 
 async function stopAndDeleteApp(appName: string): Promise<void> {

@@ -28,7 +28,7 @@ import {
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 
-const AI_LAB_EXTENSION_OCI_IMAGE = 'quay.io/vlazar/ai-lab-custom:v0.1.0';
+const AI_LAB_EXTENSION_OCI_IMAGE = 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
@@ -72,11 +72,6 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         })
         .toBeTruthy();
     });
-    test(`Verify AI Lab is responsive`, async ({ runner, page, navigationBar }) => {
-      [page, webview] = await handleWebview(runner, page, navigationBar);
-      aiLabPage = new AILabPage(page, webview);
-      await aiLabPage.waitForLoad();
-    });
   });
 
   ['ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Audio to Text', 'Object Detection'].forEach(appName => {
@@ -84,7 +79,11 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
       test.skip(isLinux, `Skipping AI App deployment on Linux`);
-      test.beforeEach(`Open Recipes Catalog`, async () => {
+      test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
+        [page, webview] = await handleWebview(runner, page, navigationBar);
+        aiLabPage = new AILabPage(page, webview);
+        await aiLabPage.navigationBar.waitForLoad();
+
         recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
         await recipesCatalogPage.waitForLoad();
       });
@@ -96,10 +95,11 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await demoApp.startNewDeployment();
       });
 
-      test.afterEach(`Stop ${appName} app`, async () => {
+      test.afterEach(`Stop ${appName} app`, async ({ navigationBar }) => {
         test.setTimeout(150_000);
         await stopAndDeleteApp(appName);
         await cleanupServiceModels();
+        await deleteUnusedImages(navigationBar);
       });
     });
   });
@@ -125,6 +125,14 @@ async function stopAndDeleteApp(appName: string): Promise<void> {
     .toBe('UNKNOWN');
   await aiRunningAppsPage.deleteAIApp(appName);
   await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 60_000 }).toBeFalsy();
+}
+
+async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
+  const imagesPage = await navigationBar.openImages();
+  await playExpect(imagesPage.heading).toBeVisible();
+
+  await imagesPage.deleteAllUnusedImages();
+  await playExpect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 60_000 }).toBe(0);
 }
 
 async function handleWebview(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<[Page, Page]> {

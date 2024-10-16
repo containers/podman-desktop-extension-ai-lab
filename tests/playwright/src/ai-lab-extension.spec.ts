@@ -74,11 +74,12 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
 
+  test.skip(isLinux, `Skipping AI App deployment on Linux`);
+
   ['ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Audio to Text', 'Object Detection'].forEach(appName => {
     test.describe.serial(`AI Lab extension verification`, () => {
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
-      test.skip(isLinux, `Skipping AI App deployment on Linux`);
       test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
         aiLabPage = new AILabPage(page, webview);

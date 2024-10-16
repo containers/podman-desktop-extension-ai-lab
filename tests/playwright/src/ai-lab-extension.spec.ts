@@ -74,10 +74,10 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
 
-  test.skip(isLinux, `Skipping AI App deployment on Linux`);
-
   ['ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Audio to Text', 'Object Detection'].forEach(appName => {
     test.describe.serial(`AI Lab extension verification`, () => {
+      test.skip(isLinux, `Skipping AI App deployment on Linux`);
+
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
       test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
@@ -97,6 +97,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test.afterEach(`Stop ${appName} app`, async ({ navigationBar }) => {
+        test.skip(isLinux, `Skipping AI App deployment on Linux`);
         test.setTimeout(150_000);
         await stopAndDeleteApp(appName);
         await cleanupServiceModels();

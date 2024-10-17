@@ -101,7 +101,7 @@
     "typecheck": "npm run generate && tsc --noEmit"
   },
   "dependencies": {
-    "@huggingface/gguf": "^0.1.10",
+    "@huggingface/gguf": "^0.1.12",
     "express": "^4.21.1",
     "express-openapi-validator": "^5.3.7",
     "isomorphic-git": "^1.27.1",

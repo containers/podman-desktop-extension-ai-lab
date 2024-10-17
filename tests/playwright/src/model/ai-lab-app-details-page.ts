@@ -44,7 +44,7 @@ export class AILabAppDetailsPage extends AILabBasePage {
     await this.startRecipeButton.click();
     const starRecipePage = new AILabStartRecipePage(this.page, this.webview);
     await starRecipePage.waitForLoad();
-    await starRecipePage.startRecipe();
+    await starRecipePage.startRecipe(this.appName);
   }
 
   async openRunningApps(): Promise<void> {

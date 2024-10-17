@@ -48,10 +48,10 @@ export class AILabRecipesCatalogPage extends AILabBasePage {
     await playExpect(this.recipesCatalogPage).toBeVisible();
   }
 
-  async openRecipesCatalogApp(category: Locator, appName: string): Promise<AILabAppDetailsPage> {
-    await playExpect(category).toBeVisible();
-    await playExpect(this.getAppDetailsLocator(appName)).toBeEnabled();
-    await this.getAppDetailsLocator(appName).click();
+  async openRecipesCatalogApp(appName: string): Promise<AILabAppDetailsPage> {
+    const moreDetailsButton = this.getAppDetailsLocator(appName);
+    await playExpect(moreDetailsButton).toBeEnabled();
+    await moreDetailsButton.click();
     return new AILabAppDetailsPage(this.page, this.webview, appName);
   }
 

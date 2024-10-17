@@ -29,7 +29,7 @@ export class AILabStartRecipePage extends AILabBasePage {
   readonly deleteAIAppButton: Locator;
 
   constructor(page: Page, webview: Page) {
-    super(page, webview, 'Start Recipe');
+    super(page, webview, 'Start recipe');
     this.recipeStatus = this.webview.getByRole('status');
     this.applicationDetailsPanel = this.webview.getByLabel('application details panel');
     this.startRecipeButton = this.webview.getByRole('button', { name: /Start(\s+([a-z]+\s+)+)recipe/i });
@@ -49,6 +49,41 @@ export class AILabStartRecipePage extends AILabBasePage {
     } catch (error) {
       console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
     }
+    await playExpect
+      .poll(async () => await this.getModelDownloadProgress(), { timeout: 720_000, intervals: [5_000] })
+      .toBe(100);
     await playExpect(this.recipeStatus).toContainText('AI App is running', { timeout: 720_000 });
+  }
+
+  async getModelDownloadProgress(): Promise<number> {
+    const content = await this.getDownloadStatusContent();
+
+    if (!content) return 0;
+    if (content.includes('already present on disk')) {
+      console.log('Model already present on disk');
+      return 100;
+    }
+
+    // eslint-disable-next-line sonarjs/slow-regex
+    const regex = new RegExp(/(\d+)%/);
+    const progressString = regex.exec(content);
+    const progress = progressString ? parseInt(progressString[1]) : 0;
+    console.log(`Model download progress: ${progress}%`);
+    return progress;
+  }
+
+  private async getStatusListLocator(): Promise<Locator[]> {
+    return await this.recipeStatus.locator('ul > li').all();
+  }
+
+  private async getDownloadStatusContent(): Promise<string> {
+    const statusList = await this.getStatusListLocator();
+
+    if (statusList.length < 3) return '';
+
+    const content = await statusList[2].textContent();
+
+    if (!content) return '';
+    return content;
   }
 }

@@ -20,6 +20,8 @@ import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { AILabRecipesCatalogPage } from './ai-lab-recipes-catalog-page';
+import { AiRunningAppsPage } from './ai-lab-running-apps-page';
+import { AiModelServicePage } from './ai-lab-model-service-page';
 
 export class AILabNavigationBar extends AILabBasePage {
   readonly navigationBar: Locator;
@@ -49,5 +51,17 @@ export class AILabNavigationBar extends AILabBasePage {
     await playExpect(this.recipesCatalogButton).toBeEnabled();
     await this.recipesCatalogButton.click();
     return new AILabRecipesCatalogPage(this.page, this.webview);
+  }
+
+  async openRunningApps(): Promise<AiRunningAppsPage> {
+    await playExpect(this.runningAppsButton).toBeEnabled();
+    await this.runningAppsButton.click();
+    return new AiRunningAppsPage(this.page, this.webview);
+  }
+
+  async openServices(): Promise<AiModelServicePage> {
+    await playExpect(this.servicesButton).toBeEnabled();
+    await this.servicesButton.click();
+    return new AiModelServicePage(this.page, this.webview);
   }
 }

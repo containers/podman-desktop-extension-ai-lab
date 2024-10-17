@@ -243,7 +243,7 @@ export class Studio {
     /**
      * GPUManager is a class responsible for detecting and storing the GPU specs
      */
-    this.#gpuManager = new GPUManager(this.#panel.webview);
+    this.#gpuManager = new GPUManager(this.#panel.webview, this.#podmanConnection);
     this.#extensionContext.subscriptions.push(this.#gpuManager);
 
     /**

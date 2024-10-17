@@ -24,7 +24,7 @@ onDestroy(() => {
 </script>
 
 <nav
-  class="z-1 w-leftsidebar min-w-leftsidebar shadow flex-col justify-between flex transition-all duration-500 ease-in-out bg-[var(--pd-secondary-nav-bg)]"
+  class="z-1 w-leftsidebar min-w-leftsidebar shadow flex-col justify-between flex transition-all duration-500 ease-in-out bg-[var(--pd-secondary-nav-bg)] border-[var(--pd-global-nav-bg-border)] border-r-[1px]"
   aria-label="PreferencesNavigation">
   <div class="flex items-center">
     <a href="/" title="Navigate to dashboard" class="pt-4 pl-3 px-5 mb-10 flex items-center ml-[4px]">

@@ -3,17 +3,26 @@ import { Button } from '@podman-desktop/ui-svelte';
 import { studioClient } from '/@/utils/client';
 import { configuration } from '/@/stores/extensionConfiguration';
 import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
+import { onMount } from 'svelte';
 
 // eslint-disable-next-line quotes
 const actionName = "Don't display anymore";
 
 function hideGPUPromotionBanner(): void {
+  studioClient.telemetryLogUsage('gpuPromotionBanner', { action: 'hide' }).catch(console.error);
   studioClient.updateExtensionConfiguration({ showGPUPromotion: false }).catch(console.error);
 }
 
 function enableGPUSupport(): void {
+  studioClient.telemetryLogUsage('gpuPromotionBanner', { action: 'enable' }).catch(console.error);
   studioClient.updateExtensionConfiguration({ experimentalGPU: true }).catch(console.error);
 }
+
+onMount(() => {
+  if ($configuration?.showGPUPromotion && !$configuration?.experimentalGPU) {
+    studioClient.telemetryLogUsage('gpuPromotionBanner', { action: 'show' }).catch(console.error);
+  }
+});
 
 const content =
   'GPU support is not enabled. Podman AI Lab supports GPU on Windows and MacOS.\n\nThis greatly enhances the developer experience when running inference servers. We recommend you to enable it.';

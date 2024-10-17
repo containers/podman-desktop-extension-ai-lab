@@ -18,19 +18,29 @@
 
 import type { Page } from '@playwright/test';
 import type { DashboardPage, ExtensionsPage, Runner } from '@podman-desktop/tests-playwright';
-import { NavigationBar, expect as playExpect, test, RunnerOptions } from '@podman-desktop/tests-playwright';
+import {
+  NavigationBar,
+  expect as playExpect,
+  test,
+  RunnerOptions,
+  waitForPodmanMachineStartup,
+} from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 import type { AILabAppDetailsPage } from './model/ai-lab-app-details-page';
 import * as os from 'node:os';
 
 const AI_LAB_EXTENSION_OCI_IMAGE: string =
-  process.env.AI_LAB_OCI ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
+  process.env.AI_LAB_OCI ?? 'quay.io/rh-ee-astefani/demo-ai-lab:debug-wsl-upload-disabled-1725025190';
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 const AI_LAB_AI_APP_NAME: string = 'ChatBot';
-const isLinux = os.platform() === 'linux';
+const isWindows = os.platform() === 'win32';
+const isCI = process.env.AI_LAB_CI_RUN;
+const customSettingsPodmanPath = isWindows
+  ? `${process.env.USERPROFILE}\\tools\\podman\\podman-5.2.0\\usr\\bin\\podman.exe`
+  : '/usr/bin/podman'; //todo: need to get podman path for linux and mac
 
 let webview: Page;
 let aiLabPage: AILabPage;
@@ -41,13 +51,29 @@ let dashboardPage: DashboardPage;
 let extensionsPage: ExtensionsPage;
 
 test.use({
-  runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd' }),
+  runnerOptions: new RunnerOptions({
+    customFolder: 'ai-lab-e2e',
+    autoCheckUpdates: false,
+    autoUpdate: false,
+    extesionsDisabled: [
+      'podman-desktop.compose',
+      'podman-desktop.docker',
+      'podman-desktop.kind',
+      'podman-desktop.kube-context',
+      'podman-desktop.kubectl-cli',
+      'podman-desktop.registries',
+      'podman-desktop.lima',
+    ],
+    binaryPath: isCI ? customSettingsPodmanPath : undefined,
+  }),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   runner.setVideoAndTraceName('ai-lab-e2e');
 
   await welcomePage.handleWelcomePage(true);
   navigationBar = new NavigationBar(page);
+  await waitForPodmanMachineStartup(page);
+  await runner.screenshot('ai-lab-tests-dashboard-podman-machine.png');
 });
 
 test.afterAll(async ({ runner }) => {
@@ -77,7 +103,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
   test.describe.serial(`AI Lab extension verification`, () => {
-    test.skip(isLinux, `Skipping AI App deployment on Linux`);
+    test.skip(os.platform() === 'linux', `Skipping AI App deployment on Linux`);
     test(`Open Recipes Catalog`, async () => {
       recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
       await recipesCatalogPage.waitForLoad();
@@ -89,7 +115,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         AI_LAB_AI_APP_NAME,
       );
       await chatBotApp.waitForLoad();
-      await chatBotApp.startNewDeployment();
+      await chatBotApp.startNewDeployment(720_000);
     });
   });
 });

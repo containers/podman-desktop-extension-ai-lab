@@ -36,6 +36,8 @@ import { getRandomString } from '../utils/randomUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { getHash } from '../utils/sha';
+import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
+import type { PodmanConnection } from './podmanConnection';
 
 export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;
@@ -46,17 +48,24 @@ export class PlaygroundV2Manager implements Disposable {
     private taskRegistry: TaskRegistry,
     private telemetry: TelemetryLogger,
     private cancellationTokenRegistry: CancellationTokenRegistry,
+    configurationRegistry: ConfigurationRegistry,
+    podmanConnection: PodmanConnection,
   ) {
-    this.#conversationRegistry = new ConversationRegistry(webview);
+    this.#conversationRegistry = new ConversationRegistry(
+      webview,
+      configurationRegistry,
+      taskRegistry,
+      podmanConnection,
+    );
   }
 
-  deleteConversation(conversationId: string): void {
+  async deleteConversation(conversationId: string): Promise<void> {
     const conversation = this.#conversationRegistry.get(conversationId);
     this.telemetry.logUsage('playground.delete', {
       totalMessages: conversation.messages.length,
       modelId: getHash(conversation.modelId),
     });
-    this.#conversationRegistry.deleteConversation(conversationId);
+    await this.#conversationRegistry.deleteConversation(conversationId);
   }
 
   async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
@@ -117,11 +126,11 @@ export class PlaygroundV2Manager implements Disposable {
     }
 
     // Create conversation
-    const conversationId = this.#conversationRegistry.createConversation(name, model.id);
+    const conversationId = await this.#conversationRegistry.createConversation(name, model.id);
 
     // create/start inference server if necessary
     const servers = this.inferenceManager.getServers();
-    const server = servers.find(s => s.models.map(mi => mi.id).includes(model.id));
+    let server = servers.find(s => s.models.map(mi => mi.id).includes(model.id));
     if (!server) {
       await this.inferenceManager.createInferenceServer(
         await withDefaultConfiguration({
@@ -131,8 +140,13 @@ export class PlaygroundV2Manager implements Disposable {
           },
         }),
       );
+      server = this.inferenceManager.findServerByModel(model);
     } else if (server.status === 'stopped') {
       await this.inferenceManager.startInferenceServer(server.container.containerId);
+    }
+
+    if (server && server.status === 'running') {
+      await this.#conversationRegistry.startConversationContainer(server, trackingId, conversationId);
     }
 
     return conversationId;

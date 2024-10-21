@@ -79,6 +79,10 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
     return path.join(this.appUserDirectory, 'models');
   }
 
+  public getConversationsPath(): string {
+    return path.join(this.appUserDirectory, 'conversations');
+  }
+
   dispose(): void {
     this.#configurationDisposable?.dispose();
   }

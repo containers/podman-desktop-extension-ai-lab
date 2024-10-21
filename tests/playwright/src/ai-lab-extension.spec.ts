@@ -27,9 +27,14 @@ import {
 } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
+import { AILabExtensionDetailsPage } from './model/podman-extension-ai-lab-details-page';
 
-const AI_LAB_EXTENSION_OCI_IMAGE = 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
+const AI_LAB_EXTENSION_OCI_IMAGE =
+  process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
+const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
+const AI_LAB_CATALOG_EXTENSION_NAME: string = 'Podman AI Lab extension';
+const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 
@@ -37,7 +42,7 @@ let webview: Page;
 let aiLabPage: AILabPage;
 
 test.use({
-  runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd', customOutputFolder: 'output' }),
+  runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   runner.setVideoAndTraceName('ai-lab-e2e');
@@ -62,12 +67,40 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       await playExpect(extensionsPage.header).toBeVisible();
     });
     test(`Install AI Lab extension`, async () => {
+      test.skip(AI_LAB_EXTENSION_PREINSTALLED, 'AI Lab extension is preinstalled');
       await extensionsPage.installExtensionFromOCIImage(AI_LAB_EXTENSION_OCI_IMAGE);
+    });
+    test('Extension (card) is installed, present and active', async ({ navigationBar }) => {
+      const extensions = await navigationBar.openExtensions();
       await playExpect
-        .poll(async () => await extensionsPage.extensionIsInstalled(AI_LAB_CATALOG_EXTENSION_LABEL), {
-          timeout: 30_000,
-        })
+        .poll(async () => await extensions.extensionIsInstalled(AI_LAB_CATALOG_EXTENSION_LABEL), { timeout: 30000 })
         .toBeTruthy();
+      const extensionCard = await extensions.getInstalledExtension(
+        AI_LAB_CATALOG_EXTENSION_NAME,
+        AI_LAB_CATALOG_EXTENSION_LABEL,
+      );
+      await playExpect(extensionCard.status).toHaveText(AI_LAB_CATALOG_STATUS_ACTIVE);
+    });
+    test(`Extension's details show correct status, no error`, async ({ page, navigationBar }) => {
+      const extensions = await navigationBar.openExtensions();
+      const extensionCard = await extensions.getInstalledExtension('ai-lab', AI_LAB_CATALOG_EXTENSION_LABEL);
+      await extensionCard.openExtensionDetails(AI_LAB_CATALOG_EXTENSION_NAME);
+      const details = new AILabExtensionDetailsPage(page);
+      await playExpect(details.heading).toBeVisible();
+      await playExpect(details.status).toHaveText(AI_LAB_CATALOG_STATUS_ACTIVE);
+      const errorTab = details.tabs.getByRole('button', { name: 'Error' });
+      // we would like to propagate the error's stack trace into test failure message
+      let stackTrace = '';
+      if ((await errorTab.count()) > 0) {
+        await details.activateTab('Error');
+        stackTrace = await details.errorStackTrace.innerText();
+      }
+      await playExpect(errorTab, `Error Tab was present with stackTrace: ${stackTrace}`).not.toBeVisible();
+    });
+    test(`Verify AI Lab extension is installed`, async ({ runner, page, navigationBar }) => {
+      [page, webview] = await handleWebview(runner, page, navigationBar);
+      aiLabPage = new AILabPage(page, webview);
+      await aiLabPage.navigationBar.waitForLoad();
     });
   });
 

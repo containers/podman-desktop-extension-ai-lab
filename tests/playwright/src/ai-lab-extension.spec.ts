@@ -28,7 +28,9 @@ import {
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 
-const AI_LAB_EXTENSION_OCI_IMAGE = 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
+const AI_LAB_EXTENSION_OCI_IMAGE =
+  process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
+const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
 const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
@@ -37,7 +39,7 @@ let webview: Page;
 let aiLabPage: AILabPage;
 
 test.use({
-  runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd', customOutputFolder: 'output' }),
+  runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   runner.setVideoAndTraceName('ai-lab-e2e');
@@ -62,6 +64,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       await playExpect(extensionsPage.header).toBeVisible();
     });
     test(`Install AI Lab extension`, async () => {
+      test.skip(AI_LAB_EXTENSION_PREINSTALLED, 'AI Lab extension is preinstalled');
       await extensionsPage.installExtensionFromOCIImage(AI_LAB_EXTENSION_OCI_IMAGE);
       await playExpect
         .poll(async () => await extensionsPage.extensionIsInstalled(AI_LAB_CATALOG_EXTENSION_LABEL), {

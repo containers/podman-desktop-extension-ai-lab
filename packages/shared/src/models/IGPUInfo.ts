@@ -28,3 +28,19 @@ export enum GPUVendor {
   INTEL = 'Intel Corporation',
   UNKNOWN = 'unknown',
 }
+
+export interface NvidiaCTKVersion {
+  version: string;
+  commit: string;
+}
+
+/**
+ * ref https://github.com/cncf-tags/container-device-interface
+ */
+export interface ContainerDeviceInterface {
+  cdiVersion: string;
+  kind: string;
+  devices: {
+    name: string;
+  }[];
+}

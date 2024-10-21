@@ -142,9 +142,10 @@ jobs:
           pnpm build
           podman build -t local_ai_lab_image ./
           CONTAINER_ID=$(podman create localhost/local_ai_lab_image --entrypoint "")
-          podman export $CONTAINER_ID > /tmp/local_ai_lab_extension.tar
           mkdir -p tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins
-          tar -xf /tmp/local_ai_lab_extension.tar -C tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins/
+          podman export $CONTAINER_ID | tar -x -C tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins/
+          podman rm -f $CONTAINER_ID
+          podman rmi -f localhost/local_ai_lab_image:latest
 
       - name: Run E2E Smoke tests
         working-directory: ./podman-desktop-extension-ai-lab

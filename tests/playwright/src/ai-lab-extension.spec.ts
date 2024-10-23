@@ -23,6 +23,7 @@ import {
   test,
   RunnerOptions,
   isLinux,
+  isWindows,
   waitForPodmanMachineStartup,
 } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
@@ -40,9 +41,13 @@ const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 
 let webview: Page;
 let aiLabPage: AILabPage;
+const runnerOptions = {
+  customFolder: 'ai-lab-tests-pd',
+  aiLabModelUploadDisabled: isWindows ? true : false,
+}
 
 test.use({
-  runnerOptions: new RunnerOptions({ customFolder: 'ai-lab-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
+  runnerOptions: new RunnerOptions(runnerOptions),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   runner.setVideoAndTraceName('ai-lab-e2e');
@@ -67,7 +72,6 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       await playExpect(extensionsPage.header).toBeVisible();
     });
     test(`Install AI Lab extension`, async () => {
-      test.skip(AI_LAB_EXTENSION_PREINSTALLED, 'AI Lab extension is preinstalled');
       await extensionsPage.installExtensionFromOCIImage(AI_LAB_EXTENSION_OCI_IMAGE);
     });
     test('Extension (card) is installed, present and active', async ({ navigationBar }) => {
@@ -104,8 +108,8 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
 
-  ['ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Audio to Text', 'Object Detection'].forEach(appName => {
-    test.describe.serial(`AI Lab extension verification`, () => {
+  ['Audio to Text', /* 'Object Detection', */ 'ChatBot', 'Summarizer', 'Code Generation', /* RAG Chatbot */].forEach(appName => {
+    test.describe.serial(`AI Recipe installation`, () => {
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
       test.skip(isLinux, `Skipping AI App deployment on Linux`);

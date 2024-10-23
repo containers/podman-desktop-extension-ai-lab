@@ -43,7 +43,7 @@ export class JsonWatcher<T> implements Disposable {
       this.#fileSystemWatcher.onDidDelete(this.onDidDelete.bind(this));
       this.#fileSystemWatcher.onDidCreate(this.onDidCreate.bind(this));
     } catch (err: unknown) {
-      console.error(`unable to watch file ${this.path}, changes wont be detected.`, err);
+      console.error(`unable to watch file ${this.path}, changes won't be detected.`, err);
     }
     this.requestUpdate();
   }

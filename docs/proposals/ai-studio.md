@@ -34,7 +34,7 @@ application:
       contextdir: model_services
       containerfile: base/Containerfile
       model-service: true
-      backend: 
+      backend:
         - llama
       arch:
         - arm64
@@ -42,12 +42,12 @@ application:
     - name: chatbot-model-servicecuda
       contextdir: model_services
       containerfile: cuda/Containerfile
-      model-service: true 
-      backend: 
+      model-service: true
+      backend:
         - llama
       gpu-env:
         - cuda
-      arch: 
+      arch:
         - amd64
 ```
 
@@ -74,7 +74,7 @@ application:
         exec:                                   # added
           command:                              # added
             - curl -f localhost:7860 || exit 1  # added
-      backend: 
+      backend:
         - llama
       arch:
         - arm64
@@ -87,11 +87,11 @@ application:
         exec:                                   # added
           command:                              # added
             - curl -f localhost:7860 || exit 1  # added
-      backend: 
+      backend:
         - llama
       gpu-env:
         - cuda
-      arch: 
+      arch:
         - amd64
 ```
 

@@ -1,0 +1,3 @@
+[tool.codespell]
+ignore-words-list = "beforeAll, afterAll, beforeEach, ue, vEw, sade, Nd"
+skip = './.*,node_modeules/*'

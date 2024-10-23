@@ -14,7 +14,7 @@ Below is what a typical release week may look like:
 
 - **Monday (Notify):** 48-hour notification. Communicate to maintainers and public channels a release will be cut on Wednesday and to merge any pending PRs. Inform QE team. Start work on blog post as it is usually the longest part of the release process.
 - **Tuesday (Staging, Testing & Blog):** Stage the release (see instructions below) to create a new cut of the release to test. Test the pre-release (master branch) build briefly. Get feedback from committers (if applicable). Push the blog post for review (as it usually takes a few back-and-forth reviews on documentation).
-- **Wednesday (Release):** Publish the new release on the catalog using the below release process. 
+- **Wednesday (Release):** Publish the new release on the catalog using the below release process.
 - **Thursday (Post-release Testing & Blog):** Test the post-release build briefly for any critical bugs. Confirm that new release has been pushed to the catalog. Push the blog post live. Get a known issues list together from QE and publish to the Podman Desktop Discussions, link to this from the release notes.
 - **Friday (Communicate):** Friday is statistically the best day for new announcements. Post on internal channels. Post on reddit, hackernews, twitter, etc.
 
@@ -58,6 +58,3 @@ Pre-requisites:
 #### Catalog
 
 Create and submit a PR to the catalog (https://github.com/containers/podman-desktop-catalog on branch gh-pages). This is manual and will be automated in the future.
-
-
-

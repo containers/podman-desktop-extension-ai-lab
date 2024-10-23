@@ -1,6 +1,6 @@
 pip
 =======
-pip install langchain langchain-openai 
+pip install langchain langchain-openai
 
 AiService.py
 ==============
@@ -10,7 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 model_service = "{{{ endpoint }}}"
 
-llm = OpenAI(base_url=model_service, 
+llm = OpenAI(base_url=model_service,
              api_key="sk-no-key-required",
              streaming=True)
 prompt = ChatPromptTemplate.from_messages([

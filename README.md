@@ -35,7 +35,7 @@ The integrated Playground environments allow for experimenting with available mo
 
 ### AI applications
 
-Once an AI model is available through a well known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. Podman AI Lab supports AI applications as a set of containers that are connected together. 
+Once an AI model is available through a well known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. Podman AI Lab supports AI applications as a set of containers that are connected together.
 
 Podman AI Lab ships with a so-called Recipes Catalog that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
 
@@ -60,7 +60,7 @@ So we recommend that a minimum of 12GB of memory and at least 4 CPUs for the Pod
 
 As an additional recommended practice, do nor run more than 3 simultaneous models concurrently.
 
-Please note that this is not relevant for WSL on Windows as the WSL technology the memory and CPU with the host desktop. 
+Please note that this is not relevant for WSL on Windows as the WSL technology the memory and CPU with the host desktop.
 
 ## Installation
 
@@ -120,7 +120,42 @@ If you are live editing the frontend package, from packages/frontend folder:
 $ yarn watch
 ```
 
-### Cleaning up resources 
+The project also uses [Pre-commit](https://pre-commit.com/#install).
+You can install pre-commit by running the following command:
+
+```bash
+pip install pre-commit
+```
+
+After installing pre-commit, you need to install the pre-commit hooks by running
+the following command:
+
+```bash
+pre-commit install
+```
+
+OR
+
+```bash
+python3 -m venv path/to/venv
+source path/to/venv/bin/activate
+pip install pre-commit
+```
+
+To run pre-commit manually use:
+
+```bash
+pre-commit run --all-files
+```
+
+To bypass the pre-commit checks one can use the `--no-verify` flag when
+committing changes to the repo:
+
+```bash
+git commit -m "test" --no-verify
+```
+
+### Cleaning up resources
 
 We'll be adding a way to let a user cleanup their environment: see issue https://github.com/containers/podman-desktop-extension-ai-lab/issues/469.
 For the time being, please consider the following actions:
@@ -136,7 +171,7 @@ The extension provides by default a curated list of recipes, models and categori
 
 To enhance the existing catalog, you can create a file located in the extension storage folder `$HOME/.local/share/containers/podman-desktop/extensions-storage/redhat.ai-lab/user-catalog.json`.
 
-It must follow the same format as the default catalog [in the sources of the extension](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json). 
+It must follow the same format as the default catalog [in the sources of the extension](https://github.com/containers/podman-desktop-extension-ai-lab/blob/main/packages/backend/src/assets/ai.json).
 
 > :information_source: The default behaviour is to append the items of the user's catalog to the default one.
 
@@ -148,10 +183,10 @@ Sample applications may be added to the catalog. See [packaging guide](https://g
 
 ## Roadmap
 
-The roadmap is always open and we are looking for your feedback. Please create new issues and upvote on the issues that are feeling the most important for you. 
+The roadmap is always open and we are looking for your feedback. Please create new issues and upvote on the issues that are feeling the most important for you.
 
 We will be working on the following items:
-- **Expanded Recipes**: Discover new use cases and samples to inspire and accelerate your applications. 
+- **Expanded Recipes**: Discover new use cases and samples to inspire and accelerate your applications.
 - **GPU Acceleration**: Speeding up processing times by leveraging GPU acceleration.
 - **API/CLI**: Interact with Podman AI Lab from CLI and APIs.
 - **Enhanced Playgrounds**: Streamlined workflows and UX giving a better space to experiment with LLMs and quickly iterate.

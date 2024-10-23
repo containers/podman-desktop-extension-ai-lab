@@ -590,7 +590,7 @@ test('delete conversation should delete the conversation', async () => {
   expect(webviewMock.postMessage).toHaveBeenCalled();
 });
 
-test('creating a new playground with an existing name shoud fail', async () => {
+test('creating a new playground with an existing name should fail', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(
     webviewMock,

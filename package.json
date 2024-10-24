@@ -27,7 +27,8 @@
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
     "typecheck:backend": "cd packages/backend && npm run typecheck",
-    "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
+    "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend",
+    "prepare": "husky"
   },
   "resolutions": {
     "string-width": "^4.2.0",

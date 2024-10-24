@@ -24,14 +24,12 @@ import { Uploader } from './uploader';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
 import { VMType } from '@shared/src/models/IPodman';
+import type { PodmanConnection } from '../managers/podmanConnection';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
     env: {
       isWindows: false,
-    },
-    process: {
-      exec: vi.fn(),
     },
     EventEmitter: vi.fn().mockImplementation(() => {
       return {
@@ -40,6 +38,10 @@ vi.mock('@podman-desktop/api', async () => {
     }),
   };
 });
+
+const podmanConnectionMock: PodmanConnection = {
+  executeSSH: vi.fn(),
+} as unknown as PodmanConnection;
 
 const connectionMock: ContainerProviderConnection = {
   name: 'machine2',
@@ -51,7 +53,7 @@ const connectionMock: ContainerProviderConnection = {
   },
 };
 
-const uploader = new Uploader(connectionMock, {
+const uploader = new Uploader(podmanConnectionMock, connectionMock, {
   id: 'dummyModelId',
   file: {
     file: 'dummyFile.guff',

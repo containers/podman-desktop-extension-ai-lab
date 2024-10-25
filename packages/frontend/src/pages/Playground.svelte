@@ -199,7 +199,7 @@ function handleOnClick(): void {
                     {#key conversation.messages.length}
                       <SystemPromptBanner conversation={conversation} />
                     {/key}
-                    <!-- show all message except the sytem prompt -->
+                    <!-- show all message except the system prompt -->
                     <ul>
                       {#each messages as message}
                         <li>

@@ -276,7 +276,7 @@ export class Studio {
     this.#inferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#inferenceManager);
 
-    /** The InstructLab tunning sessions manager */
+    /** The InstructLab tuning sessions manager */
     this.#instructlabManager = new InstructlabManager();
 
     /**

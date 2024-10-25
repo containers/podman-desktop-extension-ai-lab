@@ -50,7 +50,8 @@ function handleClick(): void {
     <!-- footer -->
     <div class="flex flex-row">
       <!-- version -->
-      <div class="flex-grow text-[var(--pd-content-card-text)] opacity-50">
+      <div
+        class="flex-grow text-[var(--pd-content-card-text)] opacity-50 whitespace-nowrap overflow-x-hidden text-ellipsis">
         {#if recipe.ref}
           <span>{recipe.ref}</span>
         {/if}

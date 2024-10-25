@@ -212,7 +212,7 @@ export function goToUpPage(): void {
             >Container port</label>
           <Input
             type="number"
-            bind:value={containerPort}
+            value={String(containerPort ?? 0)}
             on:input={onContainerPortInput}
             class="w-full"
             placeholder="8888"

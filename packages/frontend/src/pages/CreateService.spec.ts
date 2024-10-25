@@ -266,6 +266,19 @@ test('tasks should be displayed after requestCreateInferenceServer', async () =>
   });
 });
 
+test('port input should update on user input', async () => {
+  render(CreateService);
+
+  const portInput: HTMLInputElement = screen.getByRole('textbox', { name: 'Port input' });
+  expect(portInput).toBeDefined();
+
+  await fireEvent.input(portInput, '8888');
+
+  await vi.waitFor(() => {
+    expect(portInput.value).toBe('8888');
+  });
+});
+
 test('form should be disabled when loading', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
 

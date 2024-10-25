@@ -41,7 +41,7 @@ A model has the following attributes:
 - ```license```: the license under which the model is available
 - ```url```: the URL used to download the model
 - ```memory```: the memory footprint of the model in bytes, as computed by the workflow `.github/workflows/compute-model-sizes.yaml`
-- ```sha256```: the SHA-256 checksum to be used to verify the downloaded model is identical to the original. It is optional and it must be HEX encoded  
+- ```sha256```: the SHA-256 checksum to be used to verify the downloaded model is identical to the original. It is optional and it must be HEX encoded
 
 #### Recipes
 
@@ -65,7 +65,7 @@ The configuration file is called ```ai-lab.yaml``` and follows the following syn
 
 The root elements are called ```version``` and ```application```.
 
-```version``` represents the version of the specifications that ai-lab adheres to (so far, the only accepted value here is `v1.0`). 
+```version``` represents the version of the specifications that ai-lab adheres to (so far, the only accepted value here is `v1.0`).
 
 ```application``` contains an attribute called ```containers``` whose syntax is an array of objects containing the following attributes:
 - ```name```: the name of the container
@@ -102,15 +102,12 @@ application:
     - name: chatbot-model-servicecuda
       contextdir: model_services
       containerfile: cuda/Containerfile
-      model-service: true 
+      model-service: true
       gpu-env:
         - cuda
-      arch: 
+      arch:
         - amd64
       ports:
         - 8501
       image: quay.io/redhat-et/model_services:latest
 ```
-
-
-

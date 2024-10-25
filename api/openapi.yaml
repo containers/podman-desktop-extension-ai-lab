@@ -56,7 +56,7 @@ paths:
       operationId: pullModel
       tags:
         - models
-      description: | 
+      description: |
         Download a model from the Podman AI Lab catalog.
       summary: |
         Download a model from the Podman AI Lab Catalog.
@@ -139,9 +139,9 @@ components:
         stream:
           type: boolean
           description: |
-            If false the response will be returned as a single response object, 
+            If false the response will be returned as a single response object,
             rather than a stream of objects
-      required: 
+      required:
         - model
 
     ProgressResponse:

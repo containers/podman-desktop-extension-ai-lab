@@ -23,7 +23,7 @@ let status: string | undefined = $derived.by(() => {
 
 {#if status === 'NONE'}
   <div role="status" title="NONE">
-    <RemoteModel class="text-[var(--pd-status-not-running)]" size={'28'} />
+    <RemoteModel class="text-[var(--pd-status-not-running)]" size='28' />
   </div>
 {:else}
   <StatusIcon status={status} icon={ModelWhite} />

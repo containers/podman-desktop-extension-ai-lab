@@ -27,19 +27,30 @@
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
     "typecheck:backend": "cd packages/backend && npm run typecheck",
-    "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
+    "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend",
+    "prepare": "husky"
   },
   "resolutions": {
     "string-width": "^4.2.0",
     "wrap-ansi": "^7.0.0",
     "postman-code-generators": "1.10.1"
   },
+  "lint-staged": {
+    "*.{js,ts,tsx,svelte}": [
+      "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js --cache --fix",
+      "prettier --cache --write"
+    ],
+    "*.{md,css,json}": "prettier --write"
+  },
   "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
     "@eslint/compat": "^1.2.1",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
     "@vitest/coverage-v8": "^2.0.5",
     "autoprefixer": "^10.4.20",
+    "commitlint": "^19.5.0",
     "concurrently": "^9.0.1",
     "eslint": "^9.13.0",
     "eslint-import-resolver-custom-alias": "^1.3.2",
@@ -53,6 +64,8 @@
     "eslint-plugin-svelte": "^2.46.0",
     "eslint-plugin-unicorn": "^56.0.0",
     "globals": "^15.11.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
     "prettier-plugin-svelte": "^3.2.7",
     "svelte-check": "^4.0.5",

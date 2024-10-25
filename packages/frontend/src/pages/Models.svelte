@@ -13,30 +13,30 @@ import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
 import { EmptyScreen, Tab, Button, Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 import Route from '/@/Route.svelte';
 import { tasks } from '/@/stores/tasks';
-import ModelColumnIcon from '../lib/table/model/ModelColumnIcon.svelte';
+import ModelStatusIcon from '../lib/icons/ModelStatusIcon.svelte';
 import { router } from 'tinro';
 import { faBookOpen, faFileImport } from '@fortawesome/free-solid-svg-icons';
 
-const columns: TableColumn<ModelInfo>[] = [
+const columns = [
   new TableColumn<ModelInfo>('Status', {
     width: '60px',
-    renderer: ModelColumnIcon,
-    comparator: (a, b) => (a.file ? 0 : 1) - (b.file ? 0 : 1),
+    renderer: ModelStatusIcon,
+    comparator: (a, b): number => (a.file ? 0 : 1) - (b.file ? 0 : 1),
   }),
   new TableColumn<ModelInfo>('Name', {
     width: '3fr',
     renderer: ModelColumnName,
-    comparator: (a, b) => b.name.localeCompare(a.name),
+    comparator: (a, b): number => b.name.localeCompare(a.name),
   }),
   new TableColumn<ModelInfo>('Size', {
     width: '50px',
     renderer: ModelColumnSize,
-    comparator: (a, b) => (a.file?.size ?? 0) - (b.file?.size ?? 0),
+    comparator: (a, b): number => (a.file?.size ?? 0) - (b.file?.size ?? 0),
   }),
   new TableColumn<ModelInfo>('Age', {
     width: '70px',
     renderer: ModelColumnAge,
-    comparator: (a, b) => (a.file?.creation?.getTime() ?? 0) - (b.file?.creation?.getTime() ?? 0),
+    comparator: (a, b): number => (a.file?.creation?.getTime() ?? 0) - (b.file?.creation?.getTime() ?? 0),
   }),
   new TableColumn<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
   new TableColumn<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),

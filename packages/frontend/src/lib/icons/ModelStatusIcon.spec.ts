@@ -20,26 +20,18 @@ import '@testing-library/jest-dom/vitest';
 import { expect, test, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import ModelColumnIcon from './ModelColumnIcon.svelte';
+import ModelColumnIcon from './ModelStatusIcon.svelte';
 import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { readable } from 'svelte/store';
+import * as inferenceStore from '/@/stores/inferenceServers';
 
-const mocks = vi.hoisted(() => {
-  return {
-    getInferenceServersMock: vi.fn<() => InferenceServer[]>(),
-  };
-});
-
-vi.mock('../../../stores/inferenceServers', () => ({
-  inferenceServers: {
-    subscribe: (f: (msg: InferenceServer[]) => void) => {
-      f(mocks.getInferenceServersMock());
-      return (): void => {};
-    },
-  },
+vi.mock('/@/stores/inferenceServers', () => ({
+  inferenceServers: vi.fn(),
 }));
 
 beforeEach(() => {
   vi.resetAllMocks();
+  (inferenceStore.inferenceServers as unknown) = readable<InferenceServer[]>([]);
 });
 
 test('Expect remote model to have NONE title', async () => {
@@ -52,8 +44,6 @@ test('Expect remote model to have NONE title', async () => {
     url: '',
     memory: 1000,
   };
-
-  mocks.getInferenceServersMock.mockReturnValue([]);
 
   render(ModelColumnIcon, { object });
 
@@ -79,8 +69,6 @@ test('Expect downloaded model to have DOWNLOADED title', async () => {
     memory: 1000,
   };
 
-  mocks.getInferenceServersMock.mockReturnValue([]);
-
   render(ModelColumnIcon, { object });
 
   const role = screen.getByRole('status');
@@ -105,7 +93,7 @@ test('Expect in used model to have USED title', async () => {
     memory: 1000,
   };
 
-  mocks.getInferenceServersMock.mockReturnValue([
+  (inferenceStore.inferenceServers as unknown) = readable<InferenceServer[]>([
     {
       models: [object],
       type: InferenceType.LLAMA_CPP,
@@ -121,6 +109,7 @@ test('Expect in used model to have USED title', async () => {
       labels: {},
     },
   ]);
+
   render(ModelColumnIcon, { object });
 
   const role = screen.getByRole('status');
@@ -138,8 +127,6 @@ test('Expect non-downloaded model to have NONE title', async () => {
     url: '',
     memory: 1000,
   };
-
-  mocks.getInferenceServersMock.mockReturnValue([]);
 
   render(ModelColumnIcon, { object });
 

@@ -3,6 +3,7 @@ import MarkdownRenderer from '/@/lib/markdown/MarkdownRenderer.svelte';
 import { catalog } from '/@/stores/catalog';
 import { DetailsPage } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
+import ModelStatusIcon from '/@/lib/icons/ModelStatusIcon.svelte';
 
 export let modelId: string;
 
@@ -20,6 +21,13 @@ export function goToUpPage(): void {
   breadcrumbTitle="Go back to Models"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
+  <svelte:fragment slot="icon">
+    {#if model}
+      <div class="mr-3">
+        <ModelStatusIcon object={model} />
+      </div>
+    {/if}
+  </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
       <div class="flex-grow p-5">

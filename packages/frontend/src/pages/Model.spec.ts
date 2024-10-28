@@ -16,11 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, test, expect } from 'vitest';
+import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import Model from './Model.svelte';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import * as inferenceStore from '/@/stores/inferenceServers';
+import { readable } from 'svelte/store';
+import type { InferenceServer } from '@shared/src/models/IInference';
 
 vi.mock('../utils/client', async () => {
   return {
@@ -37,12 +40,39 @@ vi.mock('../utils/client', async () => {
   };
 });
 
+vi.mock('/@/stores/inferenceServers', () => ({
+  inferenceServers: vi.fn(),
+}));
+
 const model: ModelInfo = {
   id: 'model1',
   name: 'Model 1',
   properties: {},
   description: '',
 };
+
+beforeEach(() => {
+  (inferenceStore.inferenceServers as unknown) = readable<InferenceServer[]>([]);
+});
+
+test('model status should be visible', async () => {
+  vi.mocked(studioClient.getCatalog).mockResolvedValue({
+    models: [model],
+    categories: [],
+    recipes: [],
+    version: 'v1',
+  });
+
+  const { getByRole } = render(Model, {
+    modelId: model.id,
+  });
+
+  await vi.waitFor(() => {
+    const role = getByRole('status');
+    expect(role).toBeDefined();
+    expect(role.title).toBe('NONE');
+  });
+});
 
 test('should display model information', async () => {
   vi.mocked(studioClient.getCatalog).mockResolvedValue({

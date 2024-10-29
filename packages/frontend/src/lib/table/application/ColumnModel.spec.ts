@@ -81,7 +81,7 @@ test('display model port', async () => {
   expect(ports).toBeInTheDocument();
 });
 
-test('display multpile model ports', async () => {
+test('display multiple model ports', async () => {
   const obj = {
     modelId: 'model1',
     modelPorts: [8080, 5000],

@@ -85,7 +85,7 @@ describe('buildImages', () => {
       'Context configured does not exist.',
     );
   });
-  test('setTaskState should be called with error if buildImage executon fails', async () => {
+  test('setTaskState should be called with error if buildImage execution fails', async () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     vi.mocked(containerEngine.buildImage).mockRejectedValue('error');
     vi.mocked(containerEngine.listImages).mockRejectedValue([]);

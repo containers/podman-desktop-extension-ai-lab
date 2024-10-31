@@ -112,7 +112,7 @@ jobs:
         DEFAULT_BRANCH: 'main'
         DEFAULT_EXT_TESTS: '1'
         DEFAULT_NPM_TARGET: 'test:e2e'
-        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true'
+        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v5.2.4/podman-5.2.4-setup.exe"
@@ -200,6 +200,28 @@ jobs:
         # check logs
         podman logs -f pde2e-podman-run
 
+    - name: Build Podman Desktop Electron Inspect Enabled binary
+      run: |
+        podman run --rm -d --name pde2e-builder-run \
+          -e TARGET_HOST=$(cat host) \
+          -e TARGET_HOST_USERNAME=$(cat username) \
+          -e TARGET_HOST_KEY_PATH=/data/id_rsa \
+          -e TARGET_FOLDER=pd-e2e \
+          -e TARGET_CLEANUP=false \
+          -e TARGET_RESULTS=results \
+          -e OUTPUT_FOLDER=/data \
+          -e DEBUG=true \
+          -v $PWD:/data:z \
+          quay.io/odockal/pde2e-builder:${{ env.PDE2E_IMAGE_VERSION }} \
+            pd-e2e/builder.ps1 \
+              -targetFolder pd-e2e \
+              -resultsFolder results \
+              -fork ${{ env.FORK }} \
+              -branch ${{ env.BRANCH }} \
+              -envVars ${{ env.ENV_VARS }}
+        # check logs
+        podman logs -f pde2e-builder-run
+
     - name: Run Podman Desktop Playwright E2E tests
       run: |
         podman run -d --name pde2e-runner-run \
@@ -216,6 +238,7 @@ jobs:
                 -targetFolder pd-e2e \
                 -resultsFolder results \
                 -podmanPath $(cat results/podman-location.log) \
+                -pdPath "$(cat results/pde2e-binary-path.log | tr '\n' " ")" \
                 -fork ${{ env.FORK }} \
                 -branch ${{ env.BRANCH }} \
                 -extRepo ${{ env.EXT_REPO }} \

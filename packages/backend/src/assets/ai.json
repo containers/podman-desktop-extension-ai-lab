@@ -128,6 +128,17 @@
   ],
   "models": [
     {
+      "id": "hf.lmstudio-community.granite-3.0-8b-instruct-GGUF",
+      "name": "lmstudio-community/granite-3.0-8b-instruct-GGUF",
+      "description": "![image/png](https://cdn-uploads.huggingface.co/production/uploads/62cd5057674cdb524450093d/1hzxoPwqkBJXshKVVe6_9.png)\n\n# lmstudio-community/granite-3.0-8b-instruct\nThis is the Q4_K_M converted version of the original [`ibm-granite/granite-3.0-8b-instruct`](https://huggingface.co/ibm-granite/granite-3.0-8b-instruct).\nRefer to the [original model card](https://huggingface.co/ibm-granite/granite-3.0-8b-instruct) for more details.",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/lmstudio-community/granite-3.0-8b-instruct-GGUF/resolve/main/granite-3.0-8b-instruct-Q4_K_M.gguf",
+      "memory": 4942856128,
+      "sha256": "bb32555f5a0bfa077aa2bfb17d43b7f76d372e7e57d433999592dc32d5310ab8",
+      "backend": "llama-cpp"
+    },
+    {
       "id": "hf.instructlab.granite-7b-lab-GGUF",
       "name": "instructlab/granite-7b-lab-GGUF",
       "description": "# InstructLab Granite 7B",

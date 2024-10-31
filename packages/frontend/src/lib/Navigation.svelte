@@ -7,12 +7,20 @@ import { onDestroy, onMount } from 'svelte';
 import { configuration } from '../stores/extensionConfiguration';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
+import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 
 export let meta: TinroRouteMeta;
 let experimentalTuning: boolean = false;
 let cfgUnsubscribe: Unsubscriber;
 
+// By default, faBookOpen is 576x512, but we want it to be 512x512
+// we cannot modify the width and height in SettingsNavItem so just modify the icon instead
+let copyFaBookOpenIcon: IconDefinition | undefined = undefined;
+
 onMount(() => {
+  copyFaBookOpenIcon = structuredClone(faBookOpen);
+  copyFaBookOpenIcon.icon[0] = 512;
+
   cfgUnsubscribe = configuration.subscribe((val: ExtensionConfiguration | undefined) => {
     experimentalTuning = val?.experimentalTuning ?? false;
   });
@@ -35,14 +43,18 @@ onDestroy(() => {
   <div class="h-full overflow-hidden hover:overflow-y-auto" style="margin-bottom:auto">
     <!-- AI Apps -->
     <span class="pl-3 ml-[4px] text-[color:var(--pd-secondary-nav-header-text)]">AI APPS</span>
-    <SettingsNavItem icon={faBookOpen} title="Recipes Catalog" selected={meta.url === '/recipes'} href="/recipes" />
+    <SettingsNavItem
+      icon={copyFaBookOpenIcon}
+      title="Recipes Catalog"
+      selected={meta.url === '/recipes'}
+      href="/recipes" />
     <SettingsNavItem icon={faServer} title="Running" selected={meta.url === '/applications'} href="/applications" />
 
     <!-- Models -->
     <div class="pl-3 mt-2 ml-[4px]">
       <span class="text-[color:var(--pd-secondary-nav-header-text)]">MODELS</span>
     </div>
-    <SettingsNavItem icon={faBookOpen} title="Catalog" selected={meta.url === '/models'} href="/models" />
+    <SettingsNavItem icon={copyFaBookOpenIcon} title="Catalog" selected={meta.url === '/models'} href="/models" />
     <SettingsNavItem icon={faRocket} title="Services" selected={meta.url === '/services'} href="/services" />
     <SettingsNavItem icon={faMessage} title="Playgrounds" selected={meta.url === '/playgrounds'} href="/playgrounds" />
 

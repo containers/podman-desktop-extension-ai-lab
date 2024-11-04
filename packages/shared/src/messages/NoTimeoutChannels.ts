@@ -15,5 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { StudioAPI } from '../StudioAPI';
+import { getChannel } from './MessageProxy';
 
-export const noTimeoutChannels: string[] = ['openDialog'];
+export const noTimeoutChannels: string[] = [getChannel(StudioAPI, 'openDialog')];

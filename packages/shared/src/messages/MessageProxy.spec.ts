@@ -16,15 +16,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { test, expect, beforeAll, vi } from 'vitest';
-import { RpcBrowser, RpcExtension } from './MessageProxy';
+import { test, expect, vi, describe, beforeEach, afterEach } from 'vitest';
+import { getChannel, RpcBrowser, RpcExtension } from './MessageProxy';
 import type { Webview } from '@podman-desktop/api';
+import * as defaultNoTimeoutChannels from './NoTimeoutChannels';
 
 let webview: Webview;
 let window: Window;
 let api: PodmanDesktopApi;
 
-beforeAll(() => {
+vi.mock('./NoTimeoutChannels', async () => ({
+  noTimeoutChannels: [],
+}));
+
+beforeEach(() => {
   let windowListener: (message: unknown) => void;
   let webviewListener: (message: unknown) => void;
 
@@ -42,7 +47,6 @@ beforeAll(() => {
       expect(channel).toBe('message');
       windowListener = listener;
     },
-    setTimeout: vi.fn(),
   } as unknown as Window;
 
   api = {
@@ -170,16 +174,91 @@ test('Test raising exception', async () => {
   await expect(rpcBrowser.invoke('raiseError')).rejects.toThrow('big error');
 });
 
-test('A noTimeoutChannel should not call the setTimeout', async () => {
-  const rpcExtension = new RpcExtension(webview);
-  rpcExtension.init();
-  const rpcBrowser = new RpcBrowser(window, api);
+test('getChannel should use CHANNEL property of classType provided', () => {
+  class Dummy {
+    static readonly CHANNEL: string = 'dummy';
+    async ping(): Promise<'pong'> {
+      return new Promise(vi.fn());
+    }
+  }
 
-  rpcExtension.register('openDialog', () => {
-    return Promise.resolve();
+  const channel = getChannel(Dummy, 'ping');
+  expect(channel).toBe('dummy-ping');
+});
+
+describe('no timeout channel', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.useFakeTimers();
+
+    (defaultNoTimeoutChannels.noTimeoutChannels as string[]) = [];
   });
-  const setTimeoutMock = vi.spyOn(window, 'setTimeout');
 
-  await rpcBrowser.invoke('openDialog');
-  expect(setTimeoutMock).not.toHaveBeenCalled();
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('default function should have a timeout', async () => {
+    class Dummy {
+      static readonly CHANNEL: string = 'dummy';
+      async ping(): Promise<'pong'> {
+        return new Promise(vi.fn());
+      }
+    }
+
+    const rpcExtension = new RpcExtension(webview);
+    rpcExtension.init();
+    const rpcBrowser = new RpcBrowser(window, api);
+
+    rpcExtension.registerInstance(Dummy, new Dummy());
+
+    const proxy = rpcBrowser.getProxy<Dummy>(Dummy);
+
+    let error: Error | undefined;
+    proxy.ping().catch((err: unknown) => {
+      error = err as Error;
+    });
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(error?.message).toBe('Timeout');
+  });
+
+  test('noTimeoutChannels should not have a timeout', async () => {
+    class Dummy {
+      static readonly CHANNEL: string = 'dummy';
+      async ping(): Promise<'pong'> {
+        return new Promise(resolve => {
+          setTimeout(resolve.bind(undefined, 'pong'), 8_000);
+        });
+      }
+    }
+
+    // fake the noTimeoutChannels
+    (defaultNoTimeoutChannels.noTimeoutChannels as string[]) = [`${Dummy.CHANNEL}-ping`];
+
+    const rpcExtension = new RpcExtension(webview);
+    rpcExtension.init();
+    const rpcBrowser = new RpcBrowser(window, api);
+
+    rpcExtension.registerInstance(Dummy, new Dummy());
+
+    const proxy = rpcBrowser.getProxy<Dummy>(Dummy);
+
+    let error: Error | undefined;
+    let result: 'pong' | undefined;
+    proxy
+      .ping()
+      .then(mResult => {
+        result = mResult;
+      })
+      .catch((err: unknown) => {
+        error = err as Error;
+      });
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(error).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(error).toBeUndefined();
+    expect(result).toBe('pong');
+  });
 });

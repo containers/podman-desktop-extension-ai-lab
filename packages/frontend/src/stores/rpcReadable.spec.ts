@@ -52,6 +52,10 @@ vi.mock('../utils/client', async () => {
   };
 });
 
+vi.mock('@shared/src/messages/NoTimeoutChannels', () => ({
+  noTimeoutChannels: [],
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
 });

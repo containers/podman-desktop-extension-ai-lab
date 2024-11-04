@@ -40,6 +40,10 @@ export interface ISubscribedMessage {
   body: any;
 }
 
+export function getChannel<T>(classType: { CHANNEL: string; prototype: T }, method: keyof T): string {
+  return `${classType.CHANNEL}-${String(method)}`;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type UnaryRPC = (...args: any[]) => Promise<unknown>;
 
@@ -115,7 +119,7 @@ export class RpcExtension implements Disposable {
 
     methodNames.forEach(name => {
       const method = (instance[name as keyof T] as any).bind(instance);
-      this.register(`${classType.CHANNEL}-${name}`, method);
+      this.register(getChannel(classType, name as keyof T), method);
     });
   }
 
@@ -180,7 +184,7 @@ export class RpcBrowser {
         if (typeof prop === 'string') {
           return (...args: unknown[]) => {
             const channel = prop.toString();
-            return thisRef.invoke(`${classType.CHANNEL}-${channel}`, ...args);
+            return thisRef.invoke(getChannel(classType, channel as keyof T), ...args);
           };
         }
         return Reflect.get(target, prop, receiver);

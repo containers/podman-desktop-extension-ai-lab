@@ -27,8 +27,9 @@ function handleClick(): void {
     <div class="flex flex-row text-base grow">
       <!-- left column -->
       <div class="flex flex-col grow">
-        <span class="text-[var(--pd-content-card-header-text)]">{recipe.name}</span>
-        <span class="text-sm text-[var(--pd-content-card-text)]">{recipe.description}</span>
+        <span class="text-[var(--pd-content-card-header-text)]" aria-label="{recipe.name} name">{recipe.name}</span>
+        <span class="text-sm text-[var(--pd-content-card-text)]" aria-label="{recipe.name} description"
+          >{recipe.description}</span>
       </div>
 
       <!-- right column -->
@@ -43,7 +44,7 @@ function handleClick(): void {
       <div
         class="flex-grow text-[var(--pd-content-card-text)] opacity-50 whitespace-nowrap overflow-x-hidden text-ellipsis">
         {#if recipe.ref}
-          <span>{recipe.ref}</span>
+          <span aria-label="{recipe.name} ref">{recipe.ref}</span>
         {/if}
       </div>
 

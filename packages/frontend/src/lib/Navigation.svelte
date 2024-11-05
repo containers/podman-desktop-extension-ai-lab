@@ -69,6 +69,16 @@ onDestroy(() => {
     <SettingsNavItem icon={faRocket} title="Services" selected={meta.url === '/services'} href="/services" />
     <SettingsNavItem icon={faMessage} title="Playgrounds" selected={meta.url === '/playgrounds'} href="/playgrounds" />
 
+    <!-- Settings -->
+    <div class="pl-3 mt-2 ml-[4px]">
+      <span class="text-[color:var(--pd-secondary-nav-header-text)]">Configurable Options</span>
+    </div>
+    <SettingsNavItem
+      icon={faGear}
+      title="AI Lab Service"
+      selected={meta.url === '/ai_lab_service'}
+      href="/ai_lab_service" />
+
     {#if experimentalTuning}
       <!-- Tuning -->
       <div class="pl-3 mt-2 ml-[4px]">

@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Recipe } from '@shared/src/models/IRecipe';
 import { router } from 'tinro';
-import { faArrowUpRightFromSquare, faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
 import { localRepositories } from '../stores/localRepositories';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
@@ -27,8 +27,9 @@ function handleClick(): void {
     <div class="flex flex-row text-base grow">
       <!-- left column -->
       <div class="flex flex-col grow">
-        <span class="text-[var(--pd-content-card-header-text)]">{recipe.name}</span>
-        <span class="text-sm text-[var(--pd-content-card-text)]">{recipe.description}</span>
+        <span class="text-[var(--pd-content-card-header-text)]" aria-label="{recipe.name} name">{recipe.name}</span>
+        <span class="text-sm text-[var(--pd-content-card-text)]" aria-label="{recipe.name} description"
+          >{recipe.description}</span>
       </div>
 
       <!-- right column -->
@@ -37,23 +38,13 @@ function handleClick(): void {
       </div>
     </div>
 
-    {#if localPath}
-      <div
-        class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] max-w-full rounded-md p-2 mb-2 flex flex-row w-min h-min text-sm text-nowrap items-center">
-        <Fa class="mr-2" icon={faFolder} />
-        <span class="overflow-x-hidden text-ellipsis max-w-full">
-          {localPath.path}
-        </span>
-      </div>
-    {/if}
-
     <!-- footer -->
     <div class="flex flex-row">
       <!-- version -->
       <div
         class="flex-grow text-[var(--pd-content-card-text)] opacity-50 whitespace-nowrap overflow-x-hidden text-ellipsis">
         {#if recipe.ref}
-          <span>{recipe.ref}</span>
+          <span aria-label="{recipe.name} ref">{recipe.ref}</span>
         {/if}
       </div>
 

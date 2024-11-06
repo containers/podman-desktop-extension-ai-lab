@@ -19,7 +19,8 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { StatusBar, handleConfirmationDialog, waitUntil } from '@podman-desktop/tests-playwright';
+import { AILabNavigationBar } from './ai-lab-navigation-bar';
 
 export class AILabStartRecipePage extends AILabBasePage {
   readonly recipeStatus: Locator;
@@ -41,7 +42,7 @@ export class AILabStartRecipePage extends AILabBasePage {
     await playExpect(this.heading).toBeVisible();
   }
 
-  async startRecipe(): Promise<void> {
+  async startRecipe(appName: string): Promise<void> {
     await playExpect(this.startRecipeButton).toBeEnabled();
     await this.startRecipeButton.click();
     try {
@@ -49,10 +50,35 @@ export class AILabStartRecipePage extends AILabBasePage {
     } catch (error) {
       console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
     }
+    try {
+      await waitUntil(
+        async () => {
+          const progress = await this.getModelDownloadProgress();
+          return progress === 100;
+        },
+        {
+          timeout: 600_000,
+          diff: 10_000,
+          message: 'WaitTimeout reached when waiting for mode download progress to be 100 percent',
+        },
+      );
+    } catch {
+      await this.refreshStartRecipeUI(this.page, this.webview, appName);
+    }
     await playExpect
-      .poll(async () => await this.getModelDownloadProgress(), { timeout: 720_000, intervals: [5_000] })
+      .poll(async () => await this.getModelDownloadProgress(), { timeout: 60_000, intervals: [5_000] })
       .toBe(100);
-    await playExpect(this.recipeStatus).toContainText('AI App is running', { timeout: 720_000 });
+    try {
+      await waitUntil(
+        async () => {
+          return (await this.recipeStatus.allInnerTexts()).indexOf('AI App is running') >= 1;
+        },
+        { timeout: 600_000, diff: 10_000, message: 'WaitTimeout reached when waiting for text: AI App is running' },
+      );
+    } catch {
+      await this.refreshStartRecipeUI(this.page, this.webview, appName);
+    }
+    await playExpect(this.recipeStatus).toContainText('AI App is running', { timeout: 60_000 });
   }
 
   async getModelDownloadProgress(): Promise<number> {
@@ -85,5 +111,30 @@ export class AILabStartRecipePage extends AILabBasePage {
 
     if (!content) return '';
     return content;
+  }
+
+  private async refreshStartRecipeUI(page: Page, webView: Page, appName: string): Promise<void> {
+    console.log('UI might be stuck, refreshing...');
+    // do not leave webview, ie. do not switch to Dashboard
+    const aiNavBar = new AILabNavigationBar(page, webView);
+    await aiNavBar.openRunningApps();
+    console.log('Finding Tasks in status Bar');
+    const statusBar = new StatusBar(page);
+    await statusBar.tasksButton.click();
+    console.log('Opened Tasks in status Bar');
+    const tasksManager = this.page.getByTitle('Tasks Manager');
+    await playExpect(tasksManager).toBeVisible();
+    console.log('Finding particular task in task manager');
+    const task = tasksManager.getByTitle(new RegExp(`Pulling ${appName}`)).locator('../..');
+    console.log(`Content Text of task: ${await task.allInnerTexts()}`);
+    const viewButton = task.getByRole('button', { name: 'action button' }).and(task.getByText('View'));
+    await playExpect(viewButton).toBeVisible();
+    await viewButton.click();
+    console.log('Start recipe page should be back');
+    // we need to get rid of the task manager that is in the front now
+    const hideButton = tasksManager.getByRole('button').and(tasksManager.getByTitle('Hide'));
+    await playExpect(hideButton).toBeVisible();
+    await hideButton.click();
+    await playExpect(this.heading).toBeVisible();
   }
 }

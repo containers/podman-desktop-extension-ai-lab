@@ -29,6 +29,7 @@ import type { Recipe, RecipeImage } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { VMType } from '@shared/src/models/IPodman';
 import { POD_LABEL_MODEL_ID, POD_LABEL_RECIPE_ID } from '../../utils/RecipeConstants';
+import type { InferenceServer } from '@shared/src/models/IInference';
 
 const taskRegistryMock = {
   createTask: vi.fn(),
@@ -339,6 +340,71 @@ describe('pullApplication', () => {
       Image: recipeImageInfoMock.id,
       name: expect.any(String),
       Env: [],
+      HealthCheck: undefined,
+      HostConfig: undefined,
+      Detach: true,
+      pod: 'test-pod-id',
+      start: false,
+    });
+
+    // finally the pod must be started
+    expect(podManager.startPod).toHaveBeenCalledWith('test-engine-id', 'test-pod-id');
+  });
+
+  test('requestDownloadModel skipped with inference server', async () => {
+    vi.mocked(recipeManager.buildRecipe).mockResolvedValue({
+      images: [recipeImageInfoMock],
+      inferenceServer: {
+        connection: {
+          port: 56001,
+        },
+      } as InferenceServer,
+    });
+    await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock, {
+      'test-label': 'test-value',
+    });
+
+    // clone the recipe
+    expect(recipeManager.cloneRecipe).toHaveBeenCalledWith(recipeMock, {
+      'test-label': 'test-value',
+      'model-id': remoteModelMock.id,
+    });
+    // download model
+    expect(modelsManagerMock.requestDownloadModel).toHaveBeenCalledWith(remoteModelMock, {
+      'test-label': 'test-value',
+      'recipe-id': recipeMock.id,
+      'model-id': remoteModelMock.id,
+    });
+    // upload model to podman machine
+    expect(modelsManagerMock.uploadModelToPodmanMachine).not.toHaveBeenCalled();
+    // build the recipe
+    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(connectionMock, recipeMock, remoteModelMock, {
+      'test-label': 'test-value',
+      'recipe-id': recipeMock.id,
+      'model-id': remoteModelMock.id,
+    });
+    // create AI App task must be created
+    expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Creating AI App', 'loading', {
+      'test-label': 'test-value',
+      'recipe-id': recipeMock.id,
+      'model-id': remoteModelMock.id,
+    });
+
+    // a pod must have been created
+    expect(podManager.createPod).toHaveBeenCalledWith({
+      provider: connectionMock,
+      name: expect.any(String),
+      portmappings: [],
+      labels: {
+        [POD_LABEL_MODEL_ID]: remoteModelMock.id,
+        [POD_LABEL_RECIPE_ID]: recipeMock.id,
+      },
+    });
+
+    expect(containerEngine.createContainer).toHaveBeenCalledWith('test-engine-id', {
+      Image: recipeImageInfoMock.id,
+      name: expect.any(String),
+      Env: ['MODEL_ENDPOINT=http://host.containers.internal:56001'],
       HealthCheck: undefined,
       HostConfig: undefined,
       Detach: true,

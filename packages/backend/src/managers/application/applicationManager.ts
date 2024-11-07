@@ -182,14 +182,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     await this.recipeManager.cloneRecipe(recipe, { ...labels, 'model-id': model.id });
 
     // get model by downloading it or retrieving locally
-    await this.modelsManager.requestDownloadModel(model, {
-      ...labels,
-      'recipe-id': recipe.id,
-      'model-id': model.id,
-    });
-
-    // upload model to podman machine if user system is supported
-    const modelPath = await this.modelsManager.uploadModelToPodmanMachine(connection, model, {
+    let modelPath = await this.modelsManager.requestDownloadModel(model, {
       ...labels,
       'recipe-id': recipe.id,
       'model-id': model.id,
@@ -201,6 +194,15 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       'recipe-id': recipe.id,
       'model-id': model.id,
     });
+
+    // upload model to podman machine if user system is supported
+    if (!recipeComponents.inferenceServer) {
+      modelPath = await this.modelsManager.uploadModelToPodmanMachine(connection, model, {
+        ...labels,
+        'recipe-id': recipe.id,
+        'model-id': model.id,
+      });
+    }
 
     // first delete any existing pod with matching labels
     if (await this.hasApplicationPod(recipe.id, model.id)) {

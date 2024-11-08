@@ -135,6 +135,9 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/lmstudio-community/granite-3.0-8b-instruct-GGUF/resolve/main/granite-3.0-8b-instruct-Q4_K_M.gguf",
       "memory": 4942856128,
+      "properties": {
+        "chatFormat": "openchat"
+      },
       "sha256": "bb32555f5a0bfa077aa2bfb17d43b7f76d372e7e57d433999592dc32d5310ab8",
       "backend": "llama-cpp"
     },

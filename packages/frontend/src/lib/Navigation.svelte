@@ -71,11 +71,11 @@ onDestroy(() => {
 
     <!-- Settings -->
     <div class="pl-3 mt-2 ml-[4px]">
-      <span class="text-[color:var(--pd-secondary-nav-header-text)]">Configurable Options</span>
+      <span class="text-[color:var(--pd-secondary-nav-header-text)]">Server Information</span>
     </div>
     <SettingsNavItem
       icon={faGear}
-      title="AI Lab Service"
+      title="Local Server"
       selected={meta.url === '/ai_lab_service'}
       href="/ai_lab_service" />
 

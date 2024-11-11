@@ -14,7 +14,7 @@ onMount(() => {
   if (port) {
     aiLabPort = port;
   } else {
-    aiLabPort = 8888;
+    aiLabPort = 10434;
   }
 });
 
@@ -28,7 +28,7 @@ onDestroy(async () => {
 });
 
 async function setPortToDefaultOne(): Promise<void> {
-  aiLabPort = 8888;
+  aiLabPort = 10434;
   await studioClient.updateExtensionConfiguration({ apiPort: aiLabPort });
 }
 
@@ -54,7 +54,7 @@ async function onAiLabPortInput(event: Event): Promise<void> {
 }
 </script>
 
-<NavPage title="Configurable Options" searchEnabled={false}>
+<NavPage title="Local Server" searchEnabled={false}>
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="text-[var(--pd-details-body-text)] mt-4 px-5 space-y-5" aria-label="inner-content">
@@ -75,7 +75,7 @@ async function onAiLabPortInput(event: Event): Promise<void> {
               value={String(aiLabPort ?? 0)}
               on:input={async (e): Promise<void> => await onAiLabPortInput(e)}
               class="w-full ml-2"
-              placeholder="8888"
+              placeholder="10434"
               name="aiLabPort"
               aria-label="Port input" />
           </div>

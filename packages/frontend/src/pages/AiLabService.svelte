@@ -1,8 +1,8 @@
 <script lang="ts">
 import { NavPage, Input, ErrorMessage } from '@podman-desktop/ui-svelte';
-import { studioClient } from '../utils/client';
-import { onDestroy, onMount } from 'svelte';
-import { configuration } from '../stores/extensionConfiguration';
+import { studioClient } from '/@/utils/client';
+import { configuration } from '/@/stores/extensionConfiguration';
+import { onMount, onDestroy } from 'svelte';
 
 // The AI Lab Port is the bind value to form input
 let aiLabPort: number | undefined = $state(undefined);

@@ -9,6 +9,7 @@ import {
   faRocket,
   faServer,
   faHouse,
+  faGear,
 } from '@fortawesome/free-solid-svg-icons';
 import { SettingsNavItem } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';

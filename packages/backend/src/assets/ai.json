@@ -70,6 +70,23 @@
       "backend": "llama-cpp"
     },
     {
+      "id": "chatbot-java-quarkus",
+      "description": "This is a Quarkus-based chat demo application.",
+      "name": "Java-based ChatBot (Quarkus)",
+      "repository": "https://github.com/containers/ai-lab-recipes",
+      "ref": "a7b03d7bd025e009a03147391a00cb1ee472ad3f",
+      "icon": "natural-language-processing",
+      "categories": ["natural-language-processing"],
+      "basedir": "recipes/natural_language_processing/chatbot-java",
+      "readme": "# Java-based chatbot application\n\nThis application implements a simple chatbot backed by Quarkus and its\nLangChain4j extension. The UI communicates with the backend application via\nweb sockets and the backend uses the OpenAI API to talk to the model served\nby Podman AI Lab.\n\nDocumentation for Quarkus+LangChain4j can be found at\nhttps://docs.quarkiverse.io/quarkus-langchain4j/dev/.",
+      "recommended": [
+        "hf.instructlab.granite-7b-lab-GGUF",
+        "hf.instructlab.merlinite-7b-lab-GGUF",
+        "hf.lmstudio-community.granite-3.0-8b-instruct-GGUF"
+      ],
+      "backend": "llama-cpp"
+    },
+    {
       "id": "function-calling",
       "description": "This is a Streamlit function calling enabled demo application.",
       "name": "Function calling",

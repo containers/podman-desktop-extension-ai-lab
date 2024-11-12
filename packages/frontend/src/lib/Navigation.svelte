@@ -56,7 +56,7 @@ onDestroy(() => {
     </div>
     <SettingsNavItem
       icon={copyFaBookOpenIcon}
-      title="Recipes Catalog"
+      title="Recipe Catalog"
       selected={meta.url === '/recipes'}
       href="/recipes" />
     <SettingsNavItem icon={faServer} title="Running" selected={meta.url === '/applications'} href="/applications" />

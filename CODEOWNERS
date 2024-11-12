@@ -1,2 +1,8 @@
 # Default Owners
 * @containers/podman-desktop-reviewers @benoitf @jeffmaury
+
+# playwright tests
+tests/playwright/** @containers/podman-desktop-reviewers @containers/podman-desktop-qe-reviewers @benoitf @jeffmaury
+
+# CI
+.github/workflows/** @containers/podman-desktop-reviewers @containers/podman-desktop-qe-reviewers @benoitf @jeffmaury

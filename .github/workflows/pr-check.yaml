@@ -142,8 +142,8 @@ jobs:
           pnpm build
           podman build -t local_ai_lab_image ./
           CONTAINER_ID=$(podman create localhost/local_ai_lab_image --entrypoint "")
-          mkdir -p tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins
-          podman export $CONTAINER_ID | tar -x -C tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins/
+          mkdir -p tests/playwright/tests/output/ai-lab-tests-pd/plugins
+          podman export $CONTAINER_ID | tar -x -C tests/playwright/tests/output/ai-lab-tests-pd/plugins/
           podman rm -f $CONTAINER_ID
           podman rmi -f localhost/local_ai_lab_image:latest
 

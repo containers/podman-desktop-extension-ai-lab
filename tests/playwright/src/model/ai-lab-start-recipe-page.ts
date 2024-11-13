@@ -50,6 +50,7 @@ export class AILabStartRecipePage extends AILabBasePage {
     } catch (error) {
       console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
     }
+
     try {
       await waitUntil(
         async () => {
@@ -65,16 +66,17 @@ export class AILabStartRecipePage extends AILabBasePage {
     } catch {
       await this.refreshStartRecipeUI(this.page, this.webview, appName);
     }
+
     await playExpect
       .poll(async () => await this.getModelDownloadProgress(), { timeout: 60_000, intervals: [5_000] })
       .toBe(100);
+
     try {
-      await waitUntil(
-        async () => {
-          return (await this.recipeStatus.allInnerTexts()).indexOf('AI App is running') >= 1;
-        },
-        { timeout: 600_000, diff: 10_000, message: 'WaitTimeout reached when waiting for text: AI App is running' },
-      );
+      await waitUntil(async () => (await this.getLatestStatus()).includes('AI App is running'), {
+        timeout: 600_000,
+        diff: 10_000,
+        message: 'WaitTimeout reached when waiting for text: AI App is running',
+      });
     } catch {
       await this.refreshStartRecipeUI(this.page, this.webview, appName);
     }
@@ -103,13 +105,41 @@ export class AILabStartRecipePage extends AILabBasePage {
   }
 
   private async getDownloadStatusContent(): Promise<string> {
+    return await this.getStatusContent(3);
+  }
+
+  private async getLatestStatus(): Promise<string> {
+    return await this.getStatusContent();
+  }
+
+  private async getStatusContent(index: number = 0): Promise<string> {
     const statusList = await this.getStatusListLocator();
+    let currentElement: Locator;
 
-    if (statusList.length < 3) return '';
+    if (index) {
+      if (statusList.length < index) return '';
+      currentElement = statusList[index - 1];
+    } else {
+      if (statusList.length < 1) return '';
+      currentElement = statusList[statusList.length - 1];
+    }
 
-    const content = await statusList[2].textContent();
+    const content = await currentElement.textContent();
 
     if (!content) return '';
+
+    const viewErrorButton = currentElement.getByRole('button', { name: 'View error' });
+    const note = currentElement.getByRole('note');
+
+    if (await viewErrorButton.isVisible()) {
+      await viewErrorButton.click();
+      await this.page.waitForTimeout(500);
+    }
+
+    if ((await note.count()) > 0) {
+      const noteContent = await note.textContent();
+      throw new Error(`Error encountered while starting application: ${noteContent}`);
+    }
     return content;
   }
 

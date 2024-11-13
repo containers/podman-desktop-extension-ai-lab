@@ -43,7 +43,6 @@ let webview: Page;
 let aiLabPage: AILabPage;
 const runnerOptions = {
   customFolder: 'ai-lab-tests-pd',
-  customOutputFolder: 'output',
   aiLabModelUploadDisabled: isWindows ? true : false,
 };
 

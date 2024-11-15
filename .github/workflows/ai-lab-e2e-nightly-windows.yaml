@@ -48,7 +48,7 @@ on:
         type: string
         required: true
       podman_remote_url:
-        default: 'https://github.com/containers/podman/releases/download/v5.2.4/podman-5.2.4-setup.exe'
+        default: 'https://github.com/containers/podman/releases/download/v5.3.0/podman-5.3.0-setup.exe'
         description: 'podman remote setup exe'
         type: string
         required: true
@@ -58,7 +58,7 @@ on:
         type: string
         required: true
       env_vars:
-        default: 'TEST_PODMAN_MACHINE=true'
+        default: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
         type: string
         required: true
@@ -115,7 +115,8 @@ jobs:
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
-        DEFAULT_URL: "https://github.com/containers/podman/releases/download/v5.2.4/podman-5.2.4-setup.exe"
+        DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.0' }}"
+        DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.2-windows'
         DEFAULT_AZURE_VM_SIZE: 'Standard_D8as_v5'
       run: |

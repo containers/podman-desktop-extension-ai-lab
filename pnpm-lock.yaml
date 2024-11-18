@@ -216,8 +216,8 @@ importers:
         version: 0.6.12
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
-        specifier: 4.0.0
-        version: 4.0.0(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))
+        specifier: 4.0.1
+        version: 4.0.1(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))
       '@tailwindcss/typography':
         specifier: ^0.5.15
         version: 0.5.15(tailwindcss@3.4.15)
@@ -1471,8 +1471,8 @@ packages:
       svelte: ^5.0.0-next.96 || ^5.0.0
       vite: ^5.0.0
 
-  '@sveltejs/vite-plugin-svelte@4.0.0':
-    resolution: {integrity: sha512-kpVJwF+gNiMEsoHaw+FJL76IYiwBikkxYU83+BpqQLdVMff19KeRKLd2wisS8niNBMJ2omv5gG+iGDDwd8jzag==}
+  '@sveltejs/vite-plugin-svelte@4.0.1':
+    resolution: {integrity: sha512-prXoAE/GleD2C4pKgHa9vkdjpzdYwCSw/kmjw6adIyu0vk5YKCfqIztkLg10m+kOYnzZu3bb0NaPTxlWre2a9Q==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22}
     peerDependencies:
       svelte: ^5.0.0-next.96 || ^5.0.0
@@ -6481,18 +6481,18 @@ snapshots:
 
   '@sindresorhus/is@4.6.0': {}
 
-  '@sveltejs/vite-plugin-svelte-inspector@3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6)))(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))':
+  '@sveltejs/vite-plugin-svelte-inspector@3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6)))(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 4.0.0(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))
+      '@sveltejs/vite-plugin-svelte': 4.0.1(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))
       debug: 4.3.7(supports-color@9.4.0)
       svelte: 5.1.16
       vite: 5.4.11(@types/node@20.17.6)
     transitivePeerDependencies:
       - supports-color
 
-  '@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))':
+  '@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.0(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6)))(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))
+      '@sveltejs/vite-plugin-svelte-inspector': 3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6)))(svelte@5.1.16)(vite@5.4.11(@types/node@20.17.6))
       debug: 4.3.7(supports-color@9.4.0)
       deepmerge: 4.3.1
       kleur: 4.1.5

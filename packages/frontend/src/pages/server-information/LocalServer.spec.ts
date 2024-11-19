@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 
 import { render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
-import AiLabService from './AiLabService.svelte';
+import LocalServer from './LocalServer.svelte';
 import { writable, type Writable } from 'svelte/store';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import { configuration } from '/@/stores/extensionConfiguration';
@@ -59,7 +59,7 @@ beforeEach(() => {
 });
 
 test('port input should update on user input', async () => {
-  render(AiLabService);
+  render(LocalServer);
 
   const portInput: HTMLInputElement = screen.getByRole('textbox');
   expect(portInput).toBeDefined();
@@ -73,7 +73,7 @@ test('port input should update on user input', async () => {
 });
 
 test('should show default port', async () => {
-  render(AiLabService);
+  render(LocalServer);
   const portInput: HTMLInputElement = screen.getByRole('textbox');
 
   expect(portInput).toBeDefined();

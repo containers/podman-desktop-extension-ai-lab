@@ -28,7 +28,7 @@ import type { Unsubscriber } from 'svelte/store';
 import { Messages } from '@shared/Messages';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
-import AiLabService from './pages/AiLabService.svelte';
+import LocalServer from './pages/server-information/LocalServer.svelte';
 
 router.mode.hash();
 
@@ -111,9 +111,9 @@ onDestroy(() => {
           <Preferences />
         </Route>
 
-        <!-- AI Lab Service -->
-        <Route path="/ai_lab_service">
-          <AiLabService />
+        <!-- Local Server -->
+        <Route path="/local-server">
+          <LocalServer />
         </Route>
 
         <!-- Recipes -->

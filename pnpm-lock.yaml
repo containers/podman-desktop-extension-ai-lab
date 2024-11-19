@@ -194,8 +194,8 @@ importers:
         specifier: ^6.6.0
         version: 6.6.0
       '@fortawesome/free-regular-svg-icons':
-        specifier: ^6.6.0
-        version: 6.6.0
+        specifier: ^6.7.0
+        version: 6.7.0
       '@fortawesome/free-solid-svg-icons':
         specifier: ^6.6.0
         version: 6.6.0
@@ -1234,6 +1234,10 @@ packages:
     resolution: {integrity: sha512-xyX0X9mc0kyz9plIyryrRbl7ngsA9jz77mCZJsUkLl+ZKs0KWObgaEBoSgQiYWAsSmjz/yjl0F++Got0Mdp4Rw==}
     engines: {node: '>=6'}
 
+  '@fortawesome/fontawesome-common-types@6.7.0':
+    resolution: {integrity: sha512-AUetZXU6cQdAe21p8j3mg2aD40MMDKfFNUNgq/G7gR3HMDp0BsQskAudLDSgq6d0SbCY0QKP0g4s5Y02S1kkhw==}
+    engines: {node: '>=6'}
+
   '@fortawesome/fontawesome-free@6.7.0':
     resolution: {integrity: sha512-lXTP8oiLGM97Aqjn47nod9awKe574HRfCngFizr7FiHTadKTiPkoVn0Mzg+tZBLD1XpE4CRvcF7/UM3g1jyVYw==}
     engines: {node: '>=6'}
@@ -1242,8 +1246,8 @@ packages:
     resolution: {integrity: sha512-1MPD8lMNW/earme4OQi1IFHtmHUwAKgghXlNwWi9GO7QkTfD+IIaYpIai4m2YJEzqfEji3jFHX1DZI5pbY/biQ==}
     engines: {node: '>=6'}
 
-  '@fortawesome/free-regular-svg-icons@6.6.0':
-    resolution: {integrity: sha512-Yv9hDzL4aI73BEwSEh20clrY8q/uLxawaQ98lekBx6t9dQKDHcDzzV1p2YtBGTtolYtNqcWdniOnhzB+JPnQEQ==}
+  '@fortawesome/free-regular-svg-icons@6.7.0':
+    resolution: {integrity: sha512-0htjBKeeN3TJf0JtQPsQu/n/prpc9TtSbtgi84XzCUdPpc49znb+MXMACFmehR5kSA7NQVMjLD+Dh9816wklbw==}
     engines: {node: '>=6'}
 
   '@fortawesome/free-solid-svg-icons@6.6.0':
@@ -6228,15 +6232,17 @@ snapshots:
 
   '@fortawesome/fontawesome-common-types@6.6.0': {}
 
+  '@fortawesome/fontawesome-common-types@6.7.0': {}
+
   '@fortawesome/fontawesome-free@6.7.0': {}
 
   '@fortawesome/free-brands-svg-icons@6.6.0':
     dependencies:
       '@fortawesome/fontawesome-common-types': 6.6.0
 
-  '@fortawesome/free-regular-svg-icons@6.6.0':
+  '@fortawesome/free-regular-svg-icons@6.7.0':
     dependencies:
-      '@fortawesome/fontawesome-common-types': 6.6.0
+      '@fortawesome/fontawesome-common-types': 6.7.0
 
   '@fortawesome/free-solid-svg-icons@6.6.0':
     dependencies:
@@ -6325,7 +6331,7 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-free': 6.7.0
       '@fortawesome/free-brands-svg-icons': 6.6.0
-      '@fortawesome/free-regular-svg-icons': 6.6.0
+      '@fortawesome/free-regular-svg-icons': 6.7.0
       '@fortawesome/free-solid-svg-icons': 6.6.0
       humanize-duration: 3.32.1
       moment: 2.30.1

@@ -52,7 +52,7 @@
     "autoprefixer": "^10.4.20",
     "commitlint": "^19.5.0",
     "concurrently": "^9.1.0",
-    "eslint": "^9.14.0",
+    "eslint": "^9.15.0",
     "eslint-import-resolver-custom-alias": "^1.3.2",
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-etc": "^2.0.3",

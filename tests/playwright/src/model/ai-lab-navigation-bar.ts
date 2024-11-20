@@ -22,6 +22,7 @@ import { AILabBasePage } from './ai-lab-base-page';
 import { AILabRecipesCatalogPage } from './ai-lab-recipes-catalog-page';
 import { AiRunningAppsPage } from './ai-lab-running-apps-page';
 import { AiModelServicePage } from './ai-lab-model-service-page';
+import { AILabCatalogPage } from './ai-lab-catalog-page';
 
 export class AILabNavigationBar extends AILabBasePage {
   readonly navigationBar: Locator;
@@ -63,5 +64,11 @@ export class AILabNavigationBar extends AILabBasePage {
     await playExpect(this.servicesButton).toBeEnabled();
     await this.servicesButton.click();
     return new AiModelServicePage(this.page, this.webview);
+  }
+
+  async openCatalog(): Promise<AILabCatalogPage> {
+    await playExpect(this.catalogButton).toBeEnabled();
+    await this.catalogButton.click();
+    return new AILabCatalogPage(this.page, this.webview);
   }
 }

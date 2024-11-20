@@ -73,13 +73,13 @@ async function onAiLabPortInput(event: Event): Promise<void> {
             <Input
               type="number"
               value={String(aiLabPort ?? 0)}
-              on:input={async (e): Promise<void> => await onAiLabPortInput(e)}
+              on:input={onAiLabPortInput}
               class="w-full ml-2"
               placeholder="10434"
               name="aiLabPort"
               aria-label="Port input" />
           </div>
-          {#if errorMsg !== undefined}
+          {#if errorMsg}
             <ErrorMessage error={errorMsg} />
           {/if}
         </div>

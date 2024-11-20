@@ -213,6 +213,9 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ibm-granite/granite-8b-code-instruct-GGUF/resolve/main/granite-8b-code-instruct.Q4_K_M.gguf",
       "memory": 5347234284,
+      "properties": {
+        "chatFormat": "openchat"
+      },
       "sha256": "bc8804cb43c4e1e82e2188658569b147587f83a89640600a64d5f7d7de2565b4",
       "backend": "llama-cpp"
     },

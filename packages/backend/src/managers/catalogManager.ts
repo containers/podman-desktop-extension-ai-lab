@@ -23,7 +23,7 @@ import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Messages } from '@shared/Messages';
-import { type Disposable, type Event, EventEmitter, type Webview, window } from '@podman-desktop/api';
+import { type Disposable, type Event, EventEmitter, type Webview, window, env } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
@@ -212,7 +212,10 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       localModels.map(async local => {
         const statFile = await promises.stat(local.path);
         return {
-          id: local.path,
+          // on Linux the path is in the format "/home/user/folder/model1" and the routes using the "/" as well.
+          // Due to this would path to some models looks e.g. like this "/model/id//home/user/folder/model1",
+          // which is wrong. Replacing the "/" to "\" solves this issue
+          id: env.isLinux ? local.path.replace(/\//g, '\\') : local.path,
           name: local.name,
           description: `Model imported from ${local.path}`,
           file: {

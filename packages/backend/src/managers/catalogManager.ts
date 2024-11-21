@@ -19,11 +19,12 @@
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { Messages } from '@shared/Messages';
-import { type Disposable, type Event, EventEmitter, type Webview, window, env } from '@podman-desktop/api';
+import { type Disposable, type Event, EventEmitter, type Webview, window } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
@@ -211,11 +212,9 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
     const models: ModelInfo[] = await Promise.all(
       localModels.map(async local => {
         const statFile = await promises.stat(local.path);
+        const sha256 = crypto.createHash('sha256').update(local.path).digest('hex');
         return {
-          // on Linux the path is in the format "/home/user/folder/model1" and the routes using the "/" as well.
-          // Due to this would path to some models looks e.g. like this "/model/id//home/user/folder/model1",
-          // which is wrong. Replacing the "/" to "\" solves this issue
-          id: env.isLinux ? local.path.replace(/\//g, '\\') : local.path,
+          id: sha256,
           name: local.name,
           description: `Model imported from ${local.path}`,
           file: {

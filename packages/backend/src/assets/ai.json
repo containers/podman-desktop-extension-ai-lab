@@ -77,7 +77,7 @@
       "ref": "v1.3.3",
       "icon": "natural-language-processing",
       "categories": ["natural-language-processing"],
-      "basedir": "recipes/natural_language_processing/chatbot-java",
+      "basedir": "recipes/natural_language_processing/chatbot-java-quarkus",
       "readme": "# Java-based chatbot application\n\nThis application implements a simple chatbot backed by Quarkus and its\nLangChain4j extension. The UI communicates with the backend application via\nweb sockets and the backend uses the OpenAI API to talk to the model served\nby Podman AI Lab.\n\nDocumentation for Quarkus+LangChain4j can be found at\nhttps://docs.quarkiverse.io/quarkus-langchain4j/dev/.",
       "recommended": [
         "hf.instructlab.granite-7b-lab-GGUF",

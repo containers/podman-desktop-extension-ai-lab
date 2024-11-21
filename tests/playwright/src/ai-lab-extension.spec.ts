@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import type { Page } from '@playwright/test';
-import type { NavigationBar, ExtensionsPage, Runner } from '@podman-desktop/tests-playwright';
+import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
   expect as playExpect,
   test,
@@ -29,6 +29,8 @@ import {
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 import { AILabExtensionDetailsPage } from './model/podman-extension-ai-lab-details-page';
+import type { AILabCatalogPage } from './model/ai-lab-catalog-page';
+import { handleWebview } from './utils/webviewHandler';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -36,8 +38,6 @@ const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLE
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_CATALOG_EXTENSION_NAME: string = 'Podman AI Lab extension';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
-const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
-const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 
 let webview: Page;
 let aiLabPage: AILabPage;
@@ -109,14 +109,42 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
 
-  [
-    'Audio to Text',
-    'ChatBot',
-    'Summarizer',
-    'Code Generation',
-    /* 'Object Detection', */ // Object detection does not work without model upload
-    /* RAG Chatbot seems */ // too demanding on resources
-  ].forEach(appName => {
+  ['ggerganov/whisper.cpp', 'facebook/detr-resnet-101'].forEach(modelName => {
+    test.describe.serial(`Model download and deletion`, () => {
+      let catalogPage: AILabCatalogPage;
+
+      test.beforeEach(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
+        [page, webview] = await handleWebview(runner, page, navigationBar);
+        aiLabPage = new AILabPage(page, webview);
+        await aiLabPage.navigationBar.waitForLoad();
+
+        catalogPage = await aiLabPage.navigationBar.openCatalog();
+        await catalogPage.waitForLoad();
+      });
+
+      test(`Download ${modelName} model`, async () => {
+        test.setTimeout(310_000);
+        playExpect(await catalogPage.isModelDownloaded(modelName)).toBeFalsy();
+        await catalogPage.downloadModel(modelName);
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await catalogPage.isModelDownloaded(modelName), { timeout: 300_000, intervals: [5_000] })
+          .toBeTruthy();
+      });
+
+      test(`Delete ${modelName} model`, async () => {
+        test.setTimeout(310_000);
+        playExpect(await catalogPage.isModelDownloaded(modelName)).toBeTruthy();
+        await catalogPage.deleteModel(modelName);
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await catalogPage.isModelDownloaded(modelName), { timeout: 300_000, intervals: [1_000] })
+          .toBeFalsy();
+      });
+    });
+  });
+
+  ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation'].forEach(appName => {
     test.describe.serial(`AI Recipe installation`, () => {
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
@@ -179,28 +207,4 @@ async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
 
   await imagesPage.deleteAllUnusedImages();
   await playExpect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 60_000 }).toBe(0);
-}
-
-async function handleWebview(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<[Page, Page]> {
-  const aiLabPodmanExtensionButton = navigationBar.navigationLocator.getByRole('link', {
-    name: AI_LAB_NAVBAR_EXTENSION_LABEL,
-  });
-  await playExpect(aiLabPodmanExtensionButton).toBeEnabled();
-  await aiLabPodmanExtensionButton.click();
-  await page.waitForTimeout(2_000);
-
-  const webView = page.getByRole('document', { name: AI_LAB_PAGE_BODY_LABEL });
-  await playExpect(webView).toBeVisible();
-  await new Promise(resolve => setTimeout(resolve, 1_000));
-  const [mainPage, webViewPage] = runner.getElectronApp().windows();
-  await mainPage.evaluate(() => {
-    const element = document.querySelector('webview');
-    if (element) {
-      (element as HTMLElement).focus();
-    } else {
-      console.log(`element is null`);
-    }
-  });
-
-  return [mainPage, webViewPage];
 }

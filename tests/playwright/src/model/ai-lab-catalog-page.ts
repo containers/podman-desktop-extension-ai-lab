@@ -19,6 +19,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
+import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
 
 export class AILabCatalogPage extends AILabBasePage {
   readonly catalogTable: Locator;
@@ -32,18 +33,63 @@ export class AILabCatalogPage extends AILabBasePage {
 
   async waitForLoad(): Promise<void> {
     await playExpect(this.heading).toBeVisible();
+    await playExpect(this.catalogTable).toBeVisible();
+    await playExpect(this.modelsGroup).toBeVisible();
   }
 
   async getModelRowByName(modelName: string): Promise<Locator | undefined> {
     const modelRows = await this.getAllModelRows();
     for (const modelRow of modelRows) {
-      const modelNameCell = modelRow.getByLabel(modelName, { exact: true });
-      if (await modelNameCell.isVisible()) {
+      const modelNameCell = modelRow.getByText(modelName, { exact: true });
+      if ((await modelNameCell.count()) > 0) {
         return modelRow;
       }
     }
 
     return undefined;
+  }
+
+  async downloadModel(modelName: string): Promise<void> {
+    const modelRow = await this.getModelRowByName(modelName);
+    if (!modelRow) {
+      throw new Error(`Model ${modelName} not found`);
+    }
+    const downloadButton = modelRow.getByRole('button', { name: 'Download Model' });
+    await playExpect(downloadButton).toBeEnabled();
+    await downloadButton.click();
+  }
+
+  async createModelService(modelName: string): Promise<void> {
+    const modelRow = await this.getModelRowByName(modelName);
+    if (!modelRow) {
+      throw new Error(`Model ${modelName} not found`);
+    }
+    const createServiceButton = modelRow.getByRole('button', { name: 'Create Model Service' });
+    await playExpect(createServiceButton).toBeEnabled();
+    await createServiceButton.click();
+
+    throw new Error('Not implemented');
+  }
+
+  async deleteModel(modelName: string): Promise<void> {
+    const modelRow = await this.getModelRowByName(modelName);
+    if (!modelRow) {
+      throw new Error(`Model ${modelName} not found`);
+    }
+    const deleteButton = modelRow.getByRole('button', { name: 'Delete Model' });
+    await playExpect(deleteButton).toBeEnabled();
+    await deleteButton.click();
+    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+  }
+
+  async isModelDownloaded(modelName: string): Promise<boolean> {
+    const modelRow = await this.getModelRowByName(modelName);
+    if (!modelRow) {
+      return false;
+    }
+
+    const deleteButton = modelRow.getByRole('button', { name: 'Delete Model' });
+    return (await deleteButton.count()) > 0;
   }
 
   private async getAllModelRows(): Promise<Locator[]> {

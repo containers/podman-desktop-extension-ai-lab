@@ -56,6 +56,7 @@ export class AILabCatalogPage extends AILabBasePage {
     }
     const downloadButton = modelRow.getByRole('button', { name: 'Download Model' });
     await playExpect(downloadButton).toBeEnabled();
+    await downloadButton.focus();
     await downloadButton.click();
   }
 
@@ -66,6 +67,7 @@ export class AILabCatalogPage extends AILabBasePage {
     }
     const createServiceButton = modelRow.getByRole('button', { name: 'Create Model Service' });
     await playExpect(createServiceButton).toBeEnabled();
+    await createServiceButton.focus();
     await createServiceButton.click();
 
     throw new Error('Not implemented');
@@ -78,6 +80,7 @@ export class AILabCatalogPage extends AILabBasePage {
     }
     const deleteButton = modelRow.getByRole('button', { name: 'Delete Model' });
     await playExpect(deleteButton).toBeEnabled();
+    await deleteButton.focus();
     await deleteButton.click();
     await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
   }

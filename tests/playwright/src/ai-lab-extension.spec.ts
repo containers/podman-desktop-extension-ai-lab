@@ -128,7 +128,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await catalogPage.downloadModel(modelName);
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await catalogPage.isModelDownloaded(modelName), { timeout: 300_000, intervals: [5_000] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
           .toBeTruthy();
       });
 
@@ -138,7 +138,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await catalogPage.deleteModel(modelName);
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForDeleteCatalogModel(modelName), { timeout: 300_000, intervals: [2_500] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [2_500] })
           .toBeFalsy();
       });
     });
@@ -209,7 +209,7 @@ async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
   await playExpect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 60_000 }).toBe(0);
 }
 
-async function waitForDeleteCatalogModel(modelName: string): Promise<boolean> {
+async function waitForCatalogModel(modelName: string): Promise<boolean> {
   const recipeCatalogOage = await aiLabPage.navigationBar.openRecipesCatalog();
   await recipeCatalogOage.waitForLoad();
 

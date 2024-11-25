@@ -82,6 +82,7 @@ export class AILabCatalogPage extends AILabBasePage {
     await playExpect(deleteButton).toBeEnabled();
     await deleteButton.focus();
     await deleteButton.click();
+    await this.page.waitForTimeout(1_000);
     await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
   }
 

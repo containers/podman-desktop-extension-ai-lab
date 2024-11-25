@@ -21,7 +21,7 @@ import type { Locator, Page } from '@playwright/test';
 export abstract class AILabBasePage {
   readonly page: Page;
   readonly webview: Page;
-  heading: Locator;
+  readonly heading: Locator;
 
   constructor(page: Page, webview: Page, heading: string | undefined) {
     this.page = page;

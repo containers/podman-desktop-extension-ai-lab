@@ -138,7 +138,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await catalogPage.deleteModel(modelName);
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await catalogPage.isModelDownloaded(modelName), { timeout: 300_000, intervals: [1_000] })
+          .poll(async () => await waitForDeleteCatalogModel(modelName), { timeout: 300_000, intervals: [2_500] })
           .toBeFalsy();
       });
     });
@@ -207,4 +207,14 @@ async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
 
   await imagesPage.deleteAllUnusedImages();
   await playExpect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 60_000 }).toBe(0);
+}
+
+async function waitForDeleteCatalogModel(modelName: string): Promise<boolean> {
+  const recipeCatalogOage = await aiLabPage.navigationBar.openRecipesCatalog();
+  await recipeCatalogOage.waitForLoad();
+
+  const catalogPage = await aiLabPage.navigationBar.openCatalog();
+  await catalogPage.waitForLoad();
+
+  return await catalogPage.isModelDownloaded(modelName);
 }

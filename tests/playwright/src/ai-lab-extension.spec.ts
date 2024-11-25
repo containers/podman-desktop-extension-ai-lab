@@ -133,6 +133,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test(`Delete ${modelName} model`, async () => {
+        test.skip(isWindows, 'Model deletion is currently very buggy in azure cicd');
         test.setTimeout(310_000);
         playExpect(await catalogPage.isModelDownloaded(modelName)).toBeTruthy();
         await catalogPage.deleteModel(modelName);

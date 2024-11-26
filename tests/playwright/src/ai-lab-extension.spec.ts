@@ -31,6 +31,7 @@ import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-pag
 import { AILabExtensionDetailsPage } from './model/podman-extension-ai-lab-details-page';
 import type { AILabCatalogPage } from './model/ai-lab-catalog-page';
 import { handleWebview } from './utils/webviewHandler';
+import type { AILabServiceDetailsPage } from './model/ai-lab-service-details-page';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -141,6 +142,50 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
           // eslint-disable-next-line sonarjs/no-nested-functions
           .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [2_500] })
           .toBeFalsy();
+      });
+    });
+  });
+
+  ['ggerganov/whisper.cpp'].forEach(modelName => {
+    test.describe.serial(`Model service creation and deletion`, () => {
+      let catalogPage: AILabCatalogPage;
+      let modelServiceDetailsPage: AILabServiceDetailsPage;
+
+      test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
+        [page, webview] = await handleWebview(runner, page, navigationBar);
+        aiLabPage = new AILabPage(page, webview);
+        await aiLabPage.navigationBar.waitForLoad();
+
+        catalogPage = await aiLabPage.navigationBar.openCatalog();
+        await catalogPage.waitForLoad();
+      });
+
+      test(`Download ${modelName} model if not available`, async () => {
+        test.setTimeout(310_000);
+        if (!(await catalogPage.isModelDownloaded(modelName))) {
+          await catalogPage.downloadModel(modelName);
+        }
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
+          .toBeTruthy();
+      });
+
+      test(`Create model service for ${modelName}`, async () => {
+        test.setTimeout(310_000);
+        const modelServiceCreationPage = await catalogPage.createModelService(modelName);
+        await modelServiceCreationPage.waitForLoad();
+
+        modelServiceDetailsPage = await modelServiceCreationPage.createService();
+        await modelServiceDetailsPage.waitForLoad();
+
+        await playExpect(modelServiceDetailsPage.modelName).toContainText(modelName);
+      });
+
+      test(`Delete model service for ${modelName}`, async () => {
+        test.setTimeout(150_000);
+        const modelServicePage = await modelServiceDetailsPage.deleteService();
+        await playExpect(modelServicePage.heading).toBeVisible({ timeout: 120_000 });
       });
     });
   });

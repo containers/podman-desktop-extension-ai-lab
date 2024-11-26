@@ -19,12 +19,16 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
+import { AiModelServicePage } from './ai-lab-model-service-page';
+import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
 
 export class AILabServiceDetailsPage extends AILabBasePage {
   readonly endpointURL: Locator;
   readonly inferenceServerType: Locator;
   readonly modelName: Locator;
   readonly codeSnippet: Locator;
+  readonly deleteServiceButton: Locator;
+  readonly stopServiceButton: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Service details');
@@ -32,9 +36,24 @@ export class AILabServiceDetailsPage extends AILabBasePage {
     this.inferenceServerType = this.webview.getByLabel('Inference Type', { exact: true });
     this.modelName = this.webview.getByLabel('Model name', { exact: true });
     this.codeSnippet = this.webview.getByLabel('Code Snippet', { exact: true });
+    this.deleteServiceButton = this.webview.getByRole('button', { name: 'Delete service' });
+    this.stopServiceButton = this.webview.getByRole('button', { name: 'Stop service' });
   }
 
   async waitForLoad(): Promise<void> {
     await playExpect(this.heading).toBeVisible();
+  }
+
+  async deleteService(): Promise<AiModelServicePage> {
+    await playExpect(this.deleteServiceButton).toBeEnabled();
+    await this.deleteServiceButton.click();
+    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    return new AiModelServicePage(this.page, this.webview);
+  }
+
+  async getInferenceServerPort(): Promise<string> {
+    const split = (await this.endpointURL.textContent())?.split(':');
+    const port = split ? split[split.length - 1].split('/')[0] : '';
+    return port;
   }
 }

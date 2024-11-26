@@ -52,6 +52,15 @@ export class AILabCreatingModelServicePage extends AILabBasePage {
     return content;
   }
 
+  async getLastStatusIconClass(): Promise<string> {
+    const statusList = await this.getStatusListLocator();
+
+    if (statusList.length < 1) return '';
+
+    const icon = statusList[statusList.length - 1].getByRole('img');
+    return (await icon.getAttribute('class')) ?? '';
+  }
+
   async createService(modelName: string = '', port: number = 0): Promise<AILabServiceDetailsPage> {
     if (modelName) {
       await this.modelInput.fill(modelName);
@@ -69,6 +78,9 @@ export class AILabCreatingModelServicePage extends AILabBasePage {
     await playExpect
       .poll(async () => await this.getCurrentStatus(), { timeout: 300_000 })
       .toContain('Creating container');
+    await playExpect
+      .poll(async () => await this.getLastStatusIconClass(), { timeout: 300_000 })
+      .toContain('text-green-500');
     await playExpect(this.openServiceDetailsButton).toBeEnabled();
     await this.openServiceDetailsButton.click();
     return new AILabServiceDetailsPage(this.page, this.webview);

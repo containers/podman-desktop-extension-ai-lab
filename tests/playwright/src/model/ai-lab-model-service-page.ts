@@ -25,12 +25,14 @@ export class AiModelServicePage extends AILabBasePage {
   readonly additionalActions: Locator;
   readonly deleteSelectedItems: Locator;
   readonly toggleAllCheckbox: Locator;
+  readonly newModelButton: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Model Services');
     this.additionalActions = this.webview.getByRole('group', { name: 'additionalActions' });
     this.deleteSelectedItems = this.additionalActions.getByRole('button', { name: 'Delete' });
     this.toggleAllCheckbox = this.webview.getByRole('checkbox').and(this.webview.getByLabel('Toggle all'));
+    this.newModelButton = this.additionalActions.getByRole('button', { name: 'New Model Service' });
   }
 
   async waitForLoad(): Promise<void> {

@@ -20,6 +20,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { AILabCreatingModelServicePage } from './ai-lab-creating-model-service-page';
 
 export class AILabCatalogPage extends AILabBasePage {
   readonly catalogTable: Locator;
@@ -60,7 +61,7 @@ export class AILabCatalogPage extends AILabBasePage {
     await downloadButton.click();
   }
 
-  async createModelService(modelName: string): Promise<void> {
+  async createModelService(modelName: string): Promise<AILabCreatingModelServicePage> {
     const modelRow = await this.getModelRowByName(modelName);
     if (!modelRow) {
       throw new Error(`Model ${modelName} not found`);
@@ -70,7 +71,7 @@ export class AILabCatalogPage extends AILabBasePage {
     await createServiceButton.focus();
     await createServiceButton.click();
 
-    throw new Error('Not implemented');
+    return new AILabCreatingModelServicePage(this.page, this.webview);
   }
 
   async deleteModel(modelName: string): Promise<void> {

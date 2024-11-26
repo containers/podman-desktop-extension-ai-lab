@@ -19,6 +19,7 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
+import { AILabServiceDetailsPage } from './ai-lab-service-details-page';
 
 export class AILabCreatingModelServicePage extends AILabBasePage {
   readonly modelInput: Locator;
@@ -49,6 +50,26 @@ export class AILabCreatingModelServicePage extends AILabBasePage {
     if (!content) return '';
 
     return content;
+  }
+
+  async createService(modelName: string = '', port: number = 0): Promise<AILabServiceDetailsPage> {
+    if (modelName) {
+      await this.modelInput.fill(modelName);
+      await this.webview.keyboard.press('Enter');
+    }
+
+    if (port) {
+      await this.portInput.clear();
+      await this.portInput.fill(port.toString());
+    }
+
+    await playExpect(this.createButton).toBeEnabled();
+    await this.createButton.click();
+
+    await playExpect.poll(async () => await this.getCurrentStatus(), { timeout: 300_000 }).toBe('Creating container');
+    await playExpect(this.openServiceDetailsButton).toBeEnabled();
+    await this.openServiceDetailsButton.click();
+    return new AILabServiceDetailsPage(this.page, this.webview);
   }
 
   private async getStatusListLocator(): Promise<Locator[]> {

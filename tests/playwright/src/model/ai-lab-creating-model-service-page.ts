@@ -66,7 +66,9 @@ export class AILabCreatingModelServicePage extends AILabBasePage {
     await playExpect(this.createButton).toBeEnabled();
     await this.createButton.click();
 
-    await playExpect.poll(async () => await this.getCurrentStatus(), { timeout: 300_000 }).toBe('Creating container');
+    await playExpect
+      .poll(async () => await this.getCurrentStatus(), { timeout: 300_000 })
+      .toContain('Creating container');
     await playExpect(this.openServiceDetailsButton).toBeEnabled();
     await this.openServiceDetailsButton.click();
     return new AILabServiceDetailsPage(this.page, this.webview);

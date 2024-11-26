@@ -17,12 +17,21 @@
  ***********************************************************************/
 
 import { expect as playExpect } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 
 export class AILabServiceDetailsPage extends AILabBasePage {
+  readonly endpointURL: Locator;
+  readonly inferenceServerType: Locator;
+  readonly modelName: Locator;
+  readonly codeSnippet: Locator;
+
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Service details');
+    this.endpointURL = this.webview.getByLabel('Endpoint URL', { exact: true });
+    this.inferenceServerType = this.webview.getByLabel('Inference Type', { exact: true });
+    this.modelName = this.webview.getByLabel('Model name', { exact: true });
+    this.codeSnippet = this.webview.getByLabel('Code Snippet', { exact: true });
   }
 
   async waitForLoad(): Promise<void> {

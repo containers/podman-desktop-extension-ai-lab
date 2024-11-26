@@ -20,6 +20,7 @@ import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { AILabCreatingModelServicePage } from './ai-lab-creating-model-service-page';
 
 export class AiModelServicePage extends AILabBasePage {
   readonly additionalActions: Locator;
@@ -43,6 +44,12 @@ export class AiModelServicePage extends AILabBasePage {
     await playExpect(this.toggleAllCheckbox).toBeVisible();
     await this.toggleAllCheckbox.check();
     await playExpect(this.toggleAllCheckbox).toBeChecked();
+  }
+
+  async navigateToCreateNewModelPage(): Promise<AILabCreatingModelServicePage> {
+    await playExpect(this.newModelButton).toBeEnabled();
+    await this.newModelButton.click();
+    return new AILabCreatingModelServicePage(this.page, this.webview);
   }
 
   async deleteAllCurrentModels(): Promise<void> {

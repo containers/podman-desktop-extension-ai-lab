@@ -79,7 +79,7 @@ export class AILabCreatingModelServicePage extends AILabBasePage {
       .poll(async () => await this.getCurrentStatus(), { timeout: 300_000 })
       .toContain('Creating container');
     await playExpect
-      .poll(async () => await this.getLastStatusIconClass(), { timeout: 300_000 })
+      .poll(async () => await this.getLastStatusIconClass(), { timeout: 120_000 })
       .toContain('text-green-500');
     await playExpect(this.openServiceDetailsButton).toBeEnabled();
     await this.openServiceDetailsButton.click();

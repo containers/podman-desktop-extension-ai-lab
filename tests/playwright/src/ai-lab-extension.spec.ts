@@ -151,6 +151,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       let catalogPage: AILabCatalogPage;
       let modelServiceDetailsPage: AILabServiceDetailsPage;
 
+      test.skip(isLinux, `Skipping model service creation on Linux`);
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
         aiLabPage = new AILabPage(page, webview);

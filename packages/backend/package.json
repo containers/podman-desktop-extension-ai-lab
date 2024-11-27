@@ -104,7 +104,7 @@
     "@huggingface/gguf": "^0.1.12",
     "express": "^4.21.1",
     "express-openapi-validator": "^5.3.9",
-    "isomorphic-git": "^1.27.1",
+    "isomorphic-git": "^1.27.2",
     "js-yaml": "^4.1.0",
     "mustache": "^4.2.0",
     "openai": "^4.73.1",

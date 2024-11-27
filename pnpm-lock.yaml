@@ -20,7 +20,7 @@ importers:
     devDependencies:
       '@commitlint/cli':
         specifier: ^19.6.0
-        version: 19.6.0(@types/node@20.17.7)(typescript@5.7.2)
+        version: 19.6.0(@types/node@20.17.8)(typescript@5.7.2)
       '@commitlint/config-conventional':
         specifier: ^19.6.0
         version: 19.6.0
@@ -35,13 +35,13 @@ importers:
         version: 8.16.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.7.2)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
-        version: 2.1.3(vitest@2.1.3(@types/node@20.17.7)(jsdom@25.0.1))
+        version: 2.1.3(vitest@2.1.3(@types/node@20.17.8)(jsdom@25.0.1))
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
       commitlint:
         specifier: ^19.6.0
-        version: 19.6.0(@types/node@20.17.7)(typescript@5.7.2)
+        version: 19.6.0(@types/node@20.17.8)(typescript@5.7.2)
       concurrently:
         specifier: ^9.1.0
         version: 9.1.0
@@ -107,10 +107,10 @@ importers:
         version: 8.16.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.7.2)
       vite:
         specifier: ^5.4.11
-        version: 5.4.11(@types/node@20.17.7)
+        version: 5.4.11(@types/node@20.17.8)
       vitest:
         specifier: ^2.0.5
-        version: 2.1.3(@types/node@20.17.7)(jsdom@25.0.1)
+        version: 2.1.3(@types/node@20.17.8)(jsdom@25.0.1)
 
   packages/backend:
     dependencies:
@@ -217,7 +217,7 @@ importers:
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: 4.0.2
-        version: 4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7))
+        version: 4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8))
       '@tailwindcss/typography':
         specifier: ^0.5.15
         version: 0.5.15(tailwindcss@3.4.15)
@@ -229,7 +229,7 @@ importers:
         version: 6.6.3
       '@testing-library/svelte':
         specifier: ^5.2.6
-        version: 5.2.6(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7))(vitest@2.1.3(@types/node@20.17.7)(jsdom@25.0.1))
+        version: 5.2.6(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8))(vitest@2.1.3(@types/node@20.17.8)(jsdom@25.0.1))
       '@testing-library/user-event':
         specifier: ^14.5.2
         version: 14.5.2(@testing-library/dom@10.4.0)
@@ -271,7 +271,7 @@ importers:
         version: 3.4.15
       vitest:
         specifier: ^2.0.5
-        version: 2.1.3(@types/node@20.17.7)(jsdom@25.0.1)
+        version: 2.1.3(@types/node@20.17.8)(jsdom@25.0.1)
 
   tests/playwright:
     devDependencies:
@@ -1589,11 +1589,11 @@ packages:
   '@types/node@20.16.11':
     resolution: {integrity: sha512-y+cTCACu92FyA5fgQSAI8A1H429g7aSK2HsO7K4XYUWc4dY5IUz55JSDIYT6/VsOLfGy8vmvQYC2hfb0iF16Uw==}
 
-  '@types/node@20.17.6':
-    resolution: {integrity: sha512-VEI7OdvK2wP7XHnsuXbAJnEpEkF6NjSN45QJlL4VGqZSXsnicpesdTWsg9RISeSdYd3yeRj/y3k5KGjUXYnFwQ==}
-
   '@types/node@20.17.7':
     resolution: {integrity: sha512-sZXXnpBFMKbao30dUAvzKbdwA2JM1fwUtVEq/kxKuPI5mMwZiRElCpTXb0Biq/LMEVpXDZL5G5V0RPnxKeyaYg==}
+
+  '@types/node@20.17.8':
+    resolution: {integrity: sha512-ahz2g6/oqbKalW9sPv6L2iRbhLnojxjYWspAqhjvqSWBgGebEJT5GvRmk0QXPj3sbC6rU0GTQjPLQkmR8CObvA==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -5978,11 +5978,11 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@commitlint/cli@19.6.0(@types/node@20.17.7)(typescript@5.7.2)':
+  '@commitlint/cli@19.6.0(@types/node@20.17.8)(typescript@5.7.2)':
     dependencies:
       '@commitlint/format': 19.5.0
       '@commitlint/lint': 19.6.0
-      '@commitlint/load': 19.5.0(@types/node@20.17.7)(typescript@5.7.2)
+      '@commitlint/load': 19.5.0(@types/node@20.17.8)(typescript@5.7.2)
       '@commitlint/read': 19.5.0
       '@commitlint/types': 19.5.0
       tinyexec: 0.3.0
@@ -6029,7 +6029,7 @@ snapshots:
       '@commitlint/rules': 19.6.0
       '@commitlint/types': 19.5.0
 
-  '@commitlint/load@19.5.0(@types/node@20.17.7)(typescript@5.7.2)':
+  '@commitlint/load@19.5.0(@types/node@20.17.8)(typescript@5.7.2)':
     dependencies:
       '@commitlint/config-validator': 19.5.0
       '@commitlint/execute-rule': 19.5.0
@@ -6037,7 +6037,7 @@ snapshots:
       '@commitlint/types': 19.5.0
       chalk: 5.3.0
       cosmiconfig: 9.0.0(typescript@5.7.2)
-      cosmiconfig-typescript-loader: 5.1.0(@types/node@20.17.7)(cosmiconfig@9.0.0(typescript@5.7.2))(typescript@5.7.2)
+      cosmiconfig-typescript-loader: 5.1.0(@types/node@20.17.8)(cosmiconfig@9.0.0(typescript@5.7.2))(typescript@5.7.2)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -6428,25 +6428,25 @@ snapshots:
 
   '@sindresorhus/is@4.6.0': {}
 
-  '@sveltejs/vite-plugin-svelte-inspector@3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7)))(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7))':
+  '@sveltejs/vite-plugin-svelte-inspector@3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8)))(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7))
+      '@sveltejs/vite-plugin-svelte': 4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8))
       debug: 4.3.7(supports-color@9.4.0)
       svelte: 5.2.8
-      vite: 5.4.11(@types/node@20.17.7)
+      vite: 5.4.11(@types/node@20.17.8)
     transitivePeerDependencies:
       - supports-color
 
-  '@sveltejs/vite-plugin-svelte@4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7))':
+  '@sveltejs/vite-plugin-svelte@4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7)))(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7))
+      '@sveltejs/vite-plugin-svelte-inspector': 3.0.0-next.3(@sveltejs/vite-plugin-svelte@4.0.2(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8)))(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8))
       debug: 4.3.7(supports-color@9.4.0)
       deepmerge: 4.3.1
       kleur: 4.1.5
       magic-string: 0.30.12
       svelte: 5.2.8
-      vite: 5.4.11(@types/node@20.17.7)
-      vitefu: 1.0.3(vite@5.4.11(@types/node@20.17.7))
+      vite: 5.4.11(@types/node@20.17.8)
+      vitefu: 1.0.3(vite@5.4.11(@types/node@20.17.8))
     transitivePeerDependencies:
       - supports-color
 
@@ -6483,13 +6483,13 @@ snapshots:
       lodash: 4.17.21
       redent: 3.0.0
 
-  '@testing-library/svelte@5.2.6(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.7))(vitest@2.1.3(@types/node@20.17.7)(jsdom@25.0.1))':
+  '@testing-library/svelte@5.2.6(svelte@5.2.8)(vite@5.4.11(@types/node@20.17.8))(vitest@2.1.3(@types/node@20.17.8)(jsdom@25.0.1))':
     dependencies:
       '@testing-library/dom': 10.4.0
       svelte: 5.2.8
     optionalDependencies:
-      vite: 5.4.11(@types/node@20.17.7)
-      vitest: 2.1.3(@types/node@20.17.7)(jsdom@25.0.1)
+      vite: 5.4.11(@types/node@20.17.8)
+      vitest: 2.1.3(@types/node@20.17.8)(jsdom@25.0.1)
 
   '@testing-library/user-event@14.5.2(@testing-library/dom@10.4.0)':
     dependencies:
@@ -6517,7 +6517,7 @@ snapshots:
 
   '@types/conventional-commits-parser@5.0.0':
     dependencies:
-      '@types/node': 20.17.7
+      '@types/node': 20.17.8
 
   '@types/cookiejar@2.1.5': {}
 
@@ -6578,11 +6578,11 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
-  '@types/node@20.17.6':
+  '@types/node@20.17.7':
     dependencies:
       undici-types: 6.19.8
 
-  '@types/node@20.17.7':
+  '@types/node@20.17.8':
     dependencies:
       undici-types: 6.19.8
 
@@ -6590,7 +6590,7 @@ snapshots:
 
   '@types/postman-collection@3.5.10':
     dependencies:
-      '@types/node': 20.17.6
+      '@types/node': 20.17.7
 
   '@types/qs@6.9.16': {}
 
@@ -6876,7 +6876,7 @@ snapshots:
       '@typescript-eslint/types': 8.16.0
       eslint-visitor-keys: 4.2.0
 
-  '@vitest/coverage-v8@2.1.3(vitest@2.1.3(@types/node@20.17.7)(jsdom@25.0.1))':
+  '@vitest/coverage-v8@2.1.3(vitest@2.1.3(@types/node@20.17.8)(jsdom@25.0.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -6890,7 +6890,7 @@ snapshots:
       std-env: 3.7.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.3(@types/node@20.17.7)(jsdom@25.0.1)
+      vitest: 2.1.3(@types/node@20.17.8)(jsdom@25.0.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -6909,13 +6909,13 @@ snapshots:
     optionalDependencies:
       vite: 5.4.11(@types/node@20.16.11)
 
-  '@vitest/mocker@2.1.3(@vitest/spy@2.1.3)(vite@5.4.11(@types/node@20.17.7))':
+  '@vitest/mocker@2.1.3(@vitest/spy@2.1.3)(vite@5.4.11(@types/node@20.17.8))':
     dependencies:
       '@vitest/spy': 2.1.3
       estree-walker: 3.0.3
       magic-string: 0.30.12
     optionalDependencies:
-      vite: 5.4.11(@types/node@20.17.7)
+      vite: 5.4.11(@types/node@20.17.8)
 
   '@vitest/pretty-format@2.1.3':
     dependencies:
@@ -7351,9 +7351,9 @@ snapshots:
 
   commander@4.1.1: {}
 
-  commitlint@19.6.0(@types/node@20.17.7)(typescript@5.7.2):
+  commitlint@19.6.0(@types/node@20.17.8)(typescript@5.7.2):
     dependencies:
-      '@commitlint/cli': 19.6.0(@types/node@20.17.7)(typescript@5.7.2)
+      '@commitlint/cli': 19.6.0(@types/node@20.17.8)(typescript@5.7.2)
       '@commitlint/types': 19.5.0
     transitivePeerDependencies:
       - '@types/node'
@@ -7420,9 +7420,9 @@ snapshots:
 
   core-util-is@1.0.3: {}
 
-  cosmiconfig-typescript-loader@5.1.0(@types/node@20.17.7)(cosmiconfig@9.0.0(typescript@5.7.2))(typescript@5.7.2):
+  cosmiconfig-typescript-loader@5.1.0(@types/node@20.17.8)(cosmiconfig@9.0.0(typescript@5.7.2))(typescript@5.7.2):
     dependencies:
-      '@types/node': 20.17.7
+      '@types/node': 20.17.8
       cosmiconfig: 9.0.0(typescript@5.7.2)
       jiti: 1.21.6
       typescript: 5.7.2
@@ -7591,7 +7591,7 @@ snapshots:
   electron@33.2.0:
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 20.17.6
+      '@types/node': 20.17.7
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -10334,12 +10334,12 @@ snapshots:
       - supports-color
       - terser
 
-  vite-node@2.1.3(@types/node@20.17.7):
+  vite-node@2.1.3(@types/node@20.17.8):
     dependencies:
       cac: 6.7.14
       debug: 4.3.7(supports-color@9.4.0)
       pathe: 1.1.2
-      vite: 5.4.11(@types/node@20.17.7)
+      vite: 5.4.11(@types/node@20.17.8)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -10360,18 +10360,18 @@ snapshots:
       '@types/node': 20.16.11
       fsevents: 2.3.3
 
-  vite@5.4.11(@types/node@20.17.7):
+  vite@5.4.11(@types/node@20.17.8):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.49
       rollup: 4.24.0
     optionalDependencies:
-      '@types/node': 20.17.7
+      '@types/node': 20.17.8
       fsevents: 2.3.3
 
-  vitefu@1.0.3(vite@5.4.11(@types/node@20.17.7)):
+  vitefu@1.0.3(vite@5.4.11(@types/node@20.17.8)):
     optionalDependencies:
-      vite: 5.4.11(@types/node@20.17.7)
+      vite: 5.4.11(@types/node@20.17.8)
 
   vitest@2.1.3(@types/node@20.16.11)(jsdom@25.0.1):
     dependencies:
@@ -10408,10 +10408,10 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.3(@types/node@20.17.7)(jsdom@25.0.1):
+  vitest@2.1.3(@types/node@20.17.8)(jsdom@25.0.1):
     dependencies:
       '@vitest/expect': 2.1.3
-      '@vitest/mocker': 2.1.3(@vitest/spy@2.1.3)(vite@5.4.11(@types/node@20.17.7))
+      '@vitest/mocker': 2.1.3(@vitest/spy@2.1.3)(vite@5.4.11(@types/node@20.17.8))
       '@vitest/pretty-format': 2.1.3
       '@vitest/runner': 2.1.3
       '@vitest/snapshot': 2.1.3
@@ -10426,11 +10426,11 @@ snapshots:
       tinyexec: 0.3.0
       tinypool: 1.0.1
       tinyrainbow: 1.2.0
-      vite: 5.4.11(@types/node@20.17.7)
-      vite-node: 2.1.3(@types/node@20.17.7)
+      vite: 5.4.11(@types/node@20.17.8)
+      vite-node: 2.1.3(@types/node@20.17.8)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 20.17.7
+      '@types/node': 20.17.8
       jsdom: 25.0.1
     transitivePeerDependencies:
       - less

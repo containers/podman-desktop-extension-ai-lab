@@ -172,7 +172,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
           .toBeTruthy();
       });
 
-      test(`Create model service for ${modelName}`, async () => {
+      test(`Create model service from catalog for ${modelName}`, async () => {
         test.setTimeout(310_000);
         const modelServiceCreationPage = await catalogPage.createModelService(modelName);
         await modelServiceCreationPage.waitForLoad();

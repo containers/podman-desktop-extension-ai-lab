@@ -313,6 +313,100 @@ describe('perform', () => {
     expect(server.labels['gpu']).toBe('nvidia');
   });
 
+  test('gpu experimental should collect GPU data and find first supported gpu - entry 1 supported', async () => {
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+      apiPort: 10434,
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'dummy-model',
+        vendor: GPUVendor.UNKNOWN,
+      },
+      {
+        vram: 1024,
+        model: 'nvidia',
+        vendor: GPUVendor.NVIDIA,
+      },
+    ]);
+
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    const server = await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Cmd: [
+          '-c',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
+        ],
+      }),
+    );
+    expect(gpuManager.collectGPUs).toHaveBeenCalled();
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.cuda, expect.any(Function));
+    expect('gpu' in server.labels).toBeTruthy();
+    expect(server.labels['gpu']).toBe('nvidia');
+  });
+
+  test('gpu experimental should collect GPU data and find first supported gpu - entry 0 supported', async () => {
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+      apiPort: 10434,
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'nvidia',
+        vendor: GPUVendor.NVIDIA,
+      },
+      {
+        vram: 1024,
+        model: 'dummy-model',
+        vendor: GPUVendor.UNKNOWN,
+      },
+    ]);
+
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    const server = await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Cmd: [
+          '-c',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
+        ],
+      }),
+    );
+    expect(gpuManager.collectGPUs).toHaveBeenCalled();
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.cuda, expect.any(Function));
+    expect('gpu' in server.labels).toBeTruthy();
+    expect(server.labels['gpu']).toBe('nvidia');
+  });
+
   test('unknown gpu on unsupported vmtype should not provide gpu labels', async () => {
     vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
       experimentalGPU: true,

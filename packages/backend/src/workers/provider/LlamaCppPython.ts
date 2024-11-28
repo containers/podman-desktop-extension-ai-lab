@@ -135,6 +135,24 @@ export class LlamaCppPython extends InferenceProvider {
             CgroupPermissions: '',
           });
           break;
+        case VMType.UNKNOWN:
+          // Only supports NVIDIA
+          if (gpu.vendor !== GPUVendor.NVIDIA) break;
+
+          supported = true;
+          devices.push({
+            PathOnHost: 'nvidia.com/gpu=all',
+            PathInContainer: '',
+            CgroupPermissions: '',
+          });
+
+          user = '0';
+
+          entrypoint = '/usr/bin/sh';
+
+          cmd = ['-c', 'chmod 755 ./run.sh && ./run.sh'];
+
+          break;
       }
 
       // adding gpu capabilities in supported architectures
@@ -197,9 +215,21 @@ export class LlamaCppPython extends InferenceProvider {
     if (this.configurationRegistry.getExtensionConfiguration().experimentalGPU) {
       const gpus: IGPUInfo[] = await this.gpuManager.collectGPUs();
       if (gpus.length === 0) throw new Error('no gpu was found.');
-      if (gpus.length > 1)
-        console.warn(`found ${gpus.length} gpus: using multiple GPUs is not supported. Using ${gpus[0].model}.`);
-      gpu = gpus[0];
+      let selectedGPU = 0;
+      if (gpus.length > 1) {
+        // Look for a GPU that is of a known type, use the first one found.
+        // Fall back to the first one if no GPUs are of known type.
+        for (let i = 0; i < gpus.length; i++) {
+          if (gpus[i].vendor !== GPUVendor.UNKNOWN) {
+            selectedGPU = i;
+            break;
+          }
+        }
+        console.warn(
+          `found ${gpus.length} gpus: using multiple GPUs is not supported. Using ${gpus[selectedGPU].model}.`,
+        );
+      }
+      gpu = gpus[selectedGPU];
     }
 
     let connection: ContainerProviderConnection | undefined = undefined;
@@ -224,7 +254,7 @@ export class LlamaCppPython extends InferenceProvider {
     const containerCreateOptions: ContainerCreateOptions = await this.getContainerCreateOptions(
       config,
       imageInfo,
-      connection.vmType as VMType,
+      vmType,
       gpu,
     );
 
@@ -254,6 +284,8 @@ export class LlamaCppPython extends InferenceProvider {
       case VMType.LIBKRUN_LABEL:
         return gpu ? llamacpp.vulkan : llamacpp.default;
       // no GPU support
+      case VMType.UNKNOWN:
+        return gpu?.vendor === GPUVendor.NVIDIA ? llamacpp.cuda : llamacpp.default;
       default:
         return llamacpp.default;
     }

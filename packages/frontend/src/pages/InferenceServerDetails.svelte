@@ -233,6 +233,7 @@ function handleOnChange(): void {
                           <CopyButton
                             top
                             class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
+                            aria-label="Endpoint URL"
                             content={service.labels['api']}>
                             {service.labels['api']}
                             <Fa class="ml-2" icon={faCopy} />
@@ -256,14 +257,16 @@ function handleOnChange(): void {
                         {#if 'gpu' in service.labels}
                           <Tooltip left tip={service.labels['gpu']}>
                             <div
-                              class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
+                              class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
+                              aria-label="Inference Type">
                               GPU Inference
                               <Fa spin={service.status === 'running'} class="ml-2" icon={faFan} />
                             </div>
                           </Tooltip>
                         {:else}
                           <div
-                            class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center">
+                            class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
+                            aria-label="Inference Type">
                             CPU Inference
                             <Fa class="ml-2" icon={faMicrochip} />
                           </div>
@@ -366,7 +369,8 @@ function handleOnChange(): void {
 
                 {#if snippet !== undefined}
                   <div
-                    class="bg-[var(--pd-details-empty-cmdline-bg)] text-[var(--pd-details-empty-cmdline-text)] rounded-md w-full p-4 mt-2 relative">
+                    class="bg-[var(--pd-details-empty-cmdline-bg)] text-[var(--pd-details-empty-cmdline-text)] rounded-md w-full p-4 mt-2 relative"
+                    aria-label="Code Snippet">
                     <code class="whitespace-break-spaces text-sm" bind:this={code}>
                       {snippet}
                     </code>

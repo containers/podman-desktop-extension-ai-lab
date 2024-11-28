@@ -87,7 +87,7 @@
       "backend": "llama-cpp"
     },
     {
-      "id": "chatbot-nodejs",
+      "id": "chatbot-javascript-react",
       "description": "This is a Node.js based chat demo application.",
       "name": "Node.js based ChatBot",
       "repository": "https://github.com/containers/ai-lab-recipes",

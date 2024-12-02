@@ -6,7 +6,7 @@
       "description" : "This is a Streamlit chat demo application.",
       "name" : "ChatBot",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "v1.3.3.1",
+      "ref": "v1.3.3.2",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -24,7 +24,7 @@
       "description" : "This is a Streamlit demo application for summarizing text.",
       "name" : "Summarizer",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "v1.3.3.1",
+      "ref": "v1.3.3.2",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -42,7 +42,7 @@
       "description" : "This is a code-generation demo application.",
       "name" : "Code Generation",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "v1.3.3.1",
+      "ref": "v1.3.3.2",
       "icon": "generator",
       "categories": [
         "natural-language-processing"
@@ -61,7 +61,7 @@
       "description" : "This is a Streamlit RAG enabled chat demo application.",
       "name" : "RAG Chatbot",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "v1.3.3.1",
+      "ref": "v1.3.3.2",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -80,7 +80,7 @@
       "description": "This is a Quarkus-based chat demo application.",
       "name": "Java-based ChatBot (Quarkus)",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "v1.3.3.1",
+      "ref": "v1.3.3.2",
       "icon": "natural-language-processing",
       "categories": ["natural-language-processing"],
       "basedir": "recipes/natural_language_processing/chatbot-java-quarkus",
@@ -114,7 +114,7 @@
       "description": "This is a Node.js based chat demo application.",
       "name": "Node.js based ChatBot",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "26b10d23c8579ab3b9dacd39d77a0172ad3aec82",
+      "ref": "v1.3.3.2",
       "icon": "natural-language-processing",
       "categories": ["natural-language-processing"],
       "basedir": "recipes/natural_language_processing/chatbot-nodejs",
@@ -131,7 +131,7 @@
       "description" : "This is a Streamlit function calling enabled demo application.",
       "name" : "Function calling",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "v1.3.3.1",
+      "ref": "v1.3.3.2",
       "icon": "natural-language-processing",
       "categories": [
         "natural-language-processing"
@@ -148,7 +148,7 @@
       "description" : "This is an audio to text demo application.",
       "name" : "Audio to Text",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "v1.3.3.1",
+      "ref": "v1.3.3.2",
       "icon": "generator",
       "categories": [
         "audio"
@@ -165,7 +165,7 @@
       "description" : "This is an object detection demo application.",
       "name" : "Object Detection",
       "repository": "https://github.com/containers/ai-lab-recipes",
-      "ref": "v1.3.3.1",
+      "ref": "v1.3.3.2",
       "icon": "generator",
       "categories": [
         "computer-vision"

@@ -181,6 +181,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await modelServiceDetailsPage.waitForLoad();
 
         await playExpect(modelServiceDetailsPage.modelName).toContainText(modelName);
+        await playExpect(modelServiceDetailsPage.inferenceServerType).toContainText('Inference');
       });
 
       test(`Delete model service for ${modelName}`, async () => {

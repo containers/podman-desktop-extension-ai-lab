@@ -63,7 +63,6 @@
           "description": "Display GPU promotion banner",
           "hidden": true
         }
-
       }
     },
     "icons": {
@@ -125,6 +124,6 @@
     "@types/supertest": "^6.0.2",
     "openapi-typescript": "^7.4.4",
     "supertest": "^7.0.0",
-    "vitest": "^2.0.5"
+    "vitest": "^2.1.8"
   }
 }

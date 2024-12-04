@@ -227,13 +227,12 @@ function handleOnChange(): void {
                   {#if service.status === 'running'}
                     <div class="flex flex-col gap-y-2">
                       <span class="text-sm text-[var(--pd-content-card-text)]">Inference Endpoint URL</span>
-                      <div class="flex items-center gap-x-4">
+                      <div class="flex items-center gap-x-4" aria-label="Endpoint URL">
                         <!-- API URL -->
                         {#if 'api' in service.labels}
                           <CopyButton
                             top
                             class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
-                            aria-label="Endpoint URL"
                             content={service.labels['api']}>
                             {service.labels['api']}
                             <Fa class="ml-2" icon={faCopy} />

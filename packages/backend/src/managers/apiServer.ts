@@ -72,7 +72,6 @@ export class ApiServer implements Disposable {
   async init(): Promise<void> {
     const app = express();
 
-    // eslint-disable-next-line sonarjs/new-cap
     const router = express.Router();
     router.use(express.json());
 

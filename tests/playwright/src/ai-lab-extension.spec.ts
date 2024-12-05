@@ -188,7 +188,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         const port = await modelServiceDetailsPage.getInferenceServerPort();
         const url = `http://localhost:${port}`;
         const response = await request.get(url);
-        playExpect(response.status()).toBe(200);
+        playExpect(response.ok()).toBeTruthy();
         playExpect(await response.text()).toContain('hello');
       });
 

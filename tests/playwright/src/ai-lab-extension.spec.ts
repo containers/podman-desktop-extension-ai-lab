@@ -184,6 +184,14 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await playExpect(modelServiceDetailsPage.inferenceServerType).toContainText('Inference');
       });
 
+      test(`Make GET request to the model service for ${modelName}`, async ({ request }) => {
+        const port = await modelServiceDetailsPage.getInferenceServerPort();
+        const url = `http://localhost:${port}`;
+        const response = await request.get(url);
+        playExpect(response.status()).toBe(200);
+        playExpect(await response.text()).toContain('hello');
+      });
+
       test(`Delete model service for ${modelName}`, async () => {
         test.setTimeout(150_000);
         const modelServicePage = await modelServiceDetailsPage.deleteService();

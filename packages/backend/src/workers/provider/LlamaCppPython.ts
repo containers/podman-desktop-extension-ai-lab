@@ -35,6 +35,7 @@ import { VMType } from '@shared/src/models/IPodman';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import { llamacpp } from '../../assets/inference-images.json';
+import * as fs from 'node:fs';
 
 export const SECOND: number = 1_000_000_000;
 
@@ -135,6 +136,26 @@ export class LlamaCppPython extends InferenceProvider {
             CgroupPermissions: '',
           });
           break;
+        case VMType.UNKNOWN:
+          // This is linux with podman locally installed
+
+          // Linux GPU support currently requires NVIDIA GPU with CDI configured
+          if (!this.isNvidiaCDIConfigured(gpu)) break;
+
+          supported = true;
+          devices.push({
+            PathOnHost: 'nvidia.com/gpu=all',
+            PathInContainer: '',
+            CgroupPermissions: '',
+          });
+
+          user = '0';
+
+          entrypoint = '/usr/bin/sh';
+
+          cmd = ['-c', 'chmod 755 ./run.sh && ./run.sh'];
+
+          break;
       }
 
       // adding gpu capabilities in supported architectures
@@ -224,7 +245,7 @@ export class LlamaCppPython extends InferenceProvider {
     const containerCreateOptions: ContainerCreateOptions = await this.getContainerCreateOptions(
       config,
       imageInfo,
-      connection.vmType as VMType,
+      vmType,
       gpu,
     );
 
@@ -254,8 +275,29 @@ export class LlamaCppPython extends InferenceProvider {
       case VMType.LIBKRUN_LABEL:
         return gpu ? llamacpp.vulkan : llamacpp.default;
       // no GPU support
+      case VMType.UNKNOWN:
+        return this.isNvidiaCDIConfigured(gpu) ? llamacpp.cuda : llamacpp.default;
       default:
         return llamacpp.default;
     }
+  }
+
+  protected isNvidiaCDIConfigured(gpu?: IGPUInfo): boolean {
+    // NVIDIA cdi must be set up to use GPU acceleration on Linux.
+    // Check the known locations for the configuration file
+    const knownLocations = [
+      '/etc/cdi/nvidia.yaml', // Fedora
+    ];
+
+    if (gpu?.vendor !== GPUVendor.NVIDIA) return false;
+
+    let cdiSetup = false;
+    for (const location of knownLocations) {
+      if (fs.existsSync(location)) {
+        cdiSetup = true;
+        break;
+      }
+    }
+    return cdiSetup;
   }
 }

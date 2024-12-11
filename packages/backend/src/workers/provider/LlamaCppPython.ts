@@ -197,9 +197,10 @@ export class LlamaCppPython extends InferenceProvider {
     if (this.configurationRegistry.getExtensionConfiguration().experimentalGPU) {
       const gpus: IGPUInfo[] = await this.gpuManager.collectGPUs();
       if (gpus.length === 0) throw new Error('no gpu was found.');
-      if (gpus.length > 1)
-        console.warn(`found ${gpus.length} gpus: using multiple GPUs is not supported. Using ${gpus[0].model}.`);
-      gpu = gpus[0];
+
+      // Look for a GPU that is of a known type, use the first one found.
+      // Fall back to the first one if no GPUs are of known type.
+      gpu = gpus.find(({ vendor }) => vendor !== GPUVendor.UNKNOWN) ?? gpus[0];
     }
 
     let connection: ContainerProviderConnection | undefined = undefined;

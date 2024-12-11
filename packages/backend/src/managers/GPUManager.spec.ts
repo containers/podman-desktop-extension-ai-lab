@@ -105,3 +105,25 @@ test('NVIDIA controller should return intel vendor', async () => {
     },
   ]);
 });
+
+test('NVIDIA controller can have vendor "NVIDIA Corporation"', async () => {
+  vi.mocked(graphics).mockResolvedValue({
+    controllers: [
+      {
+        vendor: 'NVIDIA Corporation',
+        model: 'NVIDIA GeForce GTX 1060 6GB',
+        vram: 6144,
+      } as unknown as Systeminformation.GraphicsControllerData,
+    ],
+    displays: [],
+  });
+
+  const manager = new GPUManager(webviewMock);
+  expect(await manager.collectGPUs()).toStrictEqual([
+    {
+      vendor: GPUVendor.NVIDIA,
+      model: 'NVIDIA GeForce GTX 1060 6GB',
+      vram: 6144,
+    },
+  ]);
+});

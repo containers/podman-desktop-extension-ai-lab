@@ -53,6 +53,7 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
       case 'Intel Corporation':
         return GPUVendor.INTEL;
       case 'NVIDIA':
+      case 'NVIDIA Corporation':
         return GPUVendor.NVIDIA;
       case 'Apple':
         return GPUVendor.APPLE;

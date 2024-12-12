@@ -187,9 +187,13 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       test(`Make GET request to the model service for ${modelName}`, async ({ request }) => {
         const port = await modelServiceDetailsPage.getInferenceServerPort();
         const url = `http://localhost:${port}`;
-        const response = await request.get(url);
-        playExpect(response.ok()).toBeTruthy();
-        playExpect(await response.text()).toContain('hello');
+
+        // eslint-disable-next-line sonarjs/no-nested-functions
+        await playExpect(async () => {
+          const response = await request.get(url);
+          playExpect(response.ok()).toBeTruthy();
+          playExpect(await response.text()).toContain('hello');
+        }).toPass({ timeout: 30_000 });
       });
 
       test(`Delete model service for ${modelName}`, async () => {

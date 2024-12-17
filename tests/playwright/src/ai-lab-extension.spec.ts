@@ -32,6 +32,7 @@ import { AILabExtensionDetailsPage } from './model/podman-extension-ai-lab-detai
 import type { AILabCatalogPage } from './model/ai-lab-catalog-page';
 import { handleWebview } from './utils/webviewHandler';
 import type { AILabServiceDetailsPage } from './model/ai-lab-service-details-page';
+import type { AILabPlaygroundsPage } from './model/ai-lab-playgrounds-page';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -200,6 +201,63 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         test.setTimeout(150_000);
         const modelServicePage = await modelServiceDetailsPage.deleteService();
         await playExpect(modelServicePage.heading).toBeVisible({ timeout: 120_000 });
+      });
+    });
+  });
+
+  ['instructlab/granite-7b-lab-GGUF'].forEach(modelName => {
+    test.describe.serial(`AI Lan playground creation and deletion`, () => {
+      let catalogPage: AILabCatalogPage;
+      let playgroundsPage: AILabPlaygroundsPage;
+
+      const playgroundName = 'test playground';
+
+      test.skip(isLinux, `Skipping model service creation on Linux`);
+      test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
+        [page, webview] = await handleWebview(runner, page, navigationBar);
+        aiLabPage = new AILabPage(page, webview);
+        await aiLabPage.navigationBar.waitForLoad();
+
+        catalogPage = await aiLabPage.navigationBar.openCatalog();
+        await catalogPage.waitForLoad();
+      });
+
+      test(`Download ${modelName} model if not available`, async () => {
+        test.setTimeout(310_000);
+        if (!(await catalogPage.isModelDownloaded(modelName))) {
+          await catalogPage.downloadModel(modelName);
+        }
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
+          .toBeTruthy();
+      });
+
+      test(`Create AI Lab playground for ${modelName}`, async () => {
+        playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
+        await playgroundsPage.waitForLoad();
+
+        await playgroundsPage.createNewPlayground(playgroundName);
+        await playgroundsPage.waitForLoad();
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await playgroundsPage.doesPlaygroundExist(playgroundName), { timeout: 60_000 })
+          .toBeTruthy();
+      });
+
+      test(`Delete AI Lab playground for ${modelName}`, async () => {
+        await playgroundsPage.deletePlayground(playgroundName);
+        await playgroundsPage.waitForLoad();
+
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await playgroundsPage.doesPlaygroundExist(playgroundName), { timeout: 60_000 })
+          .toBeFalsy();
+      });
+
+      test.afterAll(`Cleaning up service model`, async () => {
+        test.setTimeout(60_000);
+        await cleanupServiceModels();
       });
     });
   });

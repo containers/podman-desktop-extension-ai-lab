@@ -20,6 +20,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { AILabPlaygroundDetailsPage } from './ai-lab-playground-details-page';
 
 export class AILabPlaygroundsPage extends AILabBasePage {
   readonly additionalActions: Locator;
@@ -64,6 +65,19 @@ export class AILabPlaygroundsPage extends AILabBasePage {
 
   async doesPlaygroundExist(playgroundName: string): Promise<boolean> {
     return (await this.getPlaygroundRowByName(playgroundName)) !== undefined;
+  }
+
+  async goToPlaygroundDetails(playgroundName: string): Promise<AILabPlaygroundDetailsPage> {
+    const playgroundRow = await this.getPlaygroundRowByName(playgroundName);
+    if (!playgroundRow) {
+      throw new Error(`Playground ${playgroundName} not found`);
+    }
+
+    const button = playgroundRow.getByRole('button', { name: playgroundName, exact: true });
+    await playExpect(button).toBeVisible();
+    await button.click();
+
+    return new AILabPlaygroundDetailsPage(this.page, this.webview, playgroundName);
   }
 
   private async getPlaygroundRowByName(playgroundName: string): Promise<Locator | undefined> {

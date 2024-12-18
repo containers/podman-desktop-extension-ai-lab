@@ -245,9 +245,22 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
           .toBeTruthy();
       });
 
+      test(`Go to AI Lab playground details for ${modelName}`, async () => {
+        const playgroundDetailsPage = await playgroundsPage.goToPlaygroundDetails(playgroundName);
+        await playgroundDetailsPage.waitForLoad();
+
+        await playExpect(playgroundDetailsPage.conversationSectionLocator).toBeVisible();
+        await playExpect(playgroundDetailsPage.temperatureSliderLocator).toBeVisible();
+        await playExpect(playgroundDetailsPage.maxTokensSliderLocator).toBeVisible();
+        await playExpect(playgroundDetailsPage.topPSliderLocator).toBeVisible();
+        await playExpect(playgroundDetailsPage.deletePlaygroundButton).toBeEnabled();
+      });
+
       test(`Delete AI Lab playground for ${modelName}`, async () => {
-        await playgroundsPage.deletePlayground(playgroundName);
+        playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
         await playgroundsPage.waitForLoad();
+
+        await playgroundsPage.deletePlayground(playgroundName);
 
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions

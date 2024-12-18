@@ -40,7 +40,7 @@ export class AILabPlaygroundsPage extends AILabBasePage {
     await playExpect(this.heading).toBeVisible();
   }
 
-  async createNewPlayground(name: string): Promise<this> {
+  async createNewPlayground(name: string, timeout = 180_000): Promise<this> {
     await playExpect(this.newPlaygroundButton).toBeEnabled();
     await this.newPlaygroundButton.click();
     await playExpect(this.playgroundNameInput).toBeVisible();
@@ -48,6 +48,7 @@ export class AILabPlaygroundsPage extends AILabBasePage {
     await playExpect(this.playgroundNameInput).toHaveValue(name);
     await playExpect(this.createPlaygroundButton).toBeEnabled();
     await this.createPlaygroundButton.click();
+    await playExpect(this.createPlaygroundButton).not.toBeVisible({ timeout });
     return this;
   }
 

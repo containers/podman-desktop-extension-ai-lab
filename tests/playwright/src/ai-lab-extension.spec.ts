@@ -234,6 +234,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test(`Create AI Lab playground for ${modelName}`, async () => {
+        test.setTimeout(310_000);
         playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
         await playgroundsPage.waitForLoad();
 

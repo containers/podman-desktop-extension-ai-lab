@@ -32,6 +32,7 @@ import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 import { llamacpp } from '../../assets/inference-images.json';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import { join } from 'node:path';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -208,7 +209,7 @@ describe('perform', () => {
         AutoRemove: false,
         Mounts: [
           {
-            Source: 'dummy-path/dummy-file.guff',
+            Source: join('dummy-path', 'dummy-file.guff'),
             Target: '/models/dummy-file.guff',
             Type: 'bind',
           },

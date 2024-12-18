@@ -27,6 +27,7 @@ import { getImageInfo } from '../../utils/inferenceUtils';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { VMType } from '@shared/src/models/IPodman';
+import { join } from 'node:path';
 
 vi.mock('@podman-desktop/api', () => ({
   containerEngine: {
@@ -243,7 +244,7 @@ test('provided connection should be used for pulling the image', async () => {
       AutoRemove: false,
       Mounts: [
         {
-          Source: 'path-to-file/random-file',
+          Source: join('path-to-file', 'random-file'),
           Target: '/models/random-file',
           Type: 'bind',
         },

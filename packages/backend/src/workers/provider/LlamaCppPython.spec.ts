@@ -208,8 +208,8 @@ describe('perform', () => {
         AutoRemove: false,
         Mounts: [
           {
-            Source: 'dummy-path',
-            Target: '/models',
+            Source: 'dummy-path/dummy-file.guff',
+            Target: '/models/dummy-file.guff',
             Type: 'bind',
           },
         ],

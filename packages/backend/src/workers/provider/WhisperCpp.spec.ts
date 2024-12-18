@@ -235,4 +235,33 @@ test('provided connection should be used for pulling the image', async () => {
   expect(getImageInfo).toHaveBeenCalledWith(connectionMock, 'localhost/whisper-cpp:custom', expect.any(Function));
   expect(podmanConnection.getContainerProviderConnection).toHaveBeenCalledWith(connection);
   expect(podmanConnection.findRunningContainerProviderConnection).not.toHaveBeenCalled();
+  // ensure the create container is called with appropriate arguments
+  expect(containerEngine.createContainer).toHaveBeenCalledWith('dummy-engine-id', {
+    Detach: true,
+    Env: ['MODEL_PATH=/models/random-file', 'HOST=0.0.0.0', 'PORT=8000'],
+    HostConfig: {
+      AutoRemove: false,
+      Mounts: [
+        {
+          Source: 'path-to-file/random-file',
+          Target: '/models/random-file',
+          Type: 'bind',
+        },
+      ],
+      PortBindings: {
+        '8000/tcp': [
+          {
+            HostPort: '8888',
+          },
+        ],
+      },
+      SecurityOpt: ['label=disable'],
+    },
+    Image: 'dummy-image-id',
+    Labels: {
+      'ai-lab-inference-server': '["whisper-cpp"]',
+      api: 'http://localhost:8888/inference',
+      hello: 'world',
+    },
+  });
 });

@@ -24,7 +24,7 @@ import type {
 } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { InferenceProvider } from './InferenceProvider';
-import { getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
+import { getLocalModelFile, getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
@@ -81,16 +81,22 @@ export class LlamaCppPython extends InferenceProvider {
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     };
 
-    const envs: string[] = [`MODEL_PATH=/models/${modelInfo.file.file}`, 'HOST=0.0.0.0', 'PORT=8000'];
-    envs.push(...getModelPropertiesForEnvironment(modelInfo));
+    // get model mount settings
+    const filename = getLocalModelFile(modelInfo);
+    const target = `/models/${modelInfo.file.file}`;
 
+    // mount the file directory to avoid adding other files to the containers
     const mounts: MountConfig = [
       {
-        Target: '/models',
-        Source: modelInfo.file.path,
+        Target: target,
+        Source: filename,
         Type: 'bind',
       },
     ];
+
+    // provide envs
+    const envs: string[] = [`MODEL_PATH=${target}`, 'HOST=0.0.0.0', 'PORT=8000'];
+    envs.push(...getModelPropertiesForEnvironment(modelInfo));
 
     const deviceRequests: DeviceRequest[] = [];
     const devices: Device[] = [];

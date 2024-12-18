@@ -206,7 +206,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
   });
 
   ['instructlab/granite-7b-lab-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lan playground creation and deletion`, () => {
+    test.describe.serial(`AI Lab playground creation and deletion`, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
 

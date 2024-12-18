@@ -40,7 +40,7 @@
     "svelte-select": "^5.8.3",
     "svelte-markdown": "^0.4.1",
     "svelte-preprocess": "^6.0.3",
-    "tailwindcss": "^3.4.16",
+    "tailwindcss": "^3.4.17",
     "vitest": "^2.1.8"
   }
 }

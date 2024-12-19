@@ -475,6 +475,129 @@ describe('perform', () => {
     expect('gpu' in server.labels).toBeTruthy();
   });
 
+  test('UNKNOWN vmtype should use llamacpp.default image - if not gpu accelerated', async () => {
+    vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
+      ...dummyConnection,
+      vmType: VMType.UNKNOWN,
+    });
+
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+      apiPort: 10434,
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'dummy-model',
+        vendor: GPUVendor.UNKNOWN,
+      },
+    ]);
+
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+
+    const server = await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.default, expect.any(Function));
+    expect(gpuManager.collectGPUs).toHaveBeenCalled();
+    expect('gpu' in server.labels).toBeFalsy();
+  });
+
+  test('UNKNOWN vmtype should use llamacpp.cuda image - if gpu accelerated and cdi configured', async () => {
+    vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
+      ...dummyConnection,
+      vmType: VMType.UNKNOWN,
+    });
+
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+      apiPort: 10434,
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'dummy-model',
+        vendor: GPUVendor.NVIDIA,
+      },
+    ]);
+
+    class CDILlamaCppPython extends LlamaCppPython {
+      override isNvidiaCDIConfigured(): boolean {
+        return true;
+      }
+    }
+
+    const provider = new CDILlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    const server = await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.cuda, expect.any(Function));
+    expect(gpuManager.collectGPUs).toHaveBeenCalled();
+    expect('gpu' in server.labels).toBeTruthy();
+  });
+
+  test('UNKNOWN vmtype should use llamacpp.default image - if gpu but cdi not configured', async () => {
+    vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
+      ...dummyConnection,
+      vmType: VMType.UNKNOWN,
+    });
+
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+      apiPort: 10434,
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'dummy-model',
+        vendor: GPUVendor.NVIDIA,
+      },
+    ]);
+
+    class NoCDILlamaCppPython extends LlamaCppPython {
+      override isNvidiaCDIConfigured(): boolean {
+        return false;
+      }
+    }
+    const provider = new NoCDILlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    const server = await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.default, expect.any(Function));
+    expect(gpuManager.collectGPUs).toHaveBeenCalled();
+    expect('gpu' in server.labels).toBeFalsy();
+  });
+
   test('provided connection should be used for pulling the image', async () => {
     const connection: ContainerProviderConnectionInfo = {
       name: 'Dummy Podman',

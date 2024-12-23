@@ -145,8 +145,8 @@ importers:
         specifier: ^7.6.3
         version: 7.6.3
       systeminformation:
-        specifier: ^5.23.14
-        version: 5.23.14
+        specifier: ^5.23.17
+        version: 5.23.17
       xml-js:
         specifier: ^1.6.11
         version: 1.6.11
@@ -4395,8 +4395,8 @@ packages:
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
-  systeminformation@5.23.14:
-    resolution: {integrity: sha512-mUHEuDQJJOpphvjcIrTY0iwLnoNo/qotr6SuN7v0ANOO0L3j89mfCrEuIVheS/9S9KGRt4Osqxh9GoF7BX49UA==}
+  systeminformation@5.23.17:
+    resolution: {integrity: sha512-jjcPB23YcoNN43Q+A0rPFsGMMSAW/Zeok8rMGko1DvO8b1SO7zizgAEVQ4lyJdlAuc6vTmqnkyMCDD3N9Uwksw==}
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -9352,7 +9352,7 @@ snapshots:
 
   symbol-tree@3.2.4: {}
 
-  systeminformation@5.23.14: {}
+  systeminformation@5.23.17: {}
 
   tailwindcss@3.4.17:
     dependencies:

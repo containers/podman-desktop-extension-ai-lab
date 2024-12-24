@@ -145,6 +145,8 @@ describe('sanitize', () => {
           readme: '',
           recommended: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
           backend: 'llama-cpp',
+          language: 'lang1',
+          frameworks: ['fw1'],
         },
       ],
       models: [
@@ -168,6 +170,8 @@ describe('sanitize', () => {
     expect(catalog.version).equals(CatalogFormat.CURRENT);
     expect(catalog.models[0].backend).toBeUndefined();
     expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
+    expect(catalog.recipes[0].language).equals('lang1');
+    expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
   });
 });
 

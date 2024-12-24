@@ -81,6 +81,20 @@ function openInstructLabContainer(): void {
 <FormPage title="Run InstructLab as a container">
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
+      <header>
+        <div class="w-full flex flex-row px-8">
+          {#if available}
+            <Button inProgress={!available} title="Open InstructLab container" on:click={openInstructLabContainer}>
+              Open InstructLab container
+            </Button>
+          {:else}
+            <Button title="Start InstructLab container" inProgress={loading} on:click={submit}>
+              Start InstructLab container
+            </Button>
+          {/if}
+          <Button title="Read documentation" type="link" on:click={submit}>Read documentation</Button>
+        </div>
+      </header>
       <!-- tasks tracked -->
       <TrackedTasks class="mx-5 mt-5" onChange={processTasks} trackingId={trackingId} tasks={$tasks} />
 
@@ -117,20 +131,6 @@ function openInstructLabContainer(): void {
           {#if errorMsg !== undefined}
             <ErrorMessage error={errorMsg} />
           {/if}
-          <footer>
-            <div class="w-full flex flex-row">
-              {#if available}
-                <Button inProgress={!available} title="Open InstructLab container" on:click={openInstructLabContainer}>
-                  Open InstructLab container
-                </Button>
-              {:else}
-                <Button title="Start InstructLab container" inProgress={loading} on:click={submit}>
-                  Start InstructLab container
-                </Button>
-              {/if}
-              <Button title="Read documentation" type="link" on:click={submit}>Read documentation</Button>
-            </div>
-          </footer>
         </div>
       </div>
     </div></svelte:fragment>

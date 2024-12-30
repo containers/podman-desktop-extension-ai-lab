@@ -145,8 +145,8 @@ importers:
         specifier: ^7.6.3
         version: 7.6.3
       systeminformation:
-        specifier: ^5.23.23
-        version: 5.23.23
+        specifier: ^5.23.25
+        version: 5.23.25
       xml-js:
         specifier: ^1.6.11
         version: 1.6.11
@@ -4399,8 +4399,8 @@ packages:
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
-  systeminformation@5.23.23:
-    resolution: {integrity: sha512-QhEWrMFZnzWjFZ7J65gikIXTrB8U6b7VTQ8pLaF/GUgJaJoUoSuucqalIVj91D/grhRUtXplL6qYwTn1A4FfhQ==}
+  systeminformation@5.23.25:
+    resolution: {integrity: sha512-sX/q1AL8gjn+VizKPieuHAiwMyPmM4/oj0mW434sEzwv3m0vghF4aO/VHUvmbMdIa3o5MVFgY9JtvX6M2dL36g==}
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -6459,6 +6459,14 @@ snapshots:
       '@vitest/utils': 2.1.8
       chai: 5.1.2
       tinyrainbow: 1.2.0
+
+  '@vitest/mocker@2.1.8(vite@5.4.11(@types/node@20.16.11))':
+    dependencies:
+      '@vitest/spy': 2.1.8
+      estree-walker: 3.0.3
+      magic-string: 0.30.12
+    optionalDependencies:
+      vite: 5.4.11(@types/node@20.16.11)
 
   '@vitest/mocker@2.1.8(vite@5.4.11(@types/node@20.17.10))':
     dependencies:
@@ -9351,7 +9359,7 @@ snapshots:
 
   symbol-tree@3.2.4: {}
 
-  systeminformation@5.23.23: {}
+  systeminformation@5.23.25: {}
 
   tailwindcss@3.4.17:
     dependencies:
@@ -9649,7 +9657,7 @@ snapshots:
   vitest@2.1.8(@types/node@20.16.11)(jsdom@25.0.1):
     dependencies:
       '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(vite@5.4.11(@types/node@20.17.10))
+      '@vitest/mocker': 2.1.8(vite@5.4.11(@types/node@20.16.11))
       '@vitest/pretty-format': 2.1.8
       '@vitest/runner': 2.1.8
       '@vitest/snapshot': 2.1.8

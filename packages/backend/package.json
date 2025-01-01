@@ -110,7 +110,7 @@
     "postman-code-generators": "^1.14.1",
     "postman-collection": "^4.5.0",
     "semver": "^7.6.3",
-    "systeminformation": "^5.23.25",
+    "systeminformation": "^5.24.3",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {

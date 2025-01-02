@@ -60,6 +60,10 @@ $effect(() => {
   if (!containerProviderConnection && startedContainerProviderConnectionInfo.length > 0) {
     containerProviderConnection = startedContainerProviderConnectionInfo[0];
   }
+
+  if (!containerProviderConnection) {
+    errorMsg = 'No running container engine found';
+  }
 });
 
 const onContainerPortInput = (event: Event): void => {
@@ -231,7 +235,7 @@ export function goToUpPage(): void {
                 title="Create service"
                 inProgress={loading}
                 on:click={submit}
-                disabled={!model || !containerPort}
+                disabled={!model || !containerPort || !containerProviderConnection}
                 icon={faPlusCircle}>
                 Create service
               </Button>

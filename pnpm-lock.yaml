@@ -124,8 +124,8 @@ importers:
         specifier: ^5.4.2
         version: 5.4.2(express@4.21.2)
       isomorphic-git:
-        specifier: ^1.27.2
-        version: 1.27.2
+        specifier: ^1.27.3
+        version: 1.27.3
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -3122,8 +3122,8 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  isomorphic-git@1.27.2:
-    resolution: {integrity: sha512-nCiz+ieOkWb5kDJSSckDTiMjTcgkxqH2xuiQmw1Y6O/spwx4d6TKYSfGCd4f71HGvUYcRSUGqJEI+3uN6UQlOw==}
+  isomorphic-git@1.27.3:
+    resolution: {integrity: sha512-pNUeske1tbFYAVSU/4cHryzEmr9XLCiIOL7Vr6JedCYnz6eMGpYf4f3KTnZYoHokuKyvq5JQ9BS2iksuH62zmw==}
     engines: {node: '>=12'}
     hasBin: true
 
@@ -8092,7 +8092,7 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  isomorphic-git@1.27.2:
+  isomorphic-git@1.27.3:
     dependencies:
       async-lock: 1.4.1
       clean-git-ref: 2.0.1

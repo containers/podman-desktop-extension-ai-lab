@@ -3,7 +3,7 @@
   "recipes": [
     {
       "id": "chatbot",
-      "description": "This is a Streamlit chat demo application.",
+      "description": "This recipe provides a blueprint for developers to create their own AI-powered chat applications using Streamlit.",
       "name": "ChatBot",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",
@@ -20,7 +20,7 @@
     },
     {
       "id": "summarizer",
-      "description": "This is a Streamlit demo application for summarizing text.",
+      "description": "This recipe guides into creating custom LLM-powered summarization applications using Streamlit.",
       "name": "Summarizer",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",
@@ -37,7 +37,7 @@
     },
     {
       "id": "codegeneration",
-      "description": "This is a code-generation demo application.",
+      "description": "This recipes showcases how to leverage LLM to build your own custom code generation application.",
       "name": "Code Generation",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",
@@ -54,7 +54,7 @@
     },
     {
       "id": "rag",
-      "description": "This is a Streamlit RAG enabled chat demo application.",
+      "description": "This application illustrates how to integrate RAG (Retrieval Augmented Generation) into LLM applications enabling to interact with your own documents.",
       "name": "RAG Chatbot",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",
@@ -71,7 +71,7 @@
     },
     {
       "id": "chatbot-java-quarkus",
-      "description": "This is a Quarkus-based chat demo application.",
+      "description": "This is a Java Quarkus-based recipe demonstrating how to create an AI-powered chat applications.",
       "name": "Java-based ChatBot (Quarkus)",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",
@@ -88,7 +88,7 @@
     },
     {
       "id": "chatbot-javascript-react",
-      "description": "This is a Node.js based chat demo application.",
+      "description": "This is a NodeJS based recipe demonstrating how to create an AI-powered chat applications.",
       "name": "Node.js based ChatBot",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",
@@ -105,7 +105,7 @@
     },
     {
       "id": "function-calling",
-      "description": "This is a Streamlit function calling enabled demo application.",
+      "description": "This recipes guides into multiple function calling use cases, showing the ability to structure data and chain multiple tasks, using Streamlit.",
       "name": "Function calling",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",
@@ -118,7 +118,7 @@
     },
     {
       "id": "audio_to_text",
-      "description": "This is an audio to text demo application.",
+      "description": "This application demonstrate how to use LLM for transcripting an audio into text.",
       "name": "Audio to Text",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",
@@ -131,7 +131,7 @@
     },
     {
       "id": "object_detection",
-      "description": "This is an object detection demo application.",
+      "description": "This recipe illustrates how to use LLM to interact with images and build object detection applications.",
       "name": "Object Detection",
       "repository": "https://github.com/containers/ai-lab-recipes",
       "ref": "v1.3.3.2",

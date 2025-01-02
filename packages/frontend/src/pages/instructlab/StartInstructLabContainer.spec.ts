@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import StartInstructLabContainer from '/@/pages/instructlab/StartInstructLabContainer.svelte';
-import { instructlabClient } from '/@/utils/client';
+import { instructlabClient, studioClient } from '/@/utils/client';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { VMType } from '@shared/src/models/IPodman';
 import userEvent from '@testing-library/user-event';
@@ -46,6 +46,9 @@ vi.mock('../../utils/client', async () => ({
   instructlabClient: {
     getInstructlabContainerId: vi.fn(),
     routeToInstructLabContainerTerminal: vi.fn().mockResolvedValue(undefined),
+  },
+  studioClient: {
+    openURL: vi.fn().mockResolvedValue(true),
   },
   rpcBrowser: {
     subscribe: (): unknown => {
@@ -97,4 +100,14 @@ test('click open button should redirect to InstructLab container', async () => {
 
   await userEvent.click(openBtn);
   expect(instructlabClient.routeToInstructLabContainerTerminal).toHaveBeenCalledWith('containerId');
+});
+
+test('documentation button should be displayed and redirect to external link', async () => {
+  render(StartInstructLabContainer);
+
+  const docBtn = screen.getByTitle('Read documentation');
+  expect(docBtn).toBeDefined();
+
+  await userEvent.click(docBtn);
+  expect(studioClient.openURL).toHaveBeenCalledWith('https://docs.instructlab.ai');
 });

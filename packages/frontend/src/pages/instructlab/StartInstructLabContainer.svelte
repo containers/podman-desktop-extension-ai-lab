@@ -6,7 +6,7 @@ import { Button, ErrorMessage, FormPage } from '@podman-desktop/ui-svelte';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
-import { instructlabClient } from '/@/utils/client';
+import { instructlabClient, studioClient } from '/@/utils/client';
 import type { Task } from '@shared/src/models/ITask';
 import { onMount } from 'svelte';
 
@@ -76,6 +76,10 @@ async function submit(): Promise<void> {
 function openInstructLabContainer(): void {
   instructlabClient.routeToInstructLabContainerTerminal(containerId!).catch(console.error);
 }
+
+function openDocumentation(): void {
+  studioClient.openURL('https://docs.instructlab.ai').catch(console.error);
+}
 </script>
 
 <FormPage title="Run InstructLab as a container">
@@ -92,7 +96,7 @@ function openInstructLabContainer(): void {
               Start InstructLab container
             </Button>
           {/if}
-          <Button title="Read documentation" type="link" on:click={submit}>Read documentation</Button>
+          <Button title="Read documentation" type="link" on:click={openDocumentation}>Read documentation</Button>
         </div>
       </header>
       <!-- tasks tracked -->

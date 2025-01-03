@@ -144,6 +144,8 @@ export function sanitizeRecipe(recipe: unknown): Recipe {
       basedir: 'basedir' in recipe && typeof recipe.basedir === 'string' ? recipe.basedir : undefined,
       recommended: 'recommended' in recipe && isStringArray(recipe.recommended) ? recipe.recommended : undefined,
       backend: 'backend' in recipe && typeof recipe.backend === 'string' ? recipe.backend : undefined,
+      language: 'language' in recipe && typeof recipe.language === 'string' ? recipe.language : undefined,
+      frameworks: 'frameworks' in recipe && isStringArray(recipe.frameworks) ? recipe.frameworks : undefined,
     };
   throw new Error('invalid recipe format');
 }

@@ -12,7 +12,7 @@ import { onMount } from 'svelte';
 
 interface Props {
   // The tracking id is a unique identifier provided by the
-  // backend when calling requestCreateInstrcutLabContainer
+  // backend when calling requestCreateInstructLabContainer
   trackingId?: string;
 }
 

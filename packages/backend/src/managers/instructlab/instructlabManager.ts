@@ -20,7 +20,12 @@ import type { InstructlabSession } from '@shared/src/models/instructlab/IInstruc
 import type { InstructlabContainerConfiguration } from '@shared/src/models/instructlab/IInstructlabContainerConfiguration';
 import { getRandomString } from '../../utils/randomUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { type ContainerProviderConnection, containerEngine, type ContainerCreateOptions } from '@podman-desktop/api';
+import {
+  type TelemetryLogger,
+  containerEngine,
+  type ContainerProviderConnection,
+  type ContainerCreateOptions,
+} from '@podman-desktop/api';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import instructlab_images from '../../assets/instructlab-images.json';
 import { getImageInfo } from '../../utils/inferenceUtils';
@@ -39,6 +44,7 @@ export class InstructlabManager {
     private taskRegistry: TaskRegistry,
     private podmanConnection: PodmanConnection,
     private containerRegistry: ContainerRegistry,
+    private telemetryLogger: TelemetryLogger,
   ) {
     this.#initialized = false;
     this.podmanConnection.onPodmanConnectionEvent(this.watchMachineEvent.bind(this));
@@ -139,6 +145,7 @@ export class InstructlabManager {
             containerId: containerId,
           },
         });
+        this.telemetryLogger.logUsage('instructlab.startContainer');
       })
       .catch((err: unknown) => {
         // Get all tasks using the tracker
@@ -160,6 +167,7 @@ export class InstructlabManager {
           state: 'error',
           error: `Something went wrong while trying to create an inference server ${String(err)}.`,
         });
+        this.telemetryLogger.logError('instructlab.startContainer', { error: err });
       });
     return trackingId;
   }

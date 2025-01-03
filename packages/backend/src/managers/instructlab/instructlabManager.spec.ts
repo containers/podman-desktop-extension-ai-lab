@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { TaskRegistry } from '../../registries/TaskRegistry';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
-import type { ContainerCreateResult, ContainerInfo, ImageInfo, Webview } from '@podman-desktop/api';
+import type { ContainerCreateResult, ContainerInfo, ImageInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
 import { containerEngine, EventEmitter } from '@podman-desktop/api';
 import type { PodmanConnection } from '../podmanConnection';
 import { INSTRUCTLAB_CONTAINER_LABEL, InstructlabManager } from './instructlabManager';
@@ -46,6 +46,11 @@ const podmanConnection: PodmanConnection = {
   findRunningContainerProviderConnection: vi.fn(),
 } as unknown as PodmanConnection;
 
+const telemetryMock = {
+  logUsage: vi.fn(),
+  logError: vi.fn(),
+} as unknown as TelemetryLogger;
+
 let instructlabManager: InstructlabManager;
 
 beforeAll(() => {
@@ -55,7 +60,7 @@ beforeAll(() => {
 beforeEach(() => {
   const containerRegistry = new ContainerRegistry();
   containerRegistry.init();
-  instructlabManager = new InstructlabManager('', taskRegistry, podmanConnection, containerRegistry);
+  instructlabManager = new InstructlabManager('', taskRegistry, podmanConnection, containerRegistry, telemetryMock);
 });
 
 test('getInstructLabContainer should return undefined if no containers', async () => {

@@ -282,6 +282,7 @@ export class Studio {
       this.#taskRegistry,
       this.#podmanConnection,
       this.#containerRegistry,
+      this.#telemetry,
     );
 
     /**

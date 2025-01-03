@@ -29,6 +29,7 @@ import { Messages } from '@shared/Messages';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 import LocalServer from './pages/server-information/LocalServer.svelte';
+import StartInstructLabContainer from '/@/pages/instructlab/StartInstructLabContainer.svelte';
 
 router.mode.hash();
 
@@ -103,6 +104,11 @@ onDestroy(() => {
             </Route>
             <Route path="/*">
               <TuneSessions />
+            </Route>
+          </Route>
+          <Route path="/instructlab/*" firstmatch>
+            <Route path="/try">
+              <StartInstructLabContainer trackingId={meta.query.trackingId} />
             </Route>
           </Route>
         {/if}

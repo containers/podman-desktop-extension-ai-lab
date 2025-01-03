@@ -27,6 +27,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { Task } from '@shared/src/models/ITask';
 import { router } from 'tinro';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import { VMType } from '@shared/src/models/IPodman';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -137,6 +138,14 @@ const fakeRemoteModel: ModelInfo = {
   name: 'Dummy Model 2',
 } as unknown as ModelInfo;
 
+const containerProviderConnection: ContainerProviderConnectionInfo = {
+  name: 'Dummy connainter connection provider',
+  status: 'started',
+  type: 'podman',
+  vmType: VMType.QEMU,
+  providerId: 'podman',
+};
+
 beforeEach(() => {
   vi.resetAllMocks();
 
@@ -148,7 +157,7 @@ beforeEach(() => {
   });
 
   // mock no ContainerConnectionInfo
-  mocks.getContainerConnectionInfoMock.mockReturnValue([]);
+  mocks.getContainerConnectionInfoMock.mockReturnValue([containerProviderConnection]);
 
   mocks.getModelsInfoMock.mockReturnValue([fakeRecommendedModel, fakeRemoteModel]);
 
@@ -304,14 +313,30 @@ test('Submit button should call requestPullApplication with proper arguments', a
   await selectOption(container, fakeRecommendedModel.name);
 
   const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
+  expect(button).toBeEnabled();
   await fireEvent.click(button);
 
   await vi.waitFor(() => {
     expect(studioClient.requestPullApplication).toHaveBeenCalledWith({
+      connection: containerProviderConnection,
       recipeId: fakeRecipe.id,
       modelId: fakeRecommendedModel.id,
     });
   });
+});
+
+test('Submit button should call requestPullApplication with proper arguments', async () => {
+  // mock no container connection available
+  mocks.getContainerConnectionInfoMock.mockReturnValue([]);
+
+  const { container, getByTitle } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  await selectOption(container, fakeRecommendedModel.name);
+
+  const button = getByTitle(`Start ${fakeRecipe.name} recipe`);
+  expect(button).toBeDisabled();
 });
 
 test('Loading task should make the submit button disabled', async () => {

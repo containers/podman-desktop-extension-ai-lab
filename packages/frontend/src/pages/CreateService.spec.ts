@@ -209,6 +209,24 @@ test('button click should call createInferenceServer', async () => {
   });
 });
 
+test('create button should be disabled if no container engine running', async () => {
+  // mock no container connection available
+  mocks.getContainerConnectionInfoMock.mockReturnValue([]);
+  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
+
+  const { getByTitle, getByRole } = render(CreateService);
+
+  const createBtn: HTMLElement = await vi.waitFor(() => {
+    const element = getByTitle('Create service');
+    expect(element).toBeDefined();
+    return element;
+  });
+  expect(createBtn).toBeDisabled();
+
+  const alert = getByRole('alert');
+  expect(alert).toHaveTextContent('No running container engine found');
+});
+
 test('tasks progress should not be visible by default', async () => {
   render(CreateService);
 

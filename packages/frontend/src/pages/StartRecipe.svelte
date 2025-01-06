@@ -7,7 +7,7 @@ import type { LocalRepository } from '@shared/src/models/ILocalRepository';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 import { localRepositories } from '/@/stores/localRepositories';
 import { modelsInfo } from '/@/stores/modelsInfo';
-import { Button, FormPage } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage } from '@podman-desktop/ui-svelte';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { InferenceType } from '@shared/src/models/IInference';
 import { studioClient } from '/@/utils/client';
@@ -51,6 +51,8 @@ let loading = $state(false);
 // All tasks are successful (not any in error)
 let completed: boolean = $state(false);
 
+let errorMsg: string | undefined = $state(undefined);
+
 $effect(() => {
   // Select default connection
   if (!containerProviderConnection && startedContainerProviderConnectionInfo.length > 0) {
@@ -59,6 +61,11 @@ $effect(() => {
   // Select default model
   if (!model && recipe && models.length > 0) {
     model = getFirstRecommended();
+  }
+
+  // if no container provider connection found this is an error
+  if (!containerProviderConnection) {
+    errorMsg = 'No running container engine found';
   }
 });
 
@@ -100,12 +107,19 @@ function populateModelFromTasks(trackedTasks: Task[]): void {
 async function submit(): Promise<void> {
   if (!recipe || !model) return;
 
-  const trackingId = await studioClient.requestPullApplication({
-    recipeId: $state.snapshot(recipe.id),
-    modelId: $state.snapshot(model.id),
-    connection: $state.snapshot(containerProviderConnection),
-  });
-  router.location.query.set('trackingId', trackingId);
+  errorMsg = undefined;
+
+  try {
+    const trackingId = await studioClient.requestPullApplication({
+      recipeId: $state.snapshot(recipe.id),
+      modelId: $state.snapshot(model.id),
+      connection: $state.snapshot(containerProviderConnection),
+    });
+    router.location.query.set('trackingId', trackingId);
+  } catch (err: unknown) {
+    console.error('Something wrong while trying to create the inference server.', err);
+    errorMsg = String(err);
+  }
 }
 
 export function goToUpPage(): void {
@@ -188,6 +202,9 @@ function handleOnClick(): void {
             {/if}
           </div>
 
+          {#if errorMsg !== undefined}
+            <ErrorMessage error={errorMsg} />
+          {/if}
           <footer>
             <div class="w-full flex flex-col">
               {#if completed}
@@ -197,7 +214,7 @@ function handleOnClick(): void {
                   title="Start {recipe.name} recipe"
                   inProgress={loading}
                   on:click={submit}
-                  disabled={!model || loading}
+                  disabled={!model || loading || !containerProviderConnection}
                   icon={faRocket}>
                   Start {recipe.name} recipe
                 </Button>

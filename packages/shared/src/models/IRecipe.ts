@@ -57,6 +57,6 @@ export interface Recipe {
    * server the recipe requires
    */
   backend?: string;
-  language?: string;
+  languages?: string[];
   frameworks?: string[];
 }

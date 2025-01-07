@@ -50,7 +50,7 @@ importers:
         version: 9.17.0(jiti@2.4.1)
       eslint-import-resolver-custom-alias:
         specifier: ^1.3.2
-        version: 1.3.2(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0(jiti@2.4.1))(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0)(eslint@9.17.0(jiti@2.4.1)))
+        version: 1.3.2(eslint-plugin-import@2.31.0)
       eslint-import-resolver-typescript:
         specifier: ^3.7.0
         version: 3.7.0(eslint-plugin-import@2.31.0)(eslint@9.17.0(jiti@2.4.1))
@@ -200,8 +200,8 @@ importers:
         specifier: ^6.7.2
         version: 6.7.2
       '@podman-desktop/ui-svelte':
-        specifier: 1.15.0
-        version: 1.15.0(svelte-fa@4.0.3(svelte@5.16.2))(svelte@5.16.2)
+        specifier: 1.16.0-202501060947-e37ef8fb5e8
+        version: 1.16.0-202501060947-e37ef8fb5e8(svelte-fa@4.0.3(svelte@5.16.2))(svelte@5.16.2)
       filesize:
         specifier: ^10.1.6
         version: 10.1.6
@@ -1279,8 +1279,8 @@ packages:
   '@podman-desktop/tests-playwright@1.15.0':
     resolution: {integrity: sha512-lDNHSr6dKaECuqwtpjDJRX/2SYYvK3o6uTQv1lMzuG3+99C27MqjgBPMcCvCYhFCT7BQDMZ9nJxeMlQsa2rJUg==}
 
-  '@podman-desktop/ui-svelte@1.15.0':
-    resolution: {integrity: sha512-CK6pYOe5+CW6u55KPpDhTRAELRkCJOUXDxS4+2lzyKpE9naAHOlozSoCRHuH/KPbPg66wPooCg/u2+qJjDyM7Q==}
+  '@podman-desktop/ui-svelte@1.16.0-202501060947-e37ef8fb5e8':
+    resolution: {integrity: sha512-3+SC9Udcg1vqM3yxJyxSCj0BAe7ki2iufAuLuYyU9PWvt9hjmLC0CxAcMAzdgkjsAhvs9G+Kj+s05Zm/r/A2YQ==}
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0
       svelte-fa: ^4.0.0
@@ -5964,7 +5964,7 @@ snapshots:
 
   '@podman-desktop/tests-playwright@1.15.0': {}
 
-  '@podman-desktop/ui-svelte@1.15.0(svelte-fa@4.0.3(svelte@5.16.2))(svelte@5.16.2)':
+  '@podman-desktop/ui-svelte@1.16.0-202501060947-e37ef8fb5e8(svelte-fa@4.0.3(svelte@5.16.2))(svelte@5.16.2)':
     dependencies:
       '@fortawesome/fontawesome-free': 6.7.2
       '@fortawesome/free-brands-svg-icons': 6.7.2
@@ -7270,7 +7270,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-custom-alias@1.3.2(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0(jiti@2.4.1))(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0)(eslint@9.17.0(jiti@2.4.1))):
+  eslint-import-resolver-custom-alias@1.3.2(eslint-plugin-import@2.31.0):
     dependencies:
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0(jiti@2.4.1))(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0)(eslint@9.17.0(jiti@2.4.1))
       glob-parent: 6.0.2
@@ -7300,7 +7300,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0(jiti@2.4.1))(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.17.0(jiti@2.4.1)))(eslint@9.17.0(jiti@2.4.1)):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0(jiti@2.4.1))(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.17.0(jiti@2.4.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -7335,7 +7335,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.17.0(jiti@2.4.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0(jiti@2.4.1))(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.17.0(jiti@2.4.1)))(eslint@9.17.0(jiti@2.4.1))
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0(jiti@2.4.1))(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.17.0(jiti@2.4.1))
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3

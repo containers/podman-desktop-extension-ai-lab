@@ -291,7 +291,8 @@ test('malformed catalog should create a notification', async () => {
 
 describe('spy on catalogUtils.sanitize', () => {
   beforeEach(() => {
-    // do not mock catalogUtils, as we want to use the original catalogUtils.hasCatalogWrongFormat
+    // do not mock the complete catalogUtils module but only spy the `sanitize` function,
+    // as we want to keep the original `catalogUtils.hasCatalogWrongFormat` function
     vi.spyOn(catalogUtils, 'sanitize');
   });
 

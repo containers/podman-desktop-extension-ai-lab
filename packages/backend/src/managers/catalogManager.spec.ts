@@ -18,7 +18,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import content from '../tests/ai-test.json';
 import userContent from '../tests/ai-user-test.json';
 import { type Webview, EventEmitter, window } from '@podman-desktop/api';
@@ -40,28 +40,14 @@ vi.mock('../assets/ai.json', async importOriginal => {
   };
 });
 
-vi.mock('node:fs', () => {
-  return {
-    existsSync: vi.fn(),
-    mkdirSync: vi.fn(),
-    promises: {
-      readFile: vi.fn(),
-      stat: vi.fn(),
-      writeFile: vi.fn(),
-      mkdir: vi.fn(),
-    },
-  };
-});
-
-const mocks = vi.hoisted(() => ({
-  withProgressMock: vi.fn(),
-}));
+vi.mock('node:fs');
+vi.mock('node:fs/promises');
+vi.mock('node:path');
 
 vi.mock('@podman-desktop/api', async () => {
   return {
     EventEmitter: vi.fn(),
     window: {
-      withProgress: mocks.withProgressMock,
       showNotification: vi.fn(),
     },
     ProgressLocation: {
@@ -82,11 +68,7 @@ let catalogManager: CatalogManager;
 beforeEach(async () => {
   vi.resetAllMocks();
 
-  const appUserDirectory = '.';
-
-  vi.mock('node:fs');
-
-  // mock EventEmitter logic
+  // mock EventEmitter logic for all tests
   vi.mocked(EventEmitter).mockImplementation(() => {
     const listeners: ((value: unknown) => void)[] = [];
     return {
@@ -99,6 +81,8 @@ beforeEach(async () => {
     } as unknown as EventEmitter<unknown>;
   });
 
+  const appUserDirectory = '.';
+
   // Creating CatalogManager
   catalogManager = new CatalogManager(
     {
@@ -110,7 +94,7 @@ beforeEach(async () => {
 
 describe('invalid user catalog', () => {
   beforeEach(async () => {
-    vi.spyOn(promises, 'readFile').mockResolvedValue('invalid json');
+    vi.mocked(promises.readFile).mockResolvedValue('invalid json');
     catalogManager.init();
   });
 
@@ -145,7 +129,7 @@ test('expect correct model is returned from default catalog with valid id when n
 
 test('expect correct model is returned with valid id when the user catalog is valid', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
-  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
@@ -159,19 +143,19 @@ test('expect correct model is returned with valid id when the user catalog is va
 
 test('expect to call writeFile in addLocalModelsToCatalog with catalog updated', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
-  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
   const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
-  vi.spyOn(promises, 'stat').mockResolvedValue({
+  vi.mocked(promises.stat).mockResolvedValue({
     size: 1,
     mtime: mtimeDate,
   } as Stats);
-  vi.spyOn(path, 'resolve').mockReturnValue('path');
+  vi.mocked(path.resolve).mockReturnValue('path');
 
-  const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
+  vi.mocked(promises.writeFile).mockResolvedValue();
 
   await catalogManager.importUserModels([
     {
@@ -181,25 +165,25 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
   ]);
 
   expect(promises.mkdir).toHaveBeenCalled();
-  expect(writeFileMock).toBeCalledWith('path', expect.any(String), 'utf-8');
+  expect(promises.writeFile).toBeCalledWith('path', expect.any(String), 'utf-8');
 });
 
 test('expect to call writeFile in removeLocalModelFromCatalog with catalog updated', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
-  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
-  vi.spyOn(path, 'resolve').mockReturnValue('path');
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+  vi.mocked(path.resolve).mockReturnValue('path');
 
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
-  const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
+  vi.mocked(promises.writeFile).mockResolvedValue();
 
   const updatedCatalog: ApplicationCatalog = { ...userContent };
   updatedCatalog.models = updatedCatalog.models.filter(m => m.id !== 'model1');
 
   await catalogManager.removeUserModel('model1');
 
-  expect(writeFileMock).toBeCalledWith(
+  expect(promises.writeFile).toBeCalledWith(
     'path',
     expect.stringContaining(`"version": "${catalogUtils.CatalogFormat.CURRENT}"`),
     'utf-8',
@@ -208,18 +192,18 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
 
 test('catalog should be the combination of user catalog and default catalog', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
-  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(userContent));
-  vi.spyOn(path, 'resolve').mockReturnValue('path');
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+  vi.mocked(path.resolve).mockReturnValue('path');
 
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().length > userContent.models.length);
 
   const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
-  vi.spyOn(promises, 'stat').mockResolvedValue({
+  vi.mocked(promises.stat).mockResolvedValue({
     size: 1,
     mtime: mtimeDate,
   } as Stats);
-  vi.spyOn(path, 'resolve').mockReturnValue('path');
+  vi.mocked(path.resolve).mockReturnValue('path');
 
   const catalog = catalogManager.getCatalog();
 
@@ -233,7 +217,7 @@ test('catalog should be the combination of user catalog and default catalog', as
 
 test('catalog should use user items in favour of default', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
-  vi.spyOn(path, 'resolve').mockReturnValue('path');
+  vi.mocked(path.resolve).mockReturnValue('path');
 
   const overwriteFullCatalog: ApplicationCatalog = {
     version: catalogUtils.CatalogFormat.CURRENT,
@@ -251,17 +235,17 @@ test('catalog should use user items in favour of default', async () => {
     })),
   };
 
-  vi.spyOn(promises, 'readFile').mockResolvedValue(JSON.stringify(overwriteFullCatalog));
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(overwriteFullCatalog));
 
   catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().length > 0);
 
   const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
-  vi.spyOn(promises, 'stat').mockResolvedValue({
+  vi.mocked(promises.stat).mockResolvedValue({
     size: 1,
     mtime: mtimeDate,
   } as Stats);
-  vi.spyOn(path, 'resolve').mockReturnValue('path');
+  vi.mocked(path.resolve).mockReturnValue('path');
 
   const catalog = catalogManager.getCatalog();
 
@@ -284,7 +268,7 @@ test('wrong catalog version should create a notification', () => {
 
 test('malformed catalog should create a notification', async () => {
   vi.mocked(existsSync).mockReturnValue(false);
-  vi.spyOn(path, 'resolve').mockReturnValue('path');
+  vi.mocked(path.resolve).mockReturnValue('path');
 
   catalogManager['onUserCatalogUpdate']({
     version: catalogUtils.CatalogFormat.CURRENT,
@@ -305,27 +289,37 @@ test('malformed catalog should create a notification', async () => {
   );
 });
 
-test('catalog with undefined version should call sanitize function to try converting it', () => {
-  const sanitizeSpy = vi.spyOn(catalogUtils, 'sanitize');
-  const writeFileMock = vi.spyOn(promises, 'writeFile').mockResolvedValue();
-  catalogManager['onUserCatalogUpdate']({
-    recipes: [
-      {
-        id: 'chatbot',
-        description: 'This is a Streamlit chat demo application.',
-        name: 'ChatBot',
-        repository: 'https://github.com/containers/ai-lab-recipes',
-        ref: 'v1.1.3',
-        icon: 'natural-language-processing',
-        categories: ['natural-language-processing'],
-        basedir: 'recipes/natural_language_processing/chatbot',
-        readme: '',
-        models: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
-      },
-    ],
-    models: [],
+describe('spy on catalogUtils.sanitize', () => {
+  beforeEach(() => {
+    // do not mock catalogUtils, as we want to use the original catalogUtils.hasCatalogWrongFormat
+    vi.spyOn(catalogUtils, 'sanitize');
   });
 
-  expect(sanitizeSpy).toHaveBeenCalled();
-  expect(writeFileMock).toHaveBeenCalled();
+  afterEach(() => {
+    vi.mocked(catalogUtils.sanitize).mockRestore();
+  });
+
+  test('catalog with undefined version should call sanitize function to try converting it', () => {
+    vi.mocked(promises.writeFile).mockResolvedValue();
+    catalogManager['onUserCatalogUpdate']({
+      recipes: [
+        {
+          id: 'chatbot',
+          description: 'This is a Streamlit chat demo application.',
+          name: 'ChatBot',
+          repository: 'https://github.com/containers/ai-lab-recipes',
+          ref: 'v1.1.3',
+          icon: 'natural-language-processing',
+          categories: ['natural-language-processing'],
+          basedir: 'recipes/natural_language_processing/chatbot',
+          readme: '',
+          models: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
+        },
+      ],
+      models: [],
+    });
+
+    expect(catalogUtils.sanitize).toHaveBeenCalled();
+    expect(promises.writeFile).toHaveBeenCalled();
+  });
 });

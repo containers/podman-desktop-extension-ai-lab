@@ -3,20 +3,55 @@
   "recipes": [
     {
       "id": "chatbot",
-      "description" : "Chat bot application",
-      "name" : "ChatBot",
+      "description": "Chat bot application",
+      "name": "ChatBot",
       "repository": "https://github.com/axel7083/locallm",
       "icon": "natural-language-processing",
-      "categories": [
-        "natural-language-processing"
-      ],
+      "categories": ["natural-language-processing"],
       "basedir": "chatbot",
       "readme": "# Locallm\n\nThis repo contains artifacts that can be used to build and run LLM (Large Language Model) services locally on your Mac using podman. These containerized LLM services can be used to help developers quickly prototype new LLM based applications, without the need for relying on any other externally hosted services. Since they are already containerized, it also helps developers move from their prototype to production quicker.     \n\n## Current Locallm Services: \n\n* [Chatbot](#chatbot)\n* [Text Summarization](#text-summarization)\n* [Fine-tuning](#fine-tuning)\n\n### Chatbot\n\nA simple chatbot using the gradio UI. Learn how to build and run this model service here: [Chatbot](/chatbot/).\n\n### Text Summarization\n\nAn LLM app that can summarize arbitrarily long text inputs. Learn how to build and run this model service here: [Text Summarization](/summarizer/).\n\n### Fine Tuning \n\nThis application allows a user to select a model and a data set they'd like to fine-tune that model on. Once the application finishes, it outputs a new fine-tuned model for the user to apply to other LLM services. Learn how to build and run this model training job here: [Fine-tuning](/finetune/).\n\n## Architecture\n![](https://raw.githubusercontent.com/MichaelClifford/locallm/main/assets/arch.jpg)\n\nThe diagram above indicates the general architecture for each of the individual model services contained in this repo. The core code available here is the \"LLM Task Service\" and the \"API Server\", bundled together under `model_services`. With an appropriately chosen model downloaded onto your host, `model_services/builds` contains the Containerfiles required to build an ARM or an x86 (with CUDA) image depending on your need. These model services are intended to be light-weight and run with smaller hardware footprints (given the Locallm name), but they can be run on any hardware that supports containers and scaled up if needed.\n\nWe also provide demo \"AI Applications\" under `ai_applications` for each model service to provide an example of how a developers could interact with the model service for their own needs. ",
-      "recommended": [
-        "llama-2-7b-chat.Q5_K_S",
-        "albedobase-xl-1.3",
-        "sdxl-turbo"
-      ]
+      "recommended": ["llama-2-7b-chat.Q5_K_S", "albedobase-xl-1.3", "sdxl-turbo"]
+    },
+    {
+      "id": "recipe0",
+      "name": "Recipe 1",
+      "categories": [],
+      "description": "",
+      "repository": "",
+      "readme": ""
+    },
+    {
+      "id": "recipe1",
+      "name": "Recipe 1",
+      "categories": [],
+      "description": "",
+      "repository": "",
+      "readme": "",
+      "backend": "tool1",
+      "languages": ["lang1", "lang10"],
+      "frameworks": ["fw1", "fw10"]
+    },
+    {
+      "id": "recipe2",
+      "name": "Recipe 2",
+      "categories": [],
+      "description": "",
+      "repository": "",
+      "readme": "",
+      "backend": "tool2",
+      "languages": ["lang2", "lang10"],
+      "frameworks": ["fw2", "fw10"]
+    },
+    {
+      "id": "recipe3",
+      "name": "Recipe 3",
+      "categories": [],
+      "description": "",
+      "repository": "",
+      "readme": "",
+      "backend": "tool3",
+      "languages": ["lang3", "lang11"],
+      "frameworks": ["fw2", "fw10", "fw11"]
     }
   ],
   "models": [
@@ -49,22 +84,22 @@
     {
       "id": "natural-language-processing",
       "name": "Natural Language Processing",
-      "description" : "Models that work with text: classify, summarize, translate, or generate text."
+      "description": "Models that work with text: classify, summarize, translate, or generate text."
     },
     {
       "id": "computer-vision",
-      "description" : "Process images, from classification to object detection and segmentation.",
-      "name" : "Computer Vision"
+      "description": "Process images, from classification to object detection and segmentation.",
+      "name": "Computer Vision"
     },
     {
       "id": "audio",
-      "description" : "Recognize speech or classify audio with audio models.",
-      "name" : "Audio"
+      "description": "Recognize speech or classify audio with audio models.",
+      "name": "Audio"
     },
     {
       "id": "multimodal",
-      "description" : "Stuff about multimodal models goes here omg yes amazing.",
-      "name" : "Multimodal"
+      "description": "Stuff about multimodal models goes here omg yes amazing.",
+      "name": "Multimodal"
     }
   ]
 }

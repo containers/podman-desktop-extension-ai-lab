@@ -33,6 +33,18 @@ import { CatalogFormat, hasCatalogWrongFormat, merge, sanitize } from '../utils/
 
 export const USER_CATALOG = 'user-catalog.json';
 
+export type CatalogFilterKey = 'languages' | 'tools' | 'frameworks';
+
+export type RecipeFilters = {
+  [key in CatalogFilterKey]?: string[];
+};
+
+export interface FilterRecipesResult {
+  filters: RecipeFilters;
+  choices: RecipeFilters;
+  result: Recipe[];
+}
+
 export class CatalogManager extends Publisher<ApplicationCatalog> implements Disposable {
   private readonly _onUpdate = new EventEmitter<ApplicationCatalog>();
   readonly onUpdate: Event<ApplicationCatalog> = this._onUpdate.event;
@@ -273,5 +285,69 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
    */
   private getUserCatalogPath(): string {
     return path.resolve(this.appUserDirectory, USER_CATALOG);
+  }
+
+  public filterRecipes(filters: RecipeFilters): FilterRecipesResult {
+    let result = this.getRecipes();
+    for (const [filter, values] of Object.entries(filters)) {
+      switch (filter) {
+        case 'languages': {
+          let res: Recipe[] = [];
+          for (const value of values) {
+            res = [...res, ...result.filter(r => r.languages?.includes(value))];
+          }
+          result = res;
+          break;
+        }
+        case 'tools':
+          result = result.filter(r => values.includes(r.backend ?? ''));
+          break;
+        case 'frameworks': {
+          let res: Recipe[] = [];
+          for (const value of values) {
+            res = [...res, ...result.filter(r => r.frameworks?.includes(value))];
+          }
+          result = res;
+          break;
+        }
+      }
+    }
+    const choices: RecipeFilters = {};
+    if ('languages' in filters) {
+      const subfilters = structuredClone(filters);
+      delete subfilters.languages;
+      choices.languages = this.filterRecipes(subfilters).choices.languages;
+    } else {
+      choices.languages = result
+        .flatMap(r => r.languages)
+        .filter(l => l !== undefined)
+        .filter((value, index, array) => array.indexOf(value) === index)
+        .sort((a, b) => a.localeCompare(b));
+    }
+
+    if ('tools' in filters) {
+      const subfilters = structuredClone(filters);
+      delete subfilters.tools;
+      choices.tools = this.filterRecipes(subfilters).choices.tools;
+    } else {
+      choices.tools = result.map(r => r.backend).filter(b => b !== undefined);
+    }
+
+    if ('frameworks' in filters) {
+      const subfilters = structuredClone(filters);
+      delete subfilters.frameworks;
+      choices.frameworks = this.filterRecipes(subfilters).choices.frameworks;
+    } else {
+      choices.frameworks = result
+        .flatMap(r => r.frameworks)
+        .filter(f => f !== undefined)
+        .filter((value, index, array) => array.indexOf(value) === index)
+        .sort((a, b) => a.localeCompare(b));
+    }
+    return {
+      filters,
+      choices,
+      result,
+    };
   }
 }

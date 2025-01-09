@@ -324,3 +324,145 @@ describe('spy on catalogUtils.sanitize', () => {
     expect(promises.writeFile).toHaveBeenCalled();
   });
 });
+
+test('filter recipes by language', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
+  const result1 = catalogManager.filterRecipes({
+    languages: ['lang1'],
+  });
+  expect(result1.result.map(r => r.id)).toEqual(['recipe1']);
+  expect(result1.choices).toEqual({
+    languages: ['lang1', 'lang10', 'lang11', 'lang2', 'lang3'],
+    frameworks: ['fw1', 'fw10'],
+    tools: ['tool1'],
+  });
+
+  const result2 = catalogManager.filterRecipes({
+    languages: ['lang2'],
+  });
+  expect(result2.result.map(r => r.id)).toEqual(['recipe2']);
+  expect(result2.choices).toEqual({
+    languages: ['lang1', 'lang10', 'lang11', 'lang2', 'lang3'],
+    frameworks: ['fw10', 'fw2'],
+    tools: ['tool2'],
+  });
+});
+
+test('filter recipes by tool', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
+
+  const result1 = catalogManager.filterRecipes({
+    tools: ['tool1'],
+  });
+  expect(result1.result.map(r => r.id)).toEqual(['recipe1']);
+  expect(result1.choices).toEqual({
+    frameworks: ['fw1', 'fw10'],
+    languages: ['lang1', 'lang10'],
+    tools: ['tool1', 'tool2', 'tool3'],
+  });
+
+  const result2 = catalogManager.filterRecipes({
+    tools: ['tool2'],
+  });
+  expect(result2.result.map(r => r.id)).toEqual(['recipe2']);
+  expect(result2.choices).toEqual({
+    frameworks: ['fw10', 'fw2'],
+    languages: ['lang10', 'lang2'],
+    tools: ['tool1', 'tool2', 'tool3'],
+  });
+
+  const result3 = catalogManager.filterRecipes({
+    tools: ['tool1', 'tool2'],
+  });
+  expect(result3.result.map(r => r.id)).toEqual(['recipe1', 'recipe2']);
+  expect(result3.choices).toEqual({
+    frameworks: ['fw1', 'fw10', 'fw2'],
+    languages: ['lang1', 'lang10', 'lang2'],
+    tools: ['tool1', 'tool2', 'tool3'],
+  });
+});
+
+test('filter recipes by framework', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
+
+  const result1 = catalogManager.filterRecipes({
+    frameworks: ['fw1'],
+  });
+  expect(result1.result.map(r => r.id)).toEqual(['recipe1']);
+  expect(result1.choices).toEqual({
+    languages: ['lang1', 'lang10'],
+    frameworks: ['fw1', 'fw10', 'fw11', 'fw2'],
+    tools: ['tool1'],
+  });
+
+  const result2 = catalogManager.filterRecipes({
+    frameworks: ['fw2'],
+  });
+  expect(result2.result.map(r => r.id)).toEqual(['recipe2', 'recipe3']);
+  expect(result2.choices).toEqual({
+    languages: ['lang10', 'lang11', 'lang2', 'lang3'],
+    frameworks: ['fw1', 'fw10', 'fw11', 'fw2'],
+    tools: ['tool2', 'tool3'],
+  });
+
+  const result3 = catalogManager.filterRecipes({
+    frameworks: ['fw1', 'fw2'],
+  });
+  expect(result3.result.map(r => r.id)).toEqual(['recipe1', 'recipe2', 'recipe3']);
+  expect(result3.choices).toEqual({
+    languages: ['lang1', 'lang10', 'lang11', 'lang2', 'lang3'],
+    frameworks: ['fw1', 'fw10', 'fw11', 'fw2'],
+    tools: ['tool1', 'tool2', 'tool3'],
+  });
+});
+
+test('filter recipes by language and framework', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
+
+  const result1 = catalogManager.filterRecipes({
+    languages: ['lang2'],
+    frameworks: ['fw2'],
+  });
+  expect(result1.result.map(r => r.id)).toEqual(['recipe2']);
+  expect(result1.choices).toEqual({
+    languages: ['lang10', 'lang11', 'lang2', 'lang3'],
+    frameworks: ['fw10', 'fw2'],
+    tools: ['tool2'],
+  });
+});
+
+test('filter recipes by language, tool and framework', async () => {
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+
+  catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
+
+  const result1 = catalogManager.filterRecipes({
+    languages: ['lang1'],
+    tools: ['tool1'],
+    frameworks: ['fw1'],
+  });
+  expect(result1.result.map(r => r.id)).toEqual(['recipe1']);
+  expect(result1.choices).toEqual({
+    languages: ['lang1', 'lang10'],
+    frameworks: ['fw1', 'fw10'],
+    tools: ['tool1'],
+  });
+});

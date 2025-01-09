@@ -1,6 +1,6 @@
 <script lang="ts">
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
-import { NavPage, Button, Link } from '@podman-desktop/ui-svelte';
+import { NavPage, Button, Link, Carousel } from '@podman-desktop/ui-svelte';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import fineTunningLargeModelsWithInstructLab from '/@/lib/images/fineTunningLargeModelsWithInstructLab.png';
@@ -30,6 +30,40 @@ async function openInstructLabHuggingFace(): Promise<void> {
 async function openSamples(): Promise<void> {
   await studioClient.openURL(instructLabSamples);
 }
+
+interface AboutInstructLabExploreCardInterface {
+  title: string;
+  link: string;
+  image: string;
+  isVideo?: boolean;
+}
+
+let cards: AboutInstructLabExploreCardInterface[] = [
+  {
+    title: 'InstructLab: Democratizing AI Models at Scale',
+    link: 'https://www.ibm.com/training/course/instructlab-democratizing-ai-models-at-scale-DL01001G',
+    image: instructLabDemocratizingAIModelsAtScale,
+    isVideo: false,
+  },
+  {
+    title: 'Fine Tuning Large Language Models with InstructLab',
+    link: 'https://www.youtube.com/watch?v=pu3-PeBG0YU',
+    image: fineTunningLargeModelsWithInstructLab,
+    isVideo: true,
+  },
+  {
+    title: 'How InstructLab’s synthetic data generation enhances LLMs',
+    link: 'https://www.redhat.com/en/blog/how-instructlabs-synthetic-data-generation-enhances-llms',
+    image: howInstructLabsSyntheticDataGenerationEnhancesLLM,
+    isVideo: false,
+  },
+  {
+    title: 'InstructLab Architecture & Implementation Overview',
+    link: 'https://blog.instructlab.ai/2024/11/instructlab-architecture-implementation-overview/',
+    image: instructLabArchitectureImplementationOverview,
+    isVideo: false,
+  },
+];
 </script>
 
 <NavPage title="About InstructLab" searchEnabled={false}>
@@ -52,7 +86,8 @@ async function openSamples(): Promise<void> {
                 skill tuning. InstructLab is a model-agnostic open source AI project that facilitates contributions to
                 Large Language Models (LLMs).
               </div>
-              <div>Start by trying one of our samples or bring your own knowledge and skills files.</div>
+              <!-- Remove hidden once we have some samples data -->
+              <div class="hidden">Start by trying one of our samples or bring your own knowledge and skills files.</div>
             </div>
             <div class="flex flex-row justify-start items-center gap-3 mt-2">
               <Link on:click={openInstructLabDocumentation}>Access InstructLab documentation</Link>
@@ -76,25 +111,15 @@ async function openSamples(): Promise<void> {
         </div>
         <div class="flex flex-1 flex-col">
           <p class="text-xl text-[var(--pd-details-body-text)]">Explore articles and videos</p>
-          <div
-            class="rounded-md my-5 bg-[var(--pd-content-card-bg)] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] p-2">
-            <AboutInstructLabExploreCard
-              title="InstructLab: Democratizing AI Models at Scale"
-              link="https://www.ibm.com/training/course/instructlab-democratizing-ai-models-at-scale-DL01001G"
-              image={instructLabDemocratizingAIModelsAtScale} />
-            <AboutInstructLabExploreCard
-              title="Fine Tuning Large Language Models with InstructLab"
-              link="https://www.youtube.com/watch?v=pu3-PeBG0YU"
-              image={fineTunningLargeModelsWithInstructLab}
-              isVideo={true} />
-            <AboutInstructLabExploreCard
-              title="How InstructLab’s synthetic data generation enhances LLMs"
-              link="https://www.redhat.com/en/blog/how-instructlabs-synthetic-data-generation-enhances-llms"
-              image={howInstructLabsSyntheticDataGenerationEnhancesLLM} />
-            <AboutInstructLabExploreCard
-              title="InstructLab Architecture & Implementation Overview"
-              link="https://blog.instructlab.ai/2024/11/instructlab-architecture-implementation-overview/"
-              image={instructLabArchitectureImplementationOverview} />
+          <div class="rounded-md my-5 bg-[var(--pd-content-card-bg)] p-2">
+            <Carousel cards={cards} cardWidth={200} let:card>
+              {@const Card = card as AboutInstructLabExploreCardInterface}
+              <AboutInstructLabExploreCard
+                title={Card.title}
+                link={Card.link}
+                image={Card.image}
+                isVideo={Card.isVideo} />
+            </Carousel>
           </div>
         </div>
       </div>

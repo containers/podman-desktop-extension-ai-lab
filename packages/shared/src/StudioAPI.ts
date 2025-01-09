@@ -36,11 +36,13 @@ import type {
 } from './models/IContainerConnectionInfo';
 import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
 import type { RecipePullOptions } from './models/IRecipe';
+import type { FilterRecipesResult, RecipeFilters } from './models/FilterRecipesResult';
 
 export abstract class StudioAPI {
   static readonly CHANNEL: string = 'StudioAPI';
   abstract ping(): Promise<string>;
   abstract getCatalog(): Promise<ApplicationCatalog>;
+  abstract filterRecipes(filters: RecipeFilters): Promise<FilterRecipesResult>;
 
   // Application related methods
   /**

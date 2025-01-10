@@ -97,11 +97,10 @@ const filtersComponents: { label: string; key: CatalogFilterKey }[] = [
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">
       <div class="px-5 space-y-5">
-        <div class="flex flex-row space-x-2">
+        <div class="flex flex-row space-x-2 text-[var(--pd-modal-text)]">
           {#each filtersComponents as filterComponent}
             <div class="w-full">
-              <label for={filterComponent.key} class="block mb-2 text-sm font-medium text-[var(--pd-modal-text)]"
-                >{filterComponent.label}</label>
+              <label for={filterComponent.key} class="block mb-2 text-sm font-medium">{filterComponent.label}</label>
               <Dropdown
                 id={filterComponent.key}
                 options={choicesToOptions(choices[filterComponent.key])}

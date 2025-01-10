@@ -23,6 +23,7 @@ import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog'
 import * as catalogStore from '/@/stores/catalog';
 import { readable } from 'svelte/store';
 import Recipes from '/@/pages/Recipes.svelte';
+import { studioClient } from '../utils/client';
 
 vi.mock('/@/stores/catalog', async () => {
   return {
@@ -31,7 +32,9 @@ vi.mock('/@/stores/catalog', async () => {
 });
 
 vi.mock('../utils/client', async () => ({
-  studioClient: {},
+  studioClient: {
+    filterRecipes: vi.fn(),
+  },
 }));
 
 vi.mock('../stores/localRepositories', () => ({
@@ -43,50 +46,63 @@ vi.mock('../stores/localRepositories', () => ({
   },
 }));
 
+const recipes = [
+  {
+    id: 'recipe1',
+    name: 'Recipe 1',
+    recommended: ['model1'],
+    categories: [],
+    description: 'Recipe 1',
+    readme: '',
+    repository: 'https://recipe-1',
+  },
+  {
+    id: 'recipe2',
+    name: 'Recipe 2',
+    recommended: ['model2'],
+    categories: ['dummy-category'],
+    description: 'Recipe 2',
+    readme: '',
+    repository: 'https://recipe-2',
+  },
+];
+
+const catalog: ApplicationCatalog = {
+  recipes: recipes,
+  models: [],
+  categories: [
+    {
+      id: 'dummy-category',
+      name: 'Dummy category',
+    },
+  ],
+};
+
 beforeEach(() => {
   vi.resetAllMocks();
-  const catalog: ApplicationCatalog = {
-    recipes: [
-      {
-        id: 'recipe1',
-        name: 'Recipe 1',
-        recommended: ['model1'],
-        categories: [],
-        description: 'Recipe 1',
-        readme: '',
-        repository: 'https://recipe-1',
-      },
-      {
-        id: 'recipe2',
-        name: 'Recipe 2',
-        recommended: ['model2'],
-        categories: ['dummy-category'],
-        description: 'Recipe 2',
-        readme: '',
-        repository: 'https://recipe-2',
-      },
-    ],
-    models: [],
-    categories: [
-      {
-        id: 'dummy-category',
-        name: 'Dummy category',
-      },
-    ],
-  };
+
   vi.mocked(catalogStore).catalog = readable(catalog);
+  vi.mocked(studioClient).filterRecipes.mockResolvedValue({
+    result: recipes,
+    filters: {},
+    choices: {},
+  });
 });
 
 test('recipe without category should be visible', async () => {
   render(Recipes);
 
-  const text = screen.getAllByText('Recipe 1');
-  expect(text.length).toBeGreaterThan(0);
+  await vi.waitFor(() => {
+    const text = screen.getAllByText('Recipe 1');
+    expect(text.length).toBeGreaterThan(0);
+  });
 });
 
 test('recipe with category should be visible', async () => {
   render(Recipes);
 
-  const text = screen.getAllByText('Recipe 2');
-  expect(text.length).toBeGreaterThan(0);
+  await vi.waitFor(() => {
+    const text = screen.getAllByText('Recipe 2');
+    expect(text.length).toBeGreaterThan(0);
+  });
 });

@@ -31,6 +31,9 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
   readonly temperatureSliderLocator: Locator;
   readonly maxTokensSliderLocator: Locator;
   readonly topPSliderLocator: Locator;
+  readonly promptTextAreaLoctor: Locator;
+  readonly clearSystemPromptButtonLocator: Locator;
+  readonly editSystemPromptButtonLocator: Locator;
 
   constructor(page: Page, webview: Page, playgroundName: string) {
     super(page, webview, playgroundName);
@@ -43,10 +46,24 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
     this.temperatureSliderLocator = this.parametersSectionLocator.getByLabel('temperature slider', { exact: true });
     this.maxTokensSliderLocator = this.parametersSectionLocator.getByLabel('max tokens slider', { exact: true });
     this.topPSliderLocator = this.parametersSectionLocator.getByLabel('top-p slider', { exact: true });
+    this.promptTextAreaLoctor = this.conversationSectionLocator.getByLabel('system-prompt-textarea');
+    this.clearSystemPromptButtonLocator = this.conversationSectionLocator.getByTitle('Clear', { exact: true });
+    this.editSystemPromptButtonLocator = this.conversationSectionLocator.getByTitle('Edit system prompt', {
+      exact: true,
+    });
   }
 
   async waitForLoad(): Promise<void> {
     await playExpect(this.heading).toBeVisible();
+  }
+
+  async definePrompt(prompt: string): Promise<void> {
+    await playExpect(this.editSystemPromptButtonLocator).toBeVisible();
+    await this.editSystemPromptButtonLocator.click();
+    await playExpect(this.promptTextAreaLoctor).toBeVisible();
+    await this.promptTextAreaLoctor.fill(prompt);
+    await this.editSystemPromptButtonLocator.click();
+    await playExpect(this.promptTextAreaLoctor).not.toBeVisible();
   }
 
   async deletePlayground(): Promise<AILabPlaygroundsPage> {

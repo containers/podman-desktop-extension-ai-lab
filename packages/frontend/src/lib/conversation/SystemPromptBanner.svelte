@@ -53,10 +53,15 @@ onMount(() => {
   <div class="flex items-center gap-x-2">
     <Fa icon={faTerminal} />
     <span class="grow">Define a system prompt</span>
-    <button class:hidden={!editing} on:click={onClear} title="Clear">
+    <button class:hidden={!editing} on:click={onClear} title="Clear" aria-label="Clear system prompt">
       <Fa icon={faClose} />
     </button>
-    <button class:text-gray-800={disabled} disabled={disabled} on:click={onButtonClick} title="Edit system prompt">
+    <button
+      class:text-gray-800={disabled}
+      disabled={disabled}
+      on:click={onButtonClick}
+      title="Edit system prompt"
+      aria-label="Edit system prompt">
       <Fa icon={editing ? faCheck : faEdit} />
     </button>
   </div>

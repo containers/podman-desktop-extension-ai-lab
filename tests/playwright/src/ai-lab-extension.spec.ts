@@ -33,6 +33,7 @@ import type { AILabCatalogPage } from './model/ai-lab-catalog-page';
 import { handleWebview } from './utils/webviewHandler';
 import type { AILabServiceDetailsPage } from './model/ai-lab-service-details-page';
 import type { AILabPlaygroundsPage } from './model/ai-lab-playgrounds-page';
+import type { AILabPlaygroundDetailsPage } from './model/ai-lab-playground-details-page';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -209,6 +210,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     test.describe.serial(`AI Lab playground creation and deletion`, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
+      let playgroundDetailsPage: AILabPlaygroundDetailsPage;
 
       const playgroundName = 'test playground';
 
@@ -247,7 +249,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test(`Go to AI Lab playground details for ${modelName}`, async () => {
-        const playgroundDetailsPage = await playgroundsPage.goToPlaygroundDetails(playgroundName);
+        playgroundDetailsPage = await playgroundsPage.goToPlaygroundDetails(playgroundName);
         await playgroundDetailsPage.waitForLoad();
 
         await playExpect(playgroundDetailsPage.conversationSectionLocator).toBeVisible();
@@ -255,6 +257,11 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
         await playExpect(playgroundDetailsPage.maxTokensSliderLocator).toBeVisible();
         await playExpect(playgroundDetailsPage.topPSliderLocator).toBeVisible();
         await playExpect(playgroundDetailsPage.deletePlaygroundButton).toBeEnabled();
+      });
+
+      test(`Define prompt for ${modelName}`, async () => {
+        const prompt = 'Hello, how are you?';
+        await playgroundDetailsPage.definePrompt(prompt);
       });
 
       test(`Delete AI Lab playground for ${modelName}`, async () => {

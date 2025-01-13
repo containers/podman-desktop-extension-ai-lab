@@ -24,9 +24,9 @@ import CreateService from '/@/pages/CreateService.svelte';
 import type { Task } from '@shared/src/models/ITask';
 import userEvent from '@testing-library/user-event';
 import type { InferenceServer } from '@shared/src/models/IInference';
-import * as modelsInfoStore from '/@/stores/modelsInfo';
+
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { writable } from 'svelte/store';
+import { readable, writable } from 'svelte/store';
 import { router } from 'tinro';
 import type {
   ContainerConnectionInfo,
@@ -35,62 +35,17 @@ import type {
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { VMType } from '@shared/src/models/IPodman';
+// stores
+import * as ConnectionStore from '/@/stores/containerProviderConnections';
+import * as InferenceStore from '/@/stores/inferenceServers';
+import * as ModelsInfoStore from '/@/stores/modelsInfo';
+import * as TaskStore from '/@/stores/tasks';
 
-const mocks = vi.hoisted(() => {
-  return {
-    // models store
-    modelsInfoSubscribeMock: vi.fn(),
-    modelsInfoQueriesMock: {
-      subscribe: (f: (msg: unknown) => void) => {
-        f(mocks.modelsInfoSubscribeMock());
-        return (): void => {};
-      },
-    },
-    // server store
-    getInferenceServersMock: vi.fn(),
-    // tasks store
-    tasksSubscribeMock: vi.fn(),
-    tasksQueriesMock: {
-      subscribe: (f: (msg: unknown) => void) => {
-        f(mocks.tasksSubscribeMock());
-        return (): void => {};
-      },
-    },
-    getContainerConnectionInfoMock: vi.fn<() => ContainerProviderConnectionInfo[]>(),
-  };
-});
-
-vi.mock('../stores/inferenceServers', () => ({
-  inferenceServers: {
-    subscribe: (f: (msg: unknown) => void) => {
-      f(mocks.getInferenceServersMock());
-      return (): void => {};
-    },
-  },
-}));
-
-vi.mock('../stores/containerProviderConnections', () => ({
-  containerProviderConnections: {
-    subscribe: (f: (msg: unknown) => void) => {
-      f(mocks.getContainerConnectionInfoMock());
-      return (): void => {};
-    },
-  },
-}));
-
-vi.mock('../stores/modelsInfo', async () => {
-  return {
-    modelsInfo: mocks.modelsInfoQueriesMock,
-  };
-});
-
-vi.mock('../stores/tasks', async () => {
-  return {
-    tasks: mocks.tasksQueriesMock,
-  };
-});
-
-vi.mock('../utils/client', async () => ({
+vi.mock('/@/stores/containerProviderConnections');
+vi.mock('/@/stores/inferenceServers');
+vi.mock('/@/stores/modelsInfo');
+vi.mock('/@/stores/tasks');
+vi.mock('../utils/client', () => ({
   studioClient: {
     requestCreateInferenceServer: vi.fn(),
     getHostFreePort: vi.fn(),
@@ -105,6 +60,18 @@ vi.mock('../utils/client', async () => ({
     },
   },
 }));
+
+const DUMMY_DOWNLOADED_MODEL: ModelInfo = {
+  id: 'dummy-model-id',
+  file: {
+    file: 'fake-file',
+    path: 'fake-path',
+  },
+  name: 'dummy-name',
+  description: 'fake description',
+  properties: {},
+  memory: 10,
+};
 
 const noMachineConnectionInfo: ContainerConnectionInfo = {
   status: 'no-machine',
@@ -138,16 +105,18 @@ const containerProviderConnection: ContainerProviderConnectionInfo = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  mocks.modelsInfoSubscribeMock.mockReturnValue([]);
-  mocks.tasksSubscribeMock.mockReturnValue([]);
-  mocks.getContainerConnectionInfoMock.mockReturnValue([containerProviderConnection]);
+  vi.restoreAllMocks();
+
+  vi.mocked(InferenceStore).inferenceServers = readable([
+    { container: { containerId: 'dummyContainerId' } } as InferenceServer,
+  ]);
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([DUMMY_DOWNLOADED_MODEL]);
+  vi.mocked(TaskStore).tasks = readable([]);
+  vi.mocked(ConnectionStore).containerProviderConnections = readable([containerProviderConnection]);
 
   vi.mocked(studioClient.checkContainerConnectionStatusAndResources).mockResolvedValue(runningMachineConnectionInfo);
   vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
-  mocks.getInferenceServersMock.mockReturnValue([
-    { container: { containerId: 'dummyContainerId' } } as InferenceServer,
-  ]);
   vi.mocked(studioClient.getExtensionConfiguration).mockResolvedValue({
     experimentalGPU: false,
     apiPort: 0,
@@ -161,6 +130,7 @@ beforeEach(() => {
 });
 
 test('create button should be disabled when no model id provided', async () => {
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([]);
   render(CreateService);
 
   await vi.waitFor(() => {
@@ -171,6 +141,8 @@ test('create button should be disabled when no model id provided', async () => {
 });
 
 test('expect error message to be displayed when no model locally', async () => {
+  // mock an empty store to simulate no models
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([]);
   render(CreateService);
 
   await vi.waitFor(() => {
@@ -180,7 +152,6 @@ test('expect error message to be displayed when no model locally', async () => {
 });
 
 test('expect error message to be hidden when models locally', () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
   render(CreateService);
 
   const alert = screen.queryByRole('alert');
@@ -188,8 +159,6 @@ test('expect error message to be hidden when models locally', () => {
 });
 
 test('button click should call createInferenceServer', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
-
   render(CreateService);
 
   let createBtn: HTMLElement | undefined = undefined;
@@ -203,16 +172,15 @@ test('button click should call createInferenceServer', async () => {
 
   await fireEvent.click(createBtn);
   expect(vi.mocked(studioClient.requestCreateInferenceServer)).toHaveBeenCalledWith({
-    modelsInfo: [{ id: 'random', file: true }],
+    modelsInfo: [DUMMY_DOWNLOADED_MODEL],
     port: 8888,
     connection: containerProviderConnection,
   });
 });
 
-test('create button should be disabled if no container engine running', async () => {
-  // mock no container connection available
-  mocks.getContainerConnectionInfoMock.mockReturnValue([]);
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
+test('containerProviderConnections should remove no running container errro', async () => {
+  // mock an empty store
+  vi.mocked(ConnectionStore).containerProviderConnections = readable([]);
 
   const { getByTitle, getByRole } = render(CreateService);
 
@@ -235,31 +203,18 @@ test('tasks progress should not be visible by default', async () => {
 });
 
 test('tasks should be displayed after requestCreateInferenceServer', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
-
-  let listener: ((tasks: Task[]) => void) | undefined;
-  vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
-    listener = f;
-    listener([]);
-    return (): void => {};
-  });
+  const store = writable<Task[]>([]);
+  vi.mocked(TaskStore).tasks = store;
 
   render(CreateService, {
     trackingId: 'dummyTrackingId',
   });
 
-  // wait for listener to be defined
-  await vi.waitFor(() => {
-    expect(listener).toBeDefined();
+  const createBtn: HTMLElement = await vi.waitFor(() => {
+    const element = screen.getByTitle('Create service');
+    expect(element).toBeDefined();
+    return element;
   });
-
-  let createBtn: HTMLElement | undefined = undefined;
-  await vi.waitFor(() => {
-    createBtn = screen.getByTitle('Create service');
-    expect(createBtn).toBeDefined();
-  });
-
-  if (createBtn === undefined || listener === undefined) throw new Error('properties undefined');
 
   await fireEvent.click(createBtn);
 
@@ -267,7 +222,7 @@ test('tasks should be displayed after requestCreateInferenceServer', async () =>
     expect(studioClient.requestCreateInferenceServer).toHaveBeenCalled();
   });
 
-  listener([
+  store.set([
     {
       id: 'dummyTaskId',
       labels: {
@@ -298,31 +253,18 @@ test('port input should update on user input', async () => {
 });
 
 test('form should be disabled when loading', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
-
-  let listener: ((tasks: Task[]) => void) | undefined;
-  vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
-    listener = f;
-    listener([]);
-    return (): void => {};
-  });
+  const store = writable<Task[]>([]);
+  vi.mocked(TaskStore).tasks = store;
 
   render(CreateService, {
     trackingId: 'dummyTrackingId',
   });
 
-  // wait for listener to be defined
-  await vi.waitFor(() => {
-    expect(listener).toBeDefined();
+  const createBtn: HTMLElement = await vi.waitFor(() => {
+    const element = screen.getByTitle('Create service');
+    expect(element).toBeDefined();
+    return element;
   });
-
-  let createBtn: HTMLElement | undefined = undefined;
-  await vi.waitFor(() => {
-    createBtn = screen.getByTitle('Create service');
-    expect(createBtn).toBeDefined();
-  });
-
-  if (createBtn === undefined || listener === undefined) throw new Error('properties undefined');
 
   await fireEvent.click(createBtn);
 
@@ -330,7 +272,7 @@ test('form should be disabled when loading', async () => {
     expect(studioClient.requestCreateInferenceServer).toHaveBeenCalled();
   });
 
-  listener([
+  store.set([
     {
       id: 'dummyTaskId',
       labels: {
@@ -348,25 +290,14 @@ test('form should be disabled when loading', async () => {
 });
 
 test('should display error message if createService fails', async () => {
-  mocks.modelsInfoSubscribeMock.mockReturnValue([{ id: 'random', file: true }]);
-
-  let listener: ((tasks: Task[]) => void) | undefined;
-  vi.spyOn(mocks.tasksQueriesMock, 'subscribe').mockImplementation((f: (tasks: Task[]) => void) => {
-    listener = f;
-    listener([]);
-    return (): void => {};
-  });
-
   vi.mocked(studioClient.requestCreateInferenceServer).mockRejectedValue('error creating service');
   render(CreateService);
 
-  let createBtn: HTMLElement | undefined = undefined;
-  await vi.waitFor(() => {
-    createBtn = screen.getByTitle('Create service');
-    expect(createBtn).toBeDefined();
+  const createBtn: HTMLElement = await vi.waitFor(() => {
+    const element = screen.getByTitle('Create service');
+    expect(element).toBeDefined();
+    return element;
   });
-
-  if (createBtn === undefined) throw new Error('createBtn undefined');
 
   const errorMessage = screen.queryByLabelText('Error Message Content');
   expect(errorMessage).not.toBeInTheDocument();
@@ -380,17 +311,6 @@ test('should display error message if createService fails', async () => {
 
 test('should display connectionInfo message if there is no running connection', async () => {
   vi.mocked(studioClient.checkContainerConnectionStatusAndResources).mockResolvedValue(noMachineConnectionInfo);
-  const modelsInfoList = writable<ModelInfo[]>([
-    {
-      id: 'id',
-      file: {
-        file: 'file',
-        path: path.resolve(os.tmpdir(), 'path'),
-      },
-      memory: 10,
-    } as unknown as ModelInfo,
-  ]);
-  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
   render(CreateService);
 
   await vi.waitFor(() => {
@@ -413,7 +333,7 @@ test('should display connectionInfo message if there is a podman connection with
       memory: 10,
     } as unknown as ModelInfo,
   ]);
-  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+  vi.mocked(ModelsInfoStore).modelsInfo = modelsInfoList;
   render(CreateService);
 
   await vi.waitFor(() => {
@@ -433,7 +353,7 @@ test('there should be NO banner if there is a running podman connection having e
       memory: 10,
     } as unknown as ModelInfo,
   ]);
-  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+  vi.mocked(ModelsInfoStore).modelsInfo = modelsInfoList;
   render(CreateService);
 
   await vi.waitFor(() => {
@@ -459,7 +379,7 @@ test('model-id query should be used to select default model', async () => {
       },
     } as unknown as ModelInfo,
   ]);
-  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+  vi.mocked(ModelsInfoStore).modelsInfo = modelsInfoList;
   router.location.query.set('model-id', 'model-id-2');
 
   render(CreateService);

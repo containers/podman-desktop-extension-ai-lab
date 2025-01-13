@@ -1,0 +1,17 @@
+name: recipe-catalog-change-windows-trigger
+
+on:
+  pull_request:
+    paths:
+      - 'packages/backend/src/assets/ai.json'
+
+jobs:
+  windows-e2e-recipe-change:
+    uses: containers/podman-desktop-extension-ai-lab/.github/workflows/recipe-catalog-change-template.yml@main
+    strategy:
+      fail-fast: false
+    with:
+      trigger-workflow-run-id: ${{ github.event.action.run_id }}
+      trugger-workflow-fork: ${{ github.event.pull_request.head.repo.organization }}
+      trigger-workflow-repo_name: ${{ github.event.pull_request.head.repo.name }}
+      trigger-workflow-branch: ${{ github.event.pull_request.head.ref }}

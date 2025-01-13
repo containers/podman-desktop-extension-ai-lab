@@ -104,7 +104,7 @@ function openDocumentation(): void {
 
       <!-- form -->
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
-        <div class="w-full">
+        <div class="w-full text-[var(--pd-details-body-text)]">
           <!-- container provider connection input -->
           {#if startedContainerProviderConnectionInfo.length > 1}
             <label for="" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"

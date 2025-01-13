@@ -194,6 +194,29 @@ test('containerProviderConnections should remove no running container errro', as
   expect(alert).toHaveTextContent('No running container engine found');
 });
 
+test('no container error should disappear if one get available', async () => {
+  // mock an empty store
+  const store = writable<ContainerProviderConnectionInfo[]>([]);
+  vi.mocked(ConnectionStore).containerProviderConnections = store;
+
+  const { getByRole, queryByRole } = render(CreateService);
+
+  // First we should have the error
+  await vi.waitFor(() => {
+    const alert = getByRole('alert');
+    expect(alert).toHaveTextContent('No running container engine found');
+  });
+
+  // let's fill the store
+  store.set([containerProviderConnection]);
+
+  // wait for error to be removed
+  await vi.waitFor(() => {
+    const alert = queryByRole('alert');
+    expect(alert).toBeNull();
+  });
+});
+
 test('tasks progress should not be visible by default', async () => {
   render(CreateService);
 

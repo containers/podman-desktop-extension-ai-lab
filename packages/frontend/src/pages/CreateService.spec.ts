@@ -105,7 +105,6 @@ const containerProviderConnection: ContainerProviderConnectionInfo = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.restoreAllMocks();
 
   vi.mocked(InferenceStore).inferenceServers = readable([
     { container: { containerId: 'dummyContainerId' } } as InferenceServer,

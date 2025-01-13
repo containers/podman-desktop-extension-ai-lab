@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,7 +177,7 @@ test('button click should call createInferenceServer', async () => {
   });
 });
 
-test('containerProviderConnections should remove no running container errro', async () => {
+test('no containerProviderConnections should have no running container error', async () => {
   // mock an empty store
   vi.mocked(ConnectionStore).containerProviderConnections = readable([]);
 

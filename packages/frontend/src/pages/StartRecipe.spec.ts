@@ -33,7 +33,7 @@ import * as ConnectionStore from '/@/stores/containerProviderConnections';
 import * as ModelsInfoStore from '/@/stores/modelsInfo';
 import * as TaskStore from '/@/stores/tasks';
 import * as CatalogStore from '/@/stores/catalog';
-import { readable } from 'svelte/store';
+import { readable, writable } from 'svelte/store';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 
 // Mock LocalRepository store
@@ -378,5 +378,42 @@ test('restoring page should use model-id from tasks to restore the value in the 
     const input = container.querySelector('input[name="select-model"][type="hidden"]');
     if (!input) throw new Error('input not found');
     expect(JSON.parse((input as HTMLInputElement).value).label).toBe(fakeRecommendedModel.name);
+  });
+});
+
+test('no containerProviderConnections should have no running container error', async () => {
+  // mock an empty store
+  vi.mocked(ConnectionStore).containerProviderConnections = readable([]);
+
+  const { getByRole } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  const alert = getByRole('alert');
+  expect(alert).toHaveTextContent('No running container engine found');
+});
+
+test('no container error should disappear if one get available', async () => {
+  // mock an empty store
+  const store = writable<ContainerProviderConnectionInfo[]>([]);
+  vi.mocked(ConnectionStore).containerProviderConnections = store;
+
+  const { getByRole, queryByRole } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  // First we should have the error
+  await vi.waitFor(() => {
+    const alert = getByRole('alert');
+    expect(alert).toHaveTextContent('No running container engine found');
+  });
+
+  // let's fill the store
+  store.set([containerProviderConnection]);
+
+  // wait for error to be removed
+  await vi.waitFor(() => {
+    const alert = queryByRole('alert');
+    expect(alert).toBeNull();
   });
 });

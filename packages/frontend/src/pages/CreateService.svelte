@@ -60,10 +60,6 @@ $effect(() => {
   if (!containerProviderConnection && startedContainerProviderConnectionInfo.length > 0) {
     containerProviderConnection = startedContainerProviderConnectionInfo[0];
   }
-
-  if (!containerProviderConnection) {
-    errorMsg = 'No running container engine found';
-  }
 });
 
 const onContainerPortInput = (event: Event): void => {
@@ -225,8 +221,8 @@ export function goToUpPage(): void {
             disabled={loading}
             required />
         </div>
-        {#if errorMsg !== undefined}
-          <ErrorMessage error={errorMsg} />
+        {#if errorMsg !== undefined || !containerProviderConnection}
+          <ErrorMessage error={errorMsg ?? 'No running container engine found'} />
         {/if}
         <footer>
           <div class="w-full flex flex-col">

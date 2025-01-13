@@ -62,11 +62,6 @@ $effect(() => {
   if (!model && recipe && models.length > 0) {
     model = getFirstRecommended();
   }
-
-  // if no container provider connection found this is an error
-  if (!containerProviderConnection) {
-    errorMsg = 'No running container engine found';
-  }
 });
 
 const getFirstRecommended = (): ModelInfo | undefined => {
@@ -202,8 +197,8 @@ function handleOnClick(): void {
             {/if}
           </div>
 
-          {#if errorMsg !== undefined}
-            <ErrorMessage error={errorMsg} />
+          {#if errorMsg !== undefined || !containerProviderConnection}
+            <ErrorMessage error={errorMsg ?? 'No running container engine found'} />
           {/if}
           <footer>
             <div class="w-full flex flex-col">

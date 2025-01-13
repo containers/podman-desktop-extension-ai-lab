@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,74 +28,20 @@ import type { Task } from '@shared/src/models/ITask';
 import { router } from 'tinro';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { VMType } from '@shared/src/models/IPodman';
-
-const mocks = vi.hoisted(() => {
-  return {
-    // models store
-    getModelsInfoMock: vi.fn(),
-    // tasks store
-    getTasksMock: vi.fn<() => Task[]>(),
-    // local repository mock
-    getLocalRepositoriesMock: vi.fn(),
-    // catalog store
-    getCatalogMock: vi.fn(),
-    // containerProviderConnectionInfo store
-    getContainerConnectionInfoMock: vi.fn<() => ContainerProviderConnectionInfo[]>(),
-  };
-});
+import * as LocalRepositoryStore from '/@/stores/localRepositories';
+import * as ConnectionStore from '/@/stores/containerProviderConnections';
+import * as ModelsInfoStore from '/@/stores/modelsInfo';
+import * as TaskStore from '/@/stores/tasks';
+import * as CatalogStore from '/@/stores/catalog';
+import { readable } from 'svelte/store';
+import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 
 // Mock LocalRepository store
-vi.mock('../stores/localRepositories', () => ({
-  localRepositories: {
-    subscribe: (f: (msg: unknown) => void) => {
-      f(mocks.getLocalRepositoriesMock());
-      return (): void => {};
-    },
-  },
-}));
-
-vi.mock('../stores/containerProviderConnections', () => ({
-  containerProviderConnections: {
-    subscribe: (f: (msg: unknown) => void) => {
-      f(mocks.getContainerConnectionInfoMock());
-      return (): void => {};
-    },
-  },
-}));
-
-// Mock ModelsInfo store
-vi.mock('../stores/modelsInfo', async () => {
-  return {
-    modelsInfo: {
-      subscribe: (f: (msg: unknown) => void) => {
-        f(mocks.getModelsInfoMock());
-        return (): void => {};
-      },
-    },
-  };
-});
-
-vi.mock('../stores/tasks', async () => {
-  return {
-    tasks: {
-      subscribe: (f: (msg: unknown) => void) => {
-        f(mocks.getTasksMock());
-        return (): void => {};
-      },
-    },
-  };
-});
-
-vi.mock('/@/stores/catalog', async () => {
-  return {
-    catalog: {
-      subscribe: (f: (msg: unknown) => void) => {
-        f(mocks.getCatalogMock());
-        return (): void => {};
-      },
-    },
-  };
-});
+vi.mock('/@/stores/localRepositories');
+vi.mock('/@/stores/containerProviderConnections');
+vi.mock('/@/stores/modelsInfo');
+vi.mock('/@/stores/tasks');
+vi.mock('/@/stores/catalog');
 
 vi.mock('tinro', () => ({
   router: {
@@ -152,19 +98,16 @@ beforeEach(() => {
   // reset all query between tests
   router.location.query.clear();
 
-  mocks.getCatalogMock.mockReturnValue({
+  vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
     recipes: [fakeRecipe],
+    models: [],
+    categories: [],
+    version: '',
   });
-
-  // mock no ContainerConnectionInfo
-  mocks.getContainerConnectionInfoMock.mockReturnValue([containerProviderConnection]);
-
-  mocks.getModelsInfoMock.mockReturnValue([fakeRecommendedModel, fakeRemoteModel]);
-
-  // no local repository
-  mocks.getLocalRepositoriesMock.mockReturnValue([]);
-
-  mocks.getTasksMock.mockReturnValue([]);
+  vi.mocked(ConnectionStore).containerProviderConnections = readable([containerProviderConnection]);
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([fakeRecommendedModel, fakeRemoteModel]);
+  vi.mocked(LocalRepositoryStore).localRepositories = readable([]);
+  vi.mocked(TaskStore).tasks = readable([]);
 
   vi.mocked(studioClient.requestPullApplication).mockResolvedValue('fake-tracking-id');
 
@@ -184,7 +127,7 @@ test('Recipe name should be visible', async () => {
 
 test('Recipe Local Repository should be visible when defined', async () => {
   // mock recipe local repository
-  mocks.getLocalRepositoriesMock.mockReturnValue([
+  vi.mocked(LocalRepositoryStore).localRepositories = readable([
     {
       path: 'dummy-recipe-path',
       sourcePath: 'dummy-recipe-path',
@@ -204,7 +147,7 @@ test('Recipe Local Repository should be visible when defined', async () => {
 });
 
 test('Submit button should be disabled when no model is selected', async () => {
-  mocks.getModelsInfoMock.mockReturnValue([]);
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([]);
 
   render(StartRecipe, {
     recipeId: 'dummy-recipe-id',
@@ -327,7 +270,7 @@ test('Submit button should call requestPullApplication with proper arguments', a
 
 test('Submit button should call requestPullApplication with proper arguments', async () => {
   // mock no container connection available
-  mocks.getContainerConnectionInfoMock.mockReturnValue([]);
+  vi.mocked(ConnectionStore).containerProviderConnections = readable([]);
 
   const { container, getByTitle } = render(StartRecipe, {
     recipeId: 'dummy-recipe-id',
@@ -340,7 +283,7 @@ test('Submit button should call requestPullApplication with proper arguments', a
 });
 
 test('Loading task should make the submit button disabled', async () => {
-  mocks.getTasksMock.mockReturnValue([
+  vi.mocked(TaskStore).tasks = readable([
     {
       id: 'dummy-task-id',
       name: 'Dummy task',
@@ -366,7 +309,7 @@ test('Loading task should make the submit button disabled', async () => {
 });
 
 test('Completed task should make the open details button visible', async () => {
-  mocks.getTasksMock.mockReturnValue([
+  vi.mocked(TaskStore).tasks = readable([
     {
       id: 'dummy-task-id',
       name: 'Dummy task',
@@ -391,7 +334,7 @@ test('Completed task should make the open details button visible', async () => {
 });
 
 test('trackingId in router query should use it to display related tasks', () => {
-  mocks.getTasksMock.mockReturnValue([
+  vi.mocked(TaskStore).tasks = readable([
     {
       id: 'dummy-task-id',
       name: 'Dummy task',
@@ -413,7 +356,7 @@ test('trackingId in router query should use it to display related tasks', () => 
 });
 
 test('restoring page should use model-id from tasks to restore the value in the select input', async () => {
-  mocks.getTasksMock.mockReturnValue([
+  vi.mocked(TaskStore).tasks = readable([
     {
       id: 'dummy-task-id',
       name: 'Dummy task',

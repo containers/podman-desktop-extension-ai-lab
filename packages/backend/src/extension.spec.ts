@@ -19,23 +19,12 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import type { ExtensionContext } from '@podman-desktop/api';
 import { activate, deactivate } from './extension';
+import { Studio } from './studio';
 
-const mocks = vi.hoisted(() => ({
-  studioActivateMock: vi.fn(),
-  studioDeactivateMock: vi.fn(),
-  studioConstructor: vi.fn(),
-}));
-
-vi.mock('./studio', () => ({
-  Studio: mocks.studioConstructor,
-}));
+vi.mock('./studio');
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.studioConstructor.mockReturnValue({
-    activate: mocks.studioActivateMock,
-    deactivate: mocks.studioDeactivateMock,
-  });
 });
 
 test('check we call activate method on studio instance', async () => {
@@ -44,18 +33,18 @@ test('check we call activate method on studio instance', async () => {
   await activate(fakeContext);
 
   // expect the activate method to be called on the studio mock
-  expect(mocks.studioActivateMock).toBeCalledTimes(1);
+  expect(Studio.prototype.activate).toBeCalledTimes(1);
 
   // no call on deactivate
-  expect(mocks.studioDeactivateMock).not.toBeCalled();
+  expect(Studio.prototype.deactivate).not.toBeCalled();
 });
 
 test('check we call deactivate method on studio instance ', async () => {
   await deactivate();
 
   // expect the activate method to be called on the studio mock
-  expect(mocks.studioDeactivateMock).toBeCalledTimes(1);
+  expect(Studio.prototype.deactivate).toBeCalledTimes(1);
 
   // no call on activate
-  expect(mocks.studioActivateMock).not.toBeCalled();
+  expect(Studio.prototype.activate).not.toBeCalled();
 });

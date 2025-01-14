@@ -24,7 +24,7 @@ import type {
 } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { InferenceProvider } from './InferenceProvider';
-import { getLocalModelFile, getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
+import { getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
@@ -36,6 +36,7 @@ import type { PodmanConnection } from '../../managers/podmanConnection';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import { llamacpp } from '../../assets/inference-images.json';
 import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 export const SECOND: number = 1_000_000_000;
 
@@ -77,13 +78,15 @@ export class LlamaCppPython extends InferenceProvider {
       throw new Error('The model info file provided is undefined');
     }
 
+    console.log('path:', modelInfo.file.path, ' file:', modelInfo.file.file);
+
     const labels: Record<string, string> = {
       ...config.labels,
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     };
 
     // get model mount settings
-    const filename = getLocalModelFile(modelInfo);
+    const filename = modelInfo.file.path + path.sep + modelInfo.file.file;
     const target = `/models/${modelInfo.file.file}`;
 
     // mount the file directory to avoid adding other files to the containers

@@ -21,12 +21,7 @@ import type { ExtensionContext } from '@podman-desktop/api';
 import { activate, deactivate } from './extension';
 import { Studio } from './studio';
 
-vi.mock('./studio', () => {
-  const Studio = vi.fn();
-  Studio.prototype.activate = vi.fn();
-  Studio.prototype.deactivate = vi.fn();
-  return { Studio };
-});
+vi.mock('./studio');
 
 beforeEach(() => {
   vi.clearAllMocks();

@@ -17,9 +17,10 @@
  ***********************************************************************/
 
 import { test, expect, vi, describe, beforeEach, afterEach } from 'vitest';
-import { getChannel, RpcBrowser, RpcExtension } from './MessageProxy';
+import { RpcBrowser, RpcExtension } from './MessageProxy';
 import type { Webview } from '@podman-desktop/api';
 import * as defaultNoTimeoutChannels from './NoTimeoutChannels';
+import { getChannel } from './utils';
 
 let webview: Webview;
 let window: Window;

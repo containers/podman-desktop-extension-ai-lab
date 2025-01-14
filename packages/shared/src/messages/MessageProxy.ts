@@ -19,6 +19,7 @@
 
 import type { Webview, Disposable } from '@podman-desktop/api';
 import { noTimeoutChannels } from './NoTimeoutChannels';
+import { getChannel } from './utils';
 
 export interface IMessage {
   id: number;
@@ -38,10 +39,6 @@ export interface IMessageResponse extends IMessageRequest {
 export interface ISubscribedMessage {
   id: string;
   body: any;
-}
-
-export function getChannel<T>(classType: { CHANNEL: string; prototype: T }, method: keyof T): string {
-  return `${classType.CHANNEL}-${String(method)}`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

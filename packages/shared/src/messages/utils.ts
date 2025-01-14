@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { StudioAPI } from '../StudioAPI';
-import { getChannel } from './utils';
 
-export const noTimeoutChannels: string[] = [getChannel(StudioAPI, 'openDialog')];
+export function getChannel<T>(classType: { CHANNEL: string; prototype: T }, method: keyof T): string {
+  return `${classType.CHANNEL}-${String(method)}`;
+}

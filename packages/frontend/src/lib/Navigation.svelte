@@ -11,7 +11,7 @@ import {
   faHouse,
   faGear,
 } from '@fortawesome/free-solid-svg-icons';
-import MyInstructLabIcon from '/@/lib/icons/InstructLabIcon.svelte';
+import InstructLabIcon from '/@/lib/icons/InstructLabIcon.svelte';
 import { SettingsNavItem } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 import { configuration } from '../stores/extensionConfiguration';
@@ -83,10 +83,10 @@ onDestroy(() => {
         <span class="text-[color:var(--pd-secondary-nav-header-text)]">TUNING</span>
       </div>
       <SettingsNavItem
-        icon={MyInstructLabIcon}
+        icon={InstructLabIcon}
         title="About InstructLab"
-        selected={meta.url.startsWith('/aboutInstructLab')}
-        href="/aboutInstructLab" />
+        selected={meta.url.startsWith('/about-instructlab')}
+        href="/about-instructlab" />
       <SettingsNavItem
         icon={faGaugeHigh}
         title="Tune with InstructLab"

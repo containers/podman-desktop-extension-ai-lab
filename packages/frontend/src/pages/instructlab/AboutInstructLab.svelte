@@ -8,8 +8,8 @@ import instructLabDemocratizingAIModelsAtScale from '/@/lib/images/instructLabDe
 import instructLabArchitectureImplementationOverview from '/@/lib/images/instructLabArchitectureImplementationOverview.png';
 import howInstructLabsSyntheticDataGenerationEnhancesLLM from '/@/lib/images/howInstructLabsSyntheticDataGenerationEnhancesLLM.png';
 import instructLabTitleImage from '/@/lib/images/instructLabTitleImage.png';
-import AboutInstructLabDiscoverCard from './AboutInstructLabDiscoverCard.svelte';
-import AboutInstructLabExploreCard from './AboutInstructLabExploreCard.svelte';
+import AboutInstructLabDiscoverCard from '../../lib/instructlab/AboutInstructLabDiscoverCard.svelte';
+import AboutInstructLabExploreCard from '../../lib/instructlab/AboutInstructLabExploreCard.svelte';
 
 function start(): void {
   router.goto('/tune/start');
@@ -112,7 +112,7 @@ let cards: AboutInstructLabExploreCardInterface[] = [
         <div class="flex flex-1 flex-col">
           <p class="text-xl text-[var(--pd-details-body-text)]">Explore articles and videos</p>
           <div class="rounded-md my-5 bg-[var(--pd-content-card-bg)] p-2">
-            <Carousel cards={cards} cardWidth={200} let:card>
+            <Carousel cards={cards} cardWidth={300} let:card>
               {@const Card = card as AboutInstructLabExploreCardInterface}
               <AboutInstructLabExploreCard
                 title={Card.title}

@@ -29,7 +29,7 @@ import { Messages } from '@shared/Messages';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 import LocalServer from './pages/server-information/LocalServer.svelte';
-import AboutInstructLab from './pages/instruct-lab/AboutInstructLab.svelte';
+import AboutInstructLab from './pages/instructlab/AboutInstructLab.svelte';
 
 router.mode.hash();
 
@@ -98,7 +98,7 @@ onDestroy(() => {
         </Route>
         {#if experimentalTuning}
           <!-- Tune with InstructLab -->
-          <Route path="/aboutInstructLab">
+          <Route path="/about-instructlab">
             <AboutInstructLab />
           </Route>
           <Route path="/tune/*" firstmatch>

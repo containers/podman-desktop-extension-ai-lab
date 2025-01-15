@@ -62,7 +62,7 @@ export function getRemoteModelFile(modelInfo: ModelInfo): string {
  */
 export async function isModelUploaded(machine: string, modelInfo: ModelInfo): Promise<boolean> {
   try {
-    const remotePath = getRemoteModelFile(modelInfo);
+    const remotePath = getRemoteModelFile(modelInfo).replace(/ /g, '\\ ');
     await process.exec(getPodmanCli(), ['machine', 'ssh', machine, 'stat', remotePath]);
     return true;
   } catch (err: unknown) {

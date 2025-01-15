@@ -39,11 +39,12 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
     const driveLetter = localPath.charAt(0);
     const convertToMntPath = localPath
       .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
-      .replace(/\\/g, '/');
+      .replace(/\\/g, '/')
+      .replace(/ /g, '\\ ');
 
     // check if model already loaded on the podman machine
     const existsRemote = await isModelUploaded(machineName, options.model);
-    const remoteFile = getRemoteModelFile(options.model);
+    const remoteFile = getRemoteModelFile(options.model).replace(/ /g, '\\ ');
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {

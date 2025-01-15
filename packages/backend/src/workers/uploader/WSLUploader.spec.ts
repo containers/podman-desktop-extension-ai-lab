@@ -131,6 +131,40 @@ describe('upload', () => {
     ]);
   });
 
+  test('copy model if not exists on podman machine with space handling', async () => {
+    vi.mocked(process.exec).mockRejectedValueOnce('error');
+    await wslUploader.perform({
+      connection: connectionMock,
+      model: {
+        id: 'dummyId',
+        file: { path: 'C:\\Users\\podman folder', file: 'dummy.guff' },
+      } as unknown as ModelInfo,
+    });
+    expect(process.exec).toBeCalledWith('podman.exe', [
+      'machine',
+      'ssh',
+      'machine2',
+      'stat',
+      '/home/user/ai-lab/models/dummy.guff',
+    ]);
+    expect(process.exec).toBeCalledWith('podman.exe', [
+      'machine',
+      'ssh',
+      'machine2',
+      'mkdir',
+      '-p',
+      '/home/user/ai-lab/models',
+    ]);
+    expect(process.exec).toBeCalledWith('podman.exe', [
+      'machine',
+      'ssh',
+      'machine2',
+      'cp',
+      '/mnt/c/Users/podman\\ folder/dummy.guff',
+      '/home/user/ai-lab/models/dummy.guff',
+    ]);
+  });
+
   test('do not copy model if it exists on podman machine', async () => {
     vi.mocked(process.exec).mockResolvedValue({} as RunResult);
     await wslUploader.perform({

@@ -135,7 +135,7 @@ describe('getRemoteModelFile', () => {
       },
     } as unknown as ModelInfo);
 
-    expect(path).toBe(`${MACHINE_BASE_FOLDER}dummy.guff`);
+    expect(path).toBe(posix.join(MACHINE_BASE_FOLDER, 'dummy.guff'));
   });
 });
 

@@ -20,7 +20,7 @@ import { join, posix } from 'node:path';
 import { getPodmanCli } from './podman';
 import { process } from '@podman-desktop/api';
 
-export const MACHINE_BASE_FOLDER = '/home/user/ai-lab/models/';
+export const MACHINE_BASE_FOLDER = '/home/user/ai-lab/models';
 
 /**
  * Given a model info object return the path where is it located locally
@@ -28,6 +28,19 @@ export const MACHINE_BASE_FOLDER = '/home/user/ai-lab/models/';
  */
 export function getLocalModelFile(modelInfo: ModelInfo): string {
   if (modelInfo.file === undefined) throw new Error('model is not available locally.');
+  return join(modelInfo.file.path, modelInfo.file.file);
+}
+
+/**
+ * Return the path to mount where the model is located
+ * @param modelInfo
+ */
+export function getMountPath(modelInfo: ModelInfo): string {
+  if (modelInfo.file === undefined) throw new Error('model is not available locally.');
+  // if the model is uploaded we need to use posix join
+  if (modelInfo.file.path === MACHINE_BASE_FOLDER) {
+    return posix.join(MACHINE_BASE_FOLDER, modelInfo.file.file);
+  }
   return join(modelInfo.file.path, modelInfo.file.file);
 }
 

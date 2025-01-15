@@ -24,7 +24,7 @@ import type {
 } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import { InferenceProvider } from './InferenceProvider';
-import { getLocalModelFile, getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
+import { getModelPropertiesForEnvironment, getMountPath } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
@@ -83,7 +83,7 @@ export class LlamaCppPython extends InferenceProvider {
     };
 
     // get model mount settings
-    const filename = getLocalModelFile(modelInfo);
+    const filename = getMountPath(modelInfo);
     const target = `/models/${modelInfo.file.file}`;
 
     // mount the file directory to avoid adding other files to the containers

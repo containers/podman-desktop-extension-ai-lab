@@ -119,7 +119,7 @@ describe('upload', () => {
       'machine2',
       'mkdir',
       '-p',
-      '/home/user/ai-lab/models/',
+      '/home/user/ai-lab/models',
     ]);
     expect(process.exec).toBeCalledWith('podman.exe', [
       'machine',

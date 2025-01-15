@@ -5,10 +5,10 @@ import type { Recipe } from '@shared/src/models/IRecipe';
 import type { Category } from '@shared/src/models/ICategory';
 import { Dropdown, NavPage } from '@podman-desktop/ui-svelte';
 import { studioClient } from '../utils/client';
-import type { CatalogFilterKey, RecipeFilters } from '@shared/src/models/FilterRecipesResult';
+import type { CatalogFilterKey, Choice, RecipeChoices, RecipeFilters } from '@shared/src/models/FilterRecipesResult';
 
 // filters available in the dropdowns for the user to select
-let choices: RecipeFilters = $state({});
+let choices: RecipeChoices = $state({});
 
 // filters selected by the user
 let filters = $state<RecipeFilters>({});
@@ -81,8 +81,11 @@ function onFilterChange(filter: CatalogFilterKey, v: unknown): void {
 }
 
 // convert a list of choices provided by the backend to a list of options acceptable by the Dropdown component, adding an empty choice
-function choicesToOptions(choices: string[] | undefined): { label: string; value: string }[] {
-  return [{ label: '(no filter)', value: '' }, ...(choices?.map(l => ({ value: l, label: l })) ?? [])];
+function choicesToOptions(choices: Choice[] | undefined): { label: string; value: string }[] {
+  return [
+    { label: '(no filter)', value: '' },
+    ...(choices?.map(l => ({ value: l.name, label: `${l.name} (${l.count})` })) ?? []),
+  ];
 }
 
 // add more filters here when the backend supports them

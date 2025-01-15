@@ -20,12 +20,21 @@ import type { Recipe } from './IRecipe';
 
 export interface FilterRecipesResult {
   filters: RecipeFilters;
-  choices: RecipeFilters;
+  choices: RecipeChoices;
   result: Recipe[];
 }
 
 export type RecipeFilters = {
   [key in CatalogFilterKey]?: string[];
+};
+
+export type RecipeChoices = {
+  [key in CatalogFilterKey]?: Choice[];
+};
+
+export type Choice = {
+  name: string;
+  count: number;
 };
 
 export type CatalogFilterKey = 'languages' | 'tools' | 'frameworks';

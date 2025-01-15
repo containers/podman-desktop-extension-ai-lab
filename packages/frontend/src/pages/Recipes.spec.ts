@@ -107,14 +107,23 @@ test('recipe with category should be visible', async () => {
   });
 });
 
-test('filters returned in choices + (no filter) are displayed', async () => {
+test('filters returned in choices + all are displayed', async () => {
   vi.mocked(studioClient).filterRecipes.mockResolvedValue({
     result: recipes,
     filters: {},
     choices: {
-      tools: ['tool1', 'tool2'],
-      languages: ['lang1', 'lang2'],
-      frameworks: ['fw1', 'fw2'],
+      tools: [
+        { name: 'tool1', count: 1 },
+        { name: 'tool2', count: 2 },
+      ],
+      languages: [
+        { name: 'lang1', count: 3 },
+        { name: 'lang2', count: 4 },
+      ],
+      frameworks: [
+        { name: 'fw1', count: 5 },
+        { name: 'fw2', count: 6 },
+      ],
     },
   });
 
@@ -126,9 +135,9 @@ test('filters returned in choices + (no filter) are displayed', async () => {
   });
 
   const tests = [
-    { category: 'Tools', choices: ['(no filter)', 'tool1', 'tool2'] },
-    { category: 'Frameworks', choices: ['(no filter)', 'fw1', 'fw2'] },
-    { category: 'Languages', choices: ['(no filter)', 'lang1', 'lang2'] },
+    { category: 'Tools', choices: ['all', 'tool1 (1)', 'tool2 (2)'] },
+    { category: 'Frameworks', choices: ['all', 'fw1 (5)', 'fw2 (6)'] },
+    { category: 'Languages', choices: ['all', 'lang1 (3)', 'lang2 (4)'] },
   ];
 
   for (const test of tests) {
@@ -150,9 +159,18 @@ test('filterRecipes is called with selected filters', async () => {
     result: recipes,
     filters: {},
     choices: {
-      tools: ['tool1', 'tool2'],
-      languages: ['lang1', 'lang2'],
-      frameworks: ['fw1', 'fw2'],
+      tools: [
+        { name: 'tool1', count: 1 },
+        { name: 'tool2', count: 2 },
+      ],
+      languages: [
+        { name: 'lang1', count: 3 },
+        { name: 'lang2', count: 4 },
+      ],
+      frameworks: [
+        { name: 'fw1', count: 5 },
+        { name: 'fw2', count: 6 },
+      ],
     },
   });
 
@@ -164,8 +182,8 @@ test('filterRecipes is called with selected filters', async () => {
   });
 
   const selectedFilters = [
-    { category: 'Tools', filter: 'tool1' },
-    { category: 'Languages', filter: 'lang2' },
+    { category: 'Tools', filter: 'tool1 (1)' },
+    { category: 'Languages', filter: 'lang2 (4)' },
   ];
 
   for (const selectedFilter of selectedFilters) {

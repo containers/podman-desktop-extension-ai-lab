@@ -32,6 +32,19 @@ export function getLocalModelFile(modelInfo: ModelInfo): string {
 }
 
 /**
+ * Return the path to mount where the model is located
+ * @param modelInfo
+ */
+export function getMountPath(modelInfo: ModelInfo): string {
+  if (modelInfo.file === undefined) throw new Error('model is not available locally.');
+  // if the model is uploaded we need to use posix join
+  if (modelInfo.file.path === MACHINE_BASE_FOLDER) {
+    return posix.join(MACHINE_BASE_FOLDER, modelInfo.file.file);
+  }
+  return join(modelInfo.file.path, modelInfo.file.file);
+}
+
+/**
  * Given a model info object return the theoretical path where the model
  * should be in the podman machine
  * @param modelInfo

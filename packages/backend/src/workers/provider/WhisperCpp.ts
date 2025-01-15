@@ -25,7 +25,7 @@ import type { ContainerProviderConnection, MountConfig } from '@podman-desktop/a
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { whispercpp } from '../../assets/inference-images.json';
 import type { PodmanConnection } from '../../managers/podmanConnection';
-import { getLocalModelFile } from '../../utils/modelsUtils';
+import { getMountPath } from '../../utils/modelsUtils';
 
 export class WhisperCpp extends InferenceProvider {
   constructor(
@@ -69,7 +69,7 @@ export class WhisperCpp extends InferenceProvider {
     if (!connection) throw new Error('no running connection could be found');
 
     // get model mount settings
-    const filename = getLocalModelFile(modelInfo);
+    const filename = getMountPath(modelInfo);
     const target = `/models/${modelInfo.file.file}`;
 
     // mount the file directory to avoid adding other files to the containers

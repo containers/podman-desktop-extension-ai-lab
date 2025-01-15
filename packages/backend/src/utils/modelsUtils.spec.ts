@@ -20,12 +20,14 @@ import { process as apiProcess } from '@podman-desktop/api';
 import {
   deleteRemoteModel,
   getLocalModelFile,
+  getMountPath,
   getRemoteModelFile,
   isModelUploaded,
   MACHINE_BASE_FOLDER,
 } from './modelsUtils';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getPodmanCli } from './podman';
+import { join, posix } from 'node:path';
 
 vi.mock('@podman-desktop/api', () => {
   return {
@@ -69,6 +71,48 @@ describe('getLocalModelFile', () => {
     } else {
       expect(path).toBe('dummyPath/dummy.guff');
     }
+  });
+});
+
+describe('getMountPath', () => {
+  const DUMMY_MODEL: ModelInfo = {
+    id: 'dummyModelId',
+    file: undefined,
+    properties: {},
+    description: '',
+    name: 'dummy-model',
+  };
+
+  const DOWNLOADED_MODEL: ModelInfo & { file: { path: string; file: string } } = {
+    ...DUMMY_MODEL,
+    file: {
+      path: 'dummyPath',
+      file: 'dummy.guff',
+    },
+  };
+
+  const UPLOADED_MODEL: ModelInfo & { file: { path: string; file: string } } = {
+    ...DUMMY_MODEL,
+    file: {
+      path: MACHINE_BASE_FOLDER,
+      file: 'dummy.guff',
+    },
+  };
+
+  test('file in ModelInfo undefined', () => {
+    expect(() => {
+      getMountPath(DUMMY_MODEL);
+    }).toThrowError('model is not available locally.');
+  });
+
+  test('should join path with respect to system host', () => {
+    const path = getMountPath(DOWNLOADED_MODEL);
+    expect(path).toBe(join(DOWNLOADED_MODEL.file.path, DOWNLOADED_MODEL.file.file));
+  });
+
+  test('uploaded model should use posix for join path', () => {
+    const path = getMountPath(UPLOADED_MODEL);
+    expect(path).toBe(posix.join(MACHINE_BASE_FOLDER, UPLOADED_MODEL.file.file));
   });
 });
 

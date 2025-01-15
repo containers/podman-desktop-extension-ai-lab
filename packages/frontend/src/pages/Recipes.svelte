@@ -83,7 +83,7 @@ function onFilterChange(filter: CatalogFilterKey, v: unknown): void {
 // convert a list of choices provided by the backend to a list of options acceptable by the Dropdown component, adding an empty choice
 function choicesToOptions(choices: Choice[] | undefined): { label: string; value: string }[] {
   return [
-    { label: '(no filter)', value: '' },
+    { label: 'all', value: '' },
     ...(choices?.map(l => ({ value: l.name, label: `${l.name} (${l.count})` })) ?? []),
   ];
 }

@@ -32,6 +32,11 @@ export type MachineJSON = {
   VMType?: string;
 };
 
+/**
+ * We should be using the {@link @podman-desktop/api#extensions.getExtensions} function to get podman
+ * exec method
+ * @deprecated
+ */
 export function getPodmanCli(): string {
   // If we have a custom binary path regardless if we are running Windows or not
   const customBinaryPath = getCustomBinaryPath();
@@ -52,8 +57,9 @@ export function getCustomBinaryPath(): string | undefined {
 }
 
 /**
- * In the ${link ContainerProviderConnection.name} property the name is not usage, and we need to transform it
+ * In the {@link ContainerProviderConnection.name} property the name is not usage, and we need to transform it
  * @param connection
+ * @deprecated
  */
 export function getPodmanMachineName(connection: ContainerProviderConnection): string {
   const runningConnectionName = connection.name;

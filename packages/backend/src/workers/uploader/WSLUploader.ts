@@ -16,14 +16,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import * as podmanDesktopApi from '@podman-desktop/api';
-import { getPodmanCli, getPodmanMachineName } from '../../utils/podman';
-import { getLocalModelFile, getRemoteModelFile, isModelUploaded, MACHINE_BASE_FOLDER } from '../../utils/modelsUtils';
+import { getLocalModelFile, getRemoteModelFile, MACHINE_BASE_FOLDER } from '../../utils/modelsUtils';
 import { WindowsWorker } from '../WindowsWorker';
 import { VMType } from '@shared/src/models/IPodman';
 import type { UploaderOptions } from './UploaderOptions';
+import type { PodmanConnection } from '../../managers/podmanConnection';
+import type { ContainerProviderConnection } from '@podman-desktop/api';
+import type { ModelInfo } from '@shared/src/models/IModelInfo';
 
 export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
+  constructor(private podman: PodmanConnection) {
+    super();
+  }
+
+  /**
+   * @param connection
+   * @param model
+   * @protected
+   */
+  protected async isModelUploaded(connection: ContainerProviderConnection, model: ModelInfo): Promise<boolean> {
+    const remoteFile = getRemoteModelFile(model);
+    try {
+      const result = await this.podman.executeSSH(connection, ['stat', remoteFile]);
+      return (result.stderr ?? '').length === 0;
+    } catch (err: unknown) {
+      console.debug(err);
+      return false;
+    }
+  }
+
   async perform(options: UploaderOptions): Promise<string> {
     const localPath = getLocalModelFile(options.model);
 
@@ -33,36 +54,21 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
       return localPath;
     }
 
-    // the connection name cannot be used as it is
-    const machineName = getPodmanMachineName(options.connection);
-
     const driveLetter = localPath.charAt(0);
     const convertToMntPath = localPath
       .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
       .replace(/\\/g, '/');
 
     // check if model already loaded on the podman machine
-    const existsRemote = await isModelUploaded(machineName, options.model);
+    const existsRemote = await this.isModelUploaded(options.connection, options.model);
+
+    // get the name of the file on the machine
     const remoteFile = getRemoteModelFile(options.model);
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {
-      await podmanDesktopApi.process.exec(getPodmanCli(), [
-        'machine',
-        'ssh',
-        machineName,
-        'mkdir',
-        '-p',
-        MACHINE_BASE_FOLDER,
-      ]);
-      await podmanDesktopApi.process.exec(getPodmanCli(), [
-        'machine',
-        'ssh',
-        machineName,
-        'cp',
-        convertToMntPath,
-        remoteFile,
-      ]);
+      await this.podman.executeSSH(options.connection, ['mkdir', '-p', MACHINE_BASE_FOLDER]);
+      await this.podman.executeSSH(options.connection, ['cp', convertToMntPath, remoteFile]);
     }
 
     return remoteFile;

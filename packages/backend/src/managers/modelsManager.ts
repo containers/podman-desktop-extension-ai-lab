@@ -30,8 +30,7 @@ import type { Task } from '@shared/src/models/ITask';
 import type { BaseEvent } from '../models/baseEvent';
 import { isCompletionEvent, isProgressEvent } from '../models/baseEvent';
 import { Uploader } from '../utils/uploader';
-import { deleteRemoteModel, getLocalModelFile, isModelUploaded } from '../utils/modelsUtils';
-import { getPodmanMachineName } from '../utils/podman';
+import { getLocalModelFile, getRemoteModelFile } from '../utils/modelsUtils';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { getHash, hasValidSha } from '../utils/sha';
 import type { GGUFParseOutput } from '@huggingface/gguf';
@@ -231,15 +230,30 @@ export class ModelsManager implements Disposable {
     for (const connection of connections) {
       // ignore non-wsl machines
       if (connection.vmType !== VMType.WSL) continue;
-      // Get the corresponding machine name
-      const machineName = getPodmanMachineName(connection);
 
-      // check if model already loaded on the podman machine
-      const existsRemote = await isModelUploaded(machineName, modelInfo);
-      if (!existsRemote) return;
+      // check if remote model is
+      try {
+        await this.podmanConnection.executeSSH(connection, ['stat', getRemoteModelFile(modelInfo)]);
+      } catch (err: unknown) {
+        console.warn(err);
+        continue;
+      }
 
-      await deleteRemoteModel(machineName, modelInfo);
+      await this.deleteRemoteModelByConnection(connection, modelInfo);
     }
+  }
+
+  /**
+   * Delete a model given a {@link ContainerProviderConnection}
+   * @param connection
+   * @param modelInfo
+   * @protected
+   */
+  protected async deleteRemoteModelByConnection(
+    connection: ContainerProviderConnection,
+    modelInfo: ModelInfo,
+  ): Promise<void> {
+    await this.podmanConnection.executeSSH(connection, ['rm', '-f', getRemoteModelFile(modelInfo)]);
   }
 
   /**
@@ -439,7 +453,7 @@ export class ModelsManager implements Disposable {
       connection: connection.name,
     });
 
-    const uploader = new Uploader(connection, model);
+    const uploader = new Uploader(this.podmanConnection, connection, model);
     uploader.onEvent(event => this.onDownloadUploadEvent(event, 'upload'), this);
 
     // perform download

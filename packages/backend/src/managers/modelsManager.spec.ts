@@ -21,7 +21,7 @@ import os from 'node:os';
 import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
-import { env, process as coreProcess } from '@podman-desktop/api';
+import { env } from '@podman-desktop/api';
 import type { RunResult, TelemetryLogger, Webview, ContainerProviderConnection } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -33,7 +33,6 @@ import type { GGUFParseOutput } from '@huggingface/gguf';
 import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
-import { getPodmanMachineName } from '../utils/podman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 import { Uploader } from '../utils/uploader';
 
@@ -47,7 +46,6 @@ const mocks = vi.hoisted(() => {
     getTargetMock: vi.fn(),
     getDownloaderCompleter: vi.fn(),
     isCompletionEventMock: vi.fn(),
-    getPodmanCliMock: vi.fn(),
   };
 });
 
@@ -59,11 +57,6 @@ vi.mock('@huggingface/gguf', () => ({
   gguf: vi.fn(),
 }));
 
-vi.mock('../utils/podman', () => ({
-  getPodmanCli: mocks.getPodmanCliMock,
-  getPodmanMachineName: vi.fn(),
-}));
-
 vi.mock('@podman-desktop/api', () => {
   return {
     Disposable: {
@@ -71,9 +64,6 @@ vi.mock('@podman-desktop/api', () => {
     },
     env: {
       isWindows: false,
-    },
-    process: {
-      exec: vi.fn(),
     },
     fs: {
       createFileSystemWatcher: (): unknown => ({
@@ -102,6 +92,7 @@ vi.mock('../utils/downloader', () => ({
 
 const podmanConnectionMock = {
   getContainerProviderConnections: vi.fn(),
+  executeSSH: vi.fn(),
 } as unknown as PodmanConnection;
 
 const cancellationTokenRegistryMock = {
@@ -599,8 +590,7 @@ describe('deleting models', () => {
   });
 
   test('deleting on windows should check for all connections', async () => {
-    vi.mocked(coreProcess.exec).mockResolvedValue({} as RunResult);
-    mocks.getPodmanCliMock.mockReturnValue('dummyCli');
+    vi.mocked(podmanConnectionMock.executeSSH).mockResolvedValue({} as RunResult);
     vi.mocked(env).isWindows = true;
     const connections: ContainerProviderConnection[] = [
       {
@@ -623,7 +613,6 @@ describe('deleting models', () => {
       },
     ];
     vi.mocked(podmanConnectionMock.getContainerProviderConnections).mockReturnValue(connections);
-    vi.mocked(getPodmanMachineName).mockReturnValue('machine-2');
 
     const rmSpy = vi.spyOn(fs.promises, 'rm');
     rmSpy.mockResolvedValue(undefined);
@@ -660,10 +649,7 @@ describe('deleting models', () => {
 
     expect(podmanConnectionMock.getContainerProviderConnections).toHaveBeenCalledOnce();
 
-    expect(coreProcess.exec).toHaveBeenCalledWith('dummyCli', [
-      'machine',
-      'ssh',
-      'machine-2',
+    expect(podmanConnectionMock.executeSSH).toHaveBeenCalledWith(connections[1], [
       'rm',
       '-f',
       '/home/user/ai-lab/models/dummyFile',

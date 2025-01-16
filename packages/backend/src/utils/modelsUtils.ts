@@ -19,6 +19,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { join, posix } from 'node:path';
 import { getPodmanCli } from './podman';
 import { process } from '@podman-desktop/api';
+import { escapeSpaces } from './pathUtils';
 
 export const MACHINE_BASE_FOLDER = '/home/user/ai-lab/models';
 
@@ -62,7 +63,7 @@ export function getRemoteModelFile(modelInfo: ModelInfo): string {
  */
 export async function isModelUploaded(machine: string, modelInfo: ModelInfo): Promise<boolean> {
   try {
-    const remotePath = getRemoteModelFile(modelInfo).replace(/ /g, '\\ ');
+    const remotePath = escapeSpaces(getRemoteModelFile(modelInfo));
     await process.exec(getPodmanCli(), ['machine', 'ssh', machine, 'stat', remotePath]);
     return true;
   } catch (err: unknown) {

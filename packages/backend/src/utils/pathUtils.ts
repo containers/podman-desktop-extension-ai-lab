@@ -25,3 +25,7 @@ export function getParentDirectory(filePath: string): string {
   // Get the directory name using path.dirname
   return path.dirname(normalizedPath);
 }
+
+export function escapeSpaces(path: string): string {
+  return path.replace(/ /g, '\\ ');
+}

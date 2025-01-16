@@ -22,6 +22,7 @@ import { getLocalModelFile, getRemoteModelFile, isModelUploaded, MACHINE_BASE_FO
 import { WindowsWorker } from '../WindowsWorker';
 import { VMType } from '@shared/src/models/IPodman';
 import type { UploaderOptions } from './UploaderOptions';
+import { escapeSpaces } from '../../utils/pathUtils';
 
 export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
   async perform(options: UploaderOptions): Promise<string> {
@@ -37,14 +38,13 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
     const machineName = getPodmanMachineName(options.connection);
 
     const driveLetter = localPath.charAt(0);
-    const convertToMntPath = localPath
-      .replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`)
-      .replace(/\\/g, '/')
-      .replace(/ /g, '\\ ');
+    const convertToMntPath = escapeSpaces(
+      localPath.replace(`${driveLetter}:\\`, `/mnt/${driveLetter.toLowerCase()}/`).replace(/\\/g, '/'),
+    );
 
     // check if model already loaded on the podman machine
     const existsRemote = await isModelUploaded(machineName, options.model);
-    const remoteFile = getRemoteModelFile(options.model).replace(/ /g, '\\ ');
+    const remoteFile = escapeSpaces(getRemoteModelFile(options.model));
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {

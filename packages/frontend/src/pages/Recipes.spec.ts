@@ -17,12 +17,13 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import * as catalogStore from '/@/stores/catalog';
 import { readable } from 'svelte/store';
 import Recipes from '/@/pages/Recipes.svelte';
+import { studioClient } from '../utils/client';
 
 vi.mock('/@/stores/catalog', async () => {
   return {
@@ -31,7 +32,9 @@ vi.mock('/@/stores/catalog', async () => {
 });
 
 vi.mock('../utils/client', async () => ({
-  studioClient: {},
+  studioClient: {
+    filterRecipes: vi.fn(),
+  },
 }));
 
 vi.mock('../stores/localRepositories', () => ({
@@ -43,50 +46,160 @@ vi.mock('../stores/localRepositories', () => ({
   },
 }));
 
+const recipes = [
+  {
+    id: 'recipe1',
+    name: 'Recipe 1',
+    recommended: ['model1'],
+    categories: [],
+    description: 'Recipe 1',
+    readme: '',
+    repository: 'https://recipe-1',
+  },
+  {
+    id: 'recipe2',
+    name: 'Recipe 2',
+    recommended: ['model2'],
+    categories: ['dummy-category'],
+    description: 'Recipe 2',
+    readme: '',
+    repository: 'https://recipe-2',
+  },
+];
+
+const catalog: ApplicationCatalog = {
+  recipes: recipes,
+  models: [],
+  categories: [
+    {
+      id: 'dummy-category',
+      name: 'Dummy category',
+    },
+  ],
+};
+
 beforeEach(() => {
   vi.resetAllMocks();
-  const catalog: ApplicationCatalog = {
-    recipes: [
-      {
-        id: 'recipe1',
-        name: 'Recipe 1',
-        recommended: ['model1'],
-        categories: [],
-        description: 'Recipe 1',
-        readme: '',
-        repository: 'https://recipe-1',
-      },
-      {
-        id: 'recipe2',
-        name: 'Recipe 2',
-        recommended: ['model2'],
-        categories: ['dummy-category'],
-        description: 'Recipe 2',
-        readme: '',
-        repository: 'https://recipe-2',
-      },
-    ],
-    models: [],
-    categories: [
-      {
-        id: 'dummy-category',
-        name: 'Dummy category',
-      },
-    ],
-  };
+
   vi.mocked(catalogStore).catalog = readable(catalog);
+  vi.mocked(studioClient).filterRecipes.mockResolvedValue({
+    result: recipes,
+    filters: {},
+    choices: {},
+  });
 });
 
 test('recipe without category should be visible', async () => {
   render(Recipes);
 
-  const text = screen.getAllByText('Recipe 1');
-  expect(text.length).toBeGreaterThan(0);
+  await vi.waitFor(() => {
+    const text = screen.getAllByText('Recipe 1');
+    expect(text.length).toBeGreaterThan(0);
+  });
 });
 
 test('recipe with category should be visible', async () => {
   render(Recipes);
 
-  const text = screen.getAllByText('Recipe 2');
-  expect(text.length).toBeGreaterThan(0);
+  await vi.waitFor(() => {
+    const text = screen.getAllByText('Recipe 2');
+    expect(text.length).toBeGreaterThan(0);
+  });
+});
+
+test('filters returned in choices + all are displayed', async () => {
+  vi.mocked(studioClient).filterRecipes.mockResolvedValue({
+    result: recipes,
+    filters: {},
+    choices: {
+      tools: [
+        { name: 'tool1', count: 1 },
+        { name: 'tool2', count: 2 },
+      ],
+      languages: [
+        { name: 'lang1', count: 3 },
+        { name: 'lang2', count: 4 },
+      ],
+      frameworks: [
+        { name: 'fw1', count: 5 },
+        { name: 'fw2', count: 6 },
+      ],
+    },
+  });
+
+  render(Recipes);
+
+  await vi.waitFor(() => {
+    const text = screen.getAllByText('Recipe 1');
+    expect(text.length).toBeGreaterThan(0);
+  });
+
+  const tests = [
+    { category: 'Tools', choices: ['all', 'tool1 (1)', 'tool2 (2)'] },
+    { category: 'Frameworks', choices: ['all', 'fw1 (5)', 'fw2 (6)'] },
+    { category: 'Languages', choices: ['all', 'lang1 (3)', 'lang2 (4)'] },
+  ];
+
+  for (const test of tests) {
+    const dropdownLabel = screen.getByLabelText(test.category);
+    expect(dropdownLabel).toBeInTheDocument();
+    await fireEvent.click(dropdownLabel);
+
+    await vi.waitFor(() => {
+      for (const choice of test.choices) {
+        const text = screen.getAllByText(choice);
+        expect(text.length).toBeGreaterThan(0);
+      }
+    });
+  }
+});
+
+test('filterRecipes is called with selected filters', async () => {
+  vi.mocked(studioClient).filterRecipes.mockResolvedValue({
+    result: recipes,
+    filters: {},
+    choices: {
+      tools: [
+        { name: 'tool1', count: 1 },
+        { name: 'tool2', count: 2 },
+      ],
+      languages: [
+        { name: 'lang1', count: 3 },
+        { name: 'lang2', count: 4 },
+      ],
+      frameworks: [
+        { name: 'fw1', count: 5 },
+        { name: 'fw2', count: 6 },
+      ],
+    },
+  });
+
+  render(Recipes);
+
+  await vi.waitFor(() => {
+    const text = screen.getAllByText('Recipe 1');
+    expect(text.length).toBeGreaterThan(0);
+  });
+
+  const selectedFilters = [
+    { category: 'Tools', filter: 'tool1 (1)' },
+    { category: 'Languages', filter: 'lang2 (4)' },
+  ];
+
+  for (const selectedFilter of selectedFilters) {
+    const dropdownLabel = screen.getByLabelText(selectedFilter.category);
+    expect(dropdownLabel).toBeInTheDocument();
+    await fireEvent.click(dropdownLabel);
+
+    await vi.waitFor(async () => {
+      const text = screen.getByText(selectedFilter.filter);
+      expect(text).toBeInTheDocument();
+      await fireEvent.click(text);
+    });
+  }
+
+  expect(studioClient.filterRecipes).toHaveBeenCalledWith({
+    tools: ['tool1'],
+    languages: ['lang2'],
+  });
 });

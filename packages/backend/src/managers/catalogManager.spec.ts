@@ -336,9 +336,18 @@ test('filter recipes by language', async () => {
   });
   expect(result1.result.map(r => r.id)).toEqual(['recipe1']);
   expect(result1.choices).toEqual({
-    languages: ['lang1', 'lang10', 'lang11', 'lang2', 'lang3'],
-    frameworks: ['fw1', 'fw10'],
-    tools: ['tool1'],
+    languages: [
+      { name: 'lang1', count: 1 },
+      { name: 'lang10', count: 2 },
+      { name: 'lang11', count: 1 },
+      { name: 'lang2', count: 1 },
+      { name: 'lang3', count: 1 },
+    ],
+    frameworks: [
+      { name: 'fw1', count: 1 },
+      { name: 'fw10', count: 1 },
+    ],
+    tools: [{ name: 'tool1', count: 1 }],
   });
 
   const result2 = catalogManager.filterRecipes({
@@ -346,9 +355,18 @@ test('filter recipes by language', async () => {
   });
   expect(result2.result.map(r => r.id)).toEqual(['recipe2']);
   expect(result2.choices).toEqual({
-    languages: ['lang1', 'lang10', 'lang11', 'lang2', 'lang3'],
-    frameworks: ['fw10', 'fw2'],
-    tools: ['tool2'],
+    languages: [
+      { name: 'lang1', count: 1 },
+      { name: 'lang10', count: 2 },
+      { name: 'lang11', count: 1 },
+      { name: 'lang2', count: 1 },
+      { name: 'lang3', count: 1 },
+    ],
+    frameworks: [
+      { name: 'fw10', count: 1 },
+      { name: 'fw2', count: 1 },
+    ],
+    tools: [{ name: 'tool2', count: 1 }],
   });
 });
 
@@ -364,9 +382,19 @@ test('filter recipes by tool', async () => {
   });
   expect(result1.result.map(r => r.id)).toEqual(['recipe1']);
   expect(result1.choices).toEqual({
-    frameworks: ['fw1', 'fw10'],
-    languages: ['lang1', 'lang10'],
-    tools: ['tool1', 'tool2', 'tool3'],
+    frameworks: [
+      { name: 'fw1', count: 1 },
+      { name: 'fw10', count: 1 },
+    ],
+    languages: [
+      { name: 'lang1', count: 1 },
+      { name: 'lang10', count: 1 },
+    ],
+    tools: [
+      { name: 'tool1', count: 1 },
+      { name: 'tool2', count: 1 },
+      { name: 'tool3', count: 1 },
+    ],
   });
 
   const result2 = catalogManager.filterRecipes({
@@ -374,9 +402,19 @@ test('filter recipes by tool', async () => {
   });
   expect(result2.result.map(r => r.id)).toEqual(['recipe2']);
   expect(result2.choices).toEqual({
-    frameworks: ['fw10', 'fw2'],
-    languages: ['lang10', 'lang2'],
-    tools: ['tool1', 'tool2', 'tool3'],
+    frameworks: [
+      { name: 'fw10', count: 1 },
+      { name: 'fw2', count: 1 },
+    ],
+    languages: [
+      { name: 'lang10', count: 1 },
+      { name: 'lang2', count: 1 },
+    ],
+    tools: [
+      { name: 'tool1', count: 1 },
+      { name: 'tool2', count: 1 },
+      { name: 'tool3', count: 1 },
+    ],
   });
 
   const result3 = catalogManager.filterRecipes({
@@ -384,9 +422,21 @@ test('filter recipes by tool', async () => {
   });
   expect(result3.result.map(r => r.id)).toEqual(['recipe1', 'recipe2']);
   expect(result3.choices).toEqual({
-    frameworks: ['fw1', 'fw10', 'fw2'],
-    languages: ['lang1', 'lang10', 'lang2'],
-    tools: ['tool1', 'tool2', 'tool3'],
+    frameworks: [
+      { name: 'fw1', count: 1 },
+      { name: 'fw10', count: 2 },
+      { name: 'fw2', count: 1 },
+    ],
+    languages: [
+      { name: 'lang1', count: 1 },
+      { name: 'lang10', count: 2 },
+      { name: 'lang2', count: 1 },
+    ],
+    tools: [
+      { name: 'tool1', count: 1 },
+      { name: 'tool2', count: 1 },
+      { name: 'tool3', count: 1 },
+    ],
   });
 });
 
@@ -402,9 +452,17 @@ test('filter recipes by framework', async () => {
   });
   expect(result1.result.map(r => r.id)).toEqual(['recipe1']);
   expect(result1.choices).toEqual({
-    languages: ['lang1', 'lang10'],
-    frameworks: ['fw1', 'fw10', 'fw11', 'fw2'],
-    tools: ['tool1'],
+    languages: [
+      { name: 'lang1', count: 1 },
+      { name: 'lang10', count: 1 },
+    ],
+    frameworks: [
+      { name: 'fw1', count: 1 },
+      { name: 'fw10', count: 3 },
+      { name: 'fw11', count: 1 },
+      { name: 'fw2', count: 2 },
+    ],
+    tools: [{ name: 'tool1', count: 1 }],
   });
 
   const result2 = catalogManager.filterRecipes({
@@ -412,9 +470,22 @@ test('filter recipes by framework', async () => {
   });
   expect(result2.result.map(r => r.id)).toEqual(['recipe2', 'recipe3']);
   expect(result2.choices).toEqual({
-    languages: ['lang10', 'lang11', 'lang2', 'lang3'],
-    frameworks: ['fw1', 'fw10', 'fw11', 'fw2'],
-    tools: ['tool2', 'tool3'],
+    languages: [
+      { name: 'lang10', count: 1 },
+      { name: 'lang11', count: 1 },
+      { name: 'lang2', count: 1 },
+      { name: 'lang3', count: 1 },
+    ],
+    frameworks: [
+      { name: 'fw1', count: 1 },
+      { name: 'fw10', count: 3 },
+      { name: 'fw11', count: 1 },
+      { name: 'fw2', count: 2 },
+    ],
+    tools: [
+      { name: 'tool2', count: 1 },
+      { name: 'tool3', count: 1 },
+    ],
   });
 
   const result3 = catalogManager.filterRecipes({
@@ -422,9 +493,24 @@ test('filter recipes by framework', async () => {
   });
   expect(result3.result.map(r => r.id)).toEqual(['recipe1', 'recipe2', 'recipe3']);
   expect(result3.choices).toEqual({
-    languages: ['lang1', 'lang10', 'lang11', 'lang2', 'lang3'],
-    frameworks: ['fw1', 'fw10', 'fw11', 'fw2'],
-    tools: ['tool1', 'tool2', 'tool3'],
+    languages: [
+      { name: 'lang1', count: 1 },
+      { name: 'lang10', count: 2 },
+      { name: 'lang11', count: 1 },
+      { name: 'lang2', count: 1 },
+      { name: 'lang3', count: 1 },
+    ],
+    frameworks: [
+      { name: 'fw1', count: 1 },
+      { name: 'fw10', count: 3 },
+      { name: 'fw11', count: 1 },
+      { name: 'fw2', count: 2 },
+    ],
+    tools: [
+      { name: 'tool1', count: 1 },
+      { name: 'tool2', count: 1 },
+      { name: 'tool3', count: 1 },
+    ],
   });
 });
 
@@ -441,9 +527,17 @@ test('filter recipes by language and framework', async () => {
   });
   expect(result1.result.map(r => r.id)).toEqual(['recipe2']);
   expect(result1.choices).toEqual({
-    languages: ['lang10', 'lang11', 'lang2', 'lang3'],
-    frameworks: ['fw10', 'fw2'],
-    tools: ['tool2'],
+    languages: [
+      { name: 'lang10', count: 1 },
+      { name: 'lang11', count: 1 },
+      { name: 'lang2', count: 1 },
+      { name: 'lang3', count: 1 },
+    ],
+    frameworks: [
+      { name: 'fw10', count: 1 },
+      { name: 'fw2', count: 1 },
+    ],
+    tools: [{ name: 'tool2', count: 1 }],
   });
 });
 
@@ -461,8 +555,14 @@ test('filter recipes by language, tool and framework', async () => {
   });
   expect(result1.result.map(r => r.id)).toEqual(['recipe1']);
   expect(result1.choices).toEqual({
-    languages: ['lang1', 'lang10'],
-    frameworks: ['fw1', 'fw10'],
-    tools: ['tool1'],
+    languages: [
+      { name: 'lang1', count: 1 },
+      { name: 'lang10', count: 1 },
+    ],
+    frameworks: [
+      { name: 'fw1', count: 1 },
+      { name: 'fw10', count: 1 },
+    ],
+    tools: [{ name: 'tool1', count: 1 }],
   });
 });

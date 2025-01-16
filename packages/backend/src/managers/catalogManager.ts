@@ -30,20 +30,9 @@ import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { InferenceType } from '@shared/src/models/IInference';
 import { CatalogFormat, hasCatalogWrongFormat, merge, sanitize } from '../utils/catalogUtils';
+import type { FilterRecipesResult, RecipeChoices, RecipeFilters } from '@shared/src/models/FilterRecipesResult';
 
 export const USER_CATALOG = 'user-catalog.json';
-
-export type CatalogFilterKey = 'languages' | 'tools' | 'frameworks';
-
-export type RecipeFilters = {
-  [key in CatalogFilterKey]?: string[];
-};
-
-export interface FilterRecipesResult {
-  filters: RecipeFilters;
-  choices: RecipeFilters;
-  result: Recipe[];
-}
 
 export class CatalogManager extends Publisher<ApplicationCatalog> implements Disposable {
   private readonly _onUpdate = new EventEmitter<ApplicationCatalog>();
@@ -312,7 +301,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
         }
       }
     }
-    const choices: RecipeFilters = {};
+    const choices: RecipeChoices = {};
     if ('languages' in filters) {
       const subfilters = structuredClone(filters);
       delete subfilters.languages;
@@ -322,7 +311,11 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
         .flatMap(r => r.languages)
         .filter(l => l !== undefined)
         .filter((value, index, array) => array.indexOf(value) === index)
-        .sort((a, b) => a.localeCompare(b));
+        .sort((a, b) => a.localeCompare(b))
+        .map(l => ({
+          name: l,
+          count: result.filter(r => r.languages?.includes(l)).length,
+        }));
     }
 
     if ('tools' in filters) {
@@ -330,7 +323,15 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       delete subfilters.tools;
       choices.tools = this.filterRecipes(subfilters).choices.tools;
     } else {
-      choices.tools = result.map(r => r.backend).filter(b => b !== undefined);
+      choices.tools = result
+        .map(r => r.backend)
+        .filter(b => b !== undefined)
+        .filter((value, index, array) => array.indexOf(value) === index)
+        .sort((a, b) => a.localeCompare(b))
+        .map(t => ({
+          name: t,
+          count: result.filter(r => r.backend === t).length,
+        }));
     }
 
     if ('frameworks' in filters) {
@@ -342,7 +343,11 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
         .flatMap(r => r.frameworks)
         .filter(f => f !== undefined)
         .filter((value, index, array) => array.indexOf(value) === index)
-        .sort((a, b) => a.localeCompare(b));
+        .sort((a, b) => a.localeCompare(b))
+        .map(f => ({
+          name: f,
+          count: result.filter(r => r.frameworks?.includes(f)).length,
+        }));
     }
     return {
       filters,

@@ -56,6 +56,7 @@ import type { PodmanConnection } from './managers/podmanConnection';
 import type { RecipePullOptions } from '@shared/src/models/IRecipe';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
 import type { NavigationRegistry } from './registries/NavigationRegistry';
+import type { FilterRecipesResult, RecipeFilters } from '@shared/src/models/FilterRecipesResult';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -248,6 +249,10 @@ export class StudioApiImpl implements StudioAPI {
 
   async getCatalog(): Promise<ApplicationCatalog> {
     return this.catalogManager.getCatalog();
+  }
+
+  async filterRecipes(filters: RecipeFilters): Promise<FilterRecipesResult> {
+    return this.catalogManager.filterRecipes(filters);
   }
 
   async requestRemoveLocalModel(modelId: string): Promise<void> {

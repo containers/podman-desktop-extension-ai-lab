@@ -187,6 +187,97 @@ test('getChannel should use CHANNEL property of classType provided', () => {
   expect(channel).toBe('dummy-ping');
 });
 
+describe('subscribe', () => {
+  beforeEach(() => {
+    window.addEventListener = vi.fn();
+
+    (defaultNoTimeoutChannels.noTimeoutChannels as string[]) = [];
+  });
+
+  function getMessageListener(): (event: MessageEvent) => void {
+    expect(window.addEventListener).toHaveBeenCalledOnce();
+    expect(window.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
+    return vi.mocked(window.addEventListener).mock.calls[0][1] as (event: MessageEvent) => void;
+  }
+
+  test('subscriber should be called on event received', async () => {
+    const rpcBrowser = new RpcBrowser(window, api);
+    const messageListener = getMessageListener();
+
+    const listener = vi.fn();
+    rpcBrowser.subscribe('example', listener);
+
+    messageListener({
+      data: {
+        id: 'example',
+        body: 'hello',
+      },
+    } as unknown as MessageEvent);
+
+    expect(listener).toHaveBeenCalledOnce();
+  });
+
+  test('all subscribers should be called if multiple exists', async () => {
+    const rpcBrowser = new RpcBrowser(window, api);
+    const messageListener = getMessageListener();
+
+    const listeners = Array.from({ length: 10 }, _ => vi.fn());
+
+    listeners.forEach(listener => rpcBrowser.subscribe('example', listener));
+
+    messageListener({
+      data: {
+        id: 'example',
+        body: 'hello',
+      },
+    } as unknown as MessageEvent);
+
+    for (const listener of listeners) {
+      expect(listener).toHaveBeenCalledWith('hello');
+    }
+  });
+
+  test('subscribers which unsubscribe should not be called', async () => {
+    const rpcBrowser = new RpcBrowser(window, api);
+    const messageListener = getMessageListener();
+
+    const [listenerA, listenerB] = [vi.fn(), vi.fn()];
+
+    const unsubscriberA = rpcBrowser.subscribe('example', listenerA);
+    const unsubscriberB = rpcBrowser.subscribe('example', listenerB);
+
+    messageListener({
+      data: {
+        id: 'example',
+        body: 'hello',
+      },
+    } as unknown as MessageEvent);
+
+    // unsubscriber the listener B
+    unsubscriberB.unsubscribe();
+
+    messageListener({
+      data: {
+        id: 'example',
+        body: 'hello',
+      },
+    } as unknown as MessageEvent);
+
+    // unsubscriber the listener A
+    unsubscriberA.unsubscribe();
+
+    messageListener({
+      data: {
+        id: 'example',
+        body: 'hello',
+      },
+    } as unknown as MessageEvent);
+
+    expect(listenerA).toHaveBeenCalledTimes(2);
+    expect(listenerB).toHaveBeenCalledOnce();
+  });
+});
+
 describe('no timeout channel', () => {
   beforeEach(() => {
     vi.resetAllMocks();

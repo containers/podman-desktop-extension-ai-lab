@@ -37,7 +37,7 @@ vi.mock('../utils/client', async () => {
     postMessage: (message: unknown) => {
       if (message && typeof message === 'object' && 'channel' in message) {
         const f = rpcBrowser.subscribers.get(message.channel as string);
-        f?.('');
+        f?.forEach(listener => listener(''));
       }
     },
   } as unknown as PodmanDesktopApi;

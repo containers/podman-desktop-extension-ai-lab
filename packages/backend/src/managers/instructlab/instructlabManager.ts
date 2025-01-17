@@ -205,17 +205,17 @@ export class InstructlabManager {
         AutoRemove: true,
         Mounts: [
           {
-            Target: '/instructlab/.cache/instructlab',
+            Target: '/instructlab/.cache/instructlab:Z',
             Source: path.join(folder, '.cache'),
             Type: 'bind',
           },
           {
-            Target: '/instructlab/.config/instructlab',
+            Target: '/instructlab/.config/instructlab:Z',
             Source: path.join(folder, '.config'),
             Type: 'bind',
           },
           {
-            Target: '/instructlab/.local/share/instructlab',
+            Target: '/instructlab/.local/share/instructlab:Z',
             Source: path.join(folder, '.local'),
             Type: 'bind',
           },

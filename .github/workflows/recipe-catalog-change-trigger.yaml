@@ -7,7 +7,7 @@ on:
 
 jobs:
   windows-e2e-recipe-change:
-    uses: containers/podman-desktop-extension-ai-lab/.github/workflows/recipe-catalog-change-template.yml@main
+    uses: containers/podman-desktop-extension-ai-lab/.github/workflows/recipe-catalog-change-template.yaml@main
     strategy:
       fail-fast: false
     with:

@@ -20,9 +20,6 @@ jobs:
   windows:
     name: recipe-catalog-windows-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}
     runs-on: ubuntu-latest
-    permissions:
-      statuses: write # needed to update commit status (pending/failure/sucess)
-      checks: write # as documented in https://github.com/mikepenz/action-junit-report?tab=readme-ov-file#pr-run-permissions
     env:
       MAPT_VERSION: v0.7.2
       MAPT_IMAGE: quay.io/redhat-developer/mapt
@@ -46,7 +43,8 @@ jobs:
         DEFAULT_EXT_TESTS: '1'
         DEFAULT_NPM_TARGET: 'test:e2e'
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
-        DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0,ADMIN=1'
+        DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
+        DEFAULT_RUN_TEST_AS_ADMIN: '1'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
         DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.1' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
@@ -60,6 +58,7 @@ jobs:
         echo "PODMAN_URL=${{ env.DEFAULT_URL }}" >> $GITHUB_ENV
         echo "PDE2E_IMAGE_VERSION=${{ env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
         echo "EXT_TESTS=${{ env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
+        echo "RUN_TEST_AS_ADMIN=${{ env.DEFAULT_RUN_TEST_AS_ADMIN }}" >> $GITHUB_ENV
         if [[ -z "${{ inputs.trigger-workflow-repo_name }}" ]] && [[ -z "${{ inputs.trigger-workflow-fork }}" ]] && [[ -z "${{ inputs.trigger-workflow-branch }}" ]]; then
           echo "DEFAULT_EXT_REPO_OPTIONS=REPO=${{ inputs.trigger-workflow-repo_name }},FORK=${{ inputs.trigger-workflow-fork }},BRANCH=${{ inputs.trigger-workflow-branch }}" >> $GITHUB_ENV
         fi
@@ -225,7 +224,7 @@ jobs:
                 -start ${{ env.PODMAN_START }} \
                 -userNetworking ${{ env.PODMAN_NETWORKING }} \
                 -envVars ${{ env.ENV_VARS }} \
-                -runAsAdmin ${{ env.PODMAN_ADMIN }} \
+                -runAsAdmin ${{ env.RUN_TEST_AS_ADMIN }}
         # check logs
         podman logs -f pde2e-runner-run
 
@@ -269,6 +268,7 @@ jobs:
       uses: mikepenz/action-junit-report@v5
       if: always() # always run even if the previous step fails
       with:
+        annotate_only: true
         fail_on_failure: true
         include_passed: true
         detailed_summary: true

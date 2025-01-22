@@ -21,7 +21,7 @@ jobs:
           name: gh-context
           path: gh_context.json
   windows-e2e-recipe-change:
-    uses: containers/podman-desktop-extension-ai-lab/.github/workflows/recipe-catalog-change-template.yaml@main
+    uses: ScrewTSW/podman-desktop-extension-ai-lab/.github/workflows/recipe-catalog-change-template.yaml@2134-run-recipe-tests-on-catalog-change
     strategy:
       fail-fast: false
     with:

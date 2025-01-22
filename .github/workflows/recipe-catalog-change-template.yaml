@@ -81,6 +81,7 @@ jobs:
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
         DEFAULT_AZURE_VM_SIZE: 'Standard_D8as_v5'
       run: |
+        echo "Parent job run id: ${{ inputs.trigger-workflow-run-id }}"
         echo "FORK=${{ inputs.pd-fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
         echo "BRANCH=${{ inputs.pd-branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
         echo "NPM_TARGET=${{ inputs.npm-target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV

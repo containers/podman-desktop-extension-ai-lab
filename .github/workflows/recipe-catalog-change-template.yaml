@@ -15,6 +15,36 @@ on:
       trigger-workflow-branch:
         required: true
         type: string
+      pd-fork:
+        required: false
+        type: string
+      pd-branch:
+        required: false
+        type: string
+      pd-env-vars:
+        required: false
+        type: string
+      podman-options:
+        required: false
+        type: string
+      podman-download-url:
+        required: false
+        type: string
+      run-extension-tests:
+        required: false
+        type: string
+      run-test-as-admin:
+        required: false
+        type: string
+      npm-target:
+        required: false
+        type: string
+      pde2e-image-version:
+        required: false
+        type: string
+      azure-vm-size:
+        required: false
+        type: string
 
 jobs:
   windows:
@@ -30,7 +60,7 @@ jobs:
         windows-featurepack: ['23h2-ent']
 
     steps:
-    - name: Get Podman version used by Desktop
+    - name: Get Podman version used by Podman Desktop
       run: |
         version=$(curl https://raw.githubusercontent.com/containers/podman-desktop/main/extensions/podman/packages/extension/src/podman5.json | jq -r '.version')
         echo "Default Podman Version from Podman Desktop: ${version}"
@@ -51,22 +81,22 @@ jobs:
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
         DEFAULT_AZURE_VM_SIZE: 'Standard_D8as_v5'
       run: |
-        echo "FORK=${{ env.DEFAULT_FORK }}" >> $GITHUB_ENV
-        echo "BRANCH=${{ env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
-        echo "NPM_TARGET=${{ env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
-        echo "ENV_VARS=${{ env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
-        echo "PODMAN_URL=${{ env.DEFAULT_URL }}" >> $GITHUB_ENV
-        echo "PDE2E_IMAGE_VERSION=${{ env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
-        echo "EXT_TESTS=${{ env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
-        echo "RUN_TEST_AS_ADMIN=${{ env.DEFAULT_RUN_TEST_AS_ADMIN }}" >> $GITHUB_ENV
+        echo "FORK=${{ inputs.pd-fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
+        echo "BRANCH=${{ inputs.pd-branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
+        echo "NPM_TARGET=${{ inputs.npm-target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
+        echo "ENV_VARS=${{ inputs.pd-env-vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
+        echo "PODMAN_URL=${{ inputs.podman-download-url || env.DEFAULT_URL }}" >> $GITHUB_ENV
+        echo "PDE2E_IMAGE_VERSION=${{ inputs.pde2e-image-version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
+        echo "EXT_TESTS=${{ inputs.run-extension-tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
+        echo "RUN_TEST_AS_ADMIN=${{ inputs.run-test-as-admin || env.DEFAULT_RUN_TEST_AS_ADMIN }}" >> $GITHUB_ENV
         if [[ -z "${{ inputs.trigger-workflow-repo_name }}" ]] && [[ -z "${{ inputs.trigger-workflow-fork }}" ]] && [[ -z "${{ inputs.trigger-workflow-branch }}" ]]; then
           echo "DEFAULT_EXT_REPO_OPTIONS=REPO=${{ inputs.trigger-workflow-repo_name }},FORK=${{ inputs.trigger-workflow-fork }},BRANCH=${{ inputs.trigger-workflow-branch }}" >> $GITHUB_ENV
         fi
         echo "${{ env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "${{ env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
+        echo "${{ inputs.podman-options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "AZURE_VM_SIZE=${{ env.DEFAULT_AZURE_VM_SIZE }}" >> $GITHUB_ENV
+        echo "AZURE_VM_SIZE=${{ inputs.azure-vm-size || env.DEFAULT_AZURE_VM_SIZE }}" >> $GITHUB_ENV
 
     - name: Download gh context
       id: download-gh-context-artifact

@@ -6,6 +6,20 @@ on:
       - 'packages/backend/src/assets/ai.json'
 
 jobs:
+  save-gh-context:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Save the GH context in an artifact
+        env:
+          GH_CONTEXT: ${{ toJSON(github) }}
+        run: echo $GH_CONTEXT > gh_context.json
+      - name: Upload the GH context artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gh-context
+          path: gh_context.json
   windows-e2e-recipe-change:
     uses: containers/podman-desktop-extension-ai-lab/.github/workflows/recipe-catalog-change-template.yaml@main
     strategy:

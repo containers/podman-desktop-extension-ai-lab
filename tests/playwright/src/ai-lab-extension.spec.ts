@@ -283,7 +283,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
 
-  ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation'].forEach(appName => {
+  ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot'].forEach(appName => {
     test.describe.serial(`AI Recipe installation`, () => {
       let recipesCatalogPage: AILabRecipesCatalogPage;
 

@@ -52,7 +52,7 @@ on:
         type: string
         required: true
       podman_remote_url:
-        default: 'https://github.com/containers/podman/releases/download/v5.3.0/podman-5.3.0-setup.exe'
+        default: 'https://github.com/containers/podman/releases/download/v5.3.2/podman-5.3.2-setup.exe'
         description: 'podman remote setup exe'
         type: string
         required: true
@@ -67,7 +67,7 @@ on:
         type: string
         required: true
       pde2e_image_version:
-        default: 'v0.0.2-windows'
+        default: 'v0.0.3-windows'
         description: 'PDE2E runner, builder, podman image versions'
         type: string
         required: true
@@ -87,7 +87,7 @@ jobs:
     name: windows-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}
     runs-on: ubuntu-latest
     env:
-      MAPT_VERSION: v0.7.2
+      MAPT_VERSION: v0.7.4
       MAPT_IMAGE: quay.io/redhat-developer/mapt
     strategy:
       fail-fast: false
@@ -116,7 +116,7 @@ jobs:
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
-        DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.0' }}"
+        DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.2' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
         DEFAULT_AZURE_VM_SIZE: 'Standard_D8as_v5'

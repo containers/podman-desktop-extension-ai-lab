@@ -302,3 +302,19 @@ jobs:
           results/*
           !./**/*.gguf
           !./**/*.bin
+          !./**/output/videos/*
+          !./**/output/traces/*
+
+    - name: Upload test videos
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}-videos
+        path: ./**/output/videos/*
+
+    - name: Upload test traces
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}-traces
+        path: ./**/output/traces/*

@@ -127,6 +127,6 @@ jobs:
         with:
           name: e2e-tests
           path: |
-            ./**/tests/output/
+            ./**/tests/**/output/
             !results/**/*.gguf
             !results/**/*.bin

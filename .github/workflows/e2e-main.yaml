@@ -130,3 +130,19 @@ jobs:
             ./**/tests/**/output/
             !./**/*.gguf
             !./**/*.bin
+            !./**/output/videos/*
+            !./**/output/traces/*
+
+      - name: Upload test videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-tests-videos
+          path: ./**/output/videos/*
+
+      - name: Upload test traces
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-tests-traces
+          path: ./**/output/traces/*

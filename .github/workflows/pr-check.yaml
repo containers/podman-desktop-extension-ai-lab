@@ -162,3 +162,19 @@ jobs:
             ./**/tests/**/output/
             !./**/*.gguf
             !./**/*.bin
+            !./**/output/videos/*
+            !./**/output/traces/*
+
+      - name: Upload test videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-pr-check-videos
+          path: ./**/output/videos/*
+
+      - name: Upload test traces
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-pr-check-traces
+          path: ./**/output/traces/*

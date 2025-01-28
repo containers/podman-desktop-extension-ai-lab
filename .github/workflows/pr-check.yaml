@@ -160,5 +160,5 @@ jobs:
           name: e2e-pr-check
           path: |
             ./**/tests/**/output/
-            !results/**/*.gguf
-            !results/**/*.bin
+            !./**/*.gguf
+            !./**/*.bin

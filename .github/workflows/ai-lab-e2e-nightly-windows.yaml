@@ -298,5 +298,5 @@ jobs:
         name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}
         path: |
           results/*
-          !results/**/*.gguf
-          !results/**/*.bin
+          !./**/*.gguf
+          !./**/*.bin

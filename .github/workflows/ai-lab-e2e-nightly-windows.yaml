@@ -291,3 +291,4 @@ jobs:
         path: |
           results/*
           !results/**/*.gguf
+          !results/**/*.bin

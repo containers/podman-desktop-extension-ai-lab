@@ -142,8 +142,8 @@ importers:
         specifier: ^4.5.0
         version: 4.5.0
       semver:
-        specifier: ^7.6.3
-        version: 7.6.3
+        specifier: ^7.7.0
+        version: 7.7.0
       systeminformation:
         specifier: ^5.25.11
         version: 5.25.11
@@ -4173,6 +4173,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.7.0:
+    resolution: {integrity: sha512-DrfFnPzblFmNrIZzg5RzHegbiRWg7KMR7btwi2yjHwx06zsUbO5g613sVwEV7FTwmzJu+Io0lJe2GJ3LxqpvBQ==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   send@0.19.0:
     resolution: {integrity: sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw==}
     engines: {node: '>= 0.8.0'}
@@ -5729,7 +5734,7 @@ snapshots:
   '@commitlint/is-ignored@19.6.0':
     dependencies:
       '@commitlint/types': 19.5.0
-      semver: 7.6.3
+      semver: 7.7.0
 
   '@commitlint/lint@19.6.0':
     dependencies:
@@ -6448,7 +6453,7 @@ snapshots:
       debug: 4.4.0(supports-color@9.4.0)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.6.3
+      semver: 7.7.0
       tsutils: 3.21.0(typescript@5.7.3)
     optionalDependencies:
       typescript: 5.7.3
@@ -6463,7 +6468,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.3
-      semver: 7.6.3
+      semver: 7.7.0
       ts-api-utils: 1.4.3(typescript@5.7.3)
     optionalDependencies:
       typescript: 5.7.3
@@ -6478,7 +6483,7 @@ snapshots:
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.6.3
+      semver: 7.7.0
       ts-api-utils: 2.0.0(typescript@5.7.3)
       typescript: 5.7.3
     transitivePeerDependencies:
@@ -6494,7 +6499,7 @@ snapshots:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.7.3)
       eslint: 9.19.0(jiti@2.4.1)
       eslint-scope: 5.1.1
-      semver: 7.6.3
+      semver: 7.7.0
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -6508,7 +6513,7 @@ snapshots:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.7.3)
       eslint: 9.19.0(jiti@2.4.1)
-      semver: 7.6.3
+      semver: 7.7.0
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -7350,7 +7355,7 @@ snapshots:
   eslint-compat-utils@0.5.1(eslint@9.19.0(jiti@2.4.1)):
     dependencies:
       eslint: 9.19.0(jiti@2.4.1)
-      semver: 7.6.3
+      semver: 7.7.0
 
   eslint-etc@5.2.1(eslint@9.19.0(jiti@2.4.1))(typescript@5.7.3):
     dependencies:
@@ -7495,7 +7500,7 @@ snapshots:
       postcss-load-config: 3.1.4(postcss@8.5.1)
       postcss-safe-parser: 6.0.0(postcss@8.5.1)
       postcss-selector-parser: 6.1.2
-      semver: 7.6.3
+      semver: 7.7.0
       svelte-eslint-parser: 0.43.0(svelte@5.19.4)
     optionalDependencies:
       svelte: 5.19.4
@@ -7519,7 +7524,7 @@ snapshots:
       read-pkg-up: 7.0.1
       regexp-tree: 0.1.27
       regjsparser: 0.10.0
-      semver: 7.6.3
+      semver: 7.7.0
       strip-indent: 3.0.0
 
   eslint-scope@5.1.1:
@@ -7919,7 +7924,7 @@ snapshots:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.6.3
+      semver: 7.7.0
       serialize-error: 7.0.1
     optional: true
 
@@ -8112,7 +8117,7 @@ snapshots:
 
   is-bun-module@1.2.1:
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.0
 
   is-callable@1.2.7: {}
 
@@ -8438,7 +8443,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.0
 
   marked@5.1.2: {}
 
@@ -8873,7 +8878,7 @@ snapshots:
       mime-format: 2.0.1
       mime-types: 2.1.31
       postman-url-encoder: 3.0.1
-      semver: 7.6.3
+      semver: 7.7.0
       uuid: 8.3.2
 
   postman-collection@4.5.0:
@@ -8887,7 +8892,7 @@ snapshots:
       mime-format: 2.0.1
       mime-types: 2.1.35
       postman-url-encoder: 3.0.5
-      semver: 7.6.3
+      semver: 7.7.0
       uuid: 8.3.2
 
   postman-url-encoder@3.0.1:
@@ -9165,6 +9170,8 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.6.3: {}
+
+  semver@7.7.0: {}
 
   send@0.19.0:
     dependencies:

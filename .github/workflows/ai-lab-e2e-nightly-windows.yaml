@@ -62,7 +62,7 @@ on:
         type: string
         required: true
       env_vars:
-        default: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
+        default: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true,EXT_TEST_RAG_CHATBOT=1'
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
         type: string
         required: true
@@ -113,7 +113,7 @@ jobs:
         DEFAULT_FORK: 'containers'
         DEFAULT_BRANCH: 'main'
         DEFAULT_NPM_TARGET: 'test:e2e'
-        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
+        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true,EXT_TEST_RAG_CHATBOT=1'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_EXT_TESTS_OPTIONS: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=1'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'

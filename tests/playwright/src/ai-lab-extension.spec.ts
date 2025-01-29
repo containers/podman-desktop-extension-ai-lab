@@ -22,7 +22,6 @@ import {
   expect as playExpect,
   test,
   RunnerOptions,
-  isLinux,
   isWindows,
   waitForPodmanMachineStartup,
 } from '@podman-desktop/tests-playwright';
@@ -289,7 +288,6 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     test.describe.serial(`AI Recipe installation`, () => {
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
-      test.skip(isLinux, `Skipping AI App deployment on Linux`);
       test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
         aiLabPage = new AILabPage(page, webview);

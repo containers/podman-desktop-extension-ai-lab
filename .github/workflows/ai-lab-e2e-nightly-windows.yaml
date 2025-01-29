@@ -41,14 +41,9 @@ on:
         description: 'Podman Desktop Extension repo, fork and branch'
         type: string
         required: true
-      ext_tests:
-        default: '1'
-        description: 'Run E2E tests from extension'
-        type: string
-        required: true
-      ext_tests_run_as_admin:
-        default: '1'
-        description: 'Run E2E tests as admin'
+      ext_tests_options:
+        default: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=1'
+        description: 'E2E tests options in format VAR1=xxx,VAR2=true,VAR3=15 etc.'
         type: string
         required: true
       npm_target:
@@ -117,12 +112,11 @@ jobs:
       env:
         DEFAULT_FORK: 'containers'
         DEFAULT_BRANCH: 'main'
-        DEFAULT_EXT_TESTS: '1'
         DEFAULT_NPM_TARGET: 'test:e2e'
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
+        DEFAULT_EXT_TESTS_OPTIONS: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=1'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
-        DEFAULT_EXT_TESTS_RUN_AS_ADMIN: '1'
         DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.2' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
@@ -134,8 +128,8 @@ jobs:
         echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
         echo "PODMAN_URL=${{ github.event.inputs.podman_remote_url || env.DEFAULT_URL }}" >> $GITHUB_ENV
         echo "PDE2E_IMAGE_VERSION=${{ github.event.inputs.pde2e_image_version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
-        echo "EXT_TESTS=${{ github.event.inputs.ext_tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
-        echo "EXT_TESTS_RUN_AS_ADMIN=${{ github.event.inputs.ext_tests_run_as_admin || env.DEFAULT_EXT_TESTS_RUN_AS_ADMIN }}" >> $GITHUB_ENV
+        echo "${{ github.event.inputs.ext_tests_options || env.DEFAULT_EXT_TESTS_OPTIONS }}" | awk -F ',' \
+         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ github.event.inputs.podman_options || env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
@@ -255,14 +249,14 @@ jobs:
                 -extRepo ${{ env.EXT_REPO }} \
                 -extFork ${{ env.EXT_FORK }} \
                 -extBranch ${{ env.EXT_BRANCH }} \
-                -extTests ${{ env.EXT_TESTS }} \
+                -extTests ${{ env.EXT_RUN_TESTS_FROM_EXTENSION }} \
                 -npmTarget ${{ env.NPM_TARGET }} \
                 -initialize ${{ env.PODMAN_INIT }} \
                 -rootful ${{ env.PODMAN_ROOTFUL }} \
                 -start ${{ env.PODMAN_START }} \
                 -userNetworking ${{ env.PODMAN_NETWORKING }} \
                 -envVars ${{ env.ENV_VARS }} \
-                -runAsAdmin ${{ env.EXT_TESTS_RUN_AS_ADMIN }}
+                -runAsAdmin ${{ env.EXT_RUN_TESTS_AS_ADMIN }}
         # check logs
         podman logs -f pde2e-runner-run
 

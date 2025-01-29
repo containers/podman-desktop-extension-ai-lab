@@ -286,6 +286,10 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
   ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot'].forEach(appName => {
     test.describe.serial(`AI Recipe installation`, () => {
+      test.skip(
+        !process.env.EXT_TEST_RAG_CHATBOT && appName === 'RAG Chatbot',
+        'EXT_TEST_RAG_CHATBOT variable not set, skipping test',
+      );
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
       test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {

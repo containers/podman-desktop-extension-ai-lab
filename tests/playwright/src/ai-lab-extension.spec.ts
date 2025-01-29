@@ -24,6 +24,7 @@ import {
   RunnerOptions,
   isWindows,
   waitForPodmanMachineStartup,
+  isLinux,
 } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
@@ -155,6 +156,11 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     test.describe.serial(`Model service creation and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let modelServiceDetailsPage: AILabServiceDetailsPage;
+
+      test.skip(
+        isLinux && modelName === 'instructlab/granite-7b-lab-GGUF',
+        `Skipping ${modelName} model service creation on linux due to known issue`,
+      );
 
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);

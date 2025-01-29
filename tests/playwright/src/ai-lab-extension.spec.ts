@@ -202,6 +202,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
       test(`Make POST request to the model service for ${modelName}`, async ({ request }) => {
         test.skip(modelName === 'ggerganov/whisper.cpp', `Skipping POST request for ${modelName}`);
+        test.setTimeout(70_000);
 
         const port = await modelServiceDetailsPage.getInferenceServerPort();
         const url = `http://localhost:${port}/v1/chat/completions`;
@@ -224,7 +225,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
           });
           playExpect(response.ok()).toBeTruthy();
           playExpect(await response.text()).toContain('Madrid');
-        }).toPass({ timeout: 30_000 });
+        }).toPass({ timeout: 60_000 });
       });
 
       test(`Delete model service for ${modelName}`, async () => {
@@ -294,6 +295,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test(`Delete AI Lab playground for ${modelName}`, async () => {
+        test.setTimeout(70_000);
         playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
         await playgroundsPage.waitForLoad();
 

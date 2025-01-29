@@ -151,7 +151,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-
   ['ggerganov/whisper.cpp', 'instructlab/granite-7b-lab-GGUF'].forEach(modelName => {
     test.describe.serial(`Model service creation and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;

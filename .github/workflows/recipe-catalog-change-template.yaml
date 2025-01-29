@@ -30,10 +30,7 @@ on:
       podman-download-url:
         required: false
         type: string
-      run-extension-tests:
-        required: false
-        type: string
-      run-test-as-admin:
+      ext_tests_options:
         required: false
         type: string
       npm-target:
@@ -51,8 +48,9 @@ jobs:
     name: recipe-catalog-windows-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}
     runs-on: ubuntu-latest
     env:
-      MAPT_VERSION: v0.7.2
+      MAPT_VERSION: v0.7.4
       MAPT_IMAGE: quay.io/redhat-developer/mapt
+      MAPT_EXCLUDED_REGIONS: 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest'
     strategy:
       fail-fast: false
       matrix:
@@ -70,13 +68,12 @@ jobs:
       env:
         DEFAULT_FORK: 'containers'
         DEFAULT_BRANCH: 'main'
-        DEFAULT_EXT_TESTS: '1'
         DEFAULT_NPM_TARGET: 'test:e2e'
-        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
+        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true,EXT_TEST_RAG_CHATBOT=1'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
-        DEFAULT_RUN_TEST_AS_ADMIN: '1'
+        DEFAULT_EXT_TESTS_OPTIONS: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=1'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
-        DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.1' }}"
+        DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.2' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
         DEFAULT_AZURE_VM_SIZE: 'Standard_D8as_v5'
@@ -87,11 +84,11 @@ jobs:
         echo "ENV_VARS=${{ inputs.pd-env-vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
         echo "PODMAN_URL=${{ inputs.podman-download-url || env.DEFAULT_URL }}" >> $GITHUB_ENV
         echo "PDE2E_IMAGE_VERSION=${{ inputs.pde2e-image-version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
-        echo "EXT_TESTS=${{ inputs.run-extension-tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
-        echo "RUN_TEST_AS_ADMIN=${{ inputs.run-test-as-admin || env.DEFAULT_RUN_TEST_AS_ADMIN }}" >> $GITHUB_ENV
         if [[ -z "${{ inputs.trigger-workflow-repo_name }}" ]] && [[ -z "${{ inputs.trigger-workflow-fork }}" ]] && [[ -z "${{ inputs.trigger-workflow-branch }}" ]]; then
           echo "DEFAULT_EXT_REPO_OPTIONS=REPO=${{ inputs.trigger-workflow-repo_name }},FORK=${{ inputs.trigger-workflow-fork }},BRANCH=${{ inputs.trigger-workflow-branch }}" >> $GITHUB_ENV
         fi
+        echo "${{ github.event.inputs.ext_tests_options || env.DEFAULT_EXT_TESTS_OPTIONS }}" | awk -F ',' \
+         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ inputs.podman-options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
@@ -153,6 +150,7 @@ jobs:
             --windows-featurepack '${{ matrix.windows-featurepack }}' \
             --vmsize '${{ env.AZURE_VM_SIZE }}' \
             --tags project=podman-desktop \
+            --spot-excluded-regions ${{ env.MAPT_EXCLUDED_REGIONS }} \
             --spot
         # Check logs
         podman logs -f windows-create
@@ -247,14 +245,14 @@ jobs:
                 -extRepo ${{ env.EXT_REPO }} \
                 -extFork ${{ env.EXT_FORK }} \
                 -extBranch ${{ env.EXT_BRANCH }} \
-                -extTests ${{ env.EXT_TESTS }} \
+                -extTests ${{ env.EXT_RUN_TESTS_FROM_EXTENSION }} \
                 -npmTarget ${{ env.NPM_TARGET }} \
                 -initialize ${{ env.PODMAN_INIT }} \
                 -rootful ${{ env.PODMAN_ROOTFUL }} \
                 -start ${{ env.PODMAN_START }} \
                 -userNetworking ${{ env.PODMAN_NETWORKING }} \
                 -envVars ${{ env.ENV_VARS }} \
-                -runAsAdmin ${{ env.RUN_TEST_AS_ADMIN }}
+                -runAsAdmin ${{ env.EXT_RUN_TESTS_AS_ADMIN }}
         # check logs
         podman logs -f pde2e-runner-run
 

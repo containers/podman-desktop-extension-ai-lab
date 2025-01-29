@@ -15,3 +15,4 @@ jobs:
       trigger-workflow-fork: ${{ github.event.pull_request.user.login }}
       trigger-workflow-repo_name: ${{ github.event.pull_request.head.repo.name }}
       trigger-workflow-branch: ${{ github.event.pull_request.head.ref }}
+      ext_tests_options: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=0'

@@ -217,7 +217,6 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
       const playgroundName = 'test playground';
 
-      test.skip(isLinux, `Skipping playground creation on Linux`);
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
         aiLabPage = new AILabPage(page, webview);

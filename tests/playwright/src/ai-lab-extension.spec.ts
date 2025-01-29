@@ -148,7 +148,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
     });
   });
 
-  ['ggerganov/whisper.cpp'].forEach(modelName => {
+  ['ggerganov/whisper.cpp', 'instructlab/granite-7b-lab-GGUF'].forEach(modelName => {
     test.describe.serial(`Model service creation and deletion`, () => {
       let catalogPage: AILabCatalogPage;
       let modelServiceDetailsPage: AILabServiceDetailsPage;
@@ -187,6 +187,8 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
       });
 
       test(`Make GET request to the model service for ${modelName}`, async ({ request }) => {
+        test.skip(modelName === 'instructlab/granite-7b-lab-GGUF', `Skipping GET request for ${modelName}`);
+
         const port = await modelServiceDetailsPage.getInferenceServerPort();
         const url = `http://localhost:${port}`;
 
@@ -195,6 +197,33 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
           const response = await request.get(url);
           playExpect(response.ok()).toBeTruthy();
           playExpect(await response.text()).toContain('hello');
+        }).toPass({ timeout: 30_000 });
+      });
+
+      test(`Make POST request to the model service for ${modelName}`, async ({ request }) => {
+        test.skip(modelName === 'ggerganov/whisper.cpp', `Skipping POST request for ${modelName}`);
+
+        const port = await modelServiceDetailsPage.getInferenceServerPort();
+        const url = `http://localhost:${port}/v1/chat/completions`;
+
+        // eslint-disable-next-line sonarjs/no-nested-functions
+        await playExpect(async () => {
+          const response = await request.post(url, {
+            data: {
+              messages: [
+                {
+                  content: 'You are a helpful assistant.',
+                  role: 'system',
+                },
+                {
+                  content: 'What is the capital of Spain?',
+                  role: 'user',
+                },
+              ],
+            },
+          });
+          playExpect(response.ok()).toBeTruthy();
+          playExpect(await response.text()).toContain('Madrid');
         }).toPass({ timeout: 30_000 });
       });
 

@@ -53,6 +53,10 @@ test.use({
   runnerOptions: new RunnerOptions(runnerOptions),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
+  const window = await runner.getElectronApp().firstWindow();
+  // Increase Window Size to improve video recording and screenshots
+  await window.setViewportSize({ width: 1050, height: 700 });
+
   runner.setVideoAndTraceName('ai-lab-e2e');
   await welcomePage.handleWelcomePage(true);
   await waitForPodmanMachineStartup(page);

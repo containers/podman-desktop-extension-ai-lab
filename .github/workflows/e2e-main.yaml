@@ -20,6 +20,8 @@ name: e2e-tests-main
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 2 * * *'
 
   workflow_dispatch:
     inputs:
@@ -41,7 +43,7 @@ on:
 
 jobs:
   e2e-tests:
-    name: Run E2E tests
+    name: Run E2E tests ${{ github.event_name == 'schedule' && '[nightly]' || '' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +54,7 @@ jobs:
           path: ${{ github.event.inputs.repositoryName }}
 
       - uses: actions/checkout@v4
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event_name == 'schedule'
         with:
           path: podman-desktop-extension-ai-lab
 
@@ -99,6 +101,15 @@ jobs:
         run: |
           # allow unprivileged user namespace
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Set cgroup_manager to 'cgroupfs' instead of systemd
+        run: |
+          mkdir -p ~/.config/containers
+          cat <<EOT >> ~/.config/containers/containers.conf
+          [engine]
+          cgroup_manager="cgroupfs"
+          EOT
+          podman info
 
       - name: Execute pnpm
         working-directory: ./podman-desktop

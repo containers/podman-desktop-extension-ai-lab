@@ -3,9 +3,8 @@
   "version": "1.5.0-next",
   "description": "Podman Desktop AI Lab extension Playwright E2E tests",
   "scripts": {
-    "test:e2e:setup": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' --",
-    "test:e2e": "npm run test:e2e:setup playwright test src/",
-    "test:e2e:smoke": "npm run test:e2e:setup playwright test src/ --grep @smoke"
+    "test:e2e": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' -- npx playwright test src/",
+    "test:e2e:smoke": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' -- npx playwright test src/ -g @smoke"
   },
   "author": "Red Hat",
   "license": "Apache-2.0",

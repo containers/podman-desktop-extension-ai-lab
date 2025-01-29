@@ -22,7 +22,6 @@ import {
   expect as playExpect,
   test,
   RunnerOptions,
-  isLinux,
   isWindows,
   waitForPodmanMachineStartup,
 } from '@podman-desktop/tests-playwright';
@@ -53,6 +52,10 @@ test.use({
   runnerOptions: new RunnerOptions(runnerOptions),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
+  const window = await runner.getElectronApp().firstWindow();
+  // Increase Window Size to improve video recording and screenshots
+  await window.setViewportSize({ width: 1050, height: 700 });
+
   runner.setVideoAndTraceName('ai-lab-e2e');
   await welcomePage.handleWelcomePage(true);
   await waitForPodmanMachineStartup(page);
@@ -64,8 +67,8 @@ test.afterAll(async ({ runner }) => {
   await runner.close();
 });
 
-test.describe.serial(`AI Lab extension installation and verification`, { tag: '@smoke' }, () => {
-  test.describe.serial(`AI Lab extension installation`, () => {
+test.describe.serial(`AI Lab extension installation and verification`, () => {
+  test.describe.serial(`AI Lab extension installation`, { tag: '@smoke' }, () => {
     let extensionsPage: ExtensionsPage;
 
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
@@ -113,7 +116,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
   });
 
   ['ggerganov/whisper.cpp', 'facebook/detr-resnet-101'].forEach(modelName => {
-    test.describe.serial(`Model download and deletion`, () => {
+    test.describe.serial(`Model download and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
 
       test.beforeEach(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
@@ -149,11 +152,10 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
   });
 
   ['ggerganov/whisper.cpp'].forEach(modelName => {
-    test.describe.serial(`Model service creation and deletion`, () => {
+    test.describe.serial(`Model service creation and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let modelServiceDetailsPage: AILabServiceDetailsPage;
 
-      test.skip(isLinux, `Skipping model service creation on Linux`);
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
         aiLabPage = new AILabPage(page, webview);
@@ -214,7 +216,6 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
       const playgroundName = 'test playground';
 
-      test.skip(isLinux, `Skipping playground creation on Linux`);
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
         aiLabPage = new AILabPage(page, webview);
@@ -285,9 +286,12 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
 
   ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot'].forEach(appName => {
     test.describe.serial(`AI Recipe installation`, () => {
+      test.skip(
+        !process.env.EXT_TEST_RAG_CHATBOT && appName === 'RAG Chatbot',
+        'EXT_TEST_RAG_CHATBOT variable not set, skipping test',
+      );
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
-      test.skip(isLinux, `Skipping AI App deployment on Linux`);
       test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
         aiLabPage = new AILabPage(page, webview);

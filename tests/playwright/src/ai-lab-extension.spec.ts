@@ -67,8 +67,8 @@ test.afterAll(async ({ runner }) => {
   await runner.close();
 });
 
-test.describe.serial(`AI Lab extension installation and verification`, { tag: '@smoke' }, () => {
-  test.describe.serial(`AI Lab extension installation`, () => {
+test.describe.serial(`AI Lab extension installation and verification`, () => {
+  test.describe.serial(`AI Lab extension installation`, { tag: '@smoke' }, () => {
     let extensionsPage: ExtensionsPage;
 
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
@@ -116,7 +116,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
   });
 
   ['ggerganov/whisper.cpp', 'facebook/detr-resnet-101'].forEach(modelName => {
-    test.describe.serial(`Model download and deletion`, () => {
+    test.describe.serial(`Model download and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
 
       test.beforeEach(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
@@ -152,7 +152,7 @@ test.describe.serial(`AI Lab extension installation and verification`, { tag: '@
   });
 
   ['ggerganov/whisper.cpp'].forEach(modelName => {
-    test.describe.serial(`Model service creation and deletion`, () => {
+    test.describe.serial(`Model service creation and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let modelServiceDetailsPage: AILabServiceDetailsPage;
 

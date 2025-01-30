@@ -24,6 +24,7 @@ import {
   RunnerOptions,
   isWindows,
   waitForPodmanMachineStartup,
+  isLinux,
 } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
@@ -151,10 +152,15 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['ggerganov/whisper.cpp'].forEach(modelName => {
+  ['ggerganov/whisper.cpp', 'instructlab/granite-7b-lab-GGUF'].forEach(modelName => {
     test.describe.serial(`Model service creation and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let modelServiceDetailsPage: AILabServiceDetailsPage;
+
+      test.skip(
+        isLinux && modelName === 'instructlab/granite-7b-lab-GGUF',
+        `Skipping ${modelName} model service creation on linux due to known issue`,
+      );
 
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
@@ -189,6 +195,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Make GET request to the model service for ${modelName}`, async ({ request }) => {
+        test.skip(modelName === 'instructlab/granite-7b-lab-GGUF', `Skipping GET request for ${modelName}`);
+
         const port = await modelServiceDetailsPage.getInferenceServerPort();
         const url = `http://localhost:${port}`;
 
@@ -198,6 +206,34 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           playExpect(response.ok()).toBeTruthy();
           playExpect(await response.text()).toContain('hello');
         }).toPass({ timeout: 30_000 });
+      });
+
+      test(`Make POST request to the model service for ${modelName}`, async ({ request }) => {
+        test.skip(modelName === 'ggerganov/whisper.cpp', `Skipping POST request for ${modelName}`);
+        test.setTimeout(70_000);
+
+        const port = await modelServiceDetailsPage.getInferenceServerPort();
+        const url = `http://localhost:${port}/v1/chat/completions`;
+
+        // eslint-disable-next-line sonarjs/no-nested-functions
+        await playExpect(async () => {
+          const response = await request.post(url, {
+            data: {
+              messages: [
+                {
+                  content: 'You are a helpful assistant.',
+                  role: 'system',
+                },
+                {
+                  content: 'What is the capital of Spain?',
+                  role: 'user',
+                },
+              ],
+            },
+          });
+          playExpect(response.ok()).toBeTruthy();
+          playExpect(await response.text()).toContain('Madrid');
+        }).toPass({ timeout: 60_000 });
       });
 
       test(`Delete model service for ${modelName}`, async () => {
@@ -266,6 +302,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Delete AI Lab playground for ${modelName}`, async () => {
+        test.setTimeout(70_000);
         playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
         await playgroundsPage.waitForLoad();
 

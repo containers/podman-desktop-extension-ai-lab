@@ -1,4 +1,4 @@
-<div role="img" class="rounded py-[6px] pl-[7px] pr-[5px]">
+<div role="img" class="rounded-xs py-[6px] pl-[7px] pr-[5px]">
   <svg
     width="24"
     height="24"

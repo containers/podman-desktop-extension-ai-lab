@@ -20,7 +20,7 @@ function handleClick(): void {
 
 <div class="no-underline">
   <div
-    class="bg-[var(--pd-content-card-bg)] hover:bg-[var(--pd-content-card-hover-bg)] flex-grow p-4 h-full rounded-md flex-nowrap flex flex-col"
+    class="bg-[var(--pd-content-card-bg)] hover:bg-[var(--pd-content-card-hover-bg)] grow p-4 h-full rounded-md flex-nowrap flex flex-col"
     role="region"
     aria-label={recipe.name}>
     <!-- body -->
@@ -41,8 +41,7 @@ function handleClick(): void {
     <!-- footer -->
     <div class="flex flex-row">
       <!-- version -->
-      <div
-        class="flex-grow text-[var(--pd-content-card-text)] opacity-50 whitespace-nowrap overflow-x-hidden text-ellipsis">
+      <div class="grow text-[var(--pd-content-card-text)] opacity-50 whitespace-nowrap overflow-x-hidden text-ellipsis">
         {#if recipe.ref}
           <span aria-label="{recipe.name} ref">{recipe.ref}</span>
         {/if}

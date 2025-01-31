@@ -140,7 +140,7 @@ function handleDragLeave(): void {
               on:drop|preventDefault={onFile}
               on:dragover|preventDefault={handleDragOver}
               on:dragleave|preventDefault={handleDragLeave}
-              class="w-full cursor-pointer flex-col px-4 py-8 border-2 border-dashed rounded flex justify-center items-center">
+              class="w-full cursor-pointer flex-col px-4 py-8 border-2 border-dashed rounded-xs flex justify-center items-center">
               <Fa size="1.1x" class="cursor-pointer text-[var(--pd-link)]" icon={faFileImport} />
               <span>Drag & Drop or <strong class="text-[var(--pd-link)]">Choose file</strong> to import</span>
               <span class="opacity-50 text-sm">Supported formats: .gguf, .bin</span>
@@ -186,7 +186,7 @@ function handleDragLeave(): void {
         <!-- action buttons -->
         <div class="mt-4 flex">
           <Button
-            class="flex-grow"
+            class="grow"
             on:click={submit}
             inProgress={loading}
             icon={faFileImport}

@@ -36,7 +36,7 @@ function onClick(): void {
       <button
         on:click={onClick}
         disabled={loading}
-        class="border-2 justify-center relative rounded border-[var(--pd-button-secondary)] text-[var(--pd-button-secondary)] hover:bg-[var(--pd-button-secondary-hover)] hover:border-[var(--pd-button-secondary-hover)] hover:text-[var(--pd-button-text)] w-10 p-2 text-center cursor-pointer flex flex-row">
+        class="border-2 justify-center relative rounded-xs border-[var(--pd-button-secondary)] text-[var(--pd-button-secondary)] hover:bg-[var(--pd-button-secondary-hover)] hover:border-[var(--pd-button-secondary-hover)] hover:text-[var(--pd-button-text)] w-10 p-2 text-center cursor-pointer flex flex-row">
         {#if loading}
           <Spinner class="text-[var(--pd-table-body-text-highlight)]" size="1em" />
         {:else}

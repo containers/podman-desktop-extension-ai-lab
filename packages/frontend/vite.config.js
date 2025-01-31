@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023-2024 Red Hat, Inc.
+ * Copyright (C) 2023-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'url';
+import tailwindcss from '@tailwindcss/vite';
 
 let filename = fileURLToPath(import.meta.url);
 const PACKAGE_ROOT = path.dirname(filename);
@@ -37,7 +38,7 @@ export default defineConfig({
       '@shared/': join(PACKAGE_ROOT, '../shared') + '/',
     },
   },
-  plugins: [svelte({ hot: !process.env.VITEST }), svelteTesting()],
+  plugins: [tailwindcss(), svelte({ hot: !process.env.VITEST }), svelteTesting()],
   optimizeDeps: {
     exclude: [],
   },
@@ -47,9 +48,7 @@ export default defineConfig({
     environment: 'jsdom',
     alias: [{ find: '@testing-library/svelte', replacement: '@testing-library/svelte/svelte5' }],
     deps: {
-      inline: [
-
-      ],
+      inline: [],
     },
   },
   base: '',

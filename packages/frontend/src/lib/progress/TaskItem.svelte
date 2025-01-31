@@ -20,7 +20,7 @@ const cancel = (): void => {
     {#if task.state === 'success'}
       <svg
         role="img"
-        class="w-4 h-4 text-green-500 flex-shrink-0"
+        class="w-4 h-4 text-green-500 shrink-0"
         xmlns="http://www.w3.org/2000/svg"
         fill="currentColor"
         viewBox="0 0 20 20">
@@ -45,7 +45,7 @@ const cancel = (): void => {
     {:else}
       <svg
         role="img"
-        class="flex-shrink-0 inline w-4 h-4 text-red-600 fe"
+        class="shrink-0 inline w-4 h-4 text-red-600 fe"
         xmlns="http://www.w3.org/2000/svg"
         fill="currentColor"
         viewBox="0 0 20 20">
@@ -59,7 +59,7 @@ const cancel = (): void => {
     {task.name}
     {#if task.progress}({Math.floor(task.progress)}%){/if}
   </span>
-  <div class="flex flex-grow justify-end">
+  <div class="flex grow justify-end">
     {#if task.state === 'loading' && task.cancellationToken !== undefined}
       <button on:click={cancel} title="Cancel"><Fa icon={faClose} /></button>
     {/if}

@@ -30,7 +30,7 @@ export function goToUpPage(): void {
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
-      <div class="flex-grow p-5">
+      <div class="grow p-5">
         <MarkdownRenderer source={model?.description} />
       </div>
     </div>

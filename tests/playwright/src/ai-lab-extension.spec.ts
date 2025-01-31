@@ -172,13 +172,13 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Download ${modelName} model if not available`, async () => {
-        test.setTimeout(310_000);
+        test.setTimeout(610_000);
         if (!(await catalogPage.isModelDownloaded(modelName))) {
           await catalogPage.downloadModel(modelName);
         }
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [5_000] })
           .toBeTruthy();
       });
 

@@ -42,7 +42,7 @@ function handleOnClear(): void {
   --list-border="1px solid var(--pd-input-field-focused-bg)"
   --border-focused="var(--pd-input-field-focused-bg)"
   placeholder={placeholder}
-  class="!bg-[var(--pd-content-bg)] !text-[var(--pd-content-card-text)]"
+  class="bg-(--pd-content-bg)! text-(--pd-content-card-text)!"
   items={items}
   showChevron>
   <div slot="item" let:item>

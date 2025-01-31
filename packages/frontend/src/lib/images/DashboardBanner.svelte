@@ -73,7 +73,7 @@
       y="-.116"
       width="1.137"
       height="1.231">
-      <feGaussianBlur stdDeviation="1.171" result="blur" id="feGaussianBlur66-4-1-7"></feGaussianBlur>
+      <feGaussianBlur stdDeviation="1.171" result="blur-xs" id="feGaussianBlur66-4-1-7"></feGaussianBlur>
     </filter>
     <filter
       style="color-interpolation-filters:sRGB"
@@ -82,7 +82,7 @@
       y="-.195"
       width="1.093"
       height="1.39">
-      <feGaussianBlur stdDeviation=".63" result="blur" id="feGaussianBlur55-6-6-6"></feGaussianBlur>
+      <feGaussianBlur stdDeviation=".63" result="blur-xs" id="feGaussianBlur55-6-6-6"></feGaussianBlur>
     </filter>
   </defs>
   <g id="layer1" transform="translate(-2063.771 -134.042)">

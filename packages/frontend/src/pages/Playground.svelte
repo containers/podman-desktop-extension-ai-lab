@@ -274,7 +274,7 @@ function handleOnClick(): void {
             use:requestFocus
             on:keydown={handleKeydown}
             rows="2"
-            class="w-full p-2 outline-none rounded-sm bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]"
+            class="w-full p-2 outline-hidden rounded-xs bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]"
             placeholder="Type your prompt here"
             disabled={!sendEnabled}></textarea>
 

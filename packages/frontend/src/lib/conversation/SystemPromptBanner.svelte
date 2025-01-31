@@ -71,7 +71,7 @@ onMount(() => {
       on:input={onChange}
       aria-label="system-prompt-textarea"
       bind:value={systemPrompt}
-      class="w-full p-2 mt-2 outline-none bg-[var(--pd-content-card-inset-bg)] rounded-sm text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)] resize-none"
+      class="w-full p-2 mt-2 outline-hidden bg-[var(--pd-content-card-inset-bg)] rounded-xs text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)] resize-none"
       rows="3"
       placeholder="Provide system prompt to define general context, instructions or guidelines to be used with each query"
     ></textarea>

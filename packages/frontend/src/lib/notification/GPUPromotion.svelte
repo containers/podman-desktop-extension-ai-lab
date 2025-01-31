@@ -37,7 +37,7 @@ const content =
         >⚡️ Supercharge Your AI: Enable GPU Acceleration and watch your LLM respond in a flash!
       </span>
       <div class="flex flex-row">
-        <div class="flex-grow">
+        <div class="grow">
           <MarkdownRenderer source={content} />
         </div>
         <div class="flex flex-col space-y-1">

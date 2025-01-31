@@ -17,7 +17,7 @@ export let value: number;
       max={max}
       step={step}
       placeholder={name}
-      class="p-2 w-24 text-right outline-none text-sm bg-[var(--pd-content-card-bg)] rounded-sm text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]" />
+      class="p-2 w-24 text-right outline-hidden text-sm bg-[var(--pd-content-card-bg)] rounded-xs text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]" />
   </div>
   <div class="w-full">
     <input

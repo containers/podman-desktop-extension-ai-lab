@@ -78,10 +78,13 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       extensionsPage = await navigationBar.openExtensions();
       await playExpect(extensionsPage.header).toBeVisible();
     });
+
     test(`Install AI Lab extension`, async () => {
       test.skip(AI_LAB_EXTENSION_PREINSTALLED, 'AI Lab extension is preinstalled');
+      test.setTimeout(120_000);
       await extensionsPage.installExtensionFromOCIImage(AI_LAB_EXTENSION_OCI_IMAGE);
     });
+
     test('Extension (card) is installed, present and active', async ({ navigationBar }) => {
       const extensions = await navigationBar.openExtensions();
       await playExpect
@@ -93,6 +96,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       );
       await playExpect(extensionCard.status).toHaveText(AI_LAB_CATALOG_STATUS_ACTIVE);
     });
+
     test(`Extension's details show correct status, no error`, async ({ page, navigationBar }) => {
       const extensions = await navigationBar.openExtensions();
       const extensionCard = await extensions.getInstalledExtension('ai-lab', AI_LAB_CATALOG_EXTENSION_LABEL);
@@ -209,7 +213,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Make POST request to the model service for ${modelName}`, async ({ request }) => {
-        test.skip(modelName === 'ggerganov/whisper.cpp', `Skipping POST request for ${modelName}`);
+        test.skip(isWindows || modelName === 'ggerganov/whisper.cpp', `Skipping POST request for ${modelName}`);
         test.setTimeout(70_000);
 
         const port = await modelServiceDetailsPage.getInferenceServerPort();

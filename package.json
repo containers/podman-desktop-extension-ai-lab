@@ -11,8 +11,8 @@
     "npm": ">=10.2.3"
   },
   "scripts": {
-    "build": "concurrently \"cd packages/frontend && npm run build\" \"cd packages/backend && npm run build\"",
-    "watch": "concurrently \"cd packages/frontend && npm run watch\" \"cd packages/backend && npm run watch\"",
+    "build": "concurrently \"cd packages/frontend && pnpm run build\" \"cd packages/backend && pnpm run build\"",
+    "watch": "concurrently \"cd packages/frontend && pnpm run watch\" \"cd packages/backend && pnpm run watch\"",
     "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
     "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
     "lint:check": "eslint . --cache",
@@ -21,13 +21,13 @@
     "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage",
     "test:frontend": "vitest -c packages/frontend/vite.config.js run packages/frontend --passWithNoTests --coverage",
     "test:shared": "vitest run -r packages/shared --passWithNoTests --coverage",
-    "test:unit": "npm run test:backend && npm run test:shared && npm run test:frontend",
-    "test:e2e": "cd tests/playwright && npm run test:e2e",
-    "test:e2e:smoke": "cd tests/playwright && npm run test:e2e:smoke",
+    "test:unit": "pnpm run test:backend && pnpm run test:shared && pnpm run test:frontend",
+    "test:e2e": "cd tests/playwright && pnpm run test:e2e",
+    "test:e2e:smoke": "cd tests/playwright && pnpm run test:e2e:smoke",
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
-    "typecheck:backend": "cd packages/backend && npm run typecheck",
-    "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend",
+    "typecheck:backend": "cd packages/backend && pnpm run typecheck",
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:frontend && pnpm run typecheck:backend",
     "prepare": "husky"
   },
   "resolutions": {

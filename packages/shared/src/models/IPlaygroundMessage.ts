@@ -27,9 +27,15 @@ export interface ErrorMessage extends Message {
   error: string;
 }
 
+export interface ModelUsage {
+  completion_tokens: number;
+  prompt_tokens: number;
+}
+
 export interface ChatMessage extends Message {
   role: 'system' | 'user' | 'assistant';
   content?: string;
+  usage?: ModelUsage;
 }
 
 export interface AssistantChat extends ChatMessage {

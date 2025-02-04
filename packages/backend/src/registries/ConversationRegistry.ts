@@ -23,6 +23,7 @@ import type {
   Choice,
   Conversation,
   Message,
+  ModelUsage,
   PendingChat,
 } from '@shared/src/models/IPlaygroundMessage';
 import type { Disposable, Webview } from '@podman-desktop/api';
@@ -116,6 +117,25 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
       completed: Date.now(),
       content: content,
     } as AssistantChat);
+  }
+
+  /**
+   * Utility method to quickly add a usage to a given a message inside a conversation
+   * @param conversationId
+   * @param messageId
+   * @param usage
+   */
+  setUsage(conversationId: string, messageId: string, usage: ModelUsage | undefined | null): void {
+    const conversation: Conversation = this.get(conversationId);
+
+    const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
+    if (messageIndex === -1)
+      throw new Error(`message with id ${messageId} does not exist in conversation ${conversationId}.`);
+
+    this.update(conversationId, messageId, {
+      ...conversation.messages[messageIndex],
+      usage: usage,
+    } as PendingChat);
   }
 
   /**

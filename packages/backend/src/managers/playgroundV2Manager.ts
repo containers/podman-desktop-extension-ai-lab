@@ -25,6 +25,7 @@ import { ConversationRegistry } from '../registries/ConversationRegistry';
 import type {
   Conversation,
   ErrorMessage,
+  ModelUsage,
   PendingChat,
   SystemPrompt,
   UserChat,
@@ -308,6 +309,7 @@ export class PlaygroundV2Manager implements Disposable {
       this.#conversationRegistry.appendChoice(conversationId, messageId, {
         content: chunk.choices[0]?.delta?.content ?? '',
       });
+      this.#conversationRegistry.setUsage(conversationId, messageId, chunk.usage as ModelUsage);
     }
 
     this.#conversationRegistry.completeMessage(conversationId, messageId);

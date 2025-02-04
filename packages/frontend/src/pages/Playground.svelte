@@ -32,19 +32,20 @@ let { playgroundId }: Props = $props();
 let prompt: string = $state('');
 let scrollable: Element | undefined = $state();
 let errorMsg = $state('');
+let cancellationTokenId: number | undefined = $state(undefined);
 
 // settings
 let temperature = $state(0.8);
 let max_tokens = $state(-1);
 let top_p = $state(0.5);
 
-let cancellationTokenId: number | undefined = $state(undefined);
-
 let conversation = $derived($conversations.find(conversation => conversation.id === playgroundId));
 let messages = $derived(
   conversation?.messages.filter(message => isChatMessage(message)).filter(message => !isSystemPrompt(message)) ?? [],
 );
 let model = $derived($catalog.models.find(model => model.id === conversation?.modelId));
+let completion_tokens = $derived(messages.findLast(message => message.usage)?.usage?.completion_tokens ?? 0);
+let prompt_tokens = $derived(messages.findLast(message => message.usage)?.usage?.prompt_tokens ?? 0);
 
 let inProgress = $state(false);
 let sendEnabled = $derived.by(() => {
@@ -78,6 +79,7 @@ function askPlayground(): void {
       temperature,
       max_tokens,
       top_p,
+      stream_options: { include_usage: true },
     })
     .then(token => {
       cancellationTokenId = token;
@@ -271,6 +273,45 @@ function handleOnClick(): void {
                           An alternative to sampling with temperature, where the model considers the results of the
                           tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10%
                           probability mass are considered.
+                        </div>
+                      </svelte:fragment>
+                    </Tooltip>
+                  </div>
+                </div>
+              </div>
+              <div class="text-[var(--pd-content-card-text)]">Model metrics</div>
+              <div
+                class="bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] w-full rounded-md p-4">
+                <div class="flex flex-col space-y-4" aria-label="metrics">
+                  <div class="flex flex-row">
+                    <div class="w-full">
+                      PROMPT TOKENS
+                      <div class="flex flex-row">
+                        {prompt_tokens}
+                      </div>
+                    </div>
+                    <Tooltip left>
+                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
+                      <svelte:fragment slot="tip">
+                        <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
+                          The number of tokens in the prompt is used as input to the model.
+                        </div>
+                      </svelte:fragment>
+                    </Tooltip>
+                  </div>
+                  <div class="flex flex-row">
+                    <div class="w-full">
+                      COMPLETION TOKENS
+                      <div class="flex flex-row">
+                        {completion_tokens}
+                      </div>
+                    </div>
+                    <Tooltip left>
+                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
+                      <svelte:fragment slot="tip">
+                        <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
+                          The number of tokens in the model's output to the prompt that has been used as an input to the
+                          model.
                         </div>
                       </svelte:fragment>
                     </Tooltip>

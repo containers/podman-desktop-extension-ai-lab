@@ -163,6 +163,16 @@ jobs:
           EXTENSION_PREINSTALLED: true
         run: pnpm test:e2e:smoke
 
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        with:
+          annotate_only: false
+          fail_on_failure: true
+          include_passed: true
+          detailed_summary: true
+          require_tests:  true
+          report_paths: '**/*results.xml'
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -10,7 +10,6 @@ import {
   isErrorMessage,
 } from '@shared/src/models/IPlaygroundMessage';
 import { catalog } from '../stores/catalog';
-import { afterUpdate } from 'svelte';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 import RangeInput from '../lib/RangeInput.svelte';
 import Fa from 'svelte-fa';
@@ -24,41 +23,56 @@ import { router } from 'tinro';
 import ConversationActions from '../lib/conversation/ConversationActions.svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 
-export let playgroundId: string;
-let prompt: string;
-let sendEnabled = false;
-let scrollable: Element;
-let errorMsg = '';
+interface Props {
+  playgroundId: string;
+}
+
+let { playgroundId }: Props = $props();
+
+let prompt: string = $state('');
+let scrollable: Element | undefined = $state();
+let errorMsg = $state('');
 
 // settings
-let temperature = 0.8;
-let max_tokens = -1;
-let top_p = 0.5;
+let temperature = $state(0.8);
+let max_tokens = $state(-1);
+let top_p = $state(0.5);
 
-let cancellationTokenId: number | undefined = undefined;
+let cancellationTokenId: number | undefined = $state(undefined);
 
-$: conversation = $conversations.find(conversation => conversation.id === playgroundId);
-$: messages =
-  conversation?.messages.filter(message => isChatMessage(message)).filter(message => !isSystemPrompt(message)) ?? [];
-$: model = $catalog.models.find(model => model.id === conversation?.modelId);
-$: {
+let conversation = $derived($conversations.find(conversation => conversation.id === playgroundId));
+let messages = $derived(
+  conversation?.messages.filter(message => isChatMessage(message)).filter(message => !isSystemPrompt(message)) ?? [],
+);
+let model = $derived($catalog.models.find(model => model.id === conversation?.modelId));
+
+let inProgress = $state(false);
+let sendEnabled = $derived.by(() => {
+  if (inProgress) {
+    return false;
+  }
   if (conversation?.messages.length) {
     const latest = conversation.messages[conversation.messages.length - 1];
     if (isSystemPrompt(latest) || (isAssistantChat(latest) && !isPendingChat(latest))) {
-      sendEnabled = true;
+      return true;
     }
     if (isErrorMessage(latest)) {
       errorMsg = latest.error;
-      sendEnabled = true;
+      return true;
     }
   } else {
-    sendEnabled = true;
+    return true;
   }
-}
-$: server = $inferenceServers.find(is => conversation && is.models.map(mi => mi.id).includes(conversation?.modelId));
+  return false;
+});
+
+let server = $derived(
+  $inferenceServers.find(is => conversation && is.models.map(mi => mi.id).includes(conversation?.modelId)),
+);
+
 function askPlayground(): void {
   errorMsg = '';
-  sendEnabled = false;
+  inProgress = true;
   studioClient
     .submitPlaygroundMessage(playgroundId, prompt, {
       temperature,
@@ -70,12 +84,14 @@ function askPlayground(): void {
     })
     .catch((err: unknown) => {
       errorMsg = String(err);
-      sendEnabled = true;
+    })
+    .finally(() => {
+      inProgress = false;
     });
   prompt = '';
 }
 
-afterUpdate(() => {
+$effect(() => {
   if (!conversation) {
     router.goto('/playgrounds');
     return;
@@ -85,7 +101,7 @@ afterUpdate(() => {
   }
   const latest = conversation.messages[conversation.messages.length - 1];
   if (isUserChat(latest) || (isAssistantChat(latest) && isPendingChat(latest))) {
-    scrollToBottom(scrollable).catch(err => console.error(`Error scrolling to bottom:`, err));
+    if (scrollable) scrollToBottom(scrollable).catch(err => console.error(`Error scrolling to bottom:`, err));
   }
 });
 
@@ -272,7 +288,7 @@ function handleOnClick(): void {
             aria-label="prompt"
             bind:value={prompt}
             use:requestFocus
-            on:keydown={handleKeydown}
+            onkeydown={handleKeydown}
             rows="2"
             class="w-full p-2 outline-none rounded-sm bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]"
             placeholder="Type your prompt here"

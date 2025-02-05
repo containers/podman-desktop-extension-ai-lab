@@ -32,6 +32,7 @@ import { getImageInfo } from '../../utils/inferenceUtils';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { ContainerRegistry, ContainerEvent } from '../../registries/ContainerRegistry';
+import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 
 export const INSTRUCTLAB_CONTAINER_LABEL = 'ai-lab-instructlab-container';
 
@@ -203,23 +204,25 @@ export class InstructlabManager {
       Labels: { [INSTRUCTLAB_CONTAINER_LABEL]: image },
       HostConfig: {
         AutoRemove: true,
+        SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
         Mounts: [
           {
-            Target: '/instructlab/.cache/instructlab:Z',
+            Target: '/instructlab/.cache/instructlab',
             Source: path.join(folder, '.cache'),
             Type: 'bind',
           },
           {
-            Target: '/instructlab/.config/instructlab:Z',
+            Target: '/instructlab/.config/instructlab',
             Source: path.join(folder, '.config'),
             Type: 'bind',
           },
           {
-            Target: '/instructlab/.local/share/instructlab:Z',
+            Target: '/instructlab/.local/share/instructlab',
             Source: path.join(folder, '.local'),
             Type: 'bind',
           },
         ],
+        UsernsMode: 'keep-id:uid=1000,gid=1000',
       },
       OpenStdin: true,
       start: true,

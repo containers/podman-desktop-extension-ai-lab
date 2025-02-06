@@ -18,7 +18,6 @@
 
 import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
 import type { InstructlabContainerConfiguration } from '@shared/src/models/instructlab/IInstructlabContainerConfiguration';
-import { getRandomString } from '../../utils/randomUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import {
   type TelemetryLogger,
@@ -33,6 +32,8 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { ContainerRegistry, ContainerEvent } from '../../registries/ContainerRegistry';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
+import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/src/models/instructlab/IInstructlabContainerInfo';
+import { getRandomName } from '../../utils/randomUtils';
 
 export const INSTRUCTLAB_CONTAINER_LABEL = 'ai-lab-instructlab-container';
 
@@ -76,8 +77,10 @@ export class InstructlabManager {
   }
 
   private onStopContainerEvent(event: ContainerEvent): void {
+    console.log('event id:', event.id, ' containerId: ', this.#containerId);
     if (this.#containerId === event.id) {
       this.#containerId = undefined;
+      this.taskRegistry.deleteByLabels({ trackingId: INSTRUCTLAB_CONTAINER_TRACKINGID });
     }
   }
 
@@ -114,9 +117,9 @@ export class InstructlabManager {
     return this.#containerId;
   }
 
-  async requestCreateInstructlabContainer(config: InstructlabContainerConfiguration): Promise<string> {
+  async requestCreateInstructlabContainer(config: InstructlabContainerConfiguration): Promise<void> {
     // create a tracking id to put in the labels
-    const trackingId: string = getRandomString();
+    const trackingId: string = INSTRUCTLAB_CONTAINER_TRACKINGID;
 
     const labels = {
       trackingId: trackingId,
@@ -170,7 +173,6 @@ export class InstructlabManager {
         });
         this.telemetryLogger.logError('instructlab.startContainer', { error: err });
       });
-    return trackingId;
   }
 
   async createInstructlabContainer(
@@ -200,7 +202,7 @@ export class InstructlabManager {
     const containerTask = this.taskRegistry.createTask('Starting InstructLab container', 'loading', labels);
     const createContainerOptions: ContainerCreateOptions = {
       Image: imageInfo.Id,
-      name: `instructlab-${labels['trackingId']}`,
+      name: getRandomName('instructlab'),
       Labels: { [INSTRUCTLAB_CONTAINER_LABEL]: image },
       HostConfig: {
         AutoRemove: true,

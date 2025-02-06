@@ -29,7 +29,7 @@ export class InstructlabApiImpl implements InstructlabAPI {
     return this.instructlabManager.getSessions();
   }
 
-  requestCreateInstructlabContainer(config: InstructlabContainerConfiguration): Promise<string> {
+  requestCreateInstructlabContainer(config: InstructlabContainerConfiguration): Promise<void> {
     return this.instructlabManager.requestCreateInstructlabContainer(config);
   }
 

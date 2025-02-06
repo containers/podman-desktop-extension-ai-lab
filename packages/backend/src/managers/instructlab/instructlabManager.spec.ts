@@ -26,6 +26,7 @@ import { TestEventEmitter } from '../../tests/utils';
 import { VMType } from '@shared/src/models/IPodman';
 import type { Task } from '@shared/src/models/ITask';
 import instructlab_images from '../../assets/instructlab-images.json';
+import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/src/models/instructlab/IInstructlabContainerInfo';
 
 vi.mock('@podman-desktop/api', () => {
   return {
@@ -61,6 +62,7 @@ beforeEach(() => {
   const containerRegistry = new ContainerRegistry();
   containerRegistry.init();
   instructlabManager = new InstructlabManager('', taskRegistry, podmanConnection, containerRegistry, telemetryMock);
+  taskRegistry.deleteByLabels({ trackingId: INSTRUCTLAB_CONTAINER_TRACKINGID });
 });
 
 test('getInstructLabContainer should return undefined if no containers', async () => {
@@ -92,9 +94,9 @@ test('requestCreateInstructlabContainer throws error if no podman connection', a
   await expect(containerIdPromise).rejects.toBeInstanceOf(Error);
 });
 
-async function waitTasks(containerId: string, nb: number): Promise<Task[]> {
+async function waitTasks(id: string, nb: number): Promise<Task[]> {
   return vi.waitFor(() => {
-    const tasks = taskRegistry.getTasksByLabels({ trackingId: containerId });
+    const tasks = taskRegistry.getTasksByLabels({ trackingId: id });
     if (tasks.length !== nb) {
       throw new Error('not completed');
     }
@@ -113,9 +115,8 @@ test('requestCreateInstructlabContainer returns id and error if listImage return
     },
   });
   vi.mocked(containerEngine.listImages).mockRejectedValue(new Error());
-  const containerId = await instructlabManager.requestCreateInstructlabContainer({});
-  expect(containerId).toBeDefined();
-  const tasks = await waitTasks(containerId, 2);
+  await instructlabManager.requestCreateInstructlabContainer({});
+  const tasks = await waitTasks(INSTRUCTLAB_CONTAINER_TRACKINGID, 2);
   expect(tasks.some(task => task.state === 'error')).toBeTruthy();
 });
 
@@ -132,9 +133,8 @@ test('requestCreateInstructlabContainer returns id and error if listImage return
   vi.mocked(containerEngine.listImages).mockResolvedValue([
     { RepoTags: [instructlab_images.default] } as unknown as ImageInfo,
   ]);
-  const containerId = await instructlabManager.requestCreateInstructlabContainer({});
-  expect(containerId).toBeDefined();
-  const tasks = await waitTasks(containerId, 3);
+  await instructlabManager.requestCreateInstructlabContainer({});
+  const tasks = await waitTasks(INSTRUCTLAB_CONTAINER_TRACKINGID, 3);
   expect(tasks.some(task => task.state === 'error')).toBeTruthy();
 });
 
@@ -154,8 +154,7 @@ test('requestCreateInstructlabContainer returns id and no error if createContain
   vi.mocked(containerEngine.createContainer).mockResolvedValue({
     id: 'containerId',
   } as unknown as ContainerCreateResult);
-  const containerId = await instructlabManager.requestCreateInstructlabContainer({});
-  expect(containerId).toBeDefined();
-  const tasks = await waitTasks(containerId, 3);
+  await instructlabManager.requestCreateInstructlabContainer({});
+  const tasks = await waitTasks(INSTRUCTLAB_CONTAINER_TRACKINGID, 3);
   expect(tasks.some(task => task.state === 'error')).toBeFalsy();
 });

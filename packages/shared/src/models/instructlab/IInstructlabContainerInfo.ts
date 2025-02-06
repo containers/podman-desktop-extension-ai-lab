@@ -15,6 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+export const INSTRUCTLAB_CONTAINER_TRACKINGID = 'instructlab.trackingid';
+
 export interface InstructlabContainerInfo {
   /**
    * The container engine it is running on

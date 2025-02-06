@@ -112,7 +112,7 @@ onDestroy(() => {
           </Route>
           <Route path="/instructlab/*" firstmatch>
             <Route path="/try">
-              <StartInstructLabContainer trackingId={meta.query.trackingId} />
+              <StartInstructLabContainer />
             </Route>
           </Route>
         {/if}

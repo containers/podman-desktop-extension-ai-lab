@@ -31,7 +31,7 @@ export abstract class InstructlabAPI {
    *
    * @param config
    */
-  abstract requestCreateInstructlabContainer(config: InstructlabContainerConfiguration): Promise<string>;
+  abstract requestCreateInstructlabContainer(config: InstructlabContainerConfiguration): Promise<void>;
 
   abstract routeToInstructLabContainerTerminal(containerId: string): Promise<void>;
 

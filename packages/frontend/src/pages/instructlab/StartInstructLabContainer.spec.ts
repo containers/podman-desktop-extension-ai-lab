@@ -24,14 +24,12 @@ import { instructlabClient, studioClient } from '/@/utils/client';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 import { VMType } from '@shared/src/models/IPodman';
 import userEvent from '@testing-library/user-event';
-import { tasks } from '/@/stores/tasks';
-import type { Task } from '@shared/src/models/ITask';
+import * as tasks from '/@/stores/tasks';
+import { writable } from 'svelte/store';
 
 vi.mock('../../stores/tasks', async () => {
   return {
-    tasks: {
-      subscribe: vi.fn().mockReturnValue((): void => {}),
-    },
+    tasks: vi.fn(),
   };
 });
 
@@ -73,6 +71,7 @@ const containerProviderConnection: ContainerProviderConnectionInfo = {
 
 beforeEach(() => {
   getContainerConnectionInfoMock.mockReturnValue([containerProviderConnection]);
+  vi.mocked(tasks).tasks = writable([]);
 });
 
 test('start button should be displayed if no InstructLab container', async () => {
@@ -82,16 +81,12 @@ test('start button should be displayed if no InstructLab container', async () =>
   expect(startBtn).toBeDefined();
 });
 
-test('start button should be displayed and disabled', async () => {
-  vi.mocked(tasks.subscribe).mockImplementation((f: (tasks: Task[]) => void) => {
-    f([]);
-    return (): void => {};
-  });
-  render(StartInstructLabContainer, { trackingId: 'trackingId' });
+test('start button should be displayed and enabled', async () => {
+  render(StartInstructLabContainer);
 
   const startBtn = screen.getByTitle('Start InstructLab container');
   expect(startBtn).toBeDefined();
-  expect(startBtn).toBeDisabled();
+  expect(startBtn).toBeEnabled();
 });
 
 test('open button should be displayed if no InstructLab container', async () => {

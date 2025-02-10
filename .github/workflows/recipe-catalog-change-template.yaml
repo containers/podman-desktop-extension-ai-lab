@@ -9,10 +9,16 @@ on:
       trigger-workflow-fork:
         required: true
         type: string
-      trigger-workflow-repo_name:
+      trigger-workflow-repo-name:
         required: true
         type: string
       trigger-workflow-branch:
+        required: true
+        type: string
+      trigger-workflow-commit-sha:
+        required: true
+        type: string
+      trigger-workflow-base-repo:
         required: true
         type: string
       pd-fork:
@@ -58,6 +64,25 @@ jobs:
         windows-featurepack: ['23h2-ent']
 
     steps:
+    - name: Add PR check status
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        status_context="ci/gh/e2e/windows-matrix-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}"
+        echo "status_context=${status_context}" >> "$GITHUB_ENV"
+        set -xuo
+        # Status msg
+        data="{\"state\":\"pending\""
+        data="${data},\"description\":\"Running recipe tests on catalog change on Windows ${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}\""
+        data="${data},\"context\":\"$status_context\""
+        data="${data},\"target_url\":\"https://github.com/${{ inputs.trigger-workflow-base-repo }}/actions/runs/${{ inputs.trigger-workflow-run-id }}\"}"
+        # Create status by API call
+        curl -L -v -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ env.GH_TOKEN }}" \
+          https://api.github.com/repos/${{ inputs.trigger-workflow-base-repo }}/statuses/${{ inputs.trigger-workflow-commit-sha }} \
+          -d "${data}"
+
     - name: Get Podman version used by Podman Desktop
       run: |
         version=$(curl https://raw.githubusercontent.com/containers/podman-desktop/main/extensions/podman/packages/extension/src/podman5.json | jq -r '.version')
@@ -84,8 +109,8 @@ jobs:
         echo "ENV_VARS=${{ inputs.pd-env-vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
         echo "PODMAN_URL=${{ inputs.podman-download-url || env.DEFAULT_URL }}" >> $GITHUB_ENV
         echo "PDE2E_IMAGE_VERSION=${{ inputs.pde2e-image-version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
-        if [[ -z "${{ inputs.trigger-workflow-repo_name }}" ]] && [[ -z "${{ inputs.trigger-workflow-fork }}" ]] && [[ -z "${{ inputs.trigger-workflow-branch }}" ]]; then
-          echo "DEFAULT_EXT_REPO_OPTIONS=REPO=${{ inputs.trigger-workflow-repo_name }},FORK=${{ inputs.trigger-workflow-fork }},BRANCH=${{ inputs.trigger-workflow-branch }}" >> $GITHUB_ENV
+        if [[ -z "${{ inputs.trigger-workflow-repo-name }}" ]] && [[ -z "${{ inputs.trigger-workflow-fork }}" ]] && [[ -z "${{ inputs.trigger-workflow-branch }}" ]]; then
+          echo "DEFAULT_EXT_REPO_OPTIONS=REPO=${{ inputs.trigger-workflow-repo-name }},FORK=${{ inputs.trigger-workflow-fork }},BRANCH=${{ inputs.trigger-workflow-branch }}" >> $GITHUB_ENV
         fi
         echo "${{ github.event.inputs.ext_tests_options || env.DEFAULT_EXT_TESTS_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print kv[1]"="kv[2]}}' >> $GITHUB_ENV
@@ -94,43 +119,6 @@ jobs:
         echo "${{ inputs.podman-options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "AZURE_VM_SIZE=${{ inputs.azure-vm-size || env.DEFAULT_AZURE_VM_SIZE }}" >> $GITHUB_ENV
-
-    - name: Download gh context
-      id: download-gh-context-artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: gh-context
-        run-id: ${{inputs.trigger-workflow-run-id}}
-        github-token: ${{ github.token }}
-
-    - name: Correlate
-      run: |
-        # Get origin commit sha for testing
-        commit_sha=$(cat gh_context.json | jq -r '.event.after')
-        if [[ -z "${commit_sha}" ]] || [[ "${commit_sha}" == null ]]; then
-          # on first PR creation .event.after is empty, then .sha is used as commit instead
-          commit_sha=$(cat gh_context.json | jq -r '.event.pull_request.head.sha')
-        fi
-        echo "commit_sha=${commit_sha}" >> "$GITHUB_ENV"
-
-        # Set status_context
-        status_context="ci/gh/e2e/windows-${{matrix.windows-version}}-${{matrix.windows-featurepack}}"
-        echo "status_context=${status_context}" >> "$GITHUB_ENV"
-
-    - name: Add status to the PR check
-      run: |
-        set -xuo
-        # Status msg
-        data="{\"state\":\"pending\""
-        data="${data},\"description\":\"recipe tests on catalog change on Windows 11\""
-        data="${data},\"context\":\"${{ env.status_context }}\""
-        data="${data},\"target_url\":\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
-        # Create status by API call
-        curl -L -v -X POST \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ github.token }}" \
-          https://api.github.com/repos/${{ github.repository }}/statuses/${{ env.commit_sha }} \
-          -d "${data}"
 
     - name: Create instance
       run: |
@@ -256,6 +244,39 @@ jobs:
         # check logs
         podman logs -f pde2e-runner-run
 
+    - name: Publish Test Report
+      id: test-report
+      uses: mikepenz/action-junit-report@v5
+      if: always() # always run even if the previous step fails
+      with:
+        annotate_only: true
+        fail_on_failure: true
+        include_passed: true
+        detailed_summary: true
+        require_tests:  true
+        report_paths: '**/*results.xml'
+
+    - name: Update status of the PR check
+      if: always()
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        set -xuo
+        # Status msg
+        data="{\"state\":\"success\""
+        if [[ ${{ steps.test-report.outcome }} != "success" ]]; then
+          data="{\"state\":\"failure\""
+        fi
+        data="${data},\"description\":\"Finished recipe tests on catalog change on Windows ${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}\""
+        data="${data},\"context\":\"$status_context\""
+        data="${data},\"target_url\":\"https://github.com/${{ inputs.trigger-workflow-base-repo }}/actions/runs/${{ inputs.trigger-workflow-run-id }}\"}"
+        # Create status by API call
+        curl -L -v -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ env.GH_TOKEN }}" \
+          https://api.github.com/repos/${{ inputs.trigger-workflow-base-repo }}/statuses/${{ inputs.trigger-workflow-commit-sha }} \
+          -d "${data}"
+
     - name: Destroy instance
       if: always()
       run: |
@@ -273,36 +294,6 @@ jobs:
         # Check logs
         podman logs -f windows-destroy
 
-    - name: Update status of the PR check
-      if: always()
-      run: |
-        set -xuo
-        # Status msg
-        data="{\"state\":\"success\""
-        if [[ ${{steps.test-report.outcome}} != "success" ]]; then
-          data="{\"state\":\"failure\""
-        fi
-        data="${data},\"description\":\"Finished ${{inputs.qe-type}}-${{inputs.preset}} on Windows\""
-        data="${data},\"context\":\"${{ env.status_context }}\""
-        data="${data},\"target_url\":\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
-        # Create status by API call
-        curl -L -v -X POST \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ github.token }}" \
-          https://api.github.com/repos/${{ github.repository }}/statuses/${{ env.commit_sha }} \
-          -d "${data}"
-
-    - name: Publish Test Report
-      uses: mikepenz/action-junit-report@v5
-      if: always() # always run even if the previous step fails
-      with:
-        annotate_only: true
-        fail_on_failure: true
-        include_passed: true
-        detailed_summary: true
-        require_tests:  true
-        report_paths: '**/*results.xml'
-
     - name: Upload test artifacts
       uses: actions/upload-artifact@v4
       if: always()
@@ -310,4 +301,21 @@ jobs:
         name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}
         path: |
           results/*
-          !results/**/*.gguf
+          !./**/*.gguf
+          !./**/*.bin
+          !./**/output/videos/*
+          !./**/output/traces/*
+
+    - name: Upload test videos
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}-videos
+        path: ./**/output/videos/*
+
+    - name: Upload test traces
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}-traces
+        path: ./**/output/traces/*

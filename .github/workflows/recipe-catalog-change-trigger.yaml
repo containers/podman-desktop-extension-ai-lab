@@ -1,18 +1,68 @@
 name: recipe-catalog-change-windows-trigger
 
 on:
-  pull_request:
-    paths:
-      - 'packages/backend/src/assets/ai.json'
+  workflow_run:
+    workflows: ["pr-check"]
+    types:
+      - completed
 
 jobs:
-  windows-e2e-recipe-change:
+  extract-context:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      workflow-run-id: ${{ steps.parse-event.outputs.workflow-run-id }}
+      fork-owner: ${{ steps.parse-event.outputs.fork-owner }}
+      fork-repo: ${{ steps.parse-event.outputs.fork-repo }}
+      fork-branch: ${{ steps.parse-event.outputs.fork-branch }}
+      commit-sha: ${{ steps.parse-event.outputs.commit-sha }}
+      base-repo: ${{ steps.parse-event.outputs.base-repo }}
+      changes-detected: ${{ steps.parse-event.outputs.changes-detected }}
+    steps:
+      - name: Parse event data
+        id: parse-event
+        env:
+          WORKFLOW_RUN: ${{ toJson(github.event.workflow_run) }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
+          echo "workflow-run-id=${{ fromJson(env.WORKFLOW_RUN).id }}" >> $GITHUB_OUTPUT
+          echo "Fork owner: ${{ fromJson(env.WORKFLOW_RUN).head_repository.owner.login }}"
+          echo "fork-owner=${{ fromJson(env.WORKFLOW_RUN).head_repository.owner.login }}" >> $GITHUB_OUTPUT
+          echo "Fork repo: ${{ fromJson(env.WORKFLOW_RUN).head_repository.name }}"
+          echo "fork-repo=${{ fromJson(env.WORKFLOW_RUN).head_repository.name }}" >> $GITHUB_OUTPUT
+          echo "Fork branch: ${{ fromJson(env.WORKFLOW_RUN).head_branch }}"
+          echo "fork-branch=${{ fromJson(env.WORKFLOW_RUN).head_branch }}" >> $GITHUB_OUTPUT
+          echo "Commit SHA: ${{ fromJson(env.WORKFLOW_RUN).head_sha }}"
+          echo "commit-sha=${{ fromJson(env.WORKFLOW_RUN).head_sha }}" >> $GITHUB_OUTPUT
+          echo "Base repo: ${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}"
+          echo "base-repo=${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}" >> $GITHUB_OUTPUT
+
+          git clone "https://www.github.com/${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}" "${{ fromJson(env.WORKFLOW_RUN).repository.name }}" --depth 1
+          cd "${{ fromJson(env.WORKFLOW_RUN).repository.name }}"
+          git remote add upstream "https://www.github.com/${{ fromJson(env.WORKFLOW_RUN).head_repository.full_name }}"
+          git fetch upstream
+          git diff --name-only upstream/${{ fromJson(env.WORKFLOW_RUN).head_branch }} HEAD > changes.txt
+          if grep -qe 'packages/backend/src/assets/ai.json' changes.txt; then
+            echo "Changes detected in ai.json"
+            echo "changes-detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes detected in ai.json"
+            echo "changes-detected=false" >> $GITHUB_OUTPUT
+            gh run cancel ${{ github.run_id}}
+          fi
+
+  trigger-template:
+    needs: extract-context
     uses: containers/podman-desktop-extension-ai-lab/.github/workflows/recipe-catalog-change-template.yaml@main
+    if: ${{ needs.extract-context.outputs.changes-detected == 'true' }}
     strategy:
       fail-fast: false
     with:
-      trigger-workflow-run-id: ${{ github.run_id }}
-      trigger-workflow-fork: ${{ github.event.pull_request.user.login }}
-      trigger-workflow-repo_name: ${{ github.event.pull_request.head.repo.name }}
-      trigger-workflow-branch: ${{ github.event.pull_request.head.ref }}
+      trigger-workflow-run-id: ${{ needs.extract-context.outputs.workflow-run-id }}
+      trigger-workflow-fork: ${{ needs.extract-context.outputs.fork-owner }}
+      trigger-workflow-repo-name: ${{ needs.extract-context.outputs.fork-repo }}
+      trigger-workflow-branch: ${{ needs.extract-context.outputs.fork-branch }}
+      trigger-workflow-commit-sha: ${{ needs.extract-context.outputs.commit-sha }}
+      trigger-workflow-base-repo: ${{ needs.extract-context.outputs.base-repo }}
       ext_tests_options: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=0'

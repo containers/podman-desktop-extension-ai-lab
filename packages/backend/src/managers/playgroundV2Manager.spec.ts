@@ -296,6 +296,7 @@ test('submit should send options', async () => {
     temperature: 0.123,
     max_tokens: 45,
     top_p: 0.345,
+    stream_options: { include_usage: true },
   });
   expect(cancellationId).toBe(55);
 
@@ -309,6 +310,7 @@ test('submit should send options', async () => {
         temperature: 0.123,
         max_tokens: 45,
         top_p: 0.345,
+        stream_options: { include_usage: true },
       },
     },
   ];
@@ -320,6 +322,7 @@ test('submit should send options', async () => {
       temperature: 0.123,
       max_tokens: 45,
       top_p: 0.345,
+      stream_options: { include_usage: true },
     },
     {
       signal: expect.anything(),

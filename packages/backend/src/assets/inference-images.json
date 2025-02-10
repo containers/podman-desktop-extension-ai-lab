@@ -3,8 +3,8 @@
     "default": "ghcr.io/containers/whispercpp@sha256:6c529656529da7aba851b6ab2d0653f23b77b9ca3c11cb46db47ff6dbd6d5e7c"
   },
   "llamacpp": {
-    "default": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat@sha256:20734e9d60f047d27e4c9cf6a3b663e0627d48bd06d0a73b968f9d81c82de2f1",
-    "cuda": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat-cuda@sha256:798acced911527254601d0e39a90c5a29ecad82755f28594bea9a587ea9e6043",
-    "vulkan": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat-vulkan@sha256:22e11661fe66ace7c30b419703305b803eb937da10e19c23cb6767f03578256c"
+    "default": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat@sha256:2eb6cd7a4c4f76e54eeb88465281f4ff2a8f7b7e49db893a579a8f6842f69eb1",
+    "cuda": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat-cuda@sha256:e4b57e52c31b379b4a73f8e9536bc130fdea665d88dbd05643350295b3402a2f",
+    "vulkan": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat-vulkan@sha256:6a93b247099643f4f8c78ee9896c2ce4e9a455af114a69be09c16ad36aa51fd2"
   }
 }

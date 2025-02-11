@@ -248,6 +248,9 @@ importers:
       jsdom:
         specifier: ^26.0.0
         version: 26.0.0
+      monaco-editor:
+        specifier: ^0.52.2
+        version: 0.52.2
       postcss:
         specifier: ^8.5.1
         version: 8.5.1
@@ -3626,6 +3629,9 @@ packages:
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
+  monaco-editor@0.52.2:
+    resolution: {integrity: sha512-GEQWEZmfkOGLdd3XK8ryrfWz3AIP8YymVXiPHEdewrUq7mh0qrKrfHLNCXcbB6sTnMLnOZ3ztSiKcciFUkIJwQ==}
+
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -4507,9 +4513,6 @@ packages:
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
-
-  tailwindcss@4.0.4:
-    resolution: {integrity: sha512-/ezDLEkOLf1lXkr9F2iI5BHJbexJpty5zkV2B8bGHCqAdbc9vk85Jgdkq+ZOvNkNPa3yAaqJ8DjRt584Bc84kw==}
 
   tailwindcss@4.0.6:
     resolution: {integrity: sha512-mysewHYJKaXgNOW6pp5xon/emCsfAMnO8WMaGKZZ35fomnR/T5gYnRg2/yRTTrtXiEl1tiVkeRt0eMO6HxEZqw==}
@@ -8639,6 +8642,8 @@ snapshots:
 
   moment@2.30.1: {}
 
+  monaco-editor@0.52.2: {}
+
   mri@1.2.0: {}
 
   ms@2.0.0: {}
@@ -9530,8 +9535,6 @@ snapshots:
   symbol-tree@3.2.4: {}
 
   systeminformation@5.25.11: {}
-
-  tailwindcss@4.0.4: {}
 
   tailwindcss@4.0.6: {}
 

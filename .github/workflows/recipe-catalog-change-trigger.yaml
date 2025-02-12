@@ -8,7 +8,7 @@ on:
 
 jobs:
   extract-context:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
       workflow-run-id: ${{ steps.parse-event.outputs.workflow-run-id }}

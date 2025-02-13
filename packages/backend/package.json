@@ -124,6 +124,6 @@
     "@types/supertest": "^6.0.2",
     "openapi-typescript": "^7.6.1",
     "supertest": "^7.0.0",
-    "vitest": "^2.1.8"
+    "vitest": "^3.0.5"
   }
 }

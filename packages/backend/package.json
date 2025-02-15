@@ -106,7 +106,7 @@
     "isomorphic-git": "^1.29.0",
     "js-yaml": "^4.1.0",
     "mustache": "^4.2.0",
-    "openai": "^4.83.0",
+    "openai": "^4.84.1",
     "postman-code-generators": "^1.14.1",
     "postman-collection": "^4.5.0",
     "semver": "^7.7.1",
@@ -124,6 +124,6 @@
     "@types/supertest": "^6.0.2",
     "openapi-typescript": "^7.6.1",
     "supertest": "^7.0.0",
-    "vitest": "^2.1.8"
+    "vitest": "^3.0.5"
   }
 }

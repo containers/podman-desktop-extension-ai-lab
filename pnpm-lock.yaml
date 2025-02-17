@@ -133,8 +133,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       openai:
-        specifier: ^4.84.1
-        version: 4.84.1(ws@8.18.0)
+        specifier: ^4.85.1
+        version: 4.85.1(ws@8.18.0)
       postman-code-generators:
         specifier: 1.10.1
         version: 1.10.1
@@ -2409,6 +2409,10 @@ packages:
     resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
     engines: {node: '>= 6'}
 
+  form-data@4.0.2:
+    resolution: {integrity: sha512-hGfm/slu0ZabnNt4oaRZ6uREyfCj6P4fT/n6A1rGV+Z0VdGXjfOhVUpkn6qVQONHGIFwmveGXyDs75+nr6FM8w==}
+    engines: {node: '>= 6'}
+
   formdata-node@4.4.1:
     resolution: {integrity: sha512-0iirZp3uVDjVGt9p49aTaqjk84TrglENEDuqfdlZQ1roC9CWlPk6Avf8EEnZNcAqPonwkG35x4n3ww/1THYAeQ==}
     engines: {node: '>= 12.20'}
@@ -3459,8 +3463,8 @@ packages:
   ono@7.1.3:
     resolution: {integrity: sha512-9jnfVriq7uJM4o5ganUY54ntUm+5EK21EGaQ5NWnkWg3zz5ywbbonlBguRcnmF1/HDiIe3zxNxXcO1YPBmPcQQ==}
 
-  openai@4.84.1:
-    resolution: {integrity: sha512-bVdFsfeVBXN59x9i26dHnYUkY5JPk19w7SydzMvJZDsA+FxwXZrQsUBtdwsQt/ZLuilcc/LzJG7mpJucO2DDHg==}
+  openai@4.85.1:
+    resolution: {integrity: sha512-jkX2fntHljUvSH3MkWh4jShl10oNkb+SsCj4auKlbu2oF4KWAnmHLNR5EpnUHK1ZNW05Rp0fjbJzYwQzMsH8ZA==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -5533,7 +5537,7 @@ snapshots:
 
   '@types/conventional-commits-parser@5.0.0':
     dependencies:
-      '@types/node': 22.13.4
+      '@types/node': 20.17.19
 
   '@types/cookiejar@2.1.5': {}
 
@@ -5584,7 +5588,7 @@ snapshots:
   '@types/node-fetch@2.6.12':
     dependencies:
       '@types/node': 20.17.19
-      form-data: 4.0.1
+      form-data: 4.0.2
 
   '@types/node@18.19.76':
     dependencies:
@@ -7188,6 +7192,13 @@ snapshots:
       combined-stream: 1.0.8
       mime-types: 2.1.35
 
+  form-data@4.0.2:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      mime-types: 2.1.35
+
   formdata-node@4.4.1:
     dependencies:
       node-domexception: 1.0.0
@@ -8208,7 +8219,7 @@ snapshots:
     dependencies:
       '@jsdevtools/ono': 7.1.3
 
-  openai@4.84.1(ws@8.18.0):
+  openai@4.85.1(ws@8.18.0):
     dependencies:
       '@types/node': 18.19.76
       '@types/node-fetch': 2.6.12

@@ -36,7 +36,7 @@
     "jsdom": "^26.0.0",
     "postcss": "^8.5.2",
     "postcss-load-config": "^6.0.1",
-    "svelte": "5.20.1",
+    "svelte": "5.20.2",
     "svelte-fa": "^4.0.3",
     "svelte-select": "^5.8.3",
     "svelte-markdown": "^0.4.1",

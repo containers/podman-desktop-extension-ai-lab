@@ -64,6 +64,10 @@ beforeAll(() => {
   Object.defineProperty(window, 'ResizeObserver', { value: ResizeObserver });
 });
 
+vi.mock('/@/lib/RecipeCardTags', () => ({
+  isDarkMode: vi.fn().mockReturnValue(false),
+}));
+
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(localRepositories).subscribe.mockImplementation(run => mockLocalRepositories.subscribe(run));

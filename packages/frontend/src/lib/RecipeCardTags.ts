@@ -22,17 +22,17 @@ export const FRAMEWORKS = ['langchain', 'langchain4j', 'quarkus', 'react', 'stre
 export const TOOLS = ['none', 'llama-cpp', 'whisper-cpp'];
 
 export const TAG_BG_COLOR = new Map<string, string>([
-  ...USE_CASES.map(useCase => [useCase, isDarkMode() ? 'bg-purple-700' : 'bg-purple-300']),
-  ...LANGUAGES.map(useCase => [useCase, isDarkMode() ? 'bg-sky-900' : 'bg-sky-200']),
-  ...FRAMEWORKS.map(useCase => [useCase, isDarkMode() ? 'bg-green-900' : 'bg-green-200']),
-  ...TOOLS.map(useCase => [useCase, isDarkMode() ? 'bg-amber-800' : 'bg-amber-100']),
+  ...USE_CASES.map(useCase => [useCase, isDarkMode() ? 'bg-purple-700' : 'bg-purple-300'] as [string, string]),
+  ...LANGUAGES.map(useCase => [useCase, isDarkMode() ? 'bg-sky-900' : 'bg-sky-200'] as [string, string]),
+  ...FRAMEWORKS.map(useCase => [useCase, isDarkMode() ? 'bg-green-900' : 'bg-green-200'] as [string, string]),
+  ...TOOLS.map(useCase => [useCase, isDarkMode() ? 'bg-amber-800' : 'bg-amber-100'] as [string, string]),
 ]);
 
 export const TAG_TEXT_COLOR = new Map<string, string>([
-  ...USE_CASES.map(useCase => [useCase, isDarkMode() ? 'text-purple-300' : 'text-purple-700']),
-  ...LANGUAGES.map(useCase => [useCase, isDarkMode() ? 'text-sky-200' : 'text-sky-900']),
-  ...FRAMEWORKS.map(useCase => [useCase, isDarkMode() ? 'text-green-200' : 'text-green-900']),
-  ...TOOLS.map(useCase => [useCase, isDarkMode() ? 'text-amber-400' : 'text-amber-900']),
+  ...USE_CASES.map(useCase => [useCase, isDarkMode() ? 'text-purple-300' : 'text-purple-700'] as [string, string]),
+  ...LANGUAGES.map(useCase => [useCase, isDarkMode() ? 'text-sky-200' : 'text-sky-900'] as [string, string]),
+  ...FRAMEWORKS.map(useCase => [useCase, isDarkMode() ? 'text-green-200' : 'text-green-900'] as [string, string]),
+  ...TOOLS.map(useCase => [useCase, isDarkMode() ? 'text-amber-400' : 'text-amber-900'] as [string, string]),
 ]);
 
 export function isDarkMode(): boolean {

@@ -2,13 +2,20 @@
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import Fa from 'svelte-fa';
 
-export let icon: IconDefinition;
-export let content: string;
-export let background: string = 'bg-[var(--pd-label-bg)]';
+interface Props {
+  icon?: IconDefinition;
+  content: string;
+  class?: string;
+}
+
+let {
+  icon = undefined,
+  content,
+  class: classes = 'bg-[var(--pd-label-bg)] text-[var(--pd-label-text)]',
+}: Props = $props();
 </script>
 
-<div
-  class="{background} rounded-md px-2 py-1 flex flex-row w-min h-min text-[var(--pd-label-text)] text-nowrap items-center text-sm">
+<div class="{classes} rounded-md px-2 py-1 flex flex-row w-min h-min text-nowrap items-center text-sm">
   {#if icon}
     <Fa class="mr-2" icon={icon} />
   {/if}

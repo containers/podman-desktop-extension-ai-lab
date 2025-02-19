@@ -44,6 +44,10 @@ vi.mock('./stores/extensionConfiguration.ts', () => ({
   },
 }));
 
+vi.mock('/@/lib/RecipeCardTags', () => ({
+  isDarkMode: vi.fn().mockReturnValue(false),
+}));
+
 vi.mock('./utils/client', async () => ({
   studioClient: {
     getExtensionConfiguration: vi.fn(),

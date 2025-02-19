@@ -2,7 +2,7 @@
 import type { Recipe } from '@shared/src/models/IRecipe';
 import Badge from './Badge.svelte';
 import { onDestroy, onMount } from 'svelte';
-import { TAG_BG_COLOR, TAG_TEXT_COLOR, TOOLS, FRAMEWORKS, isDarkMode } from './RecipeCardTags';
+import { TAG_BG_COLOR, TAG_TEXT_COLOR, TOOLS, FRAMEWORKS, isDarkMode } from '/@/lib/RecipeCardTags';
 
 interface Props {
   recipe: Recipe;

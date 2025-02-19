@@ -44,6 +44,10 @@ beforeAll(() => {
   Object.defineProperty(window, 'ResizeObserver', { value: ResizeObserver });
 });
 
+vi.mock('/@/lib/RecipeCardTags', () => ({
+  isDarkMode: vi.fn().mockReturnValue(false),
+}));
+
 test('recipes card without recipes should display empty message', async () => {
   render(RecipesCard, {
     recipes: [],

@@ -72,7 +72,7 @@ on:
         type: string
         required: true
       azure_vm_size:
-        default: 'Standard_D8as_v5'
+        default: 'Standard_D8s_v4'
         description: 'Azure VM size (Standard_E4as_v5 is cheapest, 4core AMD, 32GB RAM)'
         type: choice
         required: true
@@ -94,12 +94,12 @@ jobs:
       fail-fast: false
       matrix:
         windows-version: ['10','11']
-        windows-featurepack: ['22h2-ent', '23h2-ent']
+        windows-featurepack: ['22h2-pro', '23h2-ent']
         exclude:
         - windows-version: '10'
           windows-featurepack: '23h2-ent'
         - windows-version: '11'
-          windows-featurepack: '22h2-ent'
+          windows-featurepack: '22h2-pro'
 
 
     steps:
@@ -120,7 +120,7 @@ jobs:
         DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.2' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
-        DEFAULT_AZURE_VM_SIZE: 'Standard_D8as_v5'
+        DEFAULT_AZURE_VM_SIZE: 'Standard_D8s_v4'
       run: |
         echo "FORK=${{ github.event.inputs.fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
         echo "BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV

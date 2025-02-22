@@ -26,10 +26,6 @@ import * as fs from 'node:fs';
 
 vi.mock('./managers/modelsManager');
 
-vi.mock('@shared/src/messages/NoTimeoutChannels', () => ({
-  noTimeoutChannels: [],
-}));
-
 const mockedExtensionContext = {
   subscriptions: [],
   storagePath: 'dummy-storage-path',

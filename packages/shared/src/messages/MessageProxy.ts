@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { Webview, Disposable } from '@podman-desktop/api';
-import { noTimeoutChannels } from './NoTimeoutChannels';
-import { getChannel } from './utils';
 
 export interface IMessage {
   id: number;
   channel: string;
+  method: string;
 }
 
 export interface IMessageRequest extends IMessage {
@@ -41,9 +40,6 @@ export interface ISubscribedMessage {
   body: any;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type UnaryRPC = (...args: any[]) => Promise<unknown>;
-
 export function isMessageRequest(content: unknown): content is IMessageRequest {
   return !!content && typeof content === 'object' && 'id' in content && 'channel' in content;
 }
@@ -52,9 +48,16 @@ export function isMessageResponse(content: unknown): content is IMessageResponse
   return isMessageRequest(content) && 'status' in content;
 }
 
+// instance has methods that are callable
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ObjectInstance<T> = {
+  [key: string]: (...args: unknown[]) => unknown;
+};
+
 export class RpcExtension implements Disposable {
   #webviewDisposable: Disposable | undefined;
-  methods: Map<string, (...args: unknown[]) => Promise<unknown>> = new Map();
+
+  #instances: Map<string, ObjectInstance<unknown>> = new Map();
 
   constructor(private webview: Webview) {}
 
@@ -69,15 +72,15 @@ export class RpcExtension implements Disposable {
         return;
       }
 
-      if (!this.methods.has(message.channel)) {
+      if (!this.#instances.has(message.channel)) {
         console.error(
-          `Trying to call on an unknown channel ${message.channel}. Available: ${Array.from(this.methods.keys())}`,
+          `Trying to call on an unknown channel ${message.channel}. Available: ${Array.from(this.#instances.keys())}`,
         );
         throw new Error('channel does not exist.');
       }
 
       try {
-        const result = await this.methods.get(message.channel)?.(...message.args);
+        const result = await this.#instances.get(message.channel)?.[message.method]?.(...message.args);
         await this.webview.postMessage({
           id: message.id,
           channel: message.channel,
@@ -106,22 +109,9 @@ export class RpcExtension implements Disposable {
     });
   }
 
-  registerInstance<T extends Record<keyof T, UnaryRPC>>(
-    classType: { CHANNEL: string; prototype: T },
-    instance: T,
-  ): void {
-    const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
-      name => name !== 'constructor' && typeof instance[name as keyof T] === 'function',
-    );
-
-    methodNames.forEach(name => {
-      const method = (instance[name as keyof T] as any).bind(instance);
-      this.register(getChannel(classType, name as keyof T), method);
-    });
-  }
-
-  register(channel: string, method: (body: any) => Promise<any>): void {
-    this.methods.set(channel, method);
+  registerInstance<T, R extends T>(channel: RpcChannel<T>, instance: R): void {
+    // convert the instance to an object with method names as keys
+    this.#instances.set(channel.name, instance as ObjectInstance<unknown>);
   }
 }
 
@@ -174,25 +164,30 @@ export class RpcBrowser {
     });
   }
 
-  getProxy<T>(classType: { CHANNEL: string; prototype: T }): T {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const thisRef = this;
+  getProxy<T>(channel: RpcChannel<T>, options?: { noTimeoutMethods: string[] }): T {
+    const noTimeoutMethodsValues = options?.noTimeoutMethods ?? [];
+
     const proxyHandler: ProxyHandler<object> = {
-      get(target, prop, receiver) {
+      get: (target, prop, receiver) => {
         if (typeof prop === 'string') {
           return (...args: unknown[]) => {
-            const channel = prop.toString();
-            return thisRef.invoke(getChannel(classType, channel as keyof T), ...args);
+            return this.invoke(channel.name, noTimeoutMethodsValues, prop, ...args);
           };
         }
         return Reflect.get(target, prop, receiver);
       },
     };
 
-    return new Proxy({}, proxyHandler) as T;
+    // eslint-disable-next-line no-null/no-null
+    return new Proxy(Object.create(null), proxyHandler);
   }
 
-  async invoke(channel: string, ...args: unknown[]): Promise<unknown> {
+  protected async invoke(
+    channel: string,
+    noTimeoutMethodsValues: string[],
+    method: string,
+    ...args: unknown[]
+  ): Promise<unknown> {
     // Generate a unique id for the request
     const requestId = this.getUniqueId();
 
@@ -203,12 +198,13 @@ export class RpcBrowser {
     // Post the message
     this.api.postMessage({
       id: requestId,
-      channel: channel,
-      args: args,
+      channel,
+      method,
+      args,
     } as IMessageRequest);
 
     // Add some timeout
-    if (!noTimeoutChannels.includes(channel)) {
+    if (Array.isArray(noTimeoutMethodsValues) && !noTimeoutMethodsValues.includes(method)) {
       setTimeout(() => {
         const { reject } = this.promises.get(requestId) ?? {};
         if (!reject) return;
@@ -234,4 +230,21 @@ export class RpcBrowser {
   isSubscribedMessage(content: any): content is ISubscribedMessage {
     return !!content && 'id' in content && 'body' in content && this.subscribers.has(content.id);
   }
+}
+
+// identifier for a given interface
+export class RpcChannel<T> {
+  // variable used to use the marker interface T
+  protected _marker: T | undefined;
+
+  constructor(private channel: string) {}
+
+  public get name(): string {
+    return this.channel;
+  }
+}
+
+// defines a channel with the given name for the interface T
+export function createRpcChannel<T>(channel: string): RpcChannel<T> {
+  return new RpcChannel<T>(channel);
 }

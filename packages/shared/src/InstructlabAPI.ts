@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { createRpcChannel } from './messages/MessageProxy';
 import type { InstructlabSession } from './models/instructlab/IInstructlabSession';
 
-export abstract class InstructlabAPI {
-  static readonly CHANNEL: string = 'InstructlabAPI';
+export const INSTRUCTLAB_API_CHANNEL = createRpcChannel<InstructlabAPI>('InstructlabAPI');
+export interface InstructlabAPI {
   /**
    * Get sessions of InstructLab tuning
    */
-  abstract getIsntructlabSessions(): Promise<InstructlabSession[]>;
+  getIsntructlabSessions(): Promise<InstructlabSession[]>;
 }

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { beforeEach, expect, test, vi } from 'vitest';
-import { RpcBrowser } from '@shared/src/messages/MessageProxy';
+import { createRpcChannel, RpcBrowser } from '@shared/src/messages/MessageProxy';
 import { RPCReadable } from './rpcReadable';
 import { studioClient, rpcBrowser } from '../utils/client';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
@@ -52,10 +52,6 @@ vi.mock('../utils/client', async () => {
   };
 });
 
-vi.mock('@shared/src/messages/NoTimeoutChannels', () => ({
-  noTimeoutChannels: [],
-}));
-
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -70,26 +66,43 @@ test('check updater is called once at subscription', async () => {
 });
 
 test('check updater is called twice if there is one event fired', async () => {
+  const channel = createRpcChannel<Update>('event');
+  type Update = {
+    event: () => Promise<string[]>;
+  };
+
   const rpcWritable = RPCReadable<string[]>([], ['event'], () => {
     studioClient.getModelsInfo().catch((err: unknown) => console.error(err));
     return Promise.resolve(['']);
   });
   rpcWritable.subscribe(_ => {});
-  rpcBrowser.invoke('event').catch((err: unknown) => console.error(err));
+
+  // get proxy
+  const proxy = rpcBrowser.getProxy<Update>(channel);
+
+  proxy.event().catch((err: unknown) => console.error(err));
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
   expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);
 });
 
 test('check updater is called only twice because of the debouncer if there is more than one event in a row', async () => {
+  const channel = createRpcChannel<Event2>('event2');
+  type Event2 = {
+    event: () => Promise<string[]>;
+  };
   const rpcWritable = RPCReadable<ModelInfo[]>([], ['event2'], () => {
     return studioClient.getModelsInfo();
   });
   rpcWritable.subscribe(_ => {});
-  rpcBrowser.invoke('event2').catch((err: unknown) => console.error(err));
-  rpcBrowser.invoke('event2').catch((err: unknown) => console.error(err));
-  rpcBrowser.invoke('event2').catch((err: unknown) => console.error(err));
-  rpcBrowser.invoke('event2').catch((err: unknown) => console.error(err));
+
+  // get proxy
+  const proxy = rpcBrowser.getProxy<Event2>(channel);
+
+  proxy.event().catch((err: unknown) => console.error(err));
+  proxy.event().catch((err: unknown) => console.error(err));
+  proxy.event().catch((err: unknown) => console.error(err));
+  proxy.event().catch((err: unknown) => console.error(err));
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
   expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);

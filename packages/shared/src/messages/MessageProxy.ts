@@ -40,6 +40,9 @@ export interface ISubscribedMessage {
   body: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UnaryRPC = (...args: any[]) => Promise<unknown>;
+
 export function isMessageRequest(content: unknown): content is IMessageRequest {
   return !!content && typeof content === 'object' && 'id' in content && 'channel' in content;
 }
@@ -109,7 +112,7 @@ export class RpcExtension implements Disposable {
     });
   }
 
-  registerInstance<T, R extends T>(channel: RpcChannel<T>, instance: R): void {
+  registerInstance<T extends Record<keyof T, UnaryRPC>, R extends T>(channel: RpcChannel<T>, instance: R): void {
     // convert the instance to an object with method names as keys
     this.#instances.set(channel.name, instance as ObjectInstance<unknown>);
   }
@@ -164,8 +167,11 @@ export class RpcBrowser {
     });
   }
 
-  getProxy<T>(channel: RpcChannel<T>, options?: { noTimeoutMethods: string[] }): T {
-    const noTimeoutMethodsValues = options?.noTimeoutMethods ?? [];
+  getProxy<T>(channel: RpcChannel<T>, options?: { noTimeoutMethods: Array<keyof T> }): T {
+    // transform noTimeoutMethods keyof into an array of strings
+    const noTimeoutMethodsValues: string[] = options?.noTimeoutMethods
+      ? (Object.values(options.noTimeoutMethods) as string[])
+      : [];
 
     const proxyHandler: ProxyHandler<object> = {
       get: (target, prop, receiver) => {

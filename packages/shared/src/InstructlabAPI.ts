@@ -37,5 +37,4 @@ export interface InstructlabAPI {
   routeToInstructLabContainerTerminal(containerId: string): Promise<void>;
 
   getInstructlabContainerId(): Promise<string | undefined>;
-
 }

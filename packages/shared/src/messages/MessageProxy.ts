@@ -54,7 +54,7 @@ export function isMessageResponse(content: unknown): content is IMessageResponse
 // instance has methods that are callable
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ObjectInstance<T> = {
-  [key: string]: (...args: unknown[]) => unknown;
+  [key: string]: (...args: unknown[]) => Promise<unknown>;
 };
 
 export class RpcExtension implements Disposable {
@@ -167,7 +167,10 @@ export class RpcBrowser {
     });
   }
 
-  getProxy<T>(channel: RpcChannel<T>, options?: { noTimeoutMethods: Array<keyof T> }): T {
+  getProxy<T extends Record<keyof T, UnaryRPC>>(
+    channel: RpcChannel<T>,
+    options?: { noTimeoutMethods: Array<keyof T> },
+  ): T {
     // transform noTimeoutMethods keyof into an array of strings
     const noTimeoutMethodsValues: string[] = options?.noTimeoutMethods
       ? (Object.values(options.noTimeoutMethods) as string[])
@@ -243,7 +246,7 @@ export class RpcChannel<T> {
   // variable used to use the marker interface T
   protected _marker: T | undefined;
 
-  constructor(private channel: string) {}
+  constructor(private readonly channel: string) {}
 
   public get name(): string {
     return this.channel;

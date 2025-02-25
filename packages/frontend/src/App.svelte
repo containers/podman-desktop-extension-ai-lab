@@ -110,12 +110,12 @@ onDestroy(() => {
               <TuneSessions />
             </Route>
           </Route>
-          <Route path="/instructlab/*" firstmatch>
-            <Route path="/try">
-              <StartInstructLabContainer />
-            </Route>
-          </Route>
         {/if}
+        <Route path="/instructlab/*" firstmatch>
+          <Route path="/try">
+            <StartInstructLabContainer />
+          </Route>
+        </Route>
         <!-- Preferences -->
         <Route path="/preferences">
           <Preferences />

@@ -116,6 +116,16 @@ function openDocumentation(): void {
 
           <h1 class="pt-4 mb-2 text-lg first-letter:uppercase">Instructions</h1>
 
+          <p>
+            Once InstructLab container is started from Podman Desktop, you can start using and experimenting with it by
+            directly getting a terminal into the container. For that, go to the list of containers and search for
+            InstructLab container, click to get into the details of that container. Find the "terminal" tab, where you
+            can input the following commands.
+          </p>
+          <p></p>
+
+          <p>Please check the documentation to learn more about these commands and how InstructLab works.</p>
+
           <h2 class="pt-4 mb-2">Create InstructLab configuration</h2>
 
           <code class="pt-4 mb-2 block">ilab config init</code>

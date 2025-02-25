@@ -22,7 +22,7 @@ export type Subscriber = {
   callback: (status: string) => void;
 };
 
-export interface ContainerStart {
+export interface ContainerEvent {
   id: string;
 }
 
@@ -34,8 +34,10 @@ export class ContainerRegistry implements podmanDesktopApi.Disposable {
   private count: number = 0;
   private subscribers: Map<string, Subscriber[]> = new Map();
 
-  private readonly _onStartContainerEvent = new podmanDesktopApi.EventEmitter<ContainerStart>();
-  readonly onStartContainerEvent: podmanDesktopApi.Event<ContainerStart> = this._onStartContainerEvent.event;
+  private readonly _onStartContainerEvent = new podmanDesktopApi.EventEmitter<ContainerEvent>();
+  readonly onStartContainerEvent: podmanDesktopApi.Event<ContainerEvent> = this._onStartContainerEvent.event;
+  private readonly _onStopContainerEvent = new podmanDesktopApi.EventEmitter<ContainerEvent>();
+  readonly onStopContainerEvent: podmanDesktopApi.Event<ContainerEvent> = this._onStopContainerEvent.event;
 
   private readonly _onHealthyContainerEvent = new podmanDesktopApi.EventEmitter<ContainerHealthy>();
   readonly onHealthyContainerEvent: podmanDesktopApi.Event<ContainerHealthy> = this._onHealthyContainerEvent.event;
@@ -46,6 +48,10 @@ export class ContainerRegistry implements podmanDesktopApi.Disposable {
     this.#eventDisposable = podmanDesktopApi.containerEngine.onEvent(event => {
       if (event.status === 'start') {
         this._onStartContainerEvent.fire({
+          id: event.id,
+        });
+      } else if (event.status === 'die') {
+        this._onStopContainerEvent.fire({
           id: event.id,
         });
       }

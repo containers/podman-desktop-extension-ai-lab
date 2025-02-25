@@ -30,6 +30,7 @@ import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 import LocalServer from './pages/server-information/LocalServer.svelte';
 import AboutInstructLab from './pages/instructlab/AboutInstructLab.svelte';
+import StartInstructLabContainer from '/@/pages/instructlab/StartInstructLabContainer.svelte';
 
 router.mode.hash();
 
@@ -110,6 +111,11 @@ onDestroy(() => {
             </Route>
           </Route>
         {/if}
+        <Route path="/instructlab/*" firstmatch>
+          <Route path="/try">
+            <StartInstructLabContainer />
+          </Route>
+        </Route>
         <!-- Preferences -->
         <Route path="/preferences">
           <Preferences />

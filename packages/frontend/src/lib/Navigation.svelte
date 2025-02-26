@@ -78,26 +78,26 @@ onDestroy(() => {
     </div>
     <SettingsNavItem icon={faGear} title="Local Server" selected={meta.url === '/local-server'} href="/local-server" />
 
+    <!-- Tuning -->
+    <div class="pl-3 mt-2 ml-[4px]">
+      <span class="text-[color:var(--pd-secondary-nav-header-text)]">TUNING</span>
+    </div>
+    <SettingsNavItem
+      icon={InstructLabIcon}
+      title="About InstructLab"
+      selected={meta.url.startsWith('/about-instructlab')}
+      href="/about-instructlab" />
     {#if experimentalTuning}
-      <!-- Tuning -->
-      <div class="pl-3 mt-2 ml-[4px]">
-        <span class="text-[color:var(--pd-secondary-nav-header-text)]">TUNING</span>
-      </div>
-      <SettingsNavItem
-        icon={InstructLabIcon}
-        title="About InstructLab"
-        selected={meta.url.startsWith('/about-instructlab')}
-        href="/about-instructlab" />
       <SettingsNavItem
         icon={faGaugeHigh}
         title="Tune with InstructLab"
         selected={meta.url.startsWith('/tune')}
         href="/tune" />
-      <SettingsNavItem
-        icon={faCircleDown}
-        title="Try InstructLab"
-        selected={meta.url.startsWith('/instructlab/try')}
-        href="/instructlab/try" />
     {/if}
+    <SettingsNavItem
+      icon={faCircleDown}
+      title="Try InstructLab"
+      selected={meta.url.startsWith('/instructlab/try')}
+      href="/instructlab/try" />
   </div>
 </nav>

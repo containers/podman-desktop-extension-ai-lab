@@ -99,9 +99,6 @@ onDestroy(() => {
         </Route>
         {#if experimentalTuning}
           <!-- Tune with InstructLab -->
-          <Route path="/about-instructlab">
-            <AboutInstructLab />
-          </Route>
           <Route path="/tune/*" firstmatch>
             <Route path="/start">
               <NewInstructLabSession />
@@ -111,6 +108,9 @@ onDestroy(() => {
             </Route>
           </Route>
         {/if}
+        <Route path="/about-instructlab">
+          <AboutInstructLab />
+        </Route>
         <Route path="/instructlab/*" firstmatch>
           <Route path="/try">
             <StartInstructLabContainer />

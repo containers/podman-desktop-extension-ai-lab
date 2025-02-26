@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { createRpcChannel } from './messages/MessageProxy';
 import type { InstructlabSession } from './models/instructlab/IInstructlabSession';
 import type { InstructlabContainerConfiguration } from './models/instructlab/IInstructlabContainerConfiguration';
 
-export abstract class InstructlabAPI {
-  static readonly CHANNEL: string = 'InstructlabAPI';
+export const INSTRUCTLAB_API_CHANNEL = createRpcChannel<InstructlabAPI>('InstructlabAPI');
+export interface InstructlabAPI {
   /**
    * Get sessions of InstructLab tuning
    */
-  abstract getIsntructlabSessions(): Promise<InstructlabSession[]>;
+  getIsntructlabSessions(): Promise<InstructlabSession[]>;
 
   /**
    * Start a container for InstructLab
    *
    * @param config
    */
-  abstract requestCreateInstructlabContainer(config: InstructlabContainerConfiguration): Promise<void>;
+  requestCreateInstructlabContainer(config: InstructlabContainerConfiguration): Promise<void>;
 
-  abstract routeToInstructLabContainerTerminal(containerId: string): Promise<void>;
+  routeToInstructLabContainerTerminal(containerId: string): Promise<void>;
 
-  abstract getInstructlabContainerId(): Promise<string | undefined>;
+  getInstructlabContainerId(): Promise<string | undefined>;
 }

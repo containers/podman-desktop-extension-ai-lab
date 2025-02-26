@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,10 @@ import { ApiServer } from './managers/apiServer';
 import { InstructlabManager } from './managers/instructlab/instructlabManager';
 import { InstructlabApiImpl } from './instructlab-api-impl';
 import { NavigationRegistry } from './registries/NavigationRegistry';
-import { StudioAPI } from '@shared/src/StudioAPI';
-import { InstructlabAPI } from '@shared/src/InstructlabAPI';
+import type { StudioAPI } from '@shared/src/StudioAPI';
+import { STUDIO_API_CHANNEL } from '@shared/src/StudioAPI';
+import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
+import { INSTRUCTLAB_API_CHANNEL } from '@shared/src/InstructlabAPI';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -354,7 +356,7 @@ export class Studio {
       this.#navigationRegistry,
     );
     // Register the instance
-    this.#rpcExtension.registerInstance<StudioAPI>(StudioAPI, this.#studioApi);
+    this.#rpcExtension.registerInstance<StudioAPI, StudioApiImpl>(STUDIO_API_CHANNEL, this.#studioApi);
 
     const apiServer = new ApiServer(
       this.#extensionContext,
@@ -369,7 +371,10 @@ export class Studio {
 
     this.#instructlabApi = new InstructlabApiImpl(this.#instructlabManager);
     // Register the instance
-    this.#rpcExtension.registerInstance<InstructlabAPI>(InstructlabAPI, this.#instructlabApi);
+    this.#rpcExtension.registerInstance<InstructlabAPI, InstructlabApiImpl>(
+      INSTRUCTLAB_API_CHANNEL,
+      this.#instructlabApi,
+    );
   }
 
   public async deactivate(): Promise<void> {

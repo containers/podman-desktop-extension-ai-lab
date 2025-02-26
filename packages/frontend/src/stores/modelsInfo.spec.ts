@@ -21,6 +21,7 @@ import { Messages } from '@shared/Messages';
 import { rpcBrowser } from '../utils/client';
 import type { Unsubscriber } from 'svelte/store';
 import { modelsInfo } from './modelsInfo';
+import { createRpcChannel } from '@shared/src/messages/MessageProxy';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -30,19 +31,27 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('../utils/client', async () => {
   const subscriber = new Map();
+  const invokeMethod = (msgId: string, _: unknown[]): void => {
+    const f = subscriber.get(msgId);
+    f();
+  };
+  const subscribeMethod = (msgId: string, f: (msg: unknown) => void): unknown => {
+    subscriber.set(msgId, f);
+    return {
+      unsubscribe: (): void => {
+        subscriber.clear();
+      },
+    };
+  };
+  const getProxyMethod = (_: unknown): unknown => {
+    return {
+      send: invokeMethod,
+    };
+  };
   const rpcBrowser = {
-    invoke: (msgId: string, _: unknown[]): void => {
-      const f = subscriber.get(msgId);
-      f();
-    },
-    subscribe: (msgId: string, f: (msg: unknown) => void): unknown => {
-      subscriber.set(msgId, f);
-      return {
-        unsubscribe: (): void => {
-          subscriber.clear();
-        },
-      };
-    },
+    getProxy: getProxyMethod,
+    invoke: invokeMethod,
+    subscribe: subscribeMethod,
   };
   return {
     rpcBrowser,
@@ -70,7 +79,12 @@ test('check getLocalModels is called at subscription', async () => {
 });
 
 test('check getLocalModels is called twice if event is fired (one at init, one for the event)', async () => {
-  await rpcBrowser.invoke(Messages.MSG_NEW_MODELS_STATE);
+  type MyModel = {
+    send: (message: string) => Promise<void>;
+  };
+  const channel = createRpcChannel<MyModel>('model');
+  const proxy = rpcBrowser.getProxy<MyModel>(channel);
+  await proxy.send(Messages.MSG_NEW_MODELS_STATE);
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
   expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,16 @@
  ***********************************************************************/
 import { beforeEach, expect, test, vi } from 'vitest';
 import { LocalRepositoryRegistry } from './LocalRepositoryRegistry';
-import { Messages } from '@shared/Messages';
-import type { Webview } from '@podman-desktop/api';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { CatalogManager } from '../managers/catalogManager';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
 
 const mocks = vi.hoisted(() => ({
   DisposableCreateMock: vi.fn(),
-  postMessageMock: vi.fn(),
 }));
 
 vi.mock('@podman-desktop/api', async () => {
@@ -52,54 +51,36 @@ const catalogManagerMock = {
   getRecipes: vi.fn(),
 } as unknown as CatalogManager;
 
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
+
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mock('node:fs');
-  mocks.postMessageMock.mockResolvedValue(undefined);
+  vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
 });
 
 test('should not have any repositories by default', () => {
-  const localRepositories = new LocalRepositoryRegistry(
-    {
-      postMessage: mocks.postMessageMock,
-    } as unknown as Webview,
-    '/appUserDirectory',
-    catalogManagerMock,
-  );
+  const localRepositories = new LocalRepositoryRegistry(rpcExtensionMock, '/appUserDirectory', catalogManagerMock);
   expect(localRepositories.getLocalRepositories().length).toBe(0);
 });
 
 test('should notify webview when register', () => {
-  const localRepositories = new LocalRepositoryRegistry(
-    {
-      postMessage: mocks.postMessageMock,
-    } as unknown as Webview,
-    '/appUserDirectory',
-    catalogManagerMock,
-  );
+  const localRepositories = new LocalRepositoryRegistry(rpcExtensionMock, '/appUserDirectory', catalogManagerMock);
   localRepositories.register({ path: 'random', sourcePath: 'random', labels: { 'recipe-id': 'random' } });
-  expect(mocks.postMessageMock).toHaveBeenNthCalledWith(1, {
-    id: Messages.MSG_LOCAL_REPOSITORY_UPDATE,
-    body: [{ path: 'random', sourcePath: 'random', labels: { 'recipe-id': 'random' } }],
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenNthCalledWith(1, MSG_LOCAL_REPOSITORY_UPDATE, [
+    { path: 'random', sourcePath: 'random', labels: { 'recipe-id': 'random' } },
+  ]);
 });
 
 test('should notify webview when unregister', async () => {
-  const localRepositories = new LocalRepositoryRegistry(
-    {
-      postMessage: mocks.postMessageMock,
-    } as unknown as Webview,
-    '/appUserDirectory',
-    catalogManagerMock,
-  );
+  const localRepositories = new LocalRepositoryRegistry(rpcExtensionMock, '/appUserDirectory', catalogManagerMock);
   vi.spyOn(fs.promises, 'rm').mockResolvedValue();
   localRepositories.register({ path: 'random', sourcePath: 'random', labels: { 'recipe-id': 'random' } });
   await localRepositories.deleteLocalRepository('random');
 
-  expect(mocks.postMessageMock).toHaveBeenLastCalledWith({
-    id: Messages.MSG_LOCAL_REPOSITORY_UPDATE,
-    body: [],
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenLastCalledWith(MSG_LOCAL_REPOSITORY_UPDATE, []);
 });
 
 test('should register localRepo if it find the folder of the recipe', () => {
@@ -110,13 +91,7 @@ test('should register localRepo if it find the folder of the recipe', () => {
     } as unknown as Recipe,
   ]);
 
-  const localRepositories = new LocalRepositoryRegistry(
-    {
-      postMessage: mocks.postMessageMock,
-    } as unknown as Webview,
-    '/appUserDirectory',
-    catalogManagerMock,
-  );
+  const localRepositories = new LocalRepositoryRegistry(rpcExtensionMock, '/appUserDirectory', catalogManagerMock);
 
   const registerMock = vi.spyOn(localRepositories, 'register');
   localRepositories.init();
@@ -139,13 +114,7 @@ test('should register localRepo when catalog get updated', () => {
     return { dispose: vi.fn() };
   });
 
-  const localRepositories = new LocalRepositoryRegistry(
-    {
-      postMessage: mocks.postMessageMock,
-    } as unknown as Webview,
-    '/appUserDirectory',
-    catalogManagerMock,
-  );
+  const localRepositories = new LocalRepositoryRegistry(rpcExtensionMock, '/appUserDirectory', catalogManagerMock);
 
   const registerMock = vi.spyOn(localRepositories, 'register');
   localRepositories.init();
@@ -180,13 +149,7 @@ test('should NOT register localRepo if it does not find the folder of the recipe
     } as unknown as Recipe,
   ]);
 
-  const localRepositories = new LocalRepositoryRegistry(
-    {
-      postMessage: mocks.postMessageMock,
-    } as unknown as Webview,
-    '/appUserDirectory',
-    catalogManagerMock,
-  );
+  const localRepositories = new LocalRepositoryRegistry(rpcExtensionMock, '/appUserDirectory', catalogManagerMock);
   const registerMock = vi.spyOn(localRepositories, 'register');
   localRepositories.init();
   expect(registerMock).not.toHaveBeenCalled();

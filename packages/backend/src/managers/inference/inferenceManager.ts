@@ -18,11 +18,11 @@
 import type { InferenceServer, InferenceServerStatus, InferenceType } from '@shared/src/models/IInference';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
-import type { ContainerInfo, TelemetryLogger, Webview, ContainerProviderConnection } from '@podman-desktop/api';
+import type { ContainerInfo, TelemetryLogger, ContainerProviderConnection } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerEvent } from '../../registries/ContainerRegistry';
 import { getInferenceType, isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
-import { Messages } from '@shared/Messages';
+import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { ModelsManager } from '../modelsManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
@@ -33,6 +33,7 @@ import type { InferenceProvider } from '../../workers/provider/InferenceProvider
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { CatalogManager } from '../catalogManager';
 import { getHash } from '../../utils/sha';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -43,7 +44,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   #disposables: Disposable[];
 
   constructor(
-    webview: Webview,
+    rpcExtension: RpcExtension,
     private containerRegistry: ContainerRegistry,
     private podmanConnection: PodmanConnection,
     private modelsManager: ModelsManager,
@@ -52,7 +53,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     private inferenceProviderRegistry: InferenceProviderRegistry,
     private catalogManager: CatalogManager,
   ) {
-    super(webview, Messages.MSG_INFERENCE_SERVERS_UPDATE, () => this.getServers());
+    super(rpcExtension, MSG_INFERENCE_SERVERS_UPDATE, () => this.getServers());
     this.#servers = new Map<string, InferenceServer>();
     this.#disposables = [];
     this.#initialized = false;

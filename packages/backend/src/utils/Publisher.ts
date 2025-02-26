@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,18 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Webview } from '@podman-desktop/api';
-import type { Messages } from '@shared/Messages';
+import type { RpcChannel, RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export class Publisher<T> {
   constructor(
-    private webview: Webview,
-    private channel: Messages,
+    private rpcExtension: RpcExtension,
+    private channel: RpcChannel<T>,
     private getter: () => T,
   ) {}
 
   notify(): void {
-    this.webview
-      .postMessage({
-        id: this.channel,
-        body: this.getter(),
-      })
-      .catch((err: unknown) => {
-        console.error(`Something went wrong while emitting ${this.channel}: ${String(err)}`);
-      });
+    this.rpcExtension.fire(this.channel, this.getter()).catch((err: unknown) => {
+      console.error(`Something went wrong while emitting ${this.channel}: ${String(err)}`);
+    });
   }
 }

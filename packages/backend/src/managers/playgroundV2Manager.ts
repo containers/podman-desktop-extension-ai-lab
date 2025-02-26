@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Disposable, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { Disposable, TelemetryLogger } from '@podman-desktop/api';
 import type { InferenceManager } from './inference/inferenceManager';
 import OpenAI from 'openai';
 import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src/resources/chat/completions';
@@ -37,18 +37,19 @@ import { getRandomString } from '../utils/randomUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { getHash } from '../utils/sha';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;
 
   constructor(
-    webview: Webview,
+    rpcExtension: RpcExtension,
     private inferenceManager: InferenceManager,
     private taskRegistry: TaskRegistry,
     private telemetry: TelemetryLogger,
     private cancellationTokenRegistry: CancellationTokenRegistry,
   ) {
-    this.#conversationRegistry = new ConversationRegistry(webview);
+    this.#conversationRegistry = new ConversationRegistry(rpcExtension);
   }
 
   deleteConversation(conversationId: string): void {

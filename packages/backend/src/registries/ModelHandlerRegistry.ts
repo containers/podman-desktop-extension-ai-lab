@@ -16,14 +16,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { Publisher } from '../utils/Publisher';
-import { Disposable, type Webview } from '@podman-desktop/api';
-import { Messages } from '@shared/Messages';
+import { Disposable } from '@podman-desktop/api';
+import { MSG_MODEL_HANDLERS_UPDATE } from '@shared/Messages';
 import type { ModelHandler } from '../models/ModelHandler';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export class ModelHandlerRegistry extends Publisher<string[]> {
   #providers: Map<string, ModelHandler>;
-  constructor(webview: Webview) {
-    super(webview, Messages.MSG_MODEL_HANDLERS_UPDATE, () => this.getAll().map(provider => provider.name));
+  constructor(rpcExtension: RpcExtension) {
+    super(rpcExtension, MSG_MODEL_HANDLERS_UPDATE, () => this.getAll().map(provider => provider.name));
     this.#providers = new Map();
   }
 

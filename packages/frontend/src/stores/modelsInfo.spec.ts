@@ -17,11 +17,11 @@
  ***********************************************************************/
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { Messages } from '@shared/Messages';
 import { rpcBrowser } from '../utils/client';
 import type { Unsubscriber } from 'svelte/store';
 import { modelsInfo } from './modelsInfo';
-import { createRpcChannel } from '@shared/src/messages/MessageProxy';
+import { type RpcChannel, createRpcChannel, type Listener } from '@shared/src/messages/MessageProxy';
+import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -35,8 +35,8 @@ vi.mock('../utils/client', async () => {
     const f = subscriber.get(msgId);
     f();
   };
-  const subscribeMethod = (msgId: string, f: (msg: unknown) => void): unknown => {
-    subscriber.set(msgId, f);
+  const subscribeMethod = (rpcChannel: RpcChannel<unknown>, f: Listener<unknown>): unknown => {
+    subscriber.set(rpcChannel.name, f);
     return {
       unsubscribe: (): void => {
         subscriber.clear();
@@ -82,9 +82,9 @@ test('check getLocalModels is called twice if event is fired (one at init, one f
   type MyModel = {
     send: (message: string) => Promise<void>;
   };
-  const channel = createRpcChannel<MyModel>('model');
+  const channel = createRpcChannel<MyModel>(MSG_NEW_MODELS_STATE.name);
   const proxy = rpcBrowser.getProxy<MyModel>(channel);
-  await proxy.send(Messages.MSG_NEW_MODELS_STATE);
+  await proxy.send(MSG_NEW_MODELS_STATE.name);
   // wait for the timeout in the debouncer
   await new Promise(resolve => setTimeout(resolve, 600));
   expect(mocks.getModelsInfoMock).toHaveBeenCalledTimes(2);

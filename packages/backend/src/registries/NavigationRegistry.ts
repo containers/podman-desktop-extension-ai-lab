@@ -16,7 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { type Disposable, navigation, type WebviewPanel, commands } from '@podman-desktop/api';
-import { Messages } from '@shared/Messages';
+import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export const RECIPE_START_ROUTE = 'recipe.start';
 export const RECIPE_START_NAVIGATE_COMMAND = 'ai-lab.navigation.recipe.start';
@@ -28,7 +29,10 @@ export class NavigationRegistry implements Disposable {
   #disposables: Disposable[] = [];
   #route: string | undefined = undefined;
 
-  constructor(private panel: WebviewPanel) {}
+  constructor(
+    private panel: WebviewPanel,
+    private rpcExtension: RpcExtension,
+  ) {}
 
   init(): void {
     if (!navigation.register) {
@@ -64,10 +68,7 @@ export class NavigationRegistry implements Disposable {
   }
 
   protected async updateRoute(route: string): Promise<void> {
-    await this.panel.webview.postMessage({
-      id: Messages.MSG_NAVIGATION_ROUTE_UPDATE,
-      body: route,
-    });
+    await this.rpcExtension.fire(MSG_NAVIGATION_ROUTE_UPDATE, route);
     this.#route = route;
     this.panel.reveal();
   }

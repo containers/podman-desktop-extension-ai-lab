@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { type Disposable, type Webview, containerEngine, type ContainerStatsInfo } from '@podman-desktop/api';
+import { type Disposable, containerEngine, type ContainerStatsInfo } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
-import { Messages } from '@shared/Messages';
+import { MSG_MONITORING_UPDATE } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export interface StatsInfo {
   timestamp: number;
@@ -36,8 +37,8 @@ export class MonitoringManager extends Publisher<StatsHistory[]> implements Disp
   #containerStats: Map<string, StatsHistory>;
   #disposables: Disposable[];
 
-  constructor(webview: Webview) {
-    super(webview, Messages.MSG_MONITORING_UPDATE, () => this.getStats());
+  constructor(rpcExtension: RpcExtension) {
+    super(rpcExtension, MSG_MONITORING_UPDATE, () => this.getStats());
     this.#containerStats = new Map<string, StatsHistory>();
     this.#disposables = [];
   }

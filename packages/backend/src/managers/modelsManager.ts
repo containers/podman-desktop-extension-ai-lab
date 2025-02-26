@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'node:fs';
 import * as path from 'node:path';
-import { type Webview, type Disposable, env, type ContainerProviderConnection } from '@podman-desktop/api';
-import { Messages } from '@shared/Messages';
+import { type Disposable, env, type ContainerProviderConnection } from '@podman-desktop/api';
+import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
@@ -40,6 +40,7 @@ import type { PodmanConnection } from './podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 import type { ModelHandlerRegistry } from '../registries/ModelHandlerRegistry';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
@@ -48,7 +49,7 @@ export class ModelsManager implements Disposable {
   #downloaders: Map<string, Downloader> = new Map<string, Downloader>();
 
   constructor(
-    private webview: Webview,
+    private rpcExtension: RpcExtension,
     private catalogManager: CatalogManager,
     private telemetry: podmanDesktopApi.TelemetryLogger,
     private taskRegistry: TaskRegistry,
@@ -97,10 +98,7 @@ export class ModelsManager implements Disposable {
 
   async sendModelsInfo(): Promise<void> {
     const models = this.getModelsInfo();
-    await this.webview.postMessage({
-      id: Messages.MSG_NEW_MODELS_STATE,
-      body: models,
-    });
+    await this.rpcExtension.fire(MSG_NEW_MODELS_STATE, models);
   }
 
   async getLocalModelsFromDisk(): Promise<void> {

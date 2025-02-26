@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@
 
 import { beforeEach, expect, test, vi } from 'vitest';
 import { SnippetManager } from './SnippetManager';
-import type { TelemetryLogger, Webview } from '@podman-desktop/api';
-import { Messages } from '@shared/Messages';
+import type { TelemetryLogger } from '@podman-desktop/api';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_SUPPORTED_LANGUAGES_UPDATE } from '@shared/Messages';
 
-const webviewMock = {
-  postMessage: vi.fn(),
-} as unknown as Webview;
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 const telemetryMock = {
   logUsage: vi.fn(),
@@ -32,28 +33,25 @@ const telemetryMock = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
+  vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
 });
 
 test('expect init to notify webview', () => {
-  const manager = new SnippetManager(webviewMock, telemetryMock);
+  const manager = new SnippetManager(rpcExtensionMock, telemetryMock);
   manager.init();
 
-  expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_SUPPORTED_LANGUAGES_UPDATE,
-    body: manager.getLanguageList(),
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_SUPPORTED_LANGUAGES_UPDATE, manager.getLanguageList());
 });
 
 test('expect postman-code-generators to have many languages available.', () => {
-  const manager = new SnippetManager(webviewMock, telemetryMock);
+  const manager = new SnippetManager(rpcExtensionMock, telemetryMock);
   manager.init();
 
   expect(manager.getLanguageList().length).toBeGreaterThan(0);
 });
 
 test('expect postman-code-generators to have nodejs supported.', () => {
-  const manager = new SnippetManager(webviewMock, telemetryMock);
+  const manager = new SnippetManager(rpcExtensionMock, telemetryMock);
   manager.init();
 
   const languages = manager.getLanguageList();
@@ -66,7 +64,7 @@ test('expect postman-code-generators to have nodejs supported.', () => {
 });
 
 test('expect postman-code-generators to generate proper nodejs native code', async () => {
-  const manager = new SnippetManager(webviewMock, telemetryMock);
+  const manager = new SnippetManager(rpcExtensionMock, telemetryMock);
   manager.init();
 
   const snippet = await manager.generate(
@@ -91,7 +89,7 @@ request(options, function (error, response) {
 });
 
 test('expect snippet manager to have Quarkus Langchain4J supported.', () => {
-  const manager = new SnippetManager(webviewMock, telemetryMock);
+  const manager = new SnippetManager(rpcExtensionMock, telemetryMock);
   manager.init();
 
   const languages = manager.getLanguageList();
@@ -104,7 +102,7 @@ test('expect snippet manager to have Quarkus Langchain4J supported.', () => {
 });
 
 test('expect new variant to replace existing one if same name', () => {
-  const manager = new SnippetManager(webviewMock, telemetryMock);
+  const manager = new SnippetManager(rpcExtensionMock, telemetryMock);
   manager.init();
 
   const languages = manager.getLanguageList();

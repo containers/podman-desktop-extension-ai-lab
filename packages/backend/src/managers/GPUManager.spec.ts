@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { expect, test, vi, beforeEach } from 'vitest';
-import type { Webview } from '@podman-desktop/api';
 import { GPUManager } from './GPUManager';
 import { graphics, type Systeminformation } from 'systeminformation';
 import { GPUVendor } from '@shared/src/models/IGPUInfo';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 vi.mock('../utils/inferenceUtils', () => ({
   getProviderContainerConnection: vi.fn(),
@@ -38,17 +38,17 @@ vi.mock('systeminformation', () => ({
   graphics: vi.fn(),
 }));
 
-const webviewMock = {
-  postMessage: vi.fn(),
-} as unknown as Webview;
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
+  vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
 });
 
 test('post constructor should have no items', () => {
-  const manager = new GPUManager(webviewMock);
+  const manager = new GPUManager(rpcExtensionMock);
   expect(manager.getAll().length).toBe(0);
 });
 
@@ -58,7 +58,7 @@ test('no controller should return empty array', async () => {
     displays: [],
   });
 
-  const manager = new GPUManager(webviewMock);
+  const manager = new GPUManager(rpcExtensionMock);
   expect(await manager.collectGPUs()).toHaveLength(0);
 });
 
@@ -74,7 +74,7 @@ test('intel controller should return intel vendor', async () => {
     displays: [],
   });
 
-  const manager = new GPUManager(webviewMock);
+  const manager = new GPUManager(rpcExtensionMock);
   expect(await manager.collectGPUs()).toStrictEqual([
     {
       vendor: GPUVendor.INTEL,
@@ -96,7 +96,7 @@ test('NVIDIA controller should return intel vendor', async () => {
     displays: [],
   });
 
-  const manager = new GPUManager(webviewMock);
+  const manager = new GPUManager(rpcExtensionMock);
   expect(await manager.collectGPUs()).toStrictEqual([
     {
       vendor: GPUVendor.NVIDIA,
@@ -118,7 +118,7 @@ test('NVIDIA controller can have vendor "NVIDIA Corporation"', async () => {
     displays: [],
   });
 
-  const manager = new GPUManager(webviewMock);
+  const manager = new GPUManager(rpcExtensionMock);
   expect(await manager.collectGPUs()).toStrictEqual([
     {
       vendor: GPUVendor.NVIDIA,

@@ -17,8 +17,8 @@
  ***********************************************************************/
 
 import type { Task, TaskState } from '@shared/src/models/ITask';
-import { Messages } from '@shared/Messages';
-import type { Webview } from '@podman-desktop/api';
+import { MSG_TASKS_UPDATE } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 /**
  * A registry for managing tasks.
@@ -29,9 +29,9 @@ export class TaskRegistry {
 
   /**
    * Constructs a new TaskRegistry.
-   * @param webview The webview instance to use for communication.
+   * @param rpcExtension The rpc extension instance to use for communication.
    */
-  constructor(private webview: Webview) {}
+  constructor(private rpcExtension: RpcExtension) {}
 
   /**
    * Retrieves a task by its ID.
@@ -138,13 +138,8 @@ export class TaskRegistry {
   }
 
   private notify(): void {
-    this.webview
-      .postMessage({
-        id: Messages.MSG_TASKS_UPDATE,
-        body: this.getTasks(),
-      })
-      .catch((err: unknown) => {
-        console.error('error notifying tasks', err);
-      });
+    this.rpcExtension.fire(MSG_TASKS_UPDATE, this.getTasks()).catch((err: unknown) => {
+      console.error('error notifying tasks', err);
+    });
   }
 }

@@ -21,7 +21,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import content from '../tests/ai-test.json';
 import userContent from '../tests/ai-user-test.json';
-import { type Webview, EventEmitter, window } from '@podman-desktop/api';
+import { EventEmitter, window } from '@podman-desktop/api';
 import { CatalogManager } from './catalogManager';
 
 import type { Stats } from 'node:fs';
@@ -30,6 +30,7 @@ import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog'
 import path from 'node:path';
 import { version } from '../assets/ai.json';
 import * as catalogUtils from '../utils/catalogUtils';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 vi.mock('../assets/ai.json', async importOriginal => {
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -86,8 +87,8 @@ beforeEach(async () => {
   // Creating CatalogManager
   catalogManager = new CatalogManager(
     {
-      postMessage: vi.fn().mockResolvedValue(undefined),
-    } as unknown as Webview,
+      fire: vi.fn().mockResolvedValue(true),
+    } as unknown as RpcExtension,
     appUserDirectory,
   );
 });

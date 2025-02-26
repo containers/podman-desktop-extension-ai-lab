@@ -20,7 +20,6 @@ import {
   type ContainerInfo,
   type ContainerInspectInfo,
   type TelemetryLogger,
-  type Webview,
 } from '@podman-desktop/api';
 import type { ContainerRegistry } from '../../registries/ContainerRegistry';
 import type { PodmanConnection } from '../podmanConnection';
@@ -30,13 +29,14 @@ import type { ModelsManager } from '../modelsManager';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { Messages } from '@shared/Messages';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 import type { CatalogManager } from '../catalogManager';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import { InferenceType } from '@shared/src/models/IInference';
 import { VMType } from '@shared/src/models/IPodman';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -54,9 +54,9 @@ vi.mock('@podman-desktop/api', async () => {
   };
 });
 
-const webviewMock = {
-  postMessage: vi.fn(),
-} as unknown as Webview;
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 const containerRegistryMock = {
   onStartContainerEvent: vi.fn(),
@@ -96,7 +96,7 @@ const catalogManager = {
 
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
   const manager = new InferenceManager(
-    webviewMock,
+    rpcExtensionMock,
     containerRegistryMock,
     podmanConnectionMock,
     modelsManager,
@@ -121,7 +121,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   // Default listContainers is empty
   mockListContainers([]);
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
+  vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
   vi.mocked(containerEngine.inspectContainer).mockResolvedValue({
     State: {
       Status: 'running',
@@ -148,7 +148,7 @@ beforeEach(() => {
 describe('init Inference Manager', () => {
   test('should be initialized without catalog events', async () => {
     const manager = new InferenceManager(
-      webviewMock,
+      rpcExtensionMock,
       containerRegistryMock,
       podmanConnectionMock,
       modelsManager,
@@ -585,36 +585,30 @@ describe('transition statuses', () => {
     await inferenceManager.stopInferenceServer('dummyId');
 
     // first called with stopping status
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'stopping',
-          type: expect.anything(),
-          labels: expect.anything(),
-        },
-      ],
-    });
+    expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_INFERENCE_SERVERS_UPDATE, [
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'stopping',
+        type: expect.anything(),
+        labels: expect.anything(),
+      },
+    ]);
 
     // finally have been called with status stopped
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'stopped',
-          type: expect.anything(),
-          labels: expect.anything(),
-        },
-      ],
-    });
+    expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_INFERENCE_SERVERS_UPDATE, [
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'stopped',
+        type: expect.anything(),
+        labels: expect.anything(),
+      },
+    ]);
   });
 
   test('deleting an inference server should first set status to stopping', async () => {
@@ -637,20 +631,17 @@ describe('transition statuses', () => {
     const inferenceManager = await getInitializedInferenceManager();
     await inferenceManager.deleteInferenceServer('dummyId');
 
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'deleting',
-          type: expect.anything(),
-          labels: expect.anything(),
-        },
-      ],
-    });
+    expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_INFERENCE_SERVERS_UPDATE, [
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'deleting',
+        type: expect.anything(),
+        labels: expect.anything(),
+      },
+    ]);
   });
 
   test('starting an inference server should first set status to stopping', async () => {
@@ -674,35 +665,29 @@ describe('transition statuses', () => {
     await inferenceManager.startInferenceServer('dummyId');
 
     // first status must be set to starting
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'starting',
-          type: expect.anything(),
-          labels: expect.anything(),
-        },
-      ],
-    });
+    expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_INFERENCE_SERVERS_UPDATE, [
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'starting',
+        type: expect.anything(),
+        labels: expect.anything(),
+      },
+    ]);
 
     // on success it should have been set to running
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_INFERENCE_SERVERS_UPDATE,
-      body: [
-        {
-          connection: expect.anything(),
-          container: expect.anything(),
-          models: expect.anything(),
-          health: undefined,
-          status: 'running',
-          type: expect.anything(),
-          labels: expect.anything(),
-        },
-      ],
-    });
+    expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_INFERENCE_SERVERS_UPDATE, [
+      {
+        connection: expect.anything(),
+        container: expect.anything(),
+        models: expect.anything(),
+        health: undefined,
+        status: 'running',
+        type: expect.anything(),
+        labels: expect.anything(),
+      },
+    ]);
   });
 });

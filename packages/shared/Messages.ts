@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,40 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export enum Messages {
-  MSG_NEW_CATALOG_STATE = 'new-catalog-state',
-  MSG_TASKS_UPDATE = 'tasks-update',
-  MSG_NEW_MODELS_STATE = 'new-models-state',
-  MSG_APPLICATIONS_STATE_UPDATE = 'applications-state-update',
-  MSG_LOCAL_REPOSITORY_UPDATE = 'local-repository-update',
-  MSG_INFERENCE_SERVERS_UPDATE = 'inference-servers-update',
-  MSG_MONITORING_UPDATE = 'monitoring-update',
-  MSG_SUPPORTED_LANGUAGES_UPDATE = 'supported-languages-supported',
-  MSG_CONVERSATIONS_UPDATE = 'conversations-update',
-  MSG_GPUS_UPDATE = 'gpus-update',
-  MSG_INFERENCE_PROVIDER_UPDATE = 'inference-provider-update',
-  MSG_CONFIGURATION_UPDATE = 'configuration-update',
-  MSG_PODMAN_CONNECTION_UPDATE = 'podman-connecting-update',
-  MSG_INSTRUCTLAB_SESSIONS_UPDATE = 'instructlab-sessions-update',
-  MSG_NAVIGATION_ROUTE_UPDATE = 'navigation-route-update',
-  MSG_MODEL_HANDLERS_UPDATE = 'model-handlers-update',
-}
+import type { Language } from 'postman-code-generators';
+import { createRpcChannel } from './src/messages/MessageProxy';
+import type { Task } from './src/models/ITask';
+import type { ModelInfo } from './src/models/IModelInfo';
+import type { ContainerProviderConnectionInfo } from './src/models/IContainerConnectionInfo';
+import type { InferenceServer } from './src/models/IInference';
+import type { InstructlabSession } from './src/models/instructlab/IInstructlabSession';
+import type { LocalRepository } from './src/models/ILocalRepository';
+import type { Conversation } from './src/models/IPlaygroundMessage';
+import type { ExtensionConfiguration } from './src/models/IExtensionConfiguration';
+import type { ApplicationCatalog } from './src/models/IApplicationCatalog';
+import type { ApplicationState } from './src/models/IApplicationState';
+import type { IGPUInfo } from './src/models/IGPUInfo';
+import type { StatsHistory } from '../backend/src/managers/monitoringManager';
+
+
+export const MSG_TASKS_UPDATE = createRpcChannel<Task[]>('tasks-update');
+export const MSG_SUPPORTED_LANGUAGES_UPDATE = createRpcChannel<Language[]>('supported-languages-supported');
+export const MSG_NEW_MODELS_STATE = createRpcChannel<ModelInfo[]>('new-models-state');
+export const MSG_PODMAN_CONNECTION_UPDATE =
+  createRpcChannel<ContainerProviderConnectionInfo[]>('podman-connecting-update');
+export const MSG_INFERENCE_SERVERS_UPDATE = createRpcChannel<InferenceServer[]>('inference-servers-update');
+export const MSG_INSTRUCTLAB_SESSIONS_UPDATE = createRpcChannel<InstructlabSession[]>('instructlab-sessions-update');
+export const MSG_LOCAL_REPOSITORY_UPDATE = createRpcChannel<LocalRepository[]>('local-repository-update');
+export const MSG_CONVERSATIONS_UPDATE = createRpcChannel<Conversation[]>('conversations-update');
+export const   MSG_CONFIGURATION_UPDATE = createRpcChannel<ExtensionConfiguration>('configuration-update');
+export const MSG_NEW_CATALOG_STATE = createRpcChannel<ApplicationCatalog>('new-catalog-state');
+export const MSG_APPLICATIONS_STATE_UPDATE = createRpcChannel<ApplicationState[]>('applications-state-update');
+export const   MSG_GPUS_UPDATE = createRpcChannel<IGPUInfo[]>('gpus-update');
+export const   MSG_MONITORING_UPDATE = createRpcChannel<StatsHistory[]>('monitoring-update');
+export const   MSG_NAVIGATION_ROUTE_UPDATE = createRpcChannel<string>('navigation-route-update');
+
+
+// array of model handler names
+export const MSG_MODEL_HANDLERS_UPDATE = createRpcChannel<string[]>('model-handlers-update');
+// array of provider names
+export const MSG_INFERENCE_PROVIDER_UPDATE = createRpcChannel<string[]>('inference-provider-update');

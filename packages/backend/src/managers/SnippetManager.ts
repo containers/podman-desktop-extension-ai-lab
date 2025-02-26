@@ -15,15 +15,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Disposable, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { Disposable, TelemetryLogger } from '@podman-desktop/api';
 import { getLanguageList, convert, type Language } from 'postman-code-generators';
 import { Request } from 'postman-collection';
 import { Publisher } from '../utils/Publisher';
-import { Messages } from '@shared/Messages';
 import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import { quarkusLangchain4Jgenerator } from './snippets/quarkus-snippet';
 import { javaOkHttpGenerator } from './snippets/java-okhttp-snippet';
 import { pythonLangChainGenerator } from './snippets/python-langchain-snippet';
+import { MSG_SUPPORTED_LANGUAGES_UPDATE } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 type Generator = (requestOptions: RequestOptions) => Promise<string>;
 
@@ -32,10 +33,10 @@ export class SnippetManager extends Publisher<Language[]> implements Disposable 
   #additionalGenerators: Map<string, Generator>;
 
   constructor(
-    webview: Webview,
+    rpcExtension: RpcExtension,
     private telemetry: TelemetryLogger,
   ) {
-    super(webview, Messages.MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
+    super(rpcExtension, MSG_SUPPORTED_LANGUAGES_UPDATE, () => this.getLanguageList());
 
     this.#languages = [];
     this.#additionalGenerators = new Map<string, Generator>();

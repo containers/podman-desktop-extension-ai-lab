@@ -16,13 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { LocalRepository } from '@shared/src/models/ILocalRepository';
-import { Messages } from '@shared/Messages';
-import { type Webview, Disposable } from '@podman-desktop/api';
+import { Disposable } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { CatalogManager } from '../managers/catalogManager';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
 
 /**
  * The LocalRepositoryRegistry is responsible for keeping track of the directories where recipe are cloned
@@ -33,11 +34,11 @@ export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> implem
   #catalogEventDisposable: Disposable | undefined;
 
   constructor(
-    webview: Webview,
+    rpcExtension: RpcExtension,
     private appUserDirectory: string,
     private catalogManager: CatalogManager,
   ) {
-    super(webview, Messages.MSG_LOCAL_REPOSITORY_UPDATE, () => this.getLocalRepositories());
+    super(rpcExtension, MSG_LOCAL_REPOSITORY_UPDATE, () => this.getLocalRepositories());
   }
 
   dispose(): void {

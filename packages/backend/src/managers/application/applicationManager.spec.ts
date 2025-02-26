@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import type { ContainerProviderConnection, PodInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { ContainerProviderConnection, PodInfo, TelemetryLogger } from '@podman-desktop/api';
 import { containerEngine, window } from '@podman-desktop/api';
 import type { PodmanConnection } from '../podmanConnection';
 import type { CatalogManager } from '../catalogManager';
@@ -30,6 +30,7 @@ import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { VMType } from '@shared/src/models/IPodman';
 import { POD_LABEL_MODEL_ID, POD_LABEL_RECIPE_ID } from '../../utils/RecipeConstants';
 import type { InferenceServer } from '@shared/src/models/IInference';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 const taskRegistryMock = {
   createTask: vi.fn(),
@@ -37,9 +38,9 @@ const taskRegistryMock = {
   deleteByLabels: vi.fn(),
 } as unknown as TaskRegistry;
 
-const webviewMock = {
-  postMessage: vi.fn(),
-} as unknown as Webview;
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 const podmanConnectionMock = {
   onPodmanConnectionEvent: vi.fn(),
@@ -126,7 +127,7 @@ const connectionMock: ContainerProviderConnection = {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
+  vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
   vi.mocked(recipeManager.buildRecipe).mockResolvedValue({ images: [recipeImageInfoMock] });
   vi.mocked(podManager.createPod).mockResolvedValue({ engineId: 'test-engine-id', Id: 'test-pod-id' });
   vi.mocked(podManager.getPod).mockResolvedValue({ engineId: 'test-engine-id', Id: 'test-pod-id' } as PodInfo);
@@ -143,7 +144,7 @@ beforeEach(() => {
 function getInitializedApplicationManager(): ApplicationManager {
   const manager = new ApplicationManager(
     taskRegistryMock,
-    webviewMock,
+    rpcExtensionMock,
     podmanConnectionMock,
     catalogManagerMock,
     modelsManagerMock,

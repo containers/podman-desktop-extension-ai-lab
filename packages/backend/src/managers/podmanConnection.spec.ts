@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,17 @@ import type {
   RunResult,
   UnregisterContainerConnectionEvent,
   UpdateContainerConnectionEvent,
-  Webview,
 } from '@podman-desktop/api';
 import { containerEngine, extensions, process, provider, EventEmitter, env } from '@podman-desktop/api';
 import { VMType } from '@shared/src/models/IPodman';
-import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import { getPodmanCli, getPodmanMachineName } from '../utils/podman';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_PODMAN_CONNECTION_UPDATE } from '@shared/Messages';
 
-const webviewMock = {
-  postMessage: vi.fn(),
-} as unknown as Webview;
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -77,7 +77,7 @@ vi.mock('../utils/podman', () => {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
+  vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
   vi.mocked(provider.getContainerConnections).mockReturnValue([]);
   vi.mocked(getPodmanCli).mockReturnValue('podman-executable');
   vi.mocked(getPodmanMachineName).mockImplementation(connection => connection.name);
@@ -109,14 +109,14 @@ const providerContainerConnectionMock: ProviderContainerConnection = {
 describe('execute', () => {
   test('execute should get the podman extension from api', async () => {
     vi.mocked(extensions.getExtension).mockReturnValue(undefined);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await manager.execute(providerContainerConnectionMock.connection, ['ls']);
     expect(extensions.getExtension).toHaveBeenCalledWith('podman-desktop.podman');
   });
 
   test('execute should call getPodmanCli if extension not available', async () => {
     vi.mocked(extensions.getExtension).mockReturnValue(undefined);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await manager.execute(providerContainerConnectionMock.connection, ['ls']);
 
     expect(getPodmanCli).toHaveBeenCalledOnce();
@@ -125,7 +125,7 @@ describe('execute', () => {
 
   test('options should be propagated to process execution when provided', async () => {
     vi.mocked(extensions.getExtension).mockReturnValue(undefined);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await manager.execute(providerContainerConnectionMock.connection, ['ls'], {
       isAdmin: true,
     });
@@ -142,7 +142,7 @@ describe('execute', () => {
       exec: vi.fn(),
     };
     vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await manager.execute(providerContainerConnectionMock.connection, ['ls']);
 
     expect(getPodmanCli).not.toHaveBeenCalledOnce();
@@ -157,7 +157,7 @@ describe('execute', () => {
       exec: vi.fn(),
     };
     vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
 
     await expect(async () => {
       await manager.execute(providerContainerConnectionMock.connection, ['ls'], {
@@ -172,7 +172,7 @@ describe('execute', () => {
       exec: vi.fn(),
     };
     vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await manager.execute(providerContainerConnectionMock.connection, ['ls'], {
       isAdmin: true,
     });
@@ -188,7 +188,7 @@ describe('execute', () => {
 describe('executeSSH', () => {
   test('executeSSH should call getPodmanCli if extension not available', async () => {
     vi.mocked(extensions.getExtension).mockReturnValue(undefined);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await manager.executeSSH(providerContainerConnectionMock.connection, ['ls']);
 
     expect(getPodmanCli).toHaveBeenCalledOnce();
@@ -205,7 +205,7 @@ describe('executeSSH', () => {
       exec: vi.fn(),
     };
     vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await manager.executeSSH(providerContainerConnectionMock.connection, ['ls']);
 
     expect(getPodmanCli).not.toHaveBeenCalledOnce();
@@ -223,7 +223,7 @@ describe('executeSSH', () => {
       exec: vi.fn(),
     };
     vi.mocked(extensions.getExtension).mockReturnValue({ exports: podmanAPI } as unknown as Extension<unknown>);
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await manager.executeSSH(providerContainerConnectionMock.connection, ['ls'], {
       isAdmin: true,
     });
@@ -241,17 +241,14 @@ describe('executeSSH', () => {
 
 describe('podman connection initialization', () => {
   test('init should notify publisher', () => {
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     manager.init();
 
-    expect(webviewMock.postMessage).toHaveBeenCalledWith({
-      id: Messages.MSG_PODMAN_CONNECTION_UPDATE,
-      body: [],
-    });
+    expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_PODMAN_CONNECTION_UPDATE, []);
   });
 
   test('init should register all provider events', () => {
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     manager.init();
 
     expect(provider.onDidUnregisterContainerConnection).toHaveBeenCalledWith(expect.any(Function));
@@ -275,7 +272,7 @@ describe('podman connection initialization', () => {
     };
     vi.mocked(provider.getContainerConnections).mockReturnValue([providerContainerConnection]);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     manager.init();
 
     expect(manager.getContainerProviderConnectionInfo()).toStrictEqual([
@@ -347,7 +344,7 @@ async function getListeners(): Promise<{
     });
   });
 
-  const manager = new PodmanConnection(webviewMock);
+  const manager = new PodmanConnection(rpcExtensionMock);
   manager.init();
 
   return {
@@ -368,10 +365,7 @@ describe('container connection event', () => {
 
     // ensure the webview has been notified
     await vi.waitFor(() => {
-      expect(webviewMock.postMessage).toHaveBeenCalledWith({
-        id: Messages.MSG_PODMAN_CONNECTION_UPDATE,
-        body: [],
-      });
+      expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_PODMAN_CONNECTION_UPDATE, []);
     });
   });
 
@@ -408,18 +402,15 @@ describe('container connection event', () => {
 
     // ensure the webview has been notified
     await vi.waitFor(() => {
-      expect(webviewMock.postMessage).toHaveBeenCalledWith({
-        id: Messages.MSG_PODMAN_CONNECTION_UPDATE,
-        body: [
-          {
-            providerId: 'podman',
-            name: 'Podman Machine',
-            status: 'started',
-            type: 'podman',
-            vmType: VMType.UNKNOWN,
-          },
-        ],
-      });
+      expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_PODMAN_CONNECTION_UPDATE, [
+        {
+          providerId: 'podman',
+          name: 'Podman Machine',
+          status: 'started',
+          type: 'podman',
+          vmType: VMType.UNKNOWN,
+        },
+      ]);
     });
 
     // ensure it has properly been added
@@ -459,10 +450,7 @@ describe('container connection event', () => {
 
     // ensure the webview has been notified
     await vi.waitFor(() => {
-      expect(webviewMock.postMessage).toHaveBeenCalledWith({
-        id: Messages.MSG_PODMAN_CONNECTION_UPDATE,
-        body: [],
-      });
+      expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_PODMAN_CONNECTION_UPDATE, []);
     });
   });
 
@@ -485,10 +473,7 @@ describe('container connection event', () => {
 
     // ensure the webview has been notified
     await vi.waitFor(() => {
-      expect(webviewMock.postMessage).toHaveBeenCalledWith({
-        id: Messages.MSG_PODMAN_CONNECTION_UPDATE,
-        body: [],
-      });
+      expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_PODMAN_CONNECTION_UPDATE, []);
     });
   });
 });
@@ -499,7 +484,7 @@ describe('getVMType', () => {
       stdout: '[]',
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await expect(() => manager.getVMType('machine')).rejects.toThrowError(
       'podman machine list provided an empty array',
     );
@@ -510,7 +495,7 @@ describe('getVMType', () => {
       stdout: '[]',
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     expect(await manager.getVMType()).toBe(VMType.UNKNOWN);
   });
 
@@ -519,7 +504,7 @@ describe('getVMType', () => {
       stdout: '{}',
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await expect(() => manager.getVMType()).rejects.toThrowError('podman machine list provided a malformed response');
   });
 
@@ -528,7 +513,7 @@ describe('getVMType', () => {
       stdout: '[{}, {}]',
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await expect(() => manager.getVMType()).rejects.toThrowError(
       'name need to be provided when more than one podman machine is configured.',
     );
@@ -548,7 +533,7 @@ describe('getVMType', () => {
       ]),
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     expect(await manager.getVMType('machine-2')).toBe(VMType.APPLEHV);
   });
 
@@ -564,7 +549,7 @@ describe('getVMType', () => {
       ]),
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     await expect(() => manager.getVMType('potatoes')).rejects.toThrowError(
       'cannot find matching podman machine with name potatoes',
     );
@@ -580,7 +565,7 @@ describe('getVMType', () => {
       ]),
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     expect(await manager.getVMType()).toBe(VMType.WSL);
   });
 
@@ -594,7 +579,7 @@ describe('getVMType', () => {
       ]),
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     expect(await manager.getVMType()).toBe(VMType.UNKNOWN);
   });
 
@@ -607,7 +592,7 @@ describe('getVMType', () => {
       ]),
     } as unknown as RunResult);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     expect(await manager.getVMType()).toBe(vmtype);
   });
 });
@@ -622,7 +607,7 @@ const modelMock: ModelInfo & { memory: number } = {
 
 describe('checkContainerConnectionStatusAndResources', () => {
   test('return native on Linux', async () => {
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     vi.mocked(env).isLinux = true;
 
     const result = await manager.checkContainerConnectionStatusAndResources({
@@ -636,7 +621,7 @@ describe('checkContainerConnectionStatusAndResources', () => {
   });
 
   test('return noMachineInfo if there is no running podman connection', async () => {
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     vi.mocked(env).isLinux = false;
 
     const result = await manager.checkContainerConnectionStatusAndResources({
@@ -650,7 +635,7 @@ describe('checkContainerConnectionStatusAndResources', () => {
   });
 
   test('return noMachineInfo if we are not able to retrieve any info about the podman connection', async () => {
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     vi.mocked(env).isLinux = false;
 
     vi.mocked(containerEngine.listInfos).mockResolvedValue([]);
@@ -665,7 +650,7 @@ describe('checkContainerConnectionStatusAndResources', () => {
   });
 
   test('return lowResourceMachineInfo if the podman connection has not enough cpus', async () => {
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     vi.mocked(env).isLinux = false;
 
     vi.mocked(provider.getContainerConnections).mockReturnValue([
@@ -712,7 +697,7 @@ describe('checkContainerConnectionStatusAndResources', () => {
   });
 
   test('return runningMachineInfo if the podman connection has enough resources', async () => {
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     vi.mocked(env).isLinux = false;
 
     vi.mocked(provider.getContainerConnections).mockReturnValue([
@@ -758,7 +743,7 @@ describe('getConnectionByEngineId', () => {
   test('no provider should raise an error', async () => {
     vi.mocked(provider.getContainerConnections).mockReturnValue([]);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     manager.init();
 
     await expect(() => manager.getConnectionByEngineId('fake engine')).rejects.toThrowError('connection not found');
@@ -783,7 +768,7 @@ describe('getConnectionByEngineId', () => {
 
     vi.mocked(containerEngine.listInfos).mockResolvedValue([]);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     manager.init();
 
     await expect(() => manager.getConnectionByEngineId('fake engine')).rejects.toThrowError('connection not found');
@@ -817,7 +802,7 @@ describe('getConnectionByEngineId', () => {
       },
     ]);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     manager.init();
 
     await expect(() => manager.getConnectionByEngineId('fake engine')).rejects.toThrowError('connection not found');
@@ -852,7 +837,7 @@ describe('getConnectionByEngineId', () => {
       },
     ]);
 
-    const manager = new PodmanConnection(webviewMock);
+    const manager = new PodmanConnection(rpcExtensionMock);
     manager.init();
 
     const connection = await manager.getConnectionByEngineId('engineId');

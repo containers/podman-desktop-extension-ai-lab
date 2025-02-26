@@ -66,3 +66,4 @@ jobs:
       trigger-workflow-commit-sha: ${{ needs.extract-context.outputs.commit-sha }}
       trigger-workflow-base-repo: ${{ needs.extract-context.outputs.base-repo }}
       ext_tests_options: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=0'
+    secrets: inherit

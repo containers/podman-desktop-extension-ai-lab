@@ -181,7 +181,7 @@ function handleOnClick(): void {
 </script>
 
 {#if conversation}
-  <div class="overflow-auto">
+  <div class="overflow-auto h-full">
     <DetailsPage
       title={conversation?.name}
       breadcrumbLeftPart="Playgrounds"

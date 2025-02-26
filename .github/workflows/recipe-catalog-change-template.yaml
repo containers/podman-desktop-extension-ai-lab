@@ -61,7 +61,7 @@ jobs:
       fail-fast: false
       matrix:
         windows-version: ['11']
-        windows-featurepack: ['23h2-ent']
+        windows-featurepack: ['24h2-ent']
 
     steps:
     - name: Add PR check status

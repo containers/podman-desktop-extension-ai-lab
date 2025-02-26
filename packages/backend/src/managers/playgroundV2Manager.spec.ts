@@ -19,23 +19,24 @@
 import { expect, test, vi, beforeEach, afterEach, describe } from 'vitest';
 import OpenAI from 'openai';
 import { PlaygroundV2Manager } from './playgroundV2Manager';
-import type { TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { TelemetryLogger } from '@podman-desktop/api';
 import type { InferenceServer } from '@shared/src/models/IInference';
 import type { InferenceManager } from './inference/inferenceManager';
-import { Messages } from '@shared/Messages';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task, TaskState } from '@shared/src/models/ITask';
 import type { ChatMessage, ErrorMessage } from '@shared/src/models/IPlaygroundMessage';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
 
 vi.mock('openai', () => ({
   default: vi.fn(),
 }));
 
-const webviewMock = {
-  postMessage: vi.fn(),
-} as unknown as Webview;
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 const inferenceManagerMock = {
   get: vi.fn(),
@@ -62,7 +63,7 @@ const cancellationTokenRegistryMock = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(webviewMock.postMessage).mockResolvedValue(true);
+  vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
   vi.useFakeTimers();
 });
 
@@ -72,7 +73,7 @@ afterEach(() => {
 
 test('manager should be properly initialized', () => {
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -93,7 +94,7 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -132,7 +133,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -163,7 +164,7 @@ test('create playground should create conversation.', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -206,7 +207,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -245,10 +246,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     timestamp: expect.any(Number),
   });
 
-  expect(webviewMock.postMessage).toHaveBeenLastCalledWith({
-    id: Messages.MSG_CONVERSATIONS_UPDATE,
-    body: conversations,
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenLastCalledWith(MSG_CONVERSATIONS_UPDATE, conversations);
 });
 
 test('submit should send options', async () => {
@@ -283,7 +281,7 @@ test('submit should send options', async () => {
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -364,7 +362,7 @@ test('error', async () => {
   } as unknown as OpenAI);
 
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -400,16 +398,13 @@ test('error', async () => {
     timestamp: expect.any(Number),
   });
 
-  expect(webviewMock.postMessage).toHaveBeenLastCalledWith({
-    id: Messages.MSG_CONVERSATIONS_UPDATE,
-    body: conversations,
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenLastCalledWith(MSG_CONVERSATIONS_UPDATE, conversations);
 });
 
 test('creating a new playground should send new playground to frontend', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -423,23 +418,20 @@ test('creating a new playground should send new playground to frontend', async (
     } as unknown as ModelInfo,
     'tracking-1',
   );
-  expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_CONVERSATIONS_UPDATE,
-    body: [
-      {
-        id: expect.anything(),
-        modelId: 'model-1',
-        name: 'a name',
-        messages: [],
-      },
-    ],
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_CONVERSATIONS_UPDATE, [
+    {
+      id: expect.anything(),
+      modelId: 'model-1',
+      name: 'a name',
+      messages: [],
+    },
+  ]);
 });
 
 test('creating a new playground with no name should send new playground to frontend with generated name', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -453,24 +445,21 @@ test('creating a new playground with no name should send new playground to front
     } as unknown as ModelInfo,
     'tracking-1',
   );
-  expect(webviewMock.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_CONVERSATIONS_UPDATE,
-    body: [
-      {
-        id: expect.anything(),
-        modelId: 'model-1',
-        name: 'playground 1',
-        messages: [],
-      },
-    ],
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_CONVERSATIONS_UPDATE, [
+    {
+      id: expect.anything(),
+      modelId: 'model-1',
+      name: 'playground 1',
+      messages: [],
+    },
+  ]);
 });
 
 test('creating a new playground with no model served should start an inference server', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -514,7 +503,7 @@ test('creating a new playground with the model already served should not start a
   ] as InferenceServer[]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -548,7 +537,7 @@ test('creating a new playground with the model server stopped should start the i
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const startInferenceServerMock = vi.mocked(inferenceManagerMock.startInferenceServer);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -570,7 +559,7 @@ test('delete conversation should delete the conversation', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
 
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -590,13 +579,13 @@ test('delete conversation should delete the conversation', async () => {
   expect(conversations.length).toBe(1);
   manager.deleteConversation(conversations[0].id);
   expect(manager.getConversations().length).toBe(0);
-  expect(webviewMock.postMessage).toHaveBeenCalled();
+  expect(rpcExtensionMock.fire).toHaveBeenCalled();
 });
 
 test('creating a new playground with an existing name should fail', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -625,7 +614,7 @@ test('creating a new playground with an existing name should fail', async () => 
 test('requestCreatePlayground should call createPlayground and createTask, then updateTask', async () => {
   vi.useRealTimers();
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -659,7 +648,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
 test('requestCreatePlayground should call createPlayground and createTask, then updateTask when createPlayground fails', async () => {
   vi.useRealTimers();
   const manager = new PlaygroundV2Manager(
-    webviewMock,
+    rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
     telemetryMock,
@@ -713,7 +702,7 @@ describe('system prompt', () => {
       } as unknown as InferenceServer,
     ]);
     const manager = new PlaygroundV2Manager(
-      webviewMock,
+      rpcExtensionMock,
       inferenceManagerMock,
       taskRegistryMock,
       telemetryMock,
@@ -755,7 +744,7 @@ describe('system prompt', () => {
     } as unknown as OpenAI);
 
     const manager = new PlaygroundV2Manager(
-      webviewMock,
+      rpcExtensionMock,
       inferenceManagerMock,
       taskRegistryMock,
       telemetryMock,

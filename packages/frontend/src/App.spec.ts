@@ -22,7 +22,7 @@ import { render } from '@testing-library/svelte';
 import App from '/@/App.svelte';
 import { getRouterState, rpcBrowser } from '/@/utils/client';
 import { configuration } from '/@/stores/extensionConfiguration';
-import { Messages } from '@shared/Messages';
+import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 
 vi.mock('tinro', () => ({
   router: {
@@ -72,6 +72,6 @@ test('should subscribe to navigation update route on mount', async () => {
   render(App, {});
 
   await vi.waitFor(() => {
-    expect(rpcBrowser.subscribe).toHaveBeenCalledWith(Messages.MSG_NAVIGATION_ROUTE_UPDATE, expect.any(Function));
+    expect(rpcBrowser.subscribe).toHaveBeenCalledWith(MSG_NAVIGATION_ROUTE_UPDATE, expect.any(Function));
   });
 });

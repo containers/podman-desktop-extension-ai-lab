@@ -15,13 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { MSG_PODMAN_CONNECTION_UPDATE } from '@shared/Messages';
 import { RPCReadable } from '/@/stores/rpcReadable';
-import { Messages } from '@shared/Messages';
 import { studioClient } from '/@/utils/client';
 import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
 
 export const containerProviderConnections = RPCReadable<ContainerProviderConnectionInfo[]>(
   [],
-  [Messages.MSG_PODMAN_CONNECTION_UPDATE],
+  MSG_PODMAN_CONNECTION_UPDATE,
   studioClient.getContainerProviderConnection,
 );

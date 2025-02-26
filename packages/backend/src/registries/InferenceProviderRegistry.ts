@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@
  ***********************************************************************/
 import { Publisher } from '../utils/Publisher';
 import type { InferenceProvider } from '../workers/provider/InferenceProvider';
-import { Disposable, type Webview } from '@podman-desktop/api';
-import { Messages } from '@shared/Messages';
+import { Disposable } from '@podman-desktop/api';
+import { MSG_INFERENCE_PROVIDER_UPDATE } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 import type { InferenceType } from '@shared/src/models/IInference';
 
 export class InferenceProviderRegistry extends Publisher<string[]> {
   #providers: Map<string, InferenceProvider>;
-  constructor(webview: Webview) {
-    super(webview, Messages.MSG_INFERENCE_PROVIDER_UPDATE, () => this.getAll().map(provider => provider.name));
+  constructor(rpcExtension: RpcExtension) {
+    super(rpcExtension, MSG_INFERENCE_PROVIDER_UPDATE, () => this.getAll().map(provider => provider.name));
     this.#providers = new Map();
   }
 

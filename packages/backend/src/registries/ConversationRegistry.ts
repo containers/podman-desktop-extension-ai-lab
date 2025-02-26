@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,16 @@ import type {
   ModelUsage,
   PendingChat,
 } from '@shared/src/models/IPlaygroundMessage';
-import type { Disposable, Webview } from '@podman-desktop/api';
-import { Messages } from '@shared/Messages';
+import type { Disposable } from '@podman-desktop/api';
+import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export class ConversationRegistry extends Publisher<Conversation[]> implements Disposable {
   #conversations: Map<string, Conversation>;
   #counter: number;
 
-  constructor(webview: Webview) {
-    super(webview, Messages.MSG_CONVERSATIONS_UPDATE, () => this.getAll());
+  constructor(rpcExtension: RpcExtension) {
+    super(rpcExtension, MSG_CONVERSATIONS_UPDATE, () => this.getAll());
     this.#conversations = new Map<string, Conversation>();
     this.#counter = 0;
   }

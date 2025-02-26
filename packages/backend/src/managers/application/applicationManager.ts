@@ -23,7 +23,6 @@ import type {
   PodCreatePortOptions,
   TelemetryLogger,
   PodInfo,
-  Webview,
   HostConfig,
   HealthConfig,
   PodContainerInfo,
@@ -35,7 +34,7 @@ import { getPortsFromLabel, getPortsInfo } from '../../utils/ports';
 import { getDurationSecondsSince, timeout } from '../../utils/utils';
 import type { ApplicationState } from '@shared/src/models/IApplicationState';
 import type { PodmanConnection } from '../podmanConnection';
-import { Messages } from '@shared/Messages';
+import { MSG_APPLICATIONS_STATE_UPDATE } from '@shared/Messages';
 import type { CatalogManager } from '../catalogManager';
 import { ApplicationRegistry } from '../../registries/ApplicationRegistry';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
@@ -53,6 +52,7 @@ import {
 } from '../../utils/RecipeConstants';
 import { VMType } from '@shared/src/models/IPodman';
 import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
   #applications: ApplicationRegistry<ApplicationState>;
@@ -61,7 +61,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
   constructor(
     private taskRegistry: TaskRegistry,
-    webview: Webview,
+    rpcExtension: RpcExtension,
     private podmanConnection: PodmanConnection,
     private catalogManager: CatalogManager,
     private modelsManager: ModelsManager,
@@ -69,7 +69,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     private podManager: PodManager,
     private recipeManager: RecipeManager,
   ) {
-    super(webview, Messages.MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
+    super(rpcExtension, MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
     this.#disposables = [];
   }

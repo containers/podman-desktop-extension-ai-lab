@@ -57,7 +57,8 @@ beforeEach(() => {
 });
 
 test('check updater is called once at subscription', async () => {
-  const rpcWritable = RPCReadable<string[]>([], [], async () => {
+  const rpcChannel = createRpcChannel<string[]>('event1');
+  const rpcWritable = RPCReadable<string[]>([], rpcChannel, async () => {
     await studioClient.getModelsInfo();
     return Promise.resolve(['']);
   });
@@ -66,12 +67,14 @@ test('check updater is called once at subscription', async () => {
 });
 
 test('check updater is called twice if there is one event fired', async () => {
-  const channel = createRpcChannel<Update>('event');
+  const channelModel = createRpcChannel<string[]>('event2');
+  const channel = createRpcChannel<Update>('event2');
   type Update = {
     event: () => Promise<string[]>;
   };
 
-  const rpcWritable = RPCReadable<string[]>([], ['event'], () => {
+  const rpcWritable = RPCReadable<string[]>([], channelModel, () => {
+    console.log('being called');
     studioClient.getModelsInfo().catch((err: unknown) => console.error(err));
     return Promise.resolve(['']);
   });
@@ -87,17 +90,19 @@ test('check updater is called twice if there is one event fired', async () => {
 });
 
 test('check updater is called only twice because of the debouncer if there is more than one event in a row', async () => {
-  const channel = createRpcChannel<Event2>('event2');
-  type Event2 = {
+  const channelModel = createRpcChannel<ModelInfo[]>('event3');
+  const channel = createRpcChannel<Update>('event3');
+  type Update = {
     event: () => Promise<string[]>;
   };
-  const rpcWritable = RPCReadable<ModelInfo[]>([], ['event2'], () => {
+
+  const rpcWritable = RPCReadable<ModelInfo[]>([], channelModel, () => {
     return studioClient.getModelsInfo();
   });
   rpcWritable.subscribe(_ => {});
 
   // get proxy
-  const proxy = rpcBrowser.getProxy<Event2>(channel);
+  const proxy = rpcBrowser.getProxy<Update>(channel);
 
   proxy.event().catch((err: unknown) => console.error(err));
   proxy.event().catch((err: unknown) => console.error(err));

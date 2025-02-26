@@ -213,12 +213,17 @@ describe('subscribe', () => {
     const rpcBrowser = new RpcBrowser(window, api);
     const messageListener = getMessageListener();
 
+    interface EventTest {
+      foo: string;
+    }
+    const rpcChannel = createRpcChannel<EventTest>('example');
+
     const listener = vi.fn();
-    rpcBrowser.subscribe('example', listener);
+    rpcBrowser.subscribe<EventTest>(rpcChannel, listener);
 
     messageListener({
       data: {
-        id: 'example',
+        id: rpcChannel.name,
         body: 'hello',
       },
     } as unknown as MessageEvent);
@@ -232,11 +237,15 @@ describe('subscribe', () => {
 
     const listeners = Array.from({ length: 10 }, _ => vi.fn());
 
-    listeners.forEach(listener => rpcBrowser.subscribe('example', listener));
+    interface EventTest {
+      foo: string;
+    }
+    const rpcChannel = createRpcChannel<EventTest>('example');
+    listeners.forEach(listener => rpcBrowser.subscribe(rpcChannel, listener));
 
     messageListener({
       data: {
-        id: 'example',
+        id: rpcChannel.name,
         body: 'hello',
       },
     } as unknown as MessageEvent);
@@ -252,12 +261,17 @@ describe('subscribe', () => {
 
     const [listenerA, listenerB] = [vi.fn(), vi.fn()];
 
-    const unsubscriberA = rpcBrowser.subscribe('example', listenerA);
-    const unsubscriberB = rpcBrowser.subscribe('example', listenerB);
+    interface EventTest {
+      foo: string;
+    }
+    const rpcChannel = createRpcChannel<EventTest>('example');
+
+    const unsubscriberA = rpcBrowser.subscribe(rpcChannel, listenerA);
+    const unsubscriberB = rpcBrowser.subscribe(rpcChannel, listenerB);
 
     messageListener({
       data: {
-        id: 'example',
+        id: rpcChannel.name,
         body: 'hello',
       },
     } as unknown as MessageEvent);
@@ -267,7 +281,7 @@ describe('subscribe', () => {
 
     messageListener({
       data: {
-        id: 'example',
+        id: rpcChannel.name,
         body: 'hello',
       },
     } as unknown as MessageEvent);
@@ -277,7 +291,7 @@ describe('subscribe', () => {
 
     messageListener({
       data: {
-        id: 'example',
+        id: rpcChannel.name,
         body: 'hello',
       },
     } as unknown as MessageEvent);

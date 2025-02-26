@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,7 @@ import content from './tests/ai-test.json';
 import type { ApplicationManager } from './managers/application/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { InferenceManager } from './managers/inference/inferenceManager';
-import type {
-  ContainerProviderConnection,
-  ProviderContainerConnection,
-  TelemetryLogger,
-  Webview,
-} from '@podman-desktop/api';
+import type { ContainerProviderConnection, ProviderContainerConnection, TelemetryLogger } from '@podman-desktop/api';
 import { window, EventEmitter, navigation } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 import type { ModelsManager } from './managers/modelsManager';
@@ -47,6 +42,7 @@ import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
 import type { NavigationRegistry } from './registries/NavigationRegistry';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 vi.mock('./ai.json', () => {
   return {
@@ -120,9 +116,8 @@ beforeEach(async () => {
   // Creating CatalogManager
   catalogManager = new CatalogManager(
     {
-      postMessage: vi.fn().mockResolvedValue(undefined),
-      addLocalModelsToCatalog: vi.fn(),
-    } as unknown as Webview,
+      fire: vi.fn().mockResolvedValue(true),
+    } as unknown as RpcExtension,
     appUserDirectory,
   );
 
@@ -133,8 +128,8 @@ beforeEach(async () => {
 
   localRepositoryRegistry = new LocalRepositoryRegistry(
     {
-      postMessage: vi.fn().mockResolvedValue(undefined),
-    } as unknown as Webview,
+      fire: vi.fn().mockResolvedValue(true),
+    } as unknown as RpcExtension,
     appUserDirectory,
     {} as unknown as CatalogManager,
   );

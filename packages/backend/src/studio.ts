@@ -146,10 +146,17 @@ export class Studio {
     });
 
     /**
+     * The RpcExtension handle the communication channels between the frontend and the backend
+     */
+    this.#rpcExtension = new RpcExtension(this.#panel.webview);
+    this.#rpcExtension.init();
+    this.#extensionContext.subscriptions.push(this.#rpcExtension);
+
+    /**
      * The navigation registry is used
      * to register and managed the routes of the extension
      */
-    this.#navigationRegistry = new NavigationRegistry(this.#panel);
+    this.#navigationRegistry = new NavigationRegistry(this.#panel, this.#rpcExtension);
     this.#navigationRegistry.init();
     this.#extensionContext.subscriptions.push(this.#navigationRegistry);
 
@@ -162,7 +169,7 @@ export class Studio {
     /**
      * The configuration registry manage the extension preferences/settings
      */
-    this.#configurationRegistry = new ConfigurationRegistry(this.#panel.webview, appUserDirectory);
+    this.#configurationRegistry = new ConfigurationRegistry(this.#rpcExtension, appUserDirectory);
     this.#configurationRegistry?.init();
     this.#extensionContext.subscriptions.push(this.#configurationRegistry);
 
@@ -174,13 +181,6 @@ export class Studio {
     this.#extensionContext.subscriptions.push(this.#containerRegistry);
 
     /**
-     * The RpcExtension handle the communication channels between the frontend and the backend
-     */
-    this.#rpcExtension = new RpcExtension(this.#panel.webview);
-    this.#rpcExtension.init();
-    this.#extensionContext.subscriptions.push(this.#rpcExtension);
-
-    /**
      * GitManager is used for cloning, pulling etc. recipes repositories
      */
     const gitManager = new GitManager();
@@ -188,19 +188,19 @@ export class Studio {
     /**
      * The podman connection class is responsible for podman machine events (start/stop)
      */
-    this.#podmanConnection = new PodmanConnection(this.#panel.webview);
+    this.#podmanConnection = new PodmanConnection(this.#rpcExtension);
     this.#podmanConnection.init();
     this.#extensionContext.subscriptions.push(this.#podmanConnection);
 
     /**
      * The task registry store the tasks
      */
-    this.#taskRegistry = new TaskRegistry(this.#panel.webview);
+    this.#taskRegistry = new TaskRegistry(this.#rpcExtension);
 
     /**
      * Create catalog manager, responsible for loading the catalog files and watching for changes
      */
-    this.#catalogManager = new CatalogManager(this.#panel.webview, appUserDirectory);
+    this.#catalogManager = new CatalogManager(this.#rpcExtension, appUserDirectory);
     this.#catalogManager.init();
 
     /**
@@ -220,9 +220,9 @@ export class Studio {
     /**
      * The ModelManager role is to download and
      */
-    const modelHandlerRegistry = new ModelHandlerRegistry(this.#panel.webview);
+    const modelHandlerRegistry = new ModelHandlerRegistry(this.#rpcExtension);
     this.#modelsManager = new ModelsManager(
-      this.#panel.webview,
+      this.#rpcExtension,
       this.#catalogManager,
       this.#telemetry,
       this.#taskRegistry,
@@ -244,7 +244,7 @@ export class Studio {
      * The LocalRepositoryRegistry store and watch for recipes repository locally and expose it.
      */
     this.#localRepositoryRegistry = new LocalRepositoryRegistry(
-      this.#panel.webview,
+      this.#rpcExtension,
       appUserDirectory,
       this.#catalogManager,
     );
@@ -254,14 +254,14 @@ export class Studio {
     /**
      * GPUManager is a class responsible for detecting and storing the GPU specs
      */
-    this.#gpuManager = new GPUManager(this.#panel.webview);
+    this.#gpuManager = new GPUManager(this.#rpcExtension);
     this.#extensionContext.subscriptions.push(this.#gpuManager);
 
     /**
      * The Inference Provider registry stores all the InferenceProvider (aka backend) which
      * can be used to create InferenceServers
      */
-    this.#inferenceProviderRegistry = new InferenceProviderRegistry(this.#panel.webview);
+    this.#inferenceProviderRegistry = new InferenceProviderRegistry(this.#rpcExtension);
     this.#extensionContext.subscriptions.push(
       this.#inferenceProviderRegistry.register(
         new LlamaCppPython(this.#taskRegistry, this.#podmanConnection, this.#gpuManager, this.#configurationRegistry),
@@ -275,7 +275,7 @@ export class Studio {
      * The inference manager create, stop, manage Inference servers
      */
     this.#inferenceManager = new InferenceManager(
-      this.#panel.webview,
+      this.#rpcExtension,
       this.#containerRegistry,
       this.#podmanConnection,
       this.#modelsManager,
@@ -315,7 +315,7 @@ export class Studio {
      */
     this.#applicationManager = new ApplicationManager(
       this.#taskRegistry,
-      this.#panel.webview,
+      this.#rpcExtension,
       this.#podmanConnection,
       this.#catalogManager,
       this.#modelsManager,
@@ -330,7 +330,7 @@ export class Studio {
      * PlaygroundV2Manager handle the conversations of the Playground by using the InferenceServer available
      */
     this.#playgroundManager = new PlaygroundV2Manager(
-      this.#panel.webview,
+      this.#rpcExtension,
       this.#inferenceManager,
       this.#taskRegistry,
       this.#telemetry,
@@ -342,7 +342,7 @@ export class Studio {
      * The snippet manager provide code snippet used in the
      * InferenceServer details page
      */
-    this.#snippetManager = new SnippetManager(this.#panel.webview, this.#telemetry);
+    this.#snippetManager = new SnippetManager(this.#rpcExtension, this.#telemetry);
     this.#snippetManager.init();
 
     /**

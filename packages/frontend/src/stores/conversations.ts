@@ -18,14 +18,14 @@
 
 import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
-import { Messages } from '@shared/Messages';
+import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
 
 // RPCReadable cannot be used here, as it is doing some debouncing, and we want
 // to get the conversation as soon as the tokens arrive here, instead getting them by packets
 export const conversations: Readable<Conversation[]> = readable<Conversation[]>([], set => {
-  const sub = rpcBrowser.subscribe(Messages.MSG_CONVERSATIONS_UPDATE, msg => {
+  const sub = rpcBrowser.subscribe(MSG_CONVERSATIONS_UPDATE, msg => {
     set(msg);
   });
   // Initialize the store manually

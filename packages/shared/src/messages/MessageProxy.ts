@@ -112,6 +112,13 @@ export class RpcExtension implements Disposable {
     });
   }
 
+  fire<T>(channel: RpcChannel<T>, body: T): Promise<boolean> {
+    return this.webview.postMessage({
+      id: channel.name,
+      body,
+    });
+  }
+
   registerInstance<T extends Record<keyof T, UnaryRPC>, R extends T>(channel: RpcChannel<T>, instance: R): void {
     // convert the instance to an object with method names as keys
     this.#instances.set(channel.name, instance as ObjectInstance<unknown>);
@@ -122,12 +129,12 @@ export interface Subscriber {
   unsubscribe(): void;
 }
 
-export type Listener = (value: any) => void;
+export type Listener<T> = (value: T) => void;
 
 export class RpcBrowser {
   counter: number = 0;
   promises: Map<number, { resolve: (value: unknown) => unknown; reject: (value: unknown) => void }> = new Map();
-  subscribers: Map<string, Set<Listener>> = new Map();
+  subscribers: Map<string, Set<Listener<unknown>>> = new Map();
 
   getUniqueId(): number {
     return ++this.counter;
@@ -226,12 +233,15 @@ export class RpcBrowser {
     return promise;
   }
 
-  subscribe(msgId: string, f: Listener): Subscriber {
-    this.subscribers.set(msgId, (this.subscribers.get(msgId) ?? new Set()).add(f));
+  subscribe<T>(rpcChannel: RpcChannel<T>, f: Listener<T>): Subscriber {
+    this.subscribers.set(
+      rpcChannel.name,
+      (this.subscribers.get(rpcChannel.name) ?? new Set()).add(f as Listener<unknown>),
+    );
 
     return {
       unsubscribe: (): void => {
-        this.subscribers.get(msgId)?.delete(f);
+        this.subscribers.get(rpcChannel.name)?.delete(f as Listener<unknown>);
       },
     };
   }

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,15 @@ import crypto from 'node:crypto';
 import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/src/models/IRecipe';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { Messages } from '@shared/Messages';
-import { type Disposable, type Event, EventEmitter, type Webview, window } from '@podman-desktop/api';
+import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
+import { type Disposable, type Event, EventEmitter, window } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
 import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
 import { InferenceType } from '@shared/src/models/IInference';
 import { CatalogFormat, hasCatalogWrongFormat, merge, sanitize } from '../utils/catalogUtils';
 import type { FilterRecipesResult, RecipeChoices, RecipeFilters } from '@shared/src/models/FilterRecipesResult';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export const USER_CATALOG = 'user-catalog.json';
 
@@ -43,10 +44,10 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   #notification: Disposable | undefined;
 
   constructor(
-    webview: Webview,
+    rpcExtension: RpcExtension,
     private appUserDirectory: string,
   ) {
-    super(webview, Messages.MSG_NEW_CATALOG_STATE, () => this.getCatalog());
+    super(rpcExtension, MSG_NEW_CATALOG_STATE, () => this.getCatalog());
     // We start with an empty catalog, for the methods to work before the catalog is loaded
     this.catalog = {
       version: CatalogFormat.CURRENT,

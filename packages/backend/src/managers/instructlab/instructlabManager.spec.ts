@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { TaskRegistry } from '../../registries/TaskRegistry';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
-import type { ContainerCreateResult, ContainerInfo, ImageInfo, TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { ContainerCreateResult, ContainerInfo, ImageInfo, TelemetryLogger } from '@podman-desktop/api';
 import { containerEngine, EventEmitter } from '@podman-desktop/api';
 import type { PodmanConnection } from '../podmanConnection';
 import { INSTRUCTLAB_CONTAINER_LABEL, InstructlabManager } from './instructlabManager';
@@ -27,6 +27,7 @@ import { VMType } from '@shared/src/models/IPodman';
 import type { Task } from '@shared/src/models/ITask';
 import instructlab_images from '../../assets/instructlab-images.json';
 import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/src/models/instructlab/IInstructlabContainerInfo';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 vi.mock('@podman-desktop/api', () => {
   return {
@@ -40,7 +41,7 @@ vi.mock('@podman-desktop/api', () => {
   };
 });
 
-const taskRegistry = new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview);
+const taskRegistry = new TaskRegistry({ fire: vi.fn().mockResolvedValue(true) } as unknown as RpcExtension);
 
 const podmanConnection: PodmanConnection = {
   onPodmanConnectionEvent: vi.fn(),

@@ -25,7 +25,7 @@ import TuneSessions from './pages/TuneSessions.svelte';
 import { configuration } from './stores/extensionConfiguration';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
-import { Messages } from '@shared/Messages';
+import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 import LocalServer from './pages/server-information/LocalServer.svelte';
@@ -52,7 +52,7 @@ onMount(async () => {
   );
 
   unsubscribers.push(
-    rpcBrowser.subscribe(Messages.MSG_NAVIGATION_ROUTE_UPDATE, location => {
+    rpcBrowser.subscribe(MSG_NAVIGATION_ROUTE_UPDATE, location => {
       router.goto(location);
     }).unsubscribe,
   );

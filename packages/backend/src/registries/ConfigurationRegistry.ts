@@ -15,11 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { configuration, version, type Configuration, type Disposable, type Webview } from '@podman-desktop/api';
+import { configuration, version, type Configuration, type Disposable } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
-import { Messages } from '@shared/Messages';
+import { MSG_CONFIGURATION_UPDATE } from '@shared/Messages';
 import path from 'node:path';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 const CONFIGURATION_SECTIONS: string[] = [
   'models.path',
@@ -39,10 +40,10 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
   #configurationDisposable: Disposable | undefined;
 
   constructor(
-    webview: Webview,
+    rpcExtension: RpcExtension,
     private appUserDirectory: string,
   ) {
-    super(webview, Messages.MSG_CONFIGURATION_UPDATE, () => this.getExtensionConfiguration());
+    super(rpcExtension, MSG_CONFIGURATION_UPDATE, () => this.getExtensionConfiguration());
 
     this.#configuration = configuration.getConfiguration('ai-lab');
     this.#configurationPodmanDesktop = configuration.getConfiguration('preferences');

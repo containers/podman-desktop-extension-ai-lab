@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,19 @@
  ***********************************************************************/
 import { expect, test, vi } from 'vitest';
 import { Publisher } from './Publisher';
-import type { Webview } from '@podman-desktop/api';
-import { Messages } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_TASKS_UPDATE } from '@shared/Messages';
+import type { Task } from '@shared/src/models/ITask';
 
 test('ensure publisher properly use getter', async () => {
-  const postMessageMock = vi.fn().mockResolvedValue(undefined);
-  const getterMock = vi.fn().mockReturnValue('dummyValue');
-  const publisher = new Publisher<string>(
-    {
-      postMessage: postMessageMock,
-    } as unknown as Webview,
-    Messages.MSG_TASKS_UPDATE,
-    getterMock,
-  );
+  const rpcExtensionMock = { fire: vi.fn().mockResolvedValue(true) } as unknown as RpcExtension;
+  const fakeTasks = ['dummyValue'];
+  const getterMock = vi.fn().mockReturnValue(fakeTasks);
+  const publisher = new Publisher<Task[]>(rpcExtensionMock, MSG_TASKS_UPDATE, getterMock);
   publisher.notify();
 
   await vi.waitFor(() => {
-    expect(postMessageMock).toHaveBeenCalledWith({
-      id: Messages.MSG_TASKS_UPDATE,
-      body: 'dummyValue',
-    });
+    expect(rpcExtensionMock.fire).toHaveBeenCalledWith(MSG_TASKS_UPDATE, fakeTasks);
   });
   expect(getterMock).toHaveBeenCalled();
 });

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { vi, expect, test } from 'vitest';
-import { configuration, type Configuration, type Webview } from '@podman-desktop/api';
+import { configuration, type Configuration } from '@podman-desktop/api';
 import { ConfigurationRegistry } from './ConfigurationRegistry';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 const fakeConfiguration = {
   get: vi.fn(),
@@ -25,9 +26,9 @@ const fakeConfiguration = {
   update: vi.fn(),
 } as unknown as Configuration;
 
-const webviewMock = {
-  postMessage: vi.fn().mockResolvedValue(true),
-} as unknown as Webview;
+const rpcExtensionMock = {
+  fire: vi.fn().mockResolvedValue(true),
+} as unknown as RpcExtension;
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -39,7 +40,7 @@ vi.mock('@podman-desktop/api', async () => {
 });
 
 test('init should init listener', () => {
-  const registry = new ConfigurationRegistry(webviewMock, 'appdir');
+  const registry = new ConfigurationRegistry(rpcExtensionMock, 'appdir');
   vi.mocked(fakeConfiguration.has).mockReturnValue(true);
 
   registry.init();
@@ -47,7 +48,7 @@ test('init should init listener', () => {
 });
 
 test('dispose should dispose listener', () => {
-  const registry = new ConfigurationRegistry(webviewMock, 'appdir');
+  const registry = new ConfigurationRegistry(rpcExtensionMock, 'appdir');
   vi.mocked(fakeConfiguration.has).mockReturnValue(true);
 
   const disposeMock = vi.fn();
@@ -61,7 +62,7 @@ test('dispose should dispose listener', () => {
 });
 
 test('update should trigger configuration update', async () => {
-  const registry = new ConfigurationRegistry(webviewMock, 'appdir');
+  const registry = new ConfigurationRegistry(rpcExtensionMock, 'appdir');
   vi.mocked(fakeConfiguration.has).mockReturnValue(true);
   vi.mocked(fakeConfiguration.update).mockResolvedValue(undefined);
 

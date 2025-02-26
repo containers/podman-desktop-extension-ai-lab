@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import type {
   Event,
   RegisterContainerConnectionEvent,
   UpdateContainerConnectionEvent,
-  Webview,
   RunResult,
   RunOptions,
   ProviderContainerConnection,
@@ -36,7 +35,8 @@ import type {
   ContainerConnectionInfo,
   ContainerProviderConnectionInfo,
 } from '@shared/src/models/IContainerConnectionInfo';
-import { Messages } from '@shared/Messages';
+import { MSG_PODMAN_CONNECTION_UPDATE } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
 export interface PodmanConnectionEvent {
   status: 'stopped' | 'started' | 'unregister' | 'register';
@@ -54,8 +54,8 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
   private readonly _onPodmanConnectionEvent = new EventEmitter<PodmanConnectionEvent>();
   readonly onPodmanConnectionEvent: Event<PodmanConnectionEvent> = this._onPodmanConnectionEvent.event;
 
-  constructor(webview: Webview) {
-    super(webview, Messages.MSG_PODMAN_CONNECTION_UPDATE, () => this.getContainerProviderConnectionInfo());
+  constructor(rpcExtension: RpcExtension) {
+    super(rpcExtension, MSG_PODMAN_CONNECTION_UPDATE, () => this.getContainerProviderConnectionInfo());
     this.#providers = new Map();
     this.#disposables = [];
   }

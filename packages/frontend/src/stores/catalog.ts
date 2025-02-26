@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
-import { Messages } from '@shared/Messages';
+import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 
@@ -29,7 +29,7 @@ const emptyCatalog = {
 };
 
 export const catalog: Readable<ApplicationCatalog> = readable<ApplicationCatalog>(emptyCatalog, set => {
-  const sub = rpcBrowser.subscribe(Messages.MSG_NEW_CATALOG_STATE, msg => {
+  const sub = rpcBrowser.subscribe(MSG_NEW_CATALOG_STATE, msg => {
     set(msg);
   });
   // Initialize the store manually

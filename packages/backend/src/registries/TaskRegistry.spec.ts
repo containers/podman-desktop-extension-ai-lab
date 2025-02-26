@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,50 +16,39 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { beforeEach, expect, test, vi } from 'vitest';
-import type { Webview } from '@podman-desktop/api';
 import { TaskRegistry } from './TaskRegistry';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
 
-const mocks = vi.hoisted(() => ({
-  postMessageMock: vi.fn(),
-}));
+const rpcExtension = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 beforeEach(() => {
   vi.resetAllMocks();
-  mocks.postMessageMock.mockResolvedValue(undefined);
+  vi.mocked(rpcExtension.fire).mockResolvedValue(true);
 });
 
 test('should not have any tasks by default', () => {
-  const taskRegistry = new TaskRegistry({
-    postMessage: mocks.postMessageMock,
-  } as unknown as Webview);
+  const taskRegistry = new TaskRegistry(rpcExtension);
   expect(taskRegistry.getTasks().length).toBe(0);
 });
 
 test('should notify when create task', () => {
-  const taskRegistry = new TaskRegistry({
-    postMessage: mocks.postMessageMock,
-  } as unknown as Webview);
-
+  const taskRegistry = new TaskRegistry(rpcExtension);
   taskRegistry.createTask('random', 'loading');
-
-  expect(mocks.postMessageMock).toHaveBeenCalled();
+  expect(rpcExtension.fire).toHaveBeenCalled();
 });
 
 test('should notify when update task', () => {
-  const taskRegistry = new TaskRegistry({
-    postMessage: mocks.postMessageMock,
-  } as unknown as Webview);
-
+  const taskRegistry = new TaskRegistry(rpcExtension);
   const task = taskRegistry.createTask('random', 'loading');
   taskRegistry.updateTask(task);
 
-  expect(mocks.postMessageMock).toHaveBeenCalledTimes(2);
+  expect(rpcExtension.fire).toHaveBeenCalledTimes(2);
 });
 
 test('should get tasks by label', () => {
-  const taskRegistry = new TaskRegistry({
-    postMessage: mocks.postMessageMock,
-  } as unknown as Webview);
+  const taskRegistry = new TaskRegistry(rpcExtension);
 
   taskRegistry.createTask('random-1', 'loading', { index: '1' });
   taskRegistry.createTask('random-2', 'loading', { index: '2' });
@@ -74,9 +63,7 @@ test('should get tasks by label', () => {
 });
 
 test('should delete tasks by label', () => {
-  const taskRegistry = new TaskRegistry({
-    postMessage: mocks.postMessageMock,
-  } as unknown as Webview);
+  const taskRegistry = new TaskRegistry(rpcExtension);
 
   taskRegistry.createTask('random-1', 'loading', { index: '1' });
   taskRegistry.createTask('random-2', 'loading', { index: '2' });
@@ -88,9 +75,7 @@ test('should delete tasks by label', () => {
 });
 
 test('should get tasks by multiple labels', () => {
-  const taskRegistry = new TaskRegistry({
-    postMessage: mocks.postMessageMock,
-  } as unknown as Webview);
+  const taskRegistry = new TaskRegistry(rpcExtension);
 
   taskRegistry.createTask('task-1', 'loading', { type: 'A', priority: 'high' });
   taskRegistry.createTask('task-2', 'loading', { type: 'B', priority: 'low' });

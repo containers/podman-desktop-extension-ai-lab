@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@
 import { beforeAll, afterAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { commands, navigation, type WebviewPanel, type Disposable } from '@podman-desktop/api';
 import { NavigationRegistry } from './NavigationRegistry';
-import { Messages } from '@shared/Messages';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 
 vi.mock('@podman-desktop/api', async () => ({
   commands: {
@@ -36,6 +37,10 @@ const panelMock: WebviewPanel = {
     postMessage: vi.fn(),
   },
 } as unknown as WebviewPanel;
+
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -56,7 +61,7 @@ describe('incompatible podman-desktop', () => {
 
   test('init should not register command and navigation when using old version of podman', () => {
     (navigation.register as unknown as undefined) = undefined;
-    const registry = new NavigationRegistry(panelMock);
+    const registry = new NavigationRegistry(panelMock, rpcExtensionMock);
     registry.init();
 
     expect(commands.registerCommand).not.toHaveBeenCalled();
@@ -64,7 +69,7 @@ describe('incompatible podman-desktop', () => {
 });
 
 test('init should register command and navigation', () => {
-  const registry = new NavigationRegistry(panelMock);
+  const registry = new NavigationRegistry(panelMock, rpcExtensionMock);
   registry.init();
 
   expect(commands.registerCommand).toHaveBeenCalled();
@@ -72,7 +77,7 @@ test('init should register command and navigation', () => {
 });
 
 test('dispose should dispose all command and navigation registered', () => {
-  const registry = new NavigationRegistry(panelMock);
+  const registry = new NavigationRegistry(panelMock, rpcExtensionMock);
   const disposables: Disposable[] = [];
   vi.mocked(commands.registerCommand).mockImplementation(() => {
     const disposable: Disposable = {
@@ -97,7 +102,7 @@ test('dispose should dispose all command and navigation registered', () => {
 });
 
 test('navigateToInferenceCreate should reveal and postMessage to webview', async () => {
-  const registry = new NavigationRegistry(panelMock);
+  const registry = new NavigationRegistry(panelMock, rpcExtensionMock);
 
   await registry.navigateToInferenceCreate('dummyTrackingId');
 
@@ -105,14 +110,14 @@ test('navigateToInferenceCreate should reveal and postMessage to webview', async
     expect(panelMock.reveal).toHaveBeenCalledOnce();
   });
 
-  expect(panelMock.webview.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_NAVIGATION_ROUTE_UPDATE,
-    body: '/service/create?trackingId=dummyTrackingId',
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenCalledWith(
+    MSG_NAVIGATION_ROUTE_UPDATE,
+    '/service/create?trackingId=dummyTrackingId',
+  );
 });
 
 test('navigateToRecipeStart should reveal and postMessage to webview', async () => {
-  const registry = new NavigationRegistry(panelMock);
+  const registry = new NavigationRegistry(panelMock, rpcExtensionMock);
 
   await registry.navigateToRecipeStart('dummyRecipeId', 'dummyTrackingId');
 
@@ -120,14 +125,14 @@ test('navigateToRecipeStart should reveal and postMessage to webview', async () 
     expect(panelMock.reveal).toHaveBeenCalledOnce();
   });
 
-  expect(panelMock.webview.postMessage).toHaveBeenCalledWith({
-    id: Messages.MSG_NAVIGATION_ROUTE_UPDATE,
-    body: '/recipe/dummyRecipeId/start?trackingId=dummyTrackingId',
-  });
+  expect(rpcExtensionMock.fire).toHaveBeenCalledWith(
+    MSG_NAVIGATION_ROUTE_UPDATE,
+    '/recipe/dummyRecipeId/start?trackingId=dummyTrackingId',
+  );
 });
 
 test('reading the route has side-effect', async () => {
-  const registry = new NavigationRegistry(panelMock);
+  const registry = new NavigationRegistry(panelMock, rpcExtensionMock);
 
   await registry.navigateToRecipeStart('dummyRecipeId', 'dummyTrackingId');
 

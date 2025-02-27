@@ -181,176 +181,181 @@ function handleOnClick(): void {
 </script>
 
 {#if conversation}
-  <DetailsPage
-    title={conversation?.name}
-    breadcrumbLeftPart="Playgrounds"
-    breadcrumbRightPart={conversation?.name}
-    breadcrumbTitle="Go back to Playgrounds"
-    onclose={goToUpPage}
-    onbreadcrumbClick={goToUpPage}>
-    <svelte:fragment slot="icon">
-      <div class="mr-3">
-        <StatusIcon icon={ContainerIcon} size={24} status={getStatusForIcon(server?.status, server?.health?.Status)} />
-      </div>
-    </svelte:fragment>
-    <svelte:fragment slot="subtitle">
-      <div class="flex gap-x-2 items-center text-[var(--pd-content-sub-header)]">
-        {#if model}
-          <div class="text-sm" aria-label="Model name">
-            <a href="/model/{model.id}">{model.name}</a>
-          </div>
-        {/if}
-      </div>
-    </svelte:fragment>
-    <svelte:fragment slot="actions">
-      <ConversationActions detailed conversation={conversation} />
-    </svelte:fragment>
-    <svelte:fragment slot="content">
-      <div class="flex flex-col w-full h-full bg-[var(--pd-content-bg)]">
-        <div class="h-full overflow-auto" bind:this={scrollable}>
-          <ContentDetailsLayout detailsTitle="Settings" detailsLabel="settings">
-            <svelte:fragment slot="content">
-              <div class="flex flex-col w-full h-full">
-                <div aria-label="conversation" class="w-full h-full">
-                  {#if conversation}
-                    <!-- Show a banner for the system prompt -->
-                    {#key conversation.messages.length}
-                      <SystemPromptBanner conversation={conversation} />
-                    {/key}
-                    <!-- show all message except the system prompt -->
-                    <ul>
-                      {#each messages as message}
-                        <li>
-                          <ChatMessage message={message} />
-                        </li>
-                      {/each}
-                    </ul>
-                  {/if}
-                </div>
-              </div>
-            </svelte:fragment>
-            <svelte:fragment slot="details">
-              <div class="text-[var(--pd-content-card-text)]">Next prompt will use these settings</div>
-              <div
-                class="bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] w-full rounded-md p-4">
-                <div class="mb-4 flex flex-col">Model Parameters</div>
-                <div class="flex flex-col space-y-4" aria-label="parameters">
-                  <div class="flex flex-row">
-                    <div class="w-full">
-                      <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value={temperature} />
-                    </div>
-                    <Tooltip left>
-                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                      <svelte:fragment slot="tip">
-                        <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
-                          What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output
-                          more random, while lower values like 0.2 will make it more focused and deterministic.
-                        </div>
-                      </svelte:fragment>
-                    </Tooltip>
-                  </div>
-                  <div class="flex flex-row">
-                    <div class="w-full">
-                      <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value={max_tokens} />
-                    </div>
-                    <Tooltip left>
-                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                      <svelte:fragment slot="tip">
-                        <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
-                          The maximum number of tokens that can be generated in the chat completion.
-                        </div>
-                      </svelte:fragment>
-                    </Tooltip>
-                  </div>
-                  <div class="flex flex-row">
-                    <div class="w-full">
-                      <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value={top_p} />
-                    </div>
-                    <Tooltip left>
-                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                      <svelte:fragment slot="tip">
-                        <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
-                          An alternative to sampling with temperature, where the model considers the results of the
-                          tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10%
-                          probability mass are considered.
-                        </div>
-                      </svelte:fragment>
-                    </Tooltip>
-                  </div>
-                </div>
-              </div>
-              <div class="text-[var(--pd-content-card-text)]">Model metrics</div>
-              <div
-                class="bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] w-full rounded-md p-4">
-                <div class="flex flex-col space-y-4" aria-label="metrics">
-                  <div class="flex flex-row">
-                    <div class="w-full">
-                      PROMPT TOKENS
-                      <div class="flex flex-row">
-                        {prompt_tokens}
-                      </div>
-                    </div>
-                    <Tooltip left>
-                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                      <svelte:fragment slot="tip">
-                        <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
-                          The number of tokens in the prompt is used as input to the model.
-                        </div>
-                      </svelte:fragment>
-                    </Tooltip>
-                  </div>
-                  <div class="flex flex-row">
-                    <div class="w-full">
-                      COMPLETION TOKENS
-                      <div class="flex flex-row">
-                        {completion_tokens}
-                      </div>
-                    </div>
-                    <Tooltip left>
-                      <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                      <svelte:fragment slot="tip">
-                        <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
-                          The number of tokens in the model's output to the prompt that has been used as an input to the
-                          model.
-                        </div>
-                      </svelte:fragment>
-                    </Tooltip>
-                  </div>
-                </div>
-              </div>
-            </svelte:fragment>
-          </ContentDetailsLayout>
+  <div class="overflow-auto h-full">
+    <DetailsPage
+      title={conversation?.name}
+      breadcrumbLeftPart="Playgrounds"
+      breadcrumbRightPart={conversation?.name}
+      breadcrumbTitle="Go back to Playgrounds"
+      onclose={goToUpPage}
+      onbreadcrumbClick={goToUpPage}>
+      <svelte:fragment slot="icon">
+        <div class="mr-3">
+          <StatusIcon
+            icon={ContainerIcon}
+            size={24}
+            status={getStatusForIcon(server?.status, server?.health?.Status)} />
         </div>
-        {#if errorMsg}
-          <div class="text-[var(--pd-input-field-error-text)] p-2">{errorMsg}</div>
-        {/if}
-        <div class="flex flex-row flex-none w-full px-4 py-2 bg-[var(--pd-content-card-bg)]">
-          <textarea
-            aria-label="prompt"
-            bind:value={prompt}
-            use:requestFocus
-            onkeydown={handleKeydown}
-            rows="2"
-            class="w-full p-2 outline-hidden rounded-xs bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]"
-            placeholder="Type your prompt here"
-            disabled={!sendEnabled}></textarea>
+      </svelte:fragment>
+      <svelte:fragment slot="subtitle">
+        <div class="flex gap-x-2 items-center text-[var(--pd-content-sub-header)]">
+          {#if model}
+            <div class="text-sm" aria-label="Model name">
+              <a href="/model/{model.id}">{model.name}</a>
+            </div>
+          {/if}
+        </div>
+      </svelte:fragment>
+      <svelte:fragment slot="actions">
+        <ConversationActions detailed conversation={conversation} />
+      </svelte:fragment>
+      <svelte:fragment slot="content">
+        <div class="flex flex-col w-full h-full bg-[var(--pd-content-bg)]">
+          <div class="h-full overflow-auto" bind:this={scrollable}>
+            <ContentDetailsLayout detailsTitle="Settings" detailsLabel="settings">
+              <svelte:fragment slot="content">
+                <div class="flex flex-col w-full h-full grow overflow-auto">
+                  <div aria-label="conversation" class="w-full h-full">
+                    {#if conversation}
+                      <!-- Show a banner for the system prompt -->
+                      {#key conversation.messages.length}
+                        <SystemPromptBanner conversation={conversation} />
+                      {/key}
+                      <!-- show all message except the system prompt -->
+                      <ul>
+                        {#each messages as message}
+                          <li>
+                            <ChatMessage message={message} />
+                          </li>
+                        {/each}
+                      </ul>
+                    {/if}
+                  </div>
+                </div>
+              </svelte:fragment>
+              <svelte:fragment slot="details">
+                <div class="text-[var(--pd-content-card-text)]">Next prompt will use these settings</div>
+                <div
+                  class="bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] w-full rounded-md p-4">
+                  <div class="mb-4 flex flex-col">Model Parameters</div>
+                  <div class="flex flex-col space-y-4" aria-label="parameters">
+                    <div class="flex flex-row">
+                      <div class="w-full">
+                        <RangeInput name="temperature" min="0" max="2" step="0.1" bind:value={temperature} />
+                      </div>
+                      <Tooltip left>
+                        <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
+                        <svelte:fragment slot="tip">
+                          <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
+                            What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the
+                            output more random, while lower values like 0.2 will make it more focused and deterministic.
+                          </div>
+                        </svelte:fragment>
+                      </Tooltip>
+                    </div>
+                    <div class="flex flex-row">
+                      <div class="w-full">
+                        <RangeInput name="max tokens" min="-1" max="32768" step="1" bind:value={max_tokens} />
+                      </div>
+                      <Tooltip left>
+                        <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
+                        <svelte:fragment slot="tip">
+                          <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
+                            The maximum number of tokens that can be generated in the chat completion.
+                          </div>
+                        </svelte:fragment>
+                      </Tooltip>
+                    </div>
+                    <div class="flex flex-row">
+                      <div class="w-full">
+                        <RangeInput name="top-p" min="0" max="1" step="0.1" bind:value={top_p} />
+                      </div>
+                      <Tooltip left>
+                        <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
+                        <svelte:fragment slot="tip">
+                          <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
+                            An alternative to sampling with temperature, where the model considers the results of the
+                            tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10%
+                            probability mass are considered.
+                          </div>
+                        </svelte:fragment>
+                      </Tooltip>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-[var(--pd-content-card-text)]">Model metrics</div>
+                <div
+                  class="bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] w-full rounded-md p-4">
+                  <div class="flex flex-col space-y-4" aria-label="metrics">
+                    <div class="flex flex-row">
+                      <div class="w-full">
+                        PROMPT TOKENS
+                        <div class="flex flex-row">
+                          {prompt_tokens}
+                        </div>
+                      </div>
+                      <Tooltip left>
+                        <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
+                        <svelte:fragment slot="tip">
+                          <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
+                            The number of tokens in the prompt is used as input to the model.
+                          </div>
+                        </svelte:fragment>
+                      </Tooltip>
+                    </div>
+                    <div class="flex flex-row">
+                      <div class="w-full">
+                        COMPLETION TOKENS
+                        <div class="flex flex-row">
+                          {completion_tokens}
+                        </div>
+                      </div>
+                      <Tooltip left>
+                        <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
+                        <svelte:fragment slot="tip">
+                          <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
+                            The number of tokens in the model's output to the prompt that has been used as an input to
+                            the model.
+                          </div>
+                        </svelte:fragment>
+                      </Tooltip>
+                    </div>
+                  </div>
+                </div>
+              </svelte:fragment>
+            </ContentDetailsLayout>
+          </div>
+          {#if errorMsg}
+            <div class="text-[var(--pd-input-field-error-text)] p-2">{errorMsg}</div>
+          {/if}
+          <div class="flex flex-row flex-none w-full px-4 py-2 bg-[var(--pd-content-card-bg)]">
+            <textarea
+              aria-label="prompt"
+              bind:value={prompt}
+              use:requestFocus
+              onkeydown={handleKeydown}
+              rows="2"
+              class="w-full p-2 outline-hidden rounded-xs bg-[var(--pd-content-card-inset-bg)] text-[var(--pd-content-card-text)] placeholder-[var(--pd-content-card-text)]"
+              placeholder="Type your prompt here"
+              disabled={!sendEnabled}></textarea>
 
-          <div class="flex-none text-right m-4">
-            {#if !sendEnabled && cancellationTokenId !== undefined}
-              <Button title="Stop" icon={faStop} type="secondary" on:click={handleOnClick} />
-            {:else}
-              <Button
-                inProgress={!sendEnabled}
-                disabled={!isHealthy(server?.status, server?.health?.Status) || !prompt?.length}
-                on:click={askPlayground}
-                icon={faPaperPlane}
-                type="secondary"
-                title={getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}
-                aria-label="Send prompt"></Button>
-            {/if}
+            <div class="flex-none text-right m-4">
+              {#if !sendEnabled && cancellationTokenId !== undefined}
+                <Button title="Stop" icon={faStop} type="secondary" on:click={handleOnClick} />
+              {:else}
+                <Button
+                  inProgress={!sendEnabled}
+                  disabled={!isHealthy(server?.status, server?.health?.Status) || !prompt?.length}
+                  on:click={askPlayground}
+                  icon={faPaperPlane}
+                  type="secondary"
+                  title={getSendPromptTitle(sendEnabled, server?.status, server?.health?.Status)}
+                  aria-label="Send prompt"></Button>
+              {/if}
+            </div>
           </div>
         </div>
-      </div>
-    </svelte:fragment>
-  </DetailsPage>
+      </svelte:fragment>
+    </DetailsPage>
+  </div>
 {/if}

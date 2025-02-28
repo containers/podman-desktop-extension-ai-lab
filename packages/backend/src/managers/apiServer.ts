@@ -41,6 +41,7 @@ import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { Stream } from 'openai/streaming';
+import crypto from 'node:crypto';
 
 const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
 const SHOW_API_ERROR_COMMAND = 'ai-lab.show-api-error';
@@ -49,6 +50,7 @@ export const PREFERENCE_RANDOM_PORT = 0;
 
 type ListModelResponse = components['schemas']['ListModelResponse'];
 type Message = components['schemas']['Message'];
+type ProcessModelResponse = components['schemas']['ProcessModelResponse'];
 
 function asListModelResponse(model: ModelInfo): ListModelResponse {
   return {
@@ -58,6 +60,20 @@ function asListModelResponse(model: ModelInfo): ListModelResponse {
     size: model.file?.size,
     modified_at: model.file?.creation?.toISOString(),
     details: {},
+  };
+}
+
+// ollama expect at least 12 characters for the digest
+function toDigest(name: string, sha256?: string): string {
+  return sha256 ?? crypto.createHash('sha256').update(name).digest('hex');
+}
+
+function asProcessModelResponse(model: ModelInfo): ProcessModelResponse {
+  return {
+    name: model.name,
+    model: model.name,
+    size: model.memory,
+    digest: toDigest(model.name, model.sha256),
   };
 }
 
@@ -124,6 +140,7 @@ export class ApiServer implements Disposable {
     router.post('/show', this.show.bind(this));
     router.post('/generate', this.generate.bind(this));
     router.post('/chat', this.chat.bind(this));
+    router.get('/ps', this.ps.bind(this));
     app.get('/', (_res, res) => res.sendStatus(200)); //required for the ollama client to work against us
     app.use('/api', router);
     app.use('/spec', this.getSpec.bind(this));
@@ -573,5 +590,18 @@ export class ApiServer implements Disposable {
         });
       })
       .catch((err: unknown) => console.error(`unable to check if the inference server is running: ${err}`));
+  }
+
+  ps(_req: Request, res: Response): void {
+    try {
+      const models = this.inferenceManager
+        .getServers()
+        .filter(server => server.status === 'running')
+        .flatMap(server => server.models)
+        .map(model => asProcessModelResponse(model));
+      res.status(200).json({ models });
+    } catch (err: unknown) {
+      this.doErr(res, 'unable to ps', err);
+    }
   }
 }

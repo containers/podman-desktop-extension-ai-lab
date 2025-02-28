@@ -162,6 +162,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/ChatResponse'
 
+  /api/ps:
+    get:
+      operationId: getRunningModels
+      tags:
+        - models
+      description: List running models
+      summary: List running models
+      responses:
+        '200':
+          description: The list of running models was successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessResponse'
+
 components:
   schemas:
     ListResponse:
@@ -190,6 +205,35 @@ components:
           type: string
         details:
           $ref: '#/components/schemas/ModelDetails'
+
+    ProcessResponse:
+      type: object
+      description: Response with a list of running models
+      properties:
+        models:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessModelResponse'
+
+    ProcessModelResponse:
+      type: object
+      description: Running model description
+      properties:
+        name:
+          type: string
+        model:
+          type: string
+        size:
+          type: integer
+        digest:
+          type: string
+        details:
+          $ref: '#/components/schemas/ModelDetails'
+        expires_at:
+          type: string
+          format: date-time
+        size_vram:
+          type: integer
 
     ModelDetails:
       type: object

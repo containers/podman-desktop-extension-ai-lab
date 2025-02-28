@@ -793,3 +793,75 @@ describe.each([undefined, true, false])('stream is %o', stream => {
     });
   });
 });
+
+describe('/api/ps', () => {
+  test('returns an error if the model is not known', async () => {
+    expect(server.getListener()).toBeDefined();
+    vi.mocked(inferenceManager.getServers).mockImplementation(() => {
+      throw new Error('model unknown');
+    });
+    const res = await request(server.getListener()!).get('/api/ps').expect(500);
+    expect(res.body).toMatchObject({ message: 'unable to ps' });
+  });
+
+  test('returns empty result if no servers', async () => {
+    expect(server.getListener()).toBeDefined();
+    vi.mocked(inferenceManager.getServers).mockReturnValue([]);
+    const res = await request(server.getListener()!).get('/api/ps').expect(200);
+    expect(res.body).toEqual({ models: [] });
+  });
+
+  test('returns empty result if server is stopped', async () => {
+    expect(server.getListener()).toBeDefined();
+    vi.mocked(inferenceManager.getServers).mockReturnValue([
+      {
+        models: [
+          {
+            id: 'modelId1',
+            name: 'model-name',
+            description: 'model 1',
+          },
+        ],
+        container: {
+          engineId: 'engine1',
+          containerId: 'container1',
+        },
+        status: 'stopped',
+      } as unknown as InferenceServer,
+    ]);
+    const res = await request(server.getListener()!).get('/api/ps').expect(200);
+    expect(res.body).toEqual({ models: [] });
+  });
+
+  test('returns result if server is started', async () => {
+    expect(server.getListener()).toBeDefined();
+    vi.mocked(inferenceManager.getServers).mockReturnValue([
+      {
+        models: [
+          {
+            id: 'modelId1',
+            name: 'model-name',
+            description: 'model 1',
+            memory: 1_000_000,
+          },
+        ],
+        container: {
+          engineId: 'engine1',
+          containerId: 'container1',
+        },
+        status: 'running',
+      } as unknown as InferenceServer,
+    ]);
+    const res = await request(server.getListener()!).get('/api/ps').expect(200);
+    expect(res.body).toEqual({
+      models: [
+        {
+          name: 'model-name',
+          model: 'model-name',
+          size: 1_000_000,
+          digest: 'b48fa42fa5b28c4363747ec0797532e274650f73004383a3054697137d9d1f30',
+        },
+      ],
+    });
+  });
+});

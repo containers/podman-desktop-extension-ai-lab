@@ -121,8 +121,8 @@ importers:
         specifier: ^4.21.2
         version: 4.21.2
       express-openapi-validator:
-        specifier: ^5.4.4
-        version: 5.4.4(express@4.21.2)
+        specifier: ^5.4.6
+        version: 5.4.6(express@4.21.2)
       isomorphic-git:
         specifier: ^1.29.0
         version: 1.29.0
@@ -312,8 +312,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@apidevtools/json-schema-ref-parser@11.9.1':
-    resolution: {integrity: sha512-OvyhwtYaWSTfo8NfibmFlgl+pIMaBOmN0OwZ3CPaGscEK3B8FCVDuQ7zgxY8seU/1kfSvNWnyB0DtKJyNLxX7g==}
+  '@apidevtools/json-schema-ref-parser@11.9.3':
+    resolution: {integrity: sha512-60vepv88RwcJtSHrD6MjIL6Ta3SOYbgfnkHb+ppAVK+o9mXprRtulx7VlRl3lN3bbvysAfCS7WMVfhUYemB0IQ==}
     engines: {node: '>= 16'}
 
   '@asamuzakjp/css-color@2.8.3':
@@ -2538,8 +2538,8 @@ packages:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
 
-  express-openapi-validator@5.4.4:
-    resolution: {integrity: sha512-MiZFt9ypnWIhswbOPAAysGydCV7Tg26sNEL4sgovRL245YM02jEJCCJ2r5PN7fWG5Lm8PX5c9IwXBytfSDD+TQ==}
+  express-openapi-validator@5.4.6:
+    resolution: {integrity: sha512-DMyfgRdlR0vQZ50fHVep5U7xJDE0jc9Z0YpDtteSDmwmGt8gdzqfoBx83/33PoKOwb1UGW1ndCh4fuFETnTCgQ==}
     peerDependencies:
       express: '*'
 
@@ -5052,7 +5052,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@apidevtools/json-schema-ref-parser@11.9.1':
+  '@apidevtools/json-schema-ref-parser@11.9.3':
     dependencies:
       '@jsdevtools/ono': 7.1.3
       '@types/json-schema': 7.0.15
@@ -7476,9 +7476,9 @@ snapshots:
 
   expect-type@1.1.0: {}
 
-  express-openapi-validator@5.4.4(express@4.21.2):
+  express-openapi-validator@5.4.6(express@4.21.2):
     dependencies:
-      '@apidevtools/json-schema-ref-parser': 11.9.1
+      '@apidevtools/json-schema-ref-parser': 11.9.3
       '@types/multer': 1.4.12
       ajv: 8.17.1
       ajv-draft-04: 1.0.0(ajv@8.17.1)

@@ -184,6 +184,11 @@ export interface StudioAPI {
   updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void>;
 
   /**
+   * Get the PD version
+   */
+  abstract getPDVersion(): Promise<string>;
+
+  /**
    * Return the list of supported languages to generate code from.
    */
   getSnippetLanguages(): Promise<Language[]>;

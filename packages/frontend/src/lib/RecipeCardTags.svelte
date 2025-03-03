@@ -2,7 +2,7 @@
 import type { Recipe } from '@shared/src/models/IRecipe';
 import Badge from './Badge.svelte';
 import { onDestroy, onMount } from 'svelte';
-import { TAG_BG_COLOR, TAG_TEXT_COLOR, TOOLS, FRAMEWORKS, isDarkMode } from '/@/lib/RecipeCardTags';
+import { TOOLS, FRAMEWORKS, getBGColor, getTextColor } from '/@/lib/RecipeCardTags';
 
 interface Props {
   recipe: Recipe;
@@ -24,14 +24,6 @@ let toggleButton: HTMLDivElement | undefined = $state();
 let visibleTags: string[] = $state(TAGS);
 let divTags: HTMLDivElement[] = $state([]);
 let recipeCardWidth: number = $state(0);
-
-function determineBackgroundColor(tag: string): string {
-  return TAG_BG_COLOR.get(tag) ?? (isDarkMode() ? 'bg-purple-700' : 'bg-purple-300');
-}
-
-function determineTextColor(tag: string): string {
-  return TAG_TEXT_COLOR.get(tag) ?? (isDarkMode() ? 'text-purple-300' : 'text-purple-700');
-}
 
 function updateContent(tag: string): string {
   let updatedTag = tag;
@@ -127,7 +119,7 @@ function toggleExpanded(): void {
   class:flex-wrap={expanded}>
   {#each TAGS as tag, i}
     <div bind:this={divTags[i]}>
-      <Badge class="{determineBackgroundColor(tag)} {determineTextColor(tag)}" content={updateContent(tag)} />
+      <Badge class="{getBGColor(tag)} {getTextColor(tag)}" content={updateContent(tag)} />
     </div>
   {/each}
 

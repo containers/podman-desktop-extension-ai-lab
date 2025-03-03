@@ -123,6 +123,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.configurationRegistry.getExtensionConfiguration();
   }
 
+  async getPDVersion(): Promise<string> {
+    return this.configurationRegistry.getPDVersion();
+  }
+
   async updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void> {
     return this.configurationRegistry.updateExtensionConfiguration(update);
   }

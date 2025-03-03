@@ -123,6 +123,7 @@ beforeEach(() => {
     modelsPath: '',
     modelUploadDisabled: false,
     showGPUPromotion: false,
+    appearance: 'dark',
   });
 
   window.HTMLElement.prototype.scrollIntoView = vi.fn();

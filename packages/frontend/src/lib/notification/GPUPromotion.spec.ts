@@ -48,6 +48,7 @@ const mockConfiguration: Writable<ExtensionConfiguration> = writable({
   modelUploadDisabled: false,
   experimentalTuning: false,
   showGPUPromotion: false,
+  appearance: 'dark',
 });
 
 beforeEach(() => {
@@ -65,6 +66,7 @@ test('should show banner if gpu support if off and gpu promotion on', async () =
     modelsPath: '',
     experimentalTuning: false,
     apiPort: -1,
+    appearance: 'dark',
   });
   render(GPUPromotion);
 
@@ -85,6 +87,7 @@ test('should not show banner if gpu support if on and gpu promotion on', async (
     modelsPath: '',
     experimentalTuning: false,
     apiPort: -1,
+    appearance: 'dark',
   });
   render(GPUPromotion);
 
@@ -105,6 +108,7 @@ test('should not show banner if gpu support if off and gpu promotion off', async
     modelsPath: '',
     experimentalTuning: false,
     apiPort: -1,
+    appearance: 'dark',
   });
   render(GPUPromotion);
 
@@ -126,6 +130,7 @@ test('click enable should call client', async () => {
     modelsPath: '',
     experimentalTuning: false,
     apiPort: -1,
+    appearance: 'dark',
   });
   render(GPUPromotion);
 
@@ -152,6 +157,7 @@ test('click hide should call client', async () => {
     modelsPath: '',
     experimentalTuning: false,
     apiPort: -1,
+    appearance: 'dark',
   });
   render(GPUPromotion);
 

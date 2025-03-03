@@ -50,6 +50,7 @@ const mockConfiguration: Writable<ExtensionConfiguration> = writable({
   modelUploadDisabled: false,
   experimentalTuning: false,
   showGPUPromotion: false,
+  appearance: 'dark',
 });
 
 beforeEach(() => {

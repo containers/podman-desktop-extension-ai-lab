@@ -15,31 +15,111 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import { studioClient } from '/@/utils/client';
+import { gte } from 'semver';
 
 const USE_CASES = ['natural-language-processing', 'audio', 'computer-vision'];
 const LANGUAGES = ['java', 'javascript', 'python'];
 export const FRAMEWORKS = ['langchain', 'langchain4j', 'quarkus', 'react', 'streamlit', 'vectordb'];
 export const TOOLS = ['none', 'llama-cpp', 'whisper-cpp'];
 
-export const TAG_BG_COLOR = new Map<string, string>([
-  ...USE_CASES.map(useCase => [useCase, isDarkMode() ? 'bg-purple-700' : 'bg-purple-300'] as [string, string]),
-  ...LANGUAGES.map(useCase => [useCase, isDarkMode() ? 'bg-sky-900' : 'bg-sky-200'] as [string, string]),
-  ...FRAMEWORKS.map(useCase => [useCase, isDarkMode() ? 'bg-green-900' : 'bg-green-200'] as [string, string]),
-  ...TOOLS.map(useCase => [useCase, isDarkMode() ? 'bg-amber-800' : 'bg-amber-100'] as [string, string]),
-]);
+// Defaulting to PD min version we need to run
+let version: string = '1.8.0';
+let configuration: ExtensionConfiguration;
+let isDark = true;
 
-export const TAG_TEXT_COLOR = new Map<string, string>([
-  ...USE_CASES.map(useCase => [useCase, isDarkMode() ? 'text-purple-300' : 'text-purple-700'] as [string, string]),
-  ...LANGUAGES.map(useCase => [useCase, isDarkMode() ? 'text-sky-200' : 'text-sky-900'] as [string, string]),
-  ...FRAMEWORKS.map(useCase => [useCase, isDarkMode() ? 'text-green-200' : 'text-green-900'] as [string, string]),
-  ...TOOLS.map(useCase => [useCase, isDarkMode() ? 'text-amber-400' : 'text-amber-900'] as [string, string]),
-]);
+async function setupProps(): Promise<void> {
+  configuration = await studioClient.getExtensionConfiguration();
+  version = (await studioClient.getPDVersion()).toString().replace(/-next/g, '');
 
-export function isDarkMode(): boolean {
-  const app = document.getElementById('app');
-  if (!app) throw new Error('cannot found app element');
-  const style = window.getComputedStyle(app);
+  if (configuration.appearance === 'dark') isDark = true;
+  else if (configuration.appearance === 'light') isDark = false;
+  else if (configuration.appearance === 'system') {
+    const app = document.getElementById('app');
+    if (!app) throw new Error('cannot found app element');
+    const style = window.getComputedStyle(app);
+    const color = style.getPropertyValue('--pd-terminal-background').trim();
+    isDark = color === '#000';
+  }
+}
 
-  const color = style.getPropertyValue('--pd-terminal-background').trim();
-  return color === '#000';
+setupProps().catch((e: unknown) => {
+  throw new Error(`Got an error when setting up props: ${e}`);
+});
+
+function getColor(pdColor: string, darkColor: string, lightColor: string): string {
+  if (gte(version, '1.17.0')) {
+    return pdColor;
+  } else {
+    if (isDark) return darkColor;
+    return lightColor;
+  }
+}
+
+function createBGColorMap(): Map<string, string> {
+  return new Map<string, string>([
+    ...USE_CASES.map(
+      useCase =>
+        [useCase, getColor('bg-[var(--pd-label-primary-bg)]', 'bg-purple-700', 'bg-purple-300')] as [string, string],
+    ),
+    ...LANGUAGES.map(
+      useCase =>
+        [useCase, getColor('bg-[var(--pd-label-secondary-bg)]', 'bg-sky-900', 'bg-sky-200')] as [string, string],
+    ),
+    ...FRAMEWORKS.map(
+      useCase =>
+        [useCase, getColor('bg-[var(--pd-label-tertiary-bg)]', 'bg-green-900', 'bg-green-200')] as [string, string],
+    ),
+    ...TOOLS.map(
+      useCase =>
+        [useCase, getColor('bg-[var(--pd-label-quaternary-bg)]', 'bg-amber-800', 'bg-amber-100')] as [string, string],
+    ),
+  ]);
+}
+
+function createTextColorMap(): Map<string, string> {
+  return new Map<string, string>([
+    ...USE_CASES.map(
+      useCase =>
+        [useCase, getColor('text-[var(--pd-label-primary-text)]', 'text-purple-300', 'text-purple-700')] as [
+          string,
+          string,
+        ],
+    ),
+    ...LANGUAGES.map(
+      useCase =>
+        [useCase, getColor('text-[var(--pd-label-secondary-text)]', 'text-sky-200', 'text-sky-900')] as [
+          string,
+          string,
+        ],
+    ),
+    ...FRAMEWORKS.map(
+      useCase =>
+        [useCase, getColor('text-[var(--pd-label-tertiary-text)]', 'text-green-200', 'text-green-900')] as [
+          string,
+          string,
+        ],
+    ),
+    ...TOOLS.map(
+      useCase =>
+        [useCase, getColor('text-[var(--pd-label-quaternary-text)]', 'text-amber-400', 'text-amber-900')] as [
+          string,
+          string,
+        ],
+    ),
+  ]);
+}
+
+export function getBGColor(tag: string): string {
+  const color =
+    createBGColorMap().get(tag) ?? getColor('bg-[var(--pd-label-primary-bg)]', 'bg-purple-700', 'bg-purple-300');
+  return color;
+}
+
+export function getTextColor(tag: string): string {
+  const color =
+    createTextColorMap().get(tag) ??
+    getColor('text-[var(--pd-label-primary-text)]', 'text-purple-300', 'text-purple-700');
+  return color;
 }

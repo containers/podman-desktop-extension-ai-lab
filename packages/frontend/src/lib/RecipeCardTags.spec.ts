@@ -41,13 +41,8 @@ class ResizeObserver {
 }
 
 vi.mock('/@/lib/RecipeCardTags', () => ({
-  isDarkMode: vi.fn().mockReturnValue(false),
-  TAG_BG_COLOR: {
-    get: vi.fn((_: string) => 'bg-purple-200'),
-  },
-  TAG_TEXT_COLOR: {
-    get: vi.fn((_: string) => 'text-purple-200'),
-  },
+  getBGColor: vi.fn((_: string) => 'bg-purple-200'),
+  getTextColor: vi.fn((_: string) => 'text-purple-200'),
   FRAMEWORKS: ['langchain', 'vectordb'],
   TOOLS: ['whisper-cpp'],
 }));

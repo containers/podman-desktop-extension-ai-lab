@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { configuration, type Configuration, type Disposable, type Webview } from '@podman-desktop/api';
+import { configuration, version, type Configuration, type Disposable, type Webview } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
 import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
 import { Messages } from '@shared/Messages';
@@ -28,12 +28,14 @@ const CONFIGURATION_SECTIONS: string[] = [
   'experimentalTuning',
   'modelUploadDisabled',
   'showGPUPromotion',
+  'appearance',
 ];
 
 const API_PORT_DEFAULT = 10434;
 
 export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> implements Disposable {
   #configuration: Configuration;
+  #configurationPD: Configuration;
   #configurationDisposable: Disposable | undefined;
 
   constructor(
@@ -43,6 +45,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
     super(webview, Messages.MSG_CONFIGURATION_UPDATE, () => this.getExtensionConfiguration());
 
     this.#configuration = configuration.getConfiguration('ai-lab');
+    this.#configurationPD = configuration.getConfiguration('preferences');
   }
 
   getExtensionConfiguration(): ExtensionConfiguration {
@@ -53,7 +56,12 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
       experimentalTuning: this.#configuration.get<boolean>('experimentalTuning') ?? false,
       modelUploadDisabled: this.#configuration.get<boolean>('modelUploadDisabled') ?? false,
       showGPUPromotion: this.#configuration.get<boolean>('showGPUPromotion') ?? true,
+      appearance: this.#configurationPD.get<string>('appearance') ?? 'dark',
     };
+  }
+
+  getPDVersion(): string {
+    return version;
   }
 
   private getFieldName(section: string): keyof Partial<ExtensionConfiguration> {
@@ -86,6 +94,9 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
   init(): void {
     this.#configurationDisposable = configuration.onDidChangeConfiguration(event => {
       if (CONFIGURATION_SECTIONS.some(section => event.affectsConfiguration(`ai-lab.${section}`))) {
+        this.notify();
+      }
+      if (CONFIGURATION_SECTIONS.some(section => event.affectsConfiguration(`preferences.${section}`))) {
         this.notify();
       }
     });

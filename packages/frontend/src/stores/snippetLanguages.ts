@@ -16,13 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { Readable } from 'svelte/store';
-import { Messages } from '@shared/Messages';
+import { MSG_SUPPORTED_LANGUAGES_UPDATE } from '@shared/Messages';
 import { studioClient } from '/@/utils/client';
 import { RPCReadable } from '/@/stores/rpcReadable';
 import type { Language } from 'postman-code-generators';
 
 export const snippetLanguages: Readable<Language[]> = RPCReadable<Language[]>(
   [],
-  [Messages.MSG_SUPPORTED_LANGUAGES_UPDATE],
+  MSG_SUPPORTED_LANGUAGES_UPDATE,
   studioClient.getSnippetLanguages,
 );

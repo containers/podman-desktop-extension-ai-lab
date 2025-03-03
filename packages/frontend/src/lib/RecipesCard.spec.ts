@@ -18,7 +18,7 @@
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/svelte';
-import { expect, test, vi } from 'vitest';
+import { beforeAll, expect, test, vi } from 'vitest';
 import RecipesCard from '/@/lib/RecipesCard.svelte';
 
 vi.mock('../utils/client', async () => ({
@@ -32,6 +32,20 @@ vi.mock('../stores/localRepositories', () => ({
       return (): void => {};
     },
   },
+}));
+
+class ResizeObserver {
+  observe = vi.fn();
+  disconnect = vi.fn();
+  unobserve = vi.fn();
+}
+
+beforeAll(() => {
+  Object.defineProperty(window, 'ResizeObserver', { value: ResizeObserver });
+});
+
+vi.mock('/@/lib/RecipeCardTags', () => ({
+  isDarkMode: vi.fn().mockReturnValue(false),
 }));
 
 test('recipes card without recipes should display empty message', async () => {

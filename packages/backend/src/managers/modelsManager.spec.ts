@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
 import { env, process as coreProcess } from '@podman-desktop/api';
-import type { RunResult, TelemetryLogger, Webview, ContainerProviderConnection } from '@podman-desktop/api';
+import type { RunResult, TelemetryLogger, ContainerProviderConnection } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as utils from '../utils/utils';
@@ -36,6 +36,8 @@ import { VMType } from '@shared/src/models/IPodman';
 import { getPodmanMachineName } from '../utils/podman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 import { Uploader } from '../utils/uploader';
+import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -121,7 +123,7 @@ const configurationRegistryMock: ConfigurationRegistry = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  taskRegistry = new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview);
+  taskRegistry = new TaskRegistry({ fire: vi.fn().mockResolvedValue(undefined) } as unknown as RpcExtension);
 
   vi.mocked(configurationRegistryMock.getExtensionConfiguration).mockReturnValue({
     modelUploadDisabled: false,
@@ -194,8 +196,8 @@ test('getModelsInfo should get models in local directory', async () => {
   const manager = new ModelsManager(
     modelsDir,
     {
-      postMessage: vi.fn(),
-    } as unknown as Webview,
+      fire: vi.fn(),
+    } as unknown as RpcExtension,
     {
       getModels(): ModelInfo[] {
         return [
@@ -249,7 +251,7 @@ test('getModelsInfo should return an empty array if the models folder does not e
   }
   const manager = new ModelsManager(
     modelsDir,
-    {} as Webview,
+    {} as RpcExtension,
     {
       getModels(): ModelInfo[] {
         return [];
@@ -290,8 +292,8 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
   const manager = new ModelsManager(
     modelsDir,
     {
-      postMessage: vi.fn(),
-    } as unknown as Webview,
+      fire: vi.fn(),
+    } as unknown as RpcExtension,
     {
       getModels(): ModelInfo[] {
         return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
@@ -350,8 +352,8 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
   const manager = new ModelsManager(
     modelsDir,
     {
-      postMessage: vi.fn(),
-    } as unknown as Webview,
+      fire: vi.fn(),
+    } as unknown as RpcExtension,
     {
       getModels(): ModelInfo[] {
         return [{ id: 'model-id-1', name: 'model-id-1-model' } as ModelInfo];
@@ -378,7 +380,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
   const now = new Date();
   mockFiles(now);
 
-  const postMessageMock = vi.fn();
+  const fireMock = vi.fn();
   let modelsDir: string;
   if (process.platform === 'win32') {
     modelsDir = 'C:\\home\\user\\aistudio\\models';
@@ -388,8 +390,8 @@ test('loadLocalModels should post a message with the message on disk and on cata
   const manager = new ModelsManager(
     modelsDir,
     {
-      postMessage: postMessageMock,
-    } as unknown as Webview,
+      fire: fireMock,
+    } as unknown as RpcExtension,
     {
       getModels: () => {
         return [
@@ -408,20 +410,17 @@ test('loadLocalModels should post a message with the message on disk and on cata
   );
   manager.init();
   await manager.loadLocalModels();
-  expect(postMessageMock).toHaveBeenNthCalledWith(1, {
-    id: 'new-models-state',
-    body: [
-      {
-        file: {
-          creation: now,
-          file: 'model-id-1-model',
-          size: 32000,
-          path: path.resolve(dirent[0].path, dirent[0].name),
-        },
-        id: 'model-id-1',
+  expect(fireMock).toHaveBeenNthCalledWith(1, expect.objectContaining({ channel: MSG_NEW_MODELS_STATE.name }), [
+    {
+      file: {
+        creation: now,
+        file: 'model-id-1-model',
+        size: 32000,
+        path: path.resolve(dirent[0].path, dirent[0].name),
       },
-    ],
-  });
+      id: 'model-id-1',
+    },
+  ]);
 });
 
 test('deleteModel deletes the model folder', async () => {
@@ -435,12 +434,12 @@ test('deleteModel deletes the model folder', async () => {
   mockFiles(now);
   const rmSpy = vi.spyOn(fs.promises, 'rm');
   rmSpy.mockResolvedValue();
-  const postMessageMock = vi.fn();
+  const fireMock = vi.fn();
   const manager = new ModelsManager(
     modelsDir,
     {
-      postMessage: postMessageMock,
-    } as unknown as Webview,
+      fire: fireMock,
+    } as unknown as RpcExtension,
     {
       getModels: () => {
         return [
@@ -475,17 +474,14 @@ test('deleteModel deletes the model folder', async () => {
       maxRetries: 3,
     });
   }
-  expect(postMessageMock).toHaveBeenCalledTimes(4);
+  expect(fireMock).toHaveBeenCalledTimes(4);
   // check that a new state is sent with the model removed
-  expect(postMessageMock).toHaveBeenNthCalledWith(4, {
-    id: 'new-models-state',
-    body: [
-      {
-        id: 'model-id-1',
-        url: 'model-url',
-      },
-    ],
-  });
+  expect(fireMock).toHaveBeenNthCalledWith(4, expect.objectContaining({ channel: MSG_NEW_MODELS_STATE.name }), [
+    {
+      id: 'model-id-1',
+      url: 'model-url',
+    },
+  ]);
   expect(mocks.logUsageMock).toHaveBeenNthCalledWith(1, 'model.delete', { 'model.id': expect.any(String) });
 });
 
@@ -501,12 +497,12 @@ describe('deleting models', () => {
     mockFiles(now);
     const rmSpy = vi.spyOn(fs.promises, 'rm');
     rmSpy.mockRejectedValue(new Error('failed'));
-    const postMessageMock = vi.fn();
+    const fireMock = vi.fn();
     const manager = new ModelsManager(
       modelsDir,
       {
-        postMessage: postMessageMock,
-      } as unknown as Webview,
+        fire: fireMock,
+      } as unknown as RpcExtension,
       {
         getModels: () => {
           return [
@@ -541,36 +537,33 @@ describe('deleting models', () => {
         maxRetries: 3,
       });
     }
-    expect(postMessageMock).toHaveBeenCalledTimes(4);
+    expect(fireMock).toHaveBeenCalledTimes(4);
     // check that a new state is sent with the model non removed
-    expect(postMessageMock).toHaveBeenNthCalledWith(4, {
-      id: 'new-models-state',
-      body: [
-        {
-          id: 'model-id-1',
-          url: 'model-url',
-          file: {
-            creation: now,
-            file: 'model-id-1-model',
-            size: 32000,
-            path: path.resolve(dirent[0].path, dirent[0].name),
-          },
+    expect(fireMock).toHaveBeenNthCalledWith(4, expect.objectContaining({ channel: MSG_NEW_MODELS_STATE.name }), [
+      {
+        id: 'model-id-1',
+        url: 'model-url',
+        file: {
+          creation: now,
+          file: 'model-id-1-model',
+          size: 32000,
+          path: path.resolve(dirent[0].path, dirent[0].name),
         },
-      ],
-    });
+      },
+    ]);
     expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();
     expect(mocks.logErrorMock).toHaveBeenCalled();
   });
 
   test('delete local model should call catalogManager', async () => {
     vi.mocked(env).isWindows = false;
-    const postMessageMock = vi.fn();
+    const fireMock = vi.fn();
     const removeUserModelMock = vi.fn();
     const manager = new ModelsManager(
       'appdir',
       {
-        postMessage: postMessageMock,
-      } as unknown as Webview,
+        fire: fireMock,
+      } as unknown as RpcExtension,
       {
         getModels: () => {
           return [
@@ -631,8 +624,8 @@ describe('deleting models', () => {
     const manager = new ModelsManager(
       '/home/user/aistudio',
       {
-        postMessage: vi.fn().mockResolvedValue(undefined),
-      } as unknown as Webview,
+        fire: vi.fn().mockResolvedValue(undefined),
+      } as unknown as RpcExtension,
       {
         getModels: () => {
           return [
@@ -676,7 +669,7 @@ describe('downloadModel', () => {
     vi.mocked(cancellationTokenRegistryMock.createCancellationTokenSource).mockReturnValue(99);
     const manager = new ModelsManager(
       'appdir',
-      {} as Webview,
+      {} as RpcExtension,
       {
         getModels(): ModelInfo[] {
           return [];
@@ -712,7 +705,7 @@ describe('downloadModel', () => {
   test('retrieve model path if already on disk', async () => {
     const manager = new ModelsManager(
       'appdir',
-      {} as Webview,
+      {} as RpcExtension,
       {
         getModels(): ModelInfo[] {
           return [];
@@ -745,7 +738,7 @@ describe('downloadModel', () => {
   test('fail if model on disk has different sha of the expected value', async () => {
     const manager = new ModelsManager(
       'appdir',
-      {} as Webview,
+      {} as RpcExtension,
       {
         getModels(): ModelInfo[] {
           return [];
@@ -777,7 +770,7 @@ describe('downloadModel', () => {
 
     const manager = new ModelsManager(
       'appdir',
-      {} as Webview,
+      {} as RpcExtension,
       {
         getModels(): ModelInfo[] {
           return [];
@@ -815,7 +808,7 @@ describe('downloadModel', () => {
 
     const manager = new ModelsManager(
       'appdir',
-      {} as Webview,
+      {} as RpcExtension,
       {
         getModels(): ModelInfo[] {
           return [];
@@ -866,7 +859,7 @@ describe('getModelMetadata', () => {
   test('unknown model', async () => {
     const manager = new ModelsManager(
       'appdir',
-      {} as Webview,
+      {} as RpcExtension,
       {
         getModels: (): ModelInfo[] => [],
       } as CatalogManager,
@@ -885,7 +878,7 @@ describe('getModelMetadata', () => {
   test('remote model', async () => {
     const manager = new ModelsManager(
       'appdir',
-      {} as Webview,
+      {} as RpcExtension,
       {
         getModels: (): ModelInfo[] => [
           {
@@ -923,8 +916,8 @@ describe('getModelMetadata', () => {
     const manager = new ModelsManager(
       'appdir',
       {
-        postMessage: vi.fn(),
-      } as unknown as Webview,
+        fire: vi.fn(),
+      } as unknown as RpcExtension,
       {
         getModels: (): ModelInfo[] => [
           {
@@ -990,8 +983,8 @@ describe('uploadModelToPodmanMachine', () => {
     const manager = new ModelsManager(
       'appdir',
       {
-        postMessage: vi.fn(),
-      } as unknown as Webview,
+        fire: vi.fn(),
+      } as unknown as RpcExtension,
       {
         onUpdate: vi.fn(),
         getModels: () => [],
@@ -1023,8 +1016,8 @@ describe('uploadModelToPodmanMachine', () => {
     const manager = new ModelsManager(
       'appdir',
       {
-        postMessage: vi.fn(),
-      } as unknown as Webview,
+        fire: vi.fn(),
+      } as unknown as RpcExtension,
       {
         onUpdate: vi.fn(),
         getModels: () => [],

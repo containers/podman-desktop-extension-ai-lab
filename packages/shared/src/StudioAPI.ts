@@ -186,7 +186,7 @@ export interface StudioAPI {
   /**
    * Get the PD version
    */
-  abstract getPDVersion(): Promise<string>;
+  getPDVersion(): Promise<string>;
 
   /**
    * Return the list of supported languages to generate code from.

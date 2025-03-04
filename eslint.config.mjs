@@ -234,6 +234,9 @@ export default [
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/ban-types': 'off',
       '@typescript-eslint/no-unused-expressions': 'off',
+      'svelte/no-useless-mustaches': 'off',
+      'svelte/require-each-key': 'off',
+      'svelte/infinite-reactive-loop': 'off',
     },
   },
 

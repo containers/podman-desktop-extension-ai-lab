@@ -24,7 +24,7 @@ const LANGUAGES = ['java', 'javascript', 'python'];
 export const FRAMEWORKS = ['langchain', 'langchain4j', 'quarkus', 'react', 'streamlit', 'vectordb'];
 export const TOOLS = ['none', 'llama-cpp', 'whisper-cpp'];
 
-// Defaulting to PD min version we need to run
+// Defaulting to Podman Desktop min version we need to run
 let version: string = '1.8.0';
 let configuration: ExtensionConfiguration;
 let isDark = true;

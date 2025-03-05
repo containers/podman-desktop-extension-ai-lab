@@ -199,7 +199,7 @@ export function goToUpPage(): void {
               <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
               <div role="alert" aria-label="Error Message Content" class="ml-2">
                 You don't have any models downloaded. You can download them in <a
-                  href={'javascript:void(0);'}
+                  href="javascript:void(0);"
                   class="underline"
                   title="Models page"
                   on:click={openModelsPage}>models page</a

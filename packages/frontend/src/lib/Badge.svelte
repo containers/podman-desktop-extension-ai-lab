@@ -2,9 +2,13 @@
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import Fa from 'svelte-fa';
 
-export let icon: IconDefinition;
-export let content: string;
-export let background: string = 'bg-[var(--pd-label-bg)]';
+interface Props {
+  icon?: IconDefinition;
+  content: string;
+  background?: string;
+}
+
+let { icon, content, background = 'bg-[var(--pd-label-bg)]' }: Props = $props();
 </script>
 
 <div

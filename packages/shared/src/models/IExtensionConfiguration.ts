@@ -23,4 +23,5 @@ export interface ExtensionConfiguration {
   experimentalTuning: boolean;
   modelUploadDisabled: boolean;
   showGPUPromotion: boolean;
+  appearance: string;
 }

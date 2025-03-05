@@ -100,6 +100,7 @@ beforeEach(() => {
     experimentalTuning: false,
     modelUploadDisabled: false,
     showGPUPromotion: false,
+    appearance: 'dark',
   });
   vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue(dummyConnection);
   vi.mocked(podmanConnection.getContainerProviderConnection).mockReturnValue(dummyConnection);
@@ -280,6 +281,7 @@ describe('perform', () => {
       experimentalTuning: false,
       modelUploadDisabled: false,
       showGPUPromotion: false,
+      appearance: 'dark',
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -322,6 +324,7 @@ describe('perform', () => {
       experimentalTuning: false,
       modelUploadDisabled: false,
       showGPUPromotion: false,
+      appearance: 'dark',
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -369,6 +372,7 @@ describe('perform', () => {
       experimentalTuning: false,
       modelUploadDisabled: false,
       showGPUPromotion: false,
+      appearance: 'dark',
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -416,6 +420,7 @@ describe('perform', () => {
       experimentalTuning: false,
       modelUploadDisabled: false,
       showGPUPromotion: false,
+      appearance: 'dark',
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -451,6 +456,7 @@ describe('perform', () => {
       experimentalTuning: false,
       modelUploadDisabled: false,
       showGPUPromotion: false,
+      appearance: 'dark',
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -488,6 +494,7 @@ describe('perform', () => {
       experimentalTuning: false,
       modelUploadDisabled: false,
       showGPUPromotion: false,
+      appearance: 'dark',
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -526,6 +533,7 @@ describe('perform', () => {
       experimentalTuning: false,
       modelUploadDisabled: false,
       showGPUPromotion: false,
+      appearance: 'dark',
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
@@ -569,6 +577,7 @@ describe('perform', () => {
       experimentalTuning: false,
       modelUploadDisabled: false,
       showGPUPromotion: false,
+      appearance: 'dark',
     });
 
     vi.mocked(gpuManager.collectGPUs).mockResolvedValue([

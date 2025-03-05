@@ -18,7 +18,7 @@
 
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
 import * as catalogStore from '/@/stores/catalog';
 import { readable } from 'svelte/store';
@@ -77,6 +77,23 @@ const catalog: ApplicationCatalog = {
     },
   ],
 };
+
+class ResizeObserver {
+  observe = vi.fn();
+  disconnect = vi.fn();
+  unobserve = vi.fn();
+}
+
+beforeAll(() => {
+  Object.defineProperty(window, 'ResizeObserver', { value: ResizeObserver });
+});
+
+vi.mock('/@/lib/RecipeCardTags', () => ({
+  getBGColor: vi.fn((_: string) => 'bg-purple-200'),
+  getTextColor: vi.fn((_: string) => 'text-purple-200'),
+  FRAMEWORKS: ['langchain', 'vectordb'],
+  TOOLS: ['whisper-cpp'],
+}));
 
 beforeEach(() => {
   vi.resetAllMocks();

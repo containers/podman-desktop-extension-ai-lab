@@ -37,7 +37,7 @@
     "monaco-editor": "^0.52.2",
     "postcss": "^8.5.3",
     "postcss-load-config": "^6.0.1",
-    "svelte": "5.22.1",
+    "svelte": "5.22.4",
     "svelte-fa": "^4.0.3",
     "svelte-select": "^5.8.3",
     "svelte-markdown": "^0.4.1",

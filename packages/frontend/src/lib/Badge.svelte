@@ -3,7 +3,7 @@ import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import Fa from 'svelte-fa';
 
 interface Props {
-  icon: IconDefinition;
+  icon?: IconDefinition;
   content: string;
   class?: string;
 }

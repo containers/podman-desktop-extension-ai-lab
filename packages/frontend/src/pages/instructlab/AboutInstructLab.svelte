@@ -77,7 +77,7 @@ let cards: AboutInstructLabExploreCardInterface[] = [
           <img
             src={instructLabTitleImage}
             class="max-h-[100%] w-auto max-w-[20%] object-contain rounded-md self-start"
-            alt={`InstructLab`} />
+            alt="InstructLab" />
           <div class="flex flex-col flex-1 h-100% self-start gap-4">
             <div
               class="text-[var(--pd-content-card-text)] truncate text-ellipsis overflow-hidden whitespace-pre-line flex flex-col gap-4">
@@ -103,9 +103,9 @@ let cards: AboutInstructLabExploreCardInterface[] = [
           </p>
           <div class="flex flex-col pt-5 grow">
             <div class="grid grid-cols-3 gap-x-2">
-              <AboutInstructLabDiscoverCard title={'asdas'} link={'asd'} image={instructLabTitleImage} desc={'aaaa'} />
-              <AboutInstructLabDiscoverCard title={'asdas'} link={'asd'} image={instructLabTitleImage} desc={'aaaa'} />
-              <AboutInstructLabDiscoverCard title={'asdas'} link={'asd'} image={instructLabTitleImage} desc={'aaaa'} />
+              <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
+              <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
+              <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
             </div>
           </div>
         </div>

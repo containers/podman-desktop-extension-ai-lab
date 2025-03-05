@@ -29,13 +29,13 @@ function handleOnClear(): void {
   value={value}
   on:clear={handleOnClear}
   on:change={handleOnChange}
-  --item-color={'var(--pd-dropdown-item-text)'}
-  --item-is-active-color={'var(--pd-dropdown-item-text)'}
+  --item-color="var(--pd-dropdown-item-text)"
+  --item-is-active-color="var(--pd-dropdown-item-text)"
   --item-hover-color="var(--pd-dropdown-item-hover-text)"
   --item-active-background="var(--pd-input-field-hover-stroke)"
   --item-is-active-bg="var(--pd-input-field-hover-stroke)"
-  --background={'var(--pd-dropdown-bg)'}
-  --list-background={'var(--pd-dropdown-bg)'}
+  --background="var(--pd-dropdown-bg)"
+  --list-background="var(--pd-dropdown-bg)"
   --item-hover-bg="var(--pd-dropdown-item-hover-bg)"
   --border="1px solid var(--pd-input-field-focused-bg)"
   --border-hover="1px solid var(--pd-input-field-hover-stroke)"

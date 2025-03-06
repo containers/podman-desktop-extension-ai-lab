@@ -99,7 +99,6 @@ beforeEach(async () => {
     configurationRegistry,
     containerRegistry,
   );
-  vi.spyOn(server, 'displayApiInfo').mockReturnValue();
   vi.spyOn(server, 'getSpecFile').mockReturnValue(path.join(__dirname, '../../../../api/openapi.yaml'));
   vi.spyOn(server, 'getPackageFile').mockReturnValue(path.join(__dirname, '../../../../package.json'));
   await server.init();

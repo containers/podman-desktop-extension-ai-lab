@@ -184,9 +184,9 @@ export interface StudioAPI {
   updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void>;
 
   /**
-   * Get the PD version
+   * Get the Podman Desktop version
    */
-  getPDVersion(): Promise<string>;
+  getPodmanDesktopVersion(): Promise<string>;
 
   /**
    * Return the list of supported languages to generate code from.

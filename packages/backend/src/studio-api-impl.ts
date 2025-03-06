@@ -123,8 +123,8 @@ export class StudioApiImpl implements StudioAPI {
     return this.configurationRegistry.getExtensionConfiguration();
   }
 
-  async getPDVersion(): Promise<string> {
-    return this.configurationRegistry.getPDVersion();
+  async getPodmanDesktopVersion(): Promise<string> {
+    return this.configurationRegistry.getPodmanDesktopVersion();
   }
 
   async updateExtensionConfiguration(update: Partial<ExtensionConfiguration>): Promise<void> {

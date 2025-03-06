@@ -42,7 +42,6 @@ import type { ChatCompletionMessageParam } from 'openai/resources';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { Stream } from 'openai/streaming';
 
-const SHOW_API_INFO_COMMAND = 'ai-lab.show-api-info';
 const SHOW_API_ERROR_COMMAND = 'ai-lab.show-api-error';
 
 export const PREFERENCE_RANDOM_PORT = 0;
@@ -130,9 +129,6 @@ export class ApiServer implements Disposable {
 
     const server = http.createServer(app);
     let listeningOn = this.configurationRegistry.getExtensionConfiguration().apiPort;
-    server.on('listening', () => {
-      this.displayApiInfo(listeningOn);
-    });
     server.on('error', () => {
       this.displayApiError(listeningOn);
     });
@@ -148,27 +144,6 @@ export class ApiServer implements Disposable {
     } else {
       this.#listener = server.listen(listeningOn, LISTENING_ADDRESS);
     }
-  }
-
-  displayApiInfo(port: number): void {
-    const apiStatusBarItem = podmanDesktopApi.window.createStatusBarItem();
-    apiStatusBarItem.text = `AI Lab API listening on port ${port}`;
-    apiStatusBarItem.command = SHOW_API_INFO_COMMAND;
-    this.extensionContext.subscriptions.push(
-      podmanDesktopApi.commands.registerCommand(SHOW_API_INFO_COMMAND, async () => {
-        const address = `http://localhost:${port}`;
-        const result = await podmanDesktopApi.window.showInformationMessage(
-          `AI Lab API is listening on\n${address}`,
-          'OK',
-          `Copy`,
-        );
-        if (result === 'Copy') {
-          await podmanDesktopApi.env.clipboard.writeText(address);
-        }
-      }),
-      apiStatusBarItem,
-    );
-    apiStatusBarItem.show();
   }
 
   displayApiError(port: number): void {

@@ -115,8 +115,8 @@ importers:
   packages/backend:
     dependencies:
       '@huggingface/gguf':
-        specifier: ^0.1.13
-        version: 0.1.13
+        specifier: ^0.1.14
+        version: 0.1.14
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -887,13 +887,13 @@ packages:
     resolution: {integrity: sha512-GsBrnOzU8uj0LECDfD5zomZJIjrPhIlWU82AHwa2s40FKH+kcxQaBvBo3Z4TxyZHIyX8XTDxsyA33/Vx9eFuQA==}
     engines: {node: '>=6'}
 
-  '@huggingface/gguf@0.1.13':
-    resolution: {integrity: sha512-0d+aXCIXiYojkSjDQu5BOE784c8y2noMana5I1HtKlo/DLnzRQkXVbHRdasZ8zkBMu1A2DXDNQpA/Ids5tVO1w==}
+  '@huggingface/gguf@0.1.14':
+    resolution: {integrity: sha512-6EFIObplq0GVh+auh4UZbKcSyV9SMoNb4r1XDxGkIVD53xkwokj9om5KH5wF68Wg20VxEY9FaGGLQrs3lf11Ig==}
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/tasks@0.16.1':
-    resolution: {integrity: sha512-gH/LK7QIvyGYgycs9VIuZlCG0xqZEpb5wFR34Pocx6xRgS9iANu5moPxcUsR4QI8KEN7ApRGmgfJrqRJ7ijGxQ==}
+  '@huggingface/tasks@0.17.1':
+    resolution: {integrity: sha512-kN5F/pzwxtmdZ0jORumNyegNKOX/ciU5G/DMZcqK3SJShod4C6yfvBRCMn5sEDzanxtU8VjX+7TaInQFmmU8Nw==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5551,11 +5551,11 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 6.7.2
 
-  '@huggingface/gguf@0.1.13':
+  '@huggingface/gguf@0.1.14':
     dependencies:
-      '@huggingface/tasks': 0.16.1
+      '@huggingface/tasks': 0.17.1
 
-  '@huggingface/tasks@0.16.1': {}
+  '@huggingface/tasks@0.17.1': {}
 
   '@humanfs/core@0.19.1': {}
 

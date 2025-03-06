@@ -35,7 +35,7 @@ const API_PORT_DEFAULT = 10434;
 
 export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> implements Disposable {
   #configuration: Configuration;
-  #configurationPD: Configuration;
+  #configurationPodmanDesktop: Configuration;
   #configurationDisposable: Disposable | undefined;
 
   constructor(
@@ -45,7 +45,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
     super(webview, Messages.MSG_CONFIGURATION_UPDATE, () => this.getExtensionConfiguration());
 
     this.#configuration = configuration.getConfiguration('ai-lab');
-    this.#configurationPD = configuration.getConfiguration('preferences');
+    this.#configurationPodmanDesktop = configuration.getConfiguration('preferences');
   }
 
   getExtensionConfiguration(): ExtensionConfiguration {
@@ -56,11 +56,11 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
       experimentalTuning: this.#configuration.get<boolean>('experimentalTuning') ?? false,
       modelUploadDisabled: this.#configuration.get<boolean>('modelUploadDisabled') ?? false,
       showGPUPromotion: this.#configuration.get<boolean>('showGPUPromotion') ?? true,
-      appearance: this.#configurationPD.get<string>('appearance') ?? 'dark',
+      appearance: this.#configurationPodmanDesktop.get<string>('appearance') ?? 'dark',
     };
   }
 
-  getPDVersion(): string {
+  getPodmanDesktopVersion(): string {
     return version;
   }
 

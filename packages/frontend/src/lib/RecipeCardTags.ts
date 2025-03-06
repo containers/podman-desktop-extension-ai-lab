@@ -31,7 +31,7 @@ let isDark = true;
 
 async function setupProps(): Promise<void> {
   configuration = await studioClient.getExtensionConfiguration();
-  version = (await studioClient.getPDVersion()).toString().replace(/-next/g, '');
+  version = (await studioClient.getPodmanDesktopVersion()).toString().replace(/-next/g, '');
 
   if (configuration.appearance === 'dark') isDark = true;
   else if (configuration.appearance === 'light') isDark = false;

@@ -25,7 +25,7 @@ import { filesize } from 'filesize';
 import MonacoEditor from '/@/lib/monaco-editor/MonacoEditor.svelte';
 
 interface Props {
-  containerId: string | undefined;
+  containerId?: string;
 }
 
 let { containerId }: Props = $props();

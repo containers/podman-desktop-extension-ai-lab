@@ -223,7 +223,7 @@ importers:
         version: 5.0.3(svelte@5.22.5)(vite@6.2.0(@types/node@22.13.9)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0))
       '@tailwindcss/typography':
         specifier: ^0.5.16
-        version: 0.5.16(tailwindcss@4.0.11)
+        version: 0.5.16(tailwindcss@4.0.12)
       '@tailwindcss/vite':
         specifier: ^4.0.11
         version: 4.0.11(vite@6.2.0(@types/node@22.13.9)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0))
@@ -276,8 +276,8 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
       tailwindcss:
-        specifier: ^4.0.11
-        version: 4.0.11
+        specifier: ^4.0.12
+        version: 4.0.12
       vitest:
         specifier: ^3.0.5
         version: 3.0.5(@types/node@22.13.9)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.29.2)(yaml@2.7.0)
@@ -4501,6 +4501,9 @@ packages:
   tailwindcss@4.0.11:
     resolution: {integrity: sha512-GZ6+tNwieqvpFLZfx2tkZpfOMAK7iumbOJOLmd6v8AcYuHbjUb+cmDRu6l+rFkIqarh5FfLbCSRJhegcVdoPng==}
 
+  tailwindcss@4.0.12:
+    resolution: {integrity: sha512-bT0hJo91FtncsAMSsMzUkoo/iEU0Xs5xgFgVC9XmdM9bw5MhZuQFjPNl6wxAE0SiQF/YTZJa+PndGWYSDtuxAg==}
+
   tapable@2.2.1:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
     engines: {node: '>=6'}
@@ -5868,13 +5871,13 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.0.11
       '@tailwindcss/oxide-win32-x64-msvc': 4.0.11
 
-  '@tailwindcss/typography@0.5.16(tailwindcss@4.0.11)':
+  '@tailwindcss/typography@0.5.16(tailwindcss@4.0.12)':
     dependencies:
       lodash.castarray: 4.4.0
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 4.0.11
+      tailwindcss: 4.0.12
 
   '@tailwindcss/vite@4.0.11(vite@6.2.0(@types/node@22.13.9)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0))':
     dependencies:
@@ -9516,6 +9519,8 @@ snapshots:
   systeminformation@5.25.11: {}
 
   tailwindcss@4.0.11: {}
+
+  tailwindcss@4.0.12: {}
 
   tapable@2.2.1: {}
 

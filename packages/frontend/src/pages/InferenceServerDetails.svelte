@@ -24,18 +24,20 @@ import type { RequestOptions } from '@shared/src/models/RequestOptions';
 import { filesize } from 'filesize';
 import MonacoEditor from '/@/lib/monaco-editor/MonacoEditor.svelte';
 
-export let containerId: string | undefined = undefined;
+interface Props {
+  containerId: string | undefined;
+}
 
-let service: InferenceServer | undefined = undefined;
+let { containerId }: Props = $props();
 
-let selectedLanguage: string = 'curl';
-$: selectedLanguage;
+let service: InferenceServer | undefined = $state();
+let selectedLanguage: string = $state('curl');
 
-let variants: LanguageVariant[] = [];
-$: variants = $snippetLanguages.find(language => language.key === selectedLanguage)?.variants ?? [];
+let variants: LanguageVariant[] = $derived(
+  $snippetLanguages.find(language => language.key === selectedLanguage)?.variants ?? [],
+);
 
-let selectedVariant: string = 'cURL';
-$: selectedVariant;
+let selectedVariant: string = $state('cURL');
 
 const onLanguageChange = (): void => {
   if (variants.length > 0) {
@@ -46,8 +48,7 @@ const onLanguageChange = (): void => {
   }
 };
 
-let snippet: string | undefined = undefined;
-$: snippet;
+let snippet: string | undefined = $state();
 
 const generate = async (language: string, variant: string): Promise<void> => {
   copied = false;
@@ -114,15 +115,15 @@ const generate = async (language: string, variant: string): Promise<void> => {
   }
 };
 
-$: {
+$effect(() => {
   if (!snippet && service) {
-    generate('curl', 'cURL').catch(err =>
+    generate('curl', 'cURL').catch((err: unknown) =>
       console.error(`Error generating snippet for language curl variant cURL:`, err),
     );
   }
-}
+});
 
-let copied: boolean = false;
+let copied: boolean = $state(false);
 function copySnippet(): void {
   if (!snippet) return;
 
@@ -326,7 +327,7 @@ function handleOnChange(): void {
                     required
                     aria-label="snippet language selection"
                     bind:value={selectedLanguage}
-                    on:change={onLanguageChange}
+                    onchange={onLanguageChange}
                     id="languages"
                     class="border ml-1 text-sm rounded-lg bg-[var(--pd-action-button-details-bg)] block p-1 border-[var(--pd-action-button-details-bg)] placeholder-gray-700 text-[var(--pd-action-button-details-text)]"
                     name="languages">
@@ -340,7 +341,7 @@ function handleOnChange(): void {
                       aria-label="snippet language variant"
                       id="variants"
                       bind:value={selectedVariant}
-                      on:change={handleOnChange}
+                      onchange={handleOnChange}
                       disabled={variants.length === 1}
                       class="border ml-1 text-sm rounded-lg bg-[var(--pd-action-button-details-bg)] block p-1 border-[var(--pd-action-button-details-bg)] placeholder-gray-700 text-[var(--pd-action-button-details-text)]"
                       name="variants">

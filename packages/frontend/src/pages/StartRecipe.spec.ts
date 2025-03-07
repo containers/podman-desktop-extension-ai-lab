@@ -42,6 +42,7 @@ vi.mock('/@/stores/containerProviderConnections');
 vi.mock('/@/stores/modelsInfo');
 vi.mock('/@/stores/tasks');
 vi.mock('/@/stores/catalog');
+vi.mock('/@/stores/extensionConfiguration');
 
 vi.mock('tinro', () => ({
   router: {

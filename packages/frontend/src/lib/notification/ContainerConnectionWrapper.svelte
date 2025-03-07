@@ -11,36 +11,47 @@ import { fromStore } from 'svelte/store';
 import GPUEnabledMachine from '/@/lib/notification/GPUEnabledMachine.svelte';
 import { VMType } from '@shared/src/models/IPodman';
 
-export let containerProviderConnection: ContainerProviderConnectionInfo | undefined = undefined;
-export let model: ModelInfo | undefined = undefined;
-export let checkContext: ModelCheckerContext = 'inference';
+interface Props {
+  containerProviderConnection?: ContainerProviderConnectionInfo;
+  model?: ModelInfo;
+  checkContext?: ModelCheckerContext;
+}
 
-let connectionInfo: ContainerConnectionInfo | undefined;
-let gpuWarningRequired = false;
+let { containerProviderConnection, model, checkContext = 'inference' }: Props = $props();
+
+let connectionInfo: ContainerConnectionInfo | undefined = $state();
+let gpuWarningRequired: boolean = $derived(
+  !!(
+    containerProviderConnection &&
+    fromStore(configuration)?.current?.experimentalGPU &&
+    shouldRecommendGPU(containerProviderConnection)
+  ),
+);
 
 function shouldRecommendGPU(connection: ContainerProviderConnectionInfo): boolean {
   return connection.vmType === VMType.APPLEHV || connection.vmType === VMType.APPLEHV_LABEL;
 }
-$: if (typeof model?.memory === 'number' && containerProviderConnection) {
-  studioClient
-    .checkContainerConnectionStatusAndResources({
+
+async function checkContainerConnectionStatusAndResources(): Promise<void> {
+  try {
+    connectionInfo = await studioClient.checkContainerConnectionStatusAndResources({
       model: model as ModelInfo & { memory: number },
       context: checkContext,
       connection: containerProviderConnection,
-    })
-    .then(result => {
-      connectionInfo = result;
-    })
-    .catch((err: unknown) => {
-      connectionInfo = undefined;
-      console.error(err);
     });
-  gpuWarningRequired = !!(
-    fromStore(configuration)?.current?.experimentalGPU && shouldRecommendGPU(containerProviderConnection)
-  );
-} else {
-  connectionInfo = undefined;
+  } catch (err: unknown) {
+    console.error(err);
+    connectionInfo = undefined;
+  }
 }
+
+$effect(() => {
+  if (typeof model?.memory === 'number' && containerProviderConnection) {
+    checkContainerConnectionStatusAndResources().catch(console.error);
+  } else {
+    connectionInfo = undefined;
+  }
+});
 </script>
 
 {#if gpuWarningRequired}

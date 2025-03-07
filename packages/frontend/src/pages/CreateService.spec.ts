@@ -45,6 +45,7 @@ vi.mock('/@/stores/containerProviderConnections');
 vi.mock('/@/stores/inferenceServers');
 vi.mock('/@/stores/modelsInfo');
 vi.mock('/@/stores/tasks');
+vi.mock('/@/stores/extensionConfiguration');
 vi.mock('../utils/client', () => ({
   studioClient: {
     requestCreateInferenceServer: vi.fn(),

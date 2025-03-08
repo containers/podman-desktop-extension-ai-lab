@@ -220,3 +220,12 @@ test('filterRecipes is called with selected filters', async () => {
     languages: ['lang2'],
   });
 });
+
+test('Browse Recipe Repository button is present', async () => {
+  render(Recipes);
+
+  await vi.waitFor(() => {
+    const button = screen.getByTitle('https://github.com/containers/ai-lab-recipes/blob/main/CONTRIBUTING.md');
+    expect(button).toBeInTheDocument();
+  });
+});

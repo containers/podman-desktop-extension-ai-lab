@@ -118,7 +118,10 @@ function openContribution(): void {
             <span class="text-purple-500">audio, computer vision, multimodal, natural language processing</span>.
           </p>
           <p>Want to contribute more AI applications? The catalog is open source and available on GitHub!</p>
-          <Button title="Browse Recipe Repository" on:click={openContribution}>
+          <Button
+            title="https://github.com/containers/ai-lab-recipes/blob/main/CONTRIBUTING.md"
+            on:click={openContribution}
+            size="lg">
             <div class="flex items-center space-x-2">
               <Fa icon={faGithub} />
               <span>Browse Recipe Repository</span>

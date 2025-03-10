@@ -55,7 +55,7 @@ function asListModelResponse(model: ModelInfo): ListModelResponse {
   return {
     model: model.id,
     name: model.name,
-    digest: model.sha256,
+    digest: toDigest(model.name, model.sha256),
     size: model.file?.size,
     modified_at: model.file?.creation?.toISOString(),
     details: {},

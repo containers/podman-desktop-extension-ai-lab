@@ -1,6 +1,6 @@
 {
   "whispercpp": {
-    "default": "ghcr.io/containers/whispercpp@sha256:6c529656529da7aba851b6ab2d0653f23b77b9ca3c11cb46db47ff6dbd6d5e7c"
+    "default": "quay.io/ramalama/ramalama-whisper-server@sha256:72bce4bed86e7f72e41c60960dd7b1fd9b5115328f520ddcae5dbdd689376995"
   },
   "llamacpp": {
     "default": "ghcr.io/containers/podman-desktop-extension-ai-lab-playground-images/ai-lab-playground-chat@sha256:2eb6cd7a4c4f76e54eeb88465281f4ff2a8f7b7e49db893a579a8f6842f69eb1",

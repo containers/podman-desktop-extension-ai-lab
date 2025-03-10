@@ -166,7 +166,7 @@ function mockFiles(now: Date): void {
     return true;
   });
   const statSyncSpy = vi.spyOn(fs, 'statSync');
-  const info = new fs.Stats();
+  const info: Stats = {} as Stats;
   info.size = 32000;
   info.mtime = now;
   statSyncSpy.mockReturnValue(info);

@@ -262,7 +262,7 @@ export class ApiServer implements Disposable {
   }
 
   pullModel(req: Request, res: Response): void {
-    const modelName = req.body['model'] || req.body['name'];
+    const modelName = req.body['model'] ?? req.body['name'];
     let stream: boolean = true;
     if ('stream' in req.body) {
       stream = req.body['stream'];

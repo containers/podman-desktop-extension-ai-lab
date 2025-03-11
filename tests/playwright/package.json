@@ -11,8 +11,8 @@
   "devDependencies": {
     "@playwright/test": "^1.51.0",
     "@podman-desktop/tests-playwright": "1.17.1",
-    "@types/node": "^20",
-    "electron": "^34.3.0",
+    "@types/node": "^22",
+    "electron": "^35.0.1",
     "typescript": "^5.7.3",
     "vitest": "^3.0.5",
     "xvfb-maybe": "^0.2.1"

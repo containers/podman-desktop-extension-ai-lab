@@ -235,7 +235,7 @@ export default [
       '@typescript-eslint/ban-types': 'off',
       '@typescript-eslint/no-unused-expressions': 'off',
       'svelte/require-each-key': 'off',
-      'svelte/infinite-reactive-loop': 'off',
+      'svelte/infinite-reactive-loop': 'error',
     },
   },
 

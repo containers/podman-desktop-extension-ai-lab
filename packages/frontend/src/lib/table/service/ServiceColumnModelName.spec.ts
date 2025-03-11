@@ -31,6 +31,7 @@ test('the model name should be displayed', async () => {
       health: undefined,
       models: [
         {
+          id: 'model1',
           name: 'dummyName',
         } as unknown as ModelInfo,
       ],
@@ -51,9 +52,11 @@ test('multiple models name should be displayed as list', async () => {
       health: undefined,
       models: [
         {
+          id: 'model1',
           name: 'dummyName-1',
         } as unknown as ModelInfo,
         {
+          id: 'model2',
           name: 'dummyName-2',
         } as unknown as ModelInfo,
       ],

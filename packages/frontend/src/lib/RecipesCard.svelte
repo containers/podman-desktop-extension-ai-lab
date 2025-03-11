@@ -14,7 +14,7 @@ export let recipes: Recipe[];
       <div class="text-gray-400 mt-2">There is no recipe in this category for now ! Come back later</div>
     {/if}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-      {#each recipes as recipe}
+      {#each recipes as recipe (recipe.id)}
         <RecipeCard recipe={recipe} />
       {/each}
     </div>

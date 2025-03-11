@@ -223,7 +223,7 @@ function handleOnClick(): void {
                       {/key}
                       <!-- show all message except the system prompt -->
                       <ul>
-                        {#each messages as message}
+                        {#each messages as message (message.id)}
                           <li>
                             <ChatMessage message={message} />
                           </li>

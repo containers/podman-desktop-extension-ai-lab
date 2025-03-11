@@ -176,7 +176,7 @@ function handleDragLeave(): void {
               on:change={onBackendChange}
               name="backend"
               class="border rounded-lg w-full focus:ring-purple-500 focus:border-purple-500 block p-2.5 bg-charcoal-900 border-charcoal-900 placeholder-gray-700 text-white">
-              {#each Object.values(InferenceType) as type}
+              {#each Object.values(InferenceType) as type (type)}
                 <option value={type}>{type}</option>
               {/each}
             </select>

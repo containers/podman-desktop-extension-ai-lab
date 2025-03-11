@@ -117,7 +117,7 @@ function toggleExpanded(): void {
   class="w-full flex flex-row gap-2 py-2"
   class:overflow-hidden={!expanded}
   class:flex-wrap={expanded}>
-  {#each TAGS as tag, i}
+  {#each TAGS as tag, i (tag)}
     <div bind:this={divTags[i]}>
       <Badge class="{getBGColor(tag)} {getTextColor(tag)}" content={updateContent(tag)} />
     </div>

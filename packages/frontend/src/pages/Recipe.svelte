@@ -88,7 +88,7 @@ function getFilter(items: ApplicationState[]): ApplicationState[] {
   </svelte:fragment>
   <svelte:fragment slot="subtitle">
     <div class="mt-2">
-      {#each recipe?.categories ?? [] as categoryId}
+      {#each recipe?.categories ?? [] as categoryId (categoryId)}
         <Card
           title={categories.find(category => category.id === categoryId)?.name ?? '?'}
           classes="bg-[var(--pd-label-bg)] p-1 text-xs w-fit" />

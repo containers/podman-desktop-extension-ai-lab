@@ -101,7 +101,7 @@ const filtersComponents: { label: string; key: CatalogFilterKey }[] = [
     <div class="min-w-full min-h-full flex-1">
       <div class="px-5 space-y-5">
         <div class="flex flex-row space-x-2 text-[var(--pd-modal-text)]">
-          {#each filtersComponents as filterComponent}
+          {#each filtersComponents as filterComponent (filterComponent.key)}
             <div class="w-full">
               <label for={filterComponent.key} class="block mb-2 text-sm font-medium">{filterComponent.label}</label>
               <Dropdown
@@ -112,7 +112,7 @@ const filtersComponents: { label: string; key: CatalogFilterKey }[] = [
           {/each}
         </div>
         {#if groups}
-          {#each groups.entries() as [category, recipes]}
+          {#each groups.entries() as [category, recipes] (category.id)}
             <RecipesCard category={category} recipes={recipes} />
           {/each}
         {/if}

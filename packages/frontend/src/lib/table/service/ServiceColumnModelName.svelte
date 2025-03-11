@@ -10,7 +10,7 @@ export let object: InferenceServer;
   </span>
 {:else}
   <ul>
-    {#each object.models as model}
+    {#each object.models as model (model.id)}
       <li class="text-[var(--pd-table-body-text)]">{model.name}</li>
     {/each}
   </ul>

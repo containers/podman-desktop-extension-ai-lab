@@ -266,7 +266,7 @@ function handleOnChange(): void {
                       {service.models.length > 1 ? 'Models' : 'Model'}
                     </span>
                     <div>
-                      {#each service.models as model}
+                      {#each service.models as model (model.id)}
                         <div>
                           <div
                             class="w-full bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md px-2 py-1 flex flex-col gap-y-4">
@@ -331,7 +331,7 @@ function handleOnChange(): void {
                     id="languages"
                     class="border ml-1 text-sm rounded-lg bg-[var(--pd-action-button-details-bg)] block p-1 border-[var(--pd-action-button-details-bg)] placeholder-gray-700 text-[var(--pd-action-button-details-text)]"
                     name="languages">
-                    {#each $snippetLanguages as language}
+                    {#each $snippetLanguages as language (language.key)}
                       <option class="my-1" value={language.key}>{language.label}</option>
                     {/each}
                   </select>
@@ -345,7 +345,7 @@ function handleOnChange(): void {
                       disabled={variants.length === 1}
                       class="border ml-1 text-sm rounded-lg bg-[var(--pd-action-button-details-bg)] block p-1 border-[var(--pd-action-button-details-bg)] placeholder-gray-700 text-[var(--pd-action-button-details-text)]"
                       name="variants">
-                      {#each variants as variant}
+                      {#each variants as variant (variant.key)}
                         <option class="my-1" value={variant.key}>{variant.key}</option>
                       {/each}
                     </select>

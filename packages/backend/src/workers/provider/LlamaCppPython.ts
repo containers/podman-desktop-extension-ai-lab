@@ -183,7 +183,6 @@ export class LlamaCppPython extends InferenceProvider {
     const aiLabPort = this.configurationRegistry.getExtensionConfiguration().apiPort;
     // add in the URL the port of the inference server
     const aiLabDocsLink = `http://localhost:${aiLabPort}/api-docs/${config.port}`;
-    console.log('set the ai lab docs link to', aiLabDocsLink);
     // adding labels to inference server
     labels['docs'] = aiLabDocsLink;
     labels['api'] = `http://localhost:${config.port}/v1`;

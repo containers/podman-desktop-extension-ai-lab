@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 /* eslint-disable sonarjs/no-nested-functions */
 
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ApiServer, PREFERENCE_RANDOM_PORT } from './apiServer';
 import request from 'supertest';
 import type * as podmanDesktopApi from '@podman-desktop/api';
@@ -190,6 +190,19 @@ test('/api/tags returns error', async () => {
   vi.mocked(modelsManager.getModelsInfo).mockRejectedValue({});
   const res = await request(server.getListener()!).get('/api/tags').expect(500);
   expect(res.body.message).toEqual('unable to get models');
+});
+
+test('/api-docs/9000 returns swagger UI', async () => {
+  expect(server.getListener()).toBeDefined();
+  vi.mocked(modelsManager.getModelsInfo).mockRejectedValue({});
+  const listener = server.getListener();
+  if (!listener) {
+    assert.fail('listener is not defined');
+  }
+  const response = await request(listener).get('/api-docs/9000/').expect(200);
+  expect(response.status).toBe(200);
+  // Ensure it returns the Swagger UI page
+  expect(response.text).toContain('<title>Swagger UI</title>');
 });
 
 test('verify listening on localhost', async () => {

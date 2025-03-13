@@ -49,10 +49,7 @@ const config = {
       formats: ['cjs'],
     },
     rollupOptions: {
-      external: [
-        '@podman-desktop/api',
-        ...builtinModules.flatMap(p => [p, `node:${p}`]),
-      ],
+      external: ['@podman-desktop/api', 'swagger-ui-express', ...builtinModules.flatMap(p => [p, `node:${p}`])],
       output: {
         entryFileNames: '[name].cjs',
       },

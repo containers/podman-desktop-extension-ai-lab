@@ -19,12 +19,12 @@
 import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
 import fs from 'node:fs';
 import * as path from 'node:path';
-import { type Webview, fs as apiFs, type Disposable, env, type ContainerProviderConnection } from '@podman-desktop/api';
+import { type Webview, type Disposable, env, type ContainerProviderConnection } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
-import { Downloader } from '../utils/downloader';
+import type { Downloader } from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { Task } from '@shared/src/models/ITask';
 import type { BaseEvent } from '../models/baseEvent';
@@ -39,16 +39,15 @@ import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
+import type { ModelRegistryRegistry } from '../registries/ModelRegistryRegistry';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
-  #watcher?: podmanDesktopApi.FileSystemWatcher;
   #disposables: Disposable[];
 
   #downloaders: Map<string, Downloader> = new Map<string, Downloader>();
 
   constructor(
-    private modelsDir: string,
     private webview: Webview,
     private catalogManager: CatalogManager,
     private telemetry: podmanDesktopApi.TelemetryLogger,
@@ -56,9 +55,11 @@ export class ModelsManager implements Disposable {
     private cancellationTokenRegistry: CancellationTokenRegistry,
     private podmanConnection: PodmanConnection,
     private configurationRegistry: ConfigurationRegistry,
+    private modelRegistryRegistry: ModelRegistryRegistry,
   ) {
     this.#models = new Map();
     this.#disposables = [];
+    this.modelRegistryRegistry.getAll().forEach(registry => registry.onUpdate(this.loadLocalModels));
   }
 
   init(): void {
@@ -76,7 +77,6 @@ export class ModelsManager implements Disposable {
 
   dispose(): void {
     this.#models.clear();
-    this.#watcher?.dispose();
     this.#disposables.forEach(d => d.dispose());
   }
 
@@ -87,13 +87,6 @@ export class ModelsManager implements Disposable {
       this.getLocalModelsFromDisk();
       await this.sendModelsInfo();
     };
-    if (this.#watcher === undefined) {
-      this.#watcher = apiFs.createFileSystemWatcher(this.modelsDir);
-      this.#watcher.onDidCreate(reloadLocalModels);
-      this.#watcher.onDidDelete(reloadLocalModels);
-      this.#watcher.onDidChange(reloadLocalModels);
-    }
-
     // Initialize the local models manually
     await reloadLocalModels();
   }
@@ -110,45 +103,8 @@ export class ModelsManager implements Disposable {
     });
   }
 
-  getModelsDirectory(): string {
-    return this.modelsDir;
-  }
-
   getLocalModelsFromDisk(): void {
-    if (!fs.existsSync(this.modelsDir)) {
-      return;
-    }
-    const entries = fs.readdirSync(this.modelsDir, { withFileTypes: true });
-    const dirs = entries.filter(dir => dir.isDirectory());
-    for (const d of dirs) {
-      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
-      if (modelEntries.length !== 1) {
-        // we support models with one file only for now
-        continue;
-      }
-      const modelFile = modelEntries[0];
-      const fullPath = path.resolve(d.path, d.name, modelFile);
-
-      // Check for corresponding models or tmp file that should be ignored
-      const model = this.#models.get(d.name);
-      if (model === undefined || fullPath.endsWith('.tmp')) {
-        continue;
-      }
-
-      let info: { size?: number; mtime?: Date } = { size: undefined, mtime: undefined };
-      try {
-        info = fs.statSync(fullPath);
-      } catch (err: unknown) {
-        console.error('Something went wrong while getting file stats (probably in use).', err);
-      }
-
-      model.file = {
-        file: modelFile,
-        path: path.resolve(d.path, d.name),
-        size: info.size,
-        creation: info.mtime,
-      };
-    }
+    this.modelRegistryRegistry.getAll().forEach(registry => registry.getLocalModelsFromDisk());
   }
 
   isModelOnDisk(modelId: string): boolean {
@@ -175,10 +131,6 @@ export class ModelsManager implements Disposable {
     return getLocalModelFile(this.getModelInfo(modelId));
   }
 
-  getLocalModelFolder(modelId: string): string {
-    return path.resolve(this.modelsDir, modelId);
-  }
-
   async deleteModel(modelId: string): Promise<void> {
     const model = this.#models.get(modelId);
     if (!model?.file) {
@@ -189,16 +141,19 @@ export class ModelsManager implements Disposable {
     await this.sendModelsInfo();
     try {
       await this.deleteRemoteModel(model);
-      let modelPath;
       // if model does not have any url, it has been imported locally by the user
       if (!model.url) {
-        modelPath = path.join(model.file.path, model.file.file);
+        const modelPath = path.join(model.file.path, model.file.file);
         // remove it from the catalog as it cannot be downloaded anymore
         await this.catalogManager.removeUserModel(modelId);
+        await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
       } else {
-        modelPath = this.getLocalModelFolder(modelId);
+        const modelRegistry = this.modelRegistryRegistry.findModelRegistry(model.url);
+        if (!modelRegistry) {
+          throw new Error(`no model registry found for model ${model.id} url ${model.url}`);
+        }
+        await modelRegistry.deleteModel(model);
       }
-      await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
 
       this.telemetry.logUsage('model.delete', { 'model.id': getHash(modelId) });
       model.file = model.state = undefined;
@@ -347,16 +302,13 @@ export class ModelsManager implements Disposable {
       throw new Error(`model ${model.id} does not have url defined.`);
     }
 
-    // Ensure path to model directory exist
-    const destDir = path.join(this.getModelsDirectory(), model.id);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
+    const modelRegistry = this.modelRegistryRegistry.findModelRegistry(model.url);
+    if (!modelRegistry) {
+      throw new Error(`no model registry found for model ${model.id} url ${model.url}`);
     }
 
-    const target = path.resolve(destDir, path.basename(model.url));
     // Create a downloader
-    const downloader = new Downloader(model.url, target, model.sha256, abortSignal);
-
+    const downloader = modelRegistry.createDownloader(model, abortSignal);
     this.#downloaders.set(model.id, downloader);
 
     return downloader;

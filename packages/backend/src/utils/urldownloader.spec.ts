@@ -17,11 +17,11 @@
  ***********************************************************************/
 
 import { vi, test, expect, beforeEach } from 'vitest';
-import { Downloader } from './downloader';
 import { EventEmitter } from '@podman-desktop/api';
 import { createWriteStream, promises, type WriteStream } from 'node:fs';
 import https, { type RequestOptions } from 'node:https';
 import type { ClientRequest, IncomingMessage } from 'node:http';
+import { URLDownloader } from './urldownloader';
 
 vi.mock('@podman-desktop/api', () => {
   return {
@@ -67,12 +67,12 @@ beforeEach(() => {
 });
 
 test('Downloader constructor', async () => {
-  const downloader = new Downloader('dummyUrl', 'dummyTarget');
+  const downloader = new URLDownloader('dummyUrl', 'dummyTarget');
   expect(downloader.getTarget()).toBe('dummyTarget');
 });
 
 test('perform download failed', async () => {
-  const downloader = new Downloader('dummyUrl', 'dummyTarget');
+  const downloader = new URLDownloader('dummyUrl', 'dummyTarget');
 
   let onResponse: ((msg: IncomingMessage) => void) | undefined;
   vi.mocked(
@@ -131,7 +131,7 @@ test('perform download failed', async () => {
 });
 
 test('perform download successfully', async () => {
-  const downloader = new Downloader('dummyUrl', 'dummyTarget');
+  const downloader = new URLDownloader('dummyUrl', 'dummyTarget');
   let onResponse: ((msg: IncomingMessage) => void) | undefined;
   vi.mocked(
     https.get as (url: string | URL, options: RequestOptions, callback: (_: IncomingMessage) => void) => ClientRequest,
@@ -188,7 +188,7 @@ test('perform download successfully', async () => {
   expect(promises.rm).not.toHaveBeenCalled();
 });
 
-class DownloaderTest extends Downloader {
+class DownloaderTest extends URLDownloader {
   public override getRedirect(url: string, location: string): string {
     return super.getRedirect(url, location);
   }

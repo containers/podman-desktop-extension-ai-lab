@@ -36,6 +36,8 @@ import { VMType } from '@shared/src/models/IPodman';
 import { getPodmanMachineName } from '../utils/podman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 import { Uploader } from '../utils/uploader';
+import { ModelRegistryRegistry } from '../registries/ModelRegistryRegistry';
+import { URLModelRegistry } from '../models/URLModelRegistry';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -85,6 +87,7 @@ vi.mock('@podman-desktop/api', () => {
     window: {
       showErrorMessage: mocks.showErrorMessageMock,
     },
+    EventEmitter: vi.fn(),
   };
 });
 
@@ -119,9 +122,14 @@ const configurationRegistryMock: ConfigurationRegistry = {
   getExtensionConfiguration: vi.fn(),
 } as unknown as ConfigurationRegistry;
 
+let modelRegistryRegistry: ModelRegistryRegistry;
+
 beforeEach(() => {
   vi.resetAllMocks();
   taskRegistry = new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview);
+  modelRegistryRegistry = new ModelRegistryRegistry({
+    postMessage: vi.fn().mockReturnValue(Promise.resolve()),
+  } as unknown as Webview);
 
   vi.mocked(configurationRegistryMock.getExtensionConfiguration).mockReturnValue({
     modelUploadDisabled: false,
@@ -193,7 +201,6 @@ test('getModelsInfo should get models in local directory', async () => {
     modelsDir = '/home/user/aistudio/models';
   }
   const manager = new ModelsManager(
-    modelsDir,
     {
       postMessage: vi.fn(),
     } as unknown as Webview,
@@ -211,7 +218,9 @@ test('getModelsInfo should get models in local directory', async () => {
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
+    modelRegistryRegistry,
   );
+  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -249,7 +258,6 @@ test('getModelsInfo should return an empty array if the models folder does not e
     modelsDir = '/home/user/aistudio/models';
   }
   const manager = new ModelsManager(
-    modelsDir,
     {} as Webview,
     {
       getModels(): ModelInfo[] {
@@ -262,7 +270,9 @@ test('getModelsInfo should return an empty array if the models folder does not e
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
+    modelRegistryRegistry,
   );
+  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
   manager.init();
   manager.getLocalModelsFromDisk();
   expect(manager.getModelsInfo()).toEqual([]);
@@ -289,7 +299,6 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
     modelsDir = '/home/user/aistudio/models';
   }
   const manager = new ModelsManager(
-    modelsDir,
     {
       postMessage: vi.fn(),
     } as unknown as Webview,
@@ -304,7 +313,9 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
+    modelRegistryRegistry,
   );
+  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -349,7 +360,6 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
     modelsDir = '/home/user/aistudio/models';
   }
   const manager = new ModelsManager(
-    modelsDir,
     {
       postMessage: vi.fn(),
     } as unknown as Webview,
@@ -364,7 +374,9 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
+    modelRegistryRegistry,
   );
+  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -387,7 +399,6 @@ test('loadLocalModels should post a message with the message on disk and on cata
     modelsDir = '/home/user/aistudio/models';
   }
   const manager = new ModelsManager(
-    modelsDir,
     {
       postMessage: postMessageMock,
     } as unknown as Webview,
@@ -406,7 +417,9 @@ test('loadLocalModels should post a message with the message on disk and on cata
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
+    modelRegistryRegistry,
   );
+  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   expect(postMessageMock).toHaveBeenNthCalledWith(1, {
@@ -438,7 +451,6 @@ test('deleteModel deletes the model folder', async () => {
   rmSpy.mockResolvedValue();
   const postMessageMock = vi.fn();
   const manager = new ModelsManager(
-    modelsDir,
     {
       postMessage: postMessageMock,
     } as unknown as Webview,
@@ -447,7 +459,7 @@ test('deleteModel deletes the model folder', async () => {
         return [
           {
             id: 'model-id-1',
-            url: 'model-url',
+            url: 'https:///model-url',
           },
         ] as ModelInfo[];
       },
@@ -458,7 +470,9 @@ test('deleteModel deletes the model folder', async () => {
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
+    modelRegistryRegistry,
   );
+  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   await manager.deleteModel('model-id-1');
@@ -483,7 +497,7 @@ test('deleteModel deletes the model folder', async () => {
     body: [
       {
         id: 'model-id-1',
-        url: 'model-url',
+        url: 'https:///model-url',
       },
     ],
   });
@@ -504,7 +518,6 @@ describe('deleting models', () => {
     rmSpy.mockRejectedValue(new Error('failed'));
     const postMessageMock = vi.fn();
     const manager = new ModelsManager(
-      modelsDir,
       {
         postMessage: postMessageMock,
       } as unknown as Webview,
@@ -513,7 +526,7 @@ describe('deleting models', () => {
           return [
             {
               id: 'model-id-1',
-              url: 'model-url',
+              url: 'https:///model-url',
             },
           ] as ModelInfo[];
         },
@@ -524,7 +537,9 @@ describe('deleting models', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
+    modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
     manager.init();
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
@@ -549,7 +564,7 @@ describe('deleting models', () => {
       body: [
         {
           id: 'model-id-1',
-          url: 'model-url',
+          url: 'https:///model-url',
           file: {
             creation: now,
             file: 'model-id-1-model',
@@ -568,7 +583,6 @@ describe('deleting models', () => {
     const postMessageMock = vi.fn();
     const removeUserModelMock = vi.fn();
     const manager = new ModelsManager(
-      'appdir',
       {
         postMessage: postMessageMock,
       } as unknown as Webview,
@@ -592,6 +606,7 @@ describe('deleting models', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
@@ -630,7 +645,6 @@ describe('deleting models', () => {
     rmSpy.mockResolvedValue(undefined);
 
     const manager = new ModelsManager(
-      '/home/user/aistudio',
       {
         postMessage: vi.fn().mockResolvedValue(undefined),
       } as unknown as Webview,
@@ -653,6 +667,7 @@ describe('deleting models', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
 
     await manager.loadLocalModels();
@@ -676,7 +691,6 @@ describe('downloadModel', () => {
   test('download model if not already on disk', async () => {
     vi.mocked(cancellationTokenRegistryMock.createCancellationTokenSource).mockReturnValue(99);
     const manager = new ModelsManager(
-      'appdir',
       {} as Webview,
       {
         getModels(): ModelInfo[] {
@@ -688,14 +702,16 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
+    modelRegistryRegistry.register(new URLModelRegistry(manager, 'appdir'));
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     await manager.requestDownloadModel({
       id: 'id',
-      url: 'url',
+      url: 'https:///url',
       name: 'name',
     } as ModelInfo);
 
@@ -712,7 +728,6 @@ describe('downloadModel', () => {
   });
   test('retrieve model path if already on disk', async () => {
     const manager = new ModelsManager(
-      'appdir',
       {} as Webview,
       {
         getModels(): ModelInfo[] {
@@ -724,6 +739,7 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -745,7 +761,6 @@ describe('downloadModel', () => {
   });
   test('fail if model on disk has different sha of the expected value', async () => {
     const manager = new ModelsManager(
-      'appdir',
       {} as Webview,
       {
         getModels(): ModelInfo[] {
@@ -757,6 +772,7 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
     vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -777,7 +793,6 @@ describe('downloadModel', () => {
     mocks.getDownloaderCompleter.mockReturnValue(true);
 
     const manager = new ModelsManager(
-      'appdir',
       {} as Webview,
       {
         getModels(): ModelInfo[] {
@@ -789,20 +804,22 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
+    modelRegistryRegistry.register(new URLModelRegistry(manager, 'appdir'));
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
 
     await manager.requestDownloadModel({
       id: 'id',
-      url: 'url',
+      url: 'https:///url',
       name: 'name',
     } as ModelInfo);
 
     await manager.requestDownloadModel({
       id: 'id',
-      url: 'url',
+      url: 'https:///url',
       name: 'name',
     } as ModelInfo);
 
@@ -815,7 +832,6 @@ describe('downloadModel', () => {
     mocks.getDownloaderCompleter.mockReturnValue(false);
 
     const manager = new ModelsManager(
-      'appdir',
       {} as Webview,
       {
         getModels(): ModelInfo[] {
@@ -827,7 +843,9 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
+    modelRegistryRegistry.register(new URLModelRegistry(manager, 'appdir'));
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
@@ -847,13 +865,13 @@ describe('downloadModel', () => {
 
     await manager.requestDownloadModel({
       id: 'id',
-      url: 'url',
+      url: 'https:///url',
       name: 'name',
     } as ModelInfo);
 
     await manager.requestDownloadModel({
       id: 'id',
-      url: 'url',
+      url: 'https:///url',
       name: 'name',
     } as ModelInfo);
 
@@ -866,7 +884,6 @@ describe('downloadModel', () => {
 describe('getModelMetadata', () => {
   test('unknown model', async () => {
     const manager = new ModelsManager(
-      'appdir',
       {} as Webview,
       {
         getModels: (): ModelInfo[] => [],
@@ -876,6 +893,7 @@ describe('getModelMetadata', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
 
     await expect(() => manager.getModelMetadata('unknown-model-id')).rejects.toThrowError(
@@ -885,7 +903,6 @@ describe('getModelMetadata', () => {
 
   test('remote model', async () => {
     const manager = new ModelsManager(
-      'appdir',
       {} as Webview,
       {
         getModels: (): ModelInfo[] => [
@@ -902,6 +919,7 @@ describe('getModelMetadata', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
 
     manager.init();
@@ -922,7 +940,6 @@ describe('getModelMetadata', () => {
 
   test('local model', async () => {
     const manager = new ModelsManager(
-      'appdir',
       {
         postMessage: vi.fn(),
       } as unknown as Webview,
@@ -944,6 +961,7 @@ describe('getModelMetadata', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
 
     manager.init();
@@ -989,7 +1007,6 @@ describe('uploadModelToPodmanMachine', () => {
     } as unknown as Uploader);
 
     const manager = new ModelsManager(
-      'appdir',
       {
         postMessage: vi.fn(),
       } as unknown as Webview,
@@ -1002,6 +1019,7 @@ describe('uploadModelToPodmanMachine', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
 
     manager.init();
@@ -1023,7 +1041,6 @@ describe('uploadModelToPodmanMachine', () => {
     });
 
     const manager = new ModelsManager(
-      'appdir',
       {
         postMessage: vi.fn(),
       } as unknown as Webview,
@@ -1036,6 +1053,7 @@ describe('uploadModelToPodmanMachine', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
+      modelRegistryRegistry,
     );
 
     manager.init();

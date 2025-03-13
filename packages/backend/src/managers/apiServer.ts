@@ -20,7 +20,7 @@ import type { Disposable } from '@podman-desktop/api';
 import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import type { Server } from 'node:http';
-import path from 'node:path';
+import path, { resolve } from 'node:path';
 import http from 'node:http';
 import { existsSync } from 'node:fs';
 import * as podmanDesktopApi from '@podman-desktop/api';
@@ -42,6 +42,9 @@ import type { ChatCompletionMessageParam } from 'openai/resources';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { Stream } from 'openai/streaming';
 import crypto from 'node:crypto';
+import swaggerUi from 'swagger-ui-express';
+import { getAbsoluteFSPath } from 'swagger-ui-dist';
+import openAiApi from '../assets/openai.json';
 
 const SHOW_API_ERROR_COMMAND = 'ai-lab.show-api-error';
 
@@ -50,6 +53,10 @@ export const PREFERENCE_RANDOM_PORT = 0;
 type ListModelResponse = components['schemas']['ListModelResponse'];
 type Message = components['schemas']['Message'];
 type ProcessModelResponse = components['schemas']['ProcessModelResponse'];
+
+interface SwaggerRequest extends Request {
+  swaggerDoc?: { servers: { description: string; url: string }[] };
+}
 
 function asListModelResponse(model: ModelInfo): ListModelResponse {
   return {
@@ -143,6 +150,31 @@ export class ApiServer implements Disposable {
     app.get('/', (_res, res) => res.sendStatus(200)); //required for the ollama client to work against us
     app.use('/api', router);
     app.use('/spec', this.getSpec.bind(this));
+
+    const options = {};
+
+    // get swagger-ui path from dist/swagger-ui
+    const swaggerPath = resolve(getAbsoluteFSPath(), 'swagger-ui');
+
+    app.use(
+      '/api-docs/:portNumber',
+      function (req: SwaggerRequest, res: Response, next: NextFunction) {
+        if (req.path.startsWith('/swagger-ui') && req.path !== '/swagger-ui-init.js') {
+          // serve the swagger-ui-dist file from swaggerPath
+          res.sendFile(path.join(swaggerPath, req.path));
+          return;
+        }
+        const copyOpenAiJson = structuredClone(openAiApi);
+        // Extract the port number from the route parameter and set it as the server URL
+        const portNumber = req.params.portNumber;
+        copyOpenAiJson.servers = [{ description: 'AI Lab Inference Server', url: `http://localhost:${portNumber}` }];
+        req.swaggerDoc = copyOpenAiJson;
+
+        next();
+      },
+      swaggerUi.serveFiles(openAiApi, options),
+      swaggerUi.setup(),
+    );
 
     const server = http.createServer(app);
     let listeningOn = this.configurationRegistry.getExtensionConfiguration().apiPort;

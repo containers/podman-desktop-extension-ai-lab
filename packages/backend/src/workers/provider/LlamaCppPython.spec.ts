@@ -184,7 +184,7 @@ describe('perform', () => {
       labels: {
         [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
         api: 'http://localhost:8888/v1',
-        docs: 'http://localhost:8888/docs',
+        docs: 'http://localhost:10434/api-docs/8888',
       },
       models: [DummyModel],
       status: 'running',
@@ -230,7 +230,7 @@ describe('perform', () => {
       Labels: {
         [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
         api: 'http://localhost:8888/v1',
-        docs: 'http://localhost:8888/docs',
+        docs: 'http://localhost:10434/api-docs/8888',
       },
     });
   });

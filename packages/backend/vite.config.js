@@ -16,9 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { join } from 'path';
+import { join, resolve } from 'node:path';
 import { builtinModules } from 'module';
+import { existsSync } from 'node:fs';
 import replace from '@rollup/plugin-replace';
+import { copyFile, mkdir, readdir } from 'node:fs/promises';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -53,6 +55,35 @@ const config = {
       output: {
         entryFileNames: '[name].cjs',
       },
+      plugins: [
+        {
+          // copy the swagger-ui-dist files to the dist folder as we need the files to be served
+          name: 'copy-swagger-ui',
+          async buildStart() {
+            const start = performance.now();
+            const source = resolve('../../node_modules/swagger-ui-dist');
+            const destination = resolve('dist/swagger-ui');
+
+            // Ensure destination directory exists
+            if (!existsSync(destination)) {
+              await mkdir(destination, { recursive: true });
+            }
+
+            // Copy files
+            const entries = await readdir(source, { withFileTypes: true });
+
+            for (const entry of entries) {
+              const srcFile = join(source, entry.name);
+              const destFile = join(destination, entry.name);
+
+              if (entry.isFile()) {
+                await copyFile(srcFile, destFile);
+              }
+            }
+            console.info(`Swagger UI files copied in ${Math.round(performance.now() - start)}ms to dist/swagger-ui`);
+          },
+        },
+      ],
     },
     emptyOutDir: true,
     reportCompressedSize: false,

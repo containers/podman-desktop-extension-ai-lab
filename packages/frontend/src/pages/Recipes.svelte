@@ -115,7 +115,7 @@ function openContribution(): void {
           </p>
           <p>
             Recipes are organized into categories:
-            <span class="text-purple-500">audio, computer vision, multimodal, natural language processing</span>.
+            <span class="text-[var(--pd-link)]">audio, computer vision, multimodal, natural language processing</span>.
           </p>
           <p>Want to contribute more AI applications? The catalog is open source and available on GitHub!</p>
           <Button

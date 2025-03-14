@@ -92,8 +92,6 @@ export interface StudioAPI {
    */
   requestRemoveLocalModel(modelId: string): Promise<void>;
 
-  getModelsDirectory(): Promise<string>;
-
   navigateToContainer(containerId: string): Promise<void>;
   navigateToPod(podId: string): Promise<void>;
   navigateToResources(): Promise<void>;

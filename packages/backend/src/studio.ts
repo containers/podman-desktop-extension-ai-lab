@@ -58,6 +58,7 @@ import type { InstructlabAPI } from '@shared/InstructlabAPI';
 import { INSTRUCTLAB_API_CHANNEL } from '@shared/InstructlabAPI';
 import { ModelHandlerRegistry } from './registries/ModelHandlerRegistry';
 import { URLModelHandler } from './models/URLModelHandler';
+import { HuggingFaceModelHandler } from './models/HuggingFaceModelHandler';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -237,6 +238,9 @@ export class Studio {
     );
     this.#extensionContext.subscriptions.push(urlModelHandler);
     this.#extensionContext.subscriptions.push(modelHandlerRegistry.register(urlModelHandler));
+    const hfModelHandler = new HuggingFaceModelHandler(this.#modelsManager);
+    this.#extensionContext.subscriptions.push(hfModelHandler);
+    this.#extensionContext.subscriptions.push(modelHandlerRegistry.register(hfModelHandler));
     this.#modelsManager.init();
     this.#extensionContext.subscriptions.push(this.#modelsManager);
 

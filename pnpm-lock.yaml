@@ -117,6 +117,9 @@ importers:
       '@huggingface/gguf':
         specifier: ^0.1.14
         version: 0.1.14
+      '@huggingface/hub':
+        specifier: ^1.1.0
+        version: 1.1.0
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -911,8 +914,15 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
+  '@huggingface/hub@1.1.0':
+    resolution: {integrity: sha512-ISBWKflpav01nEum9f7LvMP+ae86GhyOFZghAiCTFnki5H7NQcoTX5OISqbwr7987gKVoVXSCooDsZcVU2SXAA==}
+    engines: {node: '>=18'}
+
   '@huggingface/tasks@0.17.1':
     resolution: {integrity: sha512-kN5F/pzwxtmdZ0jORumNyegNKOX/ciU5G/DMZcqK3SJShod4C6yfvBRCMn5sEDzanxtU8VjX+7TaInQFmmU8Nw==}
+
+  '@huggingface/tasks@0.17.8':
+    resolution: {integrity: sha512-8x9YxT1bkOhD0eMn7aytia4OrKQsjVTuQBg2Pkh7Sgjghv+8c6KQq4A5/dJbyNFdvY/1lcd2Si7NsUMhLufzCQ==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5627,7 +5637,13 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.17.1
 
+  '@huggingface/hub@1.1.0':
+    dependencies:
+      '@huggingface/tasks': 0.17.8
+
   '@huggingface/tasks@0.17.1': {}
+
+  '@huggingface/tasks@0.17.8': {}
 
   '@humanfs/core@0.19.1': {}
 

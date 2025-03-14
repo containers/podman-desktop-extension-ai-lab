@@ -173,7 +173,13 @@ export class LlamaCppPython extends InferenceProvider {
 
         // label the container
         labels['gpu'] = gpu.model;
-        envs.push(`GPU_LAYERS=${config.gpuLayers}`);
+
+        // set the number of layers to offload to the GPU in case of LibKrun
+        if (vmType === VMType.LIBKRUN || vmType === VMType.LIBKRUN_LABEL) {
+          envs.push(`GPU_LAYERS=999`);
+        } else {
+          envs.push(`GPU_LAYERS=${config.gpuLayers}`);
+        }
       } else {
         console.warn(`gpu ${gpu.model} is not supported on ${vmType}.`);
       }
@@ -209,7 +215,7 @@ export class LlamaCppPython extends InferenceProvider {
       },
       HealthCheck: {
         // must be the port INSIDE the container not the exposed one
-        Test: ['CMD-SHELL', `curl -sSf localhost:8000/docs > /dev/null`],
+        Test: ['CMD-SHELL', `curl -sSf localhost:8000 > /dev/null`],
         Interval: SECOND * 5,
         Retries: 4 * 5,
       },
@@ -284,7 +290,7 @@ export class LlamaCppPython extends InferenceProvider {
         return gpu?.vendor === GPUVendor.NVIDIA ? llamacpp.cuda : llamacpp.default;
       case VMType.LIBKRUN:
       case VMType.LIBKRUN_LABEL:
-        return gpu ? llamacpp.vulkan : llamacpp.default;
+        return llamacpp.default;
       // no GPU support
       case VMType.UNKNOWN:
         return this.isNvidiaCDIConfigured(gpu) ? llamacpp.cuda : llamacpp.default;

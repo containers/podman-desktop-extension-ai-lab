@@ -486,7 +486,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
       "properties": {
-        "chatFormat": "chatml-function-calling"
+        "jinja": "true"
       },
       "memory": 4372811936,
       "backend": "llama-cpp"

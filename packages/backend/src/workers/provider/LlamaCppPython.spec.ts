@@ -204,7 +204,7 @@ describe('perform', () => {
       HealthCheck: {
         Interval: SECOND * 5,
         Retries: 20,
-        Test: ['CMD-SHELL', 'curl -sSf localhost:8000/docs > /dev/null'],
+        Test: ['CMD-SHELL', 'curl -sSf localhost:8000 > /dev/null'],
       },
       HostConfig: {
         AutoRemove: false,

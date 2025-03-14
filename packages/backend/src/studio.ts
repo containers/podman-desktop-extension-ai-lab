@@ -231,9 +231,12 @@ export class Studio {
       this.#configurationRegistry,
       modelRegistryRegistry,
     );
-    modelRegistryRegistry.register(
-      new URLModelRegistry(this.#modelsManager, this.#configurationRegistry.getExtensionConfiguration().modelsPath),
+    const urlModelRegistry = new URLModelRegistry(
+      this.#modelsManager,
+      this.#configurationRegistry.getExtensionConfiguration().modelsPath,
     );
+    this.#extensionContext.subscriptions.push(urlModelRegistry);
+    this.#extensionContext.subscriptions.push(modelRegistryRegistry.register(urlModelRegistry));
     this.#modelsManager.init();
     this.#extensionContext.subscriptions.push(this.#modelsManager);
 

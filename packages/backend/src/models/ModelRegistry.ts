@@ -15,12 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { Disposable } from '@podman-desktop/api';
 import { EventEmitter } from '@podman-desktop/api';
 import type { Downloader } from '../utils/downloader';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from '../managers/modelsManager';
 
-export abstract class ModelRegistry {
+export abstract class ModelRegistry implements Disposable {
   readonly name: string;
   readonly modelsManager: ModelsManager;
   protected _onUpdate = new EventEmitter<void>();
@@ -30,6 +31,8 @@ export abstract class ModelRegistry {
     this.name = name;
     this.modelsManager = modelsManager;
   }
+
+  abstract dispose(): void;
 
   abstract accept(url: string): boolean;
 

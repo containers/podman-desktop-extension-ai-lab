@@ -39,6 +39,10 @@ export class URLModelRegistry extends ModelRegistry {
     this.#watcher.onDidChange(() => this._onUpdate.fire());
   }
 
+  override dispose(): void {
+    this.#watcher.dispose();
+  }
+
   override accept(url: string): boolean {
     return url.startsWith('https') || url.startsWith('http') || url.startsWith('file');
   }

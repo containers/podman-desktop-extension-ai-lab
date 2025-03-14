@@ -209,7 +209,7 @@ export class LlamaCppPython extends InferenceProvider {
       },
       HealthCheck: {
         // must be the port INSIDE the container not the exposed one
-        Test: ['CMD-SHELL', `curl -sSf localhost:8000/docs > /dev/null`],
+        Test: ['CMD-SHELL', `curl -sSf localhost:8000 > /dev/null`],
         Interval: SECOND * 5,
         Retries: 4 * 5,
       },

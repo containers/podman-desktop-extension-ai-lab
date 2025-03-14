@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
 
 import { writable, type Subscriber, type Unsubscriber, type Readable } from 'svelte/store';
 import { rpcBrowser } from '../utils/client';
-import type { Subscriber as SharedSubscriber } from '@shared/src/messages/MessageProxy';
+import type { RpcChannel, Subscriber as SharedSubscriber } from '@shared/src/messages/MessageProxy';
 
 export function RPCReadable<T>(
   value: T,
-  // The event used to subscribe to a webview postMessage event
-  subscriptionEvents: string[],
+  // The event channel used to subscribe to a webview postMessage event
+  subscriptionEventChannel: RpcChannel<T>,
   // The initialization function that will be called to update the store at creation.
   // For example, you can pass in a custom function such as "getPullingStatuses".
   updater: () => Promise<T>,
@@ -37,14 +37,12 @@ export function RPCReadable<T>(
   function subscribe(this: void, run: Subscriber<T>, invalidate?: () => void): Unsubscriber {
     const rcpSubscribes: SharedSubscriber[] = [];
 
-    for (const subscriptionEvent of subscriptionEvents) {
-      const rcpSubscribe = rpcBrowser.subscribe(subscriptionEvent, (_: unknown) => {
-        debouncedUpdater()
-          .then(v => origWritable.set(v))
-          .catch((e: unknown) => console.error('failed at updating store', String(e)));
-      });
-      rcpSubscribes.push(rcpSubscribe);
-    }
+    const rcpSubscribe = rpcBrowser.subscribe<T>(subscriptionEventChannel, (_: unknown) => {
+      debouncedUpdater()
+        .then(v => origWritable.set(v))
+        .catch((e: unknown) => console.error('failed at updating store', String(e)));
+    });
+    rcpSubscribes.push(rcpSubscribe);
 
     updater()
       .then(v => origWritable.set(v))

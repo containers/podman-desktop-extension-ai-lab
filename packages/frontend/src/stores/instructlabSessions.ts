@@ -16,12 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { RPCReadable } from '/@/stores/rpcReadable';
-import { Messages } from '@shared/Messages';
+import { MSG_INSTRUCTLAB_SESSIONS_UPDATE } from '@shared/Messages';
 import { instructlabClient } from '/@/utils/client';
 import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
 
 export const instructlabSessions = RPCReadable<InstructlabSession[]>(
   [],
-  [Messages.MSG_INSTRUCTLAB_SESSIONS_UPDATE],
+  MSG_INSTRUCTLAB_SESSIONS_UPDATE,
   instructlabClient.getIsntructlabSessions,
 );

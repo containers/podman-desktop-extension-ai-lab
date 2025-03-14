@@ -38,7 +38,7 @@ export abstract class ModelRegistry implements Disposable {
 
   abstract createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader;
 
-  abstract getLocalModelsFromDisk(): void;
+  abstract getLocalModelsFromDisk(): Promise<void>;
 
   abstract deleteModel(model: ModelInfo): Promise<void>;
 }

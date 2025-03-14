@@ -84,7 +84,7 @@ export class ModelsManager implements Disposable {
     this.#models.clear();
     this.catalogManager.getModels().forEach(m => this.#models.set(m.id, m));
     const reloadLocalModels = async (): Promise<void> => {
-      this.getLocalModelsFromDisk();
+      await this.getLocalModelsFromDisk();
       await this.sendModelsInfo();
     };
     // Initialize the local models manually
@@ -103,8 +103,10 @@ export class ModelsManager implements Disposable {
     });
   }
 
-  getLocalModelsFromDisk(): void {
-    this.modelRegistryRegistry.getAll().forEach(registry => registry.getLocalModelsFromDisk());
+  async getLocalModelsFromDisk(): Promise<void> {
+    return Promise.all(this.modelRegistryRegistry.getAll().map(registry => registry.getLocalModelsFromDisk())).then(
+      () => void 0,
+    );
   }
 
   isModelOnDisk(modelId: string): boolean {
@@ -167,7 +169,7 @@ export class ModelsManager implements Disposable {
 
       // Let's reload the models manually to avoid any issue
       model.state = undefined;
-      this.getLocalModelsFromDisk();
+      await this.getLocalModelsFromDisk();
     } finally {
       await this.sendModelsInfo();
     }
@@ -243,7 +245,7 @@ export class ModelsManager implements Disposable {
     });
   }
 
-  private onDownloadUploadEvent(event: BaseEvent, action: 'download' | 'upload'): void {
+  private async onDownloadUploadEvent(event: BaseEvent, action: 'download' | 'upload'): Promise<void> {
     let taskLabel = 'model-pulling';
     let eventName = 'model.download';
     if (action === 'upload') {
@@ -258,7 +260,7 @@ export class ModelsManager implements Disposable {
       return;
     }
 
-    tasks.forEach(task => {
+    for (const task of tasks) {
       if (isProgressEvent(event)) {
         task.state = 'loading';
         task.progress = event.value;
@@ -285,7 +287,7 @@ export class ModelsManager implements Disposable {
         }
 
         // refresh model lists on event completion
-        this.getLocalModelsFromDisk();
+        await this.getLocalModelsFromDisk();
         this.sendModelsInfo().catch((err: unknown) => {
           console.error('Something went wrong while sending models info.', err);
         });
@@ -294,7 +296,7 @@ export class ModelsManager implements Disposable {
         this.#downloaders.delete(event.id);
       }
       this.taskRegistry.updateTask(task); // update task
-    });
+    }
   }
 
   public createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader {

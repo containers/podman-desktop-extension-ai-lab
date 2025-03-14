@@ -126,7 +126,7 @@ let modelRegistryRegistry: ModelRegistryRegistry;
 
 beforeEach(() => {
   vi.resetAllMocks();
-  taskRegistry = new TaskRegistry({ postMessage: vi.fn().mockResolvedValue(undefined) } as unknown as Webview);
+  taskRegistry = new TaskRegistry({ postMessage: () => Promise.resolve() } as unknown as Webview);
   modelRegistryRegistry = new ModelRegistryRegistry({
     postMessage: vi.fn().mockReturnValue(Promise.resolve()),
   } as unknown as Webview);
@@ -173,20 +173,20 @@ function mockFiles(now: Date): void {
     }
     return true;
   });
-  const statSyncSpy = vi.spyOn(fs, 'statSync');
+  const statSpy = vi.spyOn(fs.promises, 'stat');
   const info: Stats = {} as Stats;
   info.size = 32000;
   info.mtime = now;
-  statSyncSpy.mockReturnValue(info);
-  const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
-    (path: string) => string[] | fs.Dirent[]
+  statSpy.mockResolvedValue(info);
+  const readdirMock = vi.spyOn(fs.promises, 'readdir') as unknown as MockInstance<
+    (path: string) => Promise<string[] | fs.Dirent[]>
   >;
-  readdirSyncMock.mockImplementation((dir: string) => {
+  readdirMock.mockImplementation((dir: string) => {
     if (dir.endsWith('model-id-1') || dir.endsWith('model-id-2')) {
       const base = path.basename(dir);
-      return [base + '-model'];
+      return Promise.resolve([base + '-model']);
     } else {
-      return dirent;
+      return Promise.resolve(dirent);
     }
   });
 }
@@ -247,7 +247,7 @@ test('getModelsInfo should get models in local directory', async () => {
   ]);
 });
 
-test('getModelsInfo should return an empty array if the models folder does not exist', () => {
+test('getModelsInfo should return an empty array if the models folder does not exist', async () => {
   vi.spyOn(os, 'homedir').mockReturnValue('/home/user');
   const existsSyncSpy = vi.spyOn(fs, 'existsSync');
   existsSyncSpy.mockReturnValue(false);
@@ -274,7 +274,7 @@ test('getModelsInfo should return an empty array if the models folder does not e
   );
   modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
   manager.init();
-  manager.getLocalModelsFromDisk();
+  await manager.getLocalModelsFromDisk();
   expect(manager.getModelsInfo()).toEqual([]);
   if (process.platform === 'win32') {
     expect(existsSyncSpy).toHaveBeenCalledWith('C:\\home\\user\\aistudio\\models');
@@ -286,10 +286,10 @@ test('getModelsInfo should return an empty array if the models folder does not e
 test('getLocalModelsFromDisk should return undefined Date and size when stat fail', async () => {
   const now = new Date();
   mockFiles(now);
-  const statSyncSpy = vi.spyOn(fs, 'statSync') as unknown as MockInstance<(path: PathLike) => Stats>;
-  statSyncSpy.mockImplementation((path: PathLike) => {
+  const statSpy = vi.spyOn(fs.promises, 'stat') as unknown as MockInstance<(path: PathLike) => Promise<Stats>>;
+  statSpy.mockImplementation((path: PathLike) => {
     if (`${path}`.endsWith('model-id-1')) throw new Error('random-error');
-    return { isDirectory: () => true } as Stats;
+    return Promise.resolve({ isDirectory: () => true } as Stats);
   });
 
   let modelsDir: string;
@@ -335,21 +335,21 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
 test('getLocalModelsFromDisk should skip folders containing tmp files', async () => {
   const now = new Date();
   mockFiles(now);
-  const statSyncSpy = vi.spyOn(fs, 'statSync') as unknown as MockInstance<(path: PathLike) => Stats>;
-  statSyncSpy.mockImplementation((path: PathLike) => {
+  const statSpy = vi.spyOn(fs.promises, 'stat') as unknown as MockInstance<(path: PathLike) => Promise<Stats>>;
+  statSpy.mockImplementation((path: PathLike) => {
     if (`${path}`.endsWith('model-id-1')) throw new Error('random-error');
-    return { isDirectory: () => true } as Stats;
+    return Promise.resolve({ isDirectory: () => true } as Stats);
   });
 
-  const readdirSyncMock = vi.spyOn(fs, 'readdirSync') as unknown as MockInstance<
-    (path: string) => string[] | fs.Dirent[]
+  const readdirMock = vi.spyOn(fs.promises, 'readdir') as unknown as MockInstance<
+    (path: string) => Promise<string[] | fs.Dirent[]>
   >;
-  readdirSyncMock.mockImplementation((dir: string) => {
+  readdirMock.mockImplementation((dir: string) => {
     if (dir.endsWith('model-id-1') || dir.endsWith('model-id-2')) {
       const base = path.basename(dir);
-      return [base + '-model.tmp'];
+      return Promise.resolve([base + '-model.tmp']);
     } else {
-      return dirent;
+      return Promise.resolve(dirent);
     }
   });
 

@@ -58,14 +58,14 @@ export class URLModelRegistry extends ModelRegistry {
     return new URLDownloader(model.url!, target, model.sha256, abortSignal);
   }
 
-  override getLocalModelsFromDisk(): void {
+  override async getLocalModelsFromDisk(): Promise<void> {
     if (!fs.existsSync(this.modelsDir)) {
       return;
     }
-    const entries = fs.readdirSync(this.modelsDir, { withFileTypes: true });
+    const entries = await fs.promises.readdir(this.modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {
-      const modelEntries = fs.readdirSync(path.resolve(d.path, d.name));
+      const modelEntries = await fs.promises.readdir(path.resolve(d.path, d.name));
       if (modelEntries.length !== 1) {
         // we support models with one file only for now
         continue;
@@ -82,7 +82,7 @@ export class URLModelRegistry extends ModelRegistry {
 
         let info: { size?: number; mtime?: Date } = { size: undefined, mtime: undefined };
         try {
-          info = fs.statSync(fullPath);
+          info = await fs.promises.stat(fullPath);
         } catch (err: unknown) {
           console.error('Something went wrong while getting file stats (probably in use).', err);
         }

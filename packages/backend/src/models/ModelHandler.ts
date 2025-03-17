@@ -32,13 +32,32 @@ export abstract class ModelHandler implements Disposable {
     this.modelsManager = modelsManager;
   }
 
+  /**
+   * Releases any resources held by the model handler.
+   */
   abstract dispose(): void;
 
+  /**
+   * Returns true if the model handler can handle the given URL.
+   * @param url
+   */
   abstract accept(url: string): boolean;
 
+  /**
+   * Creates a downloader for the given model.
+   * @param model the model to download
+   * @param abortSignal the signal to abort the download
+   */
   abstract createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader;
 
+  /**
+   * Retrieves the local models from disk.
+   */
   abstract getLocalModelsFromDisk(): Promise<void>;
 
+  /**
+   * Deletes the given model from local storage.
+   * @param model the model
+   */
   abstract deleteModel(model: ModelInfo): Promise<void>;
 }

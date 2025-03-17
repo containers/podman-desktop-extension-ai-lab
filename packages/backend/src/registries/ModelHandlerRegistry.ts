@@ -23,7 +23,7 @@ import type { ModelHandler } from '../models/ModelHandler';
 export class ModelHandlerRegistry extends Publisher<string[]> {
   #providers: Map<string, ModelHandler>;
   constructor(webview: Webview) {
-    super(webview, Messages.MSG_MODEL_REGISTRY_UPDATE, () => this.getAll().map(provider => provider.name));
+    super(webview, Messages.MSG_MODEL_HANDLERS_UPDATE, () => this.getAll().map(provider => provider.name));
     this.#providers = new Map();
   }
 

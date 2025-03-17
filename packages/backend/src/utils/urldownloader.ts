@@ -17,7 +17,9 @@
  ***********************************************************************/
 
 import { getDurationSecondsSince } from './utils';
-import { createWriteStream, promises } from 'node:fs';
+import { createWriteStream, existsSync } from 'node:fs';
+import { mkdir, rename, rm } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import crypto from 'node:crypto';
 import https from 'node:https';
 import type { CompletionEvent, ProgressEvent } from '../models/baseEvent';
@@ -36,6 +38,10 @@ export class URLDownloader extends Downloader {
   }
 
   async perform(id: string): Promise<void> {
+    //ensure parent folder exists
+    if (!existsSync(dirname(this.target))) {
+      await mkdir(dirname(this.target), { recursive: true });
+    }
     this.requestedIdentifier = id;
     const startTime = performance.now();
 
@@ -153,8 +159,7 @@ export class URLDownloader extends Downloader {
 
       // Handle error case
       stream.on('error', (err: Error) => {
-        promises
-          .rm(tmpFile)
+        rm(tmpFile)
           .then(() => {
             callback({
               error: err.message,
@@ -178,7 +183,7 @@ export class URLDownloader extends Downloader {
             callback({
               error: `The file's security hash (SHA-256) does not match the expected value. The file may have been altered or corrupted during the download process`,
             });
-            promises.rm(tmpFile).catch((err: unknown) => {
+            rm(tmpFile).catch((err: unknown) => {
               console.error(`Something went wrong while trying to delete ${tmpFile}`, err);
             });
             return;
@@ -186,8 +191,7 @@ export class URLDownloader extends Downloader {
         }
 
         // If everything is fine we simply rename the tmp file to the expected one
-        promises
-          .rename(tmpFile, this.target)
+        rename(tmpFile, this.target)
           .then(() => {
             callback({ ok: true });
           })

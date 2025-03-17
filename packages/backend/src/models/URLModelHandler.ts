@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import fs from 'node:fs';
-import * as path from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import type { FileSystemWatcher } from '@podman-desktop/api';
 import { fs as apiFs } from '@podman-desktop/api';
 import { ModelHandler } from './ModelHandler';
@@ -48,13 +48,8 @@ export class URLModelHandler extends ModelHandler {
   }
 
   override createDownloader(model: ModelInfo, abortSignal: AbortSignal): Downloader {
-    // Ensure path to model directory exist
-    const destDir = path.join(this.modelsDir, model.id);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
-
-    const target = path.resolve(destDir, path.basename(model.url!));
+    const destDir = join(this.modelsDir, model.id);
+    const target = resolve(destDir, basename(model.url!));
     return new URLDownloader(model.url!, target, model.sha256, abortSignal);
   }
 
@@ -65,13 +60,13 @@ export class URLModelHandler extends ModelHandler {
     const entries = await fs.promises.readdir(this.modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {
-      const modelEntries = await fs.promises.readdir(path.resolve(d.path, d.name));
+      const modelEntries = await fs.promises.readdir(resolve(d.path, d.name));
       if (modelEntries.length !== 1) {
         // we support models with one file only for now
         continue;
       }
       const modelFile = modelEntries[0];
-      const fullPath = path.resolve(d.path, d.name, modelFile);
+      const fullPath = resolve(d.path, d.name, modelFile);
 
       // Check for corresponding models or tmp file that should be ignored
       try {
@@ -89,7 +84,7 @@ export class URLModelHandler extends ModelHandler {
 
         model.file = {
           file: modelFile,
-          path: path.resolve(d.path, d.name),
+          path: resolve(d.path, d.name),
           size: info.size,
           creation: info.mtime,
         };
@@ -100,7 +95,7 @@ export class URLModelHandler extends ModelHandler {
   }
 
   async deleteModel(model: ModelInfo): Promise<void> {
-    const folder = path.resolve(this.modelsDir, model.id);
+    const folder = resolve(this.modelsDir, model.id);
     await fs.promises.rm(folder, { recursive: true, force: true, maxRetries: 3 });
   }
 }

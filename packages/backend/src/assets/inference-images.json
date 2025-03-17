@@ -4,7 +4,6 @@
   },
   "llamacpp": {
     "default": "quay.io/ramalama/ramalama-llama-server@sha256:3b26cb6afc016184da8f2f880ed5fc432ce659b5b89de6c57971163e7dc96ca1",
-    "cuda": "quay.io/ramalama/cuda-llama-server@sha256:17db334b4823cae392e09c96620ebe429d969bad89712e4dda5b0b592cfb469b",
-    "vulkan": "quay.io/ramalama/vulkan-llama-server@sha256:b0260303006052e4fafbbc6ec36c61a50ac8745ca5490fe8b8d50cc3768bf695"
+    "cuda": "quay.io/ramalama/cuda-llama-server@sha256:17db334b4823cae392e09c96620ebe429d969bad89712e4dda5b0b592cfb469b"
   }
 }

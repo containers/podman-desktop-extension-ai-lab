@@ -21,7 +21,7 @@ import type { Downloader } from '../utils/downloader';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { ModelsManager } from '../managers/modelsManager';
 
-export abstract class ModelRegistry implements Disposable {
+export abstract class ModelHandler implements Disposable {
   readonly name: string;
   readonly modelsManager: ModelsManager;
   protected _onUpdate = new EventEmitter<void>();

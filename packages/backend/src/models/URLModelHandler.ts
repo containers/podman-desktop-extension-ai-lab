@@ -19,13 +19,13 @@ import fs from 'node:fs';
 import * as path from 'node:path';
 import type { FileSystemWatcher } from '@podman-desktop/api';
 import { fs as apiFs } from '@podman-desktop/api';
-import { ModelRegistry } from './ModelRegistry';
+import { ModelHandler } from './ModelHandler';
 import type { ModelsManager } from '../managers/modelsManager';
 import type { ModelInfo } from '@shared/src/models/IModelInfo';
 import type { Downloader } from '../utils/downloader';
 import { URLDownloader } from '../utils/urldownloader';
 
-export class URLModelRegistry extends ModelRegistry {
+export class URLModelHandler extends ModelHandler {
   #watcher: FileSystemWatcher;
 
   constructor(

@@ -36,8 +36,8 @@ import { VMType } from '@shared/src/models/IPodman';
 import { getPodmanMachineName } from '../utils/podman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 import { Uploader } from '../utils/uploader';
-import { ModelRegistryRegistry } from '../registries/ModelRegistryRegistry';
-import { URLModelRegistry } from '../models/URLModelRegistry';
+import { ModelHandlerRegistry } from '../registries/ModelHandlerRegistry';
+import { URLModelHandler } from '../models/URLModelHandler';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -122,12 +122,12 @@ const configurationRegistryMock: ConfigurationRegistry = {
   getExtensionConfiguration: vi.fn(),
 } as unknown as ConfigurationRegistry;
 
-let modelRegistryRegistry: ModelRegistryRegistry;
+let modelHandlerRegistry: ModelHandlerRegistry;
 
 beforeEach(() => {
   vi.resetAllMocks();
   taskRegistry = new TaskRegistry({ postMessage: () => Promise.resolve() } as unknown as Webview);
-  modelRegistryRegistry = new ModelRegistryRegistry({
+  modelHandlerRegistry = new ModelHandlerRegistry({
     postMessage: vi.fn().mockReturnValue(Promise.resolve()),
   } as unknown as Webview);
 
@@ -218,9 +218,9 @@ test('getModelsInfo should get models in local directory', async () => {
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
-    modelRegistryRegistry,
+    modelHandlerRegistry,
   );
-  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
+  modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -270,9 +270,9 @@ test('getModelsInfo should return an empty array if the models folder does not e
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
-    modelRegistryRegistry,
+    modelHandlerRegistry,
   );
-  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
+  modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
   manager.init();
   await manager.getLocalModelsFromDisk();
   expect(manager.getModelsInfo()).toEqual([]);
@@ -313,9 +313,9 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
-    modelRegistryRegistry,
+    modelHandlerRegistry,
   );
-  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
+  modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -374,9 +374,9 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
-    modelRegistryRegistry,
+    modelHandlerRegistry,
   );
-  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
+  modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
@@ -417,9 +417,9 @@ test('loadLocalModels should post a message with the message on disk and on cata
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
-    modelRegistryRegistry,
+    modelHandlerRegistry,
   );
-  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
+  modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   expect(postMessageMock).toHaveBeenNthCalledWith(1, {
@@ -470,9 +470,9 @@ test('deleteModel deletes the model folder', async () => {
     cancellationTokenRegistryMock,
     podmanConnectionMock,
     configurationRegistryMock,
-    modelRegistryRegistry,
+    modelHandlerRegistry,
   );
-  modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
+  modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
   manager.init();
   await manager.loadLocalModels();
   await manager.deleteModel('model-id-1');
@@ -537,9 +537,9 @@ describe('deleting models', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
-    modelRegistryRegistry.register(new URLModelRegistry(manager, modelsDir));
+    modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
     manager.init();
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
@@ -606,7 +606,7 @@ describe('deleting models', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
@@ -667,7 +667,7 @@ describe('deleting models', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
 
     await manager.loadLocalModels();
@@ -702,9 +702,9 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
-    modelRegistryRegistry.register(new URLModelRegistry(manager, 'appdir'));
+    modelHandlerRegistry.register(new URLModelHandler(manager, 'appdir'));
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
@@ -739,7 +739,7 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
     const updateTaskMock = vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -772,7 +772,7 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
     vi.spyOn(taskRegistry, 'updateTask');
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(true);
@@ -804,9 +804,9 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
-    modelRegistryRegistry.register(new URLModelRegistry(manager, 'appdir'));
+    modelHandlerRegistry.register(new URLModelHandler(manager, 'appdir'));
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
@@ -843,9 +843,9 @@ describe('downloadModel', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
-    modelRegistryRegistry.register(new URLModelRegistry(manager, 'appdir'));
+    modelHandlerRegistry.register(new URLModelHandler(manager, 'appdir'));
 
     vi.spyOn(manager, 'isModelOnDisk').mockReturnValue(false);
     vi.spyOn(utils, 'getDurationSecondsSince').mockReturnValue(99);
@@ -893,7 +893,7 @@ describe('getModelMetadata', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
 
     await expect(() => manager.getModelMetadata('unknown-model-id')).rejects.toThrowError(
@@ -919,7 +919,7 @@ describe('getModelMetadata', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
 
     manager.init();
@@ -961,7 +961,7 @@ describe('getModelMetadata', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
 
     manager.init();
@@ -1019,7 +1019,7 @@ describe('uploadModelToPodmanMachine', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
 
     manager.init();
@@ -1053,7 +1053,7 @@ describe('uploadModelToPodmanMachine', () => {
       cancellationTokenRegistryMock,
       podmanConnectionMock,
       configurationRegistryMock,
-      modelRegistryRegistry,
+      modelHandlerRegistry,
     );
 
     manager.init();

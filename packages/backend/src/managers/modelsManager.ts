@@ -39,7 +39,7 @@ import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
 import { VMType } from '@shared/src/models/IPodman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
-import type { ModelRegistryRegistry } from '../registries/ModelRegistryRegistry';
+import type { ModelHandlerRegistry } from '../registries/ModelHandlerRegistry';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;
@@ -55,11 +55,11 @@ export class ModelsManager implements Disposable {
     private cancellationTokenRegistry: CancellationTokenRegistry,
     private podmanConnection: PodmanConnection,
     private configurationRegistry: ConfigurationRegistry,
-    private modelRegistryRegistry: ModelRegistryRegistry,
+    private modelHandlerRegistry: ModelHandlerRegistry,
   ) {
     this.#models = new Map();
     this.#disposables = [];
-    this.modelRegistryRegistry.getAll().forEach(registry => registry.onUpdate(this.loadLocalModels));
+    this.modelHandlerRegistry.getAll().forEach(handler => handler.onUpdate(this.loadLocalModels));
   }
 
   init(): void {
@@ -104,7 +104,7 @@ export class ModelsManager implements Disposable {
   }
 
   async getLocalModelsFromDisk(): Promise<void> {
-    return Promise.all(this.modelRegistryRegistry.getAll().map(registry => registry.getLocalModelsFromDisk())).then(
+    return Promise.all(this.modelHandlerRegistry.getAll().map(registry => registry.getLocalModelsFromDisk())).then(
       () => void 0,
     );
   }
@@ -150,11 +150,11 @@ export class ModelsManager implements Disposable {
         await this.catalogManager.removeUserModel(modelId);
         await fs.promises.rm(modelPath, { recursive: true, force: true, maxRetries: 3 });
       } else {
-        const modelRegistry = this.modelRegistryRegistry.findModelRegistry(model.url);
-        if (!modelRegistry) {
+        const modelHandler = this.modelHandlerRegistry.findModelHandler(model.url);
+        if (!modelHandler) {
           throw new Error(`no model registry found for model ${model.id} url ${model.url}`);
         }
-        await modelRegistry.deleteModel(model);
+        await modelHandler.deleteModel(model);
       }
 
       this.telemetry.logUsage('model.delete', { 'model.id': getHash(modelId) });
@@ -304,13 +304,13 @@ export class ModelsManager implements Disposable {
       throw new Error(`model ${model.id} does not have url defined.`);
     }
 
-    const modelRegistry = this.modelRegistryRegistry.findModelRegistry(model.url);
-    if (!modelRegistry) {
+    const modelHandler = this.modelHandlerRegistry.findModelHandler(model.url);
+    if (!modelHandler) {
       throw new Error(`no model registry found for model ${model.id} url ${model.url}`);
     }
 
     // Create a downloader
-    const downloader = modelRegistry.createDownloader(model, abortSignal);
+    const downloader = modelHandler.createDownloader(model, abortSignal);
     this.#downloaders.set(model.id, downloader);
 
     return downloader;

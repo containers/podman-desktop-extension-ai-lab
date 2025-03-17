@@ -18,16 +18,16 @@
 import { Publisher } from '../utils/Publisher';
 import { Disposable, type Webview } from '@podman-desktop/api';
 import { Messages } from '@shared/Messages';
-import type { ModelRegistry } from '../models/ModelRegistry';
+import type { ModelHandler } from '../models/ModelHandler';
 
-export class ModelRegistryRegistry extends Publisher<string[]> {
-  #providers: Map<string, ModelRegistry>;
+export class ModelHandlerRegistry extends Publisher<string[]> {
+  #providers: Map<string, ModelHandler>;
   constructor(webview: Webview) {
     super(webview, Messages.MSG_MODEL_REGISTRY_UPDATE, () => this.getAll().map(provider => provider.name));
     this.#providers = new Map();
   }
 
-  register(provider: ModelRegistry): Disposable {
+  register(provider: ModelHandler): Disposable {
     this.#providers.set(provider.name, provider);
 
     this.notify();
@@ -36,16 +36,16 @@ export class ModelRegistryRegistry extends Publisher<string[]> {
     });
   }
 
-  unregister(provider: ModelRegistry): void {
+  unregister(provider: ModelHandler): void {
     this.#providers.delete(provider.name);
     this.notify();
   }
 
-  getAll(): ModelRegistry[] {
+  getAll(): ModelHandler[] {
     return Array.from(this.#providers.values());
   }
 
-  findModelRegistry(url: string): ModelRegistry | undefined {
-    return Array.from(this.#providers.values()).find(modelRegistry => modelRegistry.accept(url));
+  findModelHandler(url: string): ModelHandler | undefined {
+    return Array.from(this.#providers.values()).find(modelHandler => modelHandler.accept(url));
   }
 }

@@ -285,10 +285,6 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async getModelsDirectory(): Promise<string> {
-    return this.modelsManager.getModelsDirectory();
-  }
-
   navigateToContainer(containerId: string): Promise<void> {
     return podmanDesktopApi.navigation.navigateToContainer(containerId);
   }

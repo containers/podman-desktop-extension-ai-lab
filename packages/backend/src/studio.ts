@@ -56,6 +56,8 @@ import type { StudioAPI } from '@shared/src/StudioAPI';
 import { STUDIO_API_CHANNEL } from '@shared/src/StudioAPI';
 import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
 import { INSTRUCTLAB_API_CHANNEL } from '@shared/src/InstructlabAPI';
+import { ModelHandlerRegistry } from './registries/ModelHandlerRegistry';
+import { URLModelHandler } from './models/URLModelHandler';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -218,8 +220,8 @@ export class Studio {
     /**
      * The ModelManager role is to download and
      */
+    const modelHandlerRegistry = new ModelHandlerRegistry(this.#panel.webview);
     this.#modelsManager = new ModelsManager(
-      this.#configurationRegistry.getExtensionConfiguration().modelsPath,
       this.#panel.webview,
       this.#catalogManager,
       this.#telemetry,
@@ -227,7 +229,14 @@ export class Studio {
       this.#cancellationTokenRegistry,
       this.#podmanConnection,
       this.#configurationRegistry,
+      modelHandlerRegistry,
     );
+    const urlModelHandler = new URLModelHandler(
+      this.#modelsManager,
+      this.#configurationRegistry.getExtensionConfiguration().modelsPath,
+    );
+    this.#extensionContext.subscriptions.push(urlModelHandler);
+    this.#extensionContext.subscriptions.push(modelHandlerRegistry.register(urlModelHandler));
     this.#modelsManager.init();
     this.#extensionContext.subscriptions.push(this.#modelsManager);
 

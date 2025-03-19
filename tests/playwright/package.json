@@ -1,6 +1,6 @@
 {
   "name": "ai-lab-tests-playwright",
-  "version": "1.6.0-next",
+  "version": "1.6.0",
   "description": "Podman Desktop AI Lab extension Playwright E2E tests",
   "scripts": {
     "test:e2e": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' -- npx playwright test src/",

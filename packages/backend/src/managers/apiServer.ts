@@ -53,7 +53,7 @@ type ProcessModelResponse = components['schemas']['ProcessModelResponse'];
 
 function asListModelResponse(model: ModelInfo): ListModelResponse {
   return {
-    model: model.id,
+    model: model.name,
     name: model.name,
     digest: toDigest(model.name, model.sha256),
     size: model.file?.size,

@@ -192,6 +192,25 @@ test('/api/tags returns error', async () => {
   expect(res.body.message).toEqual('unable to get models');
 });
 
+test('/api/tags returns ok', async () => {
+  expect(server.getListener()).toBeDefined();
+  vi.mocked(modelsManager.getModelsInfo).mockReturnValue([
+    {
+      id: 'modelId',
+      name: 'model-name',
+      description: 'a description',
+    },
+  ]);
+  vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(true);
+  const res = await request(server.getListener()!).get('/api/tags').expect(200);
+  expect(res.body).toBeDefined();
+  expect(res.body.models).toBeDefined();
+  expect(res.body.models[0]).toMatchObject({
+    name: 'model-name',
+    model: 'model-name',
+  });
+});
+
 test('verify listening on localhost', async () => {
   expect(server.getListener()).toBeDefined();
   expect((server.getListener()?.address() as AddressInfo).address).toEqual('127.0.0.1');

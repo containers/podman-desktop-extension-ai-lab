@@ -263,7 +263,19 @@ export class RpcChannel<T> {
   }
 }
 
+// keep the list of all RPC Channels being created
+// allow to check if a channel is already created
+const rpcChannelList = new Set<string>();
+
 // defines a channel with the given name for the interface T
 export function createRpcChannel<T>(channel: string): RpcChannel<T> {
+  if (rpcChannelList.has(channel)) {
+    throw new Error(`Duplicate channel. Channel ${channel} already exists`);
+  }
+  rpcChannelList.add(channel);
   return new RpcChannel<T>(channel);
+}
+
+export function clearRpcChannelList(): void {
+  rpcChannelList.clear();
 }

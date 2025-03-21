@@ -240,7 +240,7 @@ describe('subscribe', () => {
     interface EventTest {
       foo: string;
     }
-    const rpcChannel = createRpcChannel<EventTest>('example');
+    const rpcChannel = createRpcChannel<EventTest>('example-all-subscribers');
     listeners.forEach(listener => rpcBrowser.subscribe(rpcChannel, listener));
 
     messageListener({
@@ -264,7 +264,7 @@ describe('subscribe', () => {
     interface EventTest {
       foo: string;
     }
-    const rpcChannel = createRpcChannel<EventTest>('example');
+    const rpcChannel = createRpcChannel<EventTest>('example-unsubscribe');
 
     const unsubscriberA = rpcBrowser.subscribe(rpcChannel, listenerA);
     const unsubscriberB = rpcBrowser.subscribe(rpcChannel, listenerB);
@@ -422,4 +422,14 @@ describe('rpcExtension onDidReceiveMessage', () => {
     // check that console.error was called
     expect(console.error).toHaveBeenCalledWith('Trying to call on an unknown channel test. Available: ');
   });
+});
+
+test('Test register duplicated channel', async () => {
+  type Double = {
+    double: (value: number) => Promise<number>;
+  };
+
+  const channel1 = createRpcChannel<Double>('existing');
+  expect(channel1.name).toBe('existing');
+  expect(() => createRpcChannel<Double>('existing')).toThrowError('Duplicate channel. Channel existing already exists');
 });

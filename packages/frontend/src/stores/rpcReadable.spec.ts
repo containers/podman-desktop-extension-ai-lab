@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { beforeEach, expect, test, vi } from 'vitest';
-import { createRpcChannel, RpcBrowser } from '@shared/messages/MessageProxy';
+import { clearRpcChannelList, createRpcChannel, RpcBrowser } from '@shared/messages/MessageProxy';
 import { RPCReadable } from './rpcReadable';
 import { studioClient, rpcBrowser } from '../utils/client';
 import type { ModelInfo } from '@shared/models/IModelInfo';
@@ -68,6 +68,7 @@ test('check updater is called once at subscription', async () => {
 
 test('check updater is called twice if there is one event fired', async () => {
   const channelModel = createRpcChannel<string[]>('event2');
+  clearRpcChannelList();
   const channel = createRpcChannel<Update>('event2');
   type Update = {
     event: () => Promise<string[]>;
@@ -91,6 +92,7 @@ test('check updater is called twice if there is one event fired', async () => {
 
 test('check updater is called only twice because of the debouncer if there is more than one event in a row', async () => {
   const channelModel = createRpcChannel<ModelInfo[]>('event3');
+  clearRpcChannelList();
   const channel = createRpcChannel<Update>('event3');
   type Update = {
     event: () => Promise<string[]>;

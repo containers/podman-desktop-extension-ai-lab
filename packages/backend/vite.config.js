@@ -20,7 +20,7 @@ import { join, resolve } from 'node:path';
 import { builtinModules } from 'module';
 import { existsSync } from 'node:fs';
 import replace from '@rollup/plugin-replace';
-import { copyFile, mkdir, readdir } from 'node:fs/promises';
+import { cp, mkdir } from 'node:fs/promises';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -70,22 +70,16 @@ const config = {
             }
 
             // Copy files
-            const entries = await readdir(source, { withFileTypes: true });
-
-            for (const entry of entries) {
-              const srcFile = join(source, entry.name);
-              const destFile = join(destination, entry.name);
-
-              if (entry.isFile()) {
-                await copyFile(srcFile, destFile);
-              }
-            }
+            await cp(source, destination, {
+              recursive: true,
+              filter: source => !source.includes('.map'),
+            });
             console.info(`Swagger UI files copied in ${Math.round(performance.now() - start)}ms to dist/swagger-ui`);
           },
         },
       ],
     },
-    emptyOutDir: true,
+    emptyOutDir: false,
     reportCompressedSize: false,
   },
   plugins: [

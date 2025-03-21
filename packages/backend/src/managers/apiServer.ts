@@ -151,8 +151,6 @@ export class ApiServer implements Disposable {
     app.use('/api', router);
     app.use('/spec', this.getSpec.bind(this));
 
-    const options = {};
-
     // get swagger-ui path from dist/swagger-ui
     const swaggerPath = resolve(getAbsoluteFSPath(), 'swagger-ui');
 
@@ -172,7 +170,7 @@ export class ApiServer implements Disposable {
 
         next();
       },
-      swaggerUi.serveFiles(openAiApi, options),
+      swaggerUi.serveFiles(openAiApi),
       swaggerUi.setup(),
     );
 

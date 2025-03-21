@@ -220,6 +220,7 @@ test('/api-docs/9000 returns swagger UI', async () => {
   }
   const response = await request(listener).get('/api-docs/9000/').expect(200);
   expect(response.status).toBe(200);
+
   // Ensure it returns the Swagger UI page
   expect(response.text).toContain('<title>Swagger UI</title>');
 });

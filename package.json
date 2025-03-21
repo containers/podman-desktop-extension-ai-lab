@@ -84,6 +84,9 @@
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
+  "scarfSettings": {
+    "enabled": false
+  },
   "pnpm": {
     "overrides": {
       "postman-collection>semver": "^7.5.2"

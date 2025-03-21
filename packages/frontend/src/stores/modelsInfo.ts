@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { studioClient } from '/@/utils/client';
 import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import { RPCReadable } from './rpcReadable';

@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { InferenceServer, InferenceServerStatus, InferenceType } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceServerStatus, InferenceType } from '@shared/models/IInference';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import type { ContainerInfo, TelemetryLogger, ContainerProviderConnection } from '@podman-desktop/api';
@@ -23,17 +23,17 @@ import type { ContainerRegistry, ContainerEvent } from '../../registries/Contain
 import { getInferenceType, isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
-import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import type { ModelsManager } from '../modelsManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getRandomString } from '../../utils/randomUtils';
 import { basename, dirname } from 'node:path';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { CatalogManager } from '../catalogManager';
 import { getHash } from '../../utils/sha';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)

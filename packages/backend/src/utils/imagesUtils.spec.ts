@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import type { ContainerConfig } from '../models/AIConfig';
 import { getImageTag } from './imagesUtils';
 

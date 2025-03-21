@@ -19,9 +19,9 @@
 import '@testing-library/jest-dom/vitest';
 import { expect, test, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import ModelColumnIcon from './ModelStatusIcon.svelte';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import { readable } from 'svelte/store';
 import * as inferenceStore from '/@/stores/inferenceServers';
 

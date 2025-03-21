@@ -20,14 +20,14 @@ import { expect, test, vi, beforeEach, afterEach, describe } from 'vitest';
 import OpenAI from 'openai';
 import { PlaygroundV2Manager } from './playgroundV2Manager';
 import type { TelemetryLogger } from '@podman-desktop/api';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 import type { InferenceManager } from './inference/inferenceManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { TaskRegistry } from '../registries/TaskRegistry';
-import type { Task, TaskState } from '@shared/src/models/ITask';
-import type { ChatMessage, ErrorMessage } from '@shared/src/models/IPlaygroundMessage';
+import type { Task, TaskState } from '@shared/models/ITask';
+import type { ChatMessage, ErrorMessage } from '@shared/models/IPlaygroundMessage';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
 
 vi.mock('openai', () => ({

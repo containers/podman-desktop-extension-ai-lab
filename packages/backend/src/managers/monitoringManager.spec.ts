@@ -19,7 +19,7 @@
 import { beforeEach, expect, afterEach, test, vi } from 'vitest';
 import { MonitoringManager } from './monitoringManager';
 import { containerEngine, type ContainerStatsInfo, type Disposable } from '@podman-desktop/api';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_MONITORING_UPDATE } from '@shared/Messages';
 
 vi.mock('@podman-desktop/api', async () => {

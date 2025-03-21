@@ -1,11 +1,11 @@
 <script lang="ts">
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import { router } from 'tinro';
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
 import { localRepositories } from '../stores/localRepositories';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
-import type { LocalRepository } from '@shared/src/models/ILocalRepository';
+import type { LocalRepository } from '@shared/models/ILocalRepository';
 import RecipeStatus from '/@/lib/RecipeStatus.svelte';
 import RecipeCardTags from '/@/lib/RecipeCardTags.svelte';
 

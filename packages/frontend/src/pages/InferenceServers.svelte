@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 import ServiceColumnName from '/@/lib/table/service/ServiceColumnName.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import ServiceStatus from '/@/lib/table/service/ServiceStatus.svelte';

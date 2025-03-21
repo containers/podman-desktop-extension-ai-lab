@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import Badge from './Badge.svelte';
 import { onDestroy, onMount } from 'svelte';
 import { TOOLS, FRAMEWORKS, getBGColor, getTextColor } from '/@/lib/RecipeCardTags';

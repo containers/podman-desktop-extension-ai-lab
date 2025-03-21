@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 import { catalog } from '/@/stores/catalog';
 import { displayPorts } from '/@/utils/printers';
 

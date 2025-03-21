@@ -18,9 +18,9 @@
 
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import { WSLUploader } from './WSLUploader';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { configuration, env, process, type ContainerProviderConnection, type RunResult } from '@podman-desktop/api';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 
 vi.mock('@podman-desktop/api', () => ({
   env: {

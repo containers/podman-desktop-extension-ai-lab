@@ -16,7 +16,7 @@ import InstructLabIcon from '/@/lib/icons/InstructLabIcon.svelte';
 import { SettingsNavItem } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 import { configuration } from '../stores/extensionConfiguration';
-import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 

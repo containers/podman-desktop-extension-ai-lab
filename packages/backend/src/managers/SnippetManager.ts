@@ -19,12 +19,12 @@ import type { Disposable, TelemetryLogger } from '@podman-desktop/api';
 import { getLanguageList, convert, type Language } from 'postman-code-generators';
 import { Request } from 'postman-collection';
 import { Publisher } from '../utils/Publisher';
-import type { RequestOptions } from '@shared/src/models/RequestOptions';
+import type { RequestOptions } from '@shared/models/RequestOptions';
 import { quarkusLangchain4Jgenerator } from './snippets/quarkus-snippet';
 import { javaOkHttpGenerator } from './snippets/java-okhttp-snippet';
 import { pythonLangChainGenerator } from './snippets/python-langchain-snippet';
 import { MSG_SUPPORTED_LANGUAGES_UPDATE } from '@shared/Messages';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 type Generator = (requestOptions: RequestOptions) => Promise<string>;
 

@@ -1,4 +1,4 @@
-import type { LocalRepository } from '@shared/src/models/ILocalRepository';
+import type { LocalRepository } from '@shared/models/ILocalRepository';
 
 export const findLocalRepositoryByRecipeId = (
   store: LocalRepository[],

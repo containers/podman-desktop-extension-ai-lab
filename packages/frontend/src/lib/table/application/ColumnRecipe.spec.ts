@@ -20,10 +20,10 @@ import '@testing-library/jest-dom/vitest';
 import { test, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import * as catalogStore from '/@/stores/catalog';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import { readable } from 'svelte/store';
 import ColumnRecipe from './ColumnRecipe.svelte';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 
 const mocks = vi.hoisted(() => {
   return {

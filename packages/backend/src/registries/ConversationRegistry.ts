@@ -25,10 +25,10 @@ import type {
   Message,
   ModelUsage,
   PendingChat,
-} from '@shared/src/models/IPlaygroundMessage';
+} from '@shared/models/IPlaygroundMessage';
 import type { Disposable } from '@podman-desktop/api';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export class ConversationRegistry extends Publisher<Conversation[]> implements Disposable {
   #conversations: Map<string, Conversation>;

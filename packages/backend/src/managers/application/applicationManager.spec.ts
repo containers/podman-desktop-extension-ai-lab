@@ -25,12 +25,12 @@ import type { ModelsManager } from '../modelsManager';
 import type { PodManager } from '../recipes/PodManager';
 import type { RecipeManager } from '../recipes/RecipeManager';
 import { ApplicationManager } from './applicationManager';
-import type { Recipe, RecipeImage } from '@shared/src/models/IRecipe';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { VMType } from '@shared/src/models/IPodman';
+import type { Recipe, RecipeImage } from '@shared/models/IRecipe';
+import type { ModelInfo } from '@shared/models/IModelInfo';
+import { VMType } from '@shared/models/IPodman';
 import { POD_LABEL_MODEL_ID, POD_LABEL_RECIPE_ID } from '../../utils/RecipeConstants';
-import type { InferenceServer } from '@shared/src/models/IInference';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { InferenceServer } from '@shared/models/IInference';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 const taskRegistryMock = {
   createTask: vi.fn(),

@@ -20,10 +20,10 @@ import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import Model from './Model.svelte';
 import { studioClient } from '../utils/client';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import * as inferenceStore from '/@/stores/inferenceServers';
 import { readable } from 'svelte/store';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 
 vi.mock('../utils/client', async () => {
   return {

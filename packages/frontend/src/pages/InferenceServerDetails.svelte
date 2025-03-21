@@ -12,7 +12,7 @@ import {
   faMicrochip,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -20,7 +20,7 @@ import { onMount } from 'svelte';
 import { router } from 'tinro';
 import { Button, DetailsPage, Tooltip, Link } from '@podman-desktop/ui-svelte';
 import CopyButton from '/@/lib/button/CopyButton.svelte';
-import type { RequestOptions } from '@shared/src/models/RequestOptions';
+import type { RequestOptions } from '@shared/models/RequestOptions';
 import { filesize } from 'filesize';
 import MonacoEditor from '/@/lib/monaco-editor/MonacoEditor.svelte';
 

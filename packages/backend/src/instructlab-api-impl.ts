@@ -16,10 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
+import type { InstructlabAPI } from '@shared/InstructlabAPI';
 import type { InstructlabManager } from './managers/instructlab/instructlabManager';
-import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
-import type { InstructlabContainerConfiguration } from '@shared/src/models/instructlab/IInstructlabContainerConfiguration';
+import type { InstructlabSession } from '@shared/models/instructlab/IInstructlabSession';
+import type { InstructlabContainerConfiguration } from '@shared/models/instructlab/IInstructlabContainerConfiguration';
 import { navigation } from '@podman-desktop/api';
 
 export class InstructlabApiImpl implements InstructlabAPI {

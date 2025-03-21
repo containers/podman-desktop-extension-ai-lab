@@ -20,8 +20,8 @@ import '@testing-library/jest-dom/vitest';
 import { beforeEach, vi, test, expect } from 'vitest';
 import { render, fireEvent, within } from '@testing-library/svelte';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import { InferenceType } from '@shared/src/models/IInference';
+import type { ModelInfo } from '@shared/models/IModelInfo';
+import { InferenceType } from '@shared/models/IInference';
 
 const fakeRecommendedModel: ModelInfo = {
   id: 'dummy-model-1',

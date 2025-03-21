@@ -20,7 +20,7 @@ import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
 import { MSG_CONFIGURATION_UPDATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
-import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 
 export const configuration: Readable<ExtensionConfiguration | undefined> = readable<ExtensionConfiguration>(
   undefined,

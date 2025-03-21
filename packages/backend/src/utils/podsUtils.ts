@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { PodHealth } from '@shared/src/models/IApplicationState';
+import type { PodHealth } from '@shared/models/IApplicationState';
 
 export function getPodHealth(infos: (string | undefined)[]): PodHealth {
   const checked = infos.filter(info => !!info && info !== 'none' && info !== '');

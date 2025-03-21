@@ -27,15 +27,15 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { InferenceManager } from './inferenceManager';
 import type { ModelsManager } from '../modelsManager';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
-import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
 import type { InferenceProvider } from '../../workers/provider/InferenceProvider';
 import type { CatalogManager } from '../catalogManager';
-import type { InferenceServer } from '@shared/src/models/IInference';
-import { InferenceType } from '@shared/src/models/IInference';
-import { VMType } from '@shared/src/models/IPodman';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { InferenceServer } from '@shared/models/IInference';
+import { InferenceType } from '@shared/models/IInference';
+import { VMType } from '@shared/models/IPodman';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 
 vi.mock('@podman-desktop/api', async () => {

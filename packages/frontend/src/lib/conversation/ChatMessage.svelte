@@ -6,7 +6,7 @@ import {
   isPendingChat,
   isSystemPrompt,
   isUserChat,
-} from '@shared/src/models/IPlaygroundMessage';
+} from '@shared/models/IPlaygroundMessage';
 
 export let message: ChatMessage;
 

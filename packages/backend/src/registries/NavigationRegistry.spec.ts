@@ -19,7 +19,7 @@
 import { beforeAll, afterAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { commands, navigation, type WebviewPanel, type Disposable } from '@podman-desktop/api';
 import { NavigationRegistry } from './NavigationRegistry';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 
 vi.mock('@podman-desktop/api', async () => ({

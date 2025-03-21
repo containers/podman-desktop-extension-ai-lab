@@ -18,7 +18,7 @@
 import { MSG_PODMAN_CONNECTION_UPDATE } from '@shared/Messages';
 import { RPCReadable } from '/@/stores/rpcReadable';
 import { studioClient } from '/@/utils/client';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 
 export const containerProviderConnections = RPCReadable<ContainerProviderConnectionInfo[]>(
   [],

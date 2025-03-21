@@ -24,11 +24,11 @@ import type {
   PullEvent,
 } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
-import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import type { IWorker } from '../IWorker';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { getImageInfo } from '../../utils/inferenceUtils';
-import type { InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import type { InferenceServer, InferenceType } from '@shared/models/IInference';
 
 export type BetterContainerCreateResult = ContainerCreateResult & { engineId: string };
 

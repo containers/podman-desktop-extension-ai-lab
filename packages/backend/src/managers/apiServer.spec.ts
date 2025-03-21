@@ -34,7 +34,7 @@ import type { Downloader } from '../utils/downloader';
 import type { ProgressEvent } from '../models/baseEvent';
 import type { InferenceManager } from './inference/inferenceManager';
 import type { ContainerHealthy, ContainerRegistry } from '../registries/ContainerRegistry';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 import OpenAI from 'openai';
 import type { ChatCompletion, ChatCompletionChunk } from 'openai/resources';
 import { Stream } from 'openai/streaming';

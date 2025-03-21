@@ -9,7 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '/@/lib/button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 import { router } from 'tinro';
 import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import FlatMenu from './FlatMenu.svelte';

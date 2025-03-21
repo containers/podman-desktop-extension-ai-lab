@@ -1,6 +1,6 @@
 <script lang="ts">
 import { getApplicationStatus } from '../../../pages/applications';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 import PodIcon from '../../images/PodIcon.svelte';
 import { Spinner, StatusIcon } from '@podman-desktop/ui-svelte';
 

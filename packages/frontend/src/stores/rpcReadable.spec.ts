@@ -17,10 +17,10 @@
  ***********************************************************************/
 
 import { beforeEach, expect, test, vi } from 'vitest';
-import { createRpcChannel, RpcBrowser } from '@shared/src/messages/MessageProxy';
+import { createRpcChannel, RpcBrowser } from '@shared/messages/MessageProxy';
 import { RPCReadable } from './rpcReadable';
 import { studioClient, rpcBrowser } from '../utils/client';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 
 const mocks = vi.hoisted(() => {
   return {

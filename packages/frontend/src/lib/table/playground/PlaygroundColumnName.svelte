@@ -1,6 +1,6 @@
 <script lang="ts">
 import { router } from 'tinro';
-import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
+import type { Conversation } from '@shared/models/IPlaygroundMessage';
 
 export let object: Conversation;
 

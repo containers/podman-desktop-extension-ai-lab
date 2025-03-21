@@ -24,7 +24,7 @@ import type {
   WebviewPanel,
   WebviewPanelOnDidChangeViewStateEvent,
 } from '@podman-desktop/api';
-import { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { RpcExtension } from '@shared/messages/MessageProxy';
 import { StudioApiImpl } from './studio-api-impl';
 import { ApplicationManager } from './managers/application/applicationManager';
 import { GitManager } from './managers/gitManager';
@@ -52,10 +52,10 @@ import { ApiServer } from './managers/apiServer';
 import { InstructlabManager } from './managers/instructlab/instructlabManager';
 import { InstructlabApiImpl } from './instructlab-api-impl';
 import { NavigationRegistry } from './registries/NavigationRegistry';
-import type { StudioAPI } from '@shared/src/StudioAPI';
-import { STUDIO_API_CHANNEL } from '@shared/src/StudioAPI';
-import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
-import { INSTRUCTLAB_API_CHANNEL } from '@shared/src/InstructlabAPI';
+import type { StudioAPI } from '@shared/StudioAPI';
+import { STUDIO_API_CHANNEL } from '@shared/StudioAPI';
+import type { InstructlabAPI } from '@shared/InstructlabAPI';
+import { INSTRUCTLAB_API_CHANNEL } from '@shared/InstructlabAPI';
 import { ModelHandlerRegistry } from './registries/ModelHandlerRegistry';
 import { URLModelHandler } from './models/URLModelHandler';
 

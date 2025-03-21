@@ -18,7 +18,7 @@
 import { type Disposable, containerEngine, type ContainerStatsInfo } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
 import { MSG_MONITORING_UPDATE } from '@shared/Messages';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export interface StatsInfo {
   timestamp: number;

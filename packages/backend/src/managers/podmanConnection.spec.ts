@@ -30,10 +30,10 @@ import type {
   UpdateContainerConnectionEvent,
 } from '@podman-desktop/api';
 import { containerEngine, extensions, process, provider, EventEmitter, env } from '@podman-desktop/api';
-import { VMType } from '@shared/src/models/IPodman';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { VMType } from '@shared/models/IPodman';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { getPodmanCli, getPodmanMachineName } from '../utils/podman';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_PODMAN_CONNECTION_UPDATE } from '@shared/Messages';
 
 const rpcExtensionMock = {

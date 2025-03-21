@@ -18,7 +18,7 @@
 import { vi, expect, test } from 'vitest';
 import { configuration, type Configuration } from '@podman-desktop/api';
 import { ConfigurationRegistry } from './ConfigurationRegistry';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 const fakeConfiguration = {
   get: vi.fn(),

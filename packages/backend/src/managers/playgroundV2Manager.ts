@@ -19,7 +19,7 @@ import type { Disposable, TelemetryLogger } from '@podman-desktop/api';
 import type { InferenceManager } from './inference/inferenceManager';
 import OpenAI from 'openai';
 import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src/resources/chat/completions';
-import type { ModelOptions } from '@shared/src/models/IModelOptions';
+import type { ModelOptions } from '@shared/models/IModelOptions';
 import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/ConversationRegistry';
 import type {
@@ -29,15 +29,15 @@ import type {
   PendingChat,
   SystemPrompt,
   UserChat,
-} from '@shared/src/models/IPlaygroundMessage';
-import { isChatMessage, isSystemPrompt } from '@shared/src/models/IPlaygroundMessage';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+} from '@shared/models/IPlaygroundMessage';
+import { isChatMessage, isSystemPrompt } from '@shared/models/IPlaygroundMessage';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
 import { getRandomString } from '../utils/randomUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { getHash } from '../utils/sha';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;

@@ -21,9 +21,9 @@ import { WSLUploader } from '../workers/uploader/WSLUploader';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { beforeEach } from 'node:test';
 import { Uploader } from './uploader';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 
 vi.mock('@podman-desktop/api', async () => {
   return {

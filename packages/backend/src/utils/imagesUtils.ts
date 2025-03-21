@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import type { ContainerConfig } from '../models/AIConfig';
 
 export function getImageTag(recipe: Recipe, container: ContainerConfig): string {

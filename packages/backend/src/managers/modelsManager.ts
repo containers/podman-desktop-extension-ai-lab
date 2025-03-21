@@ -16,17 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
+import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
 import fs from 'node:fs';
 import * as path from 'node:path';
 import { type Disposable, env, type ContainerProviderConnection } from '@podman-desktop/api';
 import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 import type { CatalogManager } from './catalogManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { Downloader } from '../utils/downloader';
 import type { TaskRegistry } from '../registries/TaskRegistry';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import type { BaseEvent } from '../models/baseEvent';
 import { isCompletionEvent, isProgressEvent } from '../models/baseEvent';
 import { Uploader } from '../utils/uploader';
@@ -37,10 +37,10 @@ import { getHash, hasValidSha } from '../utils/sha';
 import type { GGUFParseOutput } from '@huggingface/gguf';
 import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 import type { ModelHandlerRegistry } from '../registries/ModelHandlerRegistry';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export class ModelsManager implements Disposable {
   #models: Map<string, ModelInfo>;

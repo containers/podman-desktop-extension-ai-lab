@@ -15,11 +15,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
-import type { Recipe } from '@shared/src/models/IRecipe';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { Category } from '@shared/src/models/ICategory';
-import type { LocalModelInfo } from '@shared/src/models/ILocalModelInfo';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
+import type { Recipe } from '@shared/models/IRecipe';
+import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { Category } from '@shared/models/ICategory';
+import type { LocalModelInfo } from '@shared/models/ILocalModelInfo';
 
 export enum CatalogFormat {
   CURRENT = '1.0',

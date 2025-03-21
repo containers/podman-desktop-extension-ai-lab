@@ -15,13 +15,9 @@
      */
     "allowJs": true,
     "checkJs": true,
+    "paths": {
+      "@shared/*": ["../shared/src/*"]
+    }
   },
-  "include": [
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-    "src/**/*.js",
-    "src/**/*.svelte",
-    "types/*.d.ts",
-    "../../types/**/*.d.ts",
-  ]
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "types/*.d.ts", "../../types/**/*.d.ts"]
 }

@@ -17,14 +17,14 @@
  ***********************************************************************/
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import type { ContainerConfig } from '../../models/AIConfig';
 import fs from 'node:fs';
 import { BuilderManager } from './BuilderManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import type { ContainerProviderConnection, ImageInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 
 const taskRegistry = {
   getTask: vi.fn(),

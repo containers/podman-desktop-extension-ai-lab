@@ -17,9 +17,9 @@
  ***********************************************************************/
 import { InferenceProvider } from './InferenceProvider';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import type { InferenceServer } from '@shared/src/models/IInference';
-import { InferenceType } from '@shared/src/models/IInference';
-import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { InferenceServer } from '@shared/models/IInference';
+import { InferenceType } from '@shared/models/IInference';
+import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { ContainerProviderConnection, MountConfig } from '@podman-desktop/api';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';

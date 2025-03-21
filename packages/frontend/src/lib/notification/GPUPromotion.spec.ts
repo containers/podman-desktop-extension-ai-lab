@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import { studioClient } from '/@/utils/client';
-import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 import { type Writable, writable } from 'svelte/store';
 import { configuration } from '/@/stores/extensionConfiguration';

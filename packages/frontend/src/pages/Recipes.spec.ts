@@ -19,7 +19,7 @@
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import * as catalogStore from '/@/stores/catalog';
 import { readable } from 'svelte/store';
 import Recipes from '/@/pages/Recipes.svelte';

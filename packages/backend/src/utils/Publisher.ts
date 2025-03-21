@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { RpcChannel, RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcChannel, RpcExtension } from '@shared/messages/MessageProxy';
 
 export class Publisher<T> {
   constructor(

@@ -19,12 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import InferenceServerDetails from '/@/pages/InferenceServerDetails.svelte';
 import type { Language } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import MonacoEditor from '/@/lib/monaco-editor/MonacoEditor.svelte';
 
 const mocks = vi.hoisted(() => {

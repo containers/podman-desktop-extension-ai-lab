@@ -22,7 +22,7 @@ import { expect, test, vi, beforeEach, describe } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import { studioClient } from '../utils/client';
 import ApplicationActions from '/@/lib/ApplicationActions.svelte';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 import { router } from 'tinro';
 
 vi.mock('../utils/client', async () => ({

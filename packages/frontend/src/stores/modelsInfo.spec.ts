@@ -20,7 +20,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { rpcBrowser } from '../utils/client';
 import type { Unsubscriber } from 'svelte/store';
 import { modelsInfo } from './modelsInfo';
-import { type RpcChannel, createRpcChannel, type Listener } from '@shared/src/messages/MessageProxy';
+import { type RpcChannel, createRpcChannel, type Listener } from '@shared/messages/MessageProxy';
 import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 
 const mocks = vi.hoisted(() => {

@@ -22,14 +22,14 @@ import type { GitManager } from '../gitManager';
 import type { LocalRepositoryRegistry } from '../../registries/LocalRepositoryRegistry';
 import { RecipeManager } from './RecipeManager';
 import { containerEngine, type ContainerProviderConnection } from '@podman-desktop/api';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import type { Stats } from 'node:fs';
 import { existsSync, statSync } from 'node:fs';
 import { AIConfigFormat, parseYamlFile } from '../../models/AIConfig';
 import { goarch } from '../../utils/arch';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 import type { InferenceManager } from '../inference/inferenceManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 
 const taskRegistryMock = {
   createTask: vi.fn(),

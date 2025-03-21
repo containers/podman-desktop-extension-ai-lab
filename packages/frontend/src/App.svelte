@@ -23,7 +23,7 @@ import ImportModels from './pages/ImportModel.svelte';
 import StartRecipe from '/@/pages/StartRecipe.svelte';
 import TuneSessions from './pages/TuneSessions.svelte';
 import { configuration } from './stores/extensionConfiguration';
-import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
 import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';

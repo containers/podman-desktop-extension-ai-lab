@@ -18,8 +18,8 @@
 import { expect, test, vi, beforeEach } from 'vitest';
 import { GPUManager } from './GPUManager';
 import { graphics, type Systeminformation } from 'systeminformation';
-import { GPUVendor } from '@shared/src/models/IGPUInfo';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { GPUVendor } from '@shared/models/IGPUInfo';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 vi.mock('../utils/inferenceUtils', () => ({
   getProviderContainerConnection: vi.fn(),

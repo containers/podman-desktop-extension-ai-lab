@@ -16,9 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Task, TaskState } from '@shared/src/models/ITask';
+import type { Task, TaskState } from '@shared/models/ITask';
 import { MSG_TASKS_UPDATE } from '@shared/Messages';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 /**
  * A registry for managing tasks.

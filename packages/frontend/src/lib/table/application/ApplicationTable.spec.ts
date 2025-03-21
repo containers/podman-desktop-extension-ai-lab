@@ -19,9 +19,9 @@
 import '@testing-library/jest-dom/vitest';
 import { beforeEach, test, expect, vi } from 'vitest';
 import { render, within } from '@testing-library/svelte';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 
 const mocks = vi.hoisted(() => ({
   getApplicationStates: vi.fn<() => ApplicationState[]>(),

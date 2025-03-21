@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { faMemory } from '@fortawesome/free-solid-svg-icons';
 import { filesize } from 'filesize';
 import Badge from '../../Badge.svelte';

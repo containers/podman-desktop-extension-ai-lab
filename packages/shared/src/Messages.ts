@@ -17,20 +17,19 @@
  ***********************************************************************/
 
 import type { Language } from 'postman-code-generators';
-import { createRpcChannel } from './src/messages/MessageProxy';
-import type { Task } from './src/models/ITask';
-import type { ModelInfo } from './src/models/IModelInfo';
-import type { ContainerProviderConnectionInfo } from './src/models/IContainerConnectionInfo';
-import type { InferenceServer } from './src/models/IInference';
-import type { InstructlabSession } from './src/models/instructlab/IInstructlabSession';
-import type { LocalRepository } from './src/models/ILocalRepository';
-import type { Conversation } from './src/models/IPlaygroundMessage';
-import type { ExtensionConfiguration } from './src/models/IExtensionConfiguration';
-import type { ApplicationCatalog } from './src/models/IApplicationCatalog';
-import type { ApplicationState } from './src/models/IApplicationState';
-import type { IGPUInfo } from './src/models/IGPUInfo';
-import type { StatsHistory } from '../backend/src/managers/monitoringManager';
-
+import { createRpcChannel } from './messages/MessageProxy';
+import type { Task } from './models/ITask';
+import type { ModelInfo } from './models/IModelInfo';
+import type { ContainerProviderConnectionInfo } from './models/IContainerConnectionInfo';
+import type { InferenceServer } from './models/IInference';
+import type { InstructlabSession } from './models/instructlab/IInstructlabSession';
+import type { LocalRepository } from './models/ILocalRepository';
+import type { Conversation } from './models/IPlaygroundMessage';
+import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
+import type { ApplicationCatalog } from './models/IApplicationCatalog';
+import type { ApplicationState } from './models/IApplicationState';
+import type { IGPUInfo } from './models/IGPUInfo';
+import type { StatsHistory } from '../../backend/src/managers/monitoringManager';
 
 export const MSG_TASKS_UPDATE = createRpcChannel<Task[]>('tasks-update');
 export const MSG_SUPPORTED_LANGUAGES_UPDATE = createRpcChannel<Language[]>('supported-languages-supported');
@@ -41,13 +40,12 @@ export const MSG_INFERENCE_SERVERS_UPDATE = createRpcChannel<InferenceServer[]>(
 export const MSG_INSTRUCTLAB_SESSIONS_UPDATE = createRpcChannel<InstructlabSession[]>('instructlab-sessions-update');
 export const MSG_LOCAL_REPOSITORY_UPDATE = createRpcChannel<LocalRepository[]>('local-repository-update');
 export const MSG_CONVERSATIONS_UPDATE = createRpcChannel<Conversation[]>('conversations-update');
-export const   MSG_CONFIGURATION_UPDATE = createRpcChannel<ExtensionConfiguration>('configuration-update');
+export const MSG_CONFIGURATION_UPDATE = createRpcChannel<ExtensionConfiguration>('configuration-update');
 export const MSG_NEW_CATALOG_STATE = createRpcChannel<ApplicationCatalog>('new-catalog-state');
 export const MSG_APPLICATIONS_STATE_UPDATE = createRpcChannel<ApplicationState[]>('applications-state-update');
-export const   MSG_GPUS_UPDATE = createRpcChannel<IGPUInfo[]>('gpus-update');
-export const   MSG_MONITORING_UPDATE = createRpcChannel<StatsHistory[]>('monitoring-update');
-export const   MSG_NAVIGATION_ROUTE_UPDATE = createRpcChannel<string>('navigation-route-update');
-
+export const MSG_GPUS_UPDATE = createRpcChannel<IGPUInfo[]>('gpus-update');
+export const MSG_MONITORING_UPDATE = createRpcChannel<StatsHistory[]>('monitoring-update');
+export const MSG_NAVIGATION_ROUTE_UPDATE = createRpcChannel<string>('navigation-route-update');
 
 // array of model handler names
 export const MSG_MODEL_HANDLERS_UPDATE = createRpcChannel<string[]>('model-handlers-update');

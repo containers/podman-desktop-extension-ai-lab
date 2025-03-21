@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { modelsInfo } from '../stores/modelsInfo';
 import ModelColumnName from '../lib/table/model/ModelColumnName.svelte';
 import ModelColumnLabels from '../lib/table/model/ModelColumnLabels.svelte';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import Card from '/@/lib/Card.svelte';
 import { onMount } from 'svelte';

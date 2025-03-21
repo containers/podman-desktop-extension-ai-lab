@@ -16,10 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { type Disposable } from '@podman-desktop/api';
-import { GPUVendor, type IGPUInfo } from '@shared/src/models/IGPUInfo';
+import { GPUVendor, type IGPUInfo } from '@shared/models/IGPUInfo';
 import { Publisher } from '../utils/Publisher';
 import { graphics } from 'systeminformation';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_GPUS_UPDATE } from '@shared/Messages';
 
 /**

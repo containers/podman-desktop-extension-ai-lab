@@ -19,7 +19,7 @@ import { Publisher } from '../utils/Publisher';
 import { Disposable } from '@podman-desktop/api';
 import { MSG_MODEL_HANDLERS_UPDATE } from '@shared/Messages';
 import type { ModelHandler } from '../models/ModelHandler';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export class ModelHandlerRegistry extends Publisher<string[]> {
   #providers: Map<string, ModelHandler>;

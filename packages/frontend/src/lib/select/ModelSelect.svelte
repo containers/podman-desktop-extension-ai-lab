@@ -2,7 +2,7 @@
 import { faCheckCircle, faDownload } from '@fortawesome/free-solid-svg-icons';
 import Select from './Select.svelte';
 import Fa from 'svelte-fa';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 
 export let disabled: boolean = false;
 /**

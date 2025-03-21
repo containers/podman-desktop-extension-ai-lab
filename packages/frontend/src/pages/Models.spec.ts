@@ -21,7 +21,7 @@ import { screen, render, waitFor, within } from '@testing-library/svelte';
 import Models from './Models.svelte';
 import { router } from 'tinro';
 import userEvent from '@testing-library/user-event';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 
 const mocks = vi.hoisted(() => {
   return {

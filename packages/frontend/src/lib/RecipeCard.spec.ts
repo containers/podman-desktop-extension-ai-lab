@@ -22,7 +22,7 @@ import { screen, render } from '@testing-library/svelte';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 import RecipeCard from './RecipeCard.svelte';
 import { writable, type Writable } from 'svelte/store';
-import type { LocalRepository } from '@shared/src/models/ILocalRepository';
+import type { LocalRepository } from '@shared/models/ILocalRepository';
 import { localRepositories } from '../stores/localRepositories';
 
 vi.mock('/@/utils/localRepositoriesUtils', () => ({

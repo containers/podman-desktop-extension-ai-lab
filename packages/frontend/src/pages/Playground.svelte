@@ -8,7 +8,7 @@ import {
   isSystemPrompt,
   isChatMessage,
   isErrorMessage,
-} from '@shared/src/models/IPlaygroundMessage';
+} from '@shared/models/IPlaygroundMessage';
 import { catalog } from '../stores/catalog';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 import RangeInput from '../lib/RangeInput.svelte';

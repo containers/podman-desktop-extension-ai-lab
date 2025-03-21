@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { expect, test, vi } from 'vitest';
 import RecipeStatus from '/@/lib/RecipeStatus.svelte';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import { studioClient } from '/@/utils/client';
 
 vi.mock('../utils/client', async () => ({

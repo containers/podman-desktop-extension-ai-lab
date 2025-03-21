@@ -1,15 +1,12 @@
 <script lang="ts">
-import type {
-  ContainerConnectionInfo,
-  ContainerProviderConnectionInfo,
-} from '@shared/src/models/IContainerConnectionInfo';
-import type { ModelCheckerContext, ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ContainerConnectionInfo, ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
+import type { ModelCheckerContext, ModelInfo } from '@shared/models/IModelInfo';
 import ContainerConnectionStatusInfo from './ContainerConnectionStatusInfo.svelte';
 import { studioClient } from '/@/utils/client';
 import { configuration } from '/@/stores/extensionConfiguration';
 import { fromStore } from 'svelte/store';
 import GPUEnabledMachine from '/@/lib/notification/GPUEnabledMachine.svelte';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 
 interface Props {
   containerProviderConnection?: ContainerProviderConnectionInfo;

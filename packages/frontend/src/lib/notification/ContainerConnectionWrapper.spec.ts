@@ -22,9 +22,9 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import { studioClient } from '../../utils/client';
 import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
-import { VMType } from '@shared/src/models/IPodman';
+import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
+import { VMType } from '@shared/models/IPodman';
 
 vi.mock('../../utils/client', async () => ({
   studioClient: {

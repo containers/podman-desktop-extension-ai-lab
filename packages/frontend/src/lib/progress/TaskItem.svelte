@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import Fa from 'svelte-fa';
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 import { studioClient } from '/@/utils/client';

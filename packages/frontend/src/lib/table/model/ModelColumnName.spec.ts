@@ -19,7 +19,7 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import ModelColumnName from './ModelColumnName.svelte';
 import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';

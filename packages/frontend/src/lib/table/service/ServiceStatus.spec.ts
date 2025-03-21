@@ -20,7 +20,7 @@ import { expect, test, vi, describe } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import ServiceStatus from './ServiceStatus.svelte';
 import { studioClient } from '/@/utils/client';
-import { type InferenceServerStatus, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServerStatus, InferenceType } from '@shared/models/IInference';
 
 vi.mock('../../../utils/client', async () => ({
   studioClient: {

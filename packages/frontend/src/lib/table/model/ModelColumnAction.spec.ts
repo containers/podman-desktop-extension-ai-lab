@@ -19,10 +19,10 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import ModelColumnActions from '/@/lib/table/model/ModelColumnActions.svelte';
 import { router } from 'tinro';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 
 const mocks = vi.hoisted(() => ({
   requestRemoveLocalModel: vi.fn(),

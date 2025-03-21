@@ -22,10 +22,10 @@ import {
   type ListImagesOptions,
   type PullEvent,
 } from '@podman-desktop/api';
-import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import { getFreeRandomPort } from './ports';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
 

@@ -22,7 +22,7 @@ import { render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 import LocalServer from './LocalServer.svelte';
 import { writable, type Writable } from 'svelte/store';
-import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import { configuration } from '/@/stores/extensionConfiguration';
 import { userEvent } from '@testing-library/user-event';
 import { studioClient } from '/@/utils/client';

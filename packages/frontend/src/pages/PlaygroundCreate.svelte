@@ -1,19 +1,19 @@
 <script lang="ts">
 import { faExclamationCircle, faInfoCircle, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import Fa from 'svelte-fa';
 import { studioClient } from '../utils/client';
 import { router } from 'tinro';
 import { onDestroy, onMount } from 'svelte';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import TasksProgress from '../lib/progress/TasksProgress.svelte';
 import { tasks } from '../stores/tasks';
 import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
-import { InferenceType } from '@shared/src/models/IInference';
+import { InferenceType } from '@shared/models/IInference';
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(model => model.file && model.backend === InferenceType.LLAMA_CPP);

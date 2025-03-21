@@ -19,19 +19,19 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { LlamaCppPython, SECOND } from './LlamaCppPython';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { getImageInfo, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { ContainerProviderConnection, ImageInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { GPUManager } from '../../managers/GPUManager';
 import type { PodmanConnection } from '../../managers/podmanConnection';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
-import { GPUVendor } from '@shared/src/models/IGPUInfo';
-import type { InferenceServer } from '@shared/src/models/IInference';
-import { InferenceType } from '@shared/src/models/IInference';
+import { GPUVendor } from '@shared/models/IGPUInfo';
+import type { InferenceServer } from '@shared/models/IInference';
+import { InferenceType } from '@shared/models/IInference';
 import { llamacpp } from '../../assets/inference-images.json';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import { join } from 'node:path';
 
 vi.mock('@podman-desktop/api', () => ({

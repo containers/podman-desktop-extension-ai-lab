@@ -16,12 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { StudioAPI } from '@shared/src/StudioAPI';
-import { STUDIO_API_CHANNEL } from '@shared/src/StudioAPI';
-import { RpcBrowser } from '@shared/src/messages/MessageProxy';
+import type { StudioAPI } from '@shared/StudioAPI';
+import { STUDIO_API_CHANNEL } from '@shared/StudioAPI';
+import { RpcBrowser } from '@shared/messages/MessageProxy';
 import type { RouterState } from '/@/models/IRouterState';
-import type { InstructlabAPI } from '@shared/src/InstructlabAPI';
-import { INSTRUCTLAB_API_CHANNEL } from '@shared/src/InstructlabAPI';
+import type { InstructlabAPI } from '@shared/InstructlabAPI';
+import { INSTRUCTLAB_API_CHANNEL } from '@shared/InstructlabAPI';
 
 const podmanDesktopApi = acquirePodmanDesktopApi();
 export const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);

@@ -19,12 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach, describe } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 import { writable, type Writable } from 'svelte/store';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import { studioClient } from '/@/utils/client';
-import type { Uri } from '@shared/src/uri/Uri';
+import type { Uri } from '@shared/uri/Uri';
 import type { RenderResult } from '@testing-library/svelte';
 import { router } from 'tinro';
 

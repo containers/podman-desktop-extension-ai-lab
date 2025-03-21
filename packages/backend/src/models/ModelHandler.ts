@@ -18,7 +18,7 @@
 import type { Disposable } from '@podman-desktop/api';
 import { EventEmitter } from '@podman-desktop/api';
 import type { Downloader } from '../utils/downloader';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ModelsManager } from '../managers/modelsManager';
 
 export abstract class ModelHandler implements Disposable {

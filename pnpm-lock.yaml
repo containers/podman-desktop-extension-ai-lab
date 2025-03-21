@@ -118,8 +118,8 @@ importers:
         specifier: ^0.1.14
         version: 0.1.14
       '@huggingface/hub':
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^1.1.2
+        version: 1.1.2
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -914,15 +914,15 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@1.1.0':
-    resolution: {integrity: sha512-ISBWKflpav01nEum9f7LvMP+ae86GhyOFZghAiCTFnki5H7NQcoTX5OISqbwr7987gKVoVXSCooDsZcVU2SXAA==}
+  '@huggingface/hub@1.1.2':
+    resolution: {integrity: sha512-Jf4GhvVj9ABDw4Itb3BV1T7f22iewuZva476qTicQ4kOTbosuUuFDhsVH7ZH6rVNgg20Ll9kaNBF5CXjySIT+w==}
     engines: {node: '>=18'}
 
   '@huggingface/tasks@0.17.1':
     resolution: {integrity: sha512-kN5F/pzwxtmdZ0jORumNyegNKOX/ciU5G/DMZcqK3SJShod4C6yfvBRCMn5sEDzanxtU8VjX+7TaInQFmmU8Nw==}
 
-  '@huggingface/tasks@0.17.8':
-    resolution: {integrity: sha512-8x9YxT1bkOhD0eMn7aytia4OrKQsjVTuQBg2Pkh7Sgjghv+8c6KQq4A5/dJbyNFdvY/1lcd2Si7NsUMhLufzCQ==}
+  '@huggingface/tasks@0.18.2':
+    resolution: {integrity: sha512-6g/6sj1gSyvUKJm+78yfiYOTU3VXMfoyh4M46AXloRD1iU/UfqB7dtAGZqcF9PuYxSFx7Q2zd8fzAYePkQ/ZvA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5637,13 +5637,13 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.17.1
 
-  '@huggingface/hub@1.1.0':
+  '@huggingface/hub@1.1.2':
     dependencies:
-      '@huggingface/tasks': 0.17.8
+      '@huggingface/tasks': 0.18.2
 
   '@huggingface/tasks@0.17.1': {}
 
-  '@huggingface/tasks@0.17.8': {}
+  '@huggingface/tasks@0.18.2': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -6015,7 +6015,7 @@ snapshots:
       '@testing-library/dom': 10.4.0
       svelte: 5.25.0
     optionalDependencies:
-      vite: 6.2.2(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0)
+      vite: 6.1.0(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0)
       vitest: 3.0.5(@types/node@22.13.10)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.29.2)(yaml@2.7.0)
 
   '@testing-library/user-event@14.6.1(@testing-library/dom@10.4.0)':
@@ -9936,9 +9936,9 @@ snapshots:
       lightningcss: 1.29.2
       yaml: 2.7.0
 
-  vitefu@1.0.5(vite@6.2.2(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0)):
+  vitefu@1.0.5(vite@6.1.0(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0)):
     optionalDependencies:
-      vite: 6.2.2(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0)
+      vite: 6.1.0(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0)
 
   vitest@3.0.5(@types/node@22.13.10)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.29.2)(yaml@2.7.0):
     dependencies:

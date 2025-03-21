@@ -101,7 +101,7 @@
   },
   "dependencies": {
     "@huggingface/gguf": "^0.1.14",
-    "@huggingface/hub": "^1.1.0",
+    "@huggingface/hub": "^1.1.2",
     "express": "^4.21.2",
     "express-openapi-validator": "^5.4.6",
     "isomorphic-git": "^1.30.1",

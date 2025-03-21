@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { beforeEach, expect, test, vi } from 'vitest';
 import { TaskRegistry } from './TaskRegistry';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 const rpcExtension = {
   fire: vi.fn(),

@@ -2,7 +2,7 @@
 import { faCheck, faClose, faEdit, faTerminal } from '@fortawesome/free-solid-svg-icons';
 import Fa from 'svelte-fa';
 import { studioClient } from '/@/utils/client';
-import { type Conversation, isSystemPrompt, isUserChat } from '@shared/src/models/IPlaygroundMessage';
+import { type Conversation, isSystemPrompt, isUserChat } from '@shared/models/IPlaygroundMessage';
 import { onMount } from 'svelte';
 
 export let conversation: Conversation;

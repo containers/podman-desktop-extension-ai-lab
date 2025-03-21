@@ -20,8 +20,8 @@ import '@testing-library/jest-dom/vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { fireEvent, render, within } from '@testing-library/svelte';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
-import { VMType } from '@shared/src/models/IPodman';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
+import { VMType } from '@shared/models/IPodman';
 
 beforeEach(() => {
   vi.resetAllMocks();

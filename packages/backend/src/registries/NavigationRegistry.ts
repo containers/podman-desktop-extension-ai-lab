@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { type Disposable, navigation, type WebviewPanel, commands } from '@podman-desktop/api';
 import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export const RECIPE_START_ROUTE = 'recipe.start';
 export const RECIPE_START_NAVIGATE_COMMAND = 'ai-lab.navigation.recipe.start';

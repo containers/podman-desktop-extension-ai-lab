@@ -1,15 +1,15 @@
 <script lang="ts">
 import { faExclamationCircle, faLocationArrow, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { modelsInfo } from '/@/stores/modelsInfo';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import Fa from 'svelte-fa';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
 import { studioClient } from '/@/utils/client';
 import { tasks } from '/@/stores/tasks';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import { inferenceServers } from '/@/stores/inferenceServers';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 import ModelSelect from '../lib/select/ModelSelect.svelte';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';

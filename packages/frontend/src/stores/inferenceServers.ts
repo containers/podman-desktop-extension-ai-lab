@@ -18,7 +18,7 @@
 import { RPCReadable } from '/@/stores/rpcReadable';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 import { studioClient } from '/@/utils/client';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 
 export const inferenceServers = RPCReadable<InferenceServer[]>(
   [],

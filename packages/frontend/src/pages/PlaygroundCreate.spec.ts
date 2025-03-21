@@ -20,14 +20,14 @@ import '@testing-library/jest-dom/vitest';
 import { render, within } from '@testing-library/svelte';
 import { expect, test, vi, beforeEach } from 'vitest';
 import { studioClient } from '../utils/client';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { writable } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
 import * as tasksStore from '/@/stores/tasks';
 import * as modelsInfoStore from '/@/stores/modelsInfo';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import PlaygroundCreate from './PlaygroundCreate.svelte';
-import { InferenceType } from '@shared/src/models/IInference';
+import { InferenceType } from '@shared/models/IInference';
 import * as path from 'node:path';
 import * as os from 'node:os';
 

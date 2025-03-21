@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
+import type { InstructlabSession } from '@shared/models/instructlab/IInstructlabSession';
 import { router } from 'tinro';
 import { catalog } from '/@/stores/catalog';
 

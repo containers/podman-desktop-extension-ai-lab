@@ -30,19 +30,19 @@ import type { ModelsManager } from './managers/modelsManager';
 import { timeout } from './utils/utils';
 import type { TaskRegistry } from './registries/TaskRegistry';
 import { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import type { SnippetManager } from './managers/SnippetManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
 import path from 'node:path';
-import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+import type { LocalModelImportInfo } from '@shared/models/ILocalModelInfo';
 import * as podman from './utils/podman';
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
 import type { NavigationRegistry } from './registries/NavigationRegistry';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 vi.mock('./ai.json', () => {
   return {

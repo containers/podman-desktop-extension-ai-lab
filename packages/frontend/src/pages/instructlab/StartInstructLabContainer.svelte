@@ -1,14 +1,14 @@
 <script lang="ts">
 import { tasks } from '/@/stores/tasks';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import { Button, ErrorMessage, FormPage } from '@podman-desktop/ui-svelte';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
 import { instructlabClient, studioClient } from '/@/utils/client';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import { onMount } from 'svelte';
-import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/src/models/instructlab/IInstructlabContainerInfo';
+import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/models/instructlab/IInstructlabContainerInfo';
 import { filterByLabel } from '/@/utils/taskUtils';
 
 // The container provider connection to use

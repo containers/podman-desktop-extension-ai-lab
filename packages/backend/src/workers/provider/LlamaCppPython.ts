@@ -22,16 +22,16 @@ import type {
   ImageInfo,
   MountConfig,
 } from '@podman-desktop/api';
-import type { InferenceServerConfig } from '@shared/src/models/InferenceServerConfig';
+import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import { InferenceProvider } from './InferenceProvider';
 import { getModelPropertiesForEnvironment, getMountPath } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { GPUManager } from '../../managers/GPUManager';
-import { GPUVendor, type IGPUInfo } from '@shared/src/models/IGPUInfo';
-import { VMType } from '@shared/src/models/IPodman';
+import { GPUVendor, type IGPUInfo } from '@shared/models/IGPUInfo';
+import { VMType } from '@shared/models/IPodman';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import { llamacpp } from '../../assets/inference-images.json';

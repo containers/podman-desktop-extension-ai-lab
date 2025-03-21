@@ -17,7 +17,7 @@
  ***********************************************************************/
 import type { Disposable, PodCreateOptions, PodInfo, Event } from '@podman-desktop/api';
 import { containerEngine, EventEmitter } from '@podman-desktop/api';
-import type { PodHealth } from '@shared/src/models/IApplicationState';
+import type { PodHealth } from '@shared/models/IApplicationState';
 import { getPodHealth } from '../../utils/podsUtils';
 
 export interface PodEvent {

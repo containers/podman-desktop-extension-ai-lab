@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import ContainerConnectionStatusInfo from './ContainerConnectionStatusInfo.svelte';
-import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import { studioClient } from '/@/utils/client';
 import { filesize } from 'filesize';
 import userEvent from '@testing-library/user-event';

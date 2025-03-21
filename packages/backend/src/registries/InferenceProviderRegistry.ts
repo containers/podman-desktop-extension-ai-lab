@@ -19,8 +19,8 @@ import { Publisher } from '../utils/Publisher';
 import type { InferenceProvider } from '../workers/provider/InferenceProvider';
 import { Disposable } from '@podman-desktop/api';
 import { MSG_INFERENCE_PROVIDER_UPDATE } from '@shared/Messages';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
-import type { InferenceType } from '@shared/src/models/IInference';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
+import type { InferenceType } from '@shared/models/IInference';
 
 export class InferenceProviderRegistry extends Publisher<string[]> {
   #providers: Map<string, InferenceProvider>;

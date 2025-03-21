@@ -16,22 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import defaultCatalog from '../assets/ai.json';
-import type { Recipe } from '@shared/src/models/IRecipe';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { Recipe } from '@shared/models/IRecipe';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
 import { type Disposable, type Event, EventEmitter, window } from '@podman-desktop/api';
 import { JsonWatcher } from '../utils/JsonWatcher';
 import { Publisher } from '../utils/Publisher';
-import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
-import { InferenceType } from '@shared/src/models/IInference';
+import type { LocalModelImportInfo } from '@shared/models/ILocalModelInfo';
+import { InferenceType } from '@shared/models/IInference';
 import { CatalogFormat, hasCatalogWrongFormat, merge, sanitize } from '../utils/catalogUtils';
-import type { FilterRecipesResult, RecipeChoices, RecipeFilters } from '@shared/src/models/FilterRecipesResult';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { FilterRecipesResult, RecipeChoices, RecipeFilters } from '@shared/models/FilterRecipesResult';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export const USER_CATALOG = 'user-catalog.json';
 

@@ -22,9 +22,9 @@ import {
   type ContainerProviderConnection,
 } from '@podman-desktop/api';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import type { RecipeImage, Recipe } from '@shared/src/models/IRecipe';
+import type { RecipeImage, Recipe } from '@shared/models/IRecipe';
 import type { ContainerConfig } from '../../models/AIConfig';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import path from 'node:path';
 import { getParentDirectory } from '../../utils/pathUtils';
 import fs from 'node:fs';

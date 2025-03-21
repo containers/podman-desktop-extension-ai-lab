@@ -16,47 +16,47 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { StudioAPI } from '@shared/src/StudioAPI';
+import type { StudioAPI } from '@shared/StudioAPI';
 import type { ApplicationManager } from './managers/application/applicationManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import * as podmanDesktopApi from '@podman-desktop/api';
 
 import type { CatalogManager } from './managers/catalogManager';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import type { ModelsManager } from './managers/modelsManager';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
-import type { Task } from '@shared/src/models/ITask';
+import type { ApplicationState } from '@shared/models/IApplicationState';
+import type { Task } from '@shared/models/ITask';
 import type { TaskRegistry } from './registries/TaskRegistry';
-import type { LocalRepository } from '@shared/src/models/ILocalRepository';
+import type { LocalRepository } from '@shared/models/ILocalRepository';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import path from 'node:path';
-import type { InferenceServer } from '@shared/src/models/IInference';
-import type { CreationInferenceServerOptions } from '@shared/src/models/InferenceServerConfig';
+import type { InferenceServer } from '@shared/models/IInference';
+import type { CreationInferenceServerOptions } from '@shared/models/InferenceServerConfig';
 import type { InferenceManager } from './managers/inference/inferenceManager';
-import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
+import type { Conversation } from '@shared/models/IPlaygroundMessage';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { getFreeRandomPort } from './utils/ports';
 import { withDefaultConfiguration } from './utils/inferenceUtils';
-import type { RequestOptions } from '@shared/src/models/RequestOptions';
+import type { RequestOptions } from '@shared/models/RequestOptions';
 import type { SnippetManager } from './managers/SnippetManager';
 import type { Language } from 'postman-code-generators';
-import type { ModelOptions } from '@shared/src/models/IModelOptions';
+import type { ModelOptions } from '@shared/models/IModelOptions';
 import type { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
-import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+import type { LocalModelImportInfo } from '@shared/models/ILocalModelInfo';
 import { getPodmanConnection } from './utils/podman';
 import type {
   CheckContainerConnectionResourcesOptions,
   ContainerConnectionInfo,
   ContainerProviderConnectionInfo,
-} from '@shared/src/models/IContainerConnectionInfo';
-import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+} from '@shared/models/IContainerConnectionInfo';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
-import type { RecipePullOptions } from '@shared/src/models/IRecipe';
+import type { RecipePullOptions } from '@shared/models/IRecipe';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
 import type { NavigationRegistry } from './registries/NavigationRegistry';
-import type { FilterRecipesResult, RecipeFilters } from '@shared/src/models/FilterRecipesResult';
+import type { FilterRecipesResult, RecipeFilters } from '@shared/models/FilterRecipesResult';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;

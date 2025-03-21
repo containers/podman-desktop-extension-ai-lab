@@ -1,13 +1,13 @@
 <script lang="ts">
 import RecipesCard from '/@/lib/RecipesCard.svelte';
 import { catalog } from '/@/stores/catalog';
-import type { Recipe } from '@shared/src/models/IRecipe';
-import type { Category } from '@shared/src/models/ICategory';
+import type { Recipe } from '@shared/models/IRecipe';
+import type { Category } from '@shared/models/ICategory';
 import { Button, Dropdown, NavPage } from '@podman-desktop/ui-svelte';
 import { Fa } from 'svelte-fa';
 import { faGithub } from '@fortawesome/free-brands-svg-icons'; // Import the GitHub icon
 import { studioClient } from '../utils/client';
-import type { CatalogFilterKey, Choice, RecipeChoices, RecipeFilters } from '@shared/src/models/FilterRecipesResult';
+import type { CatalogFilterKey, Choice, RecipeChoices, RecipeFilters } from '@shared/models/FilterRecipesResult';
 
 // filters available in the dropdowns for the user to select
 let choices: RecipeChoices = $state({});

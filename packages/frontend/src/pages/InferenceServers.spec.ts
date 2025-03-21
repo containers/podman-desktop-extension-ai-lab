@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
 import { screen, render, fireEvent } from '@testing-library/svelte';
 import InferenceServers from '/@/pages/InferenceServers.svelte';
-import { type InferenceServer, InferenceType } from '@shared/src/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 

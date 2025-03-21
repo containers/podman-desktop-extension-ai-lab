@@ -17,12 +17,12 @@
  ***********************************************************************/
 import { beforeEach, expect, test, vi } from 'vitest';
 import { LocalRepositoryRegistry } from './LocalRepositoryRegistry';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { CatalogManager } from '../managers/catalogManager';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
 
 const mocks = vi.hoisted(() => ({

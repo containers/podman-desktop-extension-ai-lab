@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
 
 export interface UploaderOptions {

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { RecipeModelIndex } from '@shared/src/models/IRecipeModelIndex';
+import type { RecipeModelIndex } from '@shared/models/IRecipeModelIndex';
 
 export class ApplicationRegistry<T extends RecipeModelIndex> {
   #applications = new Map<string, T>();

@@ -21,20 +21,20 @@ import { vi, beforeEach, test, expect } from 'vitest';
 import { studioClient } from '/@/utils/client';
 import { render, screen, fireEvent, within } from '@testing-library/svelte';
 import StartRecipe from '/@/pages/StartRecipe.svelte';
-import type { Recipe } from '@shared/src/models/IRecipe';
-import { InferenceType } from '@shared/src/models/IInference';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
-import type { Task } from '@shared/src/models/ITask';
+import type { Recipe } from '@shared/models/IRecipe';
+import { InferenceType } from '@shared/models/IInference';
+import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { Task } from '@shared/models/ITask';
 import { router } from 'tinro';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
-import { VMType } from '@shared/src/models/IPodman';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
+import { VMType } from '@shared/models/IPodman';
 import * as LocalRepositoryStore from '/@/stores/localRepositories';
 import * as ConnectionStore from '/@/stores/containerProviderConnections';
 import * as ModelsInfoStore from '/@/stores/modelsInfo';
 import * as TaskStore from '/@/stores/tasks';
 import * as CatalogStore from '/@/stores/catalog';
 import { readable, writable } from 'svelte/store';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 
 // Mock LocalRepository store
 vi.mock('/@/stores/localRepositories');

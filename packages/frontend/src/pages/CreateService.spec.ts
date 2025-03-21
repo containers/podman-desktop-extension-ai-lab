@@ -21,20 +21,17 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { studioClient } from '/@/utils/client';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import userEvent from '@testing-library/user-event';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { readable, writable } from 'svelte/store';
 import { router } from 'tinro';
-import type {
-  ContainerConnectionInfo,
-  ContainerProviderConnectionInfo,
-} from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerConnectionInfo, ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 // stores
 import * as ConnectionStore from '/@/stores/containerProviderConnections';
 import * as InferenceStore from '/@/stores/inferenceServers';

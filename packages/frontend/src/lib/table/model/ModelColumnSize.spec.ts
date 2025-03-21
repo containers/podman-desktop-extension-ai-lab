@@ -19,7 +19,7 @@
 import '@testing-library/jest-dom/vitest';
 import { test, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import ModelColumnSize from './ModelColumnSize.svelte';
 
 test('Expect simple column styling', async () => {

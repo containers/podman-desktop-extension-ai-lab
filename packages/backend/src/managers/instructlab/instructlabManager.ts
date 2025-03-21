@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
-import type { InstructlabContainerConfiguration } from '@shared/src/models/instructlab/IInstructlabContainerConfiguration';
+import type { InstructlabSession } from '@shared/models/instructlab/IInstructlabSession';
+import type { InstructlabContainerConfiguration } from '@shared/models/instructlab/IInstructlabContainerConfiguration';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import {
   type TelemetryLogger,
@@ -32,7 +32,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { ContainerRegistry, ContainerEvent } from '../../registries/ContainerRegistry';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
-import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/src/models/instructlab/IInstructlabContainerInfo';
+import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/models/instructlab/IInstructlabContainerInfo';
 import { getRandomName } from '../../utils/randomUtils';
 
 export const INSTRUCTLAB_CONTAINER_LABEL = 'ai-lab-instructlab-container';

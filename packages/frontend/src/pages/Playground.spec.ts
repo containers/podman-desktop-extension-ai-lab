@@ -21,14 +21,14 @@ import { render, screen, waitFor, within } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 import Playground from './Playground.svelte';
 import { studioClient } from '../utils/client';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { fireEvent } from '@testing-library/dom';
-import type { AssistantChat, Conversation, PendingChat, UserChat } from '@shared/src/models/IPlaygroundMessage';
+import type { AssistantChat, Conversation, PendingChat, UserChat } from '@shared/models/IPlaygroundMessage';
 import * as conversationsStore from '/@/stores/conversations';
 import * as inferenceServersStore from '/@/stores/inferenceServers';
 import { readable, writable } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 
 vi.mock('../utils/client', async () => {
   return {

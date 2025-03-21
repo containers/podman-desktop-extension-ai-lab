@@ -17,10 +17,10 @@
  ***********************************************************************/
 import { configuration, version, type Configuration, type Disposable } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
-import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import { MSG_CONFIGURATION_UPDATE } from '@shared/Messages';
 import path from 'node:path';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 const CONFIGURATION_SECTIONS: string[] = [
   'models.path',

@@ -24,7 +24,7 @@ import { ModelsManager } from './modelsManager';
 import { env, process as coreProcess } from '@podman-desktop/api';
 import type { RunResult, TelemetryLogger, ContainerProviderConnection } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import * as utils from '../utils/utils';
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
@@ -32,13 +32,13 @@ import * as sha from '../utils/sha';
 import type { GGUFParseOutput } from '@huggingface/gguf';
 import { gguf } from '@huggingface/gguf';
 import type { PodmanConnection } from './podmanConnection';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 import { getPodmanMachineName } from '../utils/podman';
 import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry';
 import { Uploader } from '../utils/uploader';
 import { ModelHandlerRegistry } from '../registries/ModelHandlerRegistry';
 import { URLModelHandler } from '../models/URLModelHandler';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_NEW_MODELS_STATE } from '@shared/Messages';
 
 const mocks = vi.hoisted(() => {

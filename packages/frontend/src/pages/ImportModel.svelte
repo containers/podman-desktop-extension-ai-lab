@@ -1,10 +1,10 @@
 <script lang="ts">
 import { faCircleInfo, faFileImport } from '@fortawesome/free-solid-svg-icons';
 import { studioClient } from '../utils/client';
-import { Uri } from '@shared/src/uri/Uri';
-import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+import { Uri } from '@shared/uri/Uri';
+import type { LocalModelImportInfo } from '@shared/models/ILocalModelInfo';
 import { Button, ErrorMessage, FormPage, Input, Tooltip } from '@podman-desktop/ui-svelte';
-import { InferenceType } from '@shared/src/models/IInference';
+import { InferenceType } from '@shared/models/IInference';
 import Fa from 'svelte-fa';
 import { getFilesFromDropEvent } from '/@/utils/fileUtils';
 import { router } from 'tinro';

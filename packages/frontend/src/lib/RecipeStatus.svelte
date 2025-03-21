@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import Fa from 'svelte-fa';
-import type { LocalRepository } from '@shared/src/models/ILocalRepository';
+import type { LocalRepository } from '@shared/models/ILocalRepository';
 import { faCircleCheck, faDownload } from '@fortawesome/free-solid-svg-icons';
 import { Spinner, Tooltip } from '@podman-desktop/ui-svelte';
 import { studioClient } from '/@/utils/client';

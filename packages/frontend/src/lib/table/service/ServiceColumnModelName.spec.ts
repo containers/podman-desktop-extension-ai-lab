@@ -19,7 +19,7 @@
 import { expect, test, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import ServiceColumnModelName from '/@/lib/table/service/ServiceColumnModelName.svelte';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 
 beforeEach(() => {
   vi.resetAllMocks();

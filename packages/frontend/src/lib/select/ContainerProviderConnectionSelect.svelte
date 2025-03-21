@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import Select from '/@/lib/select/Select.svelte';
 
 export let disabled: boolean = false;
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 
 /**
  * Current value selected

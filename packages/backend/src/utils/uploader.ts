@@ -20,7 +20,7 @@ import { EventEmitter, type Event, type ContainerProviderConnection } from '@pod
 import { WSLUploader } from '../workers/uploader/WSLUploader';
 import { getDurationSecondsSince } from './utils';
 import type { CompletionEvent, BaseEvent } from '../models/baseEvent';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { getLocalModelFile } from './modelsUtils';
 import type { IWorker } from '../workers/IWorker';
 import type { UploaderOptions } from '../workers/uploader/UploaderOptions';

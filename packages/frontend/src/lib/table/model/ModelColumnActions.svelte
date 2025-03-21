@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { faDownload, faRocket, faTrash, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import ListItemButtonIcon from '../../button/ListItemButtonIcon.svelte';
 import { studioClient } from '/@/utils/client';

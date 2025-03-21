@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import ExpandableMessage from '/@/lib/ExpandableMessage.svelte';
 import TaskItem from './TaskItem.svelte';
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { filesize } from 'filesize';
 
 export let object: ModelInfo;

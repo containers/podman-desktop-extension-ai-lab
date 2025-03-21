@@ -28,15 +28,15 @@ import type {
 } from '@podman-desktop/api';
 import { containerEngine, env, navigation, EventEmitter, process, provider, extensions } from '@podman-desktop/api';
 import { getPodmanMachineName, type MachineJSON, MIN_CPUS_VALUE, getPodmanCli } from '../utils/podman';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 import { Publisher } from '../utils/Publisher';
 import type {
   CheckContainerConnectionResourcesOptions,
   ContainerConnectionInfo,
   ContainerProviderConnectionInfo,
-} from '@shared/src/models/IContainerConnectionInfo';
+} from '@shared/models/IContainerConnectionInfo';
 import { MSG_PODMAN_CONNECTION_UPDATE } from '@shared/Messages';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export interface PodmanConnectionEvent {
   status: 'stopped' | 'started' | 'unregister' | 'register';

@@ -13,7 +13,7 @@ import Fa from 'svelte-fa';
 import Route from '/@/Route.svelte';
 import ApplicationTable from '/@/lib/table/application/ApplicationTable.svelte';
 import TasksBanner from '/@/lib/progress/TasksBanner.svelte';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 
 export let recipeId: string;
 

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 
 /* returns the status of the AI application, to be used by <IconStatus> */
 export function getApplicationStatus(appState: ApplicationState): string {

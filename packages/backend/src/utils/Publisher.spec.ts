@@ -17,9 +17,9 @@
  ***********************************************************************/
 import { expect, test, vi } from 'vitest';
 import { Publisher } from './Publisher';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_TASKS_UPDATE } from '@shared/Messages';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 
 test('ensure publisher properly use getter', async () => {
   const rpcExtensionMock = { fire: vi.fn().mockResolvedValue(true) } as unknown as RpcExtension;

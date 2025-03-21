@@ -20,10 +20,10 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 import InstructlabColumnModelName from './InstructlabColumnModelName.svelte';
-import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
+import type { InstructlabSession } from '@shared/models/instructlab/IInstructlabSession';
 import * as catalogStore from '/@/stores/catalog';
 import { readable } from 'svelte/store';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import { router } from 'tinro';
 
 vi.mock('/@/stores/catalog', async () => {

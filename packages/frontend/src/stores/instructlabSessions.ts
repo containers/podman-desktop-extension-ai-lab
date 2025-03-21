@@ -18,7 +18,7 @@
 import { RPCReadable } from '/@/stores/rpcReadable';
 import { MSG_INSTRUCTLAB_SESSIONS_UPDATE } from '@shared/Messages';
 import { instructlabClient } from '/@/utils/client';
-import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
+import type { InstructlabSession } from '@shared/models/instructlab/IInstructlabSession';
 
 export const instructlabSessions = RPCReadable<InstructlabSession[]>(
   [],

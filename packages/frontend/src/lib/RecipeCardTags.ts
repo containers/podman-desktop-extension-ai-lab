@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { ExtensionConfiguration } from '@shared/src/models/IExtensionConfiguration';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import { studioClient } from '/@/utils/client';
 import { gte } from 'semver';
 

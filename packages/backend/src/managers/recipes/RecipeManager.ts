@@ -17,9 +17,9 @@
  ***********************************************************************/
 import type { GitCloneInfo, GitManager } from '../gitManager';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
-import type { Recipe, RecipeComponents } from '@shared/src/models/IRecipe';
+import type { Recipe, RecipeComponents } from '@shared/models/IRecipe';
 import path from 'node:path';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import type { LocalRepositoryRegistry } from '../../registries/LocalRepositoryRegistry';
 import type { AIConfig, AIConfigFile, ContainerConfig } from '../../models/AIConfig';
 import { parseYamlFile } from '../../models/AIConfig';
@@ -29,9 +29,9 @@ import type { BuilderManager } from './BuilderManager';
 import type { ContainerProviderConnection, Disposable } from '@podman-desktop/api';
 import { CONFIG_FILENAME } from '../../utils/RecipeConstants';
 import type { InferenceManager } from '../inference/inferenceManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { withDefaultConfiguration } from '../../utils/inferenceUtils';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 
 export interface AIContainers {
   aiConfigFile: AIConfigFile;

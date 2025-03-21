@@ -23,11 +23,11 @@ import type { PodmanConnection } from '../podmanConnection';
 import { INSTRUCTLAB_CONTAINER_LABEL, InstructlabManager } from './instructlabManager';
 import { ContainerRegistry } from '../../registries/ContainerRegistry';
 import { TestEventEmitter } from '../../tests/utils';
-import { VMType } from '@shared/src/models/IPodman';
-import type { Task } from '@shared/src/models/ITask';
+import { VMType } from '@shared/models/IPodman';
+import type { Task } from '@shared/models/ITask';
 import instructlab_images from '../../assets/instructlab-images.json';
-import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/src/models/instructlab/IInstructlabContainerInfo';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/models/instructlab/IInstructlabContainerInfo';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 vi.mock('@podman-desktop/api', () => {
   return {

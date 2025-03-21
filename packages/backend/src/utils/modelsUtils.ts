@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { join, posix } from 'node:path';
 import { getPodmanCli } from './podman';
 import { process } from '@podman-desktop/api';

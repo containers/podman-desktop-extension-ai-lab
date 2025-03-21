@@ -20,8 +20,8 @@ import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor, within } from '@testing-library/svelte';
 import { router } from 'tinro';
 import TuneSessions from './TuneSessions.svelte';
-import type { InstructlabSession } from '@shared/src/models/instructlab/IInstructlabSession';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { InstructlabSession } from '@shared/models/instructlab/IInstructlabSession';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 
 const mocks = vi.hoisted(() => ({
   instructlabSessionsListMock: vi.fn(),

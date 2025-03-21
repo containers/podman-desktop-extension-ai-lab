@@ -1,6 +1,6 @@
 <script lang="ts">
 import { tasks } from '/@/stores/tasks';
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 import Card from '/@/lib/Card.svelte';
 import TasksProgress from '/@/lib/progress/TasksProgress.svelte';
 import { onMount } from 'svelte';

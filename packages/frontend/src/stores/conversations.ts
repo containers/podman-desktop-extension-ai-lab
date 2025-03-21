@@ -20,7 +20,7 @@ import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
-import type { Conversation } from '@shared/src/models/IPlaygroundMessage';
+import type { Conversation } from '@shared/models/IPlaygroundMessage';
 
 // RPCReadable cannot be used here, as it is doing some debouncing, and we want
 // to get the conversation as soon as the tokens arrive here, instead getting them by packets

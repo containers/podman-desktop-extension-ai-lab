@@ -19,7 +19,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { SnippetManager } from './SnippetManager';
 import type { TelemetryLogger } from '@podman-desktop/api';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_SUPPORTED_LANGUAGES_UPDATE } from '@shared/Messages';
 
 const rpcExtensionMock = {

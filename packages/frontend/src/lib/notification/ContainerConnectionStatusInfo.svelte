@@ -3,7 +3,7 @@ import Fa from 'svelte-fa';
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { filesize } from 'filesize';
 import { studioClient } from '/@/utils/client';
-import type { ContainerConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
+import type { ContainerConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import { Button } from '@podman-desktop/ui-svelte';
 
 export let connectionInfo: ContainerConnectionInfo;

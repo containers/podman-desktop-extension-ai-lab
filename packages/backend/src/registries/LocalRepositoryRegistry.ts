@@ -15,14 +15,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { LocalRepository } from '@shared/src/models/ILocalRepository';
+import type { LocalRepository } from '@shared/models/ILocalRepository';
 import { Disposable } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { CatalogManager } from '../managers/catalogManager';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
 
 /**

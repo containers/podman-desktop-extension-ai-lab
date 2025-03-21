@@ -1,6 +1,6 @@
 <script lang="ts">
 import { router } from 'tinro';
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 
 export let object: InferenceServer;
 

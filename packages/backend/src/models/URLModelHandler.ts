@@ -21,7 +21,7 @@ import type { FileSystemWatcher } from '@podman-desktop/api';
 import { fs as apiFs } from '@podman-desktop/api';
 import { ModelHandler } from './ModelHandler';
 import type { ModelsManager } from '../managers/modelsManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { Downloader } from '../utils/downloader';
 import { URLDownloader } from '../utils/urldownloader';
 

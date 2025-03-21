@@ -1,7 +1,7 @@
 <script lang="ts">
 import { catalog } from '/@/stores/catalog';
 import { displayPorts } from '/@/utils/printers';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 
 export let object: ApplicationState;
 

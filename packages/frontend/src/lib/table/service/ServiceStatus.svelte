@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { InferenceServer } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
 import { studioClient } from '/@/utils/client';
 import { Spinner, StatusIcon } from '@podman-desktop/ui-svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';

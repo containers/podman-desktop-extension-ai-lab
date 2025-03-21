@@ -18,7 +18,7 @@
 
 import { writable, type Subscriber, type Unsubscriber, type Readable } from 'svelte/store';
 import { rpcBrowser } from '../utils/client';
-import type { RpcChannel, Subscriber as SharedSubscriber } from '@shared/src/messages/MessageProxy';
+import type { RpcChannel, Subscriber as SharedSubscriber } from '@shared/messages/MessageProxy';
 
 export function RPCReadable<T>(
   value: T,

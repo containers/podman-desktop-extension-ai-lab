@@ -19,14 +19,14 @@
 import { vi, test, expect, beforeEach } from 'vitest';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { WhisperCpp } from './WhisperCpp';
-import type { InferenceServer } from '@shared/src/models/IInference';
-import { InferenceType } from '@shared/src/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
+import { InferenceType } from '@shared/models/IInference';
 import type { ContainerProviderConnection, ImageInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import { getImageInfo } from '../../utils/inferenceUtils';
 import type { PodmanConnection } from '../../managers/podmanConnection';
-import type { ContainerProviderConnectionInfo } from '@shared/src/models/IContainerConnectionInfo';
-import { VMType } from '@shared/src/models/IPodman';
+import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
+import { VMType } from '@shared/models/IPodman';
 import { join } from 'node:path';
 
 vi.mock('@podman-desktop/api', () => ({

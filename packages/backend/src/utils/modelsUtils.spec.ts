@@ -25,7 +25,7 @@ import {
   isModelUploaded,
   MACHINE_BASE_FOLDER,
 } from './modelsUtils';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { getPodmanCli } from './podman';
 import { join, posix } from 'node:path';
 

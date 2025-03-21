@@ -6,8 +6,8 @@ import Fa from 'svelte-fa';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import { studioClient } from '/@/utils/client';
-import { Uri } from '@shared/src/uri/Uri';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import { Uri } from '@shared/uri/Uri';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 
 let skillsFiles: string[] = $state([]);
 let knowledgeFiles: string[] = $state([]);

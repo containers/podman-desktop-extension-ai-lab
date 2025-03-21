@@ -20,7 +20,7 @@ import type { Readable } from 'svelte/store';
 import { readable } from 'svelte/store';
 import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 
 const emptyCatalog = {
   categories: [],

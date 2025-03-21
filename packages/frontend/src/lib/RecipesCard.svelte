@@ -1,8 +1,8 @@
 <script lang="ts">
 import Card from '/@/lib/Card.svelte';
-import type { Category } from '@shared/src/models/ICategory';
+import type { Category } from '@shared/models/ICategory';
 import RecipeCard from '/@/lib/RecipeCard.svelte';
-import type { Recipe } from '@shared/src/models/IRecipe';
+import type { Recipe } from '@shared/models/IRecipe';
 
 export let category: Category;
 export let recipes: Recipe[];

@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { LocalModelImportInfo } from '@shared/src/models/ILocalModelInfo';
+import type { LocalModelImportInfo } from '@shared/models/ILocalModelInfo';
 
 /**
  * This would only work in Electron as the `path` property is

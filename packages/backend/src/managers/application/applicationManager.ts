@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Recipe, RecipeComponents, RecipeImage } from '@shared/src/models/IRecipe';
+import type { Recipe, RecipeComponents, RecipeImage } from '@shared/models/IRecipe';
 import * as path from 'node:path';
 import { containerEngine, Disposable, window, ProgressLocation } from '@podman-desktop/api';
 import type {
@@ -28,11 +28,11 @@ import type {
   PodContainerInfo,
   ContainerProviderConnection,
 } from '@podman-desktop/api';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ModelsManager } from '../modelsManager';
 import { getPortsFromLabel, getPortsInfo } from '../../utils/ports';
 import { getDurationSecondsSince, timeout } from '../../utils/utils';
-import type { ApplicationState } from '@shared/src/models/IApplicationState';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 import type { PodmanConnection } from '../podmanConnection';
 import { MSG_APPLICATIONS_STATE_UPDATE } from '@shared/Messages';
 import type { CatalogManager } from '../catalogManager';
@@ -50,9 +50,9 @@ import {
   POD_LABEL_MODEL_PORTS,
   POD_LABEL_RECIPE_ID,
 } from '../../utils/RecipeConstants';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
   #applications: ApplicationRegistry<ApplicationState>;

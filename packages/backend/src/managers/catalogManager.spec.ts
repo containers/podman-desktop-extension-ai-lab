@@ -26,11 +26,11 @@ import { CatalogManager } from './catalogManager';
 
 import type { Stats } from 'node:fs';
 import { promises, existsSync } from 'node:fs';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import path from 'node:path';
 import { version } from '../assets/ai.json';
 import * as catalogUtils from '../utils/catalogUtils';
-import type { RpcExtension } from '@shared/src/messages/MessageProxy';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 vi.mock('../assets/ai.json', async importOriginal => {
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports

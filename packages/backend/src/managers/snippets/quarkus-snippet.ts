@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { RequestOptions } from '@shared/src/models/RequestOptions';
+import type { RequestOptions } from '@shared/models/RequestOptions';
 import mustache from 'mustache';
 import template from '../../templates/quarkus-langchain4j.mustache?raw';
 import xmljs from 'xml-js';

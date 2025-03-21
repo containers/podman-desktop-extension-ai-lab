@@ -20,7 +20,7 @@ import * as podmanDesktopApi from '@podman-desktop/api';
 import { getPodmanCli, getPodmanMachineName } from '../../utils/podman';
 import { getLocalModelFile, getRemoteModelFile, isModelUploaded, MACHINE_BASE_FOLDER } from '../../utils/modelsUtils';
 import { WindowsWorker } from '../WindowsWorker';
-import { VMType } from '@shared/src/models/IPodman';
+import { VMType } from '@shared/models/IPodman';
 import type { UploaderOptions } from './UploaderOptions';
 import { escapeSpaces } from '../../utils/pathUtils';
 

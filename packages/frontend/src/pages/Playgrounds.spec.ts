@@ -21,7 +21,7 @@ import { screen, render, within } from '@testing-library/svelte';
 import Playgrounds from '/@/pages/Playgrounds.svelte';
 import * as catalogStore from '/@/stores/catalog';
 import { readable } from 'svelte/store';
-import type { ApplicationCatalog } from '@shared/src/models/IApplicationCatalog';
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 
 const mocks = vi.hoisted(() => {
   return {

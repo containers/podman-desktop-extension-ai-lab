@@ -27,7 +27,7 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { studioClient } from '../utils/client';
 
 import ImportModels from './ImportModel.svelte';
-import type { Uri } from '@shared/src/uri/Uri';
+import type { Uri } from '@shared/uri/Uri';
 
 vi.mock('../utils/client', async () => {
   return {

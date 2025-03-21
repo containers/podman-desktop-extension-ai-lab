@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Task } from '@shared/src/models/ITask';
+import type { Task } from '@shared/models/ITask';
 
 export const filterByLabel = (tasks: Task[], requestedLabels: { [key: string]: string }): Task[] => {
   return tasks.filter(task => {

@@ -33,7 +33,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@tsconfig/svelte": "^5.0.4",
     "@types/humanize-duration": "^3.27.4",
-    "@typescript-eslint/eslint-plugin": "8.27.0",
+    "@typescript-eslint/eslint-plugin": "8.28.0",
     "jsdom": "^26.0.0",
     "monaco-editor": "^0.52.2",
     "postcss": "^8.5.3",

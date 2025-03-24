@@ -104,6 +104,8 @@ export class HuggingFaceModelHandler extends ModelHandler {
   async deleteModel(model: ModelInfo): Promise<void> {
     if (model.file) {
       await fs.rm(model.file?.path, { recursive: true });
+    } else {
+      throw new Error(`Model ${model.name} not downloaded yet.`);
     }
   }
 

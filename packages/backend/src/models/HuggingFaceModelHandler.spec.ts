@@ -16,11 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { EventEmitter } from '@podman-desktop/api';
-import type { TelemetryLogger, Webview } from '@podman-desktop/api';
+import type { TelemetryLogger } from '@podman-desktop/api';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { ModelsManager } from '../managers/modelsManager';
 import type { CatalogManager } from '../managers/catalogManager';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { PodmanConnection } from '../managers/podmanConnection';
@@ -28,6 +28,7 @@ import type { ConfigurationRegistry } from '../registries/ConfigurationRegistry'
 import { ModelHandlerRegistry } from '../registries/ModelHandlerRegistry';
 import { HuggingFaceModelHandler } from './HuggingFaceModelHandler';
 import { snapshotDownload } from '@huggingface/hub';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
 
 vi.mock('@podman-desktop/api', () => {
   return {
@@ -42,9 +43,9 @@ vi.mock('@huggingface/hub', () => {
   };
 });
 
-const WEBVIEW_MOCK = {
-  postMessage: vi.fn(),
-} as unknown as Webview;
+const rpcExtensionMock = {
+  fire: vi.fn(),
+} as unknown as RpcExtension;
 
 const catalogManagerMock = {
   getModels(): ModelInfo[] {
@@ -61,7 +62,7 @@ const telemetryLogger = {
   logError: vi.fn(),
 } as unknown as TelemetryLogger;
 
-const taskRegistry: TaskRegistry = new TaskRegistry(WEBVIEW_MOCK);
+const taskRegistry: TaskRegistry = new TaskRegistry(rpcExtensionMock);
 
 const cancellationTokenRegistryMock = {
   createCancellationTokenSource: vi.fn(),
@@ -75,10 +76,10 @@ const configurationRegistryMock = {
   getExtensionConfiguration: vi.fn(),
 } as unknown as ConfigurationRegistry;
 
-const modelHandlerRegistry = new ModelHandlerRegistry(WEBVIEW_MOCK);
+const modelHandlerRegistry = new ModelHandlerRegistry(rpcExtensionMock);
 
 const modelsManager: ModelsManager = new ModelsManager(
-  WEBVIEW_MOCK,
+  rpcExtensionMock,
   catalogManagerMock,
   telemetryLogger,
   taskRegistry,

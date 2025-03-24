@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { ModelHandler } from './ModelHandler';
-import type { ModelInfo } from '@shared/src/models/IModelInfo';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { Downloader } from '../utils/downloader';
 import { scanCacheDir, snapshotDownload } from '@huggingface/hub';
 import type { CompletionEvent } from './baseEvent';

@@ -309,8 +309,8 @@ importers:
         specifier: ^22
         version: 22.13.10
       electron:
-        specifier: ^35.0.3
-        version: 35.0.3
+        specifier: ^35.1.0
+        version: 35.1.0
       typescript:
         specifier: ^5.7.3
         version: 5.7.3
@@ -2338,8 +2338,8 @@ packages:
   electron-to-chromium@1.5.114:
     resolution: {integrity: sha512-DFptFef3iktoKlFQK/afbo274/XNWD00Am0xa7M8FZUepHlHT8PEuiNBoRfFHbH1okqN58AlhbJ4QTkcnXorjA==}
 
-  electron@35.0.3:
-    resolution: {integrity: sha512-kjQAYEWXSr2TyK19IZoF85dzFIBaYuX7Yp/C+34b5Y/jmI2z270CGie+RjmEGMMitsy0G8YJKftukhYMuWlK6g==}
+  electron@35.1.0:
+    resolution: {integrity: sha512-yHaKPlsgDgjkwsiXgJG5DAmr9BgD4wSxtDGL6aBmUaN7QTs6qppNgtGkjHsS/pXJb4ZZBIH4IpPAx9d59Epbeg==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -7122,10 +7122,10 @@ snapshots:
 
   electron-to-chromium@1.5.114: {}
 
-  electron@35.0.3:
+  electron@35.1.0:
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 22.13.10
+      '@types/node': 22.13.13
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color

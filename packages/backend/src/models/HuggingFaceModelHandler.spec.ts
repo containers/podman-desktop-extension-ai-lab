@@ -94,14 +94,18 @@ const huggingFaceModelHandler = new HuggingFaceModelHandler(modelsManager);
 beforeEach(() => {
   const listeners: ((value: unknown) => void)[] = [];
 
-  vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn().mockImplementation(callback => {
-      listeners.push(callback);
-    }),
-    fire: vi.fn().mockImplementation((content: unknown) => {
-      listeners.forEach(listener => listener(content));
-    }),
-  } as unknown as EventEmitter<unknown>);
+  const eventReturned = {
+    event: vi.fn(),
+    fire: vi.fn(),
+  };
+
+  vi.mocked(EventEmitter).mockReturnValue(eventReturned as unknown as EventEmitter<unknown>);
+  vi.mocked(eventReturned.event).mockImplementation(callback => {
+    listeners.push(callback);
+  });
+  vi.mocked(eventReturned.fire).mockImplementation((content: unknown) => {
+    listeners.forEach(listener => listener(content));
+  });
 });
 
 test('check http url are not supported', () => {

@@ -111,7 +111,7 @@
     "postman-code-generators": "^1.14.1",
     "postman-collection": "^5.0.1",
     "semver": "^7.7.1",
-    "swagger-ui-dist": "^5.20.1",
+    "swagger-ui-dist": "^5.20.2",
     "swagger-ui-express": "^5.0.1",
     "systeminformation": "^5.25.11",
     "xml-js": "^1.6.11"

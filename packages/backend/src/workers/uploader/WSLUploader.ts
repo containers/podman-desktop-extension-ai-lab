@@ -61,6 +61,7 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
         'ssh',
         machineName,
         'cp',
+        '-r',
         convertToMntPath,
         remoteFile,
       ]);

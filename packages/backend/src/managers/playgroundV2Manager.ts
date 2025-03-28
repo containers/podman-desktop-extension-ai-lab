@@ -218,7 +218,7 @@ export class PlaygroundV2Manager implements Disposable {
       timestamp: Date.now(),
     } as UserChat);
 
-    if (!modelInfo.file?.file) throw new Error('model info has undefined file.');
+    if (!modelInfo.file?.path) throw new Error('model info has undefined file.');
 
     const telemetry: Record<string, unknown> = {
       conversationId: conversationId,
@@ -243,7 +243,7 @@ export class PlaygroundV2Manager implements Disposable {
 
     const openAiClient = createOpenAICompatible({
       name: modelInfo.name,
-      baseURL: `http://localhost:${server.connection.port}/v1`,
+      baseURL: server.labels['api'] ?? `http://localhost:${server.connection.port}/v1`,
     });
     let model = openAiClient(modelInfo.name);
     // Tool calling in OpenAI doesn't support streaming yet

@@ -5,5 +5,8 @@
   "llamacpp": {
     "default": "quay.io/ramalama/ramalama-llama-server@sha256:4e56101073e0bd6f2f2e15839b64315656d0dbfc1331a3385f2ae722e13f2279",
     "cuda": "quay.io/ramalama/cuda-llama-server@sha256:56efc824e5b3ae6a6a11e9537ed9e2ac05f9f9fc6f2e81a55eb67b662c94fe95"
+  },
+  "openvino": {
+    "default": "quay.io/podman-ai-lab/openvino@sha256:0d273cc9215ad6e4b0bae89583944ce364decb35d7fc532259deeb8bdb6a9e48"
   }
 }

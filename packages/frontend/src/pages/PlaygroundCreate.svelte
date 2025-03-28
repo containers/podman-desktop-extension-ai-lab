@@ -16,7 +16,7 @@ import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
 
 let localModels: ModelInfo[];
-$: localModels = $modelsInfo.filter(model => model.file && model.backend === InferenceType.LLAMA_CPP);
+$: localModels = $modelsInfo.filter(model => model.file && model.backend !== InferenceType.WHISPER_CPP);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;
 let submitted: boolean = false;

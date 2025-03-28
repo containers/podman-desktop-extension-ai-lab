@@ -82,6 +82,33 @@ const generate = async (language: string, variant: string): Promise<void> => {
         },
       };
       break;
+    case InferenceType.OPENVINO:
+      options = {
+        url: `http://localhost:${service?.connection.port || '??'}/v3/chat/completions`,
+        method: 'POST',
+        header: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+        ],
+        body: {
+          mode: 'raw',
+          raw: `{
+  "messages": [
+    {
+      "content": "You are a helpful assistant.",
+      "role": "system"
+    },
+    {
+      "content": "What is the capital of France?",
+      "role": "user"
+    }
+  ]
+}`,
+        },
+      };
+      break;
     case InferenceType.WHISPER_CPP:
       options = {
         url: `http://localhost:${service?.connection.port || '??'}/inference`,

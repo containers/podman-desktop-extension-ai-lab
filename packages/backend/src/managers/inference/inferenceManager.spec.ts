@@ -288,6 +288,7 @@ describe('Create Inference Server', () => {
       enabled: () => true,
       name: 'dummy-inference-provider',
       dispose: () => {},
+      prePerform: vi.fn().mockReturnValue(Promise.resolve()),
       perform: vi.fn<() => InferenceServer>().mockResolvedValue({
         container: {
           containerId: 'dummy-container-id',

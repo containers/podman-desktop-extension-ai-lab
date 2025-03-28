@@ -204,7 +204,7 @@ describe('perform', () => {
       HealthCheck: {
         Interval: SECOND * 5,
         Retries: 20,
-        Test: ['CMD-SHELL', 'curl -sSf localhost:8000/docs > /dev/null'],
+        Test: ['CMD-SHELL', 'curl -sSf localhost:8000 > /dev/null'],
       },
       HostConfig: {
         AutoRemove: false,
@@ -444,7 +444,7 @@ describe('perform', () => {
     expect('gpu' in server.labels).toBeFalsy();
   });
 
-  test('LIBKRUN vmtype should uses llamacpp.vulkan image', async () => {
+  test('LIBKRUN vmtype should uses llamacpp.default image with gpu layers 999', async () => {
     vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
       ...dummyConnection,
       vmType: VMType.LIBKRUN,
@@ -476,9 +476,16 @@ describe('perform', () => {
       connection: undefined,
     });
 
-    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.vulkan, expect.any(Function));
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.default, expect.any(Function));
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
     expect('gpu' in server.labels).toBeTruthy();
+
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Env: expect.arrayContaining(['GPU_LAYERS=999']),
+      }),
+    );
   });
 
   test('UNKNOWN vmtype should use llamacpp.default image - if not gpu accelerated', async () => {

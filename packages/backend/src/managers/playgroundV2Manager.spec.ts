@@ -188,6 +188,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
         {
           id: 'dummyModelId',
           file: {
+            path: '.',
             file: 'dummyModelFile',
           },
         },
@@ -195,6 +196,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
       connection: {
         port: 8888,
       },
+      labels: [],
     } as unknown as InferenceServer,
   ]);
   const createMock = vi.fn().mockResolvedValue([]);
@@ -262,6 +264,7 @@ test('submit should send options', async () => {
         {
           id: 'dummyModelId',
           file: {
+            path: '.',
             file: 'dummyModelFile',
           },
         },
@@ -269,6 +272,7 @@ test('submit should send options', async () => {
       connection: {
         port: 8888,
       },
+      labels: [],
     } as unknown as InferenceServer,
   ]);
   const createMock = vi.fn().mockResolvedValue([]);
@@ -301,15 +305,7 @@ test('submit should send options', async () => {
   const messages: unknown[] = [
     {
       content: 'dummyUserInput',
-      id: expect.any(String),
       role: 'user',
-      timestamp: expect.any(Number),
-      options: {
-        temperature: 0.123,
-        max_tokens: 45,
-        top_p: 0.345,
-        stream_options: { include_usage: true },
-      },
     },
   ];
   expect(createMock).toHaveBeenCalledWith(
@@ -343,6 +339,7 @@ test('error', async () => {
         {
           id: 'dummyModelId',
           file: {
+            path: '.',
             file: 'dummyModelFile',
           },
         },
@@ -350,6 +347,7 @@ test('error', async () => {
       connection: {
         port: 8888,
       },
+      labels: [],
     } as unknown as InferenceServer,
   ]);
   const createMock = vi.fn().mockRejectedValue('Please reduce the length of the messages or completion.');
@@ -725,6 +723,7 @@ describe('system prompt', () => {
           {
             id: 'dummyModelId',
             file: {
+              path: '.',
               file: 'dummyModelFile',
             },
           },
@@ -732,6 +731,7 @@ describe('system prompt', () => {
         connection: {
           port: 8888,
         },
+        labels: [],
       } as unknown as InferenceServer,
     ]);
     const createMock = vi.fn().mockResolvedValue([]);

@@ -22,6 +22,7 @@ import { Button, Tooltip, DetailsPage, StatusIcon } from '@podman-desktop/ui-sve
 import { router } from 'tinro';
 import ConversationActions from '../lib/conversation/ConversationActions.svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
+import type { ModelOptions } from '@shared/models/IModelOptions';
 
 interface Props {
   playgroundId: string;
@@ -74,13 +75,16 @@ let server = $derived(
 function askPlayground(): void {
   errorMsg = '';
   inProgress = true;
+  const options: ModelOptions = {
+    temperature,
+    top_p,
+    stream_options: { include_usage: true },
+  };
+  if (max_tokens > 0) {
+    options.max_tokens = max_tokens;
+  }
   studioClient
-    .submitPlaygroundMessage(playgroundId, prompt, {
-      temperature,
-      max_tokens,
-      top_p,
-      stream_options: { include_usage: true },
-    })
+    .submitPlaygroundMessage(playgroundId, prompt, options)
     .then(token => {
       cancellationTokenId = token;
     })

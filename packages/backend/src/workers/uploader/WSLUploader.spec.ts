@@ -111,7 +111,7 @@ describe('upload', () => {
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-lab/models/dummy.guff',
+      '/home/user/ai-lab/models/dummyId',
     ]);
     expect(process.exec).toBeCalledWith('podman.exe', [
       'machine',
@@ -126,8 +126,9 @@ describe('upload', () => {
       'ssh',
       'machine2',
       'cp',
+      '-r',
       '/mnt/c/Users/podman/folder/dummy.guff',
-      '/home/user/ai-lab/models/dummy.guff',
+      '/home/user/ai-lab/models/dummyId',
     ]);
   });
 
@@ -145,7 +146,7 @@ describe('upload', () => {
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-lab/models/dummy.guff',
+      '/home/user/ai-lab/models/dummyId',
     ]);
     expect(process.exec).toBeCalledWith('podman.exe', [
       'machine',
@@ -160,8 +161,9 @@ describe('upload', () => {
       'ssh',
       'machine2',
       'cp',
+      '-r',
       '/mnt/c/Users/podman\\ folder/dummy.guff',
-      '/home/user/ai-lab/models/dummy.guff',
+      '/home/user/ai-lab/models/dummyId',
     ]);
   });
 
@@ -179,7 +181,7 @@ describe('upload', () => {
       'ssh',
       'machine2',
       'stat',
-      '/home/user/ai-lab/models/dummy.guff',
+      '/home/user/ai-lab/models/dummyId',
     ]);
     expect(process.exec).toBeCalledTimes(1);
   });

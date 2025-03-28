@@ -59,6 +59,7 @@ import { INSTRUCTLAB_API_CHANNEL } from '@shared/InstructlabAPI';
 import { ModelHandlerRegistry } from './registries/ModelHandlerRegistry';
 import { URLModelHandler } from './models/URLModelHandler';
 import { HuggingFaceModelHandler } from './models/HuggingFaceModelHandler';
+import { OpenVINO } from './workers/provider/OpenVINO';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -274,6 +275,17 @@ export class Studio {
     );
     this.#extensionContext.subscriptions.push(
       this.#inferenceProviderRegistry.register(new WhisperCpp(this.#taskRegistry, this.#podmanConnection)),
+    );
+    this.#extensionContext.subscriptions.push(
+      this.#inferenceProviderRegistry.register(
+        new OpenVINO(
+          this.#taskRegistry,
+          this.#podmanConnection,
+          this.#modelsManager,
+          this.#gpuManager,
+          this.#configurationRegistry,
+        ),
+      ),
     );
 
     /**

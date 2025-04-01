@@ -284,12 +284,6 @@ export class ModelsManager implements Disposable {
           this.telemetry.logUsage(eventName, { 'model.id': event.id, durationSeconds: event.duration });
         }
 
-        // refresh model lists on event completion
-        await this.getLocalModelsFromDisk();
-        this.sendModelsInfo().catch((err: unknown) => {
-          console.error('Something went wrong while sending models info.', err);
-        });
-
         // cleanup downloader
         this.#downloaders.delete(event.id);
       }
@@ -371,6 +365,8 @@ export class ModelsManager implements Disposable {
 
     // perform download
     await downloader.perform(model.id);
+    await this.updateModelInfos();
+
     return downloader.getTarget();
   }
 
@@ -395,7 +391,18 @@ export class ModelsManager implements Disposable {
     uploader.onEvent(event => this.onDownloadUploadEvent(event, 'upload'), this);
 
     // perform download
-    return uploader.perform(model.id);
+    const path = uploader.perform(model.id);
+    await this.updateModelInfos();
+
+    return path;
+  }
+
+  private async updateModelInfos(): Promise<void> {
+    // refresh model lists on event completion
+    await this.getLocalModelsFromDisk();
+    this.sendModelsInfo().catch((err: unknown) => {
+      console.error('Something went wrong while sending models info.', err);
+    });
   }
 
   async getModelMetadata(modelId: string): Promise<Record<string, unknown>> {

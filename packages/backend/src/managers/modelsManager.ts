@@ -365,11 +365,7 @@ export class ModelsManager implements Disposable {
 
     // perform download
     await downloader.perform(model.id);
-    // refresh model lists on event completion
-    await this.getLocalModelsFromDisk();
-    this.sendModelsInfo().catch((err: unknown) => {
-      console.error('Something went wrong while sending models info.', err);
-    });
+    await this.updateModelInfos();
 
     return downloader.getTarget();
   }
@@ -396,13 +392,17 @@ export class ModelsManager implements Disposable {
 
     // perform download
     const path = uploader.perform(model.id);
+    await this.updateModelInfos();
+
+    return path;
+  }
+
+  private async updateModelInfos(): Promise<void> {
     // refresh model lists on event completion
     await this.getLocalModelsFromDisk();
     this.sendModelsInfo().catch((err: unknown) => {
       console.error('Something went wrong while sending models info.', err);
     });
-
-    return path;
   }
 
   async getModelMetadata(modelId: string): Promise<Record<string, unknown>> {

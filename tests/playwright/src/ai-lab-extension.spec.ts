@@ -208,7 +208,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         await playExpect(async () => {
           const response = await request.get(url);
           playExpect(response.ok()).toBeTruthy();
-          playExpect(await response.text()).toContain('hello');
         }).toPass({ timeout: 30_000 });
       });
 

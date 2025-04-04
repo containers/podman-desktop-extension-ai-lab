@@ -124,8 +124,8 @@ importers:
         specifier: ^4.21.2
         version: 4.21.2
       express-openapi-validator:
-        specifier: ^5.4.7
-        version: 5.4.7(express@4.21.2)
+        specifier: ^5.4.8
+        version: 5.4.8(express@4.21.2)
       isomorphic-git:
         specifier: ^1.30.1
         version: 1.30.1
@@ -2651,8 +2651,8 @@ packages:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
 
-  express-openapi-validator@5.4.7:
-    resolution: {integrity: sha512-hg1o3+vtsRDLsdBlKBp1Zgyk4WxMtdVwGJGruEj53UIcOiMDgny/diHJmg/MLwPC2OpxLpOCTRFidlVSNAsLPg==}
+  express-openapi-validator@5.4.8:
+    resolution: {integrity: sha512-UO8naprchNoMkbURbvzi0TlV6H2VGkw+cMxxBdjZoSyCXsa2k/9s+vnZCRHluuWiJTyVgHQjcos0tt4ahO1pVQ==}
     peerDependencies:
       express: '*'
 
@@ -7656,7 +7656,7 @@ snapshots:
 
   expect-type@1.1.0: {}
 
-  express-openapi-validator@5.4.7(express@4.21.2):
+  express-openapi-validator@5.4.8(express@4.21.2):
     dependencies:
       '@apidevtools/json-schema-ref-parser': 11.9.3
       '@types/multer': 1.4.12

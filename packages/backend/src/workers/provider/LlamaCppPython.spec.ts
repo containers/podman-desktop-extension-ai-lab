@@ -306,7 +306,7 @@ describe('perform', () => {
       expect.objectContaining({
         Cmd: [
           '-c',
-          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
         ],
       }),
     );
@@ -354,7 +354,7 @@ describe('perform', () => {
       expect.objectContaining({
         Cmd: [
           '-c',
-          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
         ],
       }),
     );
@@ -402,7 +402,7 @@ describe('perform', () => {
       expect.objectContaining({
         Cmd: [
           '-c',
-          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
         ],
       }),
     );

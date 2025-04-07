@@ -124,8 +124,8 @@ importers:
         specifier: ^4.21.2
         version: 4.21.2
       express-openapi-validator:
-        specifier: ^5.4.8
-        version: 5.4.8(express@4.21.2)
+        specifier: ^5.4.9
+        version: 5.4.9(express@4.21.2)
       isomorphic-git:
         specifier: ^1.30.1
         version: 1.30.1
@@ -1782,8 +1782,8 @@ packages:
       ajv:
         optional: true
 
-  ajv-formats@2.1.1:
-    resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
+  ajv-formats@3.0.1:
+    resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
     peerDependencies:
       ajv: ^8.0.0
     peerDependenciesMeta:
@@ -2650,8 +2650,8 @@ packages:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
 
-  express-openapi-validator@5.4.8:
-    resolution: {integrity: sha512-UO8naprchNoMkbURbvzi0TlV6H2VGkw+cMxxBdjZoSyCXsa2k/9s+vnZCRHluuWiJTyVgHQjcos0tt4ahO1pVQ==}
+  express-openapi-validator@5.4.9:
+    resolution: {integrity: sha512-NdU3VSkujFNpESNLXOvR2qVc/kO+zps8O5sBPQpvj8r075hLTtH823kWaGIJyVThWTd/9c8/bXaCJH/m3m9SAQ==}
     peerDependencies:
       express: '*'
 
@@ -6556,7 +6556,7 @@ snapshots:
     optionalDependencies:
       ajv: 8.17.1
 
-  ajv-formats@2.1.1(ajv@8.17.1):
+  ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:
       ajv: 8.17.1
 
@@ -7654,13 +7654,13 @@ snapshots:
 
   expect-type@1.1.0: {}
 
-  express-openapi-validator@5.4.8(express@4.21.2):
+  express-openapi-validator@5.4.9(express@4.21.2):
     dependencies:
       '@apidevtools/json-schema-ref-parser': 11.9.3
       '@types/multer': 1.4.12
       ajv: 8.17.1
       ajv-draft-04: 1.0.0(ajv@8.17.1)
-      ajv-formats: 2.1.1(ajv@8.17.1)
+      ajv-formats: 3.0.1(ajv@8.17.1)
       content-type: 1.0.5
       express: 4.21.2
       json-schema-traverse: 1.0.0

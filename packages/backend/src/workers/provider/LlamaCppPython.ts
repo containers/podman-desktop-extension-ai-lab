@@ -169,13 +169,7 @@ export class LlamaCppPython extends InferenceProvider {
 
         // label the container
         labels['gpu'] = gpu.model;
-
-        // set the number of layers to offload to the GPU in case of LibKrun
-        if (vmType === VMType.LIBKRUN || vmType === VMType.LIBKRUN_LABEL) {
-          envs.push(`GPU_LAYERS=999`);
-        } else {
-          envs.push(`GPU_LAYERS=${config.gpuLayers}`);
-        }
+        envs.push(`GPU_LAYERS=${config.gpuLayers ?? 999}`);
       } else {
         console.warn(`gpu ${gpu.model} is not supported on ${vmType}.`);
       }

@@ -17,20 +17,10 @@
  ***********************************************************************/
 import type { Disposable, TelemetryLogger } from '@podman-desktop/api';
 import type { InferenceManager } from './inference/inferenceManager';
-import OpenAI from 'openai';
-import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/src/resources/chat/completions';
 import type { ModelOptions } from '@shared/models/IModelOptions';
-import type { Stream } from 'openai/streaming';
 import { ConversationRegistry } from '../registries/ConversationRegistry';
-import type {
-  Conversation,
-  ErrorMessage,
-  ModelUsage,
-  PendingChat,
-  SystemPrompt,
-  UserChat,
-} from '@shared/models/IPlaygroundMessage';
-import { isChatMessage, isSystemPrompt } from '@shared/models/IPlaygroundMessage';
+import type { Conversation, SystemPrompt, UserChat } from '@shared/models/IPlaygroundMessage';
+import { isSystemPrompt } from '@shared/models/IPlaygroundMessage';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
 import { getRandomString } from '../utils/randomUtils';
@@ -38,6 +28,8 @@ import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { getHash } from '../utils/sha';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { AiStreamProcessor } from './playground/aiSdk';
 
 export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;
@@ -219,11 +211,6 @@ export class PlaygroundV2Manager implements Disposable {
       timestamp: Date.now(),
     } as UserChat);
 
-    const client = new OpenAI({
-      baseURL: `http://localhost:${server.connection.port}/v1`,
-      apiKey: 'dummy',
-    });
-
     if (!modelInfo.file?.file) throw new Error('model info has undefined file.');
 
     const telemetry: Record<string, unknown> = {
@@ -233,110 +220,36 @@ export class PlaygroundV2Manager implements Disposable {
       modelId: getHash(modelInfo.id),
     };
 
-    // create an abort controller
-    const abortController = new AbortController();
+    const openAiClient = createOpenAICompatible({
+      name: modelInfo.name,
+      baseURL: `http://localhost:${server.connection.port}/v1`,
+    });
+    const model = openAiClient(modelInfo.name);
+    const streamProcessor = new AiStreamProcessor(conversationId, this.#conversationRegistry);
+
     const cancelTokenId = this.cancellationTokenRegistry.createCancellationTokenSource(() => {
-      abortController.abort('cancel');
+      streamProcessor.abortController.abort('cancel');
     });
 
-    client.chat.completions
-      .create(
-        {
-          messages: this.getFormattedMessages(conversation.id),
-          stream: true,
-          model: modelInfo.file.file,
-          ...options,
-        },
-        {
-          signal: abortController.signal,
-        },
-      )
-      .then(response => {
-        // process stream async
-        this.processStream(conversation.id, response)
-          .catch((err: unknown) => {
-            console.error('Something went wrong while processing stream', err);
-          })
-          .finally(() => {
-            this.cancellationTokenRegistry.delete(cancelTokenId);
-          });
+    const start = Date.now();
+    streamProcessor
+      .stream(model, options)
+      .consumeStream()
+      .then(() => {
+        this.telemetry.logUsage('playground.message.complete', {
+          duration: Date.now() - start,
+          modelId: getHash(conversation.modelId),
+        });
       })
       .catch((err: unknown) => {
-        telemetry['errorMessage'] = `${String(err)}`;
-        console.error('Something went wrong while creating model response', err);
-        this.processError(conversation.id, err).catch((err: unknown) => {
-          console.error('Something went wrong while processing stream', err);
-        });
+        console.error('Something went wrong while processing stream', err);
       })
       .finally(() => {
         this.telemetry.logUsage('playground.submit', telemetry);
+        this.cancellationTokenRegistry.delete(cancelTokenId);
       });
+
     return cancelTokenId;
-  }
-
-  private async processError(conversationId: string, error: unknown): Promise<void> {
-    let errorMessage = String(error);
-    if (errorMessage.endsWith('Please reduce the length of the messages or completion.')) {
-      errorMessage += ' Note: You should start a new playground.';
-    }
-    const messageId = this.#conversationRegistry.getUniqueId();
-    const start = Date.now();
-    this.#conversationRegistry.submit(conversationId, {
-      id: messageId,
-      timestamp: start,
-      error: errorMessage,
-    } as ErrorMessage);
-  }
-
-  /**
-   * Given a Stream from the OpenAI library update and notify the publisher
-   * @param conversationId
-   * @param stream
-   */
-  private async processStream(conversationId: string, stream: Stream<ChatCompletionChunk>): Promise<void> {
-    const conversation = this.#conversationRegistry.get(conversationId);
-
-    const messageId = this.#conversationRegistry.getUniqueId();
-    const start = Date.now();
-    this.#conversationRegistry.submit(conversationId, {
-      role: 'assistant',
-      choices: [],
-      completed: undefined,
-      id: messageId,
-      timestamp: start,
-    } as PendingChat);
-
-    for await (const chunk of stream) {
-      this.#conversationRegistry.appendChoice(conversationId, messageId, {
-        content: chunk.choices[0]?.delta?.content ?? '',
-      });
-      this.#conversationRegistry.setUsage(conversationId, messageId, chunk.usage as ModelUsage);
-    }
-
-    this.#conversationRegistry.completeMessage(conversationId, messageId);
-    this.telemetry.logUsage('playground.message.complete', {
-      duration: Date.now() - start,
-      modelId: getHash(conversation.modelId),
-    });
-  }
-
-  /**
-   * Transform the ChatMessage interface to the OpenAI ChatCompletionMessageParam
-   * @private
-   */
-  private getFormattedMessages(conversationId: string): ChatCompletionMessageParam[] {
-    const conversation = this.#conversationRegistry.get(conversationId);
-    if (!conversation) throw new Error(`conversation with id ${conversationId} does not exist.`);
-
-    return conversation.messages
-      .filter(m => isChatMessage(m))
-      .map(
-        message =>
-          ({
-            name: undefined,
-            ...message,
-          }) as ChatCompletionMessageParam,
-      );
   }
 
   getConversations(): Conversation[] {

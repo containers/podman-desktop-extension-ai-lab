@@ -71,6 +71,11 @@ onDestroy(() => {
     <SettingsNavItem icon={copyFaBookOpenIcon} title="Catalog" selected={meta.url === '/models'} href="/models" />
     <SettingsNavItem icon={faRocket} title="Services" selected={meta.url === '/services'} href="/services" />
     <SettingsNavItem icon={faMessage} title="Playgrounds" selected={meta.url === '/playgrounds'} href="/playgrounds" />
+    <SettingsNavItem
+      icon={faRocket}
+      title="Llama Stack"
+      selected={meta.url.startsWith('/llamastack/try')}
+      href="/llamastack/try" />
 
     <!-- Server Information -->
     <div class="pl-3 mt-2 ml-[4px]">

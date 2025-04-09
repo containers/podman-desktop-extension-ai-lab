@@ -31,6 +31,7 @@ import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 import LocalServer from './pages/server-information/LocalServer.svelte';
 import AboutInstructLab from './pages/instructlab/AboutInstructLab.svelte';
 import StartInstructLabContainer from '/@/pages/instructlab/StartInstructLabContainer.svelte';
+import StartLlamaStackContainer from './pages/llama-stack/StartLlamaStackContainer.svelte';
 
 router.mode.hash();
 
@@ -96,6 +97,11 @@ onDestroy(() => {
           {:else}
             <Playground playgroundId={meta.params.id} />
           {/if}
+        </Route>
+        <Route path="/llamastack/*" firstmatch>
+          <Route path="/try">
+            <StartLlamaStackContainer />
+          </Route>
         </Route>
         {#if experimentalTuning}
           <!-- Tune with InstructLab -->

@@ -130,7 +130,7 @@ export class LlamaCppPython extends InferenceProvider {
           entrypoint = '/usr/bin/sh';
           cmd = [
             '-c',
-            '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && chmod 755 ./run.sh && ./run.sh',
+            '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
           ];
           break;
         case VMType.LIBKRUN:
@@ -157,10 +157,6 @@ export class LlamaCppPython extends InferenceProvider {
 
           user = '0';
 
-          entrypoint = '/usr/bin/sh';
-
-          cmd = ['-c', 'chmod 755 ./run.sh && ./run.sh'];
-
           break;
       }
 
@@ -173,7 +169,7 @@ export class LlamaCppPython extends InferenceProvider {
 
         // label the container
         labels['gpu'] = gpu.model;
-        envs.push(`GPU_LAYERS=${config.gpuLayers}`);
+        envs.push(`GPU_LAYERS=${config.gpuLayers ?? 999}`);
       } else {
         console.warn(`gpu ${gpu.model} is not supported on ${vmType}.`);
       }
@@ -209,7 +205,7 @@ export class LlamaCppPython extends InferenceProvider {
       },
       HealthCheck: {
         // must be the port INSIDE the container not the exposed one
-        Test: ['CMD-SHELL', `curl -sSf localhost:8000/docs > /dev/null`],
+        Test: ['CMD-SHELL', `curl -sSf localhost:8000 > /dev/null`],
         Interval: SECOND * 5,
         Retries: 4 * 5,
       },
@@ -284,7 +280,7 @@ export class LlamaCppPython extends InferenceProvider {
         return gpu?.vendor === GPUVendor.NVIDIA ? llamacpp.cuda : llamacpp.default;
       case VMType.LIBKRUN:
       case VMType.LIBKRUN_LABEL:
-        return gpu ? llamacpp.vulkan : llamacpp.default;
+        return llamacpp.default;
       // no GPU support
       case VMType.UNKNOWN:
         return this.isNvidiaCDIConfigured(gpu) ? llamacpp.cuda : llamacpp.default;

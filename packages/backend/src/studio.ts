@@ -299,6 +299,8 @@ export class Studio {
       this.#containerRegistry,
       this.#telemetry,
     );
+    this.#instructlabManager.init();
+    this.#extensionContext.subscriptions.push(this.#instructlabManager);
 
     /**
      * The recipe manage offer some andy methods to manage recipes, build get images etc.

@@ -16,12 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { TaskRegistry } from '../../registries/TaskRegistry';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import type { ContainerCreateResult, ContainerInfo, ImageInfo, TelemetryLogger } from '@podman-desktop/api';
-import { containerEngine, EventEmitter } from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
 import type { PodmanConnection } from '../podmanConnection';
-import { ContainerRegistry } from '../../registries/ContainerRegistry';
-import { TestEventEmitter } from '../../tests/utils';
+import type { ContainerRegistry } from '../../registries/ContainerRegistry';
 import { VMType } from '@shared/models/IPodman';
 import type { Task } from '@shared/models/ITask';
 import llama_stack_images from '../../assets/llama-stack-images.json';
@@ -43,12 +42,12 @@ vi.mock('@podman-desktop/api', () => {
   };
 });
 
-const taskRegistry = new TaskRegistry({ fire: vi.fn().mockResolvedValue(true) } as unknown as RpcExtension);
-
 const podmanConnection: PodmanConnection = {
   onPodmanConnectionEvent: vi.fn(),
   findRunningContainerProviderConnection: vi.fn(),
 } as unknown as PodmanConnection;
+
+const containerRegistry = {} as ContainerRegistry;
 
 const configurationRegistry = {
   getExtensionConfiguration: vi.fn(),
@@ -59,15 +58,23 @@ const telemetryMock = {
   logError: vi.fn(),
 } as unknown as TelemetryLogger;
 
+let taskRegistry: TaskRegistry;
+
 let llamaStackManager: LlamaStackManager;
 
-beforeAll(() => {
-  vi.mocked(EventEmitter).mockImplementation(() => new TestEventEmitter() as unknown as EventEmitter<unknown>);
-});
+const LLAMA_STACK_CONTAINER_RUNNING = {
+  Id: 'dummyId',
+  State: 'running',
+  Labels: {
+    [LLAMA_STACK_CONTAINER_LABEL]: 'dummyLabel',
+    [LLAMA_STACK_API_PORT_LABEL]: '50000',
+  },
+} as unknown as ContainerInfo;
+
+const NON_LLAMA_STACK_CONTAINER = { Id: 'dummyId' } as unknown as ContainerInfo;
 
 beforeEach(() => {
-  const containerRegistry = new ContainerRegistry();
-  containerRegistry.init();
+  taskRegistry = new TaskRegistry({ fire: vi.fn().mockResolvedValue(true) } as unknown as RpcExtension);
   llamaStackManager = new LlamaStackManager(
     '',
     taskRegistry,
@@ -76,8 +83,6 @@ beforeEach(() => {
     configurationRegistry,
     telemetryMock,
   );
-  llamaStackManager.init();
-  taskRegistry.deleteByLabels({ trackingId: LLAMA_STACK_CONTAINER_TRACKINGID });
 });
 
 test('getLlamaStackContainer should return undefined if no containers', async () => {
@@ -87,22 +92,13 @@ test('getLlamaStackContainer should return undefined if no containers', async ()
 });
 
 test('getLlamaStackContainer should return undefined if no llama stack container', async () => {
-  vi.mocked(containerEngine.listContainers).mockResolvedValue([{ Id: 'dummyId' } as unknown as ContainerInfo]);
+  vi.mocked(containerEngine.listContainers).mockResolvedValue([NON_LLAMA_STACK_CONTAINER]);
   const containerId = await llamaStackManager.getLlamaStackContainer();
   expect(containerId).toBeUndefined();
 });
 
 test('getLlamaStackContainer should return id if instructlab container', async () => {
-  vi.mocked(containerEngine.listContainers).mockResolvedValue([
-    {
-      Id: 'dummyId',
-      State: 'running',
-      Labels: {
-        [LLAMA_STACK_CONTAINER_LABEL]: 'dummyLabel',
-        [LLAMA_STACK_API_PORT_LABEL]: '50000',
-      },
-    } as unknown as ContainerInfo,
-  ]);
+  vi.mocked(containerEngine.listContainers).mockResolvedValue([LLAMA_STACK_CONTAINER_RUNNING]);
   const containerInfo = await llamaStackManager.getLlamaStackContainer();
   expect(containerInfo).toEqual({ containerId: 'dummyId', port: 50000 });
 });

@@ -317,6 +317,8 @@ export class Studio {
       this.#configurationRegistry,
       this.#telemetry,
     );
+    this.#extensionContext.subscriptions.push(this.#llamaStackManager);
+    this.#llamaStackManager.init();
 
     /**
      * The recipe manage offer some andy methods to manage recipes, build get images etc.

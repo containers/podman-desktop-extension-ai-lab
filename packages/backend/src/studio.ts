@@ -197,6 +197,7 @@ export class Studio {
      * The task registry store the tasks
      */
     this.#taskRegistry = new TaskRegistry(this.#rpcExtension);
+    this.#extensionContext.subscriptions.push(this.#taskRegistry);
 
     /**
      * Create catalog manager, responsible for loading the catalog files and watching for changes

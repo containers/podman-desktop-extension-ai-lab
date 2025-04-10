@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { type Disposable } from '@podman-desktop/api';
 import type { Task, TaskState } from '@shared/models/ITask';
 import { MSG_TASKS_UPDATE } from '@shared/Messages';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
@@ -23,7 +24,7 @@ import type { RpcExtension } from '@shared/messages/MessageProxy';
 /**
  * A registry for managing tasks.
  */
-export class TaskRegistry {
+export class TaskRegistry implements Disposable {
   private counter: number = 0;
   private tasks: Map<string, Task> = new Map<string, Task>();
 
@@ -32,6 +33,11 @@ export class TaskRegistry {
    * @param rpcExtension The rpc extension instance to use for communication.
    */
   constructor(private rpcExtension: RpcExtension) {}
+
+  dispose(): void {
+    this.counter = 0;
+    this.tasks.clear();
+  }
 
   /**
    * Retrieves a task by its ID.

@@ -236,7 +236,7 @@ export class LlamaStackManager implements Disposable {
           ],
         },
       },
-      Env: [`PODMAN_AI_LAB_URL=http://host.docker.internal:${aiLabApiPort}`],
+      Env: [`PODMAN_AI_LAB_URL=http://host.containers.internal:${aiLabApiPort}`],
       OpenStdin: true,
       start: true,
     };

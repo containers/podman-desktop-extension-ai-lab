@@ -33,6 +33,16 @@ test('should not have any tasks by default', () => {
   expect(taskRegistry.getTasks().length).toBe(0);
 });
 
+test('dispose should cleanup all tasks', () => {
+  const taskRegistry = new TaskRegistry(rpcExtension);
+
+  taskRegistry.createTask('random', 'loading');
+  expect(taskRegistry.getTasks()).toHaveLength(1);
+
+  taskRegistry.dispose();
+  expect(taskRegistry.getTasks()).toHaveLength(0);
+});
+
 test('should notify when create task', () => {
   const taskRegistry = new TaskRegistry(rpcExtension);
   taskRegistry.createTask('random', 'loading');

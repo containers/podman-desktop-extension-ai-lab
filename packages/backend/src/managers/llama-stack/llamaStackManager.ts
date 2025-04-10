@@ -125,6 +125,15 @@ export class LlamaStackManager implements Disposable {
   }
 
   async requestCreateLlamaStackContainer(config: LlamaStackContainerConfiguration): Promise<void> {
+    let connection: ContainerProviderConnection | undefined;
+    if (config.connection) {
+      connection = this.podmanConnection.getContainerProviderConnection(config.connection);
+    } else {
+      connection = this.podmanConnection.findRunningContainerProviderConnection();
+    }
+
+    if (!connection) throw new Error('cannot find running container provider connection');
+
     // create a tracking id to put in the labels
     const trackingId: string = LLAMA_STACK_CONTAINER_TRACKINGID;
 
@@ -135,15 +144,6 @@ export class LlamaStackManager implements Disposable {
     const task = this.taskRegistry.createTask('Creating Llama Stack container', 'loading', {
       trackingId: trackingId,
     });
-
-    let connection: ContainerProviderConnection | undefined;
-    if (config.connection) {
-      connection = this.podmanConnection.getContainerProviderConnection(config.connection);
-    } else {
-      connection = this.podmanConnection.findRunningContainerProviderConnection();
-    }
-
-    if (!connection) throw new Error('cannot find running container provider connection');
 
     this.createLlamaStackContainer(connection, labels)
       .then((containerInfo: LlamaStackContainerInfo) => {

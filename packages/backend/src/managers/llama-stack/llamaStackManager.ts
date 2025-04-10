@@ -69,7 +69,7 @@ export class LlamaStackManager implements Disposable {
     this.#disposables = [];
   }
 
-  private async refreshLlamaStackContainer(id?: string): Promise<void> {
+  protected async refreshLlamaStackContainer(id?: string): Promise<void> {
     const containers = await containerEngine.listContainers();
     const containerInfo = containers
       .filter(c => !id || c.Id === id)
@@ -263,5 +263,10 @@ export class LlamaStackManager implements Disposable {
     const llamaStackPath = path.join(this.appUserDirectory, 'llama-stack', 'container');
     await fs.mkdir(path.join(llamaStackPath, '.llama'), { recursive: true });
     return llamaStackPath;
+  }
+
+  // For tests only
+  protected getContainerInfo(): LlamaStackContainerInfo | undefined {
+    return this.#containerInfo;
   }
 }

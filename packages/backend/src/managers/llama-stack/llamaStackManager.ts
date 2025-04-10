@@ -103,6 +103,12 @@ export class LlamaStackManager implements Disposable {
     }
   }
 
+  /**
+   * getLlamaStackContainer returns the first running container with a Llama Stack label.
+   * The container is searched only the first time and the result is cached for subsequent calls.
+   *
+   * Returns undefined if no container is found
+   */
   async getLlamaStackContainer(): Promise<LlamaStackContainerInfo | undefined> {
     if (!this.#initialized) {
       const containers = await containerEngine.listContainers();

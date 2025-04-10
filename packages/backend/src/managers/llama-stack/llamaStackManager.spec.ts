@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { TaskRegistry } from '../../registries/TaskRegistry';
 import { beforeEach, expect, test, vi } from 'vitest';
-import type { ContainerCreateResult, ContainerInfo, ImageInfo, TelemetryLogger } from '@podman-desktop/api';
+import type { ContainerCreateResult, ContainerInfo, Disposable, ImageInfo, TelemetryLogger } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { PodmanConnection } from '../podmanConnection';
 import type { ContainerRegistry } from '../../registries/ContainerRegistry';
@@ -26,7 +26,10 @@ import type { Task } from '@shared/models/ITask';
 import llama_stack_images from '../../assets/llama-stack-images.json';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { LLAMA_STACK_API_PORT_LABEL, LLAMA_STACK_CONTAINER_LABEL, LlamaStackManager } from './llamaStackManager';
-import { LLAMA_STACK_CONTAINER_TRACKINGID } from '@shared/models/llama-stack/LlamaStackContainerInfo';
+import {
+  LLAMA_STACK_CONTAINER_TRACKINGID,
+  type LlamaStackContainerInfo,
+} from '@shared/models/llama-stack/LlamaStackContainerInfo';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 
@@ -42,12 +45,25 @@ vi.mock('@podman-desktop/api', () => {
   };
 });
 
+class TestLlamaStackManager extends LlamaStackManager {
+  public override async refreshLlamaStackContainer(id?: string): Promise<void> {
+    return super.refreshLlamaStackContainer(id);
+  }
+
+  public override getContainerInfo(): LlamaStackContainerInfo | undefined {
+    return super.getContainerInfo();
+  }
+}
+
 const podmanConnection: PodmanConnection = {
   onPodmanConnectionEvent: vi.fn(),
   findRunningContainerProviderConnection: vi.fn(),
 } as unknown as PodmanConnection;
 
-const containerRegistry = {} as ContainerRegistry;
+const containerRegistry = {
+  onStartContainerEvent: vi.fn(),
+  onStopContainerEvent: vi.fn(),
+} as unknown as ContainerRegistry;
 
 const configurationRegistry = {
   getExtensionConfiguration: vi.fn(),
@@ -60,7 +76,7 @@ const telemetryMock = {
 
 let taskRegistry: TaskRegistry;
 
-let llamaStackManager: LlamaStackManager;
+let llamaStackManager: TestLlamaStackManager;
 
 const LLAMA_STACK_CONTAINER_RUNNING = {
   Id: 'dummyId',
@@ -71,11 +87,21 @@ const LLAMA_STACK_CONTAINER_RUNNING = {
   },
 } as unknown as ContainerInfo;
 
+const LLAMA_STACK_CONTAINER_STOPPED = {
+  Id: 'dummyId',
+  State: 'stopped',
+} as unknown as ContainerInfo;
+
 const NON_LLAMA_STACK_CONTAINER = { Id: 'dummyId' } as unknown as ContainerInfo;
 
+const NO_OP_DISPOSABLE = {
+  dispose: (): void => {},
+} as Disposable;
+
 beforeEach(() => {
+  vi.resetAllMocks();
   taskRegistry = new TaskRegistry({ fire: vi.fn().mockResolvedValue(true) } as unknown as RpcExtension);
-  llamaStackManager = new LlamaStackManager(
+  llamaStackManager = new TestLlamaStackManager(
     '',
     taskRegistry,
     podmanConnection,
@@ -174,4 +200,128 @@ test('requestCreateLlamaStackContainer returns id and no error if createContaine
   await llamaStackManager.requestCreateLlamaStackContainer({});
   const tasks = await waitTasks(LLAMA_STACK_CONTAINER_TRACKINGID, 3);
   expect(tasks.some(task => task.state === 'error')).toBeFalsy();
+});
+
+test('onPodmanConnectionEvent start event should call refreshLlamaStackContainer and set containerInfo', async () => {
+  vi.spyOn(llamaStackManager, 'refreshLlamaStackContainer');
+  vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_RUNNING]);
+  vi.mocked(podmanConnection.onPodmanConnectionEvent).mockImplementation(f => {
+    f({
+      status: 'started',
+    });
+    return NO_OP_DISPOSABLE;
+  });
+
+  llamaStackManager.init();
+
+  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith();
+
+  await vi.waitFor(() => {
+    expect(llamaStackManager.getContainerInfo()).toEqual({
+      containerId: 'dummyId',
+      port: 50000,
+    });
+  });
+});
+
+test('onPodmanConnectionEvent stop event should call refreshLlamaStackContainer and clear containerInfo', async () => {
+  vi.spyOn(llamaStackManager, 'refreshLlamaStackContainer');
+  vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_RUNNING]);
+  vi.mocked(podmanConnection.onPodmanConnectionEvent).mockImplementation(f => {
+    f({
+      status: 'started',
+    });
+    setTimeout(() => {
+      f({
+        status: 'stopped',
+      });
+    }, 100);
+    return NO_OP_DISPOSABLE;
+  });
+
+  llamaStackManager.init();
+
+  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith();
+
+  await vi.waitFor(() => {
+    expect(llamaStackManager.getContainerInfo()).toEqual({
+      containerId: 'dummyId',
+      port: 50000,
+    });
+  });
+
+  // Prepare to receive new event in ~ 100ms
+
+  vi.mocked(llamaStackManager.refreshLlamaStackContainer).mockClear();
+  vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_STOPPED]);
+
+  // shoudl happen after 100ms
+  await vi.waitFor(async () => {
+    expect(llamaStackManager.getContainerInfo()).toBeUndefined();
+  });
+  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith();
+});
+
+test('onStartContainerEvent event should call refreshLlamaStackContainer and set containerInfo', async () => {
+  vi.spyOn(llamaStackManager, 'refreshLlamaStackContainer');
+  vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_RUNNING]);
+  vi.mocked(containerRegistry.onStartContainerEvent).mockImplementation(f => {
+    f({
+      id: 'dummyId',
+    });
+    return NO_OP_DISPOSABLE;
+  });
+
+  llamaStackManager.init();
+
+  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith('dummyId');
+
+  await vi.waitFor(() => {
+    expect(llamaStackManager.getContainerInfo()).toEqual({
+      containerId: 'dummyId',
+      port: 50000,
+    });
+  });
+});
+
+test('onStopContainerEvent event should call refreshLlamaStackContainer and clear containerInfo', async () => {
+  vi.spyOn(llamaStackManager, 'refreshLlamaStackContainer');
+  vi.spyOn(taskRegistry, 'deleteByLabels');
+  vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_RUNNING]);
+  vi.mocked(containerRegistry.onStartContainerEvent).mockImplementation(f => {
+    f({
+      id: 'dummyId',
+    });
+    return NO_OP_DISPOSABLE;
+  });
+  vi.mocked(containerRegistry.onStopContainerEvent).mockImplementation(f => {
+    setTimeout(() => {
+      f({
+        id: 'dummyId',
+      });
+    }, 100);
+    return NO_OP_DISPOSABLE;
+  });
+
+  llamaStackManager.init();
+
+  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith('dummyId');
+
+  await vi.waitFor(() => {
+    expect(llamaStackManager.getContainerInfo()).toEqual({
+      containerId: 'dummyId',
+      port: 50000,
+    });
+  });
+
+  // Prepare to receive new event in ~ 100ms
+
+  vi.mocked(llamaStackManager.refreshLlamaStackContainer).mockClear();
+  vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_STOPPED]);
+
+  // shoudl happen after 100ms
+  await vi.waitFor(async () => {
+    expect(llamaStackManager.getContainerInfo()).toBeUndefined();
+  });
+  expect(taskRegistry.deleteByLabels).toHaveBeenCalled();
 });

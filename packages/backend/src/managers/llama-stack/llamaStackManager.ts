@@ -261,7 +261,6 @@ export class LlamaStackManager implements Disposable {
 
   private async getLlamaStackContainerFolder(): Promise<string> {
     const llamaStackPath = path.join(this.appUserDirectory, 'llama-stack', 'container');
-    await fs.mkdir(llamaStackPath, { recursive: true });
     await fs.mkdir(path.join(llamaStackPath, '.llama'), { recursive: true });
     return llamaStackPath;
   }

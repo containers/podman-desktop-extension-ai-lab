@@ -24,6 +24,7 @@ import {
   containerEngine,
   type ContainerProviderConnection,
   type ContainerCreateOptions,
+  type Disposable,
 } from '@podman-desktop/api';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import instructlab_images from '../../assets/instructlab-images.json';
@@ -37,9 +38,10 @@ import { getRandomName } from '../../utils/randomUtils';
 
 export const INSTRUCTLAB_CONTAINER_LABEL = 'ai-lab-instructlab-container';
 
-export class InstructlabManager {
+export class InstructlabManager implements Disposable {
   #initialized: boolean;
   #containerId: string | undefined;
+  #disposables: Disposable[];
 
   constructor(
     private readonly appUserDirectory: string,
@@ -49,9 +51,18 @@ export class InstructlabManager {
     private telemetryLogger: TelemetryLogger,
   ) {
     this.#initialized = false;
-    this.podmanConnection.onPodmanConnectionEvent(this.watchMachineEvent.bind(this));
-    this.containerRegistry.onStartContainerEvent(this.onStartContainerEvent.bind(this));
-    this.containerRegistry.onStopContainerEvent(this.onStopContainerEvent.bind(this));
+    this.#disposables = [];
+  }
+
+  init(): void {
+    this.#disposables.push(this.podmanConnection.onPodmanConnectionEvent(this.watchMachineEvent.bind(this)));
+    this.#disposables.push(this.containerRegistry.onStartContainerEvent(this.onStartContainerEvent.bind(this)));
+    this.#disposables.push(this.containerRegistry.onStopContainerEvent(this.onStopContainerEvent.bind(this)));
+  }
+
+  dispose(): void {
+    this.#disposables.forEach(disposable => disposable.dispose());
+    this.#disposables = [];
   }
 
   private async refreshInstructlabContainer(id?: string): Promise<void> {

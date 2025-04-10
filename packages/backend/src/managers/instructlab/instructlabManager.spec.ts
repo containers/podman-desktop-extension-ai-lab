@@ -63,6 +63,7 @@ beforeEach(() => {
   const containerRegistry = new ContainerRegistry();
   containerRegistry.init();
   instructlabManager = new InstructlabManager('', taskRegistry, podmanConnection, containerRegistry, telemetryMock);
+  instructlabManager.init();
   taskRegistry.deleteByLabels({ trackingId: INSTRUCTLAB_CONTAINER_TRACKINGID });
 });
 

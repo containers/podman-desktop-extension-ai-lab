@@ -76,6 +76,7 @@ beforeEach(() => {
     configurationRegistry,
     telemetryMock,
   );
+  llamaStackManager.init();
   taskRegistry.deleteByLabels({ trackingId: LLAMA_STACK_CONTAINER_TRACKINGID });
 });
 

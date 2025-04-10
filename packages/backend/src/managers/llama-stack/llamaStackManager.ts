@@ -18,6 +18,7 @@
 
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import {
+  type Disposable,
   type TelemetryLogger,
   containerEngine,
   type ContainerProviderConnection,
@@ -40,9 +41,10 @@ import { getFreeRandomPort } from '../../utils/ports';
 export const LLAMA_STACK_CONTAINER_LABEL = 'ai-lab-llama-stack-container';
 export const LLAMA_STACK_API_PORT_LABEL = 'ai-lab-llama-stack-api-port';
 
-export class LlamaStackManager {
+export class LlamaStackManager implements Disposable {
   #initialized: boolean;
   #containerInfo: LlamaStackContainerInfo | undefined;
+  #disposables: Disposable[];
 
   constructor(
     private readonly appUserDirectory: string,
@@ -53,9 +55,18 @@ export class LlamaStackManager {
     private telemetryLogger: TelemetryLogger,
   ) {
     this.#initialized = false;
-    this.podmanConnection.onPodmanConnectionEvent(this.watchMachineEvent.bind(this));
-    this.containerRegistry.onStartContainerEvent(this.onStartContainerEvent.bind(this));
-    this.containerRegistry.onStopContainerEvent(this.onStopContainerEvent.bind(this));
+    this.#disposables = [];
+  }
+
+  init(): void {
+    this.#disposables.push(this.podmanConnection.onPodmanConnectionEvent(this.watchMachineEvent.bind(this)));
+    this.#disposables.push(this.containerRegistry.onStartContainerEvent(this.onStartContainerEvent.bind(this)));
+    this.#disposables.push(this.containerRegistry.onStopContainerEvent(this.onStopContainerEvent.bind(this)));
+  }
+
+  dispose(): void {
+    this.#disposables.forEach(disposable => disposable.dispose());
+    this.#disposables = [];
   }
 
   private async refreshLlamaStackContainer(id?: string): Promise<void> {

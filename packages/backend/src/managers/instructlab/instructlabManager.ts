@@ -38,7 +38,7 @@ import { getRandomName } from '../../utils/randomUtils';
 
 export const INSTRUCTLAB_CONTAINER_LABEL = 'ai-lab-instructlab-container';
 
-export class InstructlabManager {
+export class InstructlabManager implements Disposable {
   #initialized: boolean;
   #containerId: string | undefined;
   #disposables: Disposable[];

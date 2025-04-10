@@ -148,8 +148,8 @@ importers:
         specifier: ^7.7.1
         version: 7.7.1
       swagger-ui-dist:
-        specifier: ^5.20.7
-        version: 5.20.7
+        specifier: ^5.20.8
+        version: 5.20.8
       swagger-ui-express:
         specifier: ^5.0.1
         version: 5.0.1(express@4.21.2)
@@ -4615,8 +4615,8 @@ packages:
     resolution: {integrity: sha512-/SSLuHty7ktD8WwDDy3bjuijeNK+9etPz5lzPwe+AariSvk/8s9YLtot3j9/W6CK2iGH347S5RHXAE4HavJS+Q==}
     engines: {node: '>=18'}
 
-  swagger-ui-dist@5.20.7:
-    resolution: {integrity: sha512-gLpb1wrWinUwMFKfSvDYsIlCyGQSryftzi6uWc9Qo98zO3mFT6oHOqmDUu5OoahvepuS6HGTe/3MsGUCVtpLig==}
+  swagger-ui-dist@5.20.8:
+    resolution: {integrity: sha512-VXVhdRh5vuKVpkegw0n0wCXuFFG+pxNmXa0vDcf76r1yP2cYKqcpOE5g8l5crbtLGx+j2EiDnG4/EU5T0jyN1w==}
 
   swagger-ui-express@5.0.1:
     resolution: {integrity: sha512-SrNU3RiBGTLLmFU8GIJdOdanJTl4TOmT27tt3bWWHppqYmAZ6IDuEuBvMU6nZq0zLEe6b/1rACXCgLZqO6ZfrA==}
@@ -9746,14 +9746,14 @@ snapshots:
       magic-string: 0.30.17
       zimmerframe: 1.1.2
 
-  swagger-ui-dist@5.20.7:
+  swagger-ui-dist@5.20.8:
     dependencies:
       '@scarf/scarf': 1.4.0
 
   swagger-ui-express@5.0.1(express@4.21.2):
     dependencies:
       express: 4.21.2
-      swagger-ui-dist: 5.20.7
+      swagger-ui-dist: 5.20.8
 
   symbol-tree@3.2.4: {}
 

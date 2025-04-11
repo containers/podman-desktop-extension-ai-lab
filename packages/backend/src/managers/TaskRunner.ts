@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import type { Task } from '@shared/models/ITask';
 import type { RunAsTaskOptions, TaskRunnerTools } from '../models/TaskRunner';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 
@@ -48,10 +49,26 @@ export class TaskRunner {
       if (options.errorLabel) {
         task.name = options.errorLabel;
       }
+      if (options.setErrorForSubtasksOnError) {
+        this.setErrorForSubtasksOnError(task, labels);
+      }
       throw err;
     } finally {
       task.progress = undefined;
       this.taskRegistry.updateTask(task);
     }
+  }
+
+  private setErrorForSubtasksOnError(task: Task, labels: Record<string, string>): void {
+    const tasks = this.taskRegistry.getTasksByLabels(labels);
+    // Filter the one no in loading state
+    tasks
+      .filter(t => t.state === 'loading' && t.id !== task.id)
+      .forEach(t => {
+        this.taskRegistry.updateTask({
+          ...t,
+          state: 'error',
+        });
+      });
   }
 }

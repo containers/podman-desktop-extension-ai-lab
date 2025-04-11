@@ -16,18 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import type { RunAsTaskOptions, TaskRunnerTools } from '../models/TaskRunner';
 import type { TaskRegistry } from '../registries/TaskRegistry';
-
-export interface RunAsTaskOptions {
-  loadingLabel: string;
-  successLabel?: string;
-  errorLabel?: string;
-  errorMsg: (err: unknown) => string;
-}
-
-export interface TaskRunnerTools {
-  updateLabels: (f: (labels: Record<string, string>) => Record<string, string>) => void;
-}
 
 export class TaskRunner {
   constructor(private taskRegistry: TaskRegistry) {}

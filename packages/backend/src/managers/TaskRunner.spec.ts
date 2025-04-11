@@ -20,10 +20,12 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import type { TaskRegistry } from '../registries/TaskRegistry';
 import { TaskRunner } from './TaskRunner';
 import type { TaskRunnerTools } from '../models/TaskRunner';
+import type { Task } from '@shared/models/ITask';
 
 const taskRegistry = {
   createTask: vi.fn(),
   updateTask: vi.fn(),
+  getTasksByLabels: vi.fn(),
 } as unknown as TaskRegistry;
 
 const runner = vi.fn<(tools: TaskRunnerTools) => Promise<void>>();
@@ -198,4 +200,73 @@ test('updateLabels', async () => {
       newLabel: 'newValue',
     },
   });
+});
+
+test.each<{ failFast: boolean }>([
+  {
+    failFast: true,
+  },
+  {
+    failFast: false,
+  },
+])('failFastSubtasks $failFast', async ({ failFast }) => {
+  vi.mocked(taskRegistry.createTask).mockReturnValue({
+    id: 'task1',
+    name: 'Loading...',
+    state: 'loading',
+  });
+  const otherTasks: Task[] = [
+    {
+      id: 'subtask1',
+      name: 'Sub task 1',
+      state: 'loading',
+    },
+    {
+      id: 'subtask2',
+      name: 'Sub task 2',
+      state: 'loading',
+    },
+    {
+      id: 'subtask3',
+      name: 'Sub task 3',
+      state: 'error',
+    },
+  ];
+  vi.mocked(taskRegistry.getTasksByLabels).mockReturnValue(otherTasks);
+  runner.mockRejectedValue('something goes wrong');
+  const labels = {
+    label1: 'value1',
+    label2: 'value2',
+  };
+  await expect(() =>
+    taskRunner.runAsTask(
+      labels,
+      {
+        loadingLabel: 'Loading...',
+        errorMsg: err => `an error: ${err}`,
+        failFastSubtasks: failFast,
+      },
+      runner,
+    ),
+  ).rejects.toThrow();
+
+  expect(taskRegistry.createTask).toHaveBeenCalledWith('Loading...', 'loading', labels);
+  if (failFast) {
+    expect(taskRegistry.updateTask).toHaveBeenCalledTimes(3);
+    expect(taskRegistry.updateTask).toHaveBeenNthCalledWith(1, { ...otherTasks[0], state: 'error' });
+    expect(taskRegistry.updateTask).toHaveBeenNthCalledWith(2, { ...otherTasks[1], state: 'error' });
+    expect(taskRegistry.updateTask).toHaveBeenNthCalledWith(3, {
+      id: 'task1',
+      name: 'Loading...',
+      state: 'error',
+      error: 'an error: something goes wrong',
+    });
+  } else {
+    expect(taskRegistry.updateTask).toHaveBeenCalledExactlyOnceWith({
+      id: 'task1',
+      name: 'Loading...',
+      state: 'error',
+      error: 'an error: something goes wrong',
+    });
+  }
 });

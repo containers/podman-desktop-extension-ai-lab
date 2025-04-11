@@ -18,9 +18,14 @@
 
 export interface RunAsTaskOptions {
   loadingLabel: string;
+  // label set when the task terminates normally, by default the loading label is kept
   successLabel?: string;
+  // label set when the task terminates in error, by default the loading label is kept
   errorLabel?: string;
+  // the error message to display when task terminates in error
   errorMsg: (err: unknown) => string;
+  // if true, all subtasks (tasks found with the same labels) will be immediately marked in error if this task fails
+  failFastSubtasks?: boolean;
 }
 
 export interface TaskRunnerTools {

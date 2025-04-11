@@ -202,14 +202,14 @@ test('updateLabels', async () => {
   });
 });
 
-test.each<{ setError: boolean }>([
+test.each<{ failFast: boolean }>([
   {
-    setError: true,
+    failFast: true,
   },
   {
-    setError: false,
+    failFast: false,
   },
-])('setErrorForSubtasksOnError $setError', async ({ setError }) => {
+])('failFastSubtasks $failFast', async ({ failFast }) => {
   vi.mocked(taskRegistry.createTask).mockReturnValue({
     id: 'task1',
     name: 'Loading...',
@@ -244,14 +244,14 @@ test.each<{ setError: boolean }>([
       {
         loadingLabel: 'Loading...',
         errorMsg: err => `an error: ${err}`,
-        setErrorForSubtasksOnError: setError,
+        failFastSubtasks: failFast,
       },
       runner,
     ),
   ).rejects.toThrow();
 
   expect(taskRegistry.createTask).toHaveBeenCalledWith('Loading...', 'loading', labels);
-  if (setError) {
+  if (failFast) {
     expect(taskRegistry.updateTask).toHaveBeenCalledTimes(3);
     expect(taskRegistry.updateTask).toHaveBeenNthCalledWith(1, { ...otherTasks[0], state: 'error' });
     expect(taskRegistry.updateTask).toHaveBeenNthCalledWith(2, { ...otherTasks[1], state: 'error' });

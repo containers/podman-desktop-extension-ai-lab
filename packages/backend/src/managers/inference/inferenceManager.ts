@@ -148,7 +148,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
         {
           loadingLabel: 'Creating Inference server',
           errorMsg: err => `Something went wrong while trying to create an inference server ${String(err)}.`,
-          setErrorForSubtasksOnError: true,
+          failFastSubtasks: true,
         },
         async ({ updateLabels }) => {
           const containerId = await this.createInferenceServer(config);

@@ -24,8 +24,8 @@ export interface RunAsTaskOptions {
   errorLabel?: string;
   // the error message to display when task terminates in error
   errorMsg: (err: unknown) => string;
-  // if true, all subtasks (tasks found with the same labels) will be marked in error if this task fails
-  setErrorForSubtasksOnError?: boolean;
+  // if true, all subtasks (tasks found with the same labels) will be immediately marked in error if this task fails
+  failFastSubtasks?: boolean;
 }
 
 export interface TaskRunnerTools {

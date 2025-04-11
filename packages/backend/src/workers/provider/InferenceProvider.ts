@@ -46,6 +46,9 @@ export abstract class InferenceProvider implements IWorker<InferenceServerConfig
   }
 
   abstract enabled(): boolean;
+  prePerform(_config: InferenceServerConfig): Promise<void> {
+    return Promise.resolve();
+  }
   abstract perform(config: InferenceServerConfig): Promise<InferenceServer>;
   abstract dispose(): void;
 

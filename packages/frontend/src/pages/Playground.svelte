@@ -212,7 +212,10 @@ function handleOnClick(): void {
       <svelte:fragment slot="content">
         <div class="flex flex-col w-full h-full bg-[var(--pd-content-bg)]">
           <div class="h-full overflow-auto" bind:this={scrollable}>
-            <ContentDetailsLayout detailsTitle="Settings" detailsLabel="settings">
+            <ContentDetailsLayout
+              detailsTitle="Settings"
+              detailsLabel="settings"
+              detailsSummary="Playground Settings: edit model parameters and view metrics">
               <svelte:fragment slot="content">
                 <div class="flex flex-col w-full h-full grow overflow-auto">
                   <div aria-label="conversation" class="w-full h-full">

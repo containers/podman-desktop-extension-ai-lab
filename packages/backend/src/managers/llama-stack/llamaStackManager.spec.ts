@@ -173,6 +173,9 @@ test('requestCreateLlamaStackContainer returns id and error if listImage returns
   vi.mocked(containerEngine.listImages).mockResolvedValue([
     { RepoTags: [llama_stack_images.default] } as unknown as ImageInfo,
   ]);
+  vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+    apiPort: 10000,
+  } as ExtensionConfiguration);
   await llamaStackManager.requestCreateLlamaStackContainer({});
   const tasks = await waitTasks(LLAMA_STACK_CONTAINER_TRACKINGID, 3);
   expect(tasks.some(task => task.state === 'error')).toBeTruthy();

@@ -23,6 +23,7 @@ import {
   containerEngine,
   type ContainerProviderConnection,
   type ContainerCreateOptions,
+  type ImageInfo,
 } from '@podman-desktop/api';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import llama_stack_images from '../../assets/llama-stack-images.json';
@@ -37,6 +38,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import { getFreeRandomPort } from '../../utils/ports';
+import { TaskRunner } from '../TaskRunner';
 
 export const LLAMA_STACK_CONTAINER_LABEL = 'ai-lab-llama-stack-container';
 export const LLAMA_STACK_API_PORT_LABEL = 'ai-lab-llama-stack-api-port';
@@ -45,6 +47,7 @@ export class LlamaStackManager implements Disposable {
   #initialized: boolean;
   #containerInfo: LlamaStackContainerInfo | undefined;
   #disposables: Disposable[];
+  #taskRunner: TaskRunner;
 
   constructor(
     private readonly appUserDirectory: string,
@@ -56,6 +59,7 @@ export class LlamaStackManager implements Disposable {
   ) {
     this.#initialized = false;
     this.#disposables = [];
+    this.#taskRunner = new TaskRunner(this.taskRegistry);
   }
 
   init(): void {
@@ -141,44 +145,28 @@ export class LlamaStackManager implements Disposable {
       trackingId: trackingId,
     };
 
-    const task = this.taskRegistry.createTask('Creating Llama Stack container', 'loading', {
-      trackingId: trackingId,
-    });
-
-    this.createLlamaStackContainer(connection, labels)
-      .then((containerInfo: LlamaStackContainerInfo) => {
-        this.#containerInfo = containerInfo;
-        this.taskRegistry.updateTask({
-          ...task,
-          state: 'success',
-          labels: {
-            ...task.labels,
+    this.#taskRunner
+      .runAsTask(
+        {
+          trackingId: trackingId,
+        },
+        {
+          loadingLabel: 'Creating Llama Stack container',
+          errorMsg: err => `Something went wrong while trying to create an inference server ${String(err)}.`,
+          failFastSubtasks: true,
+        },
+        async ({ updateLabels }) => {
+          const containerInfo = await this.createLlamaStackContainer(connection, labels);
+          this.#containerInfo = containerInfo;
+          updateLabels(labels => ({
+            ...labels,
             containerId: containerInfo.containerId,
             port: `${containerInfo.port}`,
-          },
-        });
-        this.telemetryLogger.logUsage('llamaStack.startContainer');
-      })
+          }));
+          this.telemetryLogger.logUsage('llamaStack.startContainer');
+        },
+      )
       .catch((err: unknown) => {
-        // Get all tasks using the tracker
-        const tasks = this.taskRegistry.getTasksByLabels({
-          trackingId: trackingId,
-        });
-        // Filter the one no in loading state
-        tasks
-          .filter(t => t.state === 'loading' && t.id !== task.id)
-          .forEach(t => {
-            this.taskRegistry.updateTask({
-              ...t,
-              state: 'error',
-            });
-          });
-        // Update the main task
-        this.taskRegistry.updateTask({
-          ...task,
-          state: 'error',
-          error: `Something went wrong while trying to create an inference server ${String(err)}.`,
-        });
         this.telemetryLogger.logError('llamaStack.startContainer', { error: err });
       });
   }
@@ -188,26 +176,17 @@ export class LlamaStackManager implements Disposable {
     labels: { [p: string]: string },
   ): Promise<LlamaStackContainerInfo> {
     const image = llama_stack_images.default;
-    const pullingTask = this.taskRegistry.createTask(`Pulling ${image}.`, 'loading', labels);
-    const imageInfo = await getImageInfo(connection, image, () => {})
-      .catch((err: unknown) => {
-        pullingTask.state = 'error';
-        pullingTask.progress = undefined;
-        pullingTask.error = `Something went wrong while pulling ${image}: ${String(err)}`;
-        throw err;
-      })
-      .then(imageInfo => {
-        pullingTask.state = 'success';
-        pullingTask.progress = undefined;
-        return imageInfo;
-      })
-      .finally(() => {
-        this.taskRegistry.updateTask(pullingTask);
-      });
+    const imageInfo = await this.#taskRunner.runAsTask<ImageInfo>(
+      labels,
+      {
+        loadingLabel: `Pulling ${image}.`,
+        errorMsg: err => `Something went wrong while pulling ${image}: ${String(err)}`,
+      },
+      () => getImageInfo(connection, image, () => {}),
+    );
 
     const folder = await this.getLlamaStackContainerFolder();
 
-    const containerTask = this.taskRegistry.createTask('Starting Llama Stack container', 'loading', labels);
     const aiLabApiPort = this.configurationRegistry.getExtensionConfiguration().apiPort;
     const llamaStackApiPort = await getFreeRandomPort('0.0.0.0');
     const createContainerOptions: ContainerCreateOptions = {
@@ -240,23 +219,21 @@ export class LlamaStackManager implements Disposable {
       OpenStdin: true,
       start: true,
     };
-    try {
-      const { id } = await containerEngine.createContainer(imageInfo.engineId, createContainerOptions);
-      // update the task
-      containerTask.state = 'success';
-      containerTask.progress = undefined;
-      return {
-        containerId: id,
-        port: llamaStackApiPort,
-      };
-    } catch (err: unknown) {
-      containerTask.state = 'error';
-      containerTask.progress = undefined;
-      containerTask.error = `Something went wrong while creating container: ${String(err)}`;
-      throw err;
-    } finally {
-      this.taskRegistry.updateTask(containerTask);
-    }
+
+    return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
+      labels,
+      {
+        loadingLabel: 'Starting Llama Stack container',
+        errorMsg: err => `Something went wrong while creating container: ${String(err)}`,
+      },
+      async () => {
+        const { id } = await containerEngine.createContainer(imageInfo.engineId, createContainerOptions);
+        return {
+          containerId: id,
+          port: llamaStackApiPort,
+        };
+      },
+    );
   }
 
   private async getLlamaStackContainerFolder(): Promise<string> {

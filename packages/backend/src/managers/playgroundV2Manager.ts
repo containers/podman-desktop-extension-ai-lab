@@ -220,11 +220,11 @@ export class PlaygroundV2Manager implements Disposable {
     } as UserChat);
 
     const client = new OpenAI({
-      baseURL: `http://localhost:${server.connection.port}/v1`,
+      baseURL: server.labels['api'] ?? `http://localhost:${server.connection.port}/v1`,
       apiKey: 'dummy',
     });
 
-    if (!modelInfo.file?.file) throw new Error('model info has undefined file.');
+    if (!modelInfo.file?.path) throw new Error('model info has undefined file.');
 
     const telemetry: Record<string, unknown> = {
       conversationId: conversationId,
@@ -244,7 +244,7 @@ export class PlaygroundV2Manager implements Disposable {
         {
           messages: this.getFormattedMessages(conversation.id),
           stream: true,
-          model: modelInfo.file.file,
+          model: modelInfo.file.file || modelInfo.name,
           ...options,
         },
         {
@@ -333,8 +333,8 @@ export class PlaygroundV2Manager implements Disposable {
       .map(
         message =>
           ({
-            name: undefined,
-            ...message,
+            role: message.role,
+            content: message.content,
           }) as ChatCompletionMessageParam,
       );
   }

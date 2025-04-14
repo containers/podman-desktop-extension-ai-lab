@@ -658,7 +658,7 @@ describe('deleting models', () => {
       'machine-2',
       'rm',
       '-f',
-      '/home/user/ai-lab/models/dummyFile',
+      '/home/user/ai-lab/models/model-id-1',
     ]);
   });
 });

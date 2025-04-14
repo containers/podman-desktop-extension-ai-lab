@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { TaskRegistry } from '../../registries/TaskRegistry';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { assert, beforeEach, expect, test, vi } from 'vitest';
 import type { ContainerCreateResult, ContainerInfo, Disposable, ImageInfo, TelemetryLogger } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { PodmanConnection } from '../podmanConnection';
@@ -230,22 +230,15 @@ test('onPodmanConnectionEvent start event should call refreshLlamaStackContainer
 test('onPodmanConnectionEvent stop event should call refreshLlamaStackContainer and clear containerInfo', async () => {
   vi.spyOn(llamaStackManager, 'refreshLlamaStackContainer');
   vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_RUNNING]);
-  vi.mocked(podmanConnection.onPodmanConnectionEvent).mockImplementation(f => {
-    f({
-      status: 'started',
-    });
-    setTimeout(() => {
-      f({
-        status: 'stopped',
-      });
-    }, 100);
-    return NO_OP_DISPOSABLE;
-  });
+  vi.mocked(podmanConnection.onPodmanConnectionEvent).mockReturnValue(NO_OP_DISPOSABLE);
 
   llamaStackManager.init();
+  const listener = vi.mocked(podmanConnection.onPodmanConnectionEvent).mock.calls[0][0];
+  assert(listener, 'onPodmanConnectionEvent should have been called');
+
+  listener({ status: 'started' });
 
   expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith();
-
   await vi.waitFor(() => {
     expect(llamaStackManager.getContainerInfo()).toEqual({
       containerId: 'dummyId',
@@ -253,16 +246,15 @@ test('onPodmanConnectionEvent stop event should call refreshLlamaStackContainer 
     });
   });
 
-  // Prepare to receive new event in ~ 100ms
-
   vi.mocked(llamaStackManager.refreshLlamaStackContainer).mockClear();
   vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_STOPPED]);
 
-  // shoudl happen after 100ms
+  listener({ status: 'stopped' });
+
+  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith();
   await vi.waitFor(async () => {
     expect(llamaStackManager.getContainerInfo()).toBeUndefined();
   });
-  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith();
 });
 
 test('onStartContainerEvent event should call refreshLlamaStackContainer and set containerInfo', async () => {
@@ -297,14 +289,7 @@ test('onStopContainerEvent event should call refreshLlamaStackContainer and clea
     });
     return NO_OP_DISPOSABLE;
   });
-  vi.mocked(containerRegistry.onStopContainerEvent).mockImplementation(f => {
-    setTimeout(() => {
-      f({
-        id: 'dummyId',
-      });
-    }, 100);
-    return NO_OP_DISPOSABLE;
-  });
+  vi.mocked(containerRegistry.onStopContainerEvent).mockReturnValue(NO_OP_DISPOSABLE);
 
   llamaStackManager.init();
 
@@ -317,14 +302,16 @@ test('onStopContainerEvent event should call refreshLlamaStackContainer and clea
     });
   });
 
-  // Prepare to receive new event in ~ 100ms
-
   vi.mocked(llamaStackManager.refreshLlamaStackContainer).mockClear();
   vi.mocked(containerEngine.listContainers).mockResolvedValueOnce([LLAMA_STACK_CONTAINER_STOPPED]);
 
-  // shoudl happen after 100ms
+  const listener = vi.mocked(containerRegistry.onStopContainerEvent).mock.calls[0][0];
+  assert(listener, 'onStopContainerEvent should have been called');
+
+  listener({ id: 'dummyId' });
+
+  expect(taskRegistry.deleteByLabels).toHaveBeenCalled();
   await vi.waitFor(async () => {
     expect(llamaStackManager.getContainerInfo()).toBeUndefined();
   });
-  expect(taskRegistry.deleteByLabels).toHaveBeenCalled();
 });

@@ -34,7 +34,7 @@
     "@tsconfig/svelte": "^5.0.4",
     "@types/humanize-duration": "^3.27.4",
     "@typescript-eslint/eslint-plugin": "8.29.1",
-    "jsdom": "^26.0.0",
+    "jsdom": "^26.1.0",
     "monaco-editor": "^0.52.2",
     "postcss": "^8.5.3",
     "postcss-load-config": "^6.0.1",

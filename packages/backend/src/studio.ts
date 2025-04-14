@@ -59,6 +59,9 @@ import { INSTRUCTLAB_API_CHANNEL } from '@shared/InstructlabAPI';
 import { ModelHandlerRegistry } from './registries/ModelHandlerRegistry';
 import { URLModelHandler } from './models/URLModelHandler';
 import { HuggingFaceModelHandler } from './models/HuggingFaceModelHandler';
+import { LlamaStackApiImpl } from './llama-stack-api-impl';
+import { LLAMA_STACK_API_CHANNEL, type LlamaStackAPI } from '@shared/LlamaStackAPI';
+import { LlamaStackManager } from './managers/llama-stack/llamaStackManager';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -74,6 +77,7 @@ export class Studio {
   #rpcExtension: RpcExtension | undefined;
   #studioApi: StudioApiImpl | undefined;
   #instructlabApi: InstructlabApiImpl | undefined;
+  #llamaStackApi: LlamaStackApiImpl | undefined;
 
   #localRepositoryRegistry: LocalRepositoryRegistry | undefined;
   #catalogManager: CatalogManager | undefined;
@@ -95,6 +99,7 @@ export class Studio {
   #gpuManager: GPUManager | undefined;
   #navigationRegistry: NavigationRegistry | undefined;
   #instructlabManager: InstructlabManager | undefined;
+  #llamaStackManager: LlamaStackManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -303,6 +308,18 @@ export class Studio {
     this.#instructlabManager.init();
     this.#extensionContext.subscriptions.push(this.#instructlabManager);
 
+    /** The Llama Stack manager */
+    this.#llamaStackManager = new LlamaStackManager(
+      appUserDirectory,
+      this.#taskRegistry,
+      this.#podmanConnection,
+      this.#containerRegistry,
+      this.#configurationRegistry,
+      this.#telemetry,
+    );
+    this.#extensionContext.subscriptions.push(this.#llamaStackManager);
+    this.#llamaStackManager.init();
+
     /**
      * The recipe manage offer some andy methods to manage recipes, build get images etc.
      */
@@ -391,6 +408,10 @@ export class Studio {
       INSTRUCTLAB_API_CHANNEL,
       this.#instructlabApi,
     );
+
+    this.#llamaStackApi = new LlamaStackApiImpl(this.#llamaStackManager);
+    // Register the instance
+    this.#rpcExtension.registerInstance<LlamaStackAPI, LlamaStackApiImpl>(LLAMA_STACK_API_CHANNEL, this.#llamaStackApi);
   }
 
   public async deactivate(): Promise<void> {

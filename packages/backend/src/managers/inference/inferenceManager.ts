@@ -34,6 +34,7 @@ import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { CatalogManager } from '../catalogManager';
 import { getHash } from '../../utils/sha';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
+import { TaskRunner } from '../TaskRunner';
 
 export class InferenceManager extends Publisher<InferenceServer[]> implements Disposable {
   // Inference server map (containerId -> InferenceServer)
@@ -42,6 +43,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   #initialized: boolean;
   // Disposables
   #disposables: Disposable[];
+  #taskRunner: TaskRunner;
 
   constructor(
     rpcExtension: RpcExtension,
@@ -57,6 +59,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     this.#servers = new Map<string, InferenceServer>();
     this.#disposables = [];
     this.#initialized = false;
+    this.#taskRunner = new TaskRunner(this.taskRegistry);
   }
 
   init(): void {
@@ -137,42 +140,23 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       trackingId: trackingId,
     };
 
-    const task = this.taskRegistry.createTask('Creating Inference server', 'loading', {
-      trackingId: trackingId,
-    });
-
-    this.createInferenceServer(config)
-      .then((containerId: string) => {
-        this.taskRegistry.updateTask({
-          ...task,
-          state: 'success',
-          labels: {
-            ...task.labels,
-            containerId: containerId,
-          },
-        });
-      })
-      .catch((err: unknown) => {
-        // Get all tasks using the tracker
-        const tasks = this.taskRegistry.getTasksByLabels({
+    this.#taskRunner
+      .runAsTask(
+        {
           trackingId: trackingId,
-        });
-        // Filter the one no in loading state
-        tasks
-          .filter(t => t.state === 'loading' && t.id !== task.id)
-          .forEach(t => {
-            this.taskRegistry.updateTask({
-              ...t,
-              state: 'error',
-            });
-          });
-        // Update the main task
-        this.taskRegistry.updateTask({
-          ...task,
-          state: 'error',
-          error: `Something went wrong while trying to create an inference server ${String(err)}.`,
-        });
-      });
+        },
+        {
+          loadingLabel: 'Creating Inference server',
+          errorMsg: err => `Something went wrong while trying to create an inference server ${String(err)}.`,
+          failFastSubtasks: true,
+        },
+        async ({ updateLabels }) => {
+          const containerId = await this.createInferenceServer(config);
+          updateLabels(labels => ({ ...labels, containerId }));
+        },
+      )
+      .catch(() => {});
+
     return trackingId;
   }
 

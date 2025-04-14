@@ -37,6 +37,8 @@ import { InferenceType } from '@shared/models/IInference';
 import { VMType } from '@shared/models/IPodman';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
+import * as randomUtils from '../../utils/randomUtils';
+import type { Task } from '@shared/models/ITask';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -53,6 +55,8 @@ vi.mock('@podman-desktop/api', async () => {
     },
   };
 });
+
+vi.mock('../../utils/randomUtils');
 
 const rpcExtensionMock = {
   fire: vi.fn(),
@@ -435,6 +439,10 @@ describe('Delete Inference Server', () => {
 });
 
 describe('Request Create Inference Server', () => {
+  beforeEach(() => {
+    vi.mocked(randomUtils.getRandomString).mockReturnValue('random123');
+  });
+
   test('Should return unique string identifier', async () => {
     const inferenceManager = await getInitializedInferenceManager();
     const identifier = inferenceManager.requestCreateInferenceServer({
@@ -474,6 +482,60 @@ describe('Request Create Inference Server', () => {
 
     expect(taskRegistryMock.createTask).toHaveBeenNthCalledWith(1, 'Creating Inference server', 'loading', {
       trackingId: identifier,
+    });
+  });
+
+  test('all children tasks should be set as error when one fails', async () => {
+    const inferenceManager = await getInitializedInferenceManager();
+    vi.mocked(taskRegistryMock.createTask).mockReturnValue({
+      id: 'task1',
+      name: 'Task 1',
+      state: 'loading',
+    });
+    vi.spyOn(inferenceManager, 'createInferenceServer');
+    const otherTasks: Task[] = [
+      {
+        id: 'subtask1',
+        name: 'Sub task 1',
+        state: 'loading',
+      },
+      {
+        id: 'subtask2',
+        name: 'Sub task 2',
+        state: 'loading',
+      },
+      {
+        id: 'subtask3',
+        name: 'Sub task 3',
+        state: 'error',
+      },
+    ];
+    vi.mocked(taskRegistryMock.getTasksByLabels).mockReturnValue(otherTasks);
+    vi.mocked(inferenceManager.createInferenceServer).mockRejectedValue('an error');
+    inferenceManager.requestCreateInferenceServer({
+      port: 8888,
+      providerId: 'test@providerId',
+      image: 'quay.io/bootsy/playground:v0',
+      modelsInfo: [
+        {
+          id: 'dummyModelId',
+          file: {
+            file: 'dummyFile',
+            path: 'dummyPath',
+          },
+        },
+      ],
+    } as unknown as InferenceServerConfig);
+    await vi.waitFor(() => {
+      expect(taskRegistryMock.updateTask).toHaveBeenCalledTimes(3);
+    });
+    expect(taskRegistryMock.updateTask).toHaveBeenNthCalledWith(1, { ...otherTasks[0], state: 'error' });
+    expect(taskRegistryMock.updateTask).toHaveBeenNthCalledWith(2, { ...otherTasks[1], state: 'error' });
+    expect(taskRegistryMock.updateTask).toHaveBeenNthCalledWith(3, {
+      error: 'Something went wrong while trying to create an inference server an error.',
+      id: 'task1',
+      name: 'Task 1',
+      state: 'error',
     });
   });
 });

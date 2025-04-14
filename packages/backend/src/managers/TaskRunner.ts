@@ -48,10 +48,26 @@ export class TaskRunner {
       if (options.errorLabel) {
         task.name = options.errorLabel;
       }
+      if (options.failFastSubtasks) {
+        this.failFastSubtasks(labels);
+      }
       throw err;
     } finally {
       task.progress = undefined;
       this.taskRegistry.updateTask(task);
     }
+  }
+
+  private failFastSubtasks(labels: Record<string, string>): void {
+    const tasks = this.taskRegistry.getTasksByLabels(labels);
+    // Filter the one no in loading state
+    tasks
+      .filter(t => t.state === 'loading')
+      .forEach(t => {
+        this.taskRegistry.updateTask({
+          ...t,
+          state: 'error',
+        });
+      });
   }
 }

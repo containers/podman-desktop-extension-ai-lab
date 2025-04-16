@@ -51,6 +51,16 @@
           "maximum": 65535,
           "description": "Port on which the API is listening (requires restart of extension)"
         },
+        "ai-lab.inferenceRuntime": {
+          "type": "string",
+          "default": "llama-cpp",
+          "enum": [
+            "llama-cpp",
+            "whisper-cpp",
+            "none"
+          ],
+          "description": "Choose the default inferencing runtime for AI Lab"
+        },
         "ai-lab.experimentalTuning": {
           "type": "boolean",
           "default": false,

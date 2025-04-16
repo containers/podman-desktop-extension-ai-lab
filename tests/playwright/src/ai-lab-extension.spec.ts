@@ -25,6 +25,7 @@ import {
   isWindows,
   waitForPodmanMachineStartup,
   isLinux,
+  PreferencesPage,
 } from '@podman-desktop/tests-playwright';
 import { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
@@ -38,6 +39,7 @@ import type { AILabPlaygroundDetailsPage } from './model/ai-lab-playground-detai
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
+const AI_LAB_TEST_GPU_SUPPORT = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === '1';
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_CATALOG_EXTENSION_NAME: string = 'Podman AI Lab extension';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
@@ -113,10 +115,25 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       }
       await playExpect(errorTab, `Error Tab was present with stackTrace: ${stackTrace}`).not.toBeVisible();
     });
+
     test(`Verify AI Lab extension is installed`, async ({ runner, page, navigationBar }) => {
       [page, webview] = await handleWebview(runner, page, navigationBar);
       aiLabPage = new AILabPage(page, webview);
       await aiLabPage.navigationBar.waitForLoad();
+    });
+
+    test(`Enable GPU support`, async ({ page, navigationBar }) => {
+      test.skip(!AI_LAB_TEST_GPU_SUPPORT, 'GPU support is not enabled');
+      test.setTimeout(120_000);
+      await aiLabPage.enableGpuSupport();
+      const settingsBar = await navigationBar.openSettings();
+      await settingsBar.expandPreferencesTab();
+      await playExpect(settingsBar.preferencesTab).toBeVisible();
+      await settingsBar.getPreferencesLinkLocator('Extension: AI Lab').click();
+      const preferencesPage = new PreferencesPage(page);
+      await playExpect(
+        preferencesPage.content.getByRole('checkbox', { name: 'Experimental GPU support for inference servers' }),
+      ).toBeChecked();
     });
   });
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 export let detailsTitle: string;
 export let detailsLabel: string;
+export let detailsSummary: string = '';
 let open: boolean = true;
 
 const toggle = (): void => {
@@ -35,7 +36,7 @@ const toggle = (): void => {
           class:block={!open}
           class="bg-[var(--pd-content-card-bg)] mt-5 p-4 rounded-md h-fit max-lg:hidden"
           aria-label={`toggle ${detailsLabel}`}>
-          <button on:click={toggle} aria-label={`show ${detailsLabel}`}
+          <button on:click={toggle} aria-label={`show ${detailsLabel}`} title={detailsSummary}
             ><i class="fas fa-angle-left text-[var(--pd-content-card-icon)]"></i></button>
         </div>
       </div>

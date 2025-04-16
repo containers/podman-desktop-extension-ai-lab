@@ -65,7 +65,10 @@ function getFilter(items: ApplicationState[]): ApplicationState[] {
   <svelte:fragment slot="content">
     <div class="bg-[var(--pd-content-bg)] h-full overflow-y-auto">
       <Route path="/">
-        <ContentDetailsLayout detailsTitle="AI App Details" detailsLabel="application details">
+        <ContentDetailsLayout
+          detailsTitle="AI App Details"
+          detailsLabel="application details"
+          detailsSummary="AI App Details: view the app repository">
           <svelte:fragment slot="content">
             <MarkdownRenderer source={recipe?.readme} />
           </svelte:fragment>

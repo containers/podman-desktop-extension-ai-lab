@@ -26,6 +26,7 @@ const CONFIGURATION_SECTIONS: string[] = [
   'models.path',
   'experimentalGPU',
   'apiPort',
+  'inferenceRuntime',
   'experimentalTuning',
   'modelUploadDisabled',
   'showGPUPromotion',
@@ -33,7 +34,7 @@ const CONFIGURATION_SECTIONS: string[] = [
 ];
 
 const API_PORT_DEFAULT = 10434;
-
+const INFERENCE_RUNTIME_DEFAULT = 'llama-cpp';
 export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> implements Disposable {
   #configuration: Configuration;
   #configurationPodmanDesktop: Configuration;
@@ -54,6 +55,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
       modelsPath: this.getModelsPath(),
       experimentalGPU: this.#configuration.get<boolean>('experimentalGPU') ?? false,
       apiPort: this.#configuration.get<number>('apiPort') ?? API_PORT_DEFAULT,
+      inferenceRuntime: this.#configuration.get<string>('inferenceRuntime') ?? INFERENCE_RUNTIME_DEFAULT,
       experimentalTuning: this.#configuration.get<boolean>('experimentalTuning') ?? false,
       modelUploadDisabled: this.#configuration.get<boolean>('modelUploadDisabled') ?? false,
       showGPUPromotion: this.#configuration.get<boolean>('showGPUPromotion') ?? true,

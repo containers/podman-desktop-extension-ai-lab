@@ -96,13 +96,13 @@ export class LlamaCppPython extends InferenceProvider {
     ];
 
     // provide envs
-    const envs: string[] = [`MODEL_PATH=${target}`, 'HOST=0.0.0.0', 'PORT=8000'];
+    const envs: string[] = [];
     envs.push(...getModelPropertiesForEnvironment(modelInfo));
 
     const deviceRequests: DeviceRequest[] = [];
     const devices: Device[] = [];
     let entrypoint: string | undefined = undefined;
-    let cmd: string[] = [];
+    let cmd: string[] = ['-m', target, '--port', '8000', '--host', '0.0.0.0'];
     let user: string | undefined = undefined;
 
     if (gpu) {
@@ -130,7 +130,7 @@ export class LlamaCppPython extends InferenceProvider {
           entrypoint = '/usr/bin/sh';
           cmd = [
             '-c',
-            '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
+            '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /app/llama-server',
           ];
           break;
         case VMType.LIBKRUN:
@@ -169,7 +169,7 @@ export class LlamaCppPython extends InferenceProvider {
 
         // label the container
         labels['gpu'] = gpu.model;
-        envs.push(`GPU_LAYERS=${config.gpuLayers ?? 999}`);
+        cmd.push(...['--n-gpu-layers', '999']);
       } else {
         console.warn(`gpu ${gpu.model} is not supported on ${vmType}.`);
       }

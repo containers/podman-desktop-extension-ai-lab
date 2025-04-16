@@ -3,7 +3,7 @@
     "default": "quay.io/ramalama/ramalama-whisper-server@sha256:72bce4bed86e7f72e41c60960dd7b1fd9b5115328f520ddcae5dbdd689376995"
   },
   "llamacpp": {
-    "default": "quay.io/ramalama/ramalama-llama-server@sha256:cbadb36fbbc2abf9867a33e6dfe3f2df4a76774259b5d4d24d50f4fc7e525406",
-    "cuda": "quay.io/ramalama/cuda-llama-server@sha256:56efc824e5b3ae6a6a11e9537ed9e2ac05f9f9fc6f2e81a55eb67b662c94fe95"
+    "default": "ghcr.io/ggml-org/llama.cpp@sha256:7ad572b00460468b79bb98444018449333ff4a1499835e3bcdd3239f1714b6d4",
+    "cuda": "ghcr.io/ggml-org/llama.cpp@sha256:sha256:8436c1c6c9cb551378c1a192961d355f9b1ba31facc9c0be47a4ca56e9a9e660"
   }
 }

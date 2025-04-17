@@ -316,6 +316,7 @@ export class Studio {
       this.#containerRegistry,
       this.#configurationRegistry,
       this.#telemetry,
+      this.#modelsManager,
     );
     this.#extensionContext.subscriptions.push(this.#llamaStackManager);
     this.#llamaStackManager.init();

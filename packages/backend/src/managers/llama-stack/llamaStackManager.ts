@@ -28,7 +28,7 @@ import {
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import llama_stack_images from '../../assets/llama-stack-images.json';
 import { getImageInfo } from '../../utils/inferenceUtils';
-import type { ContainerRegistry, ContainerEvent } from '../../registries/ContainerRegistry';
+import type { ContainerRegistry, ContainerEvent, ContainerHealthy } from '../../registries/ContainerRegistry';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { getRandomName } from '../../utils/randomUtils';
 import type { LlamaStackContainerInfo } from '@shared/models/llama-stack/LlamaStackContainerInfo';
@@ -39,9 +39,11 @@ import fs from 'node:fs/promises';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import { getFreeRandomPort } from '../../utils/ports';
 import { TaskRunner } from '../TaskRunner';
+import type { ModelsManager } from '../modelsManager';
 
 export const LLAMA_STACK_CONTAINER_LABEL = 'ai-lab-llama-stack-container';
 export const LLAMA_STACK_API_PORT_LABEL = 'ai-lab-llama-stack-api-port';
+export const SECOND: number = 1_000_000_000;
 
 export class LlamaStackManager implements Disposable {
   #initialized: boolean;
@@ -56,6 +58,7 @@ export class LlamaStackManager implements Disposable {
     private containerRegistry: ContainerRegistry,
     private configurationRegistry: ConfigurationRegistry,
     private telemetryLogger: TelemetryLogger,
+    private modelsManager: ModelsManager,
   ) {
     this.#initialized = false;
     this.#disposables = [];
@@ -185,6 +188,16 @@ export class LlamaStackManager implements Disposable {
       () => getImageInfo(connection, image, () => {}),
     );
 
+    let containerInfo = await this.createContainer(image, imageInfo, labels);
+    containerInfo = await this.waitLlamaStackContainerHealthy(containerInfo, labels);
+    return this.registerModels(containerInfo, labels, connection);
+  }
+
+  private async createContainer(
+    image: string,
+    imageInfo: ImageInfo,
+    labels: { [p: string]: string },
+  ): Promise<LlamaStackContainerInfo> {
     const folder = await this.getLlamaStackContainerFolder();
 
     const aiLabApiPort = this.configurationRegistry.getExtensionConfiguration().apiPort;
@@ -218,6 +231,12 @@ export class LlamaStackManager implements Disposable {
       Env: [`PODMAN_AI_LAB_URL=http://host.containers.internal:${aiLabApiPort}`],
       OpenStdin: true,
       start: true,
+      HealthCheck: {
+        // must be the port INSIDE the container not the exposed one
+        Test: ['CMD-SHELL', `curl -sSf localhost:8321/v1/models > /dev/null`],
+        Interval: SECOND * 5,
+        Retries: 4 * 5,
+      },
     };
 
     return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
@@ -234,6 +253,65 @@ export class LlamaStackManager implements Disposable {
         };
       },
     );
+  }
+
+  async waitLlamaStackContainerHealthy(
+    containerInfo: LlamaStackContainerInfo,
+    labels: { [p: string]: string },
+  ): Promise<LlamaStackContainerInfo> {
+    return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
+      labels,
+      {
+        loadingLabel: 'Waiting Llama Stack to be started',
+        errorMsg: err => `Something went wrong while trying to check container health check: ${String(err)}.`,
+      },
+      async ({ updateLabels }) => {
+        let disposable: Disposable;
+        return new Promise(resolve => {
+          disposable = this.containerRegistry.onHealthyContainerEvent((event: ContainerHealthy) => {
+            if (event.id !== containerInfo.containerId) {
+              return;
+            }
+            disposable.dispose();
+            // eslint-disable-next-line sonarjs/no-nested-functions
+            updateLabels(labels => ({
+              ...labels,
+              containerId: containerInfo.containerId,
+              port: `${containerInfo.port}`,
+            }));
+            this.telemetryLogger.logUsage('llamaStack.startContainer');
+            resolve(containerInfo);
+          });
+        });
+      },
+    );
+  }
+
+  async registerModels(
+    containerInfo: LlamaStackContainerInfo,
+    labels: { [p: string]: string },
+    connection: ContainerProviderConnection,
+  ): Promise<LlamaStackContainerInfo> {
+    for (const model of this.modelsManager.getModelsInfo().filter(model => model.file)) {
+      await this.#taskRunner.runAsTask(
+        labels,
+        {
+          loadingLabel: `Registering model ${model.name}`,
+          errorMsg: err => `Something went wrong while registering model: ${String(err)}.`,
+        },
+        async () => {
+          await this.podmanConnection.execute(connection, [
+            'exec',
+            containerInfo.containerId,
+            'llama-stack-client',
+            'models',
+            'register',
+            model.name,
+          ]);
+        },
+      );
+    }
+    return containerInfo;
   }
 
   private async getLlamaStackContainerFolder(): Promise<string> {

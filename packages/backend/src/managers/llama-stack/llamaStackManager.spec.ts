@@ -32,6 +32,7 @@ import {
 } from '@shared/models/llama-stack/LlamaStackContainerInfo';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
+import type { ModelsManager } from '../modelsManager';
 
 vi.mock('@podman-desktop/api', () => {
   return {
@@ -58,11 +59,13 @@ class TestLlamaStackManager extends LlamaStackManager {
 const podmanConnection: PodmanConnection = {
   onPodmanConnectionEvent: vi.fn(),
   findRunningContainerProviderConnection: vi.fn(),
+  execute: vi.fn(),
 } as unknown as PodmanConnection;
 
 const containerRegistry = {
   onStartContainerEvent: vi.fn(),
   onStopContainerEvent: vi.fn(),
+  onHealthyContainerEvent: vi.fn(),
 } as unknown as ContainerRegistry;
 
 const configurationRegistry = {
@@ -73,6 +76,10 @@ const telemetryMock = {
   logUsage: vi.fn(),
   logError: vi.fn(),
 } as unknown as TelemetryLogger;
+
+const modelsManagerMock = {
+  getModelsInfo: vi.fn(),
+} as unknown as ModelsManager;
 
 let taskRegistry: TaskRegistry;
 
@@ -108,6 +115,7 @@ beforeEach(() => {
     containerRegistry,
     configurationRegistry,
     telemetryMock,
+    modelsManagerMock,
   );
 });
 
@@ -181,7 +189,7 @@ test('requestCreateLlamaStackContainer returns id and error if listImage returns
   expect(tasks.some(task => task.state === 'error')).toBeTruthy();
 });
 
-test('requestCreateLlamaStackContainer returns id and no error if createContainer returns id', async () => {
+test('requestCreateLlamaStackContainer returns no error if createContainer returns id and container becomes healthy', async () => {
   vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
     name: 'Podman Machine',
     vmType: VMType.UNKNOWN,
@@ -200,9 +208,83 @@ test('requestCreateLlamaStackContainer returns id and no error if createContaine
   vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
     apiPort: 10000,
   } as ExtensionConfiguration);
+  vi.mocked(containerRegistry.onHealthyContainerEvent).mockReturnValue(NO_OP_DISPOSABLE);
   await llamaStackManager.requestCreateLlamaStackContainer({});
-  const tasks = await waitTasks(LLAMA_STACK_CONTAINER_TRACKINGID, 3);
+  await vi.waitFor(() => {
+    const healthyListener = vi.mocked(containerRegistry.onHealthyContainerEvent).mock.calls[0][0];
+    expect(healthyListener).toBeDefined();
+    healthyListener({ id: 'containerId' });
+  });
+  const tasks = await waitTasks(LLAMA_STACK_CONTAINER_TRACKINGID, 4);
   expect(tasks.some(task => task.state === 'error')).toBeFalsy();
+});
+
+test('requestCreateLlamaStackContainer registers all local models', async () => {
+  vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
+    name: 'Podman Machine',
+    vmType: VMType.UNKNOWN,
+    type: 'podman',
+    status: () => 'started',
+    endpoint: {
+      socketPath: 'socket.sock',
+    },
+  });
+  vi.mocked(containerEngine.listImages).mockResolvedValue([
+    { RepoTags: [llama_stack_images.default] } as unknown as ImageInfo,
+  ]);
+  vi.mocked(containerEngine.createContainer).mockResolvedValue({
+    id: 'containerId',
+  } as unknown as ContainerCreateResult);
+  vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+    apiPort: 10000,
+  } as ExtensionConfiguration);
+  vi.mocked(containerRegistry.onHealthyContainerEvent).mockReturnValue(NO_OP_DISPOSABLE);
+  vi.mocked(modelsManagerMock.getModelsInfo).mockReturnValue([
+    {
+      id: 'model1',
+      name: 'Model 1',
+      description: '',
+      file: { file: 'model1', path: '/path/to' },
+    },
+    {
+      id: 'model2',
+      name: 'Model 2',
+      description: '',
+      file: { file: 'model2', path: '/path/to' },
+    },
+    {
+      id: 'model3',
+      name: 'Model 3',
+      description: '',
+    },
+  ]);
+  await llamaStackManager.requestCreateLlamaStackContainer({});
+  await vi.waitFor(() => {
+    const healthyListener = vi.mocked(containerRegistry.onHealthyContainerEvent).mock.calls[0][0];
+    expect(healthyListener).toBeDefined();
+    healthyListener({ id: 'containerId' });
+  });
+  const tasks = await waitTasks(LLAMA_STACK_CONTAINER_TRACKINGID, 4);
+  expect(tasks.some(task => task.state === 'error')).toBeFalsy();
+  await vi.waitFor(() => {
+    expect(podmanConnection.execute).toHaveBeenCalledTimes(2);
+  });
+  expect(podmanConnection.execute).toHaveBeenCalledWith(expect.anything(), [
+    'exec',
+    'containerId',
+    'llama-stack-client',
+    'models',
+    'register',
+    'Model 1',
+  ]);
+  expect(podmanConnection.execute).toHaveBeenCalledWith(expect.anything(), [
+    'exec',
+    'containerId',
+    'llama-stack-client',
+    'models',
+    'register',
+    'Model 2',
+  ]);
 });
 
 test('onPodmanConnectionEvent start event should call refreshLlamaStackContainer and set containerInfo', async () => {

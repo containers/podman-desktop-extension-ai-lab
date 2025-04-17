@@ -1,11 +1,11 @@
 <script lang="ts">
 import { tasks } from '/@/stores/tasks';
 import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
-import { Button, ErrorMessage, FormPage } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage, Link, Tooltip } from '@podman-desktop/ui-svelte';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
-import { llamaStackClient } from '/@/utils/client';
+import { llamaStackClient, studioClient } from '/@/utils/client';
 import type { Task } from '@shared/models/ITask';
 import { onMount } from 'svelte';
 import { filterByLabel } from '/@/utils/taskUtils';
@@ -81,6 +81,10 @@ async function submit(): Promise<void> {
 function openLlamaStackContainer(): void {
   llamaStackClient.routeToLlamaStackContainerTerminal(containerInfo!.containerId).catch(console.error);
 }
+
+function openLink(url: string): void {
+  studioClient.openURL(url).catch(err => console.error(`Error opening URL: ${url}`, err));
+}
 </script>
 
 <FormPage title="Run Llama Stack as a container">
@@ -122,6 +126,16 @@ function openLlamaStackContainer(): void {
 
           {#if containerInfo}
             <p>Llama Stack API is accessible at http://localhost:{containerInfo.port}</p>
+            <p>
+              Access
+              <Tooltip tip="Open swagger documentation">
+                <Link
+                  aria-label="swagger documentation"
+                  on:click={openLink.bind(undefined, `http://localhost:${containerInfo.port}/docs`)}>
+                  swagger documentation
+                </Link>
+              </Tooltip>
+            </p>
           {/if}
           {#if errorMsg !== undefined}
             <ErrorMessage error={errorMsg} />

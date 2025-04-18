@@ -33,4 +33,11 @@ export class AILabPage extends AILabBasePage {
     await playExpect(this.heading).toBeVisible();
     await this.navigationBar.waitForLoad();
   }
+
+  async enableGpuSupport(): Promise<void> {
+    await this.webview.getByRole('button', { name: 'Enable GPU support' }).click();
+    await this.webview.getByRole('button', { name: 'Enable GPU support' }).waitFor({
+      state: 'detached',
+    });
+  }
 }

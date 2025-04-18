@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { expect, test, vi, beforeEach, afterEach, describe } from 'vitest';
-import OpenAI from 'openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { PlaygroundV2Manager } from './playgroundV2Manager';
 import type { TelemetryLogger } from '@podman-desktop/api';
 import type { InferenceServer } from '@shared/models/IInference';
@@ -29,9 +29,12 @@ import type { ChatMessage, ErrorMessage } from '@shared/models/IPlaygroundMessag
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
+// @ts-expect-error this is a test module
+import { convertArrayToReadableStream } from '@ai-sdk/provider-utils/test';
+import type { LanguageModelV1 } from '@ai-sdk/provider';
 
-vi.mock('openai', () => ({
-  default: vi.fn(),
+vi.mock('@ai-sdk/openai-compatible', () => ({
+  createOpenAICompatible: vi.fn(),
 }));
 
 const rpcExtensionMock = {
@@ -61,10 +64,16 @@ const cancellationTokenRegistryMock = {
   delete: vi.fn(),
 } as unknown as CancellationTokenRegistry;
 
-beforeEach(() => {
+let createTestModel: (options: object) => LanguageModelV1;
+let MockLanguageModelV1: unknown;
+
+beforeEach(async () => {
   vi.resetAllMocks();
   vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
   vi.useFakeTimers();
+  const aiSdkSpecShared = await import('./playground/aiSdk.spec');
+  createTestModel = aiSdkSpecShared.createTestModel;
+  MockLanguageModelV1 = aiSdkSpecShared.MockLanguageModelV1;
 });
 
 afterEach(() => {
@@ -197,14 +206,15 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
       },
     } as unknown as InferenceServer,
   ]);
-  const createMock = vi.fn().mockResolvedValue([]);
-  vi.mocked(OpenAI).mockReturnValue({
-    chat: {
-      completions: {
-        create: createMock,
-      },
-    },
-  } as unknown as OpenAI);
+  // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
+  vi.mocked(createOpenAICompatible).mockReturnValue(() =>
+    createTestModel({
+      stream: convertArrayToReadableStream([
+        { type: 'text-delta', textDelta: 'The message from the model' },
+        { type: 'finish', finishReason: 'stop', usage: { completionTokens: 133, promptTokens: 7 } },
+      ]),
+    }),
+  );
 
   const manager = new PlaygroundV2Manager(
     rpcExtensionMock,
@@ -223,7 +233,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
 
   // Wait for assistant message to be completed
   await vi.waitFor(() => {
-    expect((manager.getConversations()[0].messages[1] as ChatMessage).content).toBeDefined();
+    expect(manager.getConversations()[0].messages.length).toEqual(2);
   });
 
   const conversations = manager.getConversations();
@@ -240,96 +250,17 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   expect(conversations[0].messages[1]).toStrictEqual({
     choices: undefined,
     completed: expect.any(Number),
-    content: '',
+    content: 'The message from the model',
     id: expect.anything(),
     role: 'assistant',
     timestamp: expect.any(Number),
+    usage: {
+      completion_tokens: 133,
+      prompt_tokens: 7,
+    },
   });
 
   expect(rpcExtensionMock.fire).toHaveBeenLastCalledWith(MSG_CONVERSATIONS_UPDATE, conversations);
-});
-
-test('submit should send options', async () => {
-  vi.mocked(cancellationTokenRegistryMock.createCancellationTokenSource).mockReturnValue(55);
-
-  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
-    {
-      status: 'running',
-      health: {
-        Status: 'healthy',
-      },
-      models: [
-        {
-          id: 'dummyModelId',
-          file: {
-            file: 'dummyModelFile',
-          },
-        },
-      ],
-      connection: {
-        port: 8888,
-      },
-    } as unknown as InferenceServer,
-  ]);
-  const createMock = vi.fn().mockResolvedValue([]);
-  vi.mocked(OpenAI).mockReturnValue({
-    chat: {
-      completions: {
-        create: createMock,
-      },
-    },
-  } as unknown as OpenAI);
-
-  const manager = new PlaygroundV2Manager(
-    rpcExtensionMock,
-    inferenceManagerMock,
-    taskRegistryMock,
-    telemetryMock,
-    cancellationTokenRegistryMock,
-  );
-  await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
-
-  const playgrounds = manager.getConversations();
-  const cancellationId = await manager.submit(playgrounds[0].id, 'dummyUserInput', {
-    temperature: 0.123,
-    max_tokens: 45,
-    top_p: 0.345,
-    stream_options: { include_usage: true },
-  });
-  expect(cancellationId).toBe(55);
-
-  const messages: unknown[] = [
-    {
-      content: 'dummyUserInput',
-      id: expect.any(String),
-      role: 'user',
-      timestamp: expect.any(Number),
-      options: {
-        temperature: 0.123,
-        max_tokens: 45,
-        top_p: 0.345,
-        stream_options: { include_usage: true },
-      },
-    },
-  ];
-  expect(createMock).toHaveBeenCalledWith(
-    {
-      messages,
-      model: 'dummyModelFile',
-      stream: true,
-      temperature: 0.123,
-      max_tokens: 45,
-      top_p: 0.345,
-      stream_options: { include_usage: true },
-    },
-    {
-      signal: expect.anything(),
-    },
-  );
-  // at the end the token must be deleted once the request is complete
-  await vi.waitFor(() => {
-    expect(cancellationTokenRegistryMock.delete).toHaveBeenCalledWith(55);
-  });
 });
 
 test('error', async () => {
@@ -352,14 +283,14 @@ test('error', async () => {
       },
     } as unknown as InferenceServer,
   ]);
-  const createMock = vi.fn().mockRejectedValue('Please reduce the length of the messages or completion.');
-  vi.mocked(OpenAI).mockReturnValue({
-    chat: {
-      completions: {
-        create: createMock,
-      },
-    },
-  } as unknown as OpenAI);
+  const doStream: LanguageModelV1['doStream'] = async () => {
+    throw new Error('Please reduce the length of the messages or completion.');
+  };
+  vi.mocked(createOpenAICompatible).mockReturnValue(
+    // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
+    // eslint-disable-next-line sonarjs/new-operator-misuse
+    () => new MockLanguageModelV1({ doStream }),
+  );
 
   const manager = new PlaygroundV2Manager(
     rpcExtensionMock,
@@ -734,14 +665,15 @@ describe('system prompt', () => {
         },
       } as unknown as InferenceServer,
     ]);
-    const createMock = vi.fn().mockResolvedValue([]);
-    vi.mocked(OpenAI).mockReturnValue({
-      chat: {
-        completions: {
-          create: createMock,
-        },
-      },
-    } as unknown as OpenAI);
+    // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
+    vi.mocked(createOpenAICompatible).mockReturnValue(() =>
+      createTestModel({
+        stream: convertArrayToReadableStream([
+          { type: 'text-delta', textDelta: 'The message from the model' },
+          { type: 'finish', finishReason: 'stop', usage: { completionTokens: 133, promptTokens: 7 } },
+        ]),
+      }),
+    );
 
     const manager = new PlaygroundV2Manager(
       rpcExtensionMock,

@@ -55,7 +55,7 @@
           "type": "boolean",
           "default": false,
           "description": "Display InstructLab Tuning screens (experimental)",
-          "hidden": true
+          "hidden": false
         },
         "ai-lab.showGPUPromotion": {
           "type": "boolean",

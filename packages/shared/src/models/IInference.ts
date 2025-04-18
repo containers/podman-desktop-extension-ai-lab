@@ -21,6 +21,7 @@ export enum InferenceType {
   LLAMA_CPP = 'llama-cpp',
   WHISPER_CPP = 'whisper-cpp',
   OPENVINO = 'openvino',
+  VLLM = 'vllm',
   NONE = 'none',
 }
 

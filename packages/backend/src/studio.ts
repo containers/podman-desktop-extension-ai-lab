@@ -62,6 +62,7 @@ import { HuggingFaceModelHandler } from './models/HuggingFaceModelHandler';
 import { LlamaStackApiImpl } from './llama-stack-api-impl';
 import { LLAMA_STACK_API_CHANNEL, type LlamaStackAPI } from '@shared/LlamaStackAPI';
 import { LlamaStackManager } from './managers/llama-stack/llamaStackManager';
+import { VLLM } from './workers/provider/VLLM';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -279,6 +280,9 @@ export class Studio {
     );
     this.#extensionContext.subscriptions.push(
       this.#inferenceProviderRegistry.register(new WhisperCpp(this.#taskRegistry, this.#podmanConnection)),
+    );
+    this.#extensionContext.subscriptions.push(
+      this.#inferenceProviderRegistry.register(new VLLM(this.#taskRegistry, this.#podmanConnection)),
     );
 
     /**

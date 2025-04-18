@@ -38,6 +38,7 @@ import type { TaskRegistry } from '../registries/TaskRegistry';
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import { getHash } from '../utils/sha';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
+import { InferenceType } from '@shared/models/IInference';
 
 export class PlaygroundV2Manager implements Disposable {
   #conversationRegistry: ConversationRegistry;
@@ -123,8 +124,10 @@ export class PlaygroundV2Manager implements Disposable {
 
     // create/start inference server if necessary
     const servers = this.inferenceManager.getServers();
+    console.log('servers', servers);
     const server = servers.find(s => s.models.map(mi => mi.id).includes(model.id));
     if (!server) {
+      console.warn(`no server running found with modelId ${model.id}, creating new one`);
       await this.inferenceManager.createInferenceServer(
         await withDefaultConfiguration({
           modelsInfo: [model],
@@ -239,13 +242,18 @@ export class PlaygroundV2Manager implements Disposable {
       abortController.abort('cancel');
     });
 
+    const messages = this.getFormattedMessages(conversation.id);
+    console.log('[PlaygroundV2Manager] messages', messages);
+    console.log('[PlaygroundV2Manager] messages', options);
+
     client.chat.completions
       .create(
         {
-          messages: this.getFormattedMessages(conversation.id),
+          messages: messages,
           stream: true,
           model: modelInfo.file.file,
-          ...options,
+          // vllm is not compatible with options provided, only llamacpp is
+          ...(server.type === InferenceType.LLAMA_CPP ? options : {}),
         },
         {
           signal: abortController.signal,
@@ -333,8 +341,8 @@ export class PlaygroundV2Manager implements Disposable {
       .map(
         message =>
           ({
-            name: undefined,
-            ...message,
+            role: message.role,
+            content: message.content,
           }) as ChatCompletionMessageParam,
       );
   }

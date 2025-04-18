@@ -490,6 +490,13 @@
       },
       "memory": 4372811936,
       "backend": "llama-cpp"
+    },
+    {
+      "id": "Qwen/Qwen2-VL-2B-Instruct",
+      "name": "Qwen/Qwen2-VL-2B-Instruct",
+      "description": "Qwen/Qwen2-VL-2B-Instruct",
+      "url": "huggingface:/Qwen/Qwen2-VL-2B-Instruct",
+      "backend": "vllm"
     }
   ],
   "categories": [

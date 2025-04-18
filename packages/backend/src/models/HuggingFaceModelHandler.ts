@@ -23,6 +23,7 @@ import type { CompletionEvent } from './baseEvent';
 import { getDurationSecondsSince } from '../utils/utils';
 import type { ModelsManager } from '../managers/modelsManager';
 import fs from 'node:fs/promises';
+import { dirname, basename } from 'node:path';
 
 function parseURL(url: string): { repo: string; revision?: string } | undefined {
   const u = URL.parse(url);
@@ -128,8 +129,8 @@ export class HuggingFaceModelHandler extends ModelHandler {
               const model = hfModels.find(m => m.repo?.repo === repo.id.name && m.repo?.revision === ref);
               if (model) {
                 model.model.file = {
-                  path: revision.path,
-                  file: revision.path,
+                  path: dirname(revision.path),
+                  file: basename(revision.path),
                   creation: revision.lastModifiedAt,
                   size: revision.size,
                 };

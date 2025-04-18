@@ -20,6 +20,7 @@ import type { ModelInfo } from './IModelInfo';
 export enum InferenceType {
   LLAMA_CPP = 'llama-cpp',
   WHISPER_CPP = 'whisper-cpp',
+  VLLM = 'vllm',
   NONE = 'none',
 }
 

@@ -4,16 +4,23 @@ import Select from './Select.svelte';
 import Fa from 'svelte-fa';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 
-export let disabled: boolean = false;
-/**
- * Recommended model ids
- */
-export let recommended: string[] | undefined = undefined;
+interface Props {
+  disabled?: boolean;
+  /**
+   * Recommended model ids
+   */
+  recommended?: string[];
+  /**
+   * List of models
+   */
+  models: ModelInfo[];
+  /**
+   * Current value selected
+   */
+  value: ModelInfo | undefined;
+}
 
-/**
- * List of models
- */
-export let models: ModelInfo[];
+let { disabled = false, recommended = undefined, models, value = undefined }: Props = $props();
 
 function getModelSortingScore(modelInfo: ModelInfo): number {
   let score: number = 0;
@@ -23,20 +30,16 @@ function getModelSortingScore(modelInfo: ModelInfo): number {
 }
 
 /**
- * Current value selected
- */
-export let value: ModelInfo | undefined = undefined;
-
-/**
  * Handy mechanism to provide the mandatory property `label` and `value` to the Select component
  */
-let selected: (ModelInfo & { label: string; value: string }) | undefined = undefined;
-$: {
+let selected: (ModelInfo & { label: string; value: string }) | undefined = $derived.by(() => {
   // let's select a default model
   if (value) {
-    selected = { ...value, label: value.name, value: value.id };
+    return { ...value, label: value.name, value: value.id };
+  } else {
+    return undefined;
   }
-}
+});
 
 function handleOnChange(nValue: (ModelInfo & { label: string; value: string }) | undefined): void {
   value = nValue;

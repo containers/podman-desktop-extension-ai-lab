@@ -83,7 +83,7 @@ function asProcessModelResponse(model: ModelInfo): ProcessModelResponse {
   };
 }
 
-const LISTENING_ADDRESS = '127.0.0.1';
+const LISTENING_ADDRESS = '0.0.0.0';
 
 interface ChatCompletionOptions {
   server: InferenceServer;

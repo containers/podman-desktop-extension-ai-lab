@@ -23,7 +23,9 @@ import {
   containerEngine,
   type ContainerProviderConnection,
   type ContainerCreateOptions,
+  env,
   type ImageInfo,
+  process,
 } from '@podman-desktop/api';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import llama_stack_images from '../../assets/llama-stack-images.json';
@@ -40,10 +42,37 @@ import type { ConfigurationRegistry } from '../../registries/ConfigurationRegist
 import { getFreeRandomPort } from '../../utils/ports';
 import { TaskRunner } from '../TaskRunner';
 import type { ModelsManager } from '../modelsManager';
+import { getPodmanCli, getPodmanMachineName } from '../../utils/podman';
 
 export const LLAMA_STACK_CONTAINER_LABEL = 'ai-lab-llama-stack-container';
 export const LLAMA_STACK_API_PORT_LABEL = 'ai-lab-llama-stack-api-port';
 export const SECOND: number = 1_000_000_000;
+
+/*
+ * Get the local IP address of the Podman machine.
+ * See https://learn.microsoft.com/en-us/windows/wsl/networking
+ */
+async function getLocalIPAddress(connection: ContainerProviderConnection): Promise<string> {
+  const cli = getPodmanCli();
+  const machineName = getPodmanMachineName(connection);
+  const result = await process.exec(cli, [
+    'machine',
+    'ssh',
+    machineName,
+    'ip',
+    'route',
+    'show',
+    '|',
+    'grep',
+    '-i',
+    'default',
+    '|',
+    'awk',
+    // eslint-disable-next-line quotes
+    "'{print $3}'",
+  ]);
+  return result.stdout.trim();
+}
 
 export class LlamaStackManager implements Disposable {
   #initialized: boolean;
@@ -188,18 +217,21 @@ export class LlamaStackManager implements Disposable {
       () => getImageInfo(connection, image, () => {}),
     );
 
-    let containerInfo = await this.createContainer(image, imageInfo, labels);
+    let containerInfo = await this.createContainer(connection, image, imageInfo, labels);
     containerInfo = await this.waitLlamaStackContainerHealthy(containerInfo, labels);
     return this.registerModels(containerInfo, labels, connection);
   }
 
   private async createContainer(
+    connection: ContainerProviderConnection,
     image: string,
     imageInfo: ImageInfo,
     labels: { [p: string]: string },
   ): Promise<LlamaStackContainerInfo> {
     const folder = await this.getLlamaStackContainerFolder();
 
+    const aiLabApiHost =
+      env.isWindows && connection.vmType === 'wsl' ? await getLocalIPAddress(connection) : 'host.docker.internal';
     const aiLabApiPort = this.configurationRegistry.getExtensionConfiguration().apiPort;
     const llamaStackApiPort = await getFreeRandomPort('0.0.0.0');
     const createContainerOptions: ContainerCreateOptions = {
@@ -228,7 +260,7 @@ export class LlamaStackManager implements Disposable {
           ],
         },
       },
-      Env: [`PODMAN_AI_LAB_URL=http://host.containers.internal:${aiLabApiPort}`],
+      Env: [`PODMAN_AI_LAB_URL=http://${aiLabApiHost}:${aiLabApiPort}`],
       OpenStdin: true,
       start: true,
       HealthCheck: {

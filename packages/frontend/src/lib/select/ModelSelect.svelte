@@ -20,7 +20,7 @@ interface Props {
   value: ModelInfo | undefined;
 }
 
-let { disabled = false, recommended = undefined, models, value = undefined }: Props = $props();
+let { disabled = false, recommended, models, value = $bindable() }: Props = $props();
 
 function getModelSortingScore(modelInfo: ModelInfo): number {
   let score: number = 0;

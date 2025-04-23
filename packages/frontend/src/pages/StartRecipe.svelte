@@ -187,7 +187,7 @@ function handleOnClick(): void {
             <!-- model form -->
             <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
               >Model</label>
-            <ModelSelect value={model} disabled={loading} recommended={recipe.recommended} models={models} />
+            <ModelSelect bind:value={model} disabled={loading} recommended={recipe.recommended} models={models} />
             {#if model && model.file === undefined}
               <div class="text-gray-800 text-sm flex items-center">
                 <Fa class="mr-2" icon={faWarning} />

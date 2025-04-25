@@ -355,6 +355,7 @@ export class Studio {
      * PlaygroundV2Manager handle the conversations of the Playground by using the InferenceServer available
      */
     this.#playgroundManager = new PlaygroundV2Manager(
+      appUserDirectory,
       this.#rpcExtension,
       this.#inferenceManager,
       this.#taskRegistry,

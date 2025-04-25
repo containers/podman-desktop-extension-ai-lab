@@ -20,11 +20,10 @@ import { Publisher } from '../utils/Publisher';
 import type {
   AssistantChat,
   ChatMessage,
-  Choice,
   Conversation,
   Message,
   ModelUsage,
-  PendingChat,
+  ToolCall,
 } from '@shared/models/IPlaygroundMessage';
 import type { Disposable } from '@podman-desktop/api';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
@@ -90,13 +89,17 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
       modelId: modelId,
       messages: [],
       id: conversationId,
+      usage: {
+        completion_tokens: 0,
+        prompt_tokens: 0,
+      } as ModelUsage,
     });
     this.notify();
     return conversationId;
   }
 
   /**
-   * This method will be responsible for finalizing the message by concatenating all the choices
+   * This method will be responsible for finalizing the message
    * @param conversationId
    * @param messageId
    */
@@ -107,55 +110,72 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
     if (messageIndex === -1)
       throw new Error(`message with id ${messageId} does not exist in conversation ${conversationId}.`);
 
-    const content = ((conversation.messages[messageIndex] as PendingChat)?.choices || [])
-      .map(choice => choice.content)
-      .join('');
-
     this.update(conversationId, messageId, {
       ...conversation.messages[messageIndex],
       choices: undefined,
       role: 'assistant',
       completed: Date.now(),
-      content: content,
     } as AssistantChat);
   }
 
   /**
-   * Utility method to quickly add a usage to a given a message inside a conversation
+   * Utility method to quickly add a usage to a conversation
    * @param conversationId
-   * @param messageId
    * @param usage
    */
-  setUsage(conversationId: string, messageId: string, usage: ModelUsage | undefined | null): void {
+  setUsage(conversationId: string, usage: ModelUsage): void {
     const conversation: Conversation = this.get(conversationId);
-
-    const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
-    if (messageIndex === -1)
-      throw new Error(`message with id ${messageId} does not exist in conversation ${conversationId}.`);
-
-    this.update(conversationId, messageId, {
-      ...conversation.messages[messageIndex],
-      usage: usage,
-    } as PendingChat);
+    if (!usage) {
+      return;
+    }
+    this.#conversations.set(conversationId, {
+      ...conversation,
+      usage,
+    });
+    this.notify();
   }
 
   /**
-   * Utility method to quickly add a choice to a given a message inside a conversation
+   * Utility method to quickly add a delta to a given a message inside a conversation
    * @param conversationId
    * @param messageId
-   * @param choice
+   * @param delta
    */
-  appendChoice(conversationId: string, messageId: string, choice: Choice): void {
+  textDelta(conversationId: string, messageId: string, delta: string): void {
     const conversation: Conversation = this.get(conversationId);
-
     const messageIndex = conversation.messages.findIndex(message => message.id === messageId);
-    if (messageIndex === -1)
+    if (messageIndex === -1) {
       throw new Error(`message with id ${messageId} does not exist in conversation ${conversationId}.`);
-
+    }
     this.update(conversationId, messageId, {
       ...conversation.messages[messageIndex],
-      choices: [...((conversation.messages[messageIndex] as PendingChat)?.choices || []), choice],
-    } as PendingChat);
+      content: ((conversation.messages[messageIndex] as AssistantChat).content ?? '') + delta,
+    } as AssistantChat);
+  }
+
+  /**
+   *
+   */
+  toolResult(conversationId: string, toolCallId: string, toolResult: string | object): void {
+    const conversation: Conversation = this.get(conversationId);
+    const messageIndex = conversation.messages.findIndex(
+      message =>
+        (message as ChatMessage)?.role === 'assistant' &&
+        ((message as AssistantChat).content as ToolCall)?.type === 'tool-call' &&
+        ((message as AssistantChat).content as ToolCall)?.toolCallId === toolCallId,
+    );
+    if (messageIndex === -1) {
+      throw new Error(`message with for tool call ${toolCallId} does not exist in conversation ${conversationId}.`);
+    }
+    const content: ToolCall = {
+      ...((conversation.messages[messageIndex] as AssistantChat).content as ToolCall),
+      result: toolResult,
+    };
+    this.update(conversationId, conversation.messages[messageIndex].id, {
+      ...conversation.messages[messageIndex],
+      completed: Date.now(),
+      content,
+    } as AssistantChat);
   }
 
   /**

@@ -29,9 +29,11 @@ import type { ChatMessage, ErrorMessage } from '@shared/models/IPlaygroundMessag
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
-// @ts-expect-error this is a test module
 import { convertArrayToReadableStream } from '@ai-sdk/provider-utils/test';
 import type { LanguageModelV1 } from '@ai-sdk/provider';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 
 vi.mock('@ai-sdk/openai-compatible', () => ({
   createOpenAICompatible: vi.fn(),
@@ -64,6 +66,7 @@ const cancellationTokenRegistryMock = {
   delete: vi.fn(),
 } as unknown as CancellationTokenRegistry;
 
+let appUserDirectory: string;
 let createTestModel: (options: object) => LanguageModelV1;
 let MockLanguageModelV1: unknown;
 
@@ -72,16 +75,19 @@ beforeEach(async () => {
   vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
   vi.useFakeTimers();
   const aiSdkSpecShared = await import('./playground/aiSdk.spec');
+  appUserDirectory = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'mcp-server-manager-test-'));
   createTestModel = aiSdkSpecShared.createTestModel;
   MockLanguageModelV1 = aiSdkSpecShared.MockLanguageModelV1;
 });
 
-afterEach(() => {
+afterEach(async () => {
   vi.useRealTimers();
+  await fs.promises.rm(appUserDirectory, { recursive: true });
 });
 
 test('manager should be properly initialized', () => {
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -103,6 +109,7 @@ test('submit should throw an error if the server is stopped', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -142,6 +149,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -173,6 +181,7 @@ test('create playground should create conversation.', async () => {
     } as unknown as InferenceServer,
   ]);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -217,6 +226,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   );
 
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -254,10 +264,10 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     id: expect.anything(),
     role: 'assistant',
     timestamp: expect.any(Number),
-    usage: {
-      completion_tokens: 133,
-      prompt_tokens: 7,
-    },
+  });
+  expect(conversations[0].usage).toStrictEqual({
+    completion_tokens: 133,
+    prompt_tokens: 7,
   });
 
   expect(rpcExtensionMock.fire).toHaveBeenLastCalledWith(MSG_CONVERSATIONS_UPDATE, conversations);
@@ -293,6 +303,7 @@ test('error', async () => {
   );
 
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -335,6 +346,7 @@ test('error', async () => {
 test('creating a new playground should send new playground to frontend', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -355,6 +367,10 @@ test('creating a new playground should send new playground to frontend', async (
       modelId: 'model-1',
       name: 'a name',
       messages: [],
+      usage: {
+        completion_tokens: 0,
+        prompt_tokens: 0,
+      },
     },
   ]);
 });
@@ -362,6 +378,7 @@ test('creating a new playground should send new playground to frontend', async (
 test('creating a new playground with no name should send new playground to frontend with generated name', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -382,6 +399,10 @@ test('creating a new playground with no name should send new playground to front
       modelId: 'model-1',
       name: 'playground 1',
       messages: [],
+      usage: {
+        completion_tokens: 0,
+        prompt_tokens: 0,
+      },
     },
   ]);
 });
@@ -390,6 +411,7 @@ test('creating a new playground with no model served should start an inference s
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -434,6 +456,7 @@ test('creating a new playground with the model already served should not start a
   ] as InferenceServer[]);
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -468,6 +491,7 @@ test('creating a new playground with the model server stopped should start the i
   const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
   const startInferenceServerMock = vi.mocked(inferenceManagerMock.startInferenceServer);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -490,6 +514,7 @@ test('delete conversation should delete the conversation', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
 
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -516,6 +541,7 @@ test('delete conversation should delete the conversation', async () => {
 test('creating a new playground with an existing name should fail', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -545,6 +571,7 @@ test('creating a new playground with an existing name should fail', async () => 
 test('requestCreatePlayground should call createPlayground and createTask, then updateTask', async () => {
   vi.useRealTimers();
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -579,6 +606,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
 test('requestCreatePlayground should call createPlayground and createTask, then updateTask when createPlayground fails', async () => {
   vi.useRealTimers();
   const manager = new PlaygroundV2Manager(
+    appUserDirectory,
     rpcExtensionMock,
     inferenceManagerMock,
     taskRegistryMock,
@@ -633,6 +661,7 @@ describe('system prompt', () => {
       } as unknown as InferenceServer,
     ]);
     const manager = new PlaygroundV2Manager(
+      appUserDirectory,
       rpcExtensionMock,
       inferenceManagerMock,
       taskRegistryMock,
@@ -676,6 +705,7 @@ describe('system prompt', () => {
     );
 
     const manager = new PlaygroundV2Manager(
+      appUserDirectory,
       rpcExtensionMock,
       inferenceManagerMock,
       taskRegistryMock,

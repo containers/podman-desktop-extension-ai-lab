@@ -8,6 +8,7 @@ import {
   isSystemPrompt,
   isChatMessage,
   isErrorMessage,
+  isAssistantToolCall,
 } from '@shared/models/IPlaygroundMessage';
 import { catalog } from '../stores/catalog';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
@@ -22,6 +23,7 @@ import { Button, Tooltip, DetailsPage, StatusIcon } from '@podman-desktop/ui-sve
 import { router } from 'tinro';
 import ConversationActions from '../lib/conversation/ConversationActions.svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
+import ToolCallMessage from '/@/lib/conversation/ToolCallMessage.svelte';
 
 interface Props {
   playgroundId: string;
@@ -44,8 +46,8 @@ let messages = $derived(
   conversation?.messages.filter(message => isChatMessage(message)).filter(message => !isSystemPrompt(message)) ?? [],
 );
 let model = $derived($catalog.models.find(model => model.id === conversation?.modelId));
-let completion_tokens = $derived(messages.findLast(message => message.usage)?.usage?.completion_tokens ?? 0);
-let prompt_tokens = $derived(messages.findLast(message => message.usage)?.usage?.prompt_tokens ?? 0);
+let completion_tokens = $derived(conversation?.usage?.completion_tokens ?? 0);
+let prompt_tokens = $derived(conversation?.usage?.prompt_tokens ?? 0);
 
 let inProgress = $state(false);
 let sendEnabled = $derived.by(() => {
@@ -228,7 +230,11 @@ function handleOnClick(): void {
                       <ul>
                         {#each messages as message (message.id)}
                           <li>
-                            <ChatMessage message={message} />
+                            {#if isAssistantToolCall(message)}
+                              <ToolCallMessage message={message} />
+                            {:else}
+                              <ChatMessage message={message} />
+                            {/if}
                           </li>
                         {/each}
                       </ul>

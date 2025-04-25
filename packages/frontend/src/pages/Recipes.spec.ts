@@ -34,6 +34,14 @@ vi.mock('/@/stores/catalog', async () => {
 vi.mock('../utils/client', async () => ({
   studioClient: {
     filterRecipes: vi.fn(),
+    getExtensionConfiguration: vi.fn().mockResolvedValue({}),
+  },
+  rpcBrowser: {
+    subscribe: (): unknown => {
+      return {
+        unsubscribe: (): void => {},
+      };
+    },
   },
 }));
 
@@ -103,6 +111,16 @@ beforeEach(() => {
     result: recipes,
     filters: {},
     choices: {},
+  });
+  vi.mocked(studioClient.getExtensionConfiguration).mockResolvedValue({
+    experimentalGPU: false,
+    apiPort: 0,
+    experimentalTuning: false,
+    modelsPath: '',
+    inferenceRuntime: 'llama-cpp',
+    modelUploadDisabled: false,
+    showGPUPromotion: false,
+    appearance: 'dark',
   });
 });
 

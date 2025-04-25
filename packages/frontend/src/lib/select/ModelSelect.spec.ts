@@ -22,6 +22,27 @@ import { render, fireEvent, within } from '@testing-library/svelte';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { InferenceType } from '@shared/models/IInference';
+import { writable, type Writable } from 'svelte/store';
+import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
+import { configuration } from '/@/stores/extensionConfiguration';
+
+vi.mock('../../stores/extensionConfiguration', () => ({
+  configuration: {
+    subscribe: vi.fn(),
+    unsubscribe: vi.fn(),
+  },
+}));
+
+const mockConfiguration: Writable<ExtensionConfiguration> = writable({
+  inferenceRuntime: 'llama-cpp',
+  experimentalGPU: false,
+  showGPUPromotion: false,
+  modelUploadDisabled: false,
+  modelsPath: '',
+  experimentalTuning: false,
+  apiPort: -1,
+  appearance: 'dark',
+});
 
 const fakeRecommendedModel: ModelInfo = {
   id: 'dummy-model-1',
@@ -45,9 +66,39 @@ const fakeRecommendedRemoteModel: ModelInfo = {
   name: 'Dummy Model 3',
 } as unknown as ModelInfo;
 
+const fakeRemoteModelWhisper: ModelInfo = {
+  id: 'dummy-model-4',
+  backend: InferenceType.WHISPER_CPP,
+  name: 'Dummy Model 4',
+} as unknown as ModelInfo;
+
+const fakeRemoteModelNone: ModelInfo = {
+  id: 'dummy-model-5',
+  backend: InferenceType.NONE,
+  name: 'Dummy Model 5',
+} as unknown as ModelInfo;
+
+vi.mock('/@/utils/client', async () => {
+  return {
+    studioClient: {
+      updateExtensionConfiguration: vi.fn(),
+      telemetryLogUsage: vi.fn(),
+    },
+  };
+});
+
+vi.mock('../../stores/extensionConfiguration', () => ({
+  configuration: {
+    subscribe: vi.fn(),
+    unsubscribe: vi.fn(),
+  },
+}));
+
 beforeEach(() => {
+  vi.resetAllMocks();
   // mock scrollIntoView
   window.HTMLElement.prototype.scrollIntoView = vi.fn();
+  vi.mocked(configuration).subscribe.mockImplementation(run => mockConfiguration.subscribe(run));
 });
 
 test('ModelSelect should list all models provided', async () => {
@@ -55,6 +106,26 @@ test('ModelSelect should list all models provided', async () => {
     value: undefined,
     disabled: undefined,
     models: [fakeRecommendedModel, fakeRemoteModel],
+    recommended: [],
+  });
+
+  // first get the select input
+  const input = within(container).getByLabelText('Select Model');
+  await fireEvent.pointerUp(input); // they are using the pointer up event instead of click.
+
+  // get all options available
+  const items = container.querySelectorAll('div[class~="list-item"]');
+  // ensure we have two options
+  expect(items.length).toBe(2);
+  expect(items[0]).toHaveTextContent(fakeRecommendedModel.name);
+  expect(items[1]).toHaveTextContent(fakeRemoteModel.name);
+});
+
+test('ModelSelect should list all models based on selected runtime', async () => {
+  const { container } = render(ModelSelect, {
+    value: undefined,
+    disabled: undefined,
+    models: [fakeRecommendedModel, fakeRemoteModelWhisper, fakeRemoteModel, fakeRemoteModelNone],
     recommended: [],
   });
 
@@ -109,4 +180,31 @@ test('models should be sorted', async () => {
   expect(items[0]).toHaveTextContent(fakeRecommendedModel.name);
   expect(items[1]).toHaveTextContent(fakeRecommendedRemoteModel.name);
   expect(items[2]).toHaveTextContent(fakeRemoteModel.name);
+});
+
+test('ModelSelect should filter out models based on selected default runtime', async () => {
+  const { container } = render(ModelSelect, {
+    value: undefined,
+    disabled: undefined,
+    models: [
+      fakeRecommendedModel,
+      fakeRemoteModel,
+      fakeRemoteModelNone,
+      fakeRemoteModelWhisper,
+      fakeRecommendedRemoteModel,
+    ],
+    recommended: [],
+  });
+
+  // first get the select input
+  const input = within(container).getByLabelText('Select Model');
+  await fireEvent.pointerUp(input); // they are using the pointer up event instead of click.
+
+  // get all options available
+  const items = container.querySelectorAll('div[class~="list-item"]');
+  // ensure we have two options
+  expect(items.length).toBe(3);
+  expect(items[0]).toHaveTextContent(fakeRecommendedModel.name);
+  expect(items[1]).toHaveTextContent(fakeRemoteModel.name);
+  expect(items[2]).toHaveTextContent(fakeRecommendedRemoteModel.name);
 });

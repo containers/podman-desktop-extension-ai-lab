@@ -50,8 +50,11 @@ function handleOnChange(nValue: (ModelInfo & { label: string; value: string }) |
 let defaultRuntime: string = 'llama-cpp';
 
 onMount(() => {
-  const inferenceRuntime = $configuration?.inferenceRuntime;
-  if (inferenceRuntime) defaultRuntime = inferenceRuntime;
+  return configuration.subscribe(values => {
+    if (values?.inferenceRuntime) {
+      defaultRuntime = values.inferenceRuntime;
+    }
+  });
 });
 </script>
 

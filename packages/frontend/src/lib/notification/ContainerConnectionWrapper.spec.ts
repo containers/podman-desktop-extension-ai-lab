@@ -68,6 +68,7 @@ beforeEach(() => {
     apiPort: 0,
     experimentalTuning: false,
     modelsPath: '',
+    inferenceRuntime: 'llama-cpp',
     modelUploadDisabled: false,
     showGPUPromotion: false,
     appearance: 'dark',

@@ -117,6 +117,7 @@ beforeEach(() => {
   vi.mocked(studioClient.getExtensionConfiguration).mockResolvedValue({
     experimentalGPU: false,
     apiPort: 0,
+    inferenceRuntime: 'llama-cpp',
     experimentalTuning: false,
     modelsPath: '',
     modelUploadDisabled: false,

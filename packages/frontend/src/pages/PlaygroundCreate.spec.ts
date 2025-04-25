@@ -59,6 +59,7 @@ vi.mock('../utils/client', async () => {
   return {
     studioClient: {
       requestCreatePlayground: vi.fn(),
+      getExtensionConfiguration: vi.fn().mockResolvedValue({}),
     },
     rpcBrowser: {
       subscribe: (): unknown => {

@@ -30,8 +30,8 @@ on:
         required: true
 
 jobs:
-  e2e-pr-check:
-    name: e2e tests smoke
+  e2e-check:
+    name: e2e tests
     runs-on: ubuntu-24.04
     env:
       SKIP_INSTALLATION: true
@@ -122,17 +122,17 @@ jobs:
           podman rm -f $CONTAINER_ID
           podman rmi -f localhost/local_ai_lab_image:latest
 
-      - name: Run E2E Smoke tests
+      - name: Run E2E tests
         working-directory: ./podman-desktop-extension-ai-lab
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
           EXTENSION_PREINSTALLED: true
-        run: pnpm test:e2e:smoke
+        run: pnpm test:e2e
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
         with:
-          annotate_only: false
+          annotate_only: true
           fail_on_failure: true
           include_passed: true
           detailed_summary: true
@@ -142,7 +142,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-pr-check
+          name: e2e-check
           path: |
             ./**/tests/**/output/
             !./**/*.gguf
@@ -154,12 +154,12 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-pr-check-videos
+          name: e2e-check-videos
           path: ./**/output/videos/*
 
       - name: Upload test traces
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-pr-check-traces
+          name: e2e-check-traces
           path: ./**/output/traces/*

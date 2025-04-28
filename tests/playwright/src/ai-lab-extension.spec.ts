@@ -39,7 +39,6 @@ import type { AILabPlaygroundDetailsPage } from './model/ai-lab-playground-detai
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
-const AI_LAB_TEST_GPU_SUPPORT = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === '1';
 const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
 const AI_LAB_CATALOG_EXTENSION_NAME: string = 'Podman AI Lab extension';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
@@ -144,7 +143,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test.afterAll(`Disable GPU support and return to AI Lab Dashboard`, async ({ runner, page, navigationBar }) => {
-      test.skip(AI_LAB_TEST_GPU_SUPPORT, 'GPU support enabled, skip disabling preference'); // leave GPU support enabled if variable is set
       test.setTimeout(30_000);
       const preferencesPage = await openAILabPreferences(navigationBar, page);
       await preferencesPage.content

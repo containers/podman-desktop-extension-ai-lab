@@ -16,23 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Locator, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { AILabNavigationBar } from './ai-lab-navigation-bar';
+import type { NavigationBar, Runner } from '@podman-desktop/tests-playwright';
+import { handleWebview } from 'src/utils/webviewHandler';
 
 export class AILabPage extends AILabBasePage {
   readonly navigationBar: AILabNavigationBar;
-  readonly gpuSupportBanner: Locator;
-  readonly enableGpuButton: Locator;
-  readonly dontDisplayButton: Locator;
+  static readonly AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
+  static readonly AI_LAB_CATALOG_EXTENSION_NAME: string = 'Podman AI Lab extension';
+  static readonly AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Welcome to Podman AI Lab');
     this.navigationBar = new AILabNavigationBar(this.page, this.webview);
-    this.gpuSupportBanner = this.webview.getByLabel('GPU promotion banner');
-    this.enableGpuButton = this.gpuSupportBanner.getByRole('button', { name: 'Enable GPU support' });
-    this.dontDisplayButton = this.gpuSupportBanner.getByRole('button', { name: `Don't display anymore` });
   }
 
   async waitForLoad(): Promise<void> {
@@ -40,9 +39,13 @@ export class AILabPage extends AILabBasePage {
     await this.navigationBar.waitForLoad();
   }
 
-  async enableGpuSupport(): Promise<void> {
-    await playExpect(this.gpuSupportBanner).toBeVisible();
-    await this.enableGpuButton.click();
-    await playExpect(this.gpuSupportBanner).not.toBeVisible();
+  static async openAILabDashboard(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<AILabPage> {
+    const extensions = await navigationBar.openExtensions();
+    const extensionCard = await extensions.getInstalledExtension('ai-lab', AILabPage.AI_LAB_CATALOG_EXTENSION_LABEL);
+    await extensionCard.openExtensionDetails(AILabPage.AI_LAB_CATALOG_EXTENSION_NAME);
+    const [locPage, webview] = await handleWebview(runner, page, navigationBar);
+    const aiLabPage = new AILabPage(locPage, webview);
+    await aiLabPage.navigationBar.waitForLoad();
+    return aiLabPage;
   }
 }

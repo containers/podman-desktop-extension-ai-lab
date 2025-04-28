@@ -16,17 +16,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { AILabNavigationBar } from './ai-lab-navigation-bar';
 
 export class AILabPage extends AILabBasePage {
   readonly navigationBar: AILabNavigationBar;
+  readonly gpuSupportBanner: Locator;
+  readonly enableGpuButton: Locator;
+  readonly dontDisplayButton: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Welcome to Podman AI Lab');
     this.navigationBar = new AILabNavigationBar(this.page, this.webview);
+    this.gpuSupportBanner = this.webview.getByLabel('GPU promotion banner');
+    this.enableGpuButton = this.gpuSupportBanner.getByRole('button', { name: 'Enable GPU support' });
+    this.dontDisplayButton = this.gpuSupportBanner.getByRole('button', { name: `Don't display anymore` });
   }
 
   async waitForLoad(): Promise<void> {
@@ -35,9 +41,8 @@ export class AILabPage extends AILabBasePage {
   }
 
   async enableGpuSupport(): Promise<void> {
-    await this.webview.getByRole('button', { name: 'Enable GPU support' }).click();
-    await this.webview.getByRole('button', { name: 'Enable GPU support' }).waitFor({
-      state: 'detached',
-    });
+    await playExpect(this.gpuSupportBanner).toBeVisible();
+    await this.enableGpuButton.click();
+    await playExpect(this.gpuSupportBanner).not.toBeVisible();
   }
 }

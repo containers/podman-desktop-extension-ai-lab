@@ -116,24 +116,44 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await playExpect(errorTab, `Error Tab was present with stackTrace: ${stackTrace}`).not.toBeVisible();
     });
 
-    test(`Verify AI Lab extension is installed`, async ({ runner, page, navigationBar }) => {
-      [page, webview] = await handleWebview(runner, page, navigationBar);
-      aiLabPage = new AILabPage(page, webview);
-      await aiLabPage.navigationBar.waitForLoad();
+    test(`Verify AI Lab extension is accessible`, async ({ runner, page, navigationBar }) => {
+      aiLabPage = await openAILabDashboard(runner, page, navigationBar);
+    });
+  });
+
+  test.describe.serial(`AI Lab extension GPU preferences`, () => {
+    test(`Verify GPU support banner is visible, preferences are disabled`, async ({ page, navigationBar }) => {
+      test.setTimeout(15_000);
+      await playExpect(aiLabPage.gpuSupportBanner).toBeVisible();
+      await playExpect(aiLabPage.enableGpuButton).toBeVisible();
+      await playExpect(aiLabPage.dontDisplayButton).toBeVisible();
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
+      await playExpect(
+        preferencesPage.content.getByRole('checkbox', { name: 'Experimental GPU support for inference servers' }),
+      ).not.toBeChecked();
     });
 
-    test(`Enable GPU support`, async ({ page, navigationBar }) => {
-      test.skip(!AI_LAB_TEST_GPU_SUPPORT, 'GPU support is not enabled');
-      test.setTimeout(120_000);
+    test(`Enable GPU support and verify preferences`, async ({ runner, page, navigationBar }) => {
+      test.setTimeout(30_000);
+      aiLabPage = await openAILabDashboard(runner, page, navigationBar);
       await aiLabPage.enableGpuSupport();
-      const settingsBar = await navigationBar.openSettings();
-      await settingsBar.expandPreferencesTab();
-      await playExpect(settingsBar.preferencesTab).toBeVisible();
-      await settingsBar.getPreferencesLinkLocator('Extension: AI Lab').click();
-      const preferencesPage = new PreferencesPage(page);
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
       await playExpect(
         preferencesPage.content.getByRole('checkbox', { name: 'Experimental GPU support for inference servers' }),
       ).toBeChecked();
+    });
+
+    test.afterAll(`Disable GPU support and return to AI Lab Dashboard`, async ({ runner, page, navigationBar }) => {
+      test.skip(AI_LAB_TEST_GPU_SUPPORT, 'GPU support enabled, skip disabling preference'); // leave GPU support enabled if variable is set
+      test.setTimeout(30_000);
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
+      await preferencesPage.content
+        .getByRole('checkbox', { name: 'Experimental GPU support for inference servers' })
+        .uncheck({ force: true });
+      await playExpect(
+        preferencesPage.content.getByRole('checkbox', { name: 'Experimental GPU support for inference servers' }),
+      ).not.toBeChecked();
+      aiLabPage = await openAILabDashboard(runner, page, navigationBar);
     });
   });
 
@@ -530,4 +550,24 @@ async function waitForCatalogModel(modelName: string): Promise<boolean> {
   await catalogPage.waitForLoad();
 
   return await catalogPage.isModelDownloaded(modelName);
+}
+
+async function openAILabDashboard(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<AILabPage> {
+  const extensions = await navigationBar.openExtensions();
+  const extensionCard = await extensions.getInstalledExtension('ai-lab', AI_LAB_CATALOG_EXTENSION_LABEL);
+  await extensionCard.openExtensionDetails(AI_LAB_CATALOG_EXTENSION_NAME);
+  [page, webview] = await handleWebview(runner, page, navigationBar);
+  const aiLabPage = new AILabPage(page, webview);
+  await aiLabPage.navigationBar.waitForLoad();
+  return aiLabPage;
+}
+
+async function openAILabPreferences(navigationBar: NavigationBar, page: Page): Promise<PreferencesPage> {
+  const dashboardPage = await navigationBar.openDashboard();
+  await playExpect(dashboardPage.mainPage).toBeVisible();
+  const settingsBar = await navigationBar.openSettings();
+  await settingsBar.expandPreferencesTab();
+  await playExpect(settingsBar.preferencesTab).toBeVisible();
+  await settingsBar.getPreferencesLinkLocator('Extension: AI Lab').click();
+  return new PreferencesPage(page);
 }

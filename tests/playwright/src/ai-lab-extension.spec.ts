@@ -120,7 +120,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  test.describe.serial('AI Lab API endpoint e2e test', () => {
+  test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
     let localServerPort: string;
     const model: string = 'facebook/detr-resnet-101';
     test.beforeAll('Open AI Lab navigation bar', async ({ page, runner, navigationBar }) => {

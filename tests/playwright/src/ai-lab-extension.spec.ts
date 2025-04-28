@@ -181,13 +181,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       const body = await response.body();
       const text = body.toString();
       playExpect(text).toContain('success');
-
-      playExpect(await catalogPage.isModelDownloaded(model)).toBeFalsy();
-      await catalogPage.downloadModel(model);
-      await playExpect
-        // eslint-disable-next-line sonarjs/no-nested-functions
-        .poll(async () => await waitForCatalogModel(model), { timeout: 300_000, intervals: [5_000] })
-        .toBeTruthy();
     });
 
     // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925

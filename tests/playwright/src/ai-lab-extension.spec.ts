@@ -122,12 +122,19 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
   test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
     let localServerPort: string;
+    let extensionVersion: string | undefined;
     const model: string = 'facebook/detr-resnet-101';
-    test.beforeAll('Open AI Lab navigation bar', async ({ page, runner, navigationBar }) => {
-      [page, webview] = await handleWebview(runner, page, navigationBar);
-      aiLabPage = new AILabPage(page, webview);
-      await aiLabPage.navigationBar.waitForLoad();
-    });
+    test.beforeAll(
+      'Get AI Lab extension version and open AI Lab navigation bar',
+      async ({ page, runner, navigationBar }) => {
+        const extensions = await navigationBar.openExtensions();
+        extensionVersion = await extensions.getInstalledExtensionVersion('ai-lab', AI_LAB_CATALOG_EXTENSION_LABEL);
+
+        [page, webview] = await handleWebview(runner, page, navigationBar);
+        aiLabPage = new AILabPage(page, webview);
+        await aiLabPage.navigationBar.waitForLoad();
+      },
+    );
 
     test('Retrieve local server dynamic port and verify server response', async () => {
       const localServerPage = await aiLabPage.navigationBar.openLocalServer();
@@ -140,9 +147,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       playExpect(text).toContain('OK');
     });
 
-    test('Fetch API Version', async ({ request, navigationBar }) => {
-      const extensions = await navigationBar.openExtensions();
-      const extensionVersion = await extensions.getInstalledExtensionVersion('ai-lab', AI_LAB_CATALOG_EXTENSION_LABEL);
+    test('Fetch API Version', async ({ request }) => {
       const response = await request.get(`http://127.0.0.1:${localServerPort}/api/version`, {
         headers: {
           Accept: 'application/json',

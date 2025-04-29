@@ -16,11 +16,44 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Page } from '@playwright/test';
-import { ExtensionDetailsPage } from '@podman-desktop/tests-playwright';
+import type { Locator, Page } from '@playwright/test';
+import type { NavigationBar } from '@podman-desktop/tests-playwright';
+import { expect as playExpect, ExtensionDetailsPage, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 
 export class AILabExtensionDetailsPage extends ExtensionDetailsPage {
+  readonly errorTab: Locator;
+
   constructor(page: Page) {
     super(page, 'Podman AI Lab extension');
+    this.errorTab = this.tabs.getByRole('button', { name: 'Error' });
+  }
+
+  async waitForLoad(): Promise<void> {
+    await playExpect(this.heading).toBeVisible();
+  }
+
+  async checkIsActive(statusTest: string): Promise<void> {
+    await playExpect(this.status).toHaveText(statusTest);
+  }
+
+  async checkForErrors(): Promise<void> {
+    // we would like to propagate the error's stack trace into test failure message
+    let stackTrace = '';
+    if ((await this.errorTab.count()) > 0) {
+      await this.activateTab('Error');
+      stackTrace = await this.errorStackTrace.innerText();
+    }
+    await playExpect(this.errorTab, `Error Tab was present with stackTrace: ${stackTrace}`).not.toBeVisible();
+  }
+
+  static async openAILabExtensionDetails(page: Page, navigationBar: NavigationBar): Promise<AILabExtensionDetailsPage> {
+    const extensions = await navigationBar.openExtensions();
+    const extensionCard = await extensions.getInstalledExtension(
+      podmanAILabExtension.extensionLabel,
+      podmanAILabExtension.extensionFullLabel,
+    );
+    await extensionCard.openExtensionDetails(podmanAILabExtension.extensionFullName);
+    const extensionDetailsPage = new AILabExtensionDetailsPage(page);
+    return extensionDetailsPage;
   }
 }

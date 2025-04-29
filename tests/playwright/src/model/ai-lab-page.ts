@@ -40,12 +40,10 @@ export class AILabPage extends AILabBasePage {
   }
 
   static async openAILabDashboard(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<AILabPage> {
-    const extensions = await navigationBar.openExtensions();
-    const extensionCard = await extensions.getInstalledExtension('ai-lab', AILabPage.AI_LAB_CATALOG_EXTENSION_LABEL);
-    await extensionCard.openExtensionDetails(AILabPage.AI_LAB_CATALOG_EXTENSION_NAME);
+    const dashboardPage = await navigationBar.openDashboard();
+    await playExpect(dashboardPage.mainPage).toBeVisible();
     const [locPage, webview] = await handleWebview(runner, page, navigationBar);
-    const aiLabPage = new AILabPage(locPage, webview);
-    await aiLabPage.navigationBar.waitForLoad();
-    return aiLabPage;
+    const aiLabNavigationBar = new AILabNavigationBar(locPage, webview);
+    return await aiLabNavigationBar.openDashboard();
   }
 }

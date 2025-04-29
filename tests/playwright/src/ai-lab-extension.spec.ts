@@ -150,10 +150,12 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       'Get AI Lab extension version and open AI Lab navigation bar',
       async ({ page, runner, navigationBar }) => {
         const extensions = await navigationBar.openExtensions();
-        extensionVersion = await extensions.getInstalledExtensionVersion('ai-lab', AILabPage.AI_LAB_CATALOG_EXTENSION_LABEL);
-
+        extensionVersion = await extensions.getInstalledExtensionVersion(
+          podmanAILabExtension.extensionLabel,
+          podmanAILabExtension.extensionFullLabel,
+        );
         aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
-        await aiLabPage.navigationBar.waitForLoad();
+        await aiLabPage.waitForLoad();
       },
     );
 

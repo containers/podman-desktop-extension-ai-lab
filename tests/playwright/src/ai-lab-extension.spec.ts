@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,6 +120,108 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
+  test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
+    let localServerPort: string;
+    let extensionVersion: string | undefined;
+    const model: string = 'facebook/detr-resnet-101';
+    test.beforeAll(
+      'Get AI Lab extension version and open AI Lab navigation bar',
+      async ({ page, runner, navigationBar }) => {
+        const extensions = await navigationBar.openExtensions();
+        extensionVersion = await extensions.getInstalledExtensionVersion('ai-lab', AI_LAB_CATALOG_EXTENSION_LABEL);
+
+        [page, webview] = await handleWebview(runner, page, navigationBar);
+        aiLabPage = new AILabPage(page, webview);
+        await aiLabPage.navigationBar.waitForLoad();
+      },
+    );
+
+    test('Retrieve local server dynamic port and verify server response', async () => {
+      const localServerPage = await aiLabPage.navigationBar.openLocalServer();
+      await localServerPage.waitForLoad();
+      localServerPort = await localServerPage.getLocalServerPort();
+
+      const response: Response = await fetch(`http://127.0.0.1:${localServerPort}/`, { cache: 'no-store' });
+      const blob: Blob = await response.blob();
+      const text: string = await blob.text();
+      playExpect(text).toContain('OK');
+    });
+
+    test('Fetch API Version', async ({ request }) => {
+      const response = await request.get(`http://127.0.0.1:${localServerPort}/api/version`, {
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+      playExpect(response.ok()).toBeTruthy();
+      const apiResponse = await response.json();
+
+      console.log(`API version: ${apiResponse.version}`);
+      playExpect(apiResponse.version).toBe(extensionVersion);
+    });
+
+    test(`Download ${model} via API`, async ({ request }) => {
+      test.setTimeout(300_000);
+      const catalogPage = await aiLabPage.navigationBar.openCatalog();
+      await catalogPage.waitForLoad();
+      console.log(`Downloading ${model}...`);
+      const response = await request.post(`http://127.0.0.1:${localServerPort}/api/pull`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/x-ndjson',
+        },
+        data: {
+          model: model,
+          insecure: false,
+          stream: true,
+        },
+        timeout: 300_000,
+      });
+
+      const body = await response.body();
+      const text = body.toString();
+      playExpect(text).toContain('success');
+    });
+
+    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
+    test.fail(`Verify ${model} is available in AI Lab Catalog`, async () => {
+      const catalogPage = await aiLabPage.navigationBar.openCatalog();
+      await catalogPage.waitForLoad();
+      await playExpect
+        // eslint-disable-next-line sonarjs/no-nested-functions
+        .poll(async () => await waitForCatalogModel(model))
+        .toBeTruthy();
+    });
+
+    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
+    test.fail(`Verify ${model} is listed in models fetched from API`, async ({ request }) => {
+      const response = await request.get(`http://127.0.0.1:${localServerPort}/api/tags`, {
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+      playExpect(response.ok()).toBeTruthy();
+      const parsedJson = await response.json();
+      console.log(parsedJson);
+      playExpect(parsedJson.models.length).not.toBe(0);
+      playExpect(parsedJson.models).toContain(model);
+    });
+
+    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
+    test.fail(`Delete ${model} model`, async () => {
+      test.skip(isWindows, 'Model deletion is currently very buggy in azure cicd');
+      test.setTimeout(310_000);
+      const catalogPage = await aiLabPage.navigationBar.openCatalog();
+      await catalogPage.waitForLoad();
+      playExpect(await catalogPage.isModelDownloaded(model)).toBeTruthy();
+      await catalogPage.deleteModel(model);
+      await playExpect
+        // eslint-disable-next-line sonarjs/no-nested-functions
+        .poll(async () => await waitForCatalogModel(model))
+        .toBeFalsy();
+    });
+  });
+
   ['ggerganov/whisper.cpp', 'facebook/detr-resnet-101'].forEach(modelName => {
     test.describe.serial(`Model download and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
@@ -135,8 +237,9 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
       test(`Download ${modelName} model`, async () => {
         test.setTimeout(310_000);
-        playExpect(await catalogPage.isModelDownloaded(modelName)).toBeFalsy();
-        await catalogPage.downloadModel(modelName);
+        if (!(await catalogPage.isModelDownloaded(modelName))) {
+          await catalogPage.downloadModel(modelName);
+        }
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
           .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })

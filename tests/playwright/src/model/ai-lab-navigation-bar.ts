@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import { AiRunningAppsPage } from './ai-lab-running-apps-page';
 import { AiModelServicePage } from './ai-lab-model-service-page';
 import { AILabCatalogPage } from './ai-lab-catalog-page';
 import { AILabPlaygroundsPage } from './ai-lab-playgrounds-page';
+import { AILabLocalServerPage } from './ai-lab-local-server-page';
 
 export class AILabNavigationBar extends AILabBasePage {
   readonly navigationBar: Locator;
@@ -33,6 +34,7 @@ export class AILabNavigationBar extends AILabBasePage {
   readonly servicesButton: Locator;
   readonly playgroundsButton: Locator;
   readonly tuneButton: Locator;
+  readonly localServerButton: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, undefined);
@@ -43,6 +45,7 @@ export class AILabNavigationBar extends AILabBasePage {
     this.servicesButton = this.navigationBar.getByRole('link', { name: 'Services' });
     this.playgroundsButton = this.navigationBar.getByRole('link', { name: 'Playgrounds' });
     this.tuneButton = this.navigationBar.getByRole('link', { name: 'Tune with InstructLab' });
+    this.localServerButton = this.navigationBar.getByRole('link', { name: 'Local Server' });
   }
 
   async waitForLoad(): Promise<void> {
@@ -77,5 +80,11 @@ export class AILabNavigationBar extends AILabBasePage {
     await playExpect(this.playgroundsButton).toBeEnabled();
     await this.playgroundsButton.click();
     return new AILabPlaygroundsPage(this.page, this.webview);
+  }
+
+  async openLocalServer(): Promise<AILabLocalServerPage> {
+    await playExpect(this.localServerButton).toBeEnabled();
+    await this.localServerButton.click();
+    return new AILabLocalServerPage(this.page, this.webview);
   }
 }

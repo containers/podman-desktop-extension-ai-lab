@@ -31,9 +31,11 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
   readonly temperatureSliderLocator: Locator;
   readonly maxTokensSliderLocator: Locator;
   readonly topPSliderLocator: Locator;
-  readonly promptTextAreaLoctor: Locator;
+  readonly systemPromptTextAreaLoctor: Locator;
   readonly clearSystemPromptButtonLocator: Locator;
   readonly editSystemPromptButtonLocator: Locator;
+  readonly promptTextAreaLocator: Locator;
+  readonly sendPromptButton: Locator;
 
   constructor(page: Page, webview: Page, playgroundName: string) {
     super(page, webview, playgroundName);
@@ -46,11 +48,13 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
     this.temperatureSliderLocator = this.parametersSectionLocator.getByLabel('temperature slider', { exact: true });
     this.maxTokensSliderLocator = this.parametersSectionLocator.getByLabel('max tokens slider', { exact: true });
     this.topPSliderLocator = this.parametersSectionLocator.getByLabel('top-p slider', { exact: true });
-    this.promptTextAreaLoctor = this.conversationSectionLocator.getByLabel('system-prompt-textarea');
+    this.systemPromptTextAreaLoctor = this.conversationSectionLocator.getByLabel('system-prompt-textarea');
     this.clearSystemPromptButtonLocator = this.conversationSectionLocator.getByTitle('Clear', { exact: true });
     this.editSystemPromptButtonLocator = this.conversationSectionLocator.getByTitle('Edit system prompt', {
       exact: true,
     });
+    this.promptTextAreaLocator = this.webview.getByLabel('prompt', { exact: true });
+    this.sendPromptButton = this.webview.getByRole('button', { name: 'Send prompt' });
   }
 
   async waitForLoad(): Promise<void> {
@@ -60,10 +64,10 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
   async definePrompt(prompt: string): Promise<void> {
     await playExpect(this.editSystemPromptButtonLocator).toBeVisible();
     await this.editSystemPromptButtonLocator.click();
-    await playExpect(this.promptTextAreaLoctor).toBeVisible();
-    await this.promptTextAreaLoctor.fill(prompt);
+    await playExpect(this.systemPromptTextAreaLoctor).toBeVisible();
+    await this.systemPromptTextAreaLoctor.fill(prompt);
     await this.editSystemPromptButtonLocator.click();
-    await playExpect(this.promptTextAreaLoctor).not.toBeVisible();
+    await playExpect(this.systemPromptTextAreaLoctor).not.toBeVisible();
   }
 
   async deletePlayground(): Promise<AILabPlaygroundsPage> {
@@ -71,5 +75,19 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
     await this.deletePlaygroundButton.click();
     await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
     return new AILabPlaygroundsPage(this.page, this.webview);
+  }
+
+  async sendPromt(prompt: string): Promise<void> {
+    await this.promptTextAreaLocator.fill(prompt);
+    await playExpect(this.promptTextAreaLocator).toHaveValue(prompt);
+    await playExpect(this.sendPromptButton).toBeEnabled({ timeout: 30_000 });
+    await this.sendPromptButton.click();
+  }
+
+  async verifyMessage(): Promise<void> {
+    await this.sendPromptButton.waitFor({ state: 'visible', timeout: 100_000 });
+    const chatMessage = this.conversationSectionLocator.getByLabel('assistant message');
+    console.log(chatMessage);
+    await playExpect(chatMessage).toBeVisible();
   }
 }

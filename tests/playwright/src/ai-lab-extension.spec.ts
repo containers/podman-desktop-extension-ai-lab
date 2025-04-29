@@ -350,7 +350,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['instructlab/granite-7b-lab-GGUF'].forEach(modelName => {
+  ['lmstudio-community/granite-3.0-8b-instruct-GGUF'].forEach(modelName => {
     test.describe.serial(`AI Lab playground creation and deletion`, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
@@ -368,13 +368,13 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Download ${modelName} model if not available`, async () => {
-        test.setTimeout(310_000);
+        test.setTimeout(990_000);
         if (!(await catalogPage.isModelDownloaded(modelName))) {
           await catalogPage.downloadModel(modelName);
         }
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 990_000, intervals: [5_000] })
           .toBeTruthy();
       });
 
@@ -403,8 +403,14 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Define prompt for ${modelName}`, async () => {
-        const prompt = 'Hello, how are you?';
+        const prompt = 'Always respond with: "Playground test. Hello! I am Chat Bot"';
         await playgroundDetailsPage.definePrompt(prompt);
+      });
+
+      test('Send prompt to inference server and verify response', async () => {
+        test.setTimeout(100_000);
+        await playgroundDetailsPage.sendPromt('Hello');
+        await playgroundDetailsPage.verifyMessage();
       });
 
       test(`Delete AI Lab playground for ${modelName}`, async () => {

@@ -61,7 +61,7 @@ function elapsedTime(msg: AssistantChat): string {
     {/each}
   </div>
   {#if isAssistantChat(message)}
-    <div class="text-[var(--pd-content-header)] text-right" aria-label="elapssed">
+    <div class="text-[var(--pd-content-header)] text-right" aria-label="elapsed">
       {elapsedTime(message)} s
     </div>
   {/if}

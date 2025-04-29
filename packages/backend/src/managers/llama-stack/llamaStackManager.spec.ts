@@ -43,6 +43,9 @@ vi.mock('@podman-desktop/api', () => {
       createContainer: vi.fn(),
       onEvent: vi.fn(),
     },
+    env: {
+      isWindows: false,
+    },
   };
 });
 

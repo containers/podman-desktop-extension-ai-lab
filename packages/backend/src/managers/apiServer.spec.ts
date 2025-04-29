@@ -227,7 +227,7 @@ test('/api-docs/9000 returns swagger UI', async () => {
 
 test('verify listening on localhost', async () => {
   expect(server.getListener()).toBeDefined();
-  expect((server.getListener()?.address() as AddressInfo).address).toEqual('127.0.0.1');
+  expect((server.getListener()?.address() as AddressInfo).address).toEqual('0.0.0.0');
 });
 
 test('/api/pull returns an error if no body is passed', async () => {

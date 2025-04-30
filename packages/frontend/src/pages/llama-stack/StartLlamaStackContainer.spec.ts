@@ -17,10 +17,10 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { beforeEach, expect, test, vi } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { assert, beforeEach, expect, test, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import StartLlamaStackContainer from '/@/pages/llama-stack/StartLlamaStackContainer.svelte';
-import { llamaStackClient } from '/@/utils/client';
+import { llamaStackClient, studioClient } from '/@/utils/client';
 import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import { VMType } from '@shared/models/IPodman';
 import userEvent from '@testing-library/user-event';
@@ -120,4 +120,17 @@ test('port should be displayed', async () => {
   await vi.waitFor(() => {
     screen.getByText(/http:\/\/localhost:10000/);
   });
+});
+
+test('link to Swagger UI should be displayed', async () => {
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({ containerId: 'containerId', port: 10000 });
+  render(StartLlamaStackContainer);
+
+  let link: HTMLElement | undefined;
+  await vi.waitFor(() => {
+    link = screen.getByText('swagger documentation');
+  });
+  assert(link, 'link should be defined');
+  await fireEvent.click(link);
+  expect(studioClient.openURL).toHaveBeenCalledWith('http://localhost:10000/docs');
 });

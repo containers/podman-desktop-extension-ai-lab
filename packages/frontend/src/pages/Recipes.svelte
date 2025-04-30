@@ -103,12 +103,12 @@ function openContribution(): void {
   studioClient.openURL('https://github.com/containers/ai-lab-recipes/blob/main/CONTRIBUTING.md').catch(console.error);
 }
 
-let defaultRuntime: string = $state('llama-cpp');
+let defaultRuntime: string | undefined = $state();
 
 onMount(() => {
   const inferenceRuntime = $configuration?.inferenceRuntime;
   if (inferenceRuntime) defaultRuntime = inferenceRuntime;
-  onFilterChange('tools', defaultRuntime);
+  onFilterChange('tools', defaultRuntime ?? 'all');
 });
 </script>
 

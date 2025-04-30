@@ -47,7 +47,7 @@ function handleOnChange(nValue: (ModelInfo & { label: string; value: string }) |
   value = nValue;
 }
 
-let defaultRuntime: string = 'llama-cpp';
+let defaultRuntime: string | undefined = $state();
 
 onMount(() => {
   return configuration.subscribe(values => {
@@ -56,6 +56,13 @@ onMount(() => {
     }
   });
 });
+
+function filterModel(model: ModelInfo): boolean {
+  // If the defaultRuntime is undefined we should not filter any model
+  if (!defaultRuntime) return true;
+
+  return model.backend === defaultRuntime;
+}
 </script>
 
 <Select
@@ -66,7 +73,7 @@ onMount(() => {
   onchange={handleOnChange}
   placeholder="Select model to use"
   items={models
-    .filter(model => model.backend === defaultRuntime)
+    .filter(filterModel)
     .toSorted((a, b) => getModelSortingScore(a) - getModelSortingScore(b))
     .map(model => ({ ...model, value: model.id, label: model.name }))}>
   <div slot="item" let:item>

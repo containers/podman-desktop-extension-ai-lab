@@ -53,11 +53,10 @@
         },
         "ai-lab.inferenceRuntime": {
           "type": "string",
-          "default": "llama-cpp",
           "enum": [
             "llama-cpp",
-            "whisper-cpp",
-            "none"
+            "openvino",
+            "vllm"
           ],
           "description": "Choose the default inferencing runtime for AI Lab"
         },

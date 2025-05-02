@@ -51,8 +51,7 @@ describe('McpServerManager', () => {
     });
     test('with empty file, returns empty array', async () => {
       const mcpServerManager = new McpServerManager(appUserDirectory);
-      const mcpSettingsFile = path.join(appUserDirectory, 'mcp-settings.json');
-      await fs.promises.writeFile(mcpSettingsFile, '{}');
+      vi.spyOn(fs.promises, 'readFile').mockImplementation(async () => '{}');
       const mcpServers = await mcpServerManager.load();
       expect(mcpServers).toEqual([]);
       expect(consoleErrors).toBe('');
@@ -60,8 +59,7 @@ describe('McpServerManager', () => {
     });
     test('with invalid JSON, returns empty array', async () => {
       const mcpServerManager = new McpServerManager(appUserDirectory);
-      const mcpSettingsFile = path.join(appUserDirectory, 'mcp-settings.json');
-      await fs.promises.writeFile(mcpSettingsFile, '{invalid json}');
+      vi.spyOn(fs.promises, 'readFile').mockImplementation(async () => '{invalid json}');
       const mcpServers = await mcpServerManager.load();
       expect(mcpServers).toEqual([]);
       expect(consoleErrors).toContain('McpServerManager: Failed to load MCP settings');
@@ -70,7 +68,6 @@ describe('McpServerManager', () => {
     describe('with valid JSON', () => {
       let mcpServers: McpServer[];
       beforeEach(async () => {
-        const mcpSettingsFile = path.join(appUserDirectory, 'mcp-settings.json');
         const mcpSettings = {
           servers: {
             'stdio-ok': {
@@ -94,7 +91,7 @@ describe('McpServerManager', () => {
             },
           },
         };
-        fs.writeFileSync(mcpSettingsFile, JSON.stringify(mcpSettings));
+        vi.spyOn(fs.promises, 'readFile').mockImplementation(async () => JSON.stringify(mcpSettings));
         mcpServers = await new McpServerManager(appUserDirectory).load();
       });
       test('parses stdio server', async () => {

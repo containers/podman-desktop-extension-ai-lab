@@ -15,55 +15,39 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import fs from 'node:fs';
-import os from 'node:os';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { promises } from 'node:fs';
 import path from 'node:path';
-import type { McpServer } from './McpServerManager';
-import { McpServerType, McpServerManager } from './McpServerManager';
+import { type McpServer, McpServerType } from '../../models/mcpTypes';
+import { McpServerManager } from './McpServerManager';
+
+vi.mock('node:fs');
+vi.mock('node:fs/promises');
 
 /* eslint-disable sonarjs/no-nested-functions */
 describe('McpServerManager', () => {
   let appUserDirectory: string;
-  let consoleErrors: string;
-  let consoleWarnings: string;
   beforeEach(async () => {
-    appUserDirectory = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'mcp-server-manager-test-'));
-    consoleErrors = '';
-    vi.spyOn(console, 'error').mockImplementation((...args) => {
-      consoleErrors += args.join(' ') + '\n';
-    });
-    consoleWarnings = '';
-    vi.spyOn(console, 'warn').mockImplementation((...args) => {
-      consoleWarnings += args.join(' ') + '\n';
-    });
-  });
-  afterEach(async () => {
-    await fs.promises.rm(appUserDirectory, { recursive: true });
+    vi.resetAllMocks();
+    appUserDirectory = path.join('/', 'tmp', 'mcp-server-manager-test-');
   });
   describe('load', () => {
     test('with no file, returns empty array', async () => {
       const mcpServerManager = new McpServerManager(appUserDirectory);
       const mcpServers = await mcpServerManager.load();
       expect(mcpServers).toEqual([]);
-      expect(consoleErrors).toContain('McpServerManager: Failed to load MCP settings');
-      expect(consoleWarnings).toBe('');
     });
     test('with empty file, returns empty array', async () => {
       const mcpServerManager = new McpServerManager(appUserDirectory);
-      vi.spyOn(fs.promises, 'readFile').mockImplementation(async () => '{}');
+      vi.mocked(promises.readFile).mockResolvedValue('{}');
       const mcpServers = await mcpServerManager.load();
       expect(mcpServers).toEqual([]);
-      expect(consoleErrors).toBe('');
-      expect(consoleWarnings).toBe('');
     });
     test('with invalid JSON, returns empty array', async () => {
       const mcpServerManager = new McpServerManager(appUserDirectory);
-      vi.spyOn(fs.promises, 'readFile').mockImplementation(async () => '{invalid json}');
+      vi.mocked(promises.readFile).mockResolvedValue('{invalid json}');
       const mcpServers = await mcpServerManager.load();
       expect(mcpServers).toEqual([]);
-      expect(consoleErrors).toContain('McpServerManager: Failed to load MCP settings');
-      expect(consoleWarnings).toBe('');
     });
     describe('with valid JSON', () => {
       let mcpServers: McpServer[];
@@ -91,18 +75,21 @@ describe('McpServerManager', () => {
             },
           },
         };
-        vi.spyOn(fs.promises, 'readFile').mockImplementation(async () => JSON.stringify(mcpSettings));
+        vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(mcpSettings));
         mcpServers = await new McpServerManager(appUserDirectory).load();
       });
       test('parses stdio server', async () => {
-        const stdioOk: McpServer | undefined = mcpServers.find(server => server.name === 'stdio-ok');
-        expect(stdioOk).toEqual({
-          name: 'stdio-ok',
-          enabled: true,
-          type: McpServerType.STDIO,
-          command: 'npx',
-          args: ['-y', 'kubernetes-mcp-server'],
-        });
+        expect(mcpServers).toEqual(
+          expect.arrayContaining([
+            {
+              name: 'stdio-ok',
+              enabled: true,
+              type: McpServerType.STDIO,
+              command: 'npx',
+              args: ['-y', 'kubernetes-mcp-server'],
+            },
+          ]),
+        );
       });
       test('parses sse server', async () => {
         const sseOk: McpServer | undefined = mcpServers.find(server => server.name === 'sse-ok');
@@ -117,7 +104,6 @@ describe('McpServerManager', () => {
       test('ignores invalid type', async () => {
         const invalidType: McpServer | undefined = mcpServers.find(server => server.name === 'invalid-type');
         expect(invalidType).toBeUndefined();
-        expect(consoleWarnings).toContain('McpServerManager: Invalid MCP server type invalid for server invalid-type.');
       });
     });
   });

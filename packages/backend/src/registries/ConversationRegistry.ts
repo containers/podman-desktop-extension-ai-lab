@@ -125,9 +125,6 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
    */
   setUsage(conversationId: string, usage: ModelUsage): void {
     const conversation: Conversation = this.get(conversationId);
-    if (!usage) {
-      return;
-    }
     this.#conversations.set(conversationId, {
       ...conversation,
       usage,

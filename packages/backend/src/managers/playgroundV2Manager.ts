@@ -30,9 +30,10 @@ import { getHash } from '../utils/sha';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AiStreamProcessor } from './playground/aiSdk';
-import { McpServerManager, toMcpClients } from './playground/McpServerManager';
+import { McpServerManager } from './playground/McpServerManager';
 import type { ToolSet } from 'ai';
 import { simulateStreamingMiddleware, wrapLanguageModel } from 'ai';
+import { toMcpClients } from '../utils/mcpUtils';
 
 export class PlaygroundV2Manager implements Disposable {
   readonly #conversationRegistry: ConversationRegistry;

@@ -16,71 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { Disposable } from '@podman-desktop/api';
-import fs from 'node:fs';
+import { promises } from 'node:fs';
 import path from 'node:path';
-import type { ToolSet } from 'ai';
-import { experimental_createMCPClient as createMCPClient } from 'ai';
-import { Experimental_StdioMCPTransport as StdioClientTransport } from 'ai/mcp-stdio';
+import { type McpSettings, type McpServer, McpServerType } from '../../models/mcpTypes';
 
 // TODO: Agree on the name of the file and its location
 const MCP_SETTINGS = 'mcp-settings.json';
-
-export interface McpSettings {
-  servers: Record<string, McpServer>;
-}
-
-export enum McpServerType {
-  STDIO = 'stdio',
-  SSE = 'sse',
-}
-
-export interface McpServer {
-  name: string;
-  enabled: boolean;
-  type: McpServerType;
-  command: string;
-  args: string[];
-  url: string;
-  headers: Record<string, string>;
-}
-
-export interface McpClient {
-  init(): Promise<this>;
-  close(): Promise<void>;
-  tools(): Promise<ToolSet>;
-}
-
-export async function toMcpClients(...mcpServers: McpServer[]): Promise<McpClient[]> {
-  const clients: McpClient[] = [];
-  for (const server of mcpServers) {
-    switch (server.type) {
-      case McpServerType.SSE:
-        clients.push(
-          await createMCPClient({
-            name: server.name,
-            transport: {
-              type: 'sse',
-              url: server.url,
-              headers: server.headers,
-            },
-          }),
-        );
-        break;
-      case McpServerType.STDIO:
-        clients.push(
-          await createMCPClient({
-            name: server.name,
-            transport: new StdioClientTransport({
-              command: server.command,
-              args: server.args,
-            }),
-          }),
-        );
-        break;
-    }
-  }
-  return clients;
-}
 
 // TODO: Consider using JsonWatcher in case the file is going to be updated externally
 // Depending on the use case, we might want to watch for changes in the settings file.
@@ -99,7 +40,7 @@ export class McpServerManager implements Disposable {
   async load(): Promise<McpServer[]> {
     const mcpServers: McpServer[] = [];
     try {
-      const mcpSettingsContent = await fs.promises.readFile(this.settingsFile, 'utf8');
+      const mcpSettingsContent = await promises.readFile(this.settingsFile, 'utf8');
       const mcpSettings = JSON.parse(mcpSettingsContent) as McpSettings;
       if (!mcpSettings?.servers) {
         return mcpServers;

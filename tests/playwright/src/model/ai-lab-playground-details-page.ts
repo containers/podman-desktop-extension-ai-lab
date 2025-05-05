@@ -31,7 +31,7 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
   readonly temperatureSliderLocator: Locator;
   readonly maxTokensSliderLocator: Locator;
   readonly topPSliderLocator: Locator;
-  readonly systemPromptTextAreaLoctor: Locator;
+  readonly systemPromptTextAreaLocator: Locator;
   readonly clearSystemPromptButtonLocator: Locator;
   readonly editSystemPromptButtonLocator: Locator;
   readonly promptTextAreaLocator: Locator;
@@ -48,7 +48,7 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
     this.temperatureSliderLocator = this.parametersSectionLocator.getByLabel('temperature slider', { exact: true });
     this.maxTokensSliderLocator = this.parametersSectionLocator.getByLabel('max tokens slider', { exact: true });
     this.topPSliderLocator = this.parametersSectionLocator.getByLabel('top-p slider', { exact: true });
-    this.systemPromptTextAreaLoctor = this.conversationSectionLocator.getByLabel('system-prompt-textarea');
+    this.systemPromptTextAreaLocator = this.conversationSectionLocator.getByLabel('system-prompt-textarea');
     this.clearSystemPromptButtonLocator = this.conversationSectionLocator.getByTitle('Clear', { exact: true });
     this.editSystemPromptButtonLocator = this.conversationSectionLocator.getByTitle('Edit system prompt', {
       exact: true,
@@ -64,10 +64,10 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
   async defineSystemPrompt(systemPrompt: string): Promise<void> {
     await playExpect(this.editSystemPromptButtonLocator).toBeVisible();
     await this.editSystemPromptButtonLocator.click();
-    await playExpect(this.systemPromptTextAreaLoctor).toBeVisible();
-    await this.systemPromptTextAreaLoctor.fill(systemPrompt);
+    await playExpect(this.systemPromptTextAreaLocator).toBeVisible();
+    await this.systemPromptTextAreaLocator.fill(systemPrompt);
     await this.editSystemPromptButtonLocator.click();
-    await playExpect(this.systemPromptTextAreaLoctor).not.toBeVisible();
+    await playExpect(this.systemPromptTextAreaLocator).not.toBeVisible();
   }
 
   async deletePlayground(): Promise<AILabPlaygroundsPage> {

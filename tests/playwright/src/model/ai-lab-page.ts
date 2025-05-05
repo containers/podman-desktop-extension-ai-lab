@@ -20,8 +20,6 @@ import type { Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { AILabNavigationBar } from './ai-lab-navigation-bar';
-import type { NavigationBar, Runner } from '@podman-desktop/tests-playwright';
-import { handleWebview } from 'src/utils/webviewHandler';
 
 export class AILabPage extends AILabBasePage {
   readonly navigationBar: AILabNavigationBar;
@@ -37,13 +35,5 @@ export class AILabPage extends AILabBasePage {
   async waitForLoad(): Promise<void> {
     await playExpect(this.heading).toBeVisible();
     await this.navigationBar.waitForLoad();
-  }
-
-  static async openAILabDashboard(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<AILabPage> {
-    const dashboardPage = await navigationBar.openDashboard();
-    await playExpect(dashboardPage.mainPage).toBeVisible();
-    const [locPage, webview] = await handleWebview(runner, page, navigationBar);
-    const aiLabNavigationBar = new AILabNavigationBar(locPage, webview);
-    return await aiLabNavigationBar.openDashboard();
   }
 }

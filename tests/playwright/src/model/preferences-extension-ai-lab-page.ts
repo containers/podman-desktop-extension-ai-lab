@@ -15,51 +15,37 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+
 import type { Locator, Page } from '@playwright/test';
-import type { NavigationBar } from '@podman-desktop/tests-playwright';
 import { expect as playExpect, PreferencesPage } from '@podman-desktop/tests-playwright';
 
 export class ExtensionAILabPreferencesPage extends PreferencesPage {
   public static readonly tabName = 'Extension: AI Lab';
   readonly heading: Locator;
+  readonly experimentalGPUCheckbox: Locator;
 
   constructor(page: Page) {
     super(page);
     this.heading = page.getByRole('heading', { name: ExtensionAILabPreferencesPage.tabName });
+    this.experimentalGPUCheckbox = this.content.getByRole('checkbox', {
+      name: 'Experimental GPU support for inference servers',
+    });
   }
 
   async waitForLoad(): Promise<void> {
     await playExpect(this.heading).toBeVisible();
   }
 
-  public static async openAILabPreferences(
-    navigationBar: NavigationBar,
-    page: Page,
-  ): Promise<ExtensionAILabPreferencesPage> {
-    const dashboardPage = await navigationBar.openDashboard();
-    await playExpect(dashboardPage.mainPage).toBeVisible();
-    const settingsBar = await navigationBar.openSettings();
-    await playExpect(settingsBar.preferencesTab).toBeVisible();
-    await settingsBar.expandPreferencesTab();
-    await playExpect(settingsBar.preferencesTab).toBeVisible();
-    await settingsBar.getPreferencesLinkLocator('Extension: AI Lab').click();
-    const aiLabPreferencesPage = new ExtensionAILabPreferencesPage(page);
-    return aiLabPreferencesPage;
-  }
-
   public async disableGPUPreference(): Promise<void> {
-    await this.content
-      .getByRole('checkbox', { name: 'Experimental GPU support for inference servers' })
-      .uncheck({ force: true });
+    await this.experimentalGPUCheckbox.uncheck({ force: true });
+    await playExpect(this.experimentalGPUCheckbox).not.toBeChecked();
   }
 
   public async enableGPUPreference(): Promise<void> {
-    await this.content
-      .getByRole('checkbox', { name: 'Experimental GPU support for inference servers' })
-      .check({ force: true });
+    await this.experimentalGPUCheckbox.check({ force: true });
+    await playExpect(this.experimentalGPUCheckbox).toBeChecked();
   }
   public async isGPUPreferenceEnabled(): Promise<boolean> {
-    const checkbox = this.content.getByRole('checkbox', { name: 'Experimental GPU support for inference servers' });
-    return await checkbox.isChecked();
+    return await this.experimentalGPUCheckbox.isChecked();
   }
 }

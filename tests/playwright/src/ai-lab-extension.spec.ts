@@ -26,14 +26,13 @@ import {
   isLinux,
   podmanAILabExtension,
 } from '@podman-desktop/tests-playwright';
-import { AILabPage } from './model/ai-lab-page';
+import type { AILabPage } from './model/ai-lab-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
-import { AILabExtensionDetailsPage } from './model/podman-extension-ai-lab-details-page';
 import type { AILabCatalogPage } from './model/ai-lab-catalog-page';
 import type { AILabServiceDetailsPage } from './model/ai-lab-service-details-page';
 import type { AILabPlaygroundsPage } from './model/ai-lab-playgrounds-page';
 import type { AILabPlaygroundDetailsPage } from './model/ai-lab-playground-details-page';
-import { ExtensionAILabPreferencesPage } from './model/preferences-extension-ai-lab-page';
+import { openAILabDashboard, openAILabExtensionDetails, openAILabPreferences } from './utils/aiLabHandler';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -97,14 +96,14 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test(`Extension's details show correct status, no error`, async ({ page, navigationBar }) => {
-      const extensionDetailsPage = await AILabExtensionDetailsPage.openAILabExtensionDetails(page, navigationBar);
+      const extensionDetailsPage = await openAILabExtensionDetails(page, navigationBar);
       await extensionDetailsPage.waitForLoad();
       await extensionDetailsPage.checkIsActive(AI_LAB_CATALOG_STATUS_ACTIVE);
       await extensionDetailsPage.checkForErrors();
     });
 
     test(`Verify AI Lab extension is accessible`, async ({ runner, page, navigationBar }) => {
-      aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
+      aiLabPage = await openAILabDashboard(runner, page, navigationBar);
       await aiLabPage.waitForLoad();
     });
   });
@@ -115,28 +114,28 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await playExpect(aiLabPage.gpuSupportBanner).toBeVisible();
       await playExpect(aiLabPage.enableGpuButton).toBeVisible();
       await playExpect(aiLabPage.dontDisplayButton).toBeVisible();
-      const preferencesPage = await ExtensionAILabPreferencesPage.openAILabPreferences(navigationBar, page);
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
       await preferencesPage.waitForLoad();
       playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
     });
 
     test(`Enable GPU support and verify preferences`, async ({ runner, page, navigationBar }) => {
       test.setTimeout(30_000);
-      aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
+      aiLabPage = await openAILabDashboard(runner, page, navigationBar);
       await aiLabPage.waitForLoad();
       await aiLabPage.enableGpuSupport();
-      const preferencesPage = await ExtensionAILabPreferencesPage.openAILabPreferences(navigationBar, page);
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
       await preferencesPage.waitForLoad();
       playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeTruthy();
     });
 
     test.afterAll(`Disable GPU support and return to AI Lab Dashboard`, async ({ runner, page, navigationBar }) => {
       test.setTimeout(30_000);
-      const preferencesPage = await ExtensionAILabPreferencesPage.openAILabPreferences(navigationBar, page);
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
       await preferencesPage.waitForLoad();
       await preferencesPage.disableGPUPreference();
       playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
-      aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
+      aiLabPage = await openAILabDashboard(runner, page, navigationBar);
       await aiLabPage.waitForLoad();
     });
   });
@@ -153,7 +152,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           podmanAILabExtension.extensionLabel,
           podmanAILabExtension.extensionFullLabel,
         );
-        aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
+        aiLabPage = await openAILabDashboard(runner, page, navigationBar);
         await aiLabPage.waitForLoad();
       },
     );
@@ -249,8 +248,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       let catalogPage: AILabCatalogPage;
 
       test.beforeEach(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
-        await aiLabPage.waitForLoad();
+        aiLabPage = await openAILabDashboard(runner, page, navigationBar);
+
         catalogPage = await aiLabPage.navigationBar.openCatalog();
         await catalogPage.waitForLoad();
       });
@@ -290,8 +289,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       );
 
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
-        await aiLabPage.waitForLoad();
+        aiLabPage = await openAILabDashboard(runner, page, navigationBar);
+
         catalogPage = await aiLabPage.navigationBar.openCatalog();
         await catalogPage.waitForLoad();
       });
@@ -377,7 +376,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       const playgroundName = 'test playground';
 
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
+        aiLabPage = await openAILabDashboard(runner, page, navigationBar);
         await aiLabPage.waitForLoad();
         catalogPage = await aiLabPage.navigationBar.openCatalog();
         await catalogPage.waitForLoad();
@@ -452,7 +451,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
       test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
-        aiLabPage = await AILabPage.openAILabDashboard(runner, page, navigationBar);
+        aiLabPage = await openAILabDashboard(runner, page, navigationBar);
         await aiLabPage.waitForLoad();
         recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
         await recipesCatalogPage.waitForLoad();

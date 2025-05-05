@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
   expect as playExpect,
@@ -69,7 +69,7 @@ test.afterAll(async ({ runner }) => {
 });
 
 test.describe.serial(`AI Lab extension installation and verification`, () => {
-  test.describe.serial(`AI Lab extension installation`, { tag: '@smoke' }, () => {
+  test.describe.serial(`AI Lab extension installation`, { tag: '@test' }, () => {
     let extensionsPage: ExtensionsPage;
 
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
@@ -350,13 +350,15 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['instructlab/granite-7b-lab-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lab playground creation and deletion`, () => {
+  ['lmstudio-community/granite-3.0-8b-instruct-GGUF'].forEach(modelName => {
+    test.describe.serial(`AI Lab playground creation and deletion`, { tag: '@test' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;
+      let assistantResponse: Locator;
 
       const playgroundName = 'test playground';
+      const systemPrompt = 'Always respond with: "Hello, I am Chat Bot"';
 
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
         [page, webview] = await handleWebview(runner, page, navigationBar);
@@ -402,9 +404,16 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         await playExpect(playgroundDetailsPage.deletePlaygroundButton).toBeEnabled();
       });
 
-      test(`Define prompt for ${modelName}`, async () => {
-        const prompt = 'Hello, how are you?';
-        await playgroundDetailsPage.definePrompt(prompt);
+      test('Set system prompt, submit user input, and verify assistant response is visible', async () => {
+        test.setTimeout(100_000);
+        await playgroundDetailsPage.defineSystemPrompt(systemPrompt);
+        await playgroundDetailsPage.submitUserInput('Hello');
+        assistantResponse = await playgroundDetailsPage.getAssistantResponse();
+        await playExpect(assistantResponse).toBeVisible();
+      });
+
+      test('Verify assistant response contains the expected system prompt', async () => {
+        playExpect(await assistantResponse.innerText()).toContain('Hello, I am Chat Bot');
       });
 
       test(`Delete AI Lab playground for ${modelName}`, async () => {

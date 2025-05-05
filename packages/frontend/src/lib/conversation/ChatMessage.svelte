@@ -49,6 +49,7 @@ function elapsedTime(msg: AssistantChat): string {
     {roles[message.role]}
   </div>
   <div
+    aria-label={`${roles[message.role]} message`}
     class="p-4 rounded-md text-[var(--pd-content-card-text)]"
     class:bg-[var(--pd-content-card-bg)]={isUserChat(message)}
     class:bg-[var(--pd-content-bg)]={isSystemPrompt(message)}
@@ -61,7 +62,7 @@ function elapsedTime(msg: AssistantChat): string {
   </div>
   {#if isAssistantChat(message)}
     <div class="text-[var(--pd-content-header)] text-right" aria-label="elapsed">
-      {elapsedTime(message)} s
+      {elapsedTime(message)}
     </div>
   {/if}
   <div></div>

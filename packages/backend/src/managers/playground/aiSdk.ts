@@ -24,6 +24,7 @@ import type {
   CoreMessage,
   StepResult,
   StreamTextResult,
+  StreamTextOnFinishCallback,
   TextStreamPart,
   ToolCallPart,
   ToolResultPart,
@@ -185,7 +186,7 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
     }
   };
 
-  private onFinish = (stepResult: Omit<StepResult<TOOLS>, 'stepType' | 'isContinued'>): void => {
+  private onFinish: StreamTextOnFinishCallback<TOOLS> = stepResult => {
     this.conversationRegistry.setUsage(this.conversationId, {
       completion_tokens: stepResult.usage.completionTokens,
       prompt_tokens: stepResult.usage.promptTokens,

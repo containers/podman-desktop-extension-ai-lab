@@ -154,7 +154,7 @@ export class ConversationRegistry extends Publisher<Conversation[]> implements D
   }
 
   /**
-   *
+   * Utility method to quickly add a tool-call assistant message to a conversation
    */
   toolResult(conversationId: string, toolCallId: string, toolResult: string | object): void {
     const conversation: Conversation = this.get(conversationId);

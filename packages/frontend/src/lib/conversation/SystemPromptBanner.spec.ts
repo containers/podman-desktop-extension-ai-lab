@@ -22,6 +22,7 @@ import { expect, test, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
 import { studioClient } from '/@/utils/client';
+import type { SystemPrompt } from '@shared/models/IPlaygroundMessage';
 
 vi.mock('../../utils/client', async () => {
   return {
@@ -40,6 +41,8 @@ test('render empty conversation, hidden textarea', () => {
   render(SystemPromptBanner, {
     conversation: {
       id: 'dummyId',
+      modelId: 'dummyModelId',
+      name: 'dummyName',
       messages: [],
     },
   });
@@ -55,6 +58,8 @@ test('empty conversation click on edit should reveal textarea', async () => {
   render(SystemPromptBanner, {
     conversation: {
       id: 'dummyId',
+      modelId: 'dummyModelId',
+      name: 'dummyName',
       messages: [],
     },
   });
@@ -71,6 +76,8 @@ test('input in textarea should be sent to backend when valid click', async () =>
   render(SystemPromptBanner, {
     conversation: {
       id: 'dummyId',
+      modelId: 'dummyModelId',
+      name: 'dummyName',
       messages: [],
     },
   });
@@ -94,6 +101,8 @@ test('error message should be visible if submit empty', async () => {
   render(SystemPromptBanner, {
     conversation: {
       id: 'dummyId',
+      modelId: 'dummyModelId',
+      name: 'dummyName',
       messages: [],
     },
   });
@@ -118,6 +127,8 @@ test('clear button should reset editing state', async () => {
   render(SystemPromptBanner, {
     conversation: {
       id: 'dummyId',
+      modelId: 'dummyModelId',
+      name: 'dummyName',
       messages: [],
     },
   });
@@ -142,13 +153,15 @@ test('clear button should set system prompt undefined if already exist', async (
   render(SystemPromptBanner, {
     conversation: {
       id: 'dummyId',
+      modelId: 'dummyModelId',
+      name: 'dummyName',
       messages: [
         {
           id: 'random',
           content: 'existing',
           role: 'system',
           timestamp: 0,
-        },
+        } as SystemPrompt,
       ],
     },
   });
@@ -173,6 +186,8 @@ test('error message should be cleared if input change', async () => {
   render(SystemPromptBanner, {
     conversation: {
       id: 'dummyId',
+      modelId: 'dummyModelId',
+      name: 'dummyName',
       messages: [],
     },
   });

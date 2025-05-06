@@ -23,7 +23,7 @@ import Playground from './Playground.svelte';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { fireEvent } from '@testing-library/dom';
-import type { AssistantChat, Conversation, PendingChat, UserChat } from '@shared/models/IPlaygroundMessage';
+import type { AssistantChat, Conversation, ModelUsage, PendingChat, UserChat } from '@shared/models/IPlaygroundMessage';
 import * as conversationsStore from '/@/stores/conversations';
 import * as inferenceServersStore from '/@/stores/inferenceServers';
 import { readable, writable } from 'svelte/store';
@@ -65,6 +65,7 @@ const customConversations = writable<Conversation[]>([
     name: 'Playground 1',
     modelId: 'model-1',
     messages: [],
+    usage: {} as ModelUsage,
   },
 ]);
 
@@ -244,6 +245,7 @@ test('receiving complete message should enable the input element', async () => {
           completed: Date.now(),
         } as AssistantChat,
       ],
+      usage: {} as ModelUsage,
     },
   ]);
 
@@ -284,10 +286,11 @@ test('sending prompt should display the prompt and the response', async () => {
         {
           role: 'assistant',
           id: 'message-2',
-          choices: [{ content: 'a ' }, { content: 'response ' }, { content: 'from ' }, { content: 'the ' }],
+          content: 'a response from the ',
           completed: false,
         } as unknown as PendingChat,
       ],
+      usage: {} as ModelUsage,
     },
   ]);
 
@@ -315,6 +318,7 @@ test('sending prompt should display the prompt and the response', async () => {
           completed: Date.now(),
         } as AssistantChat,
       ],
+      usage: {} as ModelUsage,
     },
   ]);
 

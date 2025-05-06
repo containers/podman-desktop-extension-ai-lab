@@ -17,32 +17,73 @@
  ***********************************************************************/
 
 import { streamText } from 'ai';
-import type { LanguageModel, CoreMessage, StepResult, StreamTextResult, TextStreamPart, ToolSet } from 'ai';
-import type { ModelOptions } from '@shared/models/IModelOptions';
 import type {
-  ChatMessage,
-  Choice,
-  ErrorMessage,
-  Message,
-  ModelUsage,
-  PendingChat,
+  CoreAssistantMessage,
+  CoreToolMessage,
+  LanguageModel,
+  CoreMessage,
+  StepResult,
+  StreamTextResult,
+  StreamTextOnFinishCallback,
+  TextStreamPart,
+  ToolCallPart,
+  ToolResultPart,
+  ToolSet,
+} from 'ai';
+import type { ModelOptions } from '@shared/models/IModelOptions';
+import {
+  type AssistantChat,
+  type ErrorMessage,
+  isAssistantToolCall,
+  type Message,
+  type ModelUsage,
+  type PendingChat,
+  type ToolCall,
 } from '@shared/models/IPlaygroundMessage';
 import { isChatMessage } from '@shared/models/IPlaygroundMessage';
 import type { ConversationRegistry } from '../../registries/ConversationRegistry';
 
 export function toCoreMessage(...messages: Message[]): CoreMessage[] {
-  return messages
-    .filter(m => isChatMessage(m))
-    .map(
-      (message: ChatMessage) =>
-        ({
-          role: message.role,
-          content: message.content ?? '',
-        }) as CoreMessage,
-    );
+  const ret: CoreMessage[] = [];
+  for (const message of messages) {
+    if (isAssistantToolCall(message)) {
+      const toolCall = message.content as ToolCall;
+      ret.push({
+        role: 'assistant',
+        content: [
+          {
+            type: 'tool-call',
+            toolCallId: toolCall.toolCallId,
+            toolName: toolCall.toolName,
+            args: toolCall.args,
+          } as ToolCallPart,
+        ] as ToolCallPart[],
+      } as CoreAssistantMessage);
+      if (toolCall.result) {
+        ret.push({
+          role: 'tool',
+          content: [
+            {
+              type: 'tool-result',
+              toolCallId: toolCall.toolCallId,
+              toolName: toolCall.toolName,
+              result: toolCall.result,
+            } as ToolResultPart,
+          ] as ToolResultPart[],
+        } as CoreToolMessage);
+      }
+    } else if (isChatMessage(message)) {
+      ret.push({
+        role: message.role,
+        content: message.content ?? '',
+      } as CoreMessage);
+    }
+  }
+  return ret;
 }
 
 export class AiStreamProcessor<TOOLS extends ToolSet> {
+  private stepStartTime: number | undefined;
   private currentMessageId: string | undefined;
   public readonly abortController: AbortController;
 
@@ -55,16 +96,35 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
   }
 
   private onStepFinish = (stepResult: StepResult<TOOLS>): void => {
+    this.conversationRegistry.setUsage(this.conversationId, {
+      completion_tokens: stepResult.usage.completionTokens,
+      prompt_tokens: stepResult.usage.promptTokens,
+    } as ModelUsage);
     if (this.currentMessageId !== undefined) {
-      this.conversationRegistry.setUsage(this.conversationId, this.currentMessageId, {
-        completion_tokens: stepResult.usage.completionTokens,
-        prompt_tokens: stepResult.usage.promptTokens,
-      } as ModelUsage);
-      // TODO, this doesn't seem very wise (using choices as partial state holder)
-      // Refactor to use this.conversationRegistry.update instead
       this.conversationRegistry.completeMessage(this.conversationId, this.currentMessageId);
     }
+    if (stepResult.toolCalls?.length > 0) {
+      for (const toolCall of stepResult.toolCalls) {
+        this.conversationRegistry.submit(this.conversationId, {
+          id: this.conversationRegistry.getUniqueId(),
+          role: 'assistant',
+          timestamp: this.stepStartTime,
+          content: {
+            type: 'tool-call',
+            toolCallId: toolCall.toolCallId,
+            toolName: toolCall.toolName,
+            args: toolCall.args,
+          } as ToolCall,
+        } as AssistantChat);
+      }
+    }
+    if (stepResult.toolResults?.length > 0) {
+      for (const toolResult of stepResult.toolResults) {
+        this.conversationRegistry.toolResult(this.conversationId, toolResult.toolCallId, toolResult.result);
+      }
+    }
     this.currentMessageId = undefined;
+    this.stepStartTime = Date.now();
   };
 
   private onChunk = ({
@@ -92,16 +152,12 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
       this.conversationRegistry.submit(this.conversationId, {
         id: this.currentMessageId,
         role: 'assistant',
-        timestamp: Date.now(),
+        timestamp: this.stepStartTime,
         choices: [],
         completed: undefined,
       } as PendingChat);
     }
-    // TODO, this doesn't seem very wise (using choices as partial state holder)
-    // Refactor to use this.conversationRegistry.update instead
-    this.conversationRegistry.appendChoice(this.conversationId, this.currentMessageId, {
-      content: chunk.textDelta,
-    } as Choice);
+    this.conversationRegistry.textDelta(this.conversationId, this.currentMessageId, chunk.textDelta);
   };
 
   private onError = (error: unknown): void => {
@@ -126,15 +182,23 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
   private onAbort = (): void => {
     // Ensure the last message is marked as complete to allow the user to resume the conversation
     if (this.currentMessageId !== undefined) {
-      // TODO, this doesn't seem very wise (using choices as partial state holder)
-      // Refactor to use this.conversationRegistry.update instead
       this.conversationRegistry.completeMessage(this.conversationId, this.currentMessageId);
     }
   };
 
-  stream = (model: LanguageModel, options?: ModelOptions): StreamTextResult<TOOLS, never> => {
+  private onFinish: StreamTextOnFinishCallback<TOOLS> = stepResult => {
+    this.conversationRegistry.setUsage(this.conversationId, {
+      completion_tokens: stepResult.usage.completionTokens,
+      prompt_tokens: stepResult.usage.promptTokens,
+    } as ModelUsage);
+  };
+
+  stream = (model: LanguageModel, tools?: TOOLS, options?: ModelOptions): StreamTextResult<TOOLS, never> => {
+    this.stepStartTime = Date.now();
     return streamText({
       model,
+      tools,
+      maxSteps: 10, // TODO: configurable option
       temperature: options?.temperature,
       maxTokens: (options?.max_tokens ?? -1) < 1 ? undefined : options?.max_tokens,
       topP: options?.top_p,
@@ -143,6 +207,7 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
       onStepFinish: this.onStepFinish,
       onError: this.onError,
       onChunk: this.onChunk,
+      onFinish: this.onFinish,
     });
   };
 }

@@ -34,13 +34,13 @@ export interface ModelUsage {
 
 export interface ChatMessage extends Message {
   role: 'system' | 'user' | 'assistant';
-  content?: string;
-  usage?: ModelUsage;
+  content?: string | object;
 }
 
 export interface AssistantChat extends ChatMessage {
   role: 'assistant';
   completed?: number;
+  content?: string | ToolCall;
 }
 
 export interface SystemPrompt extends ChatMessage {
@@ -63,10 +63,19 @@ export interface Conversation {
   messages: Message[];
   modelId: string;
   name: string;
+  usage?: ModelUsage;
 }
 
 export interface Choice {
   content: string;
+}
+
+export interface ToolCall {
+  type: 'tool-call';
+  toolCallId: string;
+  toolName: string;
+  args: object;
+  result?: string | object;
 }
 
 export function isErrorMessage(msg: Message): msg is ErrorMessage {
@@ -79,6 +88,10 @@ export function isChatMessage(msg: Message): msg is ChatMessage {
 
 export function isAssistantChat(msg: Message): msg is AssistantChat {
   return isChatMessage(msg) && msg.role === 'assistant';
+}
+
+export function isAssistantToolCall(msg: Message): msg is AssistantChat {
+  return isAssistantChat(msg) && (msg.content as ToolCall)?.type === 'tool-call';
 }
 
 export function isUserChat(msg: Message): msg is UserChat {

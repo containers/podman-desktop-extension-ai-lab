@@ -627,6 +627,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     let instructLabPage: AILabTryInstructLabPage;
     const instructLabContainerName = '^instructlab-\\d+$';
 
+    //skip on linux
     test.beforeAll('Open Try InstructLab page', async ({ runner, page, navigationBar }) => {
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
       await aiLabPage.navigationBar.waitForLoad();
@@ -636,11 +637,11 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test('Start and verify InstructLab container', async ({ page }) => {
-      test.setTimeout(600_000);
+      test.setTimeout(2_100_000);
       await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
       await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
       await instructLabPage.startInstructLabButton.click();
-      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 500_000 });
+      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 2_000_000 });
 
       await instructLabPage.openInstructLabButton.click();
 

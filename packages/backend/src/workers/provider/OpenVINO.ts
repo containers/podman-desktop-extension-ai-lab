@@ -29,7 +29,6 @@ import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import { type InferenceServer, InferenceType } from '@shared/models/IInference';
-import { GPUVendor, type IGPUInfo } from '@shared/models/IGPUInfo';
 import { VMType } from '@shared/models/IPodman';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
@@ -273,24 +272,5 @@ export class OpenVINO extends InferenceProvider {
 
   protected getOpenVINOInferenceImage(_vmType: VMType): string {
     return openvino.default;
-  }
-
-  protected isNvidiaCDIConfigured(gpu?: IGPUInfo): boolean {
-    // NVIDIA cdi must be set up to use GPU acceleration on Linux.
-    // Check the known locations for the configuration file
-    const knownLocations = [
-      '/etc/cdi/nvidia.yaml', // Fedora
-    ];
-
-    if (gpu?.vendor !== GPUVendor.NVIDIA) return false;
-
-    let cdiSetup = false;
-    for (const location of knownLocations) {
-      if (existsSync(location)) {
-        cdiSetup = true;
-        break;
-      }
-    }
-    return cdiSetup;
   }
 }

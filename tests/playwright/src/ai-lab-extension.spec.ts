@@ -19,6 +19,8 @@
 import type { Page } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
+  ContainerDetailsPage,
+  ContainerState,
   expect as playExpect,
   test,
   RunnerOptions,
@@ -34,6 +36,7 @@ import { handleWebview } from './utils/webviewHandler';
 import type { AILabServiceDetailsPage } from './model/ai-lab-service-details-page';
 import type { AILabPlaygroundsPage } from './model/ai-lab-playgrounds-page';
 import type { AILabPlaygroundDetailsPage } from './model/ai-lab-playground-details-page';
+import type { AILabTryInstructLabPage } from './model/ai-lab-try-instructlab-page';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -457,6 +460,53 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         await cleanupServiceModels();
         await deleteUnusedImages(navigationBar);
       });
+    });
+  });
+
+  test.describe.serial('InstructLab container startup', () => {
+    let instructLabPage: AILabTryInstructLabPage;
+    const instructLabContainerName = '^instructlab-\\d+$';
+
+    test.beforeAll('Open Try InstructLab page', async ({ runner, page, navigationBar }) => {
+      [page, webview] = await handleWebview(runner, page, navigationBar);
+      aiLabPage = new AILabPage(page, webview);
+      await aiLabPage.navigationBar.waitForLoad();
+
+      instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();
+      await instructLabPage.waitForLoad();
+    });
+
+    test('Start and verify InstructLab container', async ({ page }) => {
+      test.setTimeout(600_000);
+      await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
+      await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
+      await instructLabPage.startInstructLabButton.click();
+      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 500_000 });
+
+      await instructLabPage.openInstructLabButton.click();
+
+      const containerDetailsPage = new ContainerDetailsPage(page, instructLabContainerName);
+      await playExpect(containerDetailsPage.heading).toBeVisible();
+      await playExpect(containerDetailsPage.heading).toContainText(instructLabContainerName);
+      const containerState = await containerDetailsPage.getState();
+      playExpect(containerState).toContain(ContainerState.Running);
+    });
+
+    test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
+      const containerDetailsPage = new ContainerDetailsPage(page, instructLabContainerName);
+      const containersPage = await containerDetailsPage.deleteContainer();
+      await playExpect(containersPage.heading).toBeVisible();
+      await playExpect
+        .poll(async () => await containersPage.containerExists(instructLabContainerName), { timeout: 10_000 })
+        .toBeFalsy();
+
+      [page, webview] = await handleWebview(runner, page, navigationBar);
+      aiLabPage = new AILabPage(page, webview);
+      await aiLabPage.navigationBar.waitForLoad();
+      instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();
+      await instructLabPage.waitForLoad();
+      await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
+      await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
     });
   });
 });

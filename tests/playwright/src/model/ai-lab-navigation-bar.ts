@@ -25,6 +25,7 @@ import { AiModelServicePage } from './ai-lab-model-service-page';
 import { AILabCatalogPage } from './ai-lab-catalog-page';
 import { AILabPlaygroundsPage } from './ai-lab-playgrounds-page';
 import { AILabLocalServerPage } from './ai-lab-local-server-page';
+import { AILabTryInstructLabPage } from './ai-lab-try-instructlab-page';
 
 export class AILabNavigationBar extends AILabBasePage {
   readonly navigationBar: Locator;
@@ -35,6 +36,7 @@ export class AILabNavigationBar extends AILabBasePage {
   readonly playgroundsButton: Locator;
   readonly tuneButton: Locator;
   readonly localServerButton: Locator;
+  readonly tryInstructLabButton: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, undefined);
@@ -46,6 +48,7 @@ export class AILabNavigationBar extends AILabBasePage {
     this.playgroundsButton = this.navigationBar.getByRole('link', { name: 'Playgrounds' });
     this.tuneButton = this.navigationBar.getByRole('link', { name: 'Tune with InstructLab' });
     this.localServerButton = this.navigationBar.getByRole('link', { name: 'Local Server' });
+    this.tryInstructLabButton = this.navigationBar.getByRole('link', { name: 'Try InstructLab' });
   }
 
   async waitForLoad(): Promise<void> {
@@ -86,5 +89,11 @@ export class AILabNavigationBar extends AILabBasePage {
     await playExpect(this.localServerButton).toBeEnabled();
     await this.localServerButton.click();
     return new AILabLocalServerPage(this.page, this.webview);
+  }
+
+  async openTryInstructLab(): Promise<AILabTryInstructLabPage> {
+    await playExpect(this.tryInstructLabButton).toBeEnabled();
+    await this.tryInstructLabButton.click();
+    return new AILabTryInstructLabPage(this.page, this.webview);
   }
 }

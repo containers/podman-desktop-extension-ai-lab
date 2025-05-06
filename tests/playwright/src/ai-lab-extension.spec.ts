@@ -69,7 +69,7 @@ test.afterAll(async ({ runner }) => {
 });
 
 test.describe.serial(`AI Lab extension installation and verification`, () => {
-  test.describe.serial(`AI Lab extension installation`, { tag: '@smoke' }, () => {
+  test.describe.serial(`AI Lab extension installation`, { tag: '@test' }, () => {
     let extensionsPage: ExtensionsPage;
 
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
@@ -351,7 +351,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
   });
 
   ['lmstudio-community/granite-3.0-8b-instruct-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lab playground creation and deletion`, () => {
+    test.describe.serial(`AI Lab playground creation and deletion`, { tag: '@test' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;
@@ -408,7 +408,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         test.setTimeout(100_000);
         await playgroundDetailsPage.defineSystemPrompt(systemPrompt);
         await playgroundDetailsPage.submitUserInput('Hello');
-        assistantResponse = await playgroundDetailsPage.getAssistantResponse();
+        // Get the first assistant response
+        assistantResponse = await playgroundDetailsPage.getAssistantResponse(0);
         await playExpect(assistantResponse).toBeVisible();
       });
 

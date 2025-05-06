@@ -84,9 +84,9 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
     await this.sendPromptButton.click();
   }
 
-  async getAssistantResponse(): Promise<Locator> {
+  async getAssistantResponse(index: number): Promise<Locator> {
     await playExpect(this.sendPromptButton).toBeVisible({ timeout: 100_000 });
-    const assistantResponse = this.conversationSectionLocator.getByLabel('Assistant message');
+    const assistantResponse = this.conversationSectionLocator.getByLabel('Assistant message').nth(index);
     return assistantResponse;
   }
 }

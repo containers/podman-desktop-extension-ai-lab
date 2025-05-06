@@ -69,7 +69,7 @@ test.afterAll(async ({ runner }) => {
 });
 
 test.describe.serial(`AI Lab extension installation and verification`, () => {
-  test.describe.serial(`AI Lab extension installation`, { tag: '@test' }, () => {
+  test.describe.serial(`AI Lab extension installation`, { tag: '@smoke' }, () => {
     let extensionsPage: ExtensionsPage;
 
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
@@ -351,7 +351,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
   });
 
   ['lmstudio-community/granite-3.0-8b-instruct-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lab playground creation and deletion`, { tag: '@test' }, () => {
+    test.describe.serial(`AI Lab playground creation and deletion`, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;

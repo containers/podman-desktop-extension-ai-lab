@@ -15,13 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type {
-  ContainerCreateOptions,
-  ContainerProviderConnection,
-  DeviceRequest,
-  ImageInfo,
-  MountConfig,
-} from '@podman-desktop/api';
+import type { ContainerCreateOptions, ContainerProviderConnection, ImageInfo, MountConfig } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import { InferenceProvider } from './InferenceProvider';
 import { getModelPropertiesForEnvironment, getMountPath } from '../../utils/modelsUtils';
@@ -79,12 +73,6 @@ node: {
   }
 }`;
 
-interface Device {
-  PathOnHost: string;
-  PathInContainer: string;
-  CgroupPermissions: string;
-}
-
 export class OpenVINO extends InferenceProvider {
   constructor(
     taskRegistry: TaskRegistry,
@@ -126,8 +114,6 @@ export class OpenVINO extends InferenceProvider {
     const envs: string[] = [`MODEL_PATH=${target}`, 'HOST=0.0.0.0', 'PORT=8000'];
     envs.push(...getModelPropertiesForEnvironment(modelInfo));
 
-    const deviceRequests: DeviceRequest[] = [];
-    const devices: Device[] = [];
     const cmd: string[] = ['--rest_port', '8000', '--config_path', `/model/${CONFIG_FILE_NAME}`, '--metrics_enable'];
 
     // add the link to our openAPI instance using the instance as the host
@@ -144,9 +130,7 @@ export class OpenVINO extends InferenceProvider {
       ExposedPorts: { [`${config.port}`]: {} },
       HostConfig: {
         AutoRemove: false,
-        Devices: devices,
         Mounts: mounts,
-        DeviceRequests: deviceRequests,
         SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
         PortBindings: {
           '8000/tcp': [

@@ -198,7 +198,6 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
       Cmd: ['--rest_port', '8000', '--config_path', '/model/config-all.json', '--metrics_enable'],
       Detach: true,
-      Entrypoint: undefined,
       Env: ['MODEL_PATH=/model', 'HOST=0.0.0.0', 'PORT=8000'],
       ExposedPorts: {
         '8888': {},
@@ -217,8 +216,6 @@ describe('perform', () => {
             Type: 'bind',
           },
         ],
-        DeviceRequests: [],
-        Devices: [],
         PortBindings: {
           '8000/tcp': [
             {

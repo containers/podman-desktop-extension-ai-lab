@@ -9,6 +9,7 @@ import {
   isChatMessage,
   isErrorMessage,
   isAssistantToolCall,
+  type Message,
 } from '@shared/models/IPlaygroundMessage';
 import { catalog } from '../stores/catalog';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
@@ -24,6 +25,7 @@ import { router } from 'tinro';
 import ConversationActions from '../lib/conversation/ConversationActions.svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 import ToolCallMessage from '/@/lib/conversation/ToolCallMessage.svelte';
+import type { InferenceServer } from '@shared/models/IInference';
 
 interface Props {
   playgroundId: string;
@@ -49,18 +51,19 @@ let model = $derived($catalog.models.find(model => model.id === conversation?.mo
 let completion_tokens = $derived(conversation?.usage?.completion_tokens ?? 0);
 let prompt_tokens = $derived(conversation?.usage?.prompt_tokens ?? 0);
 
+// Find latest message of the conversation
+let latest: Message | undefined = $derived(conversation?.messages[conversation.messages.length - 1]);
+
 let inProgress = $state(false);
 let sendEnabled = $derived.by(() => {
   if (inProgress) {
     return false;
   }
-  if (conversation?.messages.length) {
-    const latest = conversation.messages[conversation.messages.length - 1];
+  if (latest) {
     if (isSystemPrompt(latest) || (isAssistantChat(latest) && !isPendingChat(latest))) {
       return true;
     }
     if (isErrorMessage(latest)) {
-      errorMsg = latest.error;
       return true;
     }
   } else {
@@ -69,8 +72,14 @@ let sendEnabled = $derived.by(() => {
   return false;
 });
 
-let server = $derived(
-  $inferenceServers.find(is => conversation && is.models.map(mi => mi.id).includes(conversation?.modelId)),
+$effect(() => {
+  if (latest && isErrorMessage(latest)) {
+    errorMsg = latest.error;
+  }
+});
+
+let server: InferenceServer | undefined = $derived(
+  $inferenceServers.find(is => !!conversation && is.models.map(mi => mi.id).includes(conversation?.modelId)),
 );
 
 function askPlayground(): void {
@@ -100,10 +109,9 @@ $effect(() => {
     router.goto('/playgrounds');
     return;
   }
-  if (!conversation?.messages.length) {
+  if (!latest) {
     return;
   }
-  const latest = conversation.messages[conversation.messages.length - 1];
   if (isUserChat(latest) || (isAssistantChat(latest) && isPendingChat(latest))) {
     if (scrollable) scrollToBottom(scrollable).catch(err => console.error(`Error scrolling to bottom:`, err));
   }
@@ -335,7 +343,7 @@ function handleOnClick(): void {
             </ContentDetailsLayout>
           </div>
           {#if errorMsg}
-            <div class="text-[var(--pd-input-field-error-text)] p-2">{errorMsg}</div>
+            <div class="text-[var(--pd-input-field-error-text)] p-2" aria-label="error" role="alert">{errorMsg}</div>
           {/if}
           <div class="flex flex-row flex-none w-full px-4 py-2 bg-[var(--pd-content-card-bg)]">
             <textarea

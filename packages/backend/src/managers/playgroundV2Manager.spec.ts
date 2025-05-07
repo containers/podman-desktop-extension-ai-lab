@@ -19,7 +19,7 @@
 import { expect, test, vi, beforeEach, afterEach, describe } from 'vitest';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { PlaygroundV2Manager } from './playgroundV2Manager';
-import type { TelemetryLogger } from '@podman-desktop/api';
+import { EventEmitter, type TelemetryLogger } from '@podman-desktop/api';
 import type { InferenceServer } from '@shared/models/IInference';
 import type { InferenceManager } from './inference/inferenceManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
@@ -34,9 +34,14 @@ import type { LanguageModelV1 } from '@ai-sdk/provider';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { TestEventEmitter } from '../tests/utils';
 
 vi.mock('@ai-sdk/openai-compatible', () => ({
   createOpenAICompatible: vi.fn(),
+}));
+
+vi.mock('@podman-desktop/api', () => ({
+  EventEmitter: vi.fn(),
 }));
 
 const rpcExtensionMock = {
@@ -72,6 +77,7 @@ let MockLanguageModelV1: unknown;
 
 beforeEach(async () => {
   vi.resetAllMocks();
+  vi.mocked(EventEmitter).mockImplementation(() => new TestEventEmitter() as unknown as EventEmitter<unknown>);
   vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
   vi.useFakeTimers();
   const aiSdkSpecShared = await import('./playground/aiSdk.spec');

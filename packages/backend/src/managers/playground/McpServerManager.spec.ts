@@ -16,94 +16,178 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { promises } from 'node:fs';
+import { existsSync, promises } from 'node:fs';
 import path from 'node:path';
-import { type McpServer, McpServerType } from '../../models/mcpTypes';
+import { EventEmitter, type FileSystemWatcher, fs } from '@podman-desktop/api';
+import { type RpcExtension } from '@shared/messages/MessageProxy';
+import { McpServerType } from '@shared/models/McpSettings';
+import { TestEventEmitter } from '../../tests/utils';
 import { McpServerManager } from './McpServerManager';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
+vi.mock('@podman-desktop/api', () => ({
+  EventEmitter: vi.fn(),
+  fs: { createFileSystemWatcher: vi.fn() },
+}));
 
 /* eslint-disable sonarjs/no-nested-functions */
-describe('McpServerManager', () => {
+describe('McpServerManager publisher', () => {
+  let rpcExtension: RpcExtension;
   let appUserDirectory: string;
+  let onDidChangeBinding: () => void;
+  let onDidCreateBinding: () => void;
+  let onDidDeleteBinding: () => void;
+  let mcpServerManager: McpServerManager;
   beforeEach(async () => {
     vi.resetAllMocks();
+    vi.mocked(EventEmitter).mockImplementation(() => new TestEventEmitter() as unknown as EventEmitter<unknown>);
+    vi.mocked(fs.createFileSystemWatcher).mockImplementation(
+      () =>
+        ({
+          onDidChange: (fn: unknown) => (onDidChangeBinding = fn as () => void),
+          onDidCreate: (fn: unknown) => (onDidCreateBinding = fn as () => void),
+          onDidDelete: (fn: unknown) => (onDidDeleteBinding = fn as () => void),
+        }) as unknown as FileSystemWatcher,
+    );
+    rpcExtension = { fire: vi.fn(() => Promise.resolve(true)) } as unknown as RpcExtension;
     appUserDirectory = path.join('/', 'tmp', 'mcp-server-manager-test-');
+    mcpServerManager = new McpServerManager(rpcExtension, appUserDirectory);
   });
-  describe('load', () => {
-    test('with no file, returns empty array', async () => {
-      const mcpServerManager = new McpServerManager(appUserDirectory);
-      const mcpServers = await mcpServerManager.load();
-      expect(mcpServers).toEqual([]);
-    });
-    test('with empty file, returns empty array', async () => {
-      const mcpServerManager = new McpServerManager(appUserDirectory);
-      vi.mocked(promises.readFile).mockResolvedValue('{}');
-      const mcpServers = await mcpServerManager.load();
-      expect(mcpServers).toEqual([]);
-    });
-    test('with invalid JSON, returns empty array', async () => {
-      const mcpServerManager = new McpServerManager(appUserDirectory);
+  test('provides an empty default value', () => {
+    expect(mcpServerManager.getMcpSettings()).toEqual({ servers: {} });
+  });
+  describe('with non-parseable mcp-settings.json', () => {
+    beforeEach(async () => {
+      vi.spyOn(console, 'error');
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(promises.readFile).mockResolvedValue(
+        JSON.stringify({
+          servers: { 'initial-server': { type: 'stdio' } },
+        }),
+      );
+      onDidCreateBinding();
+      await vi.waitFor(() => expect(mcpServerManager.getMcpSettings().servers).not.toEqual({}));
       vi.mocked(promises.readFile).mockResolvedValue('{invalid json}');
-      const mcpServers = await mcpServerManager.load();
-      expect(mcpServers).toEqual([]);
     });
-    describe('with valid JSON', () => {
-      let mcpServers: McpServer[];
-      beforeEach(async () => {
-        const mcpSettings = {
-          servers: {
-            'stdio-ok': {
-              enabled: true,
-              type: 'stdio',
-              command: 'npx',
-              args: ['-y', 'kubernetes-mcp-server'],
-            },
-            'sse-ok': {
-              enabled: true,
-              type: 'sse',
-              url: 'https://echo.example.com/sse',
-              headers: {
-                foo: 'bar',
-              },
-            },
-            'invalid-type': {
-              enabled: true,
-              type: 'invalid',
-              url: 'https://echo.example.com/sse',
+    test.each<{ fn: () => void; event: string }>([
+      { fn: (): void => onDidChangeBinding(), event: 'onDidChange' },
+      { fn: (): void => onDidCreateBinding(), event: 'onDidCreate' },
+    ])('JsonWatcher[$event](), fails, initial servers are preserved', async ({ fn }) => {
+      fn();
+      await vi.waitFor(() =>
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringMatching(/Something went wrong JsonWatcher/),
+          expect.anything(),
+        ),
+      );
+      expect(mcpServerManager.getMcpSettings()).toEqual({
+        servers: { 'initial-server': { name: 'initial-server', type: 'stdio' } },
+      });
+    });
+    test('does not notify changes', async () => {
+      vi.mocked(rpcExtension.fire).mockClear();
+      onDidCreateBinding();
+      await vi.waitFor(() =>
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringMatching(/Something went wrong JsonWatcher/),
+          expect.anything(),
+        ),
+      );
+      expect(rpcExtension.fire).not.toHaveBeenCalled();
+    });
+  });
+  describe('with parseable mcp-settings.json', () => {
+    beforeEach(() => {
+      const mcpSettings = {
+        servers: {
+          'stdio-ok': {
+            enabled: true,
+            type: 'stdio',
+            command: 'npx',
+            args: ['-y', 'kubernetes-mcp-server'],
+          },
+          'sse-ok': {
+            enabled: true,
+            type: 'sse',
+            url: 'https://echo.example.com/sse',
+            headers: {
+              foo: 'bar',
             },
           },
-        };
-        vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(mcpSettings));
-        mcpServers = await new McpServerManager(appUserDirectory).load();
+          'invalid-type': {
+            enabled: true,
+            type: 'invalid',
+            url: 'https://echo.example.com/sse',
+          },
+        },
+      };
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(mcpSettings));
+    });
+    test.each<{ fn: () => void; event: string }>([
+      { fn: (): void => onDidChangeBinding(), event: 'onDidChange' },
+      { fn: (): void => onDidCreateBinding(), event: 'onDidCreate' },
+    ])('JsonWatcher[$event](), loads servers of supported types', async ({ fn }) => {
+      fn();
+      await vi.waitFor(() => {
+        expect(mcpServerManager.getMcpSettings().servers).not.toEqual({});
+        expect(Object.keys(mcpServerManager.getMcpSettings().servers)).toHaveLength(2);
       });
-      test('parses stdio server', async () => {
-        expect(mcpServers).toEqual(
-          expect.arrayContaining([
-            {
-              name: 'stdio-ok',
-              enabled: true,
-              type: McpServerType.STDIO,
-              command: 'npx',
-              args: ['-y', 'kubernetes-mcp-server'],
-            },
-          ]),
-        );
+      expect(mcpServerManager.getMcpSettings().servers).toEqual(
+        expect.objectContaining({
+          'stdio-ok': {
+            enabled: true,
+            name: 'stdio-ok',
+            type: McpServerType.STDIO,
+            command: 'npx',
+            args: ['-y', 'kubernetes-mcp-server'],
+          },
+          'sse-ok': {
+            enabled: true,
+            name: 'sse-ok',
+            type: McpServerType.SSE,
+            url: 'https://echo.example.com/sse',
+            headers: { foo: 'bar' },
+          },
+        }),
+      );
+      expect(mcpServerManager.getMcpSettings().servers['invalid-type']).toBeUndefined();
+    });
+    test('notifies changes', async () => {
+      onDidCreateBinding();
+      await vi.waitFor(() => expect(mcpServerManager.getMcpSettings().servers).not.toEqual({}));
+      expect(rpcExtension.fire).toHaveBeenLastCalledWith(expect.objectContaining({ channel: 'mcp-servers-update' }), {
+        servers: expect.toSatisfy(servers => Object.values(servers).length === 2),
       });
-      test('parses sse server', async () => {
-        const sseOk: McpServer | undefined = mcpServers.find(server => server.name === 'sse-ok');
-        expect(sseOk).toEqual({
-          name: 'sse-ok',
-          enabled: true,
-          type: McpServerType.SSE,
-          url: 'https://echo.example.com/sse',
-          headers: { foo: 'bar' },
-        });
-      });
-      test('ignores invalid type', async () => {
-        const invalidType: McpServer | undefined = mcpServers.find(server => server.name === 'invalid-type');
-        expect(invalidType).toBeUndefined();
+    });
+  });
+  describe('with deleted mcp-settings.json', () => {
+    beforeEach(async () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(promises.readFile).mockResolvedValue(
+        JSON.stringify({
+          servers: {
+            'stdio-ok': { type: 'stdio' },
+          },
+        }),
+      );
+      onDidCreateBinding();
+      await vi.waitFor(() => expect(mcpServerManager.getMcpSettings().servers).not.toEqual({}));
+      vi.mocked(existsSync).mockReturnValue(false);
+    });
+    test.each<{ fn: () => void; event: string }>([
+      { fn: (): void => onDidChangeBinding(), event: 'onDidChange' },
+      { fn: (): void => onDidDeleteBinding(), event: 'onDidDelete' },
+    ])('JsonWatcher[$event](), loads empty servers', async ({ fn }) => {
+      fn();
+      await vi.waitFor(() => expect(mcpServerManager.getMcpSettings().servers).toEqual({}));
+    });
+    test('notifies changes', async () => {
+      onDidDeleteBinding();
+      await vi.waitFor(() => expect(mcpServerManager.getMcpSettings().servers).toEqual({}));
+      expect(rpcExtension.fire).toHaveBeenLastCalledWith(expect.objectContaining({ channel: 'mcp-servers-update' }), {
+        servers: {},
       });
     });
   });

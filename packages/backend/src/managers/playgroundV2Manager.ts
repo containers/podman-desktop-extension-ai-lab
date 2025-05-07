@@ -33,7 +33,6 @@ import { AiStreamProcessor } from './playground/aiSdk';
 import { McpServerManager } from './playground/McpServerManager';
 import type { ToolSet } from 'ai';
 import { simulateStreamingMiddleware, wrapLanguageModel } from 'ai';
-import { toMcpClients } from '../utils/mcpUtils';
 
 export class PlaygroundV2Manager implements Disposable {
   readonly #conversationRegistry: ConversationRegistry;
@@ -48,7 +47,7 @@ export class PlaygroundV2Manager implements Disposable {
     private cancellationTokenRegistry: CancellationTokenRegistry,
   ) {
     this.#conversationRegistry = new ConversationRegistry(rpcExtension);
-    this.#mcpServerManager = new McpServerManager(appUserDirectory);
+    this.#mcpServerManager = new McpServerManager(rpcExtension, appUserDirectory);
   }
 
   deleteConversation(conversationId: string): void {
@@ -233,7 +232,7 @@ export class PlaygroundV2Manager implements Disposable {
     });
 
     const tools: ToolSet = {};
-    const mcpClients = await toMcpClients(...(await this.#mcpServerManager.load()));
+    const mcpClients = await this.#mcpServerManager.toMcpClients();
     for (const client of mcpClients) {
       const clientTools = await client.tools();
       for (const entry of Object.entries(clientTools)) {
@@ -295,5 +294,6 @@ export class PlaygroundV2Manager implements Disposable {
 
   dispose(): void {
     this.#conversationRegistry.dispose();
+    this.#mcpServerManager.dispose();
   }
 }

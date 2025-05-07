@@ -62,6 +62,7 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
         machineName,
         'cp',
         '-r',
+        '-L',
         convertToMntPath,
         remoteFile,
       ]);

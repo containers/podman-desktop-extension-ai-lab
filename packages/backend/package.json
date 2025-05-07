@@ -100,7 +100,7 @@
     "typecheck": "pnpm run generate && tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^0.2.13",
+    "@ai-sdk/openai-compatible": "^0.2.14",
     "@huggingface/gguf": "^0.1.14",
     "@huggingface/hub": "^2.0.0",
     "ai": "^4.3.13",

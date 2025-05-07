@@ -18,7 +18,7 @@
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor, within } from '@testing-library/svelte';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi, describe } from 'vitest';
 import Playground from './Playground.svelte';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/models/IModelInfo';
@@ -352,5 +352,66 @@ test('user should be able to stop prompt', async () => {
 
   await vi.waitFor(() => {
     expect(studioClient.requestCancelToken).toHaveBeenCalledWith(55);
+  });
+});
+
+describe('error message', () => {
+  test('submitPlaygroundMessage reject should be displayed', async () => {
+    // mock reject
+    vi.mocked(studioClient.submitPlaygroundMessage).mockRejectedValue(new Error('dummy'));
+
+    const { getByRole } = render(Playground, {
+      playgroundId: 'playground-1',
+    });
+
+    // Get the input
+    const prompt: HTMLElement = await waitFor<HTMLElement>(() => {
+      const element = getByRole('textbox', { name: 'prompt' });
+      expect(element).toBeInTheDocument();
+      return element;
+    });
+
+    fireEvent.change(prompt, { target: { value: 'prompt' } });
+    fireEvent.keyDown(prompt, { key: 'Enter' });
+
+    // Get the error div
+    const error: HTMLElement = await waitFor<HTMLElement>(() => {
+      const element = getByRole('alert', { name: 'error' });
+      expect(element).toBeInTheDocument();
+      return element;
+    });
+
+    expect(error).toHaveTextContent('Error: dummy');
+  });
+
+  test('error message should display the content', async () => {
+    // mock conversation
+    vi.mocked(conversationsStore).conversations = writable([
+      {
+        id: 'playground-1',
+        name: 'Playground 1',
+        modelId: 'model-1',
+        messages: [
+          {
+            id: 'error-message-id',
+            error: 'something went wrong with the server',
+            timestamp: 55,
+          },
+        ],
+      },
+    ]);
+
+    const { getByRole } = render(Playground, {
+      playgroundId: 'playground-1',
+    });
+
+    // Get the error div
+    const error: HTMLElement = await waitFor<HTMLElement>(() => {
+      const element = getByRole('alert', { name: 'error' });
+      expect(element).toBeInTheDocument();
+      return element;
+    });
+
+    expect(error).toHaveTextContent('something went wrong with the server');
   });
 });

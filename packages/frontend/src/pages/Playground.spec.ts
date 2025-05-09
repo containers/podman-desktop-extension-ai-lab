@@ -314,7 +314,7 @@ test('sending prompt should display the prompt and the response', async () => {
         {
           role: 'assistant',
           id: 'message-2',
-          content: 'a response from the assistant',
+          content: 'a response from the assistant\neat, sleep, code, repeat\neat, sleep, code, repeat',
           completed: Date.now(),
         } as AssistantChat,
       ],

@@ -35,7 +35,7 @@ function getMessageParagraphs(message: ChatMessage): string[] {
     class:bg-[var(--pd-content-card-inset-bg)]={isAssistantChat(message)}
     class:ml-8={isAssistantChat(message)}
     class:mr-8={isUserChat(message)}>
-    {#each getMessageParagraphs(message) as paragraph (paragraph)}
+    {#each getMessageParagraphs(message) as paragraph, index (index)}
       <p>{paragraph}</p>
     {/each}
   </div>

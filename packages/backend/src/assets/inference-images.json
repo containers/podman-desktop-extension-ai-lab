@@ -7,6 +7,6 @@
     "cuda": "quay.io/ramalama/cuda-llama-server@sha256:56efc824e5b3ae6a6a11e9537ed9e2ac05f9f9fc6f2e81a55eb67b662c94fe95"
   },
   "openvino": {
-    "default": "quay.io/podman-ai-lab/openvino@sha256:0d273cc9215ad6e4b0bae89583944ce364decb35d7fc532259deeb8bdb6a9e48"
+    "default": "quay.io/ramalama/openvino@sha256:670d91cc322933cc4263606459317cd4ca3fcfb16d59a46b11dcd498c2cd7cb5"
   }
 }

@@ -117,7 +117,7 @@ export class OpenVINO extends InferenceProvider {
     const envs: string[] = [`MODEL_PATH=${target}`, 'HOST=0.0.0.0', 'PORT=8000'];
     envs.push(...getModelPropertiesForEnvironment(modelInfo));
 
-    const cmd: string[] = ['--rest_port', '8000', '--config_path', configFilePath, '--metrics_enable'];
+    const cmd: string[] = ['ovms', '--rest_port', '8000', '--config_path', configFilePath, '--metrics_enable'];
 
     // add the link to our openAPI instance using the instance as the host
     const aiLabPort = this.configurationRegistry.getExtensionConfiguration().apiPort;

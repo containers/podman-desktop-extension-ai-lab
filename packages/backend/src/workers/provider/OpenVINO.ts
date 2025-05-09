@@ -18,7 +18,7 @@
 import type { ContainerCreateOptions, ContainerProviderConnection, ImageInfo, MountConfig } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import { InferenceProvider } from './InferenceProvider';
-import { getModelPropertiesForEnvironment, getMountPath } from '../../utils/modelsUtils';
+import { getHuggingFaceModelMountInfo, getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
@@ -98,23 +98,26 @@ export class OpenVINO extends InferenceProvider {
     };
 
     // get model mount settings
-    const filename = getMountPath(modelInfo);
+    const mountInfo = getHuggingFaceModelMountInfo(modelInfo);
     const target = `/model`;
 
     // mount the file directory to avoid adding other files to the containers
     const mounts: MountConfig = [
       {
         Target: target,
-        Source: filename,
+        Source: mountInfo.mount,
         Type: 'bind',
       },
     ];
+    const configFilePath = mountInfo.suffix
+      ? `/model/${mountInfo.suffix}/${CONFIG_FILE_NAME}`
+      : `/model/${CONFIG_FILE_NAME}`;
 
     // provide envs
     const envs: string[] = [`MODEL_PATH=${target}`, 'HOST=0.0.0.0', 'PORT=8000'];
     envs.push(...getModelPropertiesForEnvironment(modelInfo));
 
-    const cmd: string[] = ['--rest_port', '8000', '--config_path', `/model/${CONFIG_FILE_NAME}`, '--metrics_enable'];
+    const cmd: string[] = ['--rest_port', '8000', '--config_path', configFilePath, '--metrics_enable'];
 
     // add the link to our openAPI instance using the instance as the host
     const aiLabPort = this.configurationRegistry.getExtensionConfiguration().apiPort;

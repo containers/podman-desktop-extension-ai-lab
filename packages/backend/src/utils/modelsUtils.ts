@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ModelInfo } from '@shared/models/IModelInfo';
-import { join, posix } from 'node:path';
+import { basename, dirname, join, posix } from 'node:path';
 import { getPodmanCli } from './podman';
 import { process } from '@podman-desktop/api';
 import { escapeSpaces } from './pathUtils';
@@ -54,6 +54,30 @@ export function getRemoteModelFile(modelInfo: ModelInfo): string {
   if (modelInfo.file === undefined) throw new Error('model is not available locally.');
 
   return posix.join(MACHINE_BASE_FOLDER, modelInfo.id);
+}
+
+export interface ModelMountInfo {
+  mount: string;
+  suffix?: string;
+}
+
+export function getHuggingFaceModelMountInfo(modelInfo: ModelInfo): ModelMountInfo {
+  const localPath = getLocalModelFile(modelInfo);
+  const mountPath = getMountPath(modelInfo);
+  if (mountPath !== localPath) {
+    return {
+      mount: mountPath,
+    };
+  } else {
+    const snapShotsFolder = dirname(localPath);
+    const commitHash = basename(localPath);
+    const modelFolder = dirname(snapShotsFolder);
+    const snapShots = basename(snapShotsFolder);
+    return {
+      mount: modelFolder,
+      suffix: `${snapShots}/${commitHash}`,
+    };
+  }
 }
 
 /**

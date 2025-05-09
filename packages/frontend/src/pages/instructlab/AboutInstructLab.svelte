@@ -10,6 +10,16 @@ import howInstructLabsSyntheticDataGenerationEnhancesLLM from '/@/lib/images/how
 import instructLabTitleImage from '/@/lib/images/instructLabTitleImage.png';
 import AboutInstructLabDiscoverCard from '../../lib/instructlab/AboutInstructLabDiscoverCard.svelte';
 import AboutInstructLabExploreCard from '../../lib/instructlab/AboutInstructLabExploreCard.svelte';
+import { configuration } from '/@/stores/extensionConfiguration';
+import { onMount } from 'svelte';
+
+let experimentalTuning = false;
+
+onMount(() => {
+  configuration.subscribe(val => {
+    experimentalTuning = val?.experimentalTuning ?? false;
+  });
+});
 
 function start(): void {
   router.goto('/tune/start');
@@ -68,7 +78,9 @@ let cards: AboutInstructLabExploreCardInterface[] = [
 
 <NavPage title="About InstructLab" searchEnabled={false}>
   <div slot="additional-actions">
-    <Button icon={faPlusCircle} on:click={start}>Start Fine Tuning</Button>
+    {#if experimentalTuning}
+      <Button icon={faPlusCircle} on:click={start}>Start Fine Tuning</Button>
+    {/if}
   </div>
   <div slot="content" class="flex flex-col min-w-full min-h-full">
     <div class="min-w-full min-h-full flex-1">

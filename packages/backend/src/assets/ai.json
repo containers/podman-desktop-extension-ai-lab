@@ -39,6 +39,28 @@
       "frameworks": ["streamlit", "PydanticAI"]
     },
     {
+      "id": "agents",
+      "description": "This recipe shows how ReAct can be used to create an intelligent music discovery assistant with Spotify API.",
+      "name": "ReAct Agent Application",
+      "repository": "https://github.com/containers/ai-lab-recipes",
+      "ref": "67b7b20c4e95a6de02e7f70661b968c235ed7eb5",
+      "icon": "natural-language-processing",
+      "categories": ["natural-language-processing"],
+      "basedir": "recipes/natural_language_processing/agents",
+      "readme": "# ReAct Agent Application\n\n This recipe demonstrates the ReAct (Reasoning and Acting) framework in action through a music exploration application. ReAct enables AI to think step-by-step about tasks, take appropriate actions, and provide reasoned responses. The application shows how ReAct can be used to create an intelligent music discovery assistant that combines reasoning with Spotify API interactions.\nThe application utilizes [`llama-cpp-python`](https://github.com/abetlen/llama-cpp-python) for the Model Service and integrates with Spotify's API for music data. The recipe uses [Langchain](https://python.langchain.com/docs/get_started/introduction) for the ReAct implementation and [Streamlit](https://streamlit.io/) for the UI layer.\n\n## Spotify API Access\nTo use this application, you'll need Spotify API credentials (follow the link here for documentation https://developer.spotify.com/documentation/web-api):\n- Create a Spotify Developer account\n- Create an application in the Spotify Developer Dashboard (https://developer.spotify.com/documentation/web-api/concepts/apps dont worry about adding web/redirect url use the defaults)\n- Get your Client ID and Client Secret once the app is created (https://developer.spotify.com/dashboard)\n\nThese can be provided through environment variables or the application's UI.\n\n## Try the ReAct Agent Application\nThe [Podman Desktop](https://podman-desktop.io) [AI Lab Extension](https://github.com/containers/podman-desktop-extension-ai-lab) includes this recipe among others. To try it out, open `Recipes Catalog` -> `ReAct Agent` and follow the instructions to start the application.\n\n# Build the Application\nThe rest of this document will explain how to build and run the application from the terminal, and will go into greater detail on how each container in the Pod above is built, run, and what purpose it serves in the overall application. All the recipes use a central [Makefile](../../common/Makefile.common) that includes variables populated with default values to simplify getting started. Please review the [Makefile docs](../../common/README.md), to learn about further customizing your application.\n\n## Download a model\nIf you are just getting started, we recommend using [granite-7b-lab](https://huggingface.co/instructlab/granite-7b-lab). This is a well performant mid-sized model with an apache-2.0 license. In order to use it with our Model Service we need it converted and quantized into the [GGUF format](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md). There are a number of ways to get a GGUF version of granite-7b-lab, but the simplest is to download a pre-converted one from [huggingface.co](https://huggingface.co) here: https://huggingface.co/instructlab/granite-7b-lab-GGUF.\nThe recommended model can be downloaded using the code snippet below:\n```bash\ncd ../../../models\ncurl -sLO https://huggingface.co/instructlab/granite-7b-lab-GGUF/resolve/main/granite-7b-lab-Q4_K_M.gguf\ncd ../recipes/natural_language_processing/agents\n```\n_A full list of supported open models is forthcoming._ \n\n## Build the Model Service\nThe complete instructions for building and deploying the Model Service can be found in the [llamacpp_python model-service document](../../../model_servers/llamacpp_python/README.md).\nThe Model Service can be built from make commands from the [llamacpp_python directory](../../../model_servers/llamacpp_python/).\n```bash\n# from path model_servers/llamacpp_python from repo containers/ai-lab-recipes\nmake build\n```\nCheckout the [Makefile](../../../model_servers/llamacpp_python/Makefile) to get more details on different options for how to build.\n\n## Deploy the Model Service\nThe local Model Service relies on a volume mount to the localhost to access the model files. It also employs environment variables to dictate the model used and where its served. You can start your local Model Service using the following `make` command from `model_servers/llamacpp_python` set with reasonable defaults:\n```bash\n# from path model_servers/llamacpp_python from repo containers/ai-lab-recipes\nmake run\n```\n\n## Build the AI Application\nThe AI Application can be built from the make command:\n```bash\n# Run this from the current directory (path recipes/natural_language_processing/agents from repo containers/ai-lab-recipes)\nmake build\n```\n\n## Deploy the AI Application\nMake sure the Model Service is up and running before starting this container image. When starting the AI Application container image we need to direct it to the correct `MODEL_ENDPOINT`. This could be any appropriately hosted Model Service (running locally or in the cloud) using an OpenAI compatible API. In our case the Model Service is running inside the Podman machine so we need to provide it with the appropriate address `10.88.0.1`. To deploy the AI application use the following:\n```bash\n# Run this from the current directory (path recipes/natural_language_processing/agents from repo containers/ai-lab-recipes)\nmake run \n```\n\n## Interact with the AI Application\nEverything should now be up an running with the chat application available at [`http://localhost:8501`](http://localhost:8501). By using this recipe and getting this starting point established, users should now have an easier time customizing and building their own LLM enabled applications.",
+      "recommended": [
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
+        "hf.ibm-research.granite-3.2-8b-instruct-GGUF",
+        "hf.bartowski.granite-3.1-8b-instruct-GGUF",
+        "hf.instructlab.granite-7b-lab-GGUF",
+        "hf.instructlab.merlinite-7b-lab-GGUF",
+        "hf.lmstudio-community.granite-3.0-8b-instruct-GGUF"
+      ],
+      "backend": "llama-cpp",
+      "languages": ["python"],
+      "frameworks": ["streamlit", "langchain"]
+    },
+    {
       "id": "summarizer",
       "description": "This recipe guides into creating custom LLM-powered summarization applications using Streamlit.",
       "name": "Summarizer",
@@ -60,6 +82,7 @@
       "languages": ["python"],
       "frameworks": ["streamlit", "langchain"]
     },
+
     {
       "id": "codegeneration",
       "description": "This recipes showcases how to leverage LLM to build your own custom code generation application.",

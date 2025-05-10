@@ -193,6 +193,8 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
 
     if (!connection) throw new Error('cannot find running container provider connection');
 
+    await provider.prePerform(config);
+
     // upload models to podman machine if user system is supported
     config.modelsInfo = await Promise.all(
       config.modelsInfo.map(modelInfo =>

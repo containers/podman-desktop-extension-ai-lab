@@ -23,6 +23,9 @@ import { AILabNavigationBar } from './ai-lab-navigation-bar';
 
 export class AILabPage extends AILabBasePage {
   readonly navigationBar: AILabNavigationBar;
+  static readonly AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
+  static readonly AI_LAB_CATALOG_EXTENSION_NAME: string = 'Podman AI Lab extension';
+  static readonly AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Welcome to Podman AI Lab');

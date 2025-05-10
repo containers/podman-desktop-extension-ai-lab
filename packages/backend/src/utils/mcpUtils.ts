@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { experimental_createMCPClient as createMCPClient } from 'ai';
 import { Experimental_StdioMCPTransport as StdioClientTransport } from 'ai/mcp-stdio';
-import { type McpClient, type McpServer, McpServerType } from '../models/mcpTypes';
+import { type McpClient, type McpServer, McpServerType } from '@shared/models/McpSettings';
 
 export async function toMcpClients(...mcpServers: McpServer[]): Promise<McpClient[]> {
   const clients: McpClient[] = [];

@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import type { Language } from 'postman-code-generators';
+import type { McpSettings } from '@shared/models/McpSettings';
 import { createRpcChannel } from './messages/MessageProxy';
 import type { Task } from './models/ITask';
 import type { ModelInfo } from './models/IModelInfo';
@@ -41,6 +42,7 @@ export const MSG_INSTRUCTLAB_SESSIONS_UPDATE = createRpcChannel<InstructlabSessi
 export const MSG_LOCAL_REPOSITORY_UPDATE = createRpcChannel<LocalRepository[]>('local-repository-update');
 export const MSG_CONVERSATIONS_UPDATE = createRpcChannel<Conversation[]>('conversations-update');
 export const MSG_CONFIGURATION_UPDATE = createRpcChannel<ExtensionConfiguration>('configuration-update');
+export const MSG_MCP_SERVERS_UPDATE = createRpcChannel<McpSettings>('mcp-servers-update');
 export const MSG_NEW_CATALOG_STATE = createRpcChannel<ApplicationCatalog>('new-catalog-state');
 export const MSG_APPLICATIONS_STATE_UPDATE = createRpcChannel<ApplicationState[]>('applications-state-update');
 export const MSG_GPUS_UPDATE = createRpcChannel<IGPUInfo[]>('gpus-update');

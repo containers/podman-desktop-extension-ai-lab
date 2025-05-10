@@ -45,6 +45,14 @@ vi.mock('../utils/client', async () => ({
   studioClient: {
     openURL: vi.fn(),
     openDialog: vi.fn(),
+    getExtensionConfiguration: vi.fn(),
+  },
+  rpcBrowser: {
+    subscribe: (): unknown => {
+      return {
+        unsubscribe: (): void => {},
+      };
+    },
   },
 }));
 
@@ -53,6 +61,16 @@ beforeEach(() => {
 
   const infos: Writable<ModelInfo[]> = writable([]);
   vi.mocked(modelsInfo).subscribe.mockImplementation(run => infos.subscribe(run));
+  vi.mocked(studioClient.getExtensionConfiguration).mockResolvedValue({
+    experimentalGPU: false,
+    apiPort: 0,
+    experimentalTuning: false,
+    modelsPath: '',
+    inferenceRuntime: 'llama-cpp',
+    modelUploadDisabled: false,
+    showGPUPromotion: false,
+    appearance: 'dark',
+  });
 });
 
 test('empty form should have submit disabled', async () => {

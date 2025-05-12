@@ -55,8 +55,8 @@
           "type": "string",
           "enum": [
             "llama-cpp",
-            "openvino",
-            "vllm"
+            "whisper-cpp",
+            "none"
           ],
           "description": "Choose the default inferencing runtime for AI Lab"
         },

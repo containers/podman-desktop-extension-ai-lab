@@ -95,6 +95,7 @@ beforeEach(() => {
     experimentalGPU: false,
     modelsPath: 'model-path',
     apiPort: 10434,
+    inferenceRuntime: 'llama-cpp',
     experimentalTuning: false,
     modelUploadDisabled: false,
     showGPUPromotion: false,

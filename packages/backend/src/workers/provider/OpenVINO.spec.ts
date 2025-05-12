@@ -29,7 +29,6 @@ import type { InferenceServer } from '@shared/models/IInference';
 import { InferenceType } from '@shared/models/IInference';
 import { openvino } from '../../assets/inference-images.json';
 import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
-import { join } from 'node:path';
 import { OpenVINO, SECOND } from './OpenVINO';
 import type { ModelsManager } from '../../managers/modelsManager';
 
@@ -54,8 +53,8 @@ const DummyModel: ModelInfo = {
   name: 'dummy model',
   id: 'dummy-model-id',
   file: {
-    file: 'dummy-file.guff',
-    path: 'dummy-path',
+    file: '',
+    path: 'dummy-path/snapshots/032c17573f64eacffe8514e7ee47cc0e532ed9a2',
   },
   properties: {},
   description: 'dummy-desc',
@@ -196,7 +195,14 @@ describe('perform', () => {
     });
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
-      Cmd: ['--rest_port', '8000', '--config_path', '/model/config-all.json', '--metrics_enable'],
+      Cmd: [
+        'ovms',
+        '--rest_port',
+        '8000',
+        '--config_path',
+        '/model/snapshots/032c17573f64eacffe8514e7ee47cc0e532ed9a2/config-all.json',
+        '--metrics_enable',
+      ],
       Detach: true,
       Env: ['MODEL_PATH=/model', 'HOST=0.0.0.0', 'PORT=8000'],
       ExposedPorts: {
@@ -211,7 +217,7 @@ describe('perform', () => {
         AutoRemove: false,
         Mounts: [
           {
-            Source: join('dummy-path', 'dummy-file.guff'),
+            Source: 'dummy-path',
             Target: '/model',
             Type: 'bind',
           },

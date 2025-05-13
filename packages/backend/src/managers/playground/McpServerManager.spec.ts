@@ -38,7 +38,7 @@ beforeEach(async () => {
     dispose: vi.fn(),
     onContentUpdated: vi.fn((fn: (mcpSettings: McpSettings) => void) => (update = fn)),
   } as unknown as JsonWatcher<McpSettings>;
-  vi.mocked(JsonWatcher).mockImplementation(() => mockJsonWatcher);
+  vi.mocked(JsonWatcher).mockReturnValue(mockJsonWatcher);
   vi.mocked(toMcpClients).mockImplementation(async (...mcpServers) =>
     mcpServers.map(s => ({ name: s.name }) as unknown as McpClient),
   );

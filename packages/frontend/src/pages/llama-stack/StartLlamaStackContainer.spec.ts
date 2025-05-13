@@ -106,8 +106,12 @@ test('start button should be displayed and enabled', async () => {
   expect(startBtn).toBeEnabled();
 });
 
-test('open button should be displayed if no Llama Stack container', async () => {
-  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({ containerId: 'containerId', port: 10000 });
+test('open button should be displayed if Llama Stack container is found', async () => {
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({
+    containerId: 'containerId',
+    port: 10000,
+    playgroundPort: 0,
+  });
   render(StartLlamaStackContainer);
 
   await vi.waitFor(() => {
@@ -116,8 +120,60 @@ test('open button should be displayed if no Llama Stack container', async () => 
   });
 });
 
+test('playground button should be disabled if platground port is zero', async () => {
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({
+    containerId: 'containerId',
+    port: 10000,
+    playgroundPort: 0,
+  });
+  render(StartLlamaStackContainer);
+
+  await vi.waitFor(() => {
+    const playgroundBtn = screen.getByTitle('Explore LLama-Stack environment');
+    expect(playgroundBtn).toBeDefined();
+    expect(playgroundBtn).toBeDisabled();
+  });
+});
+
+test('playground button should be enabled if platground port is not zero', async () => {
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({
+    containerId: 'containerId',
+    port: 10000,
+    playgroundPort: 10001,
+  });
+  render(StartLlamaStackContainer);
+
+  await vi.waitFor(() => {
+    const playgroundBtn = screen.getByTitle('Explore LLama-Stack environment');
+    expect(playgroundBtn).toBeDefined();
+    expect(playgroundBtn).toBeEnabled();
+  });
+});
+
+test('click playground button should open url', async () => {
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({
+    containerId: 'containerId',
+    port: 10000,
+    playgroundPort: 10001,
+  });
+  render(StartLlamaStackContainer);
+
+  const playgroundBtn = await vi.waitFor(() => {
+    const playgroundBtn = screen.getByTitle('Explore LLama-Stack environment');
+    expect(playgroundBtn).toBeDefined();
+    return playgroundBtn;
+  });
+
+  await userEvent.click(playgroundBtn);
+  expect(studioClient.openURL).toHaveBeenCalledWith('http://localhost:10001');
+});
+
 test('click open button should redirect to Llama Stack container', async () => {
-  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({ containerId: 'containerId', port: 10000 });
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({
+    containerId: 'containerId',
+    port: 10000,
+    playgroundPort: 0,
+  });
   render(StartLlamaStackContainer);
 
   const openBtn = await vi.waitFor(() => {
@@ -131,7 +187,11 @@ test('click open button should redirect to Llama Stack container', async () => {
 });
 
 test('port should be displayed', async () => {
-  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({ containerId: 'containerId', port: 10000 });
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({
+    containerId: 'containerId',
+    port: 10000,
+    playgroundPort: 0,
+  });
   render(StartLlamaStackContainer);
 
   await vi.waitFor(() => {
@@ -140,7 +200,11 @@ test('port should be displayed', async () => {
 });
 
 test('link to Swagger UI should be displayed', async () => {
-  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({ containerId: 'containerId', port: 10000 });
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({
+    containerId: 'containerId',
+    port: 10000,
+    playgroundPort: 0,
+  });
   render(StartLlamaStackContainer);
 
   let link: HTMLElement | undefined;

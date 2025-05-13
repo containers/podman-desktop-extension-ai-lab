@@ -29,6 +29,7 @@ import {
 } from '@podman-desktop/api';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import llama_stack_images from '../../assets/llama-stack-images.json';
+import llama_stack_playground_images from '../../assets/llama-stack-playground-images.json';
 import { getImageInfo } from '../../utils/inferenceUtils';
 import type { ContainerRegistry, ContainerEvent, ContainerHealthy } from '../../registries/ContainerRegistry';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
@@ -46,6 +47,7 @@ import { getPodmanCli, getPodmanMachineName } from '../../utils/podman';
 
 export const LLAMA_STACK_CONTAINER_LABEL = 'ai-lab-llama-stack-container';
 export const LLAMA_STACK_API_PORT_LABEL = 'ai-lab-llama-stack-api-port';
+export const LLAMA_STACK_PLAYGROUND_PORT_LABEL = 'ai-lab-llama-stack-playground-port';
 export const SECOND: number = 1_000_000_000;
 
 /*
@@ -116,6 +118,7 @@ export class LlamaStackManager implements Disposable {
         ? {
             containerId: containerInfo.Id,
             port: parseInt(containerInfo.Labels[LLAMA_STACK_API_PORT_LABEL]),
+            playgroundPort: 0,
           }
         : undefined;
     }
@@ -148,13 +151,27 @@ export class LlamaStackManager implements Disposable {
   async getLlamaStackContainer(): Promise<LlamaStackContainerInfo | undefined> {
     if (!this.#initialized) {
       const containers = await containerEngine.listContainers();
-      this.#containerInfo = containers
+      const containerInfo = containers
         .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_CONTAINER_LABEL in c.Labels)
         .map(c => ({
           containerId: c.Id,
           port: parseInt(c.Labels[LLAMA_STACK_API_PORT_LABEL]),
+          playgroundPort: 0,
         }))
         .at(0);
+      this.#containerInfo = containerInfo;
+      if (containerInfo) {
+        const containerInfoWithPlayground = containers
+          .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_PLAYGROUND_PORT_LABEL in c.Labels)
+          .map(c => ({
+            ...containerInfo,
+            playgroundPort: parseInt(c.Labels[LLAMA_STACK_PLAYGROUND_PORT_LABEL]),
+          }))
+          .at(0);
+        if (containerInfoWithPlayground) {
+          this.#containerInfo = containerInfoWithPlayground;
+        }
+      }
       this.#initialized = true;
     }
     return this.#containerInfo;
@@ -194,6 +211,7 @@ export class LlamaStackManager implements Disposable {
             ...labels,
             containerId: containerInfo.containerId,
             port: `${containerInfo.port}`,
+            playgroundPort: `${containerInfo.playgroundPort}`,
           }));
           this.telemetryLogger.logUsage('llamaStack.startContainer');
         },
@@ -219,7 +237,9 @@ export class LlamaStackManager implements Disposable {
 
     let containerInfo = await this.createContainer(connection, image, imageInfo, labels);
     containerInfo = await this.waitLlamaStackContainerHealthy(containerInfo, labels);
-    return this.registerModels(containerInfo, labels, connection);
+    containerInfo = await this.registerModels(containerInfo, labels, connection);
+    containerInfo = await this.startPlayground(containerInfo, labels, connection);
+    return containerInfo;
   }
 
   private async createContainer(
@@ -282,6 +302,7 @@ export class LlamaStackManager implements Disposable {
         return {
           containerId: id,
           port: llamaStackApiPort,
+          playgroundPort: 0,
         };
       },
     );
@@ -310,6 +331,7 @@ export class LlamaStackManager implements Disposable {
               ...labels,
               containerId: containerInfo.containerId,
               port: `${containerInfo.port}`,
+              playgroundPort: `${containerInfo.playgroundPort}`,
             }));
             this.telemetryLogger.logUsage('llamaStack.startContainer');
             resolve(containerInfo);
@@ -344,6 +366,61 @@ export class LlamaStackManager implements Disposable {
       );
     }
     return containerInfo;
+  }
+
+  async startPlayground(
+    containerInfo: LlamaStackContainerInfo,
+    labels: { [p: string]: string },
+    connection: ContainerProviderConnection,
+  ): Promise<LlamaStackContainerInfo> {
+    const image = llama_stack_playground_images.default;
+    const imageInfo = await this.#taskRunner.runAsTask<ImageInfo>(
+      labels,
+      {
+        loadingLabel: `Pulling ${image}.`,
+        errorMsg: err => `Something went wrong while pulling ${image}: ${String(err)}`,
+      },
+      () => getImageInfo(connection, image, () => {}),
+    );
+
+    const llamaStackPlaygroundPort = await getFreeRandomPort('0.0.0.0');
+    const createContainerOptions: ContainerCreateOptions = {
+      Image: imageInfo.Id,
+      name: getRandomName('llama-stack-playground'),
+      Labels: {
+        [LLAMA_STACK_CONTAINER_LABEL]: image,
+        [LLAMA_STACK_PLAYGROUND_PORT_LABEL]: `${llamaStackPlaygroundPort}`,
+      },
+      HostConfig: {
+        AutoRemove: true,
+        PortBindings: {
+          '8501/tcp': [
+            {
+              HostPort: `${llamaStackPlaygroundPort}`,
+            },
+          ],
+        },
+      },
+      Env: [`LLAMA_STACK_ENDPOINT=http://host.containers.internal:${containerInfo.port}`],
+      OpenStdin: true,
+      start: true,
+    };
+
+    return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
+      labels,
+      {
+        loadingLabel: 'Starting Llama Stack Playground',
+        errorMsg: err => `Something went wrong while creating container: ${String(err)}`,
+      },
+      async () => {
+        await containerEngine.createContainer(imageInfo.engineId, createContainerOptions);
+        return {
+          containerId: containerInfo.containerId,
+          port: containerInfo.port,
+          playgroundPort: llamaStackPlaygroundPort,
+        };
+      },
+    );
   }
 
   private async getLlamaStackContainerFolder(): Promise<string> {

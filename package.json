@@ -24,6 +24,7 @@
     "test:unit": "pnpm run test:backend && pnpm run test:shared && pnpm run test:frontend",
     "test:e2e": "cd tests/playwright && pnpm run test:e2e",
     "test:e2e:smoke": "cd tests/playwright && pnpm run test:e2e:smoke",
+    "test:e2e:instructlab": "cd tests/playwright && pnpm run test:e2e:instructlab",
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
     "typecheck:backend": "cd packages/backend && pnpm run typecheck",

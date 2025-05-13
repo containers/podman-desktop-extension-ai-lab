@@ -500,7 +500,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  test.describe.serial('InstructLab container startup', () => {
+  test.describe.serial('InstructLab container startup', { tag: '@instructlab' }, () => {
     let instructLabPage: AILabTryInstructLabPage;
     const instructLabContainerName = '^instructlab-\\d+$';
 

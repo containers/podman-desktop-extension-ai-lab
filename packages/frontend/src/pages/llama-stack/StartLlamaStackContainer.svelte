@@ -111,36 +111,40 @@ function openLink(url: string): void {
         tasks={$tasks} />
 
       <!-- form -->
-      <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
-        <div class="w-full text-[var(--pd-details-body-text)]">
-          <!-- container provider connection input -->
-          {#if startedContainerProviderConnectionInfo.length > 1}
-            <label for="" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Container engine</label>
-            <ContainerProviderConnectionSelect
-              bind:value={containerProviderConnection}
-              containerProviderConnections={startedContainerProviderConnectionInfo} />
-          {/if}
+      {#if startedContainerProviderConnectionInfo.length > 1 || containerInfo !== undefined || errorMsg !== undefined}
+        <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
+          <div class="w-full text-[var(--pd-details-body-text)]">
+            <!-- container provider connection input -->
+            {#if startedContainerProviderConnectionInfo.length > 1}
+              <label for="" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+                >Container engine</label>
+              <ContainerProviderConnectionSelect
+                bind:value={containerProviderConnection}
+                containerProviderConnections={startedContainerProviderConnectionInfo} />
+            {/if}
 
-          <h1 class="pt-4 mb-2 text-lg first-letter:uppercase">Instructions</h1>
+            {#if containerInfo !== undefined || errorMsg !== undefined}
+              <h1 class="pt-4 mb-2 text-lg first-letter:uppercase">Instructions</h1>
 
-          {#if containerInfo}
-            <p>Llama Stack API is accessible at http://localhost:{containerInfo.port}</p>
-            <p>
-              Access
-              <Tooltip tip="Open swagger documentation">
-                <Link
-                  aria-label="swagger documentation"
-                  on:click={openLink.bind(undefined, `http://localhost:${containerInfo.port}/docs`)}>
-                  swagger documentation
-                </Link>
-              </Tooltip>
-            </p>
-          {/if}
-          {#if errorMsg !== undefined}
-            <ErrorMessage error={errorMsg} />
-          {/if}
+              {#if containerInfo}
+                <p>Llama Stack API is accessible at http://localhost:{containerInfo.port}</p>
+                <p>
+                  Access
+                  <Tooltip tip="Open swagger documentation">
+                    <Link
+                      aria-label="swagger documentation"
+                      on:click={openLink.bind(undefined, `http://localhost:${containerInfo.port}/docs`)}>
+                      swagger documentation
+                    </Link>
+                  </Tooltip>
+                </p>
+              {/if}
+              {#if errorMsg !== undefined}
+                <ErrorMessage error={errorMsg} />
+              {/if}
+            {/if}
+          </div>
         </div>
-      </div>
+      {/if}
     </div></svelte:fragment>
 </FormPage>

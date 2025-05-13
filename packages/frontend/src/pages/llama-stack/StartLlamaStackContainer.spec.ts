@@ -26,6 +26,7 @@ import { VMType } from '@shared/models/IPodman';
 import userEvent from '@testing-library/user-event';
 import * as tasks from '/@/stores/tasks';
 import { writable } from 'svelte/store';
+import { tick } from 'svelte';
 
 vi.mock('../../stores/tasks', async () => {
   return {
@@ -79,6 +80,22 @@ test('start button should be displayed if no Llama Stack container', async () =>
 
   const startBtn = screen.getByTitle('Start Llama Stack container');
   expect(startBtn).toBeDefined();
+});
+
+test('Instructions block should not be displayed if no Llama Stack container', async () => {
+  render(StartLlamaStackContainer);
+
+  await tick();
+  const instructions = screen.queryByText('Instructions');
+  expect(instructions).not.toBeInTheDocument();
+});
+
+test('Instructions block should be displayed if Llama Stack container is found', async () => {
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({ containerId: 'containerId', port: 10000 });
+  render(StartLlamaStackContainer);
+
+  await tick();
+  screen.getByText('Instructions');
 });
 
 test('start button should be displayed and enabled', async () => {

@@ -26,23 +26,21 @@ import { toMcpClients } from '../../utils/mcpUtils';
 vi.mock('../../utils/JsonWatcher');
 vi.mock('../../utils/mcpUtils');
 
-let mockJsonWatcher: JsonWatcher<McpSettings>;
-let rpcExtension: RpcExtension;
+const mockJsonWatcher = {
+  init: vi.fn(),
+  dispose: vi.fn(),
+  onContentUpdated: vi.fn((fn: (mcpSettings: McpSettings) => void) => (update = fn)),
+} as unknown as JsonWatcher<McpSettings>;
+const rpcExtension = { fire: vi.fn(() => Promise.resolve(true)) } as unknown as RpcExtension;
 let update: (mcpSettings: McpSettings) => void;
 let appUserDirectory: string;
 let mcpServerManager: McpServerManager;
 beforeEach(async () => {
   vi.resetAllMocks();
-  mockJsonWatcher = {
-    init: vi.fn(),
-    dispose: vi.fn(),
-    onContentUpdated: vi.fn((fn: (mcpSettings: McpSettings) => void) => (update = fn)),
-  } as unknown as JsonWatcher<McpSettings>;
   vi.mocked(JsonWatcher).mockReturnValue(mockJsonWatcher);
   vi.mocked(toMcpClients).mockImplementation(async (...mcpServers) =>
     mcpServers.map(s => ({ name: s.name }) as unknown as McpClient),
   );
-  rpcExtension = { fire: vi.fn(() => Promise.resolve(true)) } as unknown as RpcExtension;
   appUserDirectory = path.join('/', 'tmp', 'mcp-server-manager-test-');
   mcpServerManager = new McpServerManager(rpcExtension, appUserDirectory);
 });

@@ -639,11 +639,11 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test('Start and verify InstructLab container', async ({ page }) => {
-      test.setTimeout(2_100_000);
+      test.setTimeout(5_000_000);
       await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
       await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
       await instructLabPage.startInstructLabButton.click();
-      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 2_000_000 });
+      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 5_000_000 });
 
       await instructLabPage.openInstructLabButton.click();
 

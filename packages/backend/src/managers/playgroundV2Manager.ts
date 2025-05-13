@@ -30,24 +30,22 @@ import { getHash } from '../utils/sha';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AiStreamProcessor } from './playground/aiSdk';
-import { McpServerManager } from './playground/McpServerManager';
+import { type McpServerManager } from './playground/McpServerManager';
 import type { ToolSet } from 'ai';
 import { simulateStreamingMiddleware, wrapLanguageModel } from 'ai';
 
 export class PlaygroundV2Manager implements Disposable {
   readonly #conversationRegistry: ConversationRegistry;
-  readonly #mcpServerManager: McpServerManager;
 
   constructor(
-    appUserDirectory: string,
     rpcExtension: RpcExtension,
     private inferenceManager: InferenceManager,
     private taskRegistry: TaskRegistry,
     private telemetry: TelemetryLogger,
     private cancellationTokenRegistry: CancellationTokenRegistry,
+    private mcpServerManager: McpServerManager,
   ) {
     this.#conversationRegistry = new ConversationRegistry(rpcExtension);
-    this.#mcpServerManager = new McpServerManager(rpcExtension, appUserDirectory);
   }
 
   deleteConversation(conversationId: string): void {
@@ -232,7 +230,7 @@ export class PlaygroundV2Manager implements Disposable {
     });
 
     const tools: ToolSet = {};
-    const mcpClients = await this.#mcpServerManager.toMcpClients();
+    const mcpClients = await this.mcpServerManager.toMcpClients();
     for (const client of mcpClients) {
       const clientTools = await client.tools();
       for (const entry of Object.entries(clientTools)) {
@@ -294,6 +292,5 @@ export class PlaygroundV2Manager implements Disposable {
 
   dispose(): void {
     this.#conversationRegistry.dispose();
-    this.#mcpServerManager.dispose();
   }
 }

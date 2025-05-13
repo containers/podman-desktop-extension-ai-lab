@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import path from 'node:path';
-import { type Disposable, EventEmitter } from '@podman-desktop/api';
+import { type Disposable } from '@podman-desktop/api';
 import { MSG_MCP_SERVERS_UPDATE } from '@shared/Messages';
 import { type McpSettings, McpServerType, type McpClient } from '@shared/models/McpSettings';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
@@ -30,7 +30,6 @@ const MCP_SETTINGS = 'mcp-settings.json';
 export class McpServerManager extends Publisher<McpSettings> implements Disposable {
   private readonly settingsFile: string;
   private mcpSettings: McpSettings;
-  private readonly _onUpdate: EventEmitter<McpSettings>;
   readonly #jsonWatcher: JsonWatcher<McpSettings>;
 
   constructor(
@@ -42,9 +41,14 @@ export class McpServerManager extends Publisher<McpSettings> implements Disposab
     this.mcpSettings = {
       servers: {},
     };
-    this._onUpdate = new EventEmitter<McpSettings>();
     this.#jsonWatcher = new JsonWatcher<McpSettings>(this.settingsFile, { ...this.mcpSettings });
     this.#jsonWatcher.onContentUpdated(this.onMcpSettingsUpdated.bind(this));
+  }
+
+  /**
+   * Lazily initialize the MCP server manager dependencies.
+   */
+  init(): void {
     this.#jsonWatcher.init();
   }
 
@@ -71,11 +75,6 @@ export class McpServerManager extends Publisher<McpSettings> implements Disposab
   }
 
   dispose(): void {
-    // NO OP
-  }
-
-  override notify(): void {
-    super.notify();
-    this._onUpdate.fire(this.getMcpSettings());
+    this.#jsonWatcher.dispose();
   }
 }

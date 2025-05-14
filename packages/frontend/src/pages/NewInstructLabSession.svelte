@@ -12,7 +12,7 @@ import type { ModelInfo } from '@shared/models/IModelInfo';
 let skillsFiles: string[] = $state([]);
 let knowledgeFiles: string[] = $state([]);
 
-let valid: boolean = $state(false);
+let valid: boolean = $derived(false);
 
 let sessionName: string = $state('');
 let model: ModelInfo | undefined = $state(undefined);

@@ -91,7 +91,11 @@ test('Instructions block should not be displayed if no Llama Stack container', a
 });
 
 test('Instructions block should be displayed if Llama Stack container is found', async () => {
-  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({ containerId: 'containerId', port: 10000 });
+  vi.mocked(llamaStackClient.getLlamaStackContainerInfo).mockResolvedValue({
+    containerId: 'containerId',
+    port: 10000,
+    playgroundPort: 0,
+  });
   render(StartLlamaStackContainer);
 
   await tick();

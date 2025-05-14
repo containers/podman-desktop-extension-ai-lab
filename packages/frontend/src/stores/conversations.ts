@@ -21,21 +21,48 @@ import { readable } from 'svelte/store';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { Conversation } from '@shared/models/IPlaygroundMessage';
+import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { InferenceType } from '@shared/models/IInference';
+import { toInferenceType } from '@shared/models/IInference';
+
+export interface ConversationWithBackend extends Conversation {
+  backend: InferenceType;
+}
 
 // RPCReadable cannot be used here, as it is doing some debouncing, and we want
 // to get the conversation as soon as the tokens arrive here, instead getting them by packets
-export const conversations: Readable<Conversation[]> = readable<Conversation[]>([], set => {
-  const sub = rpcBrowser.subscribe(MSG_CONVERSATIONS_UPDATE, msg => {
-    set(msg);
+export const conversations: Readable<ConversationWithBackend[]> = readable<ConversationWithBackend[]>([], set => {
+  const sub = rpcBrowser.subscribe(MSG_CONVERSATIONS_UPDATE, conversations => {
+    setWithBackend(set, conversations);
   });
   // Initialize the store manually
   studioClient
     .getPlaygroundConversations()
     .then(state => {
-      set(state);
+      setWithBackend(set, state);
     })
     .catch((err: unknown) => console.error(`Error getting playground conversations:`, err));
   return () => {
     sub.unsubscribe();
   };
 });
+
+function setWithBackend(set: (value: ConversationWithBackend[]) => void, conversations: Conversation[]): void {
+  studioClient
+    .getModelsInfo()
+    .then(modelsInfo => {
+      const conversationsWithBackend: ConversationWithBackend[] = conversations.map(conversation => ({
+        ...conversation,
+        backend: getModelBackend(modelsInfo, conversation.modelId),
+      }));
+      set(conversationsWithBackend);
+    })
+    .catch((err: unknown) => {
+      console.error('error getting models info', String(err));
+    });
+}
+
+function getModelBackend(modelsInfo: ModelInfo[], modelId: string): InferenceType {
+  const backend = modelsInfo.find(modelInfo => modelInfo.id === modelId)?.backend;
+  return toInferenceType(backend);
+}

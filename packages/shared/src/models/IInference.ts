@@ -29,6 +29,18 @@ const InferenceTypeLabel = {
   none: 'None',
 };
 
+// toInferenceType casts a string to InferenceType
+// returns NONE value if input value is undefined or unknown
+export function toInferenceType(type: string | undefined): InferenceType {
+  if (!type) {
+    return InferenceType.NONE;
+  }
+  if (Object.values(InferenceType).includes(type as InferenceType)) {
+    return type as InferenceType;
+  }
+  return InferenceType.NONE;
+}
+
 export function inferenceTypeLabel(type: InferenceType): string {
   if (type in InferenceTypeLabel) {
     return InferenceTypeLabel[type];

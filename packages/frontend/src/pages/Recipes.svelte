@@ -108,7 +108,7 @@ let defaultRuntime: string | undefined = $state();
 onMount(() => {
   const inferenceRuntime = $configuration?.inferenceRuntime;
   if (inferenceRuntime) defaultRuntime = inferenceRuntime;
-  onFilterChange('tools', defaultRuntime ?? 'all');
+  if (inferenceRuntime !== 'all') onFilterChange('tools', defaultRuntime ?? '');
 });
 </script>
 
@@ -144,7 +144,7 @@ onMount(() => {
               <label for={filterComponent.key} class="block mb-2 text-sm font-medium">{filterComponent.label}</label>
               <Dropdown
                 id={filterComponent.key}
-                value={filterComponent.key === 'tools' ? defaultRuntime : undefined}
+                value={filterComponent.key === 'tools' ? defaultRuntime : ''}
                 options={choicesToOptions(choices[filterComponent.key])}
                 onChange={(v): void => onFilterChange(filterComponent.key, v)}></Dropdown>
             </div>

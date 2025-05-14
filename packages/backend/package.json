@@ -54,6 +54,7 @@
         "ai-lab.inferenceRuntime": {
           "type": "string",
           "enum": [
+            "all",
             "llama-cpp",
             "whisper-cpp",
             "none"

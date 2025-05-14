@@ -56,10 +56,11 @@ function processTasks(trackedTasks: Task[]): void {
   if (task === undefined) return;
 
   containerInfo =
-    task.labels?.['containerId'] && task.labels?.['port']
+    task.labels?.['containerId'] && task.labels?.['port'] && task.labels?.['playgroundPort']
       ? {
           containerId: task.labels?.['containerId'],
           port: parseInt(task.labels?.['port']),
+          playgroundPort: parseInt(task.labels?.['playgroundPort']),
         }
       : undefined;
 }
@@ -82,6 +83,10 @@ function openLlamaStackContainer(): void {
   llamaStackClient.routeToLlamaStackContainerTerminal(containerInfo!.containerId).catch(console.error);
 }
 
+function openLlamaStackPlayground(): void {
+  openLink(`http://localhost:${containerInfo?.playgroundPort}`);
+}
+
 function openLink(url: string): void {
   studioClient.openURL(url).catch(err => console.error(`Error opening URL: ${url}`, err));
 }
@@ -91,10 +96,17 @@ function openLink(url: string): void {
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
       <header class="mx-5 mt-5">
-        <div class="w-full flex flex-row">
+        <div class="w-full flex flex-row space-x-2">
           {#if available}
             <Button inProgress={!available} title="Open Llama Stack container" on:click={openLlamaStackContainer}>
               Open Llama Stack container
+            </Button>
+            <Button
+              disabled={!containerInfo?.playgroundPort}
+              inProgress={!available}
+              title="Explore LLama-Stack environment"
+              on:click={openLlamaStackPlayground}>
+              Explore LLama-Stack environment
             </Button>
           {:else}
             <Button title="Start Llama Stack container" inProgress={loading} on:click={submit}>

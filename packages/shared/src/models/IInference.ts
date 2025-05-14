@@ -23,6 +23,19 @@ export enum InferenceType {
   NONE = 'none',
 }
 
+const InferenceTypeLabel = {
+  'llama-cpp': 'llamacpp',
+  'whisper-cpp': 'whispercpp',
+  none: 'None',
+};
+
+export function inferenceTypeLabel(type: InferenceType): string {
+  if (type in InferenceTypeLabel) {
+    return InferenceTypeLabel[type];
+  }
+  return InferenceTypeLabel['none'];
+}
+
 export type InferenceServerStatus = 'stopped' | 'running' | 'deleting' | 'stopping' | 'error' | 'starting';
 
 export interface InferenceServer {

@@ -55,7 +55,7 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
       modelsPath: this.getModelsPath(),
       experimentalGPU: this.#configuration.get<boolean>('experimentalGPU') ?? false,
       apiPort: this.#configuration.get<number>('apiPort') ?? API_PORT_DEFAULT,
-      inferenceRuntime: this.#configuration.get<string>('inferenceRuntime') ?? 'none',
+      inferenceRuntime: this.#configuration.get<string>('inferenceRuntime') ?? 'all',
       experimentalTuning: this.#configuration.get<boolean>('experimentalTuning') ?? false,
       modelUploadDisabled: this.#configuration.get<boolean>('modelUploadDisabled') ?? false,
       showGPUPromotion: this.#configuration.get<boolean>('showGPUPromotion') ?? true,

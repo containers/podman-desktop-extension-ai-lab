@@ -59,7 +59,7 @@ onMount(() => {
 
 function filterModel(model: ModelInfo): boolean {
   // If the defaultRuntime is undefined we should not filter any model
-  if (!defaultRuntime) return true;
+  if (!defaultRuntime || defaultRuntime === 'all') return true;
 
   return model.backend === defaultRuntime;
 }

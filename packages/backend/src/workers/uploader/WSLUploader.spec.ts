@@ -127,6 +127,7 @@ describe('upload', () => {
       'machine2',
       'cp',
       '-r',
+      '-L',
       '/mnt/c/Users/podman/folder/dummy.guff',
       '/home/user/ai-lab/models/dummyId',
     ]);
@@ -162,6 +163,7 @@ describe('upload', () => {
       'machine2',
       'cp',
       '-r',
+      '-L',
       '/mnt/c/Users/podman\\ folder/dummy.guff',
       '/home/user/ai-lab/models/dummyId',
     ]);

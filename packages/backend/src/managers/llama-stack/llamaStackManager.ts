@@ -107,39 +107,23 @@ export class LlamaStackManager implements Disposable {
     this.#disposables = [];
   }
 
-  protected async refreshLlamaStackContainer(id?: string): Promise<void> {
-    const containers = await containerEngine.listContainers();
-    const containerInfo = containers
-      .filter(c => !id || c.Id === id)
-      .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_CONTAINER_LABEL in c.Labels)
-      .at(0);
-    if ((id && containerInfo) || !id) {
-      this.#containerInfo = containerInfo
-        ? {
-            containerId: containerInfo.Id,
-            port: parseInt(containerInfo.Labels[LLAMA_STACK_API_PORT_LABEL]),
-            playgroundPort: 0,
-          }
-        : undefined;
-    }
-  }
-
   private async watchMachineEvent(event: PodmanConnectionEvent): Promise<void> {
     if ((event.status === 'started' && !this.#containerInfo) || (event.status === 'stopped' && this.#containerInfo)) {
       await this.refreshLlamaStackContainer();
     }
   }
 
-  private async onStartContainerEvent(event: ContainerEvent): Promise<void> {
-    await this.refreshLlamaStackContainer(event.id);
+  private async onStartContainerEvent(): Promise<void> {
+    await this.refreshLlamaStackContainer();
   }
 
-  private onStopContainerEvent(event: ContainerEvent): void {
+  private async onStopContainerEvent(event: ContainerEvent): Promise<void> {
     console.log('event id:', event.id, ' containerId: ', this.#containerInfo?.containerId);
     if (this.#containerInfo?.containerId === event.id) {
       this.#containerInfo = undefined;
       this.taskRegistry.deleteByLabels({ trackingId: LLAMA_STACK_CONTAINER_TRACKINGID });
     }
+    await this.refreshLlamaStackContainer();
   }
 
   /**
@@ -150,31 +134,35 @@ export class LlamaStackManager implements Disposable {
    */
   async getLlamaStackContainer(): Promise<LlamaStackContainerInfo | undefined> {
     if (!this.#initialized) {
-      const containers = await containerEngine.listContainers();
-      const containerInfo = containers
-        .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_CONTAINER_LABEL in c.Labels)
-        .map(c => ({
-          containerId: c.Id,
-          port: parseInt(c.Labels[LLAMA_STACK_API_PORT_LABEL]),
-          playgroundPort: 0,
-        }))
-        .at(0);
-      this.#containerInfo = containerInfo;
-      if (containerInfo) {
-        const containerInfoWithPlayground = containers
-          .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_PLAYGROUND_PORT_LABEL in c.Labels)
-          .map(c => ({
-            ...containerInfo,
-            playgroundPort: parseInt(c.Labels[LLAMA_STACK_PLAYGROUND_PORT_LABEL]),
-          }))
-          .at(0);
-        if (containerInfoWithPlayground) {
-          this.#containerInfo = containerInfoWithPlayground;
-        }
-      }
+      await this.refreshLlamaStackContainer();
       this.#initialized = true;
     }
     return this.#containerInfo;
+  }
+
+  protected async refreshLlamaStackContainer(): Promise<void> {
+    const containers = await containerEngine.listContainers();
+    const containerInfo = containers
+      .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_CONTAINER_LABEL in c.Labels)
+      .map(c => ({
+        containerId: c.Id,
+        port: parseInt(c.Labels[LLAMA_STACK_API_PORT_LABEL]),
+        playgroundPort: 0,
+      }))
+      .at(0);
+    this.#containerInfo = containerInfo;
+    if (containerInfo) {
+      const containerInfoWithPlayground = containers
+        .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_PLAYGROUND_PORT_LABEL in c.Labels)
+        .map(c => ({
+          ...containerInfo,
+          playgroundPort: parseInt(c.Labels[LLAMA_STACK_PLAYGROUND_PORT_LABEL]),
+        }))
+        .at(0);
+      if (containerInfoWithPlayground) {
+        this.#containerInfo = containerInfoWithPlayground;
+      }
+    }
   }
 
   async requestCreateLlamaStackContainer(config: LlamaStackContainerConfiguration): Promise<void> {

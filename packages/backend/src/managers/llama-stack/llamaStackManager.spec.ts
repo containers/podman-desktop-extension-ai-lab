@@ -55,8 +55,8 @@ vi.mock('@podman-desktop/api', () => {
 vi.mock('../../utils/ports');
 
 class TestLlamaStackManager extends LlamaStackManager {
-  public override async refreshLlamaStackContainer(id?: string): Promise<void> {
-    return super.refreshLlamaStackContainer(id);
+  public override async refreshLlamaStackContainer(): Promise<void> {
+    return super.refreshLlamaStackContainer();
   }
 
   public override getContainerInfo(): LlamaStackContainerInfo | undefined {
@@ -430,7 +430,7 @@ test('onStartContainerEvent event should call refreshLlamaStackContainer and set
 
   llamaStackManager.init();
 
-  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith('dummyId');
+  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith();
 
   await vi.waitFor(() => {
     expect(llamaStackManager.getContainerInfo()).toEqual({
@@ -455,7 +455,7 @@ test('onStopContainerEvent event should call refreshLlamaStackContainer and clea
 
   llamaStackManager.init();
 
-  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith('dummyId');
+  expect(llamaStackManager.refreshLlamaStackContainer).toHaveBeenCalledWith();
 
   await vi.waitFor(() => {
     expect(llamaStackManager.getContainerInfo()).toEqual({

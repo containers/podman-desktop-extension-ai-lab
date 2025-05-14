@@ -10,11 +10,13 @@ import { studioClient } from '/@/utils/client';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
 import { Button, Table, TableColumn, TableRow, NavPage, EmptyScreen } from '@podman-desktop/ui-svelte';
+import ServiceColumnRuntime from '/@/lib/table/service/ServiceColumnRuntime.svelte';
 
 const columns: TableColumn<InferenceServer>[] = [
   new TableColumn<InferenceServer>('Status', { width: '70px', renderer: ServiceStatus, align: 'center' }),
   new TableColumn<InferenceServer>('Name', { width: '1fr', renderer: ServiceColumnName, align: 'left' }),
   new TableColumn<InferenceServer>('Model', { renderer: ServiceColumnModelName, align: 'left' }),
+  new TableColumn<InferenceServer>('Runtime', { width: '90px', renderer: ServiceColumnRuntime, align: 'left' }),
   new TableColumn<InferenceServer>('Actions', { width: '80px', renderer: ServiceAction, align: 'right' }),
 ];
 const row = new TableRow<InferenceServer>({ selectable: (_service): boolean => true });

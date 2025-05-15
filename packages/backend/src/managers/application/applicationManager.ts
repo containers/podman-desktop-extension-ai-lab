@@ -55,6 +55,7 @@ import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { TaskRunner } from '../TaskRunner';
 import { getInferenceType } from '../../utils/inferenceUtils';
+import type { LlamaStackManager } from '../llama-stack/llamaStackManager';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
   #applications: ApplicationRegistry<ApplicationState>;
@@ -71,6 +72,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     private telemetry: TelemetryLogger,
     private podManager: PodManager,
     private recipeManager: RecipeManager,
+    private llamaStackManager: LlamaStackManager,
   ) {
     super(rpcExtension, MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
@@ -81,7 +83,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   async requestPullApplication(
     connection: ContainerProviderConnection,
     recipe: Recipe,
-    model: ModelInfo,
+    model?: ModelInfo,
   ): Promise<string> {
     // create a tracking id to put in the labels
     const trackingId: string = getRandomString();
@@ -121,13 +123,14 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   async pullApplication(
     connection: ContainerProviderConnection,
     recipe: Recipe,
-    model: ModelInfo,
+    model?: ModelInfo,
     labels: Record<string, string> = {},
   ): Promise<void> {
+    const modelId = model ? model.id : '0';
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
       'recipe-id': recipe.id,
-      'model-id': model.id,
+      'model-id': modelId,
     });
 
     const startTime = performance.now();
@@ -138,7 +141,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       await this.runApplication(podInfo, {
         ...labels,
         'recipe-id': recipe.id,
-        'model-id': model.id,
+        'model-id': modelId,
       });
 
       // measure init + start time
@@ -176,45 +179,52 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   private async initApplication(
     connection: ContainerProviderConnection,
     recipe: Recipe,
-    model: ModelInfo,
+    model?: ModelInfo,
     labels: Record<string, string> = {},
   ): Promise<PodInfo> {
-    // clone the recipe
-    await this.recipeManager.cloneRecipe(recipe, { ...labels, 'model-id': model.id });
+    const modelId = model ? model.id : '0';
 
-    // get model by downloading it or retrieving locally
-    let modelPath = await this.modelsManager.requestDownloadModel(model, {
-      ...labels,
-      'recipe-id': recipe.id,
-      'model-id': model.id,
-    });
+    // clone the recipe
+    await this.recipeManager.cloneRecipe(recipe, { ...labels, 'model-id': modelId });
+
+    let modelPath: string | undefined;
+    if (model) {
+      // get model by downloading it or retrieving locally
+      modelPath = await this.modelsManager.requestDownloadModel(model, {
+        ...labels,
+        'recipe-id': recipe.id,
+        'model-id': modelId,
+      });
+    }
 
     // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
     const recipeComponents = await this.recipeManager.buildRecipe(connection, recipe, model, {
       ...labels,
       'recipe-id': recipe.id,
-      'model-id': model.id,
+      'model-id': modelId,
     });
 
-    // upload model to podman machine if user system is supported
-    if (!recipeComponents.inferenceServer) {
-      modelPath = await this.modelsManager.uploadModelToPodmanMachine(connection, model, {
-        ...labels,
-        'recipe-id': recipe.id,
-        'model-id': model.id,
-      });
+    if (model) {
+      // upload model to podman machine if user system is supported
+      if (!recipeComponents.inferenceServer) {
+        modelPath = await this.modelsManager.uploadModelToPodmanMachine(connection, model, {
+          ...labels,
+          'recipe-id': recipe.id,
+          'model-id': modelId,
+        });
+      }
     }
 
     // first delete any existing pod with matching labels
-    if (await this.hasApplicationPod(recipe.id, model.id)) {
-      await this.removeApplication(recipe.id, model.id);
+    if (await this.hasApplicationPod(recipe.id, modelId)) {
+      await this.removeApplication(recipe.id, modelId);
     }
 
     // create a pod containing all the containers to run the application
     return this.createApplicationPod(connection, recipe, model, recipeComponents, modelPath, {
       ...labels,
       'recipe-id': recipe.id,
-      'model-id': model.id,
+      'model-id': modelId,
     });
   }
 
@@ -259,9 +269,9 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   protected async createApplicationPod(
     connection: ContainerProviderConnection,
     recipe: Recipe,
-    model: ModelInfo,
+    model: ModelInfo | undefined,
     components: RecipeComponents,
-    modelPath: string,
+    modelPath: string | undefined,
     labels?: { [key: string]: string },
   ): Promise<PodInfo> {
     return this.#taskRunner.runAsTask<PodInfo>(
@@ -286,8 +296,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     connection: ContainerProviderConnection,
     podInfo: PodInfo,
     components: RecipeComponents,
-    modelInfo: ModelInfo,
-    modelPath: string,
+    modelInfo: ModelInfo | undefined,
+    modelPath: string | undefined,
   ): Promise<void> {
     const vmType = connection.vmType ?? VMType.UNKNOWN;
     // temporary check to set Z flag or not - to be removed when switching to podman 5
@@ -297,28 +307,35 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         let envs: string[] = [];
         let healthcheck: HealthConfig | undefined = undefined;
         // if it's a model service we mount the model as a volume
-        if (image.modelService) {
-          const modelName = path.basename(modelPath);
-          hostConfig = {
-            Mounts: [
-              {
-                Target: `/${modelName}`,
-                Source: modelPath,
-                Type: 'bind',
-                Mode: vmType === VMType.QEMU ? undefined : 'Z',
-              },
-            ],
-          };
-          envs = [`MODEL_PATH=/${modelName}`];
-          envs.push(...getModelPropertiesForEnvironment(modelInfo));
-        } else if (components.inferenceServer) {
-          const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
-          envs = [`MODEL_ENDPOINT=${endPoint}`];
-        } else {
-          const modelService = components.images.find(image => image.modelService);
-          if (modelService && modelService.ports.length > 0) {
-            const endPoint = `http://localhost:${modelService.ports[0]}`;
+        if (modelInfo && modelPath) {
+          if (image.modelService) {
+            const modelName = path.basename(modelPath);
+            hostConfig = {
+              Mounts: [
+                {
+                  Target: `/${modelName}`,
+                  Source: modelPath,
+                  Type: 'bind',
+                  Mode: vmType === VMType.QEMU ? undefined : 'Z',
+                },
+              ],
+            };
+            envs = [`MODEL_PATH=/${modelName}`];
+            envs.push(...getModelPropertiesForEnvironment(modelInfo));
+          } else if (components.inferenceServer) {
+            const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
+          } else {
+            const modelService = components.images.find(image => image.modelService);
+            if (modelService && modelService.ports.length > 0) {
+              const endPoint = `http://localhost:${modelService.ports[0]}`;
+              envs = [`MODEL_ENDPOINT=${endPoint}`];
+            }
+          }
+        } else {
+          const stack = await this.llamaStackManager.getLlamaStackContainer();
+          if (stack) {
+            envs = [`MODEL_ENDPOINT=http://host.containers.internal:${stack.port}`];
           }
         }
         if (image.ports.length > 0) {
@@ -349,7 +366,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   protected async createPod(
     connection: ContainerProviderConnection,
     recipe: Recipe,
-    model: ModelInfo,
+    model: ModelInfo | undefined,
     images: RecipeImage[],
   ): Promise<PodInfo> {
     // find the exposed port of the sample app so we can open its ports on the new pod
@@ -379,8 +396,11 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     // create new pod
     const labels: Record<string, string> = {
       [POD_LABEL_RECIPE_ID]: recipe.id,
-      [POD_LABEL_MODEL_ID]: model.id,
     };
+
+    if (model) {
+      labels[POD_LABEL_MODEL_ID] = model.id;
+    }
     // collecting all modelService ports
     const modelPorts = images
       .filter(img => img.modelService)

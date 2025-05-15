@@ -99,47 +99,49 @@ export class RecipeManager implements Disposable {
   public async buildRecipe(
     connection: ContainerProviderConnection,
     recipe: Recipe,
-    model: ModelInfo,
+    model: ModelInfo | undefined,
     labels?: { [key: string]: string },
   ): Promise<RecipeComponents> {
     const localFolder = path.join(this.appUserDirectory, recipe.id);
 
     let inferenceServer: InferenceServer | undefined;
-    // if the recipe has a defined backend, we gives priority to using an inference server
-    if (recipe.backend && recipe.backend === model.backend) {
-      let task: Task | undefined;
-      try {
-        inferenceServer = this.inferenceManager.findServerByModel(model);
-        task = this.taskRegistry.createTask('Starting Inference server', 'loading', labels);
-        if (!inferenceServer) {
-          const inferenceContainerId = await this.inferenceManager.createInferenceServer(
-            await withDefaultConfiguration({
-              modelsInfo: [model],
-            }),
-          );
-          inferenceServer = this.inferenceManager.get(inferenceContainerId);
-          this.taskRegistry.updateTask({
-            ...task,
-            labels: {
-              ...task.labels,
-              containerId: inferenceContainerId,
-            },
-          });
-        } else if (inferenceServer.status === 'stopped') {
-          await this.inferenceManager.startInferenceServer(inferenceServer.container.containerId);
-        }
-        task.state = 'success';
-      } catch (e) {
-        // we only skip the task update if the error is that we do not support this backend.
-        // If so, we build the image for the model service
-        if (task && String(e) !== 'no enabled provider could be found.') {
-          task.state = 'error';
-          task.error = `Something went wrong while starting the inference server: ${String(e)}`;
-          throw e;
-        }
-      } finally {
-        if (task) {
-          this.taskRegistry.updateTask(task);
+    if (model) {
+      // if the recipe has a defined backend, we gives priority to using an inference server
+      if (recipe.backend && recipe.backend === model.backend) {
+        let task: Task | undefined;
+        try {
+          inferenceServer = this.inferenceManager.findServerByModel(model);
+          task = this.taskRegistry.createTask('Starting Inference server', 'loading', labels);
+          if (!inferenceServer) {
+            const inferenceContainerId = await this.inferenceManager.createInferenceServer(
+              await withDefaultConfiguration({
+                modelsInfo: [model],
+              }),
+            );
+            inferenceServer = this.inferenceManager.get(inferenceContainerId);
+            this.taskRegistry.updateTask({
+              ...task,
+              labels: {
+                ...task.labels,
+                containerId: inferenceContainerId,
+              },
+            });
+          } else if (inferenceServer.status === 'stopped') {
+            await this.inferenceManager.startInferenceServer(inferenceServer.container.containerId);
+          }
+          task.state = 'success';
+        } catch (e) {
+          // we only skip the task update if the error is that we do not support this backend.
+          // If so, we build the image for the model service
+          if (task && String(e) !== 'no enabled provider could be found.') {
+            task.state = 'error';
+            task.error = `Something went wrong while starting the inference server: ${String(e)}`;
+            throw e;
+          }
+        } finally {
+          if (task) {
+            this.taskRegistry.updateTask(task);
+          }
         }
       }
     }

@@ -23,7 +23,6 @@ import CopyButton from '/@/lib/button/CopyButton.svelte';
 import type { RequestOptions } from '@shared/models/RequestOptions';
 import { filesize } from 'filesize';
 import MonacoEditor from '/@/lib/monaco-editor/MonacoEditor.svelte';
-import Badge from '../lib/Badge.svelte';
 
 interface Props {
   containerId?: string;
@@ -240,7 +239,11 @@ function handleOnChange(): void {
                           {/if}
                         </div>
 
-                        <Badge content={inferenceTypeLabel(service.type)}></Badge>
+                        <div
+                          class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
+                          aria-label="Service type">
+                          {inferenceTypeLabel(service.type)}
+                        </div>
                         {#if 'gpu' in service.labels}
                           <Tooltip left tip={service.labels['gpu']}>
                             <div

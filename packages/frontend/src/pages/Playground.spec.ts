@@ -23,12 +23,12 @@ import Playground from './Playground.svelte';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { fireEvent } from '@testing-library/dom';
-import type { AssistantChat, Conversation, ModelUsage, PendingChat, UserChat } from '@shared/models/IPlaygroundMessage';
+import type { AssistantChat, ModelUsage, PendingChat, UserChat } from '@shared/models/IPlaygroundMessage';
 import * as conversationsStore from '/@/stores/conversations';
 import * as inferenceServersStore from '/@/stores/inferenceServers';
 import { readable, writable } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
-import type { InferenceServer } from '@shared/models/IInference';
+import { InferenceType, type InferenceServer } from '@shared/models/IInference';
 
 vi.mock('../utils/client', async () => {
   return {
@@ -59,13 +59,14 @@ vi.mock('/@/stores/inferenceServers', async () => {
   };
 });
 
-const customConversations = writable<Conversation[]>([
+const customConversations = writable<conversationsStore.ConversationWithBackend[]>([
   {
     id: 'playground-1',
     name: 'Playground 1',
     modelId: 'model-1',
     messages: [],
     usage: {} as ModelUsage,
+    backend: InferenceType.LLAMA_CPP,
   },
 ]);
 
@@ -246,6 +247,7 @@ test('receiving complete message should enable the input element', async () => {
         } as AssistantChat,
       ],
       usage: {} as ModelUsage,
+      backend: InferenceType.LLAMA_CPP,
     },
   ]);
 
@@ -291,6 +293,7 @@ test('sending prompt should display the prompt and the response', async () => {
         } as unknown as PendingChat,
       ],
       usage: {} as ModelUsage,
+      backend: InferenceType.LLAMA_CPP,
     },
   ]);
 
@@ -319,6 +322,7 @@ test('sending prompt should display the prompt and the response', async () => {
         } as AssistantChat,
       ],
       usage: {} as ModelUsage,
+      backend: InferenceType.LLAMA_CPP,
     },
   ]);
 
@@ -398,6 +402,7 @@ describe('error message', () => {
             timestamp: 55,
           },
         ],
+        backend: InferenceType.LLAMA_CPP,
       },
     ]);
 

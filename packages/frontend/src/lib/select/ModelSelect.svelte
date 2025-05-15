@@ -3,8 +3,6 @@ import { faCheckCircle, faDownload } from '@fortawesome/free-solid-svg-icons';
 import Select from './Select.svelte';
 import Fa from 'svelte-fa';
 import type { ModelInfo } from '@shared/models/IModelInfo';
-import { onMount } from 'svelte';
-import { configuration } from '/@/stores/extensionConfiguration';
 
 interface Props {
   disabled?: boolean;
@@ -46,23 +44,6 @@ let selected: (ModelInfo & { label: string; value: string }) | undefined = $deri
 function handleOnChange(nValue: (ModelInfo & { label: string; value: string }) | undefined): void {
   value = nValue;
 }
-
-let defaultRuntime: string | undefined = $state();
-
-onMount(() => {
-  return configuration.subscribe(values => {
-    if (values?.inferenceRuntime) {
-      defaultRuntime = values.inferenceRuntime;
-    }
-  });
-});
-
-function filterModel(model: ModelInfo): boolean {
-  // If the defaultRuntime is undefined we should not filter any model
-  if (!defaultRuntime || defaultRuntime === 'all') return true;
-
-  return model.backend === defaultRuntime;
-}
 </script>
 
 <Select
@@ -73,7 +54,6 @@ function filterModel(model: ModelInfo): boolean {
   onchange={handleOnChange}
   placeholder="Select model to use"
   items={models
-    .filter(filterModel)
     .toSorted((a, b) => getModelSortingScore(a) - getModelSortingScore(b))
     .map(model => ({ ...model, value: model.id, label: model.name }))}>
   <div slot="item" let:item>

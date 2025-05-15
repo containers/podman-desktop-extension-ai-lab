@@ -29,6 +29,7 @@ const InferenceTypeLabel = {
   'llama-cpp': 'llamacpp',
   'whisper-cpp': 'whispercpp',
   openvino: 'openvino',
+  vllm: 'vLLM',
   none: 'None',
 };
 

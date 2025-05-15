@@ -25,9 +25,7 @@ import type { ContainerProviderConnection, MountConfig } from '@podman-desktop/a
 import * as images from '../../assets/inference-images.json';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
-import { basename, dirname } from 'node:path';
-import { join as joinposix } from 'node:path/posix';
-import { getLocalModelFile } from '../../utils/modelsUtils';
+import { getHuggingFaceModelMountInfo } from '../../utils/modelsUtils';
 import { SECOND } from './LlamaCppPython';
 
 export class VLLM extends InferenceProvider {
@@ -72,14 +70,9 @@ export class VLLM extends InferenceProvider {
     // something ~/.cache/huggingface/hub/models--facebook--opt-125m/snapshots
     // modelInfo.file.path
 
-    const fullPath = getLocalModelFile(modelInfo);
-
-    // modelInfo.file.path must be under the form $(HF_HUB_CACHE)/<repo-type>--<repo-id>/snapshots/<commit-hash>
-    const parent = dirname(fullPath);
-    const commitHash = basename(fullPath);
-    const name = basename(parent);
-    if (name !== 'snapshots') throw new Error('you must provide snapshot path for vllm');
-    const modelCache = dirname(parent);
+    // get model mount settings
+    const mountInfo = getHuggingFaceModelMountInfo(modelInfo);
+    const modelCache = mountInfo.suffix ? `/cache/${mountInfo.suffix}` : '/cache';
 
     let connection: ContainerProviderConnection | undefined;
     if (config.connection) {
@@ -101,12 +94,12 @@ export class VLLM extends InferenceProvider {
     // TRANSFORMERS_OFFLINE for legacy
     const envs: string[] = [`HF_HUB_CACHE=/cache`, 'TRANSFORMERS_OFFLINE=1', 'HF_HUB_OFFLINE=1'];
 
-    labels['api'] = `http://localhost:${config.port}/inference`;
+    labels['api'] = `http://localhost:${config.port}/v1`;
 
     const mounts: MountConfig = [
       {
-        Target: `/cache/${modelInfo.id}`,
-        Source: modelCache,
+        Target: `/cache`,
+        Source: mountInfo.mount,
         Type: 'bind',
       },
     ];
@@ -137,8 +130,8 @@ export class VLLM extends InferenceProvider {
         },
         Env: envs,
         Cmd: [
-          `--model=${joinposix('/cache', modelInfo.id, 'snapshots', commitHash)}`,
-          `--served_model_name=${modelInfo.file.file}`,
+          `--model=${modelCache}`,
+          `--served_model_name=${modelInfo.name}`,
           '--chat-template-content-format=openai',
         ],
       },

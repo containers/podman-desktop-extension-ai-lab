@@ -23,7 +23,6 @@ import type { CompletionEvent } from './baseEvent';
 import { getDurationSecondsSince } from '../utils/utils';
 import type { ModelsManager } from '../managers/modelsManager';
 import fs from 'node:fs/promises';
-import { dirname, basename } from 'node:path';
 
 function parseURL(url: string): { repo: string; revision?: string } | undefined {
   const u = URL.parse(url);

@@ -256,7 +256,7 @@ export class PlaygroundV2Manager implements Disposable {
 
     const start = Date.now();
     streamProcessor
-      .stream(model, tools, options)
+      .stream(model, tools, server.type === InferenceType.VLLM ? {} : options)
       .consumeStream()
       .then(() => {
         this.telemetry.logUsage('playground.message.complete', {

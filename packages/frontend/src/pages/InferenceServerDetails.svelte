@@ -12,7 +12,7 @@ import {
   faMicrochip,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
-import { type InferenceServer, InferenceType } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType, inferenceTypeLabel } from '@shared/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -23,6 +23,7 @@ import CopyButton from '/@/lib/button/CopyButton.svelte';
 import type { RequestOptions } from '@shared/models/RequestOptions';
 import { filesize } from 'filesize';
 import MonacoEditor from '/@/lib/monaco-editor/MonacoEditor.svelte';
+import Badge from '../lib/Badge.svelte';
 
 interface Props {
   containerId?: string;
@@ -239,6 +240,7 @@ function handleOnChange(): void {
                           {/if}
                         </div>
 
+                        <Badge content={inferenceTypeLabel(service.type)}></Badge>
                         {#if 'gpu' in service.labels}
                           <Tooltip left tip={service.labels['gpu']}>
                             <div

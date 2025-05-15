@@ -283,6 +283,15 @@ test('ensure models to be clickable', async () => {
   expect(a.getAttribute('href')).toBe('/model/dummyModelId');
 });
 
+test('runtime label is displayed', async () => {
+  render(InferenceServerDetails, {
+    containerId: 'dummyContainerId',
+  });
+
+  const span = screen.getByText('llamacpp');
+  expect(span).toBeDefined();
+});
+
 describe('labels', () => {
   test('GPU label should display GPU Inference', async () => {
     mocks.getInferenceServersMock.mockReturnValue([

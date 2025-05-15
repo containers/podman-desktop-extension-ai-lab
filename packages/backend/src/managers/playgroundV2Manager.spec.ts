@@ -206,6 +206,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
         {
           id: 'dummyModelId',
           file: {
+            path: '.',
             file: 'dummyModelFile',
           },
         },
@@ -213,6 +214,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
       connection: {
         port: 8888,
       },
+      labels: [],
     } as unknown as InferenceServer,
   ]);
   // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
@@ -284,6 +286,7 @@ test('error', async () => {
         {
           id: 'dummyModelId',
           file: {
+            path: '.',
             file: 'dummyModelFile',
           },
         },
@@ -291,6 +294,7 @@ test('error', async () => {
       connection: {
         port: 8888,
       },
+      labels: [],
     } as unknown as InferenceServer,
   ]);
   const doStream: LanguageModelV1['doStream'] = async () => {
@@ -685,6 +689,7 @@ describe('system prompt', () => {
           {
             id: 'dummyModelId',
             file: {
+              path: '.',
               file: 'dummyModelFile',
             },
           },
@@ -692,6 +697,7 @@ describe('system prompt', () => {
         connection: {
           port: 8888,
         },
+        labels: [],
       } as unknown as InferenceServer,
     ]);
     // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider

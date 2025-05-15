@@ -62,6 +62,8 @@ import { HuggingFaceModelHandler } from './models/HuggingFaceModelHandler';
 import { LlamaStackApiImpl } from './llama-stack-api-impl';
 import { LLAMA_STACK_API_CHANNEL, type LlamaStackAPI } from '@shared/LlamaStackAPI';
 import { LlamaStackManager } from './managers/llama-stack/llamaStackManager';
+import { OpenVINO } from './workers/provider/OpenVINO';
+import os from 'node:os';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -280,6 +282,13 @@ export class Studio {
     this.#extensionContext.subscriptions.push(
       this.#inferenceProviderRegistry.register(new WhisperCpp(this.#taskRegistry, this.#podmanConnection)),
     );
+    if (os.arch() === 'x64') {
+      this.#extensionContext.subscriptions.push(
+        this.#inferenceProviderRegistry.register(
+          new OpenVINO(this.#taskRegistry, this.#podmanConnection, this.#modelsManager, this.#configurationRegistry),
+        ),
+      );
+    }
 
     /**
      * The inference manager create, stop, manage Inference servers

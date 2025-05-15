@@ -5,7 +5,7 @@ import { router } from 'tinro';
 export let object: ModelInfo;
 
 function openDetails(): void {
-  router.goto(`/model/${object.id}`);
+  router.goto(`/model/${encodeURIComponent(object.id)}`);
 }
 </script>
 

@@ -15,7 +15,7 @@ export function goToUpPage(): void {
 </script>
 
 <DetailsPage
-  title={model?.name ?? ''}
+  title={model?.name ?? modelId}
   breadcrumbLeftPart="Models"
   breadcrumbRightPart={model?.name ?? ''}
   breadcrumbTitle="Go back to Models"

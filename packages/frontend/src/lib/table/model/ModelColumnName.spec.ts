@@ -85,3 +85,34 @@ test('Expect model info lower bar to be visible', async () => {
   await userEvent.click(modelNameBtn);
   expect(routerMock).toBeCalledWith('/model/my-model');
 });
+
+test('Expect model id to be encoded', async () => {
+  const routerMock = vi.spyOn(router, 'goto');
+  const object: ModelInfo = {
+    id: 'org/my-model',
+    description: '',
+    license: 'apache-2',
+    name: 'My model',
+    registry: 'registry',
+    url: 'url',
+    file: {
+      file: 'file',
+      size: 1000,
+      path: 'path',
+    },
+    memory: 1000,
+  };
+  render(ModelColumnName, { object });
+  const name = screen.getByLabelText('Model Name');
+  expect(name.textContent).equal('My model');
+
+  const info = screen.getByLabelText('Model Info');
+  expect(info.textContent).equal('registry - apache-2');
+
+  const importedInfo = screen.queryByLabelText('Imported Model Info');
+  expect(importedInfo).not.toBeInTheDocument();
+
+  const modelNameBtn = screen.getByRole('button', { name: 'Open Model Details' });
+  await userEvent.click(modelNameBtn);
+  expect(routerMock).toBeCalledWith('/model/org%2Fmy-model');
+});

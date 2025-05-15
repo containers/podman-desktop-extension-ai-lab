@@ -153,7 +153,7 @@ onDestroy(() => {
         </Route>
 
         <Route path="/model/:id/*" let:meta>
-          <Model modelId={meta.params.id} />
+          <Model modelId={decodeURIComponent(meta.params.id)} />
         </Route>
 
         <!-- services -->

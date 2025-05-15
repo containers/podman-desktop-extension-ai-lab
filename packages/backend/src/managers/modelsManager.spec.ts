@@ -224,7 +224,7 @@ test('getModelsInfo should get models in local directory', async () => {
     modelHandlerRegistry,
   );
   modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
-  manager.init();
+  await manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
     {
@@ -276,7 +276,7 @@ test('getModelsInfo should return an empty array if the models folder does not e
     modelHandlerRegistry,
   );
   modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
-  manager.init();
+  await manager.init();
   await manager.getLocalModelsFromDisk();
   expect(manager.getModelsInfo()).toEqual([]);
   if (process.platform === 'win32') {
@@ -317,7 +317,7 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
     modelHandlerRegistry,
   );
   modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
-  manager.init();
+  await manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
     {
@@ -376,7 +376,7 @@ test('getLocalModelsFromDisk should skip folders containing tmp files', async ()
     modelHandlerRegistry,
   );
   modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
-  manager.init();
+  await manager.init();
   await manager.loadLocalModels();
   expect(manager.getModelsInfo()).toEqual([
     {
@@ -416,7 +416,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
     modelHandlerRegistry,
   );
   modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
-  manager.init();
+  await manager.init();
   await manager.loadLocalModels();
   expect(rpcExtensionMock.fire).toHaveBeenNthCalledWith(2, MSG_NEW_MODELS_STATE, [
     {
@@ -463,7 +463,7 @@ test('deleteModel deletes the model folder', async () => {
     modelHandlerRegistry,
   );
   modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
-  manager.init();
+  await manager.init();
   await manager.loadLocalModels();
   await manager.deleteModel('model-id-1');
   // check that the model's folder is removed from disk
@@ -524,7 +524,7 @@ describe('deleting models', () => {
       modelHandlerRegistry,
     );
     modelHandlerRegistry.register(new URLModelHandler(manager, modelsDir));
-    manager.init();
+    await manager.init();
     await manager.loadLocalModels();
     await manager.deleteModel('model-id-1');
     // check that the model's folder is removed from disk
@@ -898,7 +898,7 @@ describe('getModelMetadata', () => {
       modelHandlerRegistry,
     );
 
-    manager.init();
+    await manager.init();
 
     const fakeMetadata: Record<string, string> = {
       hello: 'world',
@@ -938,7 +938,7 @@ describe('getModelMetadata', () => {
       modelHandlerRegistry,
     );
 
-    manager.init();
+    await manager.init();
 
     const fakeMetadata: Record<string, string> = {
       hello: 'world',
@@ -994,7 +994,7 @@ describe('uploadModelToPodmanMachine', () => {
       modelHandlerRegistry,
     );
 
-    manager.init();
+    await manager.init();
     const result = await manager.uploadModelToPodmanMachine(connectionMock, modelMock);
     expect(result).toBe('uploader-result');
     expect(performMock).toHaveBeenCalledWith(modelMock.id);
@@ -1026,7 +1026,7 @@ describe('uploadModelToPodmanMachine', () => {
       modelHandlerRegistry,
     );
 
-    manager.init();
+    await manager.init();
     await manager.uploadModelToPodmanMachine(connectionMock, modelMock);
     expect(Uploader).not.toHaveBeenCalled();
   });

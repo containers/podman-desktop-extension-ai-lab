@@ -12,7 +12,7 @@ import {
   faMicrochip,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
-import { type InferenceServer, InferenceType } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType, inferenceTypeLabel } from '@shared/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -266,6 +266,11 @@ function handleOnChange(): void {
                           {/if}
                         </div>
 
+                        <div
+                          class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
+                          aria-label="Service type">
+                          {inferenceTypeLabel(service.type)}
+                        </div>
                         {#if 'gpu' in service.labels}
                           <Tooltip left tip={service.labels['gpu']}>
                             <div

@@ -229,7 +229,7 @@ export class StudioApiImpl implements StudioAPI {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === options.recipeId);
     if (!recipe) throw new Error(`recipe with if ${options.recipeId} not found`);
 
-    const model = this.catalogManager.getModelById(options.modelId);
+    const model = options.modelId ? this.catalogManager.getModelById(options.modelId) : undefined;
 
     let connection: ContainerProviderConnection | undefined = undefined;
     if (options.connection) {

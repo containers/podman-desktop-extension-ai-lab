@@ -27,6 +27,7 @@ export enum InferenceType {
 const InferenceTypeLabel = {
   'llama-cpp': 'llamacpp',
   'whisper-cpp': 'whispercpp',
+  openvino: 'openvino',
   none: 'None',
 };
 

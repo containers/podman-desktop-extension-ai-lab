@@ -18,11 +18,12 @@
 
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { getPodmanCli, getPodmanMachineName } from '../../utils/podman';
-import { getLocalModelFile, getRemoteModelFile, isModelUploaded, MACHINE_BASE_FOLDER } from '../../utils/modelsUtils';
+import { getLocalModelFile, getRemoteModelFile, isModelUploaded } from '../../utils/modelsUtils';
 import { WindowsWorker } from '../WindowsWorker';
 import { VMType } from '@shared/models/IPodman';
 import type { UploaderOptions } from './UploaderOptions';
 import { escapeSpaces } from '../../utils/pathUtils';
+import { dirname } from 'node:path';
 
 export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
   async perform(options: UploaderOptions): Promise<string> {
@@ -45,17 +46,11 @@ export class WSLUploader extends WindowsWorker<UploaderOptions, string> {
     // check if model already loaded on the podman machine
     const existsRemote = await isModelUploaded(machineName, options.model);
     const remoteFile = escapeSpaces(getRemoteModelFile(options.model));
+    const baseFolder = dirname(remoteFile);
 
     // if not exists remotely it copies it from the local path
     if (!existsRemote) {
-      await podmanDesktopApi.process.exec(getPodmanCli(), [
-        'machine',
-        'ssh',
-        machineName,
-        'mkdir',
-        '-p',
-        MACHINE_BASE_FOLDER,
-      ]);
+      await podmanDesktopApi.process.exec(getPodmanCli(), ['machine', 'ssh', machineName, 'mkdir', '-p', baseFolder]);
       await podmanDesktopApi.process.exec(getPodmanCli(), [
         'machine',
         'ssh',

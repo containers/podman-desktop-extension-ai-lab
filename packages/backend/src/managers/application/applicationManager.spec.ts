@@ -31,6 +31,7 @@ import { VMType } from '@shared/models/IPodman';
 import { POD_LABEL_MODEL_ID, POD_LABEL_RECIPE_ID } from '../../utils/RecipeConstants';
 import type { InferenceServer } from '@shared/models/IInference';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
+import type { LlamaStackManager } from '../llama-stack/llamaStackManager';
 
 const taskRegistryMock = {
   createTask: vi.fn(),
@@ -74,6 +75,10 @@ const recipeManager = {
   cloneRecipe: vi.fn(),
   buildRecipe: vi.fn(),
 } as unknown as RecipeManager;
+
+const llamaStackManager = {
+  getLlamaStackContainer: vi.fn(),
+} as unknown as LlamaStackManager;
 
 vi.mock('@podman-desktop/api', () => ({
   window: {
@@ -139,6 +144,11 @@ beforeEach(() => {
     id: 'fake-task',
   }));
   vi.mocked(modelsManagerMock.uploadModelToPodmanMachine).mockResolvedValue('downloaded-model-path');
+  vi.mocked(llamaStackManager.getLlamaStackContainer).mockResolvedValue({
+    containerId: 'container1',
+    port: 10001,
+    playgroundPort: 10002,
+  });
 });
 
 function getInitializedApplicationManager(): ApplicationManager {
@@ -151,6 +161,7 @@ function getInitializedApplicationManager(): ApplicationManager {
     telemetryMock,
     podManager,
     recipeManager,
+    llamaStackManager,
   );
 
   manager.init();

@@ -299,7 +299,7 @@ function handleOnChange(): void {
                             class="w-full bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md px-2 py-1 flex flex-col gap-y-4">
                             <div class="flex flex-row gap-2 items-center">
                               <div class="grow text-sm" aria-label="Model name">
-                                <a href="/model/{model.id}" class="flex items-center">
+                                <a href="/model/{encodeURIComponent(model.id)}" class="flex items-center">
                                   {model.name}
                                   <Fa class="ml-2" icon={faArrowUpRightFromSquare} />
                                 </a>

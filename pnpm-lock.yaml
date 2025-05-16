@@ -142,8 +142,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       openai:
-        specifier: ^4.98.0
-        version: 4.98.0(ws@8.18.1)(zod@3.24.4)
+        specifier: ^4.99.0
+        version: 4.99.0(ws@8.18.1)(zod@3.24.4)
       postman-code-generators:
         specifier: 1.10.1
         version: 1.10.1
@@ -1543,9 +1543,6 @@ packages:
 
   '@types/node@22.13.10':
     resolution: {integrity: sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==}
-
-  '@types/node@22.15.17':
-    resolution: {integrity: sha512-wIX2aSZL5FE+MR0JlvF87BNVrtFWf6AE6rxSE9X7OwnVvoyCQjpzSRJ+M87se/4QCkCiebQAqrJ0y6fwIyi7nw==}
 
   '@types/node@22.15.18':
     resolution: {integrity: sha512-v1DKRfUdyW+jJhZNEI1PYy29S2YRxMV5AOO/x/SjKmW0acCIOqmbj6Haf9eHAhsPmrhlHSxEhv/1WszcLWV4cg==}
@@ -3985,8 +3982,8 @@ packages:
   ono@7.1.3:
     resolution: {integrity: sha512-9jnfVriq7uJM4o5ganUY54ntUm+5EK21EGaQ5NWnkWg3zz5ywbbonlBguRcnmF1/HDiIe3zxNxXcO1YPBmPcQQ==}
 
-  openai@4.98.0:
-    resolution: {integrity: sha512-TmDKur1WjxxMPQAtLG5sgBSCJmX7ynTsGmewKzoDwl1fRxtbLOsiR0FA/AOAAtYUmP6azal+MYQuOENfdU+7yg==}
+  openai@4.99.0:
+    resolution: {integrity: sha512-E2bd6ghsKF6iV6B4vuhREtdpeB/8dNUnWcPIt5VmnM019/mXxOdqisnIcn4e1zWt1H8BpeMY2HwKJ3UIin6baA==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -6434,7 +6431,7 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 22.15.17
+      '@types/node': 22.15.18
       form-data: 4.0.2
 
   '@types/node@18.19.100':
@@ -6444,10 +6441,6 @@ snapshots:
   '@types/node@22.13.10':
     dependencies:
       undici-types: 6.20.0
-
-  '@types/node@22.15.17':
-    dependencies:
-      undici-types: 6.21.0
 
   '@types/node@22.15.18':
     dependencies:
@@ -9223,7 +9216,7 @@ snapshots:
     dependencies:
       '@jsdevtools/ono': 7.1.3
 
-  openai@4.98.0(ws@8.18.1)(zod@3.24.4):
+  openai@4.99.0(ws@8.18.1)(zod@3.24.4):
     dependencies:
       '@types/node': 18.19.100
       '@types/node-fetch': 2.6.12

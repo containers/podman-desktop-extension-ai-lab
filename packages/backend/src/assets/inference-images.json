@@ -8,5 +8,8 @@
   },
   "openvino": {
     "default": "quay.io/ramalama/openvino@sha256:670d91cc322933cc4263606459317cd4ca3fcfb16d59a46b11dcd498c2cd7cb5"
+  },
+  "vllm": {
+    "default": "public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo:v0.8.4"
   }
 }

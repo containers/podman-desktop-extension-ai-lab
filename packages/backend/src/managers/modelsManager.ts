@@ -375,6 +375,8 @@ export class ModelsManager implements Disposable {
     model: ModelInfo,
     labels?: { [key: string]: string },
   ): Promise<string> {
+    console.log('[ModelsManager] upload model', model);
+
     // ensure the model upload is not disabled
     if (this.configurationRegistry.getExtensionConfiguration().modelUploadDisabled) {
       console.warn('The model upload is disabled, this may cause the inference server to take a few minutes to start.');
@@ -392,6 +394,7 @@ export class ModelsManager implements Disposable {
 
     // perform download
     const path = uploader.perform(model.id);
+    console.log('[ModelsManager] path got', path);
     await this.updateModelInfos();
 
     return path;

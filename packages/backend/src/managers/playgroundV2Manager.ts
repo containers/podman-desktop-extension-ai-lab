@@ -34,6 +34,7 @@ import { McpServerManager } from './playground/McpServerManager';
 import type { ToolSet } from 'ai';
 import { simulateStreamingMiddleware, wrapLanguageModel } from 'ai';
 import { toMcpClients } from '../utils/mcpUtils';
+import { InferenceType } from '@shared/models/IInference';
 
 export class PlaygroundV2Manager implements Disposable {
   readonly #conversationRegistry: ConversationRegistry;
@@ -122,8 +123,10 @@ export class PlaygroundV2Manager implements Disposable {
 
     // create/start inference server if necessary
     const servers = this.inferenceManager.getServers();
+    console.log('servers', servers);
     const server = servers.find(s => s.models.map(mi => mi.id).includes(model.id));
     if (!server) {
+      console.warn(`no server running found with modelId ${model.id}, creating new one`);
       await this.inferenceManager.createInferenceServer(
         await withDefaultConfiguration({
           modelsInfo: [model],
@@ -253,7 +256,7 @@ export class PlaygroundV2Manager implements Disposable {
 
     const start = Date.now();
     streamProcessor
-      .stream(model, tools, options)
+      .stream(model, tools, server.type === InferenceType.VLLM ? {} : options)
       .consumeStream()
       .then(() => {
         this.telemetry.logUsage('playground.message.complete', {

@@ -56,6 +56,7 @@ const generate = async (language: string, variant: string): Promise<void> => {
   let options: RequestOptions | undefined;
   switch (service?.type) {
     case InferenceType.LLAMA_CPP:
+    case InferenceType.VLLM:
       options = {
         url: `http://localhost:${service?.connection.port || '??'}/v1/chat/completions`,
         method: 'POST',

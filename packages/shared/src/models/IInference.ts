@@ -21,6 +21,7 @@ export enum InferenceType {
   LLAMA_CPP = 'llama-cpp',
   WHISPER_CPP = 'whisper-cpp',
   OPENVINO = 'openvino',
+  VLLM = 'vllm',
   NONE = 'none',
 }
 
@@ -28,6 +29,7 @@ const InferenceTypeLabel = {
   'llama-cpp': 'llamacpp',
   'whisper-cpp': 'whispercpp',
   openvino: 'openvino',
+  vllm: 'vLLM',
   none: 'None',
 };
 

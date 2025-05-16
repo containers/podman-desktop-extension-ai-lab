@@ -59,6 +59,7 @@ const mockConfiguration: Writable<ExtensionConfiguration> = writable({
   modelUploadDisabled: false,
   experimentalTuning: false,
   showGPUPromotion: false,
+  inferenceRuntime: 'llama-cpp',
   appearance: 'dark',
 });
 
@@ -75,6 +76,7 @@ test('renders Start Fine Tuning button if experimentalTuning is true', async () 
     modelUploadDisabled: false,
     modelsPath: '',
     experimentalTuning: true,
+    inferenceRuntime: 'llama-cpp',
     apiPort: -1,
     appearance: 'dark',
   });
@@ -89,6 +91,7 @@ test('does not render Start Fine Tuning button if experimentalTuning is false', 
     modelUploadDisabled: false,
     modelsPath: '',
     experimentalTuning: false,
+    inferenceRuntime: 'llama-cpp',
     apiPort: -1,
     appearance: 'dark',
   });
@@ -103,6 +106,7 @@ test('navigates to /tune/start when Start Fine Tuning is clicked', async () => {
     modelUploadDisabled: false,
     modelsPath: '',
     experimentalTuning: true,
+    inferenceRuntime: 'llama-cpp',
     apiPort: -1,
     appearance: 'dark',
   });

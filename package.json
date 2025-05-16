@@ -90,7 +90,18 @@
   "pnpm": {
     "overrides": {
       "postman-collection>semver": "^7.5.2"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "@scarf/scarf",
+      "@tailwindcss/oxide",
+      "esbuild",
+      "postman-code-generators",
+      "svelte-preprocess",
+      "unrs-resolver"
+    ],
+    "onlyBuiltDependencies": [
+      "electron"
+    ]
   },
-  "packageManager": "pnpm@9.9.0+sha512.60c18acd138bff695d339be6ad13f7e936eea6745660d4cc4a776d5247c540d0edee1a563695c183a66eb917ef88f2b4feb1fc25f32a7adcadc7aaf3438e99c1"
+  "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977"
 }

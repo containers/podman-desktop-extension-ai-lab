@@ -405,6 +405,8 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
     if (model) {
       labels[POD_LABEL_MODEL_ID] = model.id;
+    } else {
+      labels[POD_LABEL_MODEL_ID] = '-';
     }
     // collecting all modelService ports
     const modelPorts = images

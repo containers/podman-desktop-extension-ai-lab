@@ -286,7 +286,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
           ...labels,
           'pod-id': podInfo.Id,
         }));
-        await this.createContainerAndAttachToPod(connection, podInfo, components, model, modelPath);
+        await this.createContainerAndAttachToPod(connection, podInfo, components, model, modelPath, labels);
         return podInfo;
       },
     );
@@ -298,6 +298,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     components: RecipeComponents,
     modelInfo: ModelInfo | undefined,
     modelPath: string | undefined,
+    labels?: { [key: string]: string },
   ): Promise<void> {
     const vmType = connection.vmType ?? VMType.UNKNOWN;
     // temporary check to set Z flag or not - to be removed when switching to podman 5
@@ -333,7 +334,11 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
             }
           }
         } else {
-          const stack = await this.llamaStackManager.getLlamaStackContainer();
+          let stack = await this.llamaStackManager.getLlamaStackContainer();
+          if (!stack) {
+            await this.llamaStackManager.createLlamaStackContainer(connection, labels ?? {});
+            stack = await this.llamaStackManager.getLlamaStackContainer();
+          }
           if (stack) {
             envs = [`MODEL_ENDPOINT=http://host.containers.internal:${stack.port}`];
           }

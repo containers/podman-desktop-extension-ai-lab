@@ -22,7 +22,7 @@ import type { InferenceServer } from './IInference';
 export interface RecipePullOptions {
   connection?: ContainerProviderConnectionInfo;
   recipeId: string;
-  modelId: string;
+  modelId?: string;
 }
 
 export interface RecipeComponents {

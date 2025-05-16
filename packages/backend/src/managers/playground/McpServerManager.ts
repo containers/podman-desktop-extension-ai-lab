@@ -15,52 +15,66 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Disposable } from '@podman-desktop/api';
-import { promises } from 'node:fs';
 import path from 'node:path';
-import { type McpSettings, type McpServer, McpServerType } from '../../models/mcpTypes';
+import { type Disposable } from '@podman-desktop/api';
+import { MSG_MCP_SERVERS_UPDATE } from '@shared/Messages';
+import { type McpSettings, McpServerType, type McpClient } from '@shared/models/McpSettings';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
+import { JsonWatcher } from '../../utils/JsonWatcher';
+import { Publisher } from '../../utils/Publisher';
+import { toMcpClients } from '../../utils/mcpUtils';
 
 // TODO: Agree on the name of the file and its location
 const MCP_SETTINGS = 'mcp-settings.json';
 
-// TODO: Consider using JsonWatcher in case the file is going to be updated externally
-// Depending on the use case, we might want to watch for changes in the settings file.
-// 1. As a user, I want to be able to modify the mcp-settings.json file and have the changes reflected in the application without restarting it.
-// 2. As a user, I want to be able to add/remove servers from the mcp-settings.json while also having the application to provide a UI to manage the servers.
-// 3. As a user, I don't want to tinker with the mcp-settings.json file and would like to have the application to provide a UI to manage the servers.
-// Cases 1 and 2 are covered by JsonWatcher, but case 3 is not.
-// For 2 and 3, we need to implement a UI to manage the servers.
-export class McpServerManager implements Disposable {
+export class McpServerManager extends Publisher<McpSettings> implements Disposable {
   private readonly settingsFile: string;
+  private mcpSettings: McpSettings;
+  readonly #jsonWatcher: JsonWatcher<McpSettings>;
 
-  constructor(private appUserDirectory: string) {
+  constructor(
+    rpcExtension: RpcExtension,
+    private appUserDirectory: string,
+  ) {
+    super(rpcExtension, MSG_MCP_SERVERS_UPDATE, () => this.getMcpSettings());
     this.settingsFile = path.join(this.appUserDirectory, MCP_SETTINGS);
+    this.mcpSettings = {
+      servers: {},
+    };
+    this.#jsonWatcher = new JsonWatcher<McpSettings>(this.settingsFile, { ...this.mcpSettings });
+    this.#jsonWatcher.onContentUpdated(this.onMcpSettingsUpdated.bind(this));
   }
 
-  async load(): Promise<McpServer[]> {
-    const mcpServers: McpServer[] = [];
-    try {
-      const mcpSettingsContent = await promises.readFile(this.settingsFile, 'utf8');
-      const mcpSettings = JSON.parse(mcpSettingsContent) as McpSettings;
-      if (!mcpSettings?.servers) {
-        return mcpServers;
+  /**
+   * Lazily initialize the MCP server manager dependencies.
+   */
+  init(): void {
+    this.#jsonWatcher.init();
+  }
+
+  private onMcpSettingsUpdated(mcpSettings: McpSettings): void {
+    this.mcpSettings = { servers: {} };
+    for (const [name, mcpServer] of Object.entries(mcpSettings.servers ?? {})) {
+      mcpServer.name = name;
+      if (!Object.values(McpServerType).includes(mcpServer.type)) {
+        console.warn(`McpServerManager: Invalid MCP server type ${mcpServer.type} for server ${mcpServer.name}.`);
+        continue;
       }
-      for (const entry of Object.entries(mcpSettings.servers)) {
-        const mcpServer: McpServer = entry[1] as McpServer;
-        mcpServer.name = entry[0];
-        if (!Object.values(McpServerType).includes(mcpServer.type)) {
-          console.warn(`McpServerManager: Invalid MCP server type ${mcpServer.type} for server ${mcpServer.name}.`);
-          continue;
-        }
-        mcpServers.push(mcpServer);
-      }
-    } catch (error: unknown) {
-      console.error(`McpServerManager: Failed to load MCP settings: ${error}`);
+      this.mcpSettings.servers[name] = mcpServer;
     }
-    return mcpServers;
+    this.notify();
+  }
+
+  getMcpSettings(): McpSettings {
+    return this.mcpSettings;
+  }
+
+  async toMcpClients(): Promise<McpClient[]> {
+    const enabledServers = Object.values(this.mcpSettings.servers).filter(server => server.enabled);
+    return toMcpClients(...enabledServers);
   }
 
   dispose(): void {
-    // NO OP
+    this.#jsonWatcher.dispose();
   }
 }

@@ -63,6 +63,7 @@ import { LlamaStackApiImpl } from './llama-stack-api-impl';
 import { LLAMA_STACK_API_CHANNEL, type LlamaStackAPI } from '@shared/LlamaStackAPI';
 import { LlamaStackManager } from './managers/llama-stack/llamaStackManager';
 import { OpenVINO } from './workers/provider/OpenVINO';
+import { McpServerManager } from './managers/playground/McpServerManager';
 import os from 'node:os';
 
 export class Studio {
@@ -93,6 +94,7 @@ export class Studio {
   #taskRegistry: TaskRegistry | undefined;
   #cancellationTokenRegistry: CancellationTokenRegistry | undefined;
   #snippetManager: SnippetManager | undefined;
+  #mcpServerManager: McpServerManager | undefined;
   #playgroundManager: PlaygroundV2Manager | undefined;
   #applicationManager: ApplicationManager | undefined;
   #recipeManager: RecipeManager | undefined;
@@ -360,16 +362,20 @@ export class Studio {
     this.#applicationManager.init();
     this.#extensionContext.subscriptions.push(this.#applicationManager);
 
+    this.#mcpServerManager = new McpServerManager(this.#rpcExtension, appUserDirectory);
+    this.#mcpServerManager.init();
+    this.#extensionContext.subscriptions.push(this.#mcpServerManager);
+
     /**
      * PlaygroundV2Manager handle the conversations of the Playground by using the InferenceServer available
      */
     this.#playgroundManager = new PlaygroundV2Manager(
-      appUserDirectory,
       this.#rpcExtension,
       this.#inferenceManager,
       this.#taskRegistry,
       this.#telemetry,
       this.#cancellationTokenRegistry,
+      this.#mcpServerManager,
     );
     this.#extensionContext.subscriptions.push(this.#playgroundManager);
 

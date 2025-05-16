@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { PodInfo } from '@podman-desktop/api';
-import type { InferenceType } from './IInference';
+import { test, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/svelte';
+import { InferenceType } from '@shared/models/IInference';
+import ColumnRuntime from './ColumnRuntime.svelte';
+import type { ApplicationState } from '@shared/models/IApplicationState';
 
-export type PodHealth = 'none' | 'starting' | 'healthy' | 'unhealthy';
+beforeEach(() => {
+  vi.resetAllMocks();
+});
 
-export interface ApplicationState {
-  recipeId: string;
-  modelId: string;
-  pod: PodInfo;
-  appPorts: number[];
-  modelPorts: number[];
-  health: PodHealth;
-  backend: InferenceType;
-}
+test('should display label for backend', async () => {
+  render(ColumnRuntime, {
+    object: {
+      backend: InferenceType.LLAMA_CPP,
+    } as ApplicationState,
+  });
+
+  screen.getByText('llamacpp');
+});

@@ -549,6 +549,13 @@
       "license": "Apache-2.0",
       "url": "huggingface:/OpenVINO/mistral-7B-instruct-v0.2-int4-ov",
       "backend": "openvino"
+    },
+    {
+      "id": "Qwen/Qwen2-VL-2B-Instruct",
+      "name": "Qwen/Qwen2-VL-2B-Instruct",
+      "description": "Qwen/Qwen2-VL-2B-Instruct",
+      "url": "huggingface:/Qwen/Qwen2-VL-2B-Instruct",
+      "backend": "vllm"
     }
   ],
   "categories": [

@@ -191,16 +191,27 @@ describe('buildRecipe', () => {
     const manager = await getInitializedRecipeManager();
 
     await expect(() => {
-      return manager.buildRecipe(connectionMock, recipeMock, modelInfoMock);
+      return manager.buildRecipe({
+        connection: connectionMock,
+        recipe: recipeMock,
+        model: modelInfoMock,
+      });
     }).rejects.toThrowError('build error');
   });
 
   test('labels should be propagated', async () => {
     const manager = await getInitializedRecipeManager();
 
-    await manager.buildRecipe(connectionMock, recipeMock, modelInfoMock, {
-      'test-label': 'test-value',
-    });
+    await manager.buildRecipe(
+      {
+        connection: connectionMock,
+        recipe: recipeMock,
+        model: modelInfoMock,
+      },
+      {
+        'test-label': 'test-value',
+      },
+    );
 
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Loading configuration', 'loading', {
       'test-label': 'test-value',

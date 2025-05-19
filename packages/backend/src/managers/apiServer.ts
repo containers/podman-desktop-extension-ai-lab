@@ -411,7 +411,7 @@ export class ApiServer implements Disposable {
 
   // openAIChatCompletions executes a chat completion on an OpenAI compatible API
   private async openAIChatCompletions(options: ChatCompletionOptions): Promise<void> {
-    if (!options.modelInfo.file?.file) {
+    if (!options.modelInfo.file) {
       throw new Error('model info has undefined file.');
     }
     const client = new OpenAI({
@@ -420,7 +420,7 @@ export class ApiServer implements Disposable {
     });
     const createOptions = {
       messages: options.messages,
-      model: options.modelInfo.file.file,
+      model: options.modelInfo.name,
     };
     // we call `create` with a fixed value of `stream`, to get the specific type of `response`, either Stream<T>, or T
     if (options.stream) {

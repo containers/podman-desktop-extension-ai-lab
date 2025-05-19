@@ -372,6 +372,7 @@ describe('pullApplication', () => {
         },
       } as InferenceServer,
     });
+    vi.mocked(modelsManagerMock.requestDownloadModel).mockResolvedValue('/path/to/model');
     await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock, {
       'test-label': 'test-value',
     });

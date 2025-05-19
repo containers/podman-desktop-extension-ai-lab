@@ -26,12 +26,12 @@ import { parseYamlFile } from '../../models/AIConfig';
 import { existsSync, statSync } from 'node:fs';
 import { goarch } from '../../utils/arch';
 import type { BuilderManager } from './BuilderManager';
-import type { ContainerProviderConnection, Disposable } from '@podman-desktop/api';
+import type { Disposable } from '@podman-desktop/api';
 import { CONFIG_FILENAME } from '../../utils/RecipeConstants';
 import type { InferenceManager } from '../inference/inferenceManager';
-import type { ModelInfo } from '@shared/models/IModelInfo';
 import { withDefaultConfiguration } from '../../utils/inferenceUtils';
 import type { InferenceServer } from '@shared/models/IInference';
+import { type ApplicationOptions, isApplicationOptionsWithModelInference } from '../../models/ApplicationOptions';
 
 export interface AIContainers {
   aiConfigFile: AIConfigFile;
@@ -96,26 +96,21 @@ export class RecipeManager implements Disposable {
     });
   }
 
-  public async buildRecipe(
-    connection: ContainerProviderConnection,
-    recipe: Recipe,
-    model: ModelInfo | undefined,
-    labels?: { [key: string]: string },
-  ): Promise<RecipeComponents> {
-    const localFolder = path.join(this.appUserDirectory, recipe.id);
+  public async buildRecipe(options: ApplicationOptions, labels?: { [key: string]: string }): Promise<RecipeComponents> {
+    const localFolder = path.join(this.appUserDirectory, options.recipe.id);
 
     let inferenceServer: InferenceServer | undefined;
-    if (model) {
+    if (isApplicationOptionsWithModelInference(options)) {
       // if the recipe has a defined backend, we gives priority to using an inference server
-      if (recipe.backend && recipe.backend === model.backend) {
+      if (options.recipe.backend && options.recipe.backend === options.model.backend) {
         let task: Task | undefined;
         try {
-          inferenceServer = this.inferenceManager.findServerByModel(model);
+          inferenceServer = this.inferenceManager.findServerByModel(options.model);
           task = this.taskRegistry.createTask('Starting Inference server', 'loading', labels);
           if (!inferenceServer) {
             const inferenceContainerId = await this.inferenceManager.createInferenceServer(
               await withDefaultConfiguration({
-                modelsInfo: [model],
+                modelsInfo: [options.model],
               }),
             );
             inferenceServer = this.inferenceManager.get(inferenceContainerId);
@@ -148,23 +143,23 @@ export class RecipeManager implements Disposable {
 
     // load and parse the recipe configuration file and filter containers based on architecture
     const configAndFilteredContainers = this.getConfigAndFilterContainers(
-      recipe.basedir,
+      options.recipe.basedir,
       localFolder,
       !!inferenceServer,
       {
         ...labels,
-        'recipe-id': recipe.id,
+        'recipe-id': options.recipe.id,
       },
     );
 
     const images = await this.builderManager.build(
-      connection,
-      recipe,
+      options.connection,
+      options.recipe,
       configAndFilteredContainers.containers,
       configAndFilteredContainers.aiConfigFile.path,
       {
         ...labels,
-        'recipe-id': recipe.id,
+        'recipe-id': options.recipe.id,
       },
     );
 

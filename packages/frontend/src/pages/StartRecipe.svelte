@@ -2,7 +2,7 @@
 import { faFolder, faRocket, faUpRightFromSquare, faWarning } from '@fortawesome/free-solid-svg-icons';
 import { catalog } from '/@/stores/catalog';
 import Fa from 'svelte-fa';
-import type { Recipe } from '@shared/models/IRecipe';
+import type { Recipe, RecipePullOptionsWithModelInference } from '@shared/models/IRecipe';
 import type { LocalRepository } from '@shared/models/ILocalRepository';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 import { localRepositories } from '/@/stores/localRepositories';
@@ -115,11 +115,14 @@ async function submit(): Promise<void> {
   errorMsg = undefined;
 
   try {
-    const trackingId = await studioClient.requestPullApplication({
+    const options = {
       recipeId: $state.snapshot(recipe.id),
-      modelId: model ? $state.snapshot(model.id) : undefined,
       connection: $state.snapshot(containerProviderConnection),
-    });
+    };
+    if (model) {
+      (options as RecipePullOptionsWithModelInference).modelId = $state.snapshot(model.id);
+    }
+    const trackingId = await studioClient.requestPullApplication(options);
     router.location.query.set('trackingId', trackingId);
   } catch (err: unknown) {
     console.error('Something wrong while trying to create the inference server.', err);

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2024 Red Hat, Inc.
+# Copyright (C) 2024-2025 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ jobs:
 
   tag:
     name: Tagging
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     outputs:
       githubTag: ${{ steps.TAG_UTIL.outputs.githubTag}}
       extVersion: ${{ steps.TAG_UTIL.outputs.extVersion}}

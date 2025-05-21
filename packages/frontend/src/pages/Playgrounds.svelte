@@ -3,19 +3,24 @@ import { router } from 'tinro';
 import PlaygroundColumnModel from '../lib/table/playground/PlaygroundColumnModel.svelte';
 import PlaygroundColumnName from '../lib/table/playground/PlaygroundColumnName.svelte';
 import ConversationColumnAction from '/@/lib/table/playground/ConversationColumnAction.svelte';
-import { conversations } from '/@/stores/conversations';
+import { conversations, type ConversationWithBackend } from '/@/stores/conversations';
 import PlaygroundColumnIcon from '/@/lib/table/playground/PlaygroundColumnIcon.svelte';
 import { Button, EmptyScreen, Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
-import type { Conversation } from '@shared/models/IPlaygroundMessage';
 import { faMessage, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import PlaygroundColumnRuntime from '../lib/table/playground/PlaygroundColumnRuntime.svelte';
 
 const columns = [
   new TableColumn<unknown>('', { width: '40px', renderer: PlaygroundColumnIcon }),
-  new TableColumn<Conversation>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
-  new TableColumn<Conversation>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
-  new TableColumn<Conversation>('Actions', { width: '80px', renderer: ConversationColumnAction, align: 'right' }),
+  new TableColumn<ConversationWithBackend>('Name', { width: '1fr', renderer: PlaygroundColumnName }),
+  new TableColumn<ConversationWithBackend>('Model', { width: '1fr', renderer: PlaygroundColumnModel }),
+  new TableColumn<ConversationWithBackend>('Runtime', { width: '90px', renderer: PlaygroundColumnRuntime }),
+  new TableColumn<ConversationWithBackend>('Actions', {
+    width: '80px',
+    renderer: ConversationColumnAction,
+    align: 'right',
+  }),
 ];
-const row = new TableRow<Conversation>({});
+const row = new TableRow<ConversationWithBackend>({});
 
 function createNewPlayground(): void {
   router.goto('/playground/create');

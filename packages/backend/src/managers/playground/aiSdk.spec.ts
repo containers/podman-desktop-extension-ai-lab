@@ -22,23 +22,26 @@ import { AiStreamProcessor, toCoreMessage } from './aiSdk';
 import type {
   AssistantChat,
   ChatMessage,
+  Conversation,
   ErrorMessage,
   Message,
   PendingChat,
   UserChat,
 } from '@shared/models/IPlaygroundMessage';
 import type { LanguageModelV1, LanguageModelV1CallWarning, LanguageModelV1StreamPart } from '@ai-sdk/provider';
-// @ts-expect-error this is a test module
 import { convertArrayToReadableStream } from '@ai-sdk/provider-utils/test';
 import { ConversationRegistry } from '../../registries/ConversationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import type { ModelOptions } from '@shared/models/IModelOptions';
+import type { ToolSet } from 'ai';
+import { jsonSchema, simulateStreamingMiddleware, tool, wrapLanguageModel } from 'ai';
 
 vi.mock('ai', async original => {
   const mod = (await original()) as object;
   return { ...mod };
 });
 
+/* eslint-disable sonarjs/no-nested-functions */
 describe('aiSdk', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -70,6 +73,52 @@ describe('aiSdk', () => {
         { role: 'assistant', content: 'bob' },
       ]);
     });
+    test('with tool call messages', () => {
+      const result = toCoreMessage(
+        { role: 'user', content: 'alex' } as ChatMessage,
+        {
+          role: 'assistant',
+          content: {
+            type: 'tool-call',
+            toolCallId: 'call-001',
+            toolName: 'tool-1',
+            args: {},
+            result: {
+              content: [{ type: 'text', text: 'Success!!!' }],
+            },
+          },
+        } as AssistantChat,
+        { role: 'assistant', content: 'The call to the tool was a success!' } as AssistantChat,
+      );
+      expect(result).toEqual([
+        { role: 'user', content: 'alex' },
+        {
+          role: 'assistant',
+          content: [
+            {
+              type: 'tool-call',
+              toolCallId: 'call-001',
+              toolName: 'tool-1',
+              args: {},
+            },
+          ],
+        },
+        {
+          role: 'tool',
+          content: [
+            {
+              type: 'tool-result',
+              toolCallId: 'call-001',
+              toolName: 'tool-1',
+              result: {
+                content: [{ type: 'text', text: 'Success!!!' }],
+              },
+            },
+          ],
+        },
+        { role: 'assistant', content: 'The call to the tool was a success!' },
+      ]);
+    });
   });
   describe('AiStreamProcessor', () => {
     let conversationRegistry: ConversationRegistry;
@@ -90,7 +139,7 @@ describe('aiSdk', () => {
     test('sends model options', async () => {
       const streamTextSpy = vi.spyOn(ai, 'streamText');
       const streamProcessor = new AiStreamProcessor(conversationId, conversationRegistry);
-      const streamResult = streamProcessor.stream(createTestModel(), {
+      const streamResult = streamProcessor.stream(createTestModel(), undefined, {
         temperature: 42,
         top_p: 13,
         max_tokens: 37,
@@ -175,10 +224,108 @@ describe('aiSdk', () => {
         );
       });
       test('setsUsage', async () => {
-        await new AiStreamProcessor(conversationId, conversationRegistry).stream(model).consumeStream();
-        const message = conversationRegistry.get(conversationId).messages[1] as ChatMessage;
-        expect(message?.usage?.completion_tokens).toEqual(133);
-        expect(message?.usage?.prompt_tokens).toEqual(7);
+        const conversation = conversationRegistry.get(conversationId) as Conversation;
+        expect(conversation?.usage?.completion_tokens).toEqual(133);
+        expect(conversation?.usage?.prompt_tokens).toEqual(7);
+      });
+    });
+    describe('with wrapped generated multiple messages as stream', () => {
+      let model: LanguageModelV1;
+      let tools: ToolSet;
+      let generateStep: number;
+
+      beforeEach(async () => {
+        generateStep = 0;
+        model = wrapLanguageModel({
+          model: new MockLanguageModelV1({
+            // This is the output that the simulateStreamingMiddleware expects for tool-calling
+            doGenerate: (async () => {
+              // First call to the model returns a list of tool calls
+              if (generateStep++ === 0) {
+                return {
+                  rawCall: { rawPrompt: {}, rawSettings: {} },
+                  usage: { promptTokens: 1, completionTokens: 1 },
+                  text: '',
+                  finishReason: 'tool-calls',
+                  toolCalls: [
+                    {
+                      toolCallType: 'function',
+                      toolCallId: 'call-001',
+                      toolName: 'tool-1',
+                      args: '',
+                    },
+                    {
+                      toolCallType: 'function',
+                      toolCallId: 'call-002',
+                      toolName: 'tool-1',
+                      args: '',
+                    },
+                  ],
+                };
+              }
+              // Second call to the model returns the final human-readable result
+              return {
+                rawCall: { rawPrompt: {}, rawSettings: {} },
+                finishReason: 'stop',
+                usage: { promptTokens: 133, completionTokens: 7 },
+                text: 'These are the results of you functions: huge success!',
+              };
+            }) as LanguageModelV1['doGenerate'],
+          }),
+          middleware: simulateStreamingMiddleware(),
+        });
+        tools = {
+          'tool-1': tool({
+            parameters: jsonSchema({ type: 'object' }),
+            execute: async () => 'successful result!',
+          }),
+        };
+        await new AiStreamProcessor(conversationId, conversationRegistry).stream(model, tools).consumeStream();
+      });
+      test('appends multiple messages', () => {
+        expect(conversationRegistry.get(conversationId).messages).toHaveLength(4);
+      });
+      test.each<{ index: number; toolCallId: string }>([
+        { index: 1, toolCallId: 'call-001' },
+        { index: 2, toolCallId: 'call-002' },
+      ])(`appends tool call (to tool-1) message at $index`, ({ index, toolCallId }) => {
+        const message = conversationRegistry.get(conversationId).messages[index] as AssistantChat;
+        expect(message.role).toEqual('assistant');
+        expect(message.content).toMatchObject({
+          type: 'tool-call',
+          toolCallId,
+          toolName: 'tool-1',
+          args: {},
+        });
+      });
+      test.each<{ index: number; id: string; toolCallId: string }>([
+        { index: 1, id: '3', toolCallId: 'call-001' },
+        { index: 2, id: '4', toolCallId: 'call-002' },
+      ])(`sets tool result message at $index for $toolCallId`, ({ index, id, toolCallId }) => {
+        const message = conversationRegistry.get(conversationId).messages[index] as AssistantChat;
+        expect(message).toEqual({
+          id,
+          timestamp: expect.any(Number),
+          completed: expect.any(Number),
+          role: 'assistant',
+          content: {
+            type: 'tool-call',
+            toolCallId,
+            toolName: 'tool-1',
+            args: {},
+            result: 'successful result!',
+          },
+        });
+      });
+      test('appends final assistant message', () => {
+        const message = conversationRegistry.get(conversationId).messages[3] as AssistantChat;
+        expect(message.role).toEqual('assistant');
+        expect(message.content).toEqual('These are the results of you functions: huge success!');
+      });
+      test('setsUsage', async () => {
+        const conversation = conversationRegistry.get(conversationId) as Conversation;
+        expect(conversation?.usage?.completion_tokens).toEqual(8);
+        expect(conversation?.usage?.prompt_tokens).toEqual(134);
       });
     });
   });
@@ -195,10 +342,16 @@ export class MockLanguageModelV1 implements LanguageModelV1 {
 
   readonly defaultObjectGenerationMode: LanguageModelV1['defaultObjectGenerationMode'];
   readonly supportsStructuredOutputs: LanguageModelV1['supportsStructuredOutputs'];
-  constructor({ doStream = notImplemented }: { doStream?: LanguageModelV1['doStream'] }) {
+  constructor({
+    doStream = notImplemented,
+    doGenerate = notImplemented,
+  }: {
+    doStream?: LanguageModelV1['doStream'];
+    doGenerate?: LanguageModelV1['doGenerate'];
+  }) {
     this.provider = 'mock-model-provider';
     this.modelId = 'mock-model-id';
-    this.doGenerate = notImplemented;
+    this.doGenerate = doGenerate;
     this.doStream = doStream;
   }
 }

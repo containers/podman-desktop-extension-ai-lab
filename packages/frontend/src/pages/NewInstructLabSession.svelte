@@ -12,16 +12,13 @@ import type { ModelInfo } from '@shared/models/IModelInfo';
 let skillsFiles: string[] = $state([]);
 let knowledgeFiles: string[] = $state([]);
 
-let valid: boolean = $state(false);
-
-let sessionName: string = $state('');
 let model: ModelInfo | undefined = $state(undefined);
+let sessionName: string = $state('');
+let valid: boolean = $derived(
+  (skillsFiles.length > 0 || knowledgeFiles.length > 0) && !!model && sessionName.length > 0,
+);
 
 let trainingType: 'knowledge' | 'skills' = $state('knowledge');
-
-$effect(() => {
-  valid = (skillsFiles.length > 0 || knowledgeFiles.length > 0) && !!model && sessionName.length > 0;
-});
 
 function goToUpPage(): void {
   router.goto('/tune');

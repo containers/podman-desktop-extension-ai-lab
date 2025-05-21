@@ -8,7 +8,7 @@ export let object: InstructlabSession;
 $: name = $catalog.models.find(r => r.id === object.modelId)?.name;
 
 function openDetails(): void {
-  router.goto(`/model/${object.modelId}`);
+  router.goto(`/model/${encodeURIComponent(object.modelId)}`);
 }
 </script>
 

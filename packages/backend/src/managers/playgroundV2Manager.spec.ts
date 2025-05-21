@@ -29,9 +29,9 @@ import type { ChatMessage, ErrorMessage } from '@shared/models/IPlaygroundMessag
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
-// @ts-expect-error this is a test module
 import { convertArrayToReadableStream } from '@ai-sdk/provider-utils/test';
 import type { LanguageModelV1 } from '@ai-sdk/provider';
+import { type McpServerManager } from './playground/McpServerManager';
 
 vi.mock('@ai-sdk/openai-compatible', () => ({
   createOpenAICompatible: vi.fn(),
@@ -64,6 +64,7 @@ const cancellationTokenRegistryMock = {
   delete: vi.fn(),
 } as unknown as CancellationTokenRegistry;
 
+let mcpServerManager: McpServerManager;
 let createTestModel: (options: object) => LanguageModelV1;
 let MockLanguageModelV1: unknown;
 
@@ -71,12 +72,16 @@ beforeEach(async () => {
   vi.resetAllMocks();
   vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
   vi.useFakeTimers();
+  mcpServerManager = {
+    getMcpSettings: vi.fn(() => {}),
+    toMcpClients: vi.fn(() => []),
+  } as unknown as McpServerManager;
   const aiSdkSpecShared = await import('./playground/aiSdk.spec');
   createTestModel = aiSdkSpecShared.createTestModel;
   MockLanguageModelV1 = aiSdkSpecShared.MockLanguageModelV1;
 });
 
-afterEach(() => {
+afterEach(async () => {
   vi.useRealTimers();
 });
 
@@ -87,6 +92,7 @@ test('manager should be properly initialized', () => {
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   expect(manager.getConversations().length).toBe(0);
 });
@@ -108,6 +114,7 @@ test('submit should throw an error if the server is stopped', async () => {
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground('playground 1', { id: 'model1' } as ModelInfo, 'tracking-1');
 
@@ -147,6 +154,7 @@ test('submit should throw an error if the server is unhealthy', async () => {
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground('p1', { id: 'model1' } as ModelInfo, 'tracking-1');
   const playgroundId = manager.getConversations()[0].id;
@@ -178,6 +186,7 @@ test('create playground should create conversation.', async () => {
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   expect(manager.getConversations().length).toBe(0);
   await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo, 'tracking-1');
@@ -197,6 +206,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
         {
           id: 'dummyModelId',
           file: {
+            path: '.',
             file: 'dummyModelFile',
           },
         },
@@ -204,6 +214,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
       connection: {
         port: 8888,
       },
+      labels: [],
     } as unknown as InferenceServer,
   ]);
   // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
@@ -222,6 +233,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
 
@@ -254,10 +266,10 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
     id: expect.anything(),
     role: 'assistant',
     timestamp: expect.any(Number),
-    usage: {
-      completion_tokens: 133,
-      prompt_tokens: 7,
-    },
+  });
+  expect(conversations[0].usage).toStrictEqual({
+    completion_tokens: 133,
+    prompt_tokens: 7,
   });
 
   expect(rpcExtensionMock.fire).toHaveBeenLastCalledWith(MSG_CONVERSATIONS_UPDATE, conversations);
@@ -274,6 +286,7 @@ test('error', async () => {
         {
           id: 'dummyModelId',
           file: {
+            path: '.',
             file: 'dummyModelFile',
           },
         },
@@ -281,6 +294,7 @@ test('error', async () => {
       connection: {
         port: 8888,
       },
+      labels: [],
     } as unknown as InferenceServer,
   ]);
   const doStream: LanguageModelV1['doStream'] = async () => {
@@ -298,6 +312,7 @@ test('error', async () => {
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
 
@@ -340,6 +355,7 @@ test('creating a new playground should send new playground to frontend', async (
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground(
     'a name',
@@ -355,6 +371,10 @@ test('creating a new playground should send new playground to frontend', async (
       modelId: 'model-1',
       name: 'a name',
       messages: [],
+      usage: {
+        completion_tokens: 0,
+        prompt_tokens: 0,
+      },
     },
   ]);
 });
@@ -367,6 +387,7 @@ test('creating a new playground with no name should send new playground to front
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground(
     '',
@@ -382,6 +403,10 @@ test('creating a new playground with no name should send new playground to front
       modelId: 'model-1',
       name: 'playground 1',
       messages: [],
+      usage: {
+        completion_tokens: 0,
+        prompt_tokens: 0,
+      },
     },
   ]);
 });
@@ -395,6 +420,7 @@ test('creating a new playground with no model served should start an inference s
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground(
     'a name',
@@ -439,6 +465,7 @@ test('creating a new playground with the model already served should not start a
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground(
     'a name',
@@ -473,6 +500,7 @@ test('creating a new playground with the model server stopped should start the i
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground(
     'a name',
@@ -495,6 +523,7 @@ test('delete conversation should delete the conversation', async () => {
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   expect(manager.getConversations().length).toBe(0);
   await manager.createPlayground(
@@ -521,6 +550,7 @@ test('creating a new playground with an existing name should fail', async () => 
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   await manager.createPlayground(
     'a name',
@@ -550,6 +580,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   const createTaskMock = vi.mocked(taskRegistryMock).createTask;
   const updateTaskMock = vi.mocked(taskRegistryMock).updateTask;
@@ -584,6 +615,7 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
     taskRegistryMock,
     telemetryMock,
     cancellationTokenRegistryMock,
+    mcpServerManager,
   );
   const createTaskMock = vi.mocked(taskRegistryMock).createTask;
   const updateTaskMock = vi.mocked(taskRegistryMock).updateTask;
@@ -638,6 +670,7 @@ describe('system prompt', () => {
       taskRegistryMock,
       telemetryMock,
       cancellationTokenRegistryMock,
+      mcpServerManager,
     );
 
     expect(() => {
@@ -656,6 +689,7 @@ describe('system prompt', () => {
           {
             id: 'dummyModelId',
             file: {
+              path: '.',
               file: 'dummyModelFile',
             },
           },
@@ -663,6 +697,7 @@ describe('system prompt', () => {
         connection: {
           port: 8888,
         },
+        labels: [],
       } as unknown as InferenceServer,
     ]);
     // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
@@ -681,6 +716,7 @@ describe('system prompt', () => {
       taskRegistryMock,
       telemetryMock,
       cancellationTokenRegistryMock,
+      mcpServerManager,
     );
     await manager.createPlayground('playground 1', { id: 'dummyModelId' } as ModelInfo, 'tracking-1');
 

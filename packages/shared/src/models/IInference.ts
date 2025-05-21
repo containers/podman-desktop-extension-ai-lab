@@ -20,7 +20,34 @@ import type { ModelInfo } from './IModelInfo';
 export enum InferenceType {
   LLAMA_CPP = 'llama-cpp',
   WHISPER_CPP = 'whisper-cpp',
+  OPENVINO = 'openvino',
   NONE = 'none',
+}
+
+const InferenceTypeLabel = {
+  'llama-cpp': 'llamacpp',
+  'whisper-cpp': 'whispercpp',
+  openvino: 'openvino',
+  none: 'None',
+};
+
+// toInferenceType casts a string to InferenceType
+// returns NONE value if input value is undefined or unknown
+export function toInferenceType(type: string | undefined): InferenceType {
+  if (!type) {
+    return InferenceType.NONE;
+  }
+  if (Object.values(InferenceType).includes(type as InferenceType)) {
+    return type as InferenceType;
+  }
+  return InferenceType.NONE;
+}
+
+export function inferenceTypeLabel(type: InferenceType): string {
+  if (type in InferenceTypeLabel) {
+    return InferenceTypeLabel[type];
+  }
+  return InferenceTypeLabel['none'];
 }
 
 export type InferenceServerStatus = 'stopped' | 'running' | 'deleting' | 'stopping' | 'error' | 'starting';

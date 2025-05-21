@@ -56,10 +56,11 @@ function processTasks(trackedTasks: Task[]): void {
   if (task === undefined) return;
 
   containerInfo =
-    task.labels?.['containerId'] && task.labels?.['port']
+    task.labels?.['containerId'] && task.labels?.['port'] && task.labels?.['playgroundPort']
       ? {
           containerId: task.labels?.['containerId'],
           port: parseInt(task.labels?.['port']),
+          playgroundPort: parseInt(task.labels?.['playgroundPort']),
         }
       : undefined;
 }
@@ -82,6 +83,10 @@ function openLlamaStackContainer(): void {
   llamaStackClient.routeToLlamaStackContainerTerminal(containerInfo!.containerId).catch(console.error);
 }
 
+function openLlamaStackPlayground(): void {
+  openLink(`http://localhost:${containerInfo?.playgroundPort}`);
+}
+
 function openLink(url: string): void {
   studioClient.openURL(url).catch(err => console.error(`Error opening URL: ${url}`, err));
 }
@@ -91,10 +96,17 @@ function openLink(url: string): void {
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
       <header class="mx-5 mt-5">
-        <div class="w-full flex flex-row">
+        <div class="w-full flex flex-row space-x-2">
           {#if available}
             <Button inProgress={!available} title="Open Llama Stack container" on:click={openLlamaStackContainer}>
               Open Llama Stack container
+            </Button>
+            <Button
+              disabled={!containerInfo?.playgroundPort}
+              inProgress={!available}
+              title="Explore LLama-Stack environment"
+              on:click={openLlamaStackPlayground}>
+              Explore LLama-Stack environment
             </Button>
           {:else}
             <Button title="Start Llama Stack container" inProgress={loading} on:click={submit}>
@@ -111,36 +123,40 @@ function openLink(url: string): void {
         tasks={$tasks} />
 
       <!-- form -->
-      <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
-        <div class="w-full text-[var(--pd-details-body-text)]">
-          <!-- container provider connection input -->
-          {#if startedContainerProviderConnectionInfo.length > 1}
-            <label for="" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Container engine</label>
-            <ContainerProviderConnectionSelect
-              bind:value={containerProviderConnection}
-              containerProviderConnections={startedContainerProviderConnectionInfo} />
-          {/if}
+      {#if startedContainerProviderConnectionInfo.length > 1 || containerInfo !== undefined || errorMsg !== undefined}
+        <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
+          <div class="w-full text-[var(--pd-details-body-text)]">
+            <!-- container provider connection input -->
+            {#if startedContainerProviderConnectionInfo.length > 1}
+              <label for="" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+                >Container engine</label>
+              <ContainerProviderConnectionSelect
+                bind:value={containerProviderConnection}
+                containerProviderConnections={startedContainerProviderConnectionInfo} />
+            {/if}
 
-          <h1 class="pt-4 mb-2 text-lg first-letter:uppercase">Instructions</h1>
+            {#if containerInfo !== undefined || errorMsg !== undefined}
+              <h1 class="pt-4 mb-2 text-lg first-letter:uppercase">Instructions</h1>
 
-          {#if containerInfo}
-            <p>Llama Stack API is accessible at http://localhost:{containerInfo.port}</p>
-            <p>
-              Access
-              <Tooltip tip="Open swagger documentation">
-                <Link
-                  aria-label="swagger documentation"
-                  on:click={openLink.bind(undefined, `http://localhost:${containerInfo.port}/docs`)}>
-                  swagger documentation
-                </Link>
-              </Tooltip>
-            </p>
-          {/if}
-          {#if errorMsg !== undefined}
-            <ErrorMessage error={errorMsg} />
-          {/if}
+              {#if containerInfo}
+                <p>Llama Stack API is accessible at http://localhost:{containerInfo.port}</p>
+                <p>
+                  Access
+                  <Tooltip tip="Open swagger documentation">
+                    <Link
+                      aria-label="swagger documentation"
+                      on:click={openLink.bind(undefined, `http://localhost:${containerInfo.port}/docs`)}>
+                      swagger documentation
+                    </Link>
+                  </Tooltip>
+                </p>
+              {/if}
+              {#if errorMsg !== undefined}
+                <ErrorMessage error={errorMsg} />
+              {/if}
+            {/if}
+          </div>
         </div>
-      </div>
+      {/if}
     </div></svelte:fragment>
 </FormPage>

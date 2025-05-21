@@ -18,17 +18,17 @@
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor, within } from '@testing-library/svelte';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi, describe } from 'vitest';
 import Playground from './Playground.svelte';
 import { studioClient } from '../utils/client';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { fireEvent } from '@testing-library/dom';
-import type { AssistantChat, Conversation, PendingChat, UserChat } from '@shared/models/IPlaygroundMessage';
+import type { AssistantChat, ModelUsage, PendingChat, UserChat } from '@shared/models/IPlaygroundMessage';
 import * as conversationsStore from '/@/stores/conversations';
 import * as inferenceServersStore from '/@/stores/inferenceServers';
 import { readable, writable } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
-import type { InferenceServer } from '@shared/models/IInference';
+import { InferenceType, type InferenceServer } from '@shared/models/IInference';
 
 vi.mock('../utils/client', async () => {
   return {
@@ -59,12 +59,14 @@ vi.mock('/@/stores/inferenceServers', async () => {
   };
 });
 
-const customConversations = writable<Conversation[]>([
+const customConversations = writable<conversationsStore.ConversationWithBackend[]>([
   {
     id: 'playground-1',
     name: 'Playground 1',
     modelId: 'model-1',
     messages: [],
+    usage: {} as ModelUsage,
+    backend: InferenceType.LLAMA_CPP,
   },
 ]);
 
@@ -244,6 +246,8 @@ test('receiving complete message should enable the input element', async () => {
           completed: Date.now(),
         } as AssistantChat,
       ],
+      usage: {} as ModelUsage,
+      backend: InferenceType.LLAMA_CPP,
     },
   ]);
 
@@ -284,10 +288,12 @@ test('sending prompt should display the prompt and the response', async () => {
         {
           role: 'assistant',
           id: 'message-2',
-          choices: [{ content: 'a ' }, { content: 'response ' }, { content: 'from ' }, { content: 'the ' }],
+          content: 'a response from the ',
           completed: false,
         } as unknown as PendingChat,
       ],
+      usage: {} as ModelUsage,
+      backend: InferenceType.LLAMA_CPP,
     },
   ]);
 
@@ -311,10 +317,12 @@ test('sending prompt should display the prompt and the response', async () => {
         {
           role: 'assistant',
           id: 'message-2',
-          content: 'a response from the assistant',
+          content: 'a response from the assistant\neat, sleep, code, repeat\neat, sleep, code, repeat',
           completed: Date.now(),
         } as AssistantChat,
       ],
+      usage: {} as ModelUsage,
+      backend: InferenceType.LLAMA_CPP,
     },
   ]);
 
@@ -348,5 +356,67 @@ test('user should be able to stop prompt', async () => {
 
   await vi.waitFor(() => {
     expect(studioClient.requestCancelToken).toHaveBeenCalledWith(55);
+  });
+});
+
+describe('error message', () => {
+  test('submitPlaygroundMessage reject should be displayed', async () => {
+    // mock reject
+    vi.mocked(studioClient.submitPlaygroundMessage).mockRejectedValue(new Error('dummy'));
+
+    const { getByRole } = render(Playground, {
+      playgroundId: 'playground-1',
+    });
+
+    // Get the input
+    const prompt: HTMLElement = await waitFor<HTMLElement>(() => {
+      const element = getByRole('textbox', { name: 'prompt' });
+      expect(element).toBeInTheDocument();
+      return element;
+    });
+
+    fireEvent.change(prompt, { target: { value: 'prompt' } });
+    fireEvent.keyDown(prompt, { key: 'Enter' });
+
+    // Get the error div
+    const error: HTMLElement = await waitFor<HTMLElement>(() => {
+      const element = getByRole('alert', { name: 'error' });
+      expect(element).toBeInTheDocument();
+      return element;
+    });
+
+    expect(error).toHaveTextContent('Error: dummy');
+  });
+
+  test('error message should display the content', async () => {
+    // mock conversation
+    vi.mocked(conversationsStore).conversations = writable([
+      {
+        id: 'playground-1',
+        name: 'Playground 1',
+        modelId: 'model-1',
+        messages: [
+          {
+            id: 'error-message-id',
+            error: 'something went wrong with the server',
+            timestamp: 55,
+          },
+        ],
+        backend: InferenceType.LLAMA_CPP,
+      },
+    ]);
+
+    const { getByRole } = render(Playground, {
+      playgroundId: 'playground-1',
+    });
+
+    // Get the error div
+    const error: HTMLElement = await waitFor<HTMLElement>(() => {
+      const element = getByRole('alert', { name: 'error' });
+      expect(element).toBeInTheDocument();
+      return element;
+    });
+
+    expect(error).toHaveTextContent('something went wrong with the server');
   });
 });

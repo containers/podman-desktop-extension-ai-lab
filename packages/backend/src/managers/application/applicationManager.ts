@@ -54,6 +54,7 @@ import { VMType } from '@shared/models/IPodman';
 import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { TaskRunner } from '../TaskRunner';
+import { getInferenceType } from '../../utils/inferenceUtils';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
   #applications: ApplicationRegistry<ApplicationState>;
@@ -523,6 +524,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       appPorts,
       modelPorts,
       health: 'starting',
+      backend: getInferenceType(this.modelsManager.getModelsInfo().filter(m => m.id === modelId)),
     };
     this.updateApplicationState(recipeId, modelId, state);
   }

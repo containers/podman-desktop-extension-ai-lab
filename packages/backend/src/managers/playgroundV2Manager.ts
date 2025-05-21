@@ -30,9 +30,12 @@ import { getHash } from '../utils/sha';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AiStreamProcessor } from './playground/aiSdk';
+import { type McpServerManager } from './playground/McpServerManager';
+import type { ToolSet } from 'ai';
+import { simulateStreamingMiddleware, wrapLanguageModel } from 'ai';
 
 export class PlaygroundV2Manager implements Disposable {
-  #conversationRegistry: ConversationRegistry;
+  readonly #conversationRegistry: ConversationRegistry;
 
   constructor(
     rpcExtension: RpcExtension,
@@ -40,6 +43,7 @@ export class PlaygroundV2Manager implements Disposable {
     private taskRegistry: TaskRegistry,
     private telemetry: TelemetryLogger,
     private cancellationTokenRegistry: CancellationTokenRegistry,
+    private mcpServerManager: McpServerManager,
   ) {
     this.#conversationRegistry = new ConversationRegistry(rpcExtension);
   }
@@ -211,7 +215,7 @@ export class PlaygroundV2Manager implements Disposable {
       timestamp: Date.now(),
     } as UserChat);
 
-    if (!modelInfo.file?.file) throw new Error('model info has undefined file.');
+    if (!modelInfo.file?.path) throw new Error('model info has undefined file.');
 
     const telemetry: Record<string, unknown> = {
       conversationId: conversationId,
@@ -220,20 +224,33 @@ export class PlaygroundV2Manager implements Disposable {
       modelId: getHash(modelInfo.id),
     };
 
-    const openAiClient = createOpenAICompatible({
-      name: modelInfo.name,
-      baseURL: `http://localhost:${server.connection.port}/v1`,
-    });
-    const model = openAiClient(modelInfo.name);
     const streamProcessor = new AiStreamProcessor(conversationId, this.#conversationRegistry);
-
     const cancelTokenId = this.cancellationTokenRegistry.createCancellationTokenSource(() => {
       streamProcessor.abortController.abort('cancel');
     });
 
+    const tools: ToolSet = {};
+    const mcpClients = await this.mcpServerManager.toMcpClients();
+    for (const client of mcpClients) {
+      const clientTools = await client.tools();
+      for (const entry of Object.entries(clientTools)) {
+        tools[entry[0]] = entry[1];
+      }
+    }
+
+    const openAiClient = createOpenAICompatible({
+      name: modelInfo.name,
+      baseURL: server.labels['api'] ?? `http://localhost:${server.connection.port}/v1`,
+    });
+    let model = openAiClient(modelInfo.name);
+    // Tool calling in OpenAI doesn't support streaming yet
+    if (Object.keys(tools).length > 0) {
+      model = wrapLanguageModel({ model, middleware: simulateStreamingMiddleware() });
+    }
+
     const start = Date.now();
     streamProcessor
-      .stream(model, options)
+      .stream(model, tools, options)
       .consumeStream()
       .then(() => {
         this.telemetry.logUsage('playground.message.complete', {
@@ -247,6 +264,9 @@ export class PlaygroundV2Manager implements Disposable {
       .finally(() => {
         this.telemetry.logUsage('playground.submit', telemetry);
         this.cancellationTokenRegistry.delete(cancelTokenId);
+        Promise.all(mcpClients.map(client => client.close())).catch((e: unknown) =>
+          console.error(`Error closing MCP client`, e),
+        );
       });
 
     return cancelTokenId;

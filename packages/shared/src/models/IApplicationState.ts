@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import type { PodInfo } from '@podman-desktop/api';
+import type { InferenceType } from './IInference';
 
 export type PodHealth = 'none' | 'starting' | 'healthy' | 'unhealthy';
 
@@ -27,4 +28,5 @@ export interface ApplicationState {
   appPorts: number[];
   modelPorts: number[];
   health: PodHealth;
+  backend: InferenceType;
 }

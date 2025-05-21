@@ -129,7 +129,7 @@ export class HuggingFaceModelHandler extends ModelHandler {
               if (model) {
                 model.model.file = {
                   path: revision.path,
-                  file: revision.path,
+                  file: '',
                   creation: revision.lastModifiedAt,
                   size: revision.size,
                 };

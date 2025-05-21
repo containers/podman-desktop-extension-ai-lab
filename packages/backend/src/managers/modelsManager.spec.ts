@@ -141,6 +141,7 @@ beforeEach(() => {
     modelsPath: '~/downloads',
     experimentalTuning: false,
     apiPort: 0,
+    inferenceRuntime: 'llama-cpp',
     experimentalGPU: false,
     showGPUPromotion: false,
     appearance: 'dark',
@@ -658,7 +659,7 @@ describe('deleting models', () => {
       'machine-2',
       'rm',
       '-f',
-      '/home/user/ai-lab/models/dummyFile',
+      '/home/user/ai-lab/models/model-id-1',
     ]);
   });
 });
@@ -1007,6 +1008,7 @@ describe('uploadModelToPodmanMachine', () => {
       modelsPath: '~/downloads',
       experimentalTuning: false,
       apiPort: 0,
+      inferenceRuntime: 'llama-cpp',
       experimentalGPU: false,
       showGPUPromotion: false,
       appearance: 'dark',

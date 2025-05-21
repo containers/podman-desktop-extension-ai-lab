@@ -9,6 +9,7 @@ import ColumnAge from './ColumnAge.svelte';
 import { onMount } from 'svelte';
 import type { ApplicationState } from '@shared/models/IApplicationState';
 import { Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
+import ColumnRuntime from './ColumnRuntime.svelte';
 
 export let filter: ((items: ApplicationState[]) => ApplicationState[]) | undefined = undefined;
 const columns: TableColumn<ApplicationState>[] = [
@@ -17,6 +18,7 @@ const columns: TableColumn<ApplicationState>[] = [
   new TableColumn<ApplicationState>('Recipe', { width: '2fr', renderer: ColumnRecipe }),
   new TableColumn<ApplicationState>('Pod', { width: '3fr', renderer: ColumnPod }),
   new TableColumn<ApplicationState>('Age', { width: '2fr', renderer: ColumnAge }),
+  new TableColumn<ApplicationState>('Runtime', { width: '90px', renderer: ColumnRuntime }),
   new TableColumn<ApplicationState>('Actions', {
     align: 'right',
     width: '120px',

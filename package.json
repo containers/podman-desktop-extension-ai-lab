@@ -3,7 +3,7 @@
   "displayName": "ai-lab-monorepo",
   "description": "ai-lab-monorepo",
   "publisher": "redhat",
-  "version": "1.7.0-next",
+  "version": "1.8.0-next",
   "license": "Apache-2.0",
   "private": true,
   "engines": {
@@ -43,35 +43,35 @@
     "*.{md,css,json}": "prettier --write"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/compat": "^1.2.9",
-    "@typescript-eslint/eslint-plugin": "^8.31.1",
-    "@typescript-eslint/parser": "^8.31.1",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
     "@vitest/coverage-v8": "^3.0.5",
     "autoprefixer": "^10.4.21",
-    "commitlint": "^19.8.0",
+    "commitlint": "^19.8.1",
     "concurrently": "^9.1.2",
-    "eslint": "^9.26.0",
+    "eslint": "^9.27.0",
     "eslint-import-resolver-custom-alias": "^1.3.2",
-    "eslint-import-resolver-typescript": "^4.3.4",
+    "eslint-import-resolver-typescript": "^4.3.5",
     "eslint-plugin-etc": "^2.0.3",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-no-null": "^1.0.2",
     "eslint-plugin-redundant-undefined": "^1.0.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sonarjs": "^3.0.2",
-    "eslint-plugin-svelte": "^3.5.1",
-    "eslint-plugin-unicorn": "^59.0.0",
-    "globals": "^16.0.0",
+    "eslint-plugin-svelte": "^3.8.1",
+    "eslint-plugin-unicorn": "^59.0.1",
+    "globals": "^16.1.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.1",
+    "lint-staged": "^16.0.0",
     "prettier": "^3.5.3",
-    "prettier-plugin-svelte": "^3.3.3",
-    "svelte-check": "^4.1.7",
-    "svelte-eslint-parser": "^1.1.3",
+    "prettier-plugin-svelte": "^3.4.0",
+    "svelte-check": "^4.2.1",
+    "svelte-eslint-parser": "^1.2.0",
     "typescript": "5.8.3",
-    "typescript-eslint": "^8.31.1",
+    "typescript-eslint": "^8.32.1",
     "vite": "^6.3.5",
     "vitest": "^3.0.5"
   },
@@ -90,7 +90,18 @@
   "pnpm": {
     "overrides": {
       "postman-collection>semver": "^7.5.2"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "@scarf/scarf",
+      "@tailwindcss/oxide",
+      "esbuild",
+      "postman-code-generators",
+      "svelte-preprocess",
+      "unrs-resolver"
+    ],
+    "onlyBuiltDependencies": [
+      "electron"
+    ]
   },
-  "packageManager": "pnpm@9.9.0+sha512.60c18acd138bff695d339be6ad13f7e936eea6745660d4cc4a776d5247c540d0edee1a563695c183a66eb917ef88f2b4feb1fc25f32a7adcadc7aaf3438e99c1"
+  "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977"
 }

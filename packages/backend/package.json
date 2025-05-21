@@ -2,7 +2,7 @@
   "name": "ai-lab",
   "displayName": "Podman AI Lab",
   "description": "Podman AI Lab lets you work with LLMs locally, exploring AI fundamentals, experimenting with models and prompts, and serving models while maintaining data security and privacy.",
-  "version": "1.7.0-next",
+  "version": "1.8.0-next",
   "icon": "icon.png",
   "type": "module",
   "publisher": "redhat",
@@ -50,6 +50,16 @@
           "minimum": 1024,
           "maximum": 65535,
           "description": "Port on which the API is listening (requires restart of extension)"
+        },
+        "ai-lab.inferenceRuntime": {
+          "type": "string",
+          "enum": [
+            "all",
+            "llama-cpp",
+            "whisper-cpp",
+            "none"
+          ],
+          "description": "Choose the default inferencing runtime for AI Lab"
         },
         "ai-lab.experimentalTuning": {
           "type": "boolean",
@@ -100,19 +110,19 @@
     "typecheck": "pnpm run generate && tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^0.2.13",
-    "@huggingface/gguf": "^0.1.14",
-    "@huggingface/hub": "^1.1.2",
-    "ai": "^4.3.13",
+    "@ai-sdk/openai-compatible": "^0.2.14",
+    "@huggingface/gguf": "^0.1.17",
+    "@huggingface/hub": "^2.1.0",
+    "ai": "^4.3.16",
     "express": "^4.21.2",
-    "express-openapi-validator": "^5.4.9",
+    "express-openapi-validator": "^5.5.2",
     "isomorphic-git": "^1.30.1",
     "js-yaml": "^4.1.0",
     "mustache": "^4.2.0",
-    "openai": "^4.97.0",
+    "openai": "^4.99.0",
     "postman-code-generators": "^1.14.1",
     "postman-collection": "^5.0.2",
-    "semver": "^7.7.1",
+    "semver": "^7.7.2",
     "swagger-ui-dist": "^5.21.0",
     "swagger-ui-express": "^5.0.1",
     "systeminformation": "^5.25.11",
@@ -120,18 +130,18 @@
   },
   "devDependencies": {
     "@podman-desktop/api": "1.13.0-202409181313-78725a6565",
-    "@ai-sdk/provider-utils": "^2.2.6",
+    "@ai-sdk/provider-utils": "^2.2.8",
     "@rollup/plugin-replace": "^6.0.2",
     "@types/express": "^4.17.21",
     "@types/js-yaml": "^4.0.9",
-    "@types/mustache": "^4.2.5",
+    "@types/mustache": "^4.2.6",
     "@types/node": "^22",
-    "@types/postman-collection": "^3.5.10",
+    "@types/postman-collection": "^3.5.11",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-dist": "^3.30.5",
     "@types/swagger-ui-express": "^4.1.8",
-    "openapi-typescript": "^7.7.1",
-    "supertest": "^7.1.0",
+    "openapi-typescript": "^7.8.0",
+    "supertest": "^7.1.1",
     "vitest": "^3.0.5"
   }
 }

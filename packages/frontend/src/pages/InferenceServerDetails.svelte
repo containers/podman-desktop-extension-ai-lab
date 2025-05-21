@@ -12,7 +12,7 @@ import {
   faMicrochip,
   faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons';
-import { type InferenceServer, InferenceType } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType, inferenceTypeLabel } from '@shared/models/IInference';
 import { snippetLanguages } from '/@/stores/snippetLanguages';
 import type { LanguageVariant } from 'postman-code-generators';
 import { studioClient } from '/@/utils/client';
@@ -58,6 +58,33 @@ const generate = async (language: string, variant: string): Promise<void> => {
     case InferenceType.LLAMA_CPP:
       options = {
         url: `http://localhost:${service?.connection.port || '??'}/v1/chat/completions`,
+        method: 'POST',
+        header: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+        ],
+        body: {
+          mode: 'raw',
+          raw: `{
+  "messages": [
+    {
+      "content": "You are a helpful assistant.",
+      "role": "system"
+    },
+    {
+      "content": "What is the capital of France?",
+      "role": "user"
+    }
+  ]
+}`,
+        },
+      };
+      break;
+    case InferenceType.OPENVINO:
+      options = {
+        url: `http://localhost:${service?.connection.port || '??'}/v3/chat/completions`,
         method: 'POST',
         header: [
           {
@@ -239,6 +266,11 @@ function handleOnChange(): void {
                           {/if}
                         </div>
 
+                        <div
+                          class="bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md p-2 flex flex-row w-min h-min text-xs text-nowrap items-center"
+                          aria-label="Service type">
+                          {inferenceTypeLabel(service.type)}
+                        </div>
                         {#if 'gpu' in service.labels}
                           <Tooltip left tip={service.labels['gpu']}>
                             <div
@@ -272,7 +304,7 @@ function handleOnChange(): void {
                             class="w-full bg-[var(--pd-label-bg)] text-[var(--pd-label-text)] rounded-md px-2 py-1 flex flex-col gap-y-4">
                             <div class="flex flex-row gap-2 items-center">
                               <div class="grow text-sm" aria-label="Model name">
-                                <a href="/model/{model.id}" class="flex items-center">
+                                <a href="/model/{encodeURIComponent(model.id)}" class="flex items-center">
                                   {model.name}
                                   <Fa class="ml-2" icon={faArrowUpRightFromSquare} />
                                 </a>

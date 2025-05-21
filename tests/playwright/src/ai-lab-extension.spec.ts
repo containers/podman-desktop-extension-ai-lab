@@ -299,6 +299,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
         await playExpect(modelServiceDetailsPage.modelName).toContainText(modelName);
         await playExpect(modelServiceDetailsPage.inferenceServerType).toContainText('Inference');
+        await playExpect(modelServiceDetailsPage.inferenceServerType).toContainText(/CPU|GPU/);
       });
 
       test(`Make GET request to the model service for ${modelName}`, async ({ request }) => {

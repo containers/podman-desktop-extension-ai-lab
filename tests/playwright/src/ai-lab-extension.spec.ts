@@ -625,7 +625,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
   test.describe.serial('InstructLab container startup', { tag: '@instructlab' }, () => {
     let instructLabPage: AILabTryInstructLabPage;
-    const instructLabContainerName = '^instructlab-\\d+$';
+    const instructLabContainerName = /^instructlab-\\d+$/;
+    let exactInstructLabContainerName = '';
 
     if (process.env.GITHUB_ACTIONS && isLinux) {
       test.skip();
@@ -639,7 +640,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test('Start and verify InstructLab container', async ({ page }) => {
-      test.setTimeout(5_000_000);
+      test.setTimeout(1_000_000);
       await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
       await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
       await instructLabPage.startInstructLabButton.click();
@@ -647,19 +648,26 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
       await instructLabPage.openInstructLabButton.click();
 
-      const containerDetailsPage = new ContainerDetailsPage(page, instructLabContainerName);
+      const containerName = await page
+        .getByRole('region', { name: 'Header' })
+        .getByLabel(instructLabContainerName)
+        .textContent();
+      if (typeof containerName === 'string') {
+        exactInstructLabContainerName = containerName;
+      }
+      const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
       await playExpect(containerDetailsPage.heading).toBeVisible();
-      await playExpect(containerDetailsPage.heading).toContainText(instructLabContainerName);
+      await playExpect(containerDetailsPage.heading).toContainText(exactInstructLabContainerName);
       const containerState = await containerDetailsPage.getState();
       playExpect(containerState).toContain(ContainerState.Running);
     });
 
     test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
-      const containerDetailsPage = new ContainerDetailsPage(page, instructLabContainerName);
+      const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
       const containersPage = await containerDetailsPage.deleteContainer();
       await playExpect(containersPage.heading).toBeVisible();
       await playExpect
-        .poll(async () => await containersPage.containerExists(instructLabContainerName), { timeout: 10_000 })
+        .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 10_000 })
         .toBeFalsy();
 
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);

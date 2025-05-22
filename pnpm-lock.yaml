@@ -143,7 +143,7 @@ importers:
         version: 4.2.0
       openai:
         specifier: ^4.101.0
-        version: 4.101.0(ws@8.18.1)(zod@3.24.4)
+        version: 4.102.0(ws@8.18.1)(zod@3.24.4)
       postman-code-generators:
         specifier: 1.10.1
         version: 1.10.1
@@ -160,8 +160,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(express@4.21.2)
       systeminformation:
-        specifier: ^5.25.11
-        version: 5.25.11
+        specifier: ^5.26.1
+        version: 5.26.1
       xml-js:
         specifier: ^1.6.11
         version: 1.6.11
@@ -3814,6 +3814,7 @@ packages:
   multer@1.4.5-lts.2:
     resolution: {integrity: sha512-VzGiVigcG9zUAoCNU+xShztrlr1auZOlurXynNvO9GiWD1/mTBbUljOKY+qMeazBqXgRnjzeEgJI/wyjJUHg9A==}
     engines: {node: '>= 6.0.0'}
+    deprecated: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
 
   mustache@4.2.0:
     resolution: {integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==}
@@ -3923,8 +3924,8 @@ packages:
   ono@7.1.3:
     resolution: {integrity: sha512-9jnfVriq7uJM4o5ganUY54ntUm+5EK21EGaQ5NWnkWg3zz5ywbbonlBguRcnmF1/HDiIe3zxNxXcO1YPBmPcQQ==}
 
-  openai@4.101.0:
-    resolution: {integrity: sha512-fBsmtOXm3vEBDcL24fqXtDIotKIZ/CY+DsvbCejFp0n+KUh03UrZZosdgCynx5vP+REVJYz4p4mRvz3y6aeQsg==}
+  openai@4.102.0:
+    resolution: {integrity: sha512-CWk15CMhPSHNZnjz+6rwVYV551xaC8CwOd7/zxImrC1btEo37dX/Ii5tBKWfqqxqyzpJ6p3Y4bICzzKhW03WhQ==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -4715,8 +4716,8 @@ packages:
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
-  systeminformation@5.25.11:
-    resolution: {integrity: sha512-jI01fn/t47rrLTQB0FTlMCC+5dYx8o0RRF+R4BPiUNsvg5OdY0s9DKMFmJGrx5SwMZQ4cag0Gl6v8oycso9b/g==}
+  systeminformation@5.26.1:
+    resolution: {integrity: sha512-Nd503zsVvWKBREk5ekpCqONR6EVeualuZNm1ZS2BBCX/f/AUsOmsF32UVHUj8CUghWQle+6MdelIxRENGDvGhA==}
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -9018,7 +9019,7 @@ snapshots:
     dependencies:
       '@jsdevtools/ono': 7.1.3
 
-  openai@4.101.0(ws@8.18.1)(zod@3.24.4):
+  openai@4.102.0(ws@8.18.1)(zod@3.24.4):
     dependencies:
       '@types/node': 18.19.103
       '@types/node-fetch': 2.6.12
@@ -9895,7 +9896,7 @@ snapshots:
 
   symbol-tree@3.2.4: {}
 
-  systeminformation@5.25.11: {}
+  systeminformation@5.26.1: {}
 
   tailwindcss@4.1.7: {}
 

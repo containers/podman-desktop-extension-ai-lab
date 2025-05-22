@@ -213,6 +213,7 @@ export class Studio {
      */
     this.#catalogManager = new CatalogManager(this.#rpcExtension, appUserDirectory);
     await this.#catalogManager.init();
+    this.#extensionContext.subscriptions.push(this.#catalogManager);
 
     /**
      * The builder manager is handling the building tasks, create corresponding tasks
@@ -386,6 +387,7 @@ export class Studio {
      */
     this.#snippetManager = new SnippetManager(this.#rpcExtension, this.#telemetry);
     this.#snippetManager.init();
+    this.#extensionContext.subscriptions.push(this.#snippetManager);
 
     /**
      * The StudioApiImpl is the implementation of our API between backend and frontend
@@ -398,6 +400,7 @@ export class Studio {
       this.#localRepositoryRegistry,
       this.#taskRegistry,
       this.#inferenceManager,
+      this.#mcpServerManager,
       this.#playgroundManager,
       this.#snippetManager,
       this.#cancellationTokenRegistry,

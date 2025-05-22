@@ -38,6 +38,7 @@ import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
 import type { RecipePullOptions } from './models/IRecipe';
 import type { FilterRecipesResult, RecipeFilters } from './models/FilterRecipesResult';
 import { createRpcChannel } from './messages/MessageProxy';
+import type { McpSettings } from '@shared/models/McpSettings';
 
 export const STUDIO_API_CHANNEL = createRpcChannel<StudioAPI>('StudioAPI');
 export interface StudioAPI {
@@ -174,6 +175,11 @@ export interface StudioAPI {
    * Return the conversations
    */
   getPlaygroundConversations(): Promise<Conversation[]>;
+
+  /**
+   * Returns the current MCP settings.
+   */
+  getMcpSettings(): Promise<McpSettings>;
 
   /**
    * Get the extension configuration (preferences)

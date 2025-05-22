@@ -92,6 +92,7 @@ vi.mock('@podman-desktop/api', async () => {
     containerEngine: {
       onEvent: vi.fn(),
       listContainers: mocks.listContainers,
+      listPods: vi.fn(() => []),
     },
     navigation: {
       register: vi.fn(),
@@ -138,17 +139,52 @@ afterEach(() => {
   console.log = originalConsoleLog;
 });
 
-test('check activate', async () => {
-  expect(version).toBe('1.8.0');
-  mocks.listContainers.mockReturnValue([]);
-  mocks.getContainerConnections.mockReturnValue([]);
-  (vi.spyOn(fs.promises, 'readFile') as unknown as MockInstance<() => Promise<string>>).mockImplementation(() => {
-    return Promise.resolve('<html></html>');
+describe('activate', () => {
+  beforeEach(async () => {
+    expect(version).toBe('1.8.0');
+    mocks.listContainers.mockReturnValue([]);
+    mocks.getContainerConnections.mockReturnValue([]);
+    (vi.spyOn(fs.promises, 'readFile') as unknown as MockInstance<() => Promise<string>>).mockImplementation(() => {
+      return Promise.resolve('<html lang="en"></html>');
+    });
+    await studio.activate();
   });
-  await studio.activate();
 
-  // expect the activate method to be called on the studio class
-  expect(mocks.consoleLogMock).toBeCalledWith('starting AI Lab extension');
+  test('logs the activation message', () => {
+    // expect the activate method to be called on the studio class
+    expect(mocks.consoleLogMock).toBeCalledWith('starting AI Lab extension');
+  });
+
+  test.each([
+    'RpcExtension',
+    'NavigationRegistry',
+    'CancellationTokenRegistry',
+    'ConfigurationRegistry',
+    'ContainerRegistry',
+    'PodmanConnection',
+    'TaskRegistry',
+    'CatalogManager',
+    'BuilderManager',
+    'PodManager',
+    'URLModelHandler',
+    'HuggingFaceModelHandler',
+    'ModelsManager',
+    'LocalRepositoryRegistry',
+    'GPUManager',
+    'InferenceManager',
+    'InstructlabManager',
+    'LlamaStackManager',
+    'RecipeManager',
+    'ApplicationManager',
+    'McpServerManager',
+    'PlaygroundV2Manager',
+    'SnippetManager',
+  ])('registers $0 as subscription', (manger: string) => {
+    const subscriptions = mockedExtensionContext.subscriptions
+      .filter(s => s?.constructor?.name)
+      .map(s => s.constructor.name);
+    expect(subscriptions).toContain(manger);
+  });
 });
 
 describe('version checker', () => {

@@ -43,6 +43,7 @@ import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
 import type { NavigationRegistry } from './registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
+import type { McpServerManager } from './managers/playground/McpServerManager';
 
 vi.mock('./ai.json', () => {
   return {
@@ -103,6 +104,7 @@ let studioApiImpl: StudioApiImpl;
 let catalogManager: CatalogManager;
 let localRepositoryRegistry: LocalRepositoryRegistry;
 let applicationManager: ApplicationManager;
+let mcpServerManager: McpServerManager;
 
 const podmanConnectionMock: PodmanConnection = {
   findRunningContainerProviderConnection: vi.fn(),
@@ -139,6 +141,10 @@ beforeEach(async () => {
     logError: vi.fn(),
   } as unknown as TelemetryLogger;
 
+  mcpServerManager = {
+    getMcpSettings: vi.fn(),
+  } as unknown as McpServerManager;
+
   // Creating StudioApiImpl
   studioApiImpl = new StudioApiImpl(
     applicationManager,
@@ -148,6 +154,7 @@ beforeEach(async () => {
     localRepositoryRegistry,
     {} as unknown as TaskRegistry,
     {} as unknown as InferenceManager,
+    mcpServerManager,
     {} as unknown as PlaygroundV2Manager,
     {} as unknown as SnippetManager,
     {} as unknown as CancellationTokenRegistry,
@@ -367,4 +374,9 @@ test('navigateToEditConnectionProvider should call navigation.navigateToEditProv
   await studioApiImpl.navigateToEditConnectionProvider('connection');
   await timeout(0);
   expect(navigationSpy).toHaveBeenCalledWith(connection);
+});
+
+test('getMcpSettings should call mcpServerManager.getMcpSettings', async () => {
+  await studioApiImpl.getMcpSettings();
+  expect(mcpServerManager.getMcpSettings).toHaveBeenCalledOnce();
 });

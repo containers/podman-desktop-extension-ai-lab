@@ -134,7 +134,7 @@ importers:
         version: 5.5.2(express@4.21.2)
       isomorphic-git:
         specifier: ^1.30.1
-        version: 1.30.1
+        version: 1.30.2
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -142,8 +142,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       openai:
-        specifier: ^4.101.0
-        version: 4.102.0(ws@8.18.1)(zod@3.24.4)
+        specifier: ^4.103.0
+        version: 4.103.0(ws@8.18.1)(zod@3.24.4)
       postman-code-generators:
         specifier: 1.10.1
         version: 1.10.1
@@ -161,7 +161,7 @@ importers:
         version: 5.0.1(express@4.21.2)
       systeminformation:
         specifier: ^5.26.1
-        version: 5.26.1
+        version: 5.26.2
       xml-js:
         specifier: ^1.6.11
         version: 1.6.11
@@ -319,7 +319,7 @@ importers:
         version: 22.15.21
       electron:
         specifier: ^36.2.1
-        version: 36.2.1
+        version: 36.3.1
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -2463,8 +2463,8 @@ packages:
   electron-to-chromium@1.5.150:
     resolution: {integrity: sha512-rOOkP2ZUMx1yL4fCxXQKDHQ8ZXwisb2OycOQVKHgvB3ZI4CvehOd4y2tfnnLDieJ3Zs1RL1Dlp3cMkyIn7nnXA==}
 
-  electron@36.2.1:
-    resolution: {integrity: sha512-mm1Y+Ms46xcOTA69h8hpqfX392HfV4lga9aEkYkd/Syx1JBStvcACOIouCgGrnZpxNZPVS1jM8NTcMkNjuK6BQ==}
+  electron@36.3.1:
+    resolution: {integrity: sha512-LeOZ+tVahmctHaAssLCGRRUa2SAO09GXua3pKdG+WzkbSDMh+3iOPONNVPTqGp8HlWnzGj4r6mhsIbM2RgH+eQ==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -3374,8 +3374,8 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  isomorphic-git@1.30.1:
-    resolution: {integrity: sha512-eWBlPIPDOctGY/bTUc/whs6EZ8YvnG1H2kOjTCJ/AkvBWUzODXcfulhpiA8Y4Px9e+bRYYkifE5fSE8FcRk8Ew==}
+  isomorphic-git@1.30.2:
+    resolution: {integrity: sha512-Io/AkS58RFp0Sm+PPHkPT2NHfsxkG1+F6iOuPYxWvF1K0ZgIzT950lYt1G5PkhZr2edzIUoDJcqWYbxPIL6mXw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -3924,8 +3924,8 @@ packages:
   ono@7.1.3:
     resolution: {integrity: sha512-9jnfVriq7uJM4o5ganUY54ntUm+5EK21EGaQ5NWnkWg3zz5ywbbonlBguRcnmF1/HDiIe3zxNxXcO1YPBmPcQQ==}
 
-  openai@4.102.0:
-    resolution: {integrity: sha512-CWk15CMhPSHNZnjz+6rwVYV551xaC8CwOd7/zxImrC1btEo37dX/Ii5tBKWfqqxqyzpJ6p3Y4bICzzKhW03WhQ==}
+  openai@4.103.0:
+    resolution: {integrity: sha512-eWcz9kdurkGOFDtd5ySS5y251H2uBgq9+1a2lTBnjMMzlexJ40Am5t6Mu76SSE87VvitPa0dkIAp75F+dZVC0g==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -4716,8 +4716,8 @@ packages:
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
-  systeminformation@5.26.1:
-    resolution: {integrity: sha512-Nd503zsVvWKBREk5ekpCqONR6EVeualuZNm1ZS2BBCX/f/AUsOmsF32UVHUj8CUghWQle+6MdelIxRENGDvGhA==}
+  systeminformation@5.26.2:
+    resolution: {integrity: sha512-MeIqcMRZl9y4ujhuCgpCU/u0ArfUHePZUpmCps/LiQQkkEWd2JxR9XMIJtJIuzGUGOu6KJ+NmEMeSJ+dqYhA2g==}
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -7324,7 +7324,7 @@ snapshots:
 
   electron-to-chromium@1.5.150: {}
 
-  electron@36.2.1:
+  electron@36.3.1:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 22.15.21
@@ -8529,7 +8529,7 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  isomorphic-git@1.30.1:
+  isomorphic-git@1.30.2:
     dependencies:
       async-lock: 1.4.1
       clean-git-ref: 2.0.1
@@ -9019,7 +9019,7 @@ snapshots:
     dependencies:
       '@jsdevtools/ono': 7.1.3
 
-  openai@4.102.0(ws@8.18.1)(zod@3.24.4):
+  openai@4.103.0(ws@8.18.1)(zod@3.24.4):
     dependencies:
       '@types/node': 18.19.103
       '@types/node-fetch': 2.6.12
@@ -9896,7 +9896,7 @@ snapshots:
 
   symbol-tree@3.2.4: {}
 
-  systeminformation@5.26.1: {}
+  systeminformation@5.26.2: {}
 
   tailwindcss@4.1.7: {}
 

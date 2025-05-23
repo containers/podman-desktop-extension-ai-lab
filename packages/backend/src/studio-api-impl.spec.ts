@@ -190,15 +190,15 @@ test('expect requestPullApplication to provide a tracking id', async () => {
     modelId: 'model1',
     recipeId: 'recipe 1',
   });
-  expect(applicationManager.requestPullApplication).toHaveBeenCalledWith(
-    connectionMock,
-    expect.objectContaining({
+  expect(applicationManager.requestPullApplication).toHaveBeenCalledWith({
+    connection: connectionMock,
+    recipe: expect.objectContaining({
       id: 'recipe 1',
     }),
-    expect.objectContaining({
+    model: expect.objectContaining({
       id: 'model 1',
     }),
-  );
+  });
   expect(trackingId).toBe('dummy-tracker');
 });
 

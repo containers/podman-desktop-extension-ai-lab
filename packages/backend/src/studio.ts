@@ -358,6 +358,7 @@ export class Studio {
       this.#telemetry,
       this.#podManager,
       this.#recipeManager,
+      this.#llamaStackManager,
     );
     this.#applicationManager.init();
     this.#extensionContext.subscriptions.push(this.#applicationManager);

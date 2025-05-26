@@ -16,6 +16,8 @@ import { containerProviderConnections } from '/@/stores/containerProviderConnect
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
 import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
+import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
+import { InferenceType } from '@shared/models/IInference';
 
 interface Props {
   // The tracking id is a unique identifier provided by the
@@ -25,8 +27,14 @@ interface Props {
 
 let { trackingId }: Props = $props();
 
+// The runtime to use
+let runtime: InferenceType = $state(InferenceType.LLAMA_CPP);
+
 // List of the models available locally
 let localModels: ModelInfo[] = $derived($modelsInfo.filter(model => model.file));
+
+// List of the models filtered by runtime
+let filteredModels: Array<ModelInfo> = $derived(localModels.filter(model => model.backend === runtime));
 
 // The container provider connection to use
 let containerProviderConnection: ContainerProviderConnectionInfo | undefined = $state(undefined);
@@ -51,9 +59,14 @@ let available: boolean = $derived(!!containerId && $inferenceServers.some(server
 let loading = $derived(trackingId !== undefined && !errorMsg);
 
 $effect(() => {
+  // remove any incompatible model
+  if (model?.backend !== runtime) {
+    model = undefined;
+  }
+
   // Select default model
-  if (!model && localModels.length > 0) {
-    model = localModels[0];
+  if (!model && filteredModels.length > 0) {
+    model = filteredModels[0];
   }
 
   // Select default connection
@@ -129,6 +142,7 @@ function populateModelFromTasks(trackedTasks: Task[]): void {
   if (!mModel) return;
 
   model = mModel;
+  runtime = mModel.backend as InferenceType;
 }
 
 onMount(() => {
@@ -145,6 +159,9 @@ onMount(() => {
   const queryModelId = router.location.query.get('model-id');
   if (queryModelId !== undefined && typeof queryModelId === 'string') {
     model = localModels.find(mModel => mModel.id === queryModelId);
+    if (model) {
+      runtime = model.backend as InferenceType;
+    }
   }
 });
 
@@ -182,6 +199,11 @@ export function goToUpPage(): void {
       <!-- form -->
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
+          <!-- inference runtime -->
+          <label for="inference-runtime" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+            >Inference Runtime</label>
+          <InferenceRuntimeSelect bind:value={runtime} />
+
           <!-- container provider connection input -->
           {#if startedContainerProviderConnectionInfo.length > 1}
             <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
@@ -193,8 +215,8 @@ export function goToUpPage(): void {
 
           <!-- model input -->
           <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
-          <ModelSelect models={localModels} disabled={loading} bind:value={model} />
-          {#if localModels.length === 0}
+          <ModelSelect models={filteredModels} disabled={loading} bind:value={model} />
+          {#if filteredModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">
               <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
               <div role="alert" aria-label="Error Message Content" class="ml-2">

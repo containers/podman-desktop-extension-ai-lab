@@ -21,7 +21,7 @@ import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { AILabNavigationBar } from './ai-lab-navigation-bar';
 
-export class AILabPage extends AILabBasePage {
+export class AILabDashboardPage extends AILabBasePage {
   readonly navigationBar: AILabNavigationBar;
 
   constructor(page: Page, webview: Page) {

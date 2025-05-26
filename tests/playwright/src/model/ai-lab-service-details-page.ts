@@ -20,7 +20,7 @@ import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { AiModelServicePage } from './ai-lab-model-service-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { handleConfirmationDialog, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 
 export class AILabServiceDetailsPage extends AILabBasePage {
   readonly endpointURL: Locator;
@@ -47,7 +47,7 @@ export class AILabServiceDetailsPage extends AILabBasePage {
   async deleteService(): Promise<AiModelServicePage> {
     await playExpect(this.deleteServiceButton).toBeEnabled();
     await this.deleteServiceButton.click();
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
     return new AiModelServicePage(this.page, this.webview);
   }
 

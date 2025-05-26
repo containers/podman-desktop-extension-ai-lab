@@ -125,7 +125,7 @@
     "semver": "^7.7.2",
     "swagger-ui-dist": "^5.21.0",
     "swagger-ui-express": "^5.0.1",
-    "systeminformation": "^5.26.2",
+    "systeminformation": "^5.27.1",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {

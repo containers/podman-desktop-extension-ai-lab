@@ -163,7 +163,6 @@ describe('activate', () => {
     'ContainerRegistry',
     'PodmanConnection',
     'TaskRegistry',
-    'CatalogManager',
     'BuilderManager',
     'PodManager',
     'URLModelHandler',
@@ -178,7 +177,6 @@ describe('activate', () => {
     'ApplicationManager',
     'McpServerManager',
     'PlaygroundV2Manager',
-    'SnippetManager',
   ])('registers $0 as subscription', (manger: string) => {
     const subscriptions = mockedExtensionContext.subscriptions
       .filter(s => s?.constructor?.name)

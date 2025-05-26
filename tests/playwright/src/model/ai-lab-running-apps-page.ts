@@ -19,7 +19,7 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { handleConfirmationDialog, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 
 export class AiRunningAppsPage extends AILabBasePage {
   constructor(page: Page, webview: Page) {
@@ -66,7 +66,7 @@ export class AiRunningAppsPage extends AILabBasePage {
     await playExpect(deleteButton).toBeVisible();
     await deleteButton.click();
 
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
   }
 
   async appExists(appName: string): Promise<boolean> {

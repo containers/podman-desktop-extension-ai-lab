@@ -19,7 +19,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { handleConfirmationDialog, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 import { AILabPlaygroundDetailsPage } from './ai-lab-playground-details-page';
 
 export class AILabPlaygroundsPage extends AILabBasePage {
@@ -60,7 +60,7 @@ export class AILabPlaygroundsPage extends AILabBasePage {
     const deleteButton = playgroundRow.getByRole('button', { name: 'Delete conversation', exact: true });
     await playExpect(deleteButton).toBeEnabled();
     await deleteButton.click();
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
     return this;
   }
 

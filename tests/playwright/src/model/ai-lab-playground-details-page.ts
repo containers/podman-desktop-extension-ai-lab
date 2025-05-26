@@ -20,7 +20,7 @@ import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
 import { AILabPlaygroundsPage } from './ai-lab-playgrounds-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { handleConfirmationDialog, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 
 export class AILabPlaygroundDetailsPage extends AILabBasePage {
   readonly name: string;
@@ -73,7 +73,7 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
   async deletePlayground(): Promise<AILabPlaygroundsPage> {
     await playExpect(this.deletePlaygroundButton).toBeEnabled();
     await this.deletePlaygroundButton.click();
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
     return new AILabPlaygroundsPage(this.page, this.webview);
   }
 

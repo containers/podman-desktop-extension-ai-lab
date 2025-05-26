@@ -19,7 +19,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { handleConfirmationDialog, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 import { AILabCreatingModelServicePage } from './ai-lab-creating-model-service-page';
 
 export class AILabCatalogPage extends AILabBasePage {
@@ -84,7 +84,7 @@ export class AILabCatalogPage extends AILabBasePage {
     await deleteButton.focus();
     await deleteButton.click();
     await this.page.waitForTimeout(1_000);
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
   }
 
   async isModelDownloaded(modelName: string): Promise<boolean> {

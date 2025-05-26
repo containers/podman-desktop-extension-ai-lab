@@ -19,8 +19,13 @@
 import type { Page } from '@playwright/test';
 import type { NavigationBar, Runner } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@podman-desktop/tests-playwright';
+import { AILabNavigationBar } from 'src/model/ai-lab-navigation-bar';
 
-export async function handleWebview(runner: Runner, page: Page, navigationBar: NavigationBar): Promise<[Page, Page]> {
+export async function handleWebview(
+  runner: Runner,
+  page: Page,
+  navigationBar: NavigationBar,
+): Promise<[Page, Page, AILabNavigationBar]> {
   const AI_LAB_NAVBAR_EXTENSION_LABEL: string = 'AI Lab';
   const AI_LAB_PAGE_BODY_LABEL: string = 'Webview AI Lab';
 
@@ -43,6 +48,6 @@ export async function handleWebview(runner: Runner, page: Page, navigationBar: N
       console.log(`element is null`);
     }
   });
-
-  return [mainPage, webViewPage];
+  const aiLabNavigationBar = new AILabNavigationBar(mainPage, webViewPage);
+  return [mainPage, webViewPage, aiLabNavigationBar];
 }

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Locator, Page } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
   expect as playExpect,
@@ -26,24 +26,26 @@ import {
   waitForPodmanMachineStartup,
   isLinux,
 } from '@podman-desktop/tests-playwright';
-import { AILabPage } from './model/ai-lab-page';
+import type { AILabDashboardPage } from './model/ai-lab-dashboard-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
-import { AILabExtensionDetailsPage } from './model/podman-extension-ai-lab-details-page';
 import type { AILabCatalogPage } from './model/ai-lab-catalog-page';
-import { handleWebview } from './utils/webviewHandler';
 import type { AILabServiceDetailsPage } from './model/ai-lab-service-details-page';
 import type { AILabPlaygroundsPage } from './model/ai-lab-playgrounds-page';
 import type { AILabPlaygroundDetailsPage } from './model/ai-lab-playground-details-page';
+import {
+  getExtensionCard,
+  getExtensionVersion,
+  openAILabExtensionDetails,
+  reopenAILabDashboard,
+  waitForExtensionToInitialize,
+} from './utils/aiLabHandler';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
-const AI_LAB_CATALOG_EXTENSION_LABEL: string = 'redhat.ai-lab';
-const AI_LAB_CATALOG_EXTENSION_NAME: string = 'Podman AI Lab extension';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 
-let webview: Page;
-let aiLabPage: AILabPage;
+let aiLabPage: AILabDashboardPage;
 const runnerOptions = {
   customFolder: 'ai-lab-tests-pd',
   aiLabModelUploadDisabled: isWindows ? true : false,
@@ -86,36 +88,20 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test('Extension (card) is installed, present and active', async ({ navigationBar }) => {
-      const extensions = await navigationBar.openExtensions();
-      await playExpect
-        .poll(async () => await extensions.extensionIsInstalled(AI_LAB_CATALOG_EXTENSION_LABEL), { timeout: 30000 })
-        .toBeTruthy();
-      const extensionCard = await extensions.getInstalledExtension(
-        AI_LAB_CATALOG_EXTENSION_NAME,
-        AI_LAB_CATALOG_EXTENSION_LABEL,
-      );
+      await waitForExtensionToInitialize(navigationBar);
+      const extensionCard = await getExtensionCard(navigationBar);
       await playExpect(extensionCard.status).toHaveText(AI_LAB_CATALOG_STATUS_ACTIVE);
     });
 
-    test(`Extension's details show correct status, no error`, async ({ page, navigationBar }) => {
-      const extensions = await navigationBar.openExtensions();
-      const extensionCard = await extensions.getInstalledExtension('ai-lab', AI_LAB_CATALOG_EXTENSION_LABEL);
-      await extensionCard.openExtensionDetails(AI_LAB_CATALOG_EXTENSION_NAME);
-      const details = new AILabExtensionDetailsPage(page);
-      await playExpect(details.heading).toBeVisible();
-      await playExpect(details.status).toHaveText(AI_LAB_CATALOG_STATUS_ACTIVE);
-      const errorTab = details.tabs.getByRole('button', { name: 'Error' });
-      // we would like to propagate the error's stack trace into test failure message
-      let stackTrace = '';
-      if ((await errorTab.count()) > 0) {
-        await details.activateTab('Error');
-        stackTrace = await details.errorStackTrace.innerText();
-      }
-      await playExpect(errorTab, `Error Tab was present with stackTrace: ${stackTrace}`).not.toBeVisible();
+    test(`Extension's details show correct status, no error`, async ({ navigationBar }) => {
+      const aiLabExtensionDetailsPage = await openAILabExtensionDetails(navigationBar);
+      await aiLabExtensionDetailsPage.waitForLoad();
+      await aiLabExtensionDetailsPage.checkIsActive(AI_LAB_CATALOG_STATUS_ACTIVE);
+      await aiLabExtensionDetailsPage.checkForErrors();
     });
-    test(`Verify AI Lab extension is installed`, async ({ runner, page, navigationBar }) => {
-      [page, webview] = await handleWebview(runner, page, navigationBar);
-      aiLabPage = new AILabPage(page, webview);
+
+    test(`Verify AI Lab is accessible`, async ({ runner, page, navigationBar }) => {
+      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
       await aiLabPage.navigationBar.waitForLoad();
     });
   });
@@ -127,11 +113,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     test.beforeAll(
       'Get AI Lab extension version and open AI Lab navigation bar',
       async ({ page, runner, navigationBar }) => {
-        const extensions = await navigationBar.openExtensions();
-        extensionVersion = await extensions.getInstalledExtensionVersion('ai-lab', AI_LAB_CATALOG_EXTENSION_LABEL);
-
-        [page, webview] = await handleWebview(runner, page, navigationBar);
-        aiLabPage = new AILabPage(page, webview);
+        extensionVersion = await getExtensionVersion(navigationBar);
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await aiLabPage.navigationBar.waitForLoad();
       },
     );
@@ -227,8 +210,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       let catalogPage: AILabCatalogPage;
 
       test.beforeEach(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        [page, webview] = await handleWebview(runner, page, navigationBar);
-        aiLabPage = new AILabPage(page, webview);
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await aiLabPage.navigationBar.waitForLoad();
 
         catalogPage = await aiLabPage.navigationBar.openCatalog();
@@ -270,8 +252,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       );
 
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        [page, webview] = await handleWebview(runner, page, navigationBar);
-        aiLabPage = new AILabPage(page, webview);
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await aiLabPage.navigationBar.waitForLoad();
 
         catalogPage = await aiLabPage.navigationBar.openCatalog();
@@ -362,8 +343,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       const systemPrompt = 'Always respond with: "Hello, I am Chat Bot"';
 
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        [page, webview] = await handleWebview(runner, page, navigationBar);
-        aiLabPage = new AILabPage(page, webview);
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await aiLabPage.navigationBar.waitForLoad();
 
         catalogPage = await aiLabPage.navigationBar.openCatalog();
@@ -447,8 +427,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
       test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
-        [page, webview] = await handleWebview(runner, page, navigationBar);
-        aiLabPage = new AILabPage(page, webview);
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await aiLabPage.navigationBar.waitForLoad();
 
         recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();

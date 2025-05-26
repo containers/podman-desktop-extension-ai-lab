@@ -25,9 +25,11 @@ import { AiModelServicePage } from './ai-lab-model-service-page';
 import { AILabCatalogPage } from './ai-lab-catalog-page';
 import { AILabPlaygroundsPage } from './ai-lab-playgrounds-page';
 import { AILabLocalServerPage } from './ai-lab-local-server-page';
+import { AILabDashboardPage } from './ai-lab-dashboard-page';
 
 export class AILabNavigationBar extends AILabBasePage {
   readonly navigationBar: Locator;
+  readonly dashboardButton: Locator;
   readonly recipesCatalogButton: Locator;
   readonly runningAppsButton: Locator;
   readonly catalogButton: Locator;
@@ -39,6 +41,7 @@ export class AILabNavigationBar extends AILabBasePage {
   constructor(page: Page, webview: Page) {
     super(page, webview, undefined);
     this.navigationBar = this.webview.getByRole('navigation', { name: 'PreferencesNavigation' });
+    this.dashboardButton = this.navigationBar.getByRole('link', { name: 'Dashboard', exact: true });
     this.recipesCatalogButton = this.navigationBar.getByRole('link', { name: 'Recipe Catalog', exact: true });
     this.runningAppsButton = this.navigationBar.getByRole('link', { name: 'Running' });
     this.catalogButton = this.navigationBar.getByRole('link', { name: 'Catalog', exact: true });
@@ -50,6 +53,12 @@ export class AILabNavigationBar extends AILabBasePage {
 
   async waitForLoad(): Promise<void> {
     await playExpect(this.navigationBar).toBeVisible();
+  }
+
+  async openDashboard(): Promise<AILabDashboardPage> {
+    await playExpect(this.dashboardButton).toBeEnabled();
+    await this.dashboardButton.click();
+    return new AILabDashboardPage(this.page, this.webview);
   }
 
   async openRecipesCatalog(): Promise<AILabRecipesCatalogPage> {

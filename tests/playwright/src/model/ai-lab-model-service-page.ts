@@ -19,7 +19,7 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { handleConfirmationDialog, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 import { AILabCreatingModelServicePage } from './ai-lab-creating-model-service-page';
 
 export class AiModelServicePage extends AILabBasePage {
@@ -59,7 +59,7 @@ export class AiModelServicePage extends AILabBasePage {
     await playExpect(this.deleteSelectedItems).toBeEnabled();
     await this.deleteSelectedItems.click();
 
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
   }
 
   async getCurrentModelCount(): Promise<number> {

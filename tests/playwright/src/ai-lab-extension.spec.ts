@@ -625,7 +625,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
   test.describe.serial('InstructLab container startup', { tag: '@instructlab' }, () => {
     let instructLabPage: AILabTryInstructLabPage;
-    const instructLabContainerName = /^instructlab-\\d+$/;
+    const instructLabContainerName = /^instructlab-\d+$/;
     let exactInstructLabContainerName = '';
 
     if (process.env.GITHUB_ACTIONS && isLinux) {
@@ -664,7 +664,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
     test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
       const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
-      const containersPage = await containerDetailsPage.deleteContainer();
+      await containerDetailsPage.deleteContainer();
+      const containersPage = await navigationBar.openContainers();
       await playExpect(containersPage.heading).toBeVisible();
       await playExpect
         .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 10_000 })

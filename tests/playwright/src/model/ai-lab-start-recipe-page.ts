@@ -19,7 +19,7 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { StatusBar, handleConfirmationDialog, waitUntil } from '@podman-desktop/tests-playwright';
+import { StatusBar, handleConfirmationDialog, podmanAILabExtension, waitUntil } from '@podman-desktop/tests-playwright';
 import { AILabNavigationBar } from './ai-lab-navigation-bar';
 
 export class AILabStartRecipePage extends AILabBasePage {
@@ -46,7 +46,7 @@ export class AILabStartRecipePage extends AILabBasePage {
     await playExpect(this.startRecipeButton).toBeEnabled();
     await this.startRecipeButton.click();
     try {
-      await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Reset');
+      await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Reset');
     } catch (error) {
       console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
     }

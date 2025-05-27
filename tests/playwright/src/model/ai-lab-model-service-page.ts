@@ -19,8 +19,9 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { handleConfirmationDialog, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 import { AILabCreatingModelServicePage } from './ai-lab-creating-model-service-page';
+import { AILabServiceDetailsPage } from './ai-lab-service-details-page';
 
 export class AiModelServicePage extends AILabBasePage {
   readonly additionalActions: Locator;
@@ -59,11 +60,33 @@ export class AiModelServicePage extends AILabBasePage {
     await playExpect(this.deleteSelectedItems).toBeEnabled();
     await this.deleteSelectedItems.click();
 
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
   }
 
   async getCurrentModelCount(): Promise<number> {
     return (await this.getAllTableRows()).length;
+  }
+
+  async openServiceDetails(modelName: string): Promise<AILabServiceDetailsPage> {
+    const serviceRow = await this.getServiceByModel(modelName);
+    if (serviceRow === undefined) {
+      throw new Error(`Model [${modelName}] service doesn't exist`);
+    }
+    const serviceRowName = serviceRow.getByRole('cell').nth(3);
+    await serviceRowName.click();
+    return new AILabServiceDetailsPage(this.page, this.webview);
+  }
+
+  async getServiceByModel(modelName: string): Promise<Locator | undefined> {
+    const rows = await this.getAllTableRows();
+    for (let rowNum = 1; rowNum < rows.length; rowNum++) {
+      //skip header
+      const serviceModel = rows[rowNum].getByRole('cell').nth(4);
+      if ((await serviceModel.textContent()) === modelName) {
+        return rows[rowNum];
+      }
+    }
+    return undefined;
   }
 
   private async getAllTableRows(): Promise<Locator[]> {

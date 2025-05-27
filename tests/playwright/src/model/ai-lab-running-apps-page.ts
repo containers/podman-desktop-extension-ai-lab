@@ -19,7 +19,7 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { handleConfirmationDialog } from '@podman-desktop/tests-playwright';
+import { handleConfirmationDialog, podmanAILabExtension } from '@podman-desktop/tests-playwright';
 
 export class AiRunningAppsPage extends AILabBasePage {
   constructor(page: Page, webview: Page) {
@@ -46,6 +46,15 @@ export class AiRunningAppsPage extends AILabBasePage {
     return `${await row.getByRole('cell').nth(1).getByRole('status').getAttribute('title', { timeout: 60_000 })}`;
   }
 
+  async restartApp(appName: string): Promise<void> {
+    const dropDownMenu = await this.openKebabMenuForApp(appName);
+    const restartButton = dropDownMenu.getByTitle('Restart AI App');
+    await playExpect(restartButton).toBeVisible();
+    await restartButton.click();
+
+    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+  }
+
   async stopApp(appName: string): Promise<void> {
     const row = await this.getRowForApp(appName);
     const stopButton = row.getByLabel('Stop AI App');
@@ -53,20 +62,21 @@ export class AiRunningAppsPage extends AILabBasePage {
     await stopButton.click();
   }
 
-  async openKebabMenuForApp(appName: string): Promise<void> {
+  async openKebabMenuForApp(appName: string): Promise<Locator> {
     const row = await this.getRowForApp(appName);
     const kebabMenu = row.getByLabel('kebab menu');
     await playExpect(kebabMenu).toBeEnabled();
     await kebabMenu.click();
+    return this.webview.getByTitle('Drop Down Menu Items');
   }
 
   async deleteAIApp(appName: string): Promise<void> {
-    await this.openKebabMenuForApp(appName);
-    const deleteButton = this.webview.getByRole('none').nth(2);
+    const dropDownMenu = await this.openKebabMenuForApp(appName);
+    const deleteButton = dropDownMenu.getByTitle('Delete AI App');
     await playExpect(deleteButton).toBeVisible();
     await deleteButton.click();
 
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
   }
 
   async appExists(appName: string): Promise<boolean> {

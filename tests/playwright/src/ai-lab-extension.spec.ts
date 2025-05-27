@@ -418,7 +418,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot'].forEach(appName => {
+  ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Function calling'].forEach(appName => {
     test.describe.serial(`AI Recipe installation`, () => {
       test.skip(
         !process.env.EXT_TEST_RAG_CHATBOT && appName === 'RAG Chatbot',
@@ -426,7 +426,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       );
       let recipesCatalogPage: AILabRecipesCatalogPage;
 
-      test.beforeEach(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
+      test.beforeAll(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
         aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await aiLabPage.navigationBar.waitForLoad();
 
@@ -441,8 +441,53 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         await demoApp.startNewDeployment();
       });
 
-      test.afterEach(`Stop ${appName} app`, async ({ navigationBar }) => {
+      test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
+        test.skip(appName !== 'Function calling');
+        test.setTimeout(600_000);
+
+        const modelServicePage = await aiLabPage.navigationBar.openServices();
+        const serviceDetailsPage = await modelServicePage.openServiceDetails(
+          'ibm-granite/granite-3.3-8b-instruct-GGUF',
+        );
+
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await serviceDetailsPage.getServiceState(), { timeout: 60_000 })
+          .toBe('RUNNING');
+        const port = await serviceDetailsPage.getInferenceServerPort();
+        const url = `http://localhost:${port}/v1/chat/completions`;
+
+        const response = await request.post(url, {
+          data: {
+            messages: [
+              {
+                content: 'You are a helpful assistant.',
+                role: 'system',
+              },
+              {
+                content: 'What is the capital of Czech Republic?',
+                role: 'user',
+              },
+            ],
+          },
+          timeout: 600_000,
+        });
+
+        playExpect(response.ok()).toBeTruthy();
+        const body = await response.body();
+        const text = body.toString();
+        playExpect(text).toContain('Prague');
+      });
+
+      test(`Stop ${appName} app`, async () => {
         test.setTimeout(150_000);
+        await stopAndDeleteApp(appName);
+        await cleanupServiceModels();
+      });
+
+      test.afterAll(`Ensure cleanup of "${appName}" app, related service, and images`, async ({ navigationBar }) => {
+        test.setTimeout(150_000);
+
         await stopAndDeleteApp(appName);
         await cleanupServiceModels();
         await deleteUnusedImages(navigationBar);
@@ -465,6 +510,10 @@ async function cleanupServiceModels(): Promise<void> {
 async function stopAndDeleteApp(appName: string): Promise<void> {
   const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
   await aiRunningAppsPage.waitForLoad();
+  if (!(await aiRunningAppsPage.appExists(appName))) {
+    console.log(`"${appName}" is not present in the running apps list. Skipping stop and delete operations.`);
+    return;
+  }
   await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
   await playExpect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })

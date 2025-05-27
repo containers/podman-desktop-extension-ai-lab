@@ -62,7 +62,7 @@ export class AiRunningAppsPage extends AILabBasePage {
     await stopButton.click();
   }
 
-  private async openKebabMenuForApp(appName: string): Promise<Locator> {
+  async openKebabMenuForApp(appName: string): Promise<Locator> {
     const row = await this.getRowForApp(appName);
     const kebabMenu = row.getByLabel('kebab menu');
     await playExpect(kebabMenu).toBeEnabled();

@@ -479,7 +479,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         playExpect(text).toContain('Prague');
       });
 
-      test(`Restart, Stop, and Cleanup ${appName}`, async () => {
+      test(`${appName}: Restart, Stop, Delete. Clean up model service`, async () => {
         test.setTimeout(150_000);
 
         await restartApp(appName);

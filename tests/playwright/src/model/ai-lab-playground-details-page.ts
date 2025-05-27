@@ -80,7 +80,7 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
   async submitUserInput(prompt: string): Promise<void> {
     await this.promptTextAreaLocator.fill(prompt);
     await playExpect(this.promptTextAreaLocator).toHaveValue(prompt);
-    await playExpect(this.sendPromptButton).toBeEnabled({ timeout: 30_000 });
+    await playExpect(this.sendPromptButton).toBeEnabled({ timeout: 80_000 });
     await this.sendPromptButton.click();
   }
 

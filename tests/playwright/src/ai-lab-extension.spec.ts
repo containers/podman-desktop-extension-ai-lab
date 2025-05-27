@@ -36,6 +36,7 @@ import {
   getExtensionCard,
   getExtensionVersion,
   openAILabExtensionDetails,
+  openAILabPreferences,
   reopenAILabDashboard,
   waitForExtensionToInitialize,
 } from './utils/aiLabHandler';
@@ -104,6 +105,45 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
       await aiLabPage.navigationBar.waitForLoad();
     });
+  });
+
+  test.describe.serial(`AI Lab extension GPU preferences`, { tag: '@smoke' }, () => {
+    test(`Verify GPU support banner is visible, preferences are disabled`, async ({ page, navigationBar }) => {
+      test.setTimeout(15_000);
+      await playExpect(aiLabPage.gpuSupportBanner).toBeVisible();
+      await playExpect(aiLabPage.enableGpuButton).toBeVisible();
+      await playExpect(aiLabPage.dontDisplayButton).toBeVisible();
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
+      await preferencesPage.waitForLoad();
+      playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
+    });
+
+    test(`Enable GPU support and verify preferences`, async ({ runner, page, navigationBar }) => {
+      test.setTimeout(30_000);
+      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+      await aiLabPage.waitForLoad();
+      await aiLabPage.enableGpuSupport();
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
+      await preferencesPage.waitForLoad();
+      playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeTruthy();
+    });
+
+    test.afterAll(
+      `Disable GPU support, return to AI Lab Dashboard and hide banner`,
+      async ({ runner, page, navigationBar }) => {
+        test.setTimeout(30_000);
+        const preferencesPage = await openAILabPreferences(navigationBar, page);
+        await preferencesPage.waitForLoad();
+        await preferencesPage.disableGPUPreference();
+        playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+        await playExpect(aiLabPage.gpuSupportBanner).toBeVisible();
+        await playExpect(aiLabPage.enableGpuButton).toBeVisible();
+        await playExpect(aiLabPage.dontDisplayButton).toBeVisible();
+        await aiLabPage.dontDisplayButton.click();
+        await playExpect(aiLabPage.gpuSupportBanner).toBeHidden();
+      },
+    );
   });
 
   test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {

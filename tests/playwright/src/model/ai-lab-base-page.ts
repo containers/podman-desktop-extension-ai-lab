@@ -17,17 +17,30 @@
  ***********************************************************************/
 
 import type { Locator, Page } from '@playwright/test';
+import { expect as playExpect } from '@playwright/test';
 
 export abstract class AILabBasePage {
   readonly page: Page;
   readonly webview: Page;
   readonly heading: Locator;
+  readonly gpuSupportBanner: Locator;
+  readonly enableGpuButton: Locator;
+  readonly dontDisplayButton: Locator;
 
   constructor(page: Page, webview: Page, heading: string | undefined) {
     this.page = page;
     this.webview = webview;
     this.heading = webview.getByRole('heading', { name: heading, exact: true }).first();
+    this.gpuSupportBanner = this.webview.getByLabel('GPU promotion banner');
+    this.enableGpuButton = this.gpuSupportBanner.getByRole('button', { name: 'Enable GPU support' });
+    this.dontDisplayButton = this.gpuSupportBanner.getByRole('button', { name: `Don't display anymore` });
   }
 
   abstract waitForLoad(): Promise<void>;
+
+  async enableGpuSupport(): Promise<void> {
+    await playExpect(this.gpuSupportBanner).toBeVisible();
+    await this.enableGpuButton.click();
+    await playExpect(this.gpuSupportBanner).not.toBeVisible();
+  }
 }

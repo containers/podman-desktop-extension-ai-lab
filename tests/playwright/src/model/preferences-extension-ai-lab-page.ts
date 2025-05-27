@@ -26,7 +26,7 @@ export class ExtensionAILabPreferencesPage extends PreferencesPage {
 
   constructor(page: Page) {
     super(page);
-    this.heading = page.getByRole('heading', { name: ExtensionAILabPreferencesPage.tabName });
+    this.heading = this.content.getByText(ExtensionAILabPreferencesPage.tabName, { exact: true });
     this.experimentalGPUCheckbox = this.content.getByRole('checkbox', {
       name: 'Experimental GPU support for inference servers',
     });

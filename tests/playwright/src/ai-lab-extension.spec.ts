@@ -479,8 +479,10 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         playExpect(text).toContain('Prague');
       });
 
-      test(`Stop ${appName} app`, async () => {
+      test(`Restart, Stop, and Cleanup ${appName}`, async () => {
         test.setTimeout(150_000);
+
+        await restartApp(appName);
         await stopAndDeleteApp(appName);
         await cleanupServiceModels();
       });
@@ -505,6 +507,23 @@ async function cleanupServiceModels(): Promise<void> {
   } catch (error) {
     console.log(`Error while cleaning up service models: ${error}`);
   }
+}
+
+async function restartApp(appName: string): Promise<void> {
+  const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
+  const aiApp = await aiRunningAppsPage.getRowForApp(appName);
+  await aiRunningAppsPage.waitForLoad();
+  await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
+  await playExpect
+    .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
+    .toBe('RUNNING');
+  await aiRunningAppsPage.restartApp(appName);
+
+  const appProgressBar = aiApp.getByRole('progressbar', { name: 'Loading' });
+  await playExpect(appProgressBar).toBeVisible({ timeout: 40_000 });
+  await playExpect
+    .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
+    .toBe('RUNNING');
 }
 
 async function stopAndDeleteApp(appName: string): Promise<void> {

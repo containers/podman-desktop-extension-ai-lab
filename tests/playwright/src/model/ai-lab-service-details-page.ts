@@ -56,4 +56,9 @@ export class AILabServiceDetailsPage extends AILabBasePage {
     const port = split ? split[split.length - 1].split('/')[0] : '';
     return port;
   }
+
+  async getServiceState(): Promise<string> {
+    const serviceState = await this.webview.getByRole('status').getAttribute('title');
+    return serviceState ?? 'UNKNOWN';
+  }
 }

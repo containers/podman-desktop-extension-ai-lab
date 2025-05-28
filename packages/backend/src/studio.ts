@@ -212,7 +212,7 @@ export class Studio {
      * Create catalog manager, responsible for loading the catalog files and watching for changes
      */
     this.#catalogManager = new CatalogManager(this.#rpcExtension, appUserDirectory);
-    this.#catalogManager.init();
+    await this.#catalogManager.init();
 
     /**
      * The builder manager is handling the building tasks, create corresponding tasks

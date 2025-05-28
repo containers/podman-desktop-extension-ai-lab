@@ -332,7 +332,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['lmstudio-community/granite-3.0-8b-instruct-GGUF'].forEach(modelName => {
+  ['ibm-research/granite-3.2-8b-instruct-GGUF'].forEach(modelName => {
     test.describe.serial(`AI Lab playground creation and deletion`, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;

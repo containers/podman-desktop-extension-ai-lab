@@ -61,30 +61,20 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
    * The init method will start a watcher on the user catalog.json
    */
   async init(): Promise<void> {
-    // Creating a json watcher
-    this.#jsonWatcher = new JsonWatcher(this.getUserCatalogPath(), {
-      version: CatalogFormat.CURRENT,
-      recipes: [],
-      models: [],
-      categories: [],
+    return new Promise<void>(resolve => {
+      // Creating a json watcher
+      this.#jsonWatcher = new JsonWatcher(this.getUserCatalogPath(), {
+        version: CatalogFormat.CURRENT,
+        recipes: [],
+        models: [],
+        categories: [],
+      });
+      this.#jsonWatcher.onContentUpdated(content => {
+        this.onUserCatalogUpdate(content);
+        resolve();
+      });
+      this.#jsonWatcher.init();
     });
-    this.#jsonWatcher.onContentUpdated(content => this.onUserCatalogUpdate(content));
-    this.#jsonWatcher.init();
-
-    await this.readCatalogs();
-  }
-
-  // read user and default catalog
-  private async readCatalogs(): Promise<void> {
-    let content: unknown;
-    try {
-      const str = await promises.readFile(this.getUserCatalogPath(), 'utf8');
-      content = JSON.parse(str);
-    } catch {
-      // Ignore all errors at this time, errors will be caught from JSON watcher event
-      content = {};
-    }
-    this.onUserCatalogUpdate(content);
   }
 
   private loadDefaultCatalog(): void {

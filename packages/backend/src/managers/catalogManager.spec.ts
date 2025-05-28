@@ -575,6 +575,7 @@ test('models are loaded as soon as init is finished when no user catalog', async
 
 test('models are loaded as soon as init is finished when user catalog exists', async () => {
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+  vi.mocked(existsSync).mockReturnValue(true);
   await catalogManager.init();
   expect(catalogManager.getModels()).toHaveLength(5);
 });

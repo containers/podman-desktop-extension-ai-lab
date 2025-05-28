@@ -21,10 +21,12 @@
 import { afterEach, beforeEach, expect, test, vi, describe, type MockInstance } from 'vitest';
 import { Studio } from './studio';
 import { type ExtensionContext, EventEmitter, version } from '@podman-desktop/api';
+import { CatalogManager } from './managers/catalogManager';
 
 import * as fs from 'node:fs';
 
 vi.mock('./managers/modelsManager');
+vi.mock('./managers/catalogManager');
 
 const mockedExtensionContext = {
   subscriptions: [],
@@ -124,6 +126,12 @@ beforeEach(() => {
   } as unknown as EventEmitter<unknown>);
 
   mocks.postMessage.mockResolvedValue(undefined);
+
+  vi.mocked(CatalogManager).mockReturnValue({
+    onUpdate: vi.fn(),
+    init: vi.fn(),
+    getRecipes: vi.fn().mockReturnValue([]),
+  } as unknown as CatalogManager);
 });
 
 afterEach(() => {

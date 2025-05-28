@@ -42,7 +42,7 @@ let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = 
 let localPath: LocalRepository | undefined = $derived(findLocalRepositoryByRecipeId($localRepositories, recipe?.id));
 // Filter all models based on backend property
 let models: ModelInfo[] = $derived(
-  $modelsInfo.filter(model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE)),
+  $modelsInfo.filter(model => recipe?.backend?.includes(model.backend ?? InferenceType.NONE)),
 );
 // Hold the selected model
 let model: ModelInfo | undefined = $state(undefined);

@@ -114,6 +114,15 @@ export function isStringArray(obj: unknown): obj is Array<string> {
   return Array.isArray(obj) && obj.every(item => typeof item === 'string');
 }
 
+function sanitizeBackend(backend: unknown): string[] {
+  if (typeof backend === 'string') {
+    return backend.split(',');
+  } else if (Array.isArray(backend)) {
+    return backend;
+  }
+  return [];
+}
+
 export function sanitizeRecipe(recipe: unknown): Recipe {
   if (
     isNonNullObject(recipe) &&
@@ -143,7 +152,7 @@ export function sanitizeRecipe(recipe: unknown): Recipe {
       icon: 'icon' in recipe && typeof recipe.icon === 'string' ? recipe.icon : undefined,
       basedir: 'basedir' in recipe && typeof recipe.basedir === 'string' ? recipe.basedir : undefined,
       recommended: 'recommended' in recipe && isStringArray(recipe.recommended) ? recipe.recommended : undefined,
-      backend: 'backend' in recipe && typeof recipe.backend === 'string' ? recipe.backend : undefined,
+      backend: 'backend' in recipe ? sanitizeBackend(recipe.backend) : undefined,
       languages: 'languages' in recipe && isStringArray(recipe.languages) ? recipe.languages : undefined,
       frameworks: 'frameworks' in recipe && isStringArray(recipe.frameworks) ? recipe.frameworks : undefined,
     };

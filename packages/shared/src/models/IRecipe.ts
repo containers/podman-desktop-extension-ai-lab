@@ -56,7 +56,7 @@ export interface Recipe {
    * The backend field aims to target which inference
    * server the recipe requires
    */
-  backend?: string;
+  backend?: string[];
   languages?: string[];
   frameworks?: string[];
 }

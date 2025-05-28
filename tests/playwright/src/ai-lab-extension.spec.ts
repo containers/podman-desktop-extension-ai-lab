@@ -333,7 +333,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
   });
 
   ['ibm-research/granite-3.2-8b-instruct-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lab playground creation and deletion`, () => {
+    test.describe.serial(`AI Lab playground creation and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;
@@ -357,7 +357,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         }
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [5_000] })
           .toBeTruthy();
       });
 

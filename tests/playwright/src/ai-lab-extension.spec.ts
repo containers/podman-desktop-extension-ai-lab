@@ -324,6 +324,24 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         }).toPass({ timeout: 600_000, intervals: [5_000] });
       });
 
+      test(`Restart model service for ${modelName}`, async () => {
+        test.skip(modelName === 'ggerganov/whisper.cpp');
+        test.setTimeout(180_000);
+
+        await modelServiceDetailsPage.stopService();
+        await playExpect(modelServiceDetailsPage.startServiceButton).toBeEnabled({ timeout: 120_000 });
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await modelServiceDetailsPage.getServiceState(), { timeout: 120_000 })
+          .toBe('');
+
+        await modelServiceDetailsPage.startService();
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await modelServiceDetailsPage.getServiceState(), { timeout: 120_000 })
+          .toBe('RUNNING');
+      });
+
       test(`Delete model service for ${modelName}`, async () => {
         test.setTimeout(150_000);
         const modelServicePage = await modelServiceDetailsPage.deleteService();

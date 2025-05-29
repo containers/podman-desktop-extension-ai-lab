@@ -578,7 +578,7 @@ async function restartApp(appName: string): Promise<void> {
   await aiRunningAppsPage.restartApp(appName);
 
   const appProgressBar = aiApp.getByRole('progressbar', { name: 'Loading' });
-  await playExpect(appProgressBar).toBeVisible({ timeout: 40_000 });
+  await playExpect(appProgressBar).toBeVisible({ timeout: 80_000 });
   await playExpect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');

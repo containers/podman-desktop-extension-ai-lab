@@ -63,7 +63,7 @@ export class ModelsManager implements Disposable {
     this.modelHandlerRegistry.getAll().forEach(handler => handler.onUpdate(this.loadLocalModels));
   }
 
-  init(): void {
+  async init(): Promise<void> {
     const disposable = this.catalogManager.onUpdate(() => {
       this.loadLocalModels().catch((err: unknown) => {
         console.error(`Something went wrong when loading local models`, err);
@@ -71,9 +71,11 @@ export class ModelsManager implements Disposable {
     });
     this.#disposables.push(disposable);
 
-    this.loadLocalModels().catch((err: unknown) => {
+    try {
+      await this.loadLocalModels();
+    } catch (err: unknown) {
       console.error('Something went wrong while trying to load local models', err);
-    });
+    }
   }
 
   dispose(): void {

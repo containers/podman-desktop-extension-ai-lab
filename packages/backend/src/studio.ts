@@ -251,7 +251,7 @@ export class Studio {
     const hfModelHandler = new HuggingFaceModelHandler(this.#modelsManager);
     this.#extensionContext.subscriptions.push(hfModelHandler);
     this.#extensionContext.subscriptions.push(modelHandlerRegistry.register(hfModelHandler));
-    this.#modelsManager.init();
+    await this.#modelsManager.init();
     this.#extensionContext.subscriptions.push(this.#modelsManager);
 
     /**

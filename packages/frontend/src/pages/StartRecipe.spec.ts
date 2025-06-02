@@ -62,7 +62,7 @@ vi.mock('../utils/client', async () => ({
 
 const fakeRecipe: Recipe = {
   id: 'dummy-recipe-id',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Recipe',
   description: 'Dummy description',
   recommended: ['dummy-model-1'],

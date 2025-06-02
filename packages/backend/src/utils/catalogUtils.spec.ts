@@ -174,7 +174,7 @@ describe('sanitize', () => {
     expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
   });
 
-  test('should return multiple backend recipe as string', () => {
+  test('should return backend recipe as string', () => {
     const raw = {
       version: '1.0',
       recipes: [
@@ -189,7 +189,7 @@ describe('sanitize', () => {
           basedir: 'recipes/natural_language_processing/chatbot',
           readme: '',
           recommended: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
-          backend: 'llama-cpp,openvino',
+          backend: 'llama-cpp',
           languages: ['lang1'],
           frameworks: ['fw1'],
         },
@@ -217,7 +217,7 @@ describe('sanitize', () => {
     expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
     expect(catalog.recipes[0].languages).toStrictEqual(['lang1']);
     expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
-    expect(catalog.recipes[0].backend).toStrictEqual(['llama-cpp', 'openvino']);
+    expect(catalog.recipes[0].backends).toStrictEqual(['llama-cpp']);
   });
 
   test('should return multiple backend recipe as array', () => {
@@ -235,7 +235,7 @@ describe('sanitize', () => {
           basedir: 'recipes/natural_language_processing/chatbot',
           readme: '',
           recommended: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
-          backend: ['llama-cpp', 'openvino'],
+          backends: ['llama-cpp', 'openvino'],
           languages: ['lang1'],
           frameworks: ['fw1'],
         },
@@ -263,7 +263,7 @@ describe('sanitize', () => {
     expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
     expect(catalog.recipes[0].languages).toStrictEqual(['lang1']);
     expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
-    expect(catalog.recipes[0].backend).toStrictEqual(['llama-cpp', 'openvino']);
+    expect(catalog.recipes[0].backends).toStrictEqual(['llama-cpp', 'openvino']);
   });
 });
 

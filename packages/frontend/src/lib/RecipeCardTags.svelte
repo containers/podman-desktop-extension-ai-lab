@@ -12,7 +12,7 @@ let { recipe }: Props = $props();
 
 const TAGS: string[] = [
   ...recipe.categories,
-  ...(recipe.backend ?? []),
+  ...(recipe.backends ?? []),
   ...(recipe.frameworks ?? []),
   ...(recipe.languages ?? []),
 ];

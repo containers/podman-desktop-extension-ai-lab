@@ -142,6 +142,6 @@
     "@types/swagger-ui-express": "^4.1.8",
     "openapi-typescript": "^7.8.0",
     "supertest": "^7.1.1",
-    "vitest": "^3.0.5"
+    "vitest": "^3.2.0"
   }
 }

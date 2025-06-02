@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Locator } from '@playwright/test';
+import type { APIResponse, Locator } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
   expect as playExpect,
@@ -40,6 +40,9 @@ import {
   reopenAILabDashboard,
   waitForExtensionToInitialize,
 } from './utils/aiLabHandler';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -51,6 +54,24 @@ const runnerOptions = {
   customFolder: 'ai-lab-tests-pd',
   aiLabModelUploadDisabled: isWindows ? true : false,
 };
+
+interface AiApp {
+  appName: string;
+  appModel: string;
+}
+
+const AI_APPS: AiApp[] = [
+  { appName: 'Audio to Text', appModel: 'ggerganov/whisper.cpp' },
+  { appName: 'ChatBot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'Summarizer', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'Code Generation', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'RAG Chatbot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'Function calling', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+];
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const TEST_AUDIO_FILE = path.resolve(__dirname, '..', '..', 'playwright', 'resources', `test-audio-to-text.wav`);
 
 test.use({
   runnerOptions: new RunnerOptions(runnerOptions),
@@ -476,7 +497,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Function calling'].forEach(appName => {
+  AI_APPS.forEach(({ appName, appModel }) => {
     test.describe.serial(`AI Recipe installation`, () => {
       test.skip(
         !process.env.EXT_TEST_RAG_CHATBOT && appName === 'RAG Chatbot',
@@ -500,41 +521,69 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
-        test.skip(appName !== 'Function calling');
+        test.skip(appName !== 'Function calling' && appName !== 'Audio to Text');
+        // Expected failure due to issue #3111: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111
+        test.fail(appName === 'Audio to Text');
         test.setTimeout(600_000);
 
         const modelServicePage = await aiLabPage.navigationBar.openServices();
-        const serviceDetailsPage = await modelServicePage.openServiceDetails(
-          'ibm-granite/granite-3.3-8b-instruct-GGUF',
-        );
+        const serviceDetailsPage = await modelServicePage.openServiceDetails(appModel);
 
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
           .poll(async () => await serviceDetailsPage.getServiceState(), { timeout: 60_000 })
           .toBe('RUNNING');
-        const port = await serviceDetailsPage.getInferenceServerPort();
-        const url = `http://localhost:${port}/v1/chat/completions`;
 
-        const response = await request.post(url, {
-          data: {
-            messages: [
-              {
-                content: 'You are a helpful assistant.',
-                role: 'system',
+        const port = await serviceDetailsPage.getInferenceServerPort();
+        const baseUrl = `http://localhost:${port}`;
+
+        let response: APIResponse;
+        let expectedResponse: string;
+
+        switch (appModel) {
+          case 'ggerganov/whisper.cpp': {
+            expectedResponse =
+              'And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country';
+            const audioFileContent = fs.readFileSync(TEST_AUDIO_FILE);
+
+            response = await request.post(`${baseUrl}/inference`, {
+              headers: {
+                Accept: 'application/json',
               },
-              {
-                content: 'What is the capital of Czech Republic?',
-                role: 'user',
+              multipart: {
+                file: {
+                  name: 'test.wav',
+                  mimeType: 'audio/wav',
+                  buffer: audioFileContent,
+                },
               },
-            ],
-          },
-          timeout: 600_000,
-        });
+              timeout: 600_000,
+            });
+            break;
+          }
+
+          case 'ibm-granite/granite-3.3-8b-instruct-GGUF': {
+            expectedResponse = 'Prague';
+            response = await request.post(`${baseUrl}/v1/chat/completions`, {
+              data: {
+                messages: [
+                  { role: 'system', content: 'You are a helpful assistant.' },
+                  { role: 'user', content: 'What is the capital of Czech Republic?' },
+                ],
+              },
+              timeout: 600_000,
+            });
+            break;
+          }
+
+          default:
+            throw new Error(`Unhandled model type: ${appModel}`);
+        }
 
         playExpect(response.ok()).toBeTruthy();
         const body = await response.body();
         const text = body.toString();
-        playExpect(text).toContain('Prague');
+        playExpect(text).toContain(expectedResponse);
       });
 
       test(`${appName}: Restart, Stop, Delete. Clean up model service`, async () => {

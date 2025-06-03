@@ -189,7 +189,7 @@ describe('sanitize', () => {
           basedir: 'recipes/natural_language_processing/chatbot',
           readme: '',
           recommended: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
-          backend: 'llama-cpp',
+          backends: ['llama-cpp'],
           languages: ['lang1'],
           frameworks: ['fw1'],
         },

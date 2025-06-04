@@ -78,7 +78,14 @@ const AI_APPS: AiApp[] = [
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const __testAudioFilePath = path.resolve(__dirname, '..', '..', 'playwright', 'resources', `test-audio-to-text.wav`);
+const TEST_AUDIO_FILE_PATH: string = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  'playwright',
+  'resources',
+  `test-audio-to-text.wav`,
+);
 
 test.use({
   runnerOptions: new RunnerOptions(runnerOptions),
@@ -553,7 +560,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           case 'ggerganov/whisper.cpp': {
             expectedResponse =
               'And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country';
-            const audioFileContent = fs.readFileSync(__testAudioFilePath);
+            const audioFileContent = fs.readFileSync(TEST_AUDIO_FILE_PATH);
 
             response = await request.post(`${baseUrl}/inference`, {
               headers: {

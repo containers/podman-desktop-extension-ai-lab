@@ -16,6 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+/**
+ * The 'test-audio-to-text.wav' file used in this test was sourced from the
+ * whisper.cpp project (https://github.com/ggml-org/whisper.cpp).
+ * It is licensed under the MIT License (see https://github.com/ggml-org/whisper.cpp/blob/master/LICENSE for details).
+ * This specific WAV file is used solely for Playwright testing purposes within this repository.
+ */
+
 import type { APIResponse, Locator } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
@@ -522,8 +529,10 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
       test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
         test.skip(appName !== 'Function calling' && appName !== 'Audio to Text');
-        // Expected failure due to issue #3111: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111
-        test.fail(appName === 'Audio to Text');
+        test.fail(
+          appName === 'Audio to Text',
+          'Expected failure due to issue #3111: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
+        );
         test.setTimeout(600_000);
 
         const modelServicePage = await aiLabPage.navigationBar.openServices();

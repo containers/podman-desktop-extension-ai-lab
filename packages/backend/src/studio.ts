@@ -212,7 +212,7 @@ export class Studio {
      * Create catalog manager, responsible for loading the catalog files and watching for changes
      */
     this.#catalogManager = new CatalogManager(this.#rpcExtension, appUserDirectory);
-    this.#catalogManager.init();
+    await this.#catalogManager.init();
 
     /**
      * The builder manager is handling the building tasks, create corresponding tasks
@@ -251,7 +251,7 @@ export class Studio {
     const hfModelHandler = new HuggingFaceModelHandler(this.#modelsManager);
     this.#extensionContext.subscriptions.push(hfModelHandler);
     this.#extensionContext.subscriptions.push(modelHandlerRegistry.register(hfModelHandler));
-    this.#modelsManager.init();
+    await this.#modelsManager.init();
     this.#extensionContext.subscriptions.push(this.#modelsManager);
 
     /**

@@ -29,6 +29,7 @@ export class AILabServiceDetailsPage extends AILabBasePage {
   readonly codeSnippet: Locator;
   readonly deleteServiceButton: Locator;
   readonly stopServiceButton: Locator;
+  readonly startServiceButton: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Service details');
@@ -38,6 +39,7 @@ export class AILabServiceDetailsPage extends AILabBasePage {
     this.codeSnippet = this.webview.getByLabel('Code Snippet', { exact: true });
     this.deleteServiceButton = this.webview.getByRole('button', { name: 'Delete service' });
     this.stopServiceButton = this.webview.getByRole('button', { name: 'Stop service' });
+    this.startServiceButton = this.webview.getByRole('button', { name: 'Start service' });
   }
 
   async waitForLoad(): Promise<void> {
@@ -49,6 +51,16 @@ export class AILabServiceDetailsPage extends AILabBasePage {
     await this.deleteServiceButton.click();
     await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
     return new AiModelServicePage(this.page, this.webview);
+  }
+
+  async stopService(): Promise<void> {
+    await playExpect(this.stopServiceButton).toBeEnabled();
+    await this.stopServiceButton.click();
+  }
+
+  async startService(): Promise<void> {
+    await playExpect(this.startServiceButton).toBeEnabled();
+    await this.startServiceButton.click();
   }
 
   async getInferenceServerPort(): Promise<string> {

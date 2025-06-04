@@ -16,7 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Locator } from '@playwright/test';
+/**
+ * The 'test-audio-to-text.wav' file used in this test was sourced from the
+ * whisper.cpp project (https://github.com/ggml-org/whisper.cpp).
+ * It is licensed under the MIT License (see https://github.com/ggml-org/whisper.cpp/blob/master/LICENSE for details).
+ * This specific WAV file is used solely for Playwright testing purposes within this repository.
+ */
+
+import type { APIResponse, Locator } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
   ContainerDetailsPage,
@@ -38,9 +45,13 @@ import {
   getExtensionCard,
   getExtensionVersion,
   openAILabExtensionDetails,
+  openAILabPreferences,
   reopenAILabDashboard,
   waitForExtensionToInitialize,
 } from './utils/aiLabHandler';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { AILabTryInstructLabPage } from './model/ai-lab-try-instructlab-page';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
@@ -53,6 +64,31 @@ const runnerOptions = {
   customFolder: 'ai-lab-tests-pd',
   aiLabModelUploadDisabled: isWindows ? true : false,
 };
+
+interface AiApp {
+  appName: string;
+  appModel: string;
+}
+
+const AI_APPS: AiApp[] = [
+  { appName: 'Audio to Text', appModel: 'ggerganov/whisper.cpp' },
+  { appName: 'ChatBot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'Summarizer', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'Code Generation', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'RAG Chatbot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'Function calling', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+];
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const TEST_AUDIO_FILE_PATH: string = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  'playwright',
+  'resources',
+  `test-audio-to-text.wav`,
+);
 
 test.use({
   runnerOptions: new RunnerOptions(runnerOptions),
@@ -107,6 +143,45 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
       await aiLabPage.navigationBar.waitForLoad();
     });
+  });
+
+  test.describe.serial(`AI Lab extension GPU preferences`, { tag: '@smoke' }, () => {
+    test(`Verify GPU support banner is visible, preferences are disabled`, async ({ page, navigationBar }) => {
+      test.setTimeout(15_000);
+      await playExpect(aiLabPage.gpuSupportBanner).toBeVisible();
+      await playExpect(aiLabPage.enableGpuButton).toBeVisible();
+      await playExpect(aiLabPage.dontDisplayButton).toBeVisible();
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
+      await preferencesPage.waitForLoad();
+      playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
+    });
+
+    test(`Enable GPU support and verify preferences`, async ({ runner, page, navigationBar }) => {
+      test.setTimeout(30_000);
+      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+      await aiLabPage.waitForLoad();
+      await aiLabPage.enableGpuSupport();
+      const preferencesPage = await openAILabPreferences(navigationBar, page);
+      await preferencesPage.waitForLoad();
+      playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeTruthy();
+    });
+
+    test.afterAll(
+      `Disable GPU support, return to AI Lab Dashboard and hide banner`,
+      async ({ runner, page, navigationBar }) => {
+        test.setTimeout(30_000);
+        const preferencesPage = await openAILabPreferences(navigationBar, page);
+        await preferencesPage.waitForLoad();
+        await preferencesPage.disableGPUPreference();
+        playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+        await playExpect(aiLabPage.gpuSupportBanner).toBeVisible();
+        await playExpect(aiLabPage.enableGpuButton).toBeVisible();
+        await playExpect(aiLabPage.dontDisplayButton).toBeVisible();
+        await aiLabPage.dontDisplayButton.click();
+        await playExpect(aiLabPage.gpuSupportBanner).toBeHidden();
+      },
+    );
   });
 
   test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
@@ -327,6 +402,24 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         }).toPass({ timeout: 600_000, intervals: [5_000] });
       });
 
+      test(`Restart model service for ${modelName}`, async () => {
+        test.skip(modelName === 'ggerganov/whisper.cpp');
+        test.setTimeout(180_000);
+
+        await modelServiceDetailsPage.stopService();
+        await playExpect(modelServiceDetailsPage.startServiceButton).toBeEnabled({ timeout: 120_000 });
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await modelServiceDetailsPage.getServiceState(), { timeout: 120_000 })
+          .toBe('');
+
+        await modelServiceDetailsPage.startService();
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await modelServiceDetailsPage.getServiceState(), { timeout: 120_000 })
+          .toBe('RUNNING');
+      });
+
       test(`Delete model service for ${modelName}`, async () => {
         test.setTimeout(150_000);
         const modelServicePage = await modelServiceDetailsPage.deleteService();
@@ -335,8 +428,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['lmstudio-community/granite-3.0-8b-instruct-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lab playground creation and deletion`, () => {
+  ['ibm-research/granite-3.2-8b-instruct-GGUF'].forEach(modelName => {
+    test.describe.serial(`AI Lab playground creation and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;
@@ -360,7 +453,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         }
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [5_000] })
           .toBeTruthy();
       });
 
@@ -421,7 +514,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['Audio to Text', 'ChatBot', 'Summarizer', 'Code Generation', 'RAG Chatbot', 'Function calling'].forEach(appName => {
+  AI_APPS.forEach(({ appName, appModel }) => {
     test.describe.serial(`AI Recipe installation`, () => {
       test.skip(
         !process.env.EXT_TEST_RAG_CHATBOT && appName === 'RAG Chatbot',
@@ -445,41 +538,71 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
-        test.skip(appName !== 'Function calling');
+        test.skip(appName !== 'Function calling' && appName !== 'Audio to Text');
+        test.fail(
+          appName === 'Audio to Text',
+          'Expected failure due to issue #3111: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
+        );
         test.setTimeout(600_000);
 
         const modelServicePage = await aiLabPage.navigationBar.openServices();
-        const serviceDetailsPage = await modelServicePage.openServiceDetails(
-          'ibm-granite/granite-3.3-8b-instruct-GGUF',
-        );
+        const serviceDetailsPage = await modelServicePage.openServiceDetails(appModel);
 
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
           .poll(async () => await serviceDetailsPage.getServiceState(), { timeout: 60_000 })
           .toBe('RUNNING');
-        const port = await serviceDetailsPage.getInferenceServerPort();
-        const url = `http://localhost:${port}/v1/chat/completions`;
 
-        const response = await request.post(url, {
-          data: {
-            messages: [
-              {
-                content: 'You are a helpful assistant.',
-                role: 'system',
+        const port = await serviceDetailsPage.getInferenceServerPort();
+        const baseUrl = `http://localhost:${port}`;
+
+        let response: APIResponse;
+        let expectedResponse: string;
+
+        switch (appModel) {
+          case 'ggerganov/whisper.cpp': {
+            expectedResponse =
+              'And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country';
+            const audioFileContent = fs.readFileSync(TEST_AUDIO_FILE_PATH);
+
+            response = await request.post(`${baseUrl}/inference`, {
+              headers: {
+                Accept: 'application/json',
               },
-              {
-                content: 'What is the capital of Czech Republic?',
-                role: 'user',
+              multipart: {
+                file: {
+                  name: 'test.wav',
+                  mimeType: 'audio/wav',
+                  buffer: audioFileContent,
+                },
               },
-            ],
-          },
-          timeout: 600_000,
-        });
+              timeout: 600_000,
+            });
+            break;
+          }
+
+          case 'ibm-granite/granite-3.3-8b-instruct-GGUF': {
+            expectedResponse = 'Prague';
+            response = await request.post(`${baseUrl}/v1/chat/completions`, {
+              data: {
+                messages: [
+                  { role: 'system', content: 'You are a helpful assistant.' },
+                  { role: 'user', content: 'What is the capital of Czech Republic?' },
+                ],
+              },
+              timeout: 600_000,
+            });
+            break;
+          }
+
+          default:
+            throw new Error(`Unhandled model type: ${appModel}`);
+        }
 
         playExpect(response.ok()).toBeTruthy();
         const body = await response.body();
         const text = body.toString();
-        playExpect(text).toContain('Prague');
+        playExpect(text).toContain(expectedResponse);
       });
 
       test(`${appName}: Restart, Stop, Delete. Clean up model service`, async () => {
@@ -568,7 +691,7 @@ async function restartApp(appName: string): Promise<void> {
   await aiRunningAppsPage.restartApp(appName);
 
   const appProgressBar = aiApp.getByRole('progressbar', { name: 'Loading' });
-  await playExpect(appProgressBar).toBeVisible({ timeout: 40_000 });
+  await playExpect(appProgressBar).toBeVisible({ timeout: 60_000 });
   await playExpect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');

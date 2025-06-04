@@ -96,7 +96,7 @@ beforeEach(async () => {
 describe('invalid user catalog', () => {
   beforeEach(async () => {
     vi.mocked(promises.readFile).mockResolvedValue('invalid json');
-    catalogManager.init();
+    await catalogManager.init();
   });
 
   test('expect correct model is returned with valid id', () => {
@@ -116,7 +116,7 @@ describe('invalid user catalog', () => {
 
 test('expect correct model is returned from default catalog with valid id when no user catalog exists', async () => {
   vi.mocked(existsSync).mockReturnValue(false);
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
   const model = catalogManager.getModelById('llama-2-7b-chat.Q5_K_S');
@@ -132,7 +132,7 @@ test('expect correct model is returned with valid id when the user catalog is va
   vi.mocked(existsSync).mockReturnValue(true);
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
 
   const model = catalogManager.getModelById('model1');
@@ -146,7 +146,7 @@ test('expect to call writeFile in addLocalModelsToCatalog with catalog updated',
   vi.mocked(existsSync).mockReturnValue(true);
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
   const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
@@ -174,7 +174,7 @@ test('expect to call writeFile in removeLocalModelFromCatalog with catalog updat
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
   vi.mocked(path.resolve).mockReturnValue('path');
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getRecipes().length > 0);
 
   vi.mocked(promises.writeFile).mockResolvedValue();
@@ -196,7 +196,7 @@ test('catalog should be the combination of user catalog and default catalog', as
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
   vi.mocked(path.resolve).mockReturnValue('path');
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().length > userContent.models.length);
 
   const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
@@ -238,7 +238,7 @@ test('catalog should use user items in favour of default', async () => {
 
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(overwriteFullCatalog));
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().length > 0);
 
   const mtimeDate = new Date('2024-04-03T09:51:15.766Z');
@@ -330,7 +330,7 @@ test('filter recipes by language', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
   const result1 = catalogManager.filterRecipes({
     languages: ['lang1'],
@@ -375,7 +375,7 @@ test('filter recipes by tool', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
 
   const result1 = catalogManager.filterRecipes({
@@ -445,7 +445,7 @@ test('filter recipes by framework', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
 
   const result1 = catalogManager.filterRecipes({
@@ -519,7 +519,7 @@ test('filter recipes by language and framework', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
 
   const result1 = catalogManager.filterRecipes({
@@ -546,7 +546,7 @@ test('filter recipes by language, tool and framework', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
 
-  catalogManager.init();
+  await catalogManager.init();
   await vi.waitUntil(() => catalogManager.getModels().some(model => model.id === 'model1'));
 
   const result1 = catalogManager.filterRecipes({
@@ -566,4 +566,16 @@ test('filter recipes by language, tool and framework', async () => {
     ],
     tools: [{ name: 'tool1', count: 1 }],
   });
+});
+
+test('models are loaded as soon as init is finished when no user catalog', async () => {
+  await catalogManager.init();
+  expect(catalogManager.getModels()).toHaveLength(3);
+});
+
+test('models are loaded as soon as init is finished when user catalog exists', async () => {
+  vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));
+  vi.mocked(existsSync).mockReturnValue(true);
+  await catalogManager.init();
+  expect(catalogManager.getModels()).toHaveLength(5);
 });

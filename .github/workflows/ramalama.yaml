@@ -108,7 +108,7 @@ jobs:
 
       - name: Update ramalama image references in AI Lab Extension
         working-directory: ./podman-desktop-extension-ai-lab
-        run: sed -i -E "s/(@sha256:[0-9a-f]+)/:${{ github.event.inputs.tag }}/g" packages/backend/src/assets/inference-images.json
+        run: sed -i -E "s/(@sha256:[0-9a-f]+)/:${{ github.event_name != 'workflow_dispatch' && 'latest' || github.event.inputs.tag }}/g" packages/backend/src/assets/inference-images.json
 
       - name: Build Image
         working-directory: ./podman-desktop-extension-ai-lab

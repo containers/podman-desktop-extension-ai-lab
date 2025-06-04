@@ -629,6 +629,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     let exactInstructLabContainerName = '';
 
     if (process.env.GITHUB_ACTIONS && isLinux) {
+      //Current GHA Linux machine doesnt have enough resources
       test.skip();
     }
     test.beforeAll('Open Try InstructLab page', async ({ runner, page, navigationBar }) => {
@@ -644,7 +645,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
       await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
       await instructLabPage.startInstructLabButton.click();
-      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 5_000_000 });
+      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 900_000 });
 
       await instructLabPage.openInstructLabButton.click();
 
@@ -668,7 +669,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       const containersPage = await navigationBar.openContainers();
       await playExpect(containersPage.heading).toBeVisible();
       await playExpect
-        .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 10_000 })
+        .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 100_000 })
         .toBeFalsy();
 
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);

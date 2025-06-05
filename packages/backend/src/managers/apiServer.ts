@@ -505,7 +505,7 @@ export class ApiServer implements Disposable {
               res.write(
                 JSON.stringify({
                   model: modelName,
-                  response: chunk.choices[0].delta.content,
+                  response: chunk.choices[0].delta.content ?? '',
                   done: chunk.choices[0].finish_reason === 'stop',
                   done_reason: chunk.choices[0].finish_reason === 'stop' ? 'stop' : undefined,
                 }) + '\n',
@@ -516,7 +516,7 @@ export class ApiServer implements Disposable {
           onNonStreamResponse: response => {
             res.status(200).json({
               model: modelName,
-              response: response.choices[0].message.content,
+              response: response.choices[0].message.content ?? '',
               done: true,
               done_reason: 'stop',
             });

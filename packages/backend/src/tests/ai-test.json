@@ -27,7 +27,7 @@
       "description": "",
       "repository": "",
       "readme": "",
-      "backend": "tool1",
+      "backends": ["tool1"],
       "languages": ["lang1", "lang10"],
       "frameworks": ["fw1", "fw10"]
     },
@@ -38,7 +38,7 @@
       "description": "",
       "repository": "",
       "readme": "",
-      "backend": "tool2",
+      "backends": ["tool2"],
       "languages": ["lang2", "lang10"],
       "frameworks": ["fw2", "fw10"]
     },
@@ -49,7 +49,7 @@
       "description": "",
       "repository": "",
       "readme": "",
-      "backend": "tool3",
+      "backends": ["tool3"],
       "languages": ["lang3", "lang11"],
       "frameworks": ["fw2", "fw10", "fw11"]
     }

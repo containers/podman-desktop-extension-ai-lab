@@ -173,6 +173,98 @@ describe('sanitize', () => {
     expect(catalog.recipes[0].languages).toStrictEqual(['lang1']);
     expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
   });
+
+  test('should return backend recipe as string', () => {
+    const raw = {
+      version: '1.0',
+      recipes: [
+        {
+          id: 'chatbot',
+          description: 'This is a Streamlit chat demo application.',
+          name: 'ChatBot',
+          repository: 'https://github.com/containers/ai-lab-recipes',
+          ref: 'v1.1.3',
+          icon: 'natural-language-processing',
+          categories: ['natural-language-processing'],
+          basedir: 'recipes/natural_language_processing/chatbot',
+          readme: '',
+          recommended: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
+          backends: ['llama-cpp'],
+          languages: ['lang1'],
+          frameworks: ['fw1'],
+        },
+      ],
+      models: [
+        {
+          id: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          name: 'Mistral-7B-Instruct-v0.3-Q4_K_M',
+          description: 'Model imported from path\\Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          hw: 'CPU',
+          file: {
+            path: 'path',
+            file: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+            size: 4372812000,
+            creation: '2024-06-19T12:14:12.489Z',
+          },
+          memory: 4372812000,
+        },
+      ],
+    };
+    expect(hasCatalogWrongFormat(raw)).toBeFalsy();
+    const catalog = sanitize(raw);
+    expect(catalog.version).equals(CatalogFormat.CURRENT);
+    expect(catalog.models[0].backend).toBeUndefined();
+    expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
+    expect(catalog.recipes[0].languages).toStrictEqual(['lang1']);
+    expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
+    expect(catalog.recipes[0].backends).toStrictEqual(['llama-cpp']);
+  });
+
+  test('should return multiple backend recipe as array', () => {
+    const raw = {
+      version: '1.0',
+      recipes: [
+        {
+          id: 'chatbot',
+          description: 'This is a Streamlit chat demo application.',
+          name: 'ChatBot',
+          repository: 'https://github.com/containers/ai-lab-recipes',
+          ref: 'v1.1.3',
+          icon: 'natural-language-processing',
+          categories: ['natural-language-processing'],
+          basedir: 'recipes/natural_language_processing/chatbot',
+          readme: '',
+          recommended: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
+          backends: ['llama-cpp', 'openvino'],
+          languages: ['lang1'],
+          frameworks: ['fw1'],
+        },
+      ],
+      models: [
+        {
+          id: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          name: 'Mistral-7B-Instruct-v0.3-Q4_K_M',
+          description: 'Model imported from path\\Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+          hw: 'CPU',
+          file: {
+            path: 'path',
+            file: 'Mistral-7B-Instruct-v0.3-Q4_K_M.gguf',
+            size: 4372812000,
+            creation: '2024-06-19T12:14:12.489Z',
+          },
+          memory: 4372812000,
+        },
+      ],
+    };
+    expect(hasCatalogWrongFormat(raw)).toBeFalsy();
+    const catalog = sanitize(raw);
+    expect(catalog.version).equals(CatalogFormat.CURRENT);
+    expect(catalog.models[0].backend).toBeUndefined();
+    expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
+    expect(catalog.recipes[0].languages).toStrictEqual(['lang1']);
+    expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
+    expect(catalog.recipes[0].backends).toStrictEqual(['llama-cpp', 'openvino']);
+  });
 });
 
 describe('merge', () => {

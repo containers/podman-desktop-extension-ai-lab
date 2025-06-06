@@ -571,7 +571,7 @@ export class ApiServer implements Disposable {
                   model: modelName,
                   message: {
                     role: 'assistant',
-                    content: chunk.choices[0].delta.content,
+                    content: chunk.choices[0].delta.content ?? '',
                   },
                   done: chunk.choices[0].finish_reason === 'stop',
                   done_reason: chunk.choices[0].finish_reason === 'stop' ? 'stop' : undefined,
@@ -585,7 +585,7 @@ export class ApiServer implements Disposable {
               model: modelName,
               message: {
                 role: 'assistant',
-                content: response.choices[0].message.content,
+                content: response.choices[0].message.content ?? '',
               },
               done: true,
               done_reason: 'stop',

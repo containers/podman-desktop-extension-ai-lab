@@ -36,6 +36,7 @@ vi.mock('../utils/client', async () => {
       getCatalog: vi.fn(),
       submitPlaygroundMessage: vi.fn(),
       requestCancelToken: vi.fn(),
+      getMcpSettings: vi.fn(async () => ({ servers: {} })),
     },
     rpcBrowser: {
       subscribe: (): unknown => {

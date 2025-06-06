@@ -19,6 +19,7 @@
 import type { StudioAPI } from '@shared/StudioAPI';
 import type { ApplicationManager } from './managers/application/applicationManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { McpSettings } from '@shared/models/McpSettings';
 import * as podmanDesktopApi from '@podman-desktop/api';
 
 import type { CatalogManager } from './managers/catalogManager';
@@ -33,6 +34,7 @@ import path from 'node:path';
 import type { InferenceServer } from '@shared/models/IInference';
 import type { CreationInferenceServerOptions } from '@shared/models/InferenceServerConfig';
 import type { InferenceManager } from './managers/inference/inferenceManager';
+import type { McpServerManager } from './managers/playground/McpServerManager';
 import type { Conversation } from '@shared/models/IPlaygroundMessage';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { getFreeRandomPort } from './utils/ports';
@@ -71,6 +73,7 @@ export class StudioApiImpl implements StudioAPI {
     private localRepositories: LocalRepositoryRegistry,
     private taskRegistry: TaskRegistry,
     private inferenceManager: InferenceManager,
+    private mcpServerManager: McpServerManager,
     private playgroundV2: PlaygroundV2Manager,
     private snippetManager: SnippetManager,
     private cancellationTokenRegistry: CancellationTokenRegistry,
@@ -117,6 +120,10 @@ export class StudioApiImpl implements StudioAPI {
 
   async getPlaygroundConversations(): Promise<Conversation[]> {
     return this.playgroundV2.getConversations();
+  }
+
+  async getMcpSettings(): Promise<McpSettings> {
+    return this.mcpServerManager.getMcpSettings();
   }
 
   async getExtensionConfiguration(): Promise<ExtensionConfiguration> {

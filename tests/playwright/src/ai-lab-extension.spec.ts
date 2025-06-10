@@ -74,7 +74,7 @@ const AI_APPS: AiApp[] = [
   { appName: 'Code Generation', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
   { appName: 'RAG Chatbot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
   { appName: 'Function calling', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
-  { appName: 'Object Detection', appModel: 'facebook/detr-resnet-10' },
+  { appName: 'Object Detection', appModel: 'facebook/detr-resnet-101' },
 ];
 
 const __filename = fileURLToPath(import.meta.url);

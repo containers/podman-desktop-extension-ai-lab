@@ -94,6 +94,7 @@ export class AiRunningAppsPage extends AILabBasePage {
 
   async getAppPort(appName: string): Promise<string> {
     const appRow = await this.getRowForApp(appName);
+    //Update this locator after issue https://github.com/containers/podman-desktop-extension-ai-lab/issues/3113 is resolved
     const portCell = appRow.getByRole('cell').nth(3);
     const rawPortText = await portCell.getByText(/PORT\s\d+/).textContent();
     if (!rawPortText) {

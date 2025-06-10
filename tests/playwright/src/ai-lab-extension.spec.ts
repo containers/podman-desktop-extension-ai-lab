@@ -543,6 +543,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
         playExpect(response.ok()).toBeTruthy();
         const body = await response.text();
+        // Apps created with Streamlit include this title in the HTML code.
         playExpect(body).toContain('<title>Streamlit</title>');
       });
 

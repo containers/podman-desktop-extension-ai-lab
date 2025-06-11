@@ -36,7 +36,7 @@
     "@typescript-eslint/eslint-plugin": "8.34.0",
     "jsdom": "^26.1.0",
     "monaco-editor": "^0.52.2",
-    "postcss": "^8.5.3",
+    "postcss": "^8.5.5",
     "postcss-load-config": "^6.0.1",
     "svelte": "5.33.19",
     "svelte-fa": "^4.0.4",

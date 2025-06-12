@@ -160,11 +160,11 @@ function getInitializedApplicationManager(): ApplicationManager {
 describe('requestPullApplication', () => {
   test('task should be set to error if pull application raise an error', async () => {
     vi.mocked(window.withProgress).mockRejectedValue(new Error('pull application error'));
-    const trackingId = await getInitializedApplicationManager().requestPullApplication(
-      connectionMock,
-      recipeMock,
-      remoteModelMock,
-    );
+    const trackingId = await getInitializedApplicationManager().requestPullApplication({
+      connection: connectionMock,
+      recipe: recipeMock,
+      model: remoteModelMock,
+    });
 
     // ensure the task is created
     await vi.waitFor(() => {
@@ -292,9 +292,16 @@ describe('startApplication', () => {
 
 describe('pullApplication', () => {
   test('labels should be propagated', async () => {
-    await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock, {
-      'test-label': 'test-value',
-    });
+    await getInitializedApplicationManager().pullApplication(
+      {
+        connection: connectionMock,
+        recipe: recipeMock,
+        model: remoteModelMock,
+      },
+      {
+        'test-label': 'test-value',
+      },
+    );
 
     // clone the recipe
     expect(recipeManager.cloneRecipe).toHaveBeenCalledWith(recipeMock, {
@@ -314,11 +321,18 @@ describe('pullApplication', () => {
       'model-id': remoteModelMock.id,
     });
     // build the recipe
-    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(connectionMock, recipeMock, remoteModelMock, {
-      'test-label': 'test-value',
-      'recipe-id': recipeMock.id,
-      'model-id': remoteModelMock.id,
-    });
+    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(
+      {
+        connection: connectionMock,
+        recipe: recipeMock,
+        model: remoteModelMock,
+      },
+      {
+        'test-label': 'test-value',
+        'recipe-id': recipeMock.id,
+        'model-id': remoteModelMock.id,
+      },
+    );
     // create AI App task must be created
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Creating AI App', 'loading', {
       'test-label': 'test-value',
@@ -361,9 +375,17 @@ describe('pullApplication', () => {
         },
       } as InferenceServer,
     });
-    await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock, {
-      'test-label': 'test-value',
-    });
+    vi.mocked(modelsManagerMock.requestDownloadModel).mockResolvedValue('/path/to/model');
+    await getInitializedApplicationManager().pullApplication(
+      {
+        connection: connectionMock,
+        recipe: recipeMock,
+        model: remoteModelMock,
+      },
+      {
+        'test-label': 'test-value',
+      },
+    );
 
     // clone the recipe
     expect(recipeManager.cloneRecipe).toHaveBeenCalledWith(recipeMock, {
@@ -379,11 +401,18 @@ describe('pullApplication', () => {
     // upload model to podman machine
     expect(modelsManagerMock.uploadModelToPodmanMachine).not.toHaveBeenCalled();
     // build the recipe
-    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(connectionMock, recipeMock, remoteModelMock, {
-      'test-label': 'test-value',
-      'recipe-id': recipeMock.id,
-      'model-id': remoteModelMock.id,
-    });
+    expect(recipeManager.buildRecipe).toHaveBeenCalledWith(
+      {
+        connection: connectionMock,
+        recipe: recipeMock,
+        model: remoteModelMock,
+      },
+      {
+        'test-label': 'test-value',
+        'recipe-id': recipeMock.id,
+        'model-id': remoteModelMock.id,
+      },
+    );
     // create AI App task must be created
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Creating AI App', 'loading', {
       'test-label': 'test-value',
@@ -427,7 +456,11 @@ describe('pullApplication', () => {
       },
     } as unknown as PodInfo);
 
-    await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock);
+    await getInitializedApplicationManager().pullApplication({
+      connection: connectionMock,
+      recipe: recipeMock,
+      model: remoteModelMock,
+    });
 
     // removing existing application should create a task to notify the user
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Removing AI App', 'loading', {
@@ -456,7 +489,11 @@ describe('pullApplication', () => {
       ],
     });
 
-    await getInitializedApplicationManager().pullApplication(connectionMock, recipeMock, remoteModelMock);
+    await getInitializedApplicationManager().pullApplication({
+      connection: connectionMock,
+      recipe: recipeMock,
+      model: remoteModelMock,
+    });
 
     // the remove pod should have been called
     expect(containerEngine.createContainer).toHaveBeenCalledWith(

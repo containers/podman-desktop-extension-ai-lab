@@ -240,7 +240,7 @@ export class StudioApiImpl implements StudioAPI {
 
     if (!connection) throw new Error('no running container provider connection found.');
 
-    return this.applicationManager.requestPullApplication(connection, recipe, model);
+    return this.applicationManager.requestPullApplication({ connection, recipe, model });
   }
 
   async getModelsInfo(): Promise<ModelInfo[]> {

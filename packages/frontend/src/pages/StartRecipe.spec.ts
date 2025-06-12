@@ -60,16 +60,25 @@ vi.mock('../utils/client', async () => ({
   },
 }));
 
-const fakeRecipe: Recipe = {
-  id: 'dummy-recipe-id',
-  backend: InferenceType.LLAMA_CPP,
-  name: 'Dummy Recipe',
-  description: 'Dummy description',
+const fakeRecipe1: Recipe = {
+  id: 'dummy-recipe-id1',
+  backends: [InferenceType.LLAMA_CPP],
+  name: 'Dummy Recipe 1',
+  description: 'Dummy description 1',
   recommended: ['dummy-model-1'],
   categories: [],
 } as unknown as Recipe;
 
-const fakeRecommendedModel: ModelInfo = {
+const fakeRecipe2: Recipe = {
+  id: 'dummy-recipe-id2',
+  backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+  name: 'Dummy Recipe 2',
+  description: 'Dummy description 2',
+  recommended: ['dummy-model-1'],
+  categories: [],
+} as unknown as Recipe;
+
+const fakeRecommendedModel1: ModelInfo = {
   id: 'dummy-model-1',
   backend: InferenceType.LLAMA_CPP,
   name: 'Dummy Model 1',
@@ -79,10 +88,20 @@ const fakeRecommendedModel: ModelInfo = {
   },
 } as unknown as ModelInfo;
 
-const fakeRemoteModel: ModelInfo = {
+const fakeRecommendedModel2: ModelInfo = {
   id: 'dummy-model-2',
-  backend: InferenceType.LLAMA_CPP,
+  backend: InferenceType.OPENVINO,
   name: 'Dummy Model 2',
+  file: {
+    file: 'dummy-model-file',
+    path: 'dummy-model-path',
+  },
+} as unknown as ModelInfo;
+
+const fakeRemoteModel: ModelInfo = {
+  id: 'dummy-model-3',
+  backend: InferenceType.LLAMA_CPP,
+  name: 'Dummy Model 3',
 } as unknown as ModelInfo;
 
 const containerProviderConnection: ContainerProviderConnectionInfo = {
@@ -100,13 +119,13 @@ beforeEach(() => {
   router.location.query.clear();
 
   vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
-    recipes: [fakeRecipe],
+    recipes: [fakeRecipe1, fakeRecipe2],
     models: [],
     categories: [],
     version: '',
   });
   vi.mocked(ConnectionStore).containerProviderConnections = readable([containerProviderConnection]);
-  vi.mocked(ModelsInfoStore).modelsInfo = readable([fakeRecommendedModel, fakeRemoteModel]);
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([fakeRecommendedModel1, fakeRecommendedModel2, fakeRemoteModel]);
   vi.mocked(LocalRepositoryStore).localRepositories = readable([]);
   vi.mocked(TaskStore).tasks = readable([]);
 
@@ -118,12 +137,12 @@ beforeEach(() => {
 
 test('Recipe name should be visible', async () => {
   render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
   const span = screen.getByLabelText('Recipe name');
   expect(span).toBeDefined();
-  expect(span.textContent).toBe(fakeRecipe.name);
+  expect(span.textContent).toBe(fakeRecipe1.name);
 });
 
 test('Recipe Local Repository should be visible when defined', async () => {
@@ -133,13 +152,13 @@ test('Recipe Local Repository should be visible when defined', async () => {
       path: 'dummy-recipe-path',
       sourcePath: 'dummy-recipe-path',
       labels: {
-        'recipe-id': fakeRecipe.id,
+        'recipe-id': fakeRecipe1.id,
       },
     },
   ]);
 
   render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
   const span = screen.getByLabelText('Recipe local path');
@@ -151,22 +170,22 @@ test('Submit button should be disabled when no model is selected', async () => {
   vi.mocked(ModelsInfoStore).modelsInfo = readable([]);
 
   render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
-  const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
+  const button = screen.getByTitle(`Start ${fakeRecipe1.name} recipe`);
   expect(button).toBeDefined();
   expect(button).toBeDisabled();
 });
 
 test('First recommended model should be selected as default model', async () => {
   const { container } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
   await vi.waitFor(() => {
     const option = getSelectedOption<{ value: string }>(container);
-    expect(option?.value).toBe(fakeRecommendedModel.id);
+    expect(option?.value).toBe(fakeRecommendedModel1.id);
   });
 });
 
@@ -212,7 +231,7 @@ async function selectOption(container: HTMLElement, label: string): Promise<void
 
 test('Selecting model not downloaded should display a warning', async () => {
   const { container } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
   await selectOption(container, fakeRemoteModel.name);
@@ -227,44 +246,70 @@ test('Selecting model not downloaded should display a warning', async () => {
   });
 });
 
-test('Selecting model downloaded should not display a warning', async () => {
+test('Check single backend recipe has models only for that backend', async () => {
   const { container } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
-  await selectOption(container, fakeRecommendedModel.name);
+  const input = screen.getByLabelText('Select Model');
+  await fireEvent.pointerUp(input); // they are using the pointer up event instead of click.
+  // get all options available
+  const items = container.querySelectorAll('div[class~="list-item"]');
+  // ensure we have two options
+  expect(items.length).toBe(2);
+});
+
+test('Check multiple backends recipe has models for all backends', async () => {
+  const { container } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id2',
+  });
+
+  const input = screen.getByLabelText('Select Model');
+  await fireEvent.pointerUp(input); // they are using the pointer up event instead of click.
+  // get all options available
+  const items = container.querySelectorAll('div[class~="list-item"]');
+  // ensure we have two options
+  expect(items.length).toBe(3);
+});
+
+test('Selecting model downloaded should not display a warning', async () => {
+  const { container } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id1',
+  });
+
+  await selectOption(container, fakeRecommendedModel1.name);
   const span = screen.queryByRole('alert');
   expect(span).toBeNull();
 });
 
 test('Selecting model should enable submit button', async () => {
   const { container } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
-  await selectOption(container, fakeRecommendedModel.name);
+  await selectOption(container, fakeRecommendedModel1.name);
 
-  const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
+  const button = screen.getByTitle(`Start ${fakeRecipe1.name} recipe`);
   expect(button).toBeDefined();
   expect(button).not.toBeDisabled();
 });
 
 test('Submit button should call requestPullApplication with proper arguments', async () => {
   const { container } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
-  await selectOption(container, fakeRecommendedModel.name);
+  await selectOption(container, fakeRecommendedModel1.name);
 
-  const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
+  const button = screen.getByTitle(`Start ${fakeRecipe1.name} recipe`);
   expect(button).toBeEnabled();
   await fireEvent.click(button);
 
   await vi.waitFor(() => {
     expect(studioClient.requestPullApplication).toHaveBeenCalledWith({
       connection: containerProviderConnection,
-      recipeId: fakeRecipe.id,
-      modelId: fakeRecommendedModel.id,
+      recipeId: fakeRecipe1.id,
+      modelId: fakeRecommendedModel1.id,
     });
   });
 });
@@ -274,12 +319,12 @@ test('Submit button should call requestPullApplication with proper arguments', a
   vi.mocked(ConnectionStore).containerProviderConnections = readable([]);
 
   const { container, getByTitle } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
-  await selectOption(container, fakeRecommendedModel.name);
+  await selectOption(container, fakeRecommendedModel1.name);
 
-  const button = getByTitle(`Start ${fakeRecipe.name} recipe`);
+  const button = getByTitle(`Start ${fakeRecipe1.name} recipe`);
   expect(button).toBeDisabled();
 });
 
@@ -295,12 +340,12 @@ test('Loading task should make the submit button disabled', async () => {
     } as Task,
   ]);
   const { container } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
-  await selectOption(container, fakeRecommendedModel.name);
+  await selectOption(container, fakeRecommendedModel1.name);
 
-  const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
+  const button = screen.getByTitle(`Start ${fakeRecipe1.name} recipe`);
   expect(button).not.toBeDisabled();
   await fireEvent.click(button);
 
@@ -317,7 +362,7 @@ test('Completed task should make the open details button visible', async () => {
       state: 'success',
       labels: {
         trackingId: 'fake-tracking-id',
-        recipeId: 'dummy-recipe-id',
+        recipeId: 'dummy-recipe-id1',
       },
     } as Task,
   ]);
@@ -325,7 +370,7 @@ test('Completed task should make the open details button visible', async () => {
   router.location.query.set('trackingId', 'fake-tracking-id');
 
   const { container } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
     trackingId: 'fake-tracking-id',
   });
 
@@ -349,10 +394,10 @@ test('trackingId in router query should use it to display related tasks', () => 
   router.location.query.set('trackingId', 'fake-tracking-id');
 
   render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
     trackingId: 'fake-tracking-id',
   });
-  const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
+  const button = screen.getByTitle(`Start ${fakeRecipe1.name} recipe`);
   expect(button).toBeDisabled();
 });
 
@@ -364,7 +409,7 @@ test('restoring page should use model-id from tasks to restore the value in the 
       state: 'loading',
       labels: {
         trackingId: 'fake-tracking-id',
-        'model-id': fakeRecommendedModel.id,
+        'model-id': fakeRecommendedModel1.id,
       },
     } as Task,
   ]);
@@ -372,13 +417,13 @@ test('restoring page should use model-id from tasks to restore the value in the 
   router.location.query.set('trackingId', 'fake-tracking-id');
 
   const { container } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
   return await vi.waitFor(() => {
     const input = container.querySelector('input[name="select-model"][type="hidden"]');
     if (!input) throw new Error('input not found');
-    expect(JSON.parse((input as HTMLInputElement).value).label).toBe(fakeRecommendedModel.name);
+    expect(JSON.parse((input as HTMLInputElement).value).label).toBe(fakeRecommendedModel1.name);
   });
 });
 
@@ -387,7 +432,7 @@ test('no containerProviderConnections should have no running container error', a
   vi.mocked(ConnectionStore).containerProviderConnections = readable([]);
 
   const { getByRole } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
   const alert = getByRole('alert');
@@ -400,7 +445,7 @@ test('no container error should disappear if one get available', async () => {
   vi.mocked(ConnectionStore).containerProviderConnections = store;
 
   const { getByRole, queryByRole } = render(StartRecipe, {
-    recipeId: 'dummy-recipe-id',
+    recipeId: 'dummy-recipe-id1',
   });
 
   // First we should have the error

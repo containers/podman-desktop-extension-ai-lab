@@ -31,7 +31,7 @@ const recipe = {
   categories: ['natural-language-processing', 'audio'],
   languages: ['java', 'python'],
   frameworks: ['langchain', 'vectordb'],
-  backend: 'whisper-cpp',
+  backends: ['whisper-cpp'],
 };
 
 class ResizeObserver {

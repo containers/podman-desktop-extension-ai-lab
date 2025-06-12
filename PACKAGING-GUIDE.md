@@ -33,15 +33,16 @@ The catalog also lists the models that may be associated to recipes. A model is 
 citizen in AI Lab as they will be listed in the Models page and can be tested through the playground.
 
 A model has the following attributes:
-- ```id```: a unique identifier for the model
-- ```name```: the model name
-- ```description```: a detailed description about the model
-- ```registry```: the model registry where the model is stored
-- ```popularity```: an integer field giving the rating of the model. Can be thought as the number of stars
-- ```license```: the license under which the model is available
-- ```url```: the URL used to download the model
-- ```memory```: the memory footprint of the model in bytes, as computed by the workflow `.github/workflows/compute-model-sizes.yaml`
-- ```sha256```: the SHA-256 checksum to be used to verify the downloaded model is identical to the original. It is optional and it must be HEX encoded
+
+- `id`: a unique identifier for the model
+- `name`: the model name
+- `description`: a detailed description about the model
+- `registry`: the model registry where the model is stored
+- `popularity`: an integer field giving the rating of the model. Can be thought as the number of stars
+- `license`: the license under which the model is available
+- `url`: the URL used to download the model
+- `memory`: the memory footprint of the model in bytes, as computed by the workflow `.github/workflows/compute-model-sizes.yaml`
+- `sha256`: the SHA-256 checksum to be used to verify the downloaded model is identical to the original. It is optional and it must be HEX encoded
 
 #### Recipes
 
@@ -49,40 +50,44 @@ A recipe is a sample AI application that is packaged as one or several container
 source code and AI Lab will make sure the container images are built prior to launching the containers.
 
 A recipe has the following attributes:
-- ```id```: a unique identifier to the recipe
-- ```name```: the recipe name
-- ```description```: a detailed description about the recipe
-- ```repository```: the URL where the recipe code can be retrieved
-- ```ref```: an optional ref in the repository to checkout (a branch name, tag name, or commit full id - short commit id won't be recognized). If not defined, the default branch will be used
-- ```categories```: an array of category id to be associated by this recipe
-- ```basedir```: an optional path within the repository where the ai-lab.yaml file is located. If not provided, the ai-lab.yaml is assumed to be located at the root the repository
-- ```readme```: a markdown description of the recipe
-- ```models```: an array of model id to be associated with this recipe
+
+- `id`: a unique identifier to the recipe
+- `name`: the recipe name
+- `description`: a detailed description about the recipe
+- `repository`: the URL where the recipe code can be retrieved
+- `ref`: an optional ref in the repository to checkout (a branch name, tag name, or commit full id - short commit id won't be recognized). If not defined, the default branch will be used
+- `categories`: an array of category id to be associated by this recipe
+- `basedir`: an optional path within the repository where the ai-lab.yaml file is located. If not provided, the ai-lab.yaml is assumed to be located at the root the repository
+- `readme`: a markdown description of the recipe
+- `models`: an array of model id to be associated with this recipe
+- `backends`: an array of backends from which models may be associated with this recipe. The backends are used to filter models when associating them to a recipe.
 
 #### Recipe configuration file
 
-The configuration file is called ```ai-lab.yaml``` and follows the following syntax.
+The configuration file is called `ai-lab.yaml` and follows the following syntax.
 
-The root elements are called ```version``` and ```application```.
+The root elements are called `version` and `application`.
 
-```version``` represents the version of the specifications that ai-lab adheres to (so far, the only accepted value here is `v1.0`).
+`version` represents the version of the specifications that ai-lab adheres to (so far, the only accepted value here is `v1.0`).
 
-```application``` contains an attribute called ```containers``` whose syntax is an array of objects containing the following attributes:
-- ```name```: the name of the container
-- ```contextdir```: the context directory used to build the container.
-- ```containerfile```: the containerfile used to build the image
-- ```model-service```: a boolean flag used to indicate if the container is running the model or not
-- ```arch```: an optional array of architecture for which this image is compatible with. The values follow the
-[GOARCH specification](https://go.dev/src/go/build/syslist.go)
-- ```gpu-env```: an optional array of GPU environment for which this image is compatible with. The only accepted value here is cuda.
-- ```ports```: an optional array of ports for which the application listens to.
+`application` contains an attribute called `containers` whose syntax is an array of objects containing the following attributes:
+
+- `name`: the name of the container
+- `contextdir`: the context directory used to build the container.
+- `containerfile`: the containerfile used to build the image
+- `model-service`: a boolean flag used to indicate if the container is running the model or not
+- `arch`: an optional array of architecture for which this image is compatible with. The values follow the
+  [GOARCH specification](https://go.dev/src/go/build/syslist.go)
+- `gpu-env`: an optional array of GPU environment for which this image is compatible with. The only accepted value here is cuda.
+- `ports`: an optional array of ports for which the application listens to.
 - `image`: an optional image name to be used when building the container image.
 
-The container that is running the service (having the ```model-service``` flag equal to ```true```) can use at runtime
-the model managed by AI Lab through an environment variable ```MODEL_PATH``` whose value is the full path name of the
+The container that is running the service (having the `model-service` flag equal to `true`) can use at runtime
+the model managed by AI Lab through an environment variable `MODEL_PATH` whose value is the full path name of the
 model file.
 
 Below is given an example of such a configuration file:
+
 ```yaml
 application:
   containers:

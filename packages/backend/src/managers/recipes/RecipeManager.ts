@@ -106,7 +106,7 @@ export class RecipeManager implements Disposable {
 
     let inferenceServer: InferenceServer | undefined;
     // if the recipe has a defined backend, we gives priority to using an inference server
-    if (recipe.backend && recipe.backend === model.backend) {
+    if (model.backend && recipe.backends?.includes(model.backend)) {
       let task: Task | undefined;
       try {
         inferenceServer = this.inferenceManager.findServerByModel(model);

@@ -26,12 +26,12 @@ import { parseYamlFile } from '../../models/AIConfig';
 import { existsSync, statSync } from 'node:fs';
 import { goarch } from '../../utils/arch';
 import type { BuilderManager } from './BuilderManager';
-import type { ContainerProviderConnection, Disposable } from '@podman-desktop/api';
+import type { Disposable } from '@podman-desktop/api';
 import { CONFIG_FILENAME } from '../../utils/RecipeConstants';
 import type { InferenceManager } from '../inference/inferenceManager';
-import type { ModelInfo } from '@shared/models/IModelInfo';
 import { withDefaultConfiguration } from '../../utils/inferenceUtils';
 import type { InferenceServer } from '@shared/models/IInference';
+import { type ApplicationOptions, isApplicationOptionsWithModelInference } from '../../models/ApplicationOptions';
 
 export interface AIContainers {
   aiConfigFile: AIConfigFile;
@@ -96,73 +96,70 @@ export class RecipeManager implements Disposable {
     });
   }
 
-  public async buildRecipe(
-    connection: ContainerProviderConnection,
-    recipe: Recipe,
-    model: ModelInfo,
-    labels?: { [key: string]: string },
-  ): Promise<RecipeComponents> {
-    const localFolder = path.join(this.appUserDirectory, recipe.id);
+  public async buildRecipe(options: ApplicationOptions, labels?: { [key: string]: string }): Promise<RecipeComponents> {
+    const localFolder = path.join(this.appUserDirectory, options.recipe.id);
 
     let inferenceServer: InferenceServer | undefined;
-    // if the recipe has a defined backend, we gives priority to using an inference server
-    if (recipe.backend && recipe.backend === model.backend) {
-      let task: Task | undefined;
-      try {
-        inferenceServer = this.inferenceManager.findServerByModel(model);
-        task = this.taskRegistry.createTask('Starting Inference server', 'loading', labels);
-        if (!inferenceServer) {
-          const inferenceContainerId = await this.inferenceManager.createInferenceServer(
-            await withDefaultConfiguration({
-              modelsInfo: [model],
-            }),
-          );
-          inferenceServer = this.inferenceManager.get(inferenceContainerId);
-          this.taskRegistry.updateTask({
-            ...task,
-            labels: {
-              ...task.labels,
-              containerId: inferenceContainerId,
-            },
-          });
-        } else if (inferenceServer.status === 'stopped') {
-          await this.inferenceManager.startInferenceServer(inferenceServer.container.containerId);
-        }
-        task.state = 'success';
-      } catch (e) {
-        // we only skip the task update if the error is that we do not support this backend.
-        // If so, we build the image for the model service
-        if (task && String(e) !== 'no enabled provider could be found.') {
-          task.state = 'error';
-          task.error = `Something went wrong while starting the inference server: ${String(e)}`;
-          throw e;
-        }
-      } finally {
-        if (task) {
-          this.taskRegistry.updateTask(task);
+    if (isApplicationOptionsWithModelInference(options)) {
+      // if the recipe has a defined backend, we gives priority to using an inference server
+      if (options.recipe.backend && options.recipe.backend === options.model.backend) {
+        let task: Task | undefined;
+        try {
+          inferenceServer = this.inferenceManager.findServerByModel(options.model);
+          task = this.taskRegistry.createTask('Starting Inference server', 'loading', labels);
+          if (!inferenceServer) {
+            const inferenceContainerId = await this.inferenceManager.createInferenceServer(
+              await withDefaultConfiguration({
+                modelsInfo: [options.model],
+              }),
+            );
+            inferenceServer = this.inferenceManager.get(inferenceContainerId);
+            this.taskRegistry.updateTask({
+              ...task,
+              labels: {
+                ...task.labels,
+                containerId: inferenceContainerId,
+              },
+            });
+          } else if (inferenceServer.status === 'stopped') {
+            await this.inferenceManager.startInferenceServer(inferenceServer.container.containerId);
+          }
+          task.state = 'success';
+        } catch (e) {
+          // we only skip the task update if the error is that we do not support this backend.
+          // If so, we build the image for the model service
+          if (task && String(e) !== 'no enabled provider could be found.') {
+            task.state = 'error';
+            task.error = `Something went wrong while starting the inference server: ${String(e)}`;
+            throw e;
+          }
+        } finally {
+          if (task) {
+            this.taskRegistry.updateTask(task);
+          }
         }
       }
     }
 
     // load and parse the recipe configuration file and filter containers based on architecture
     const configAndFilteredContainers = this.getConfigAndFilterContainers(
-      recipe.basedir,
+      options.recipe.basedir,
       localFolder,
       !!inferenceServer,
       {
         ...labels,
-        'recipe-id': recipe.id,
+        'recipe-id': options.recipe.id,
       },
     );
 
     const images = await this.builderManager.build(
-      connection,
-      recipe,
+      options.connection,
+      options.recipe,
       configAndFilteredContainers.containers,
       configAndFilteredContainers.aiConfigFile.path,
       {
         ...labels,
-        'recipe-id': recipe.id,
+        'recipe-id': options.recipe.id,
       },
     );
 

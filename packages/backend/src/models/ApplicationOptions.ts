@@ -20,8 +20,19 @@ import type { ContainerProviderConnection } from '@podman-desktop/api';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { Recipe } from '@shared/models/IRecipe';
 
-export interface ApplicationOptions {
+export type ApplicationOptions = ApplicationOptionsDefault | ApplicationOptionsWithModelInference;
+
+export interface ApplicationOptionsDefault {
   connection: ContainerProviderConnection;
   recipe: Recipe;
+}
+
+export type ApplicationOptionsWithModelInference = ApplicationOptionsDefault & {
   model: ModelInfo;
+};
+
+export function isApplicationOptionsWithModelInference(
+  options: ApplicationOptions,
+): options is ApplicationOptionsWithModelInference {
+  return 'model' in options;
 }

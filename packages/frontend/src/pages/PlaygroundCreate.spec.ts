@@ -55,6 +55,18 @@ const dummyWhisperCppModel: ModelInfo = {
   backend: InferenceType.WHISPER_CPP,
 };
 
+const dummyOpenVinoModel: ModelInfo = {
+  id: 'openvino-model-id',
+  name: 'Dummy Openvino model',
+  file: {
+    file: 'file',
+    path: path.resolve(os.tmpdir(), 'path'),
+  },
+  properties: {},
+  description: '',
+  backend: InferenceType.OPENVINO,
+};
+
 vi.mock('../utils/client', async () => {
   return {
     studioClient: {
@@ -102,14 +114,31 @@ test('model should be selected by default', () => {
   expect(model).toBeInTheDocument();
 });
 
-test('models with incompatible backend should not be listed', async () => {
-  const modelsInfoList = writable<ModelInfo[]>([dummyWhisperCppModel]);
+test('selecting a runtime filters the displayed models', async () => {
+  const modelsInfoList = writable<ModelInfo[]>([dummyLlamaCppModel, dummyWhisperCppModel, dummyOpenVinoModel]);
+  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+  const { container } = render(PlaygroundCreate);
+
+  // Select our runtime
+  const dropdown = within(container).getByLabelText('Select Inference Runtime');
+  await userEvent.click(dropdown);
+
+  const openvinoOption = within(container).getByText(InferenceType.OPENVINO);
+  await userEvent.click(openvinoOption);
+
+  expect(within(container).queryByText(dummyOpenVinoModel.name)).toBeInTheDocument();
+  expect(within(container).queryByText(dummyLlamaCppModel.name)).toBeNull();
+  expect(within(container).queryByText(dummyWhisperCppModel.name)).toBeNull();
+});
+
+test('should show warning when no local models are available', () => {
+  const modelsInfoList = writable<ModelInfo[]>([]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
 
   const { container } = render(PlaygroundCreate);
 
-  const model = within(container).queryByText(dummyWhisperCppModel.name);
-  expect(model).toBeNull();
+  const warning = within(container).getByText(/You don't have any models downloaded/);
+  expect(warning).toBeInTheDocument();
 });
 
 test('should display error message if createPlayground fails', async () => {

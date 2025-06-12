@@ -14,9 +14,19 @@ import type { Unsubscriber } from 'svelte/store';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
+import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
 
+// Preset the runtime selection
+let runtime: InferenceType;
+runtime = InferenceType.ALL;
+// exlude whisper.cpp from selection
+let exclude: InferenceType[] = [InferenceType.WHISPER_CPP];
 let localModels: ModelInfo[];
-$: localModels = $modelsInfo.filter(model => model.file && model.backend !== InferenceType.WHISPER_CPP);
+// Special case for "ALL" returns runtimes with optional exclution
+$: localModels =
+  runtime === InferenceType.ALL
+    ? $modelsInfo.filter(model => model.file && !exclude.includes(model.backend as InferenceType))
+    : $modelsInfo.filter(model => model.file && model.backend === runtime);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;
 let submitted: boolean = false;
@@ -30,10 +40,10 @@ let trackingId: string | undefined = undefined;
 // The trackedTasks are the tasks linked to the trackingId
 let trackedTasks: Task[] = [];
 
-$: {
-  if (!model && localModels.length > 0) {
-    model = localModels[0];
-  }
+$: if (localModels.length > 0) {
+  model = localModels[0];
+} else {
+  model = undefined;
 }
 
 function openModelsPage(): void {
@@ -145,33 +155,47 @@ export function goToUpPage(): void {
             placeholder="Leave blank to generate a name"
             aria-label="playgroundName" />
 
-          <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
-          <ModelSelect models={localModels} disabled={submitted} bind:value={model} />
-          {#if localModels.length === 0}
+          <!-- inference runtime -->
+          <label for="inference-runtime" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+            Inference Runtime
+          </label>
+          <InferenceRuntimeSelect bind:value={runtime} exclude={exclude} />
+          {#if !runtime}
             <div class="text-red-500 p-1 flex flex-row items-center">
               <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
               <div role="alert" aria-label="Error Message Content" class="ml-2">
-                You don't have any models downloaded. You can download them in <a
-                  href="javascript:void(0);"
-                  class="underline"
-                  title="Models page"
-                  on:click={openModelsPage}>models page</a
-                >.
+                Please select an inference runtime before selecting a model.
               </div>
             </div>
-          {:else if availModels.length > 0}
-            <div class="text-sm p-1 flex flex-row items-center text-[var(--pd-content-card-text)]">
-              <Fa size="1.1x" class="cursor-pointer" icon={faInfoCircle} />
-              <div role="alert" aria-label="Info Message Content" class="ml-2">
-                Other models are available, but must be downloaded from the <a
-                  href="javascript:void(0);"
-                  class="underline"
-                  title="Models page"
-                  on:click={openModelsPage}>models page</a
-                >.
+          {:else}
+            <!-- model input -->
+            <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
+            <ModelSelect models={localModels} disabled={submitted} bind:value={model} />
+            {#if localModels.length === 0}
+              <div class="text-red-500 p-1 flex flex-row items-center">
+                <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
+                <div role="alert" aria-label="Error Message Content" class="ml-2">
+                  You don't have any models downloaded. You can download them in <a
+                    href="javascript:void(0);"
+                    class="underline"
+                    title="Models page"
+                    on:click={openModelsPage}>models page</a
+                  >.
+                </div>
               </div>
-            </div>
+            {:else if availModels.length > 0}
+              <div class="text-sm p-1 flex flex-row items-center text-[var(--pd-content-card-text)]">
+                <Fa size="1.1x" class="cursor-pointer" icon={faInfoCircle} />
+                <div role="alert" aria-label="Info Message Content" class="ml-2">
+                  Other models are available, but must be downloaded from the <a
+                    href="javascript:void(0);"
+                    class="underline"
+                    title="Models page"
+                    on:click={openModelsPage}>models page</a
+                  >.
+                </div>
+              </div>
+            {/if}
           {/if}
         </div>
         {#if errorMsg !== undefined}

@@ -74,6 +74,7 @@ const AI_APPS: AiApp[] = [
   { appName: 'Code Generation', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
   { appName: 'RAG Chatbot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
   { appName: 'Function calling', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'Object Detection', appModel: 'facebook/detr-resnet-101' },
 ];
 
 const __filename = fileURLToPath(import.meta.url);
@@ -531,6 +532,19 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
         await demoApp.waitForLoad();
         await demoApp.startNewDeployment();
+      });
+
+      test(`Verify ${appName} app HTTP page is reachable`, async ({ request }) => {
+        test.setTimeout(60_000);
+        test.skip(appName !== 'Object Detection');
+        const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
+        const appPort = await aiRunningAppsPage.getAppPort(appName);
+        const response = await request.get(`http://localhost:${appPort}`, { timeout: 60_000 });
+
+        playExpect(response.ok()).toBeTruthy();
+        const body = await response.text();
+        // Apps created with Streamlit include this title in the HTML code.
+        playExpect(body).toContain('<title>Streamlit</title>');
       });
 
       test(`Verify that model service for the ${appName} is working`, async ({ request }) => {

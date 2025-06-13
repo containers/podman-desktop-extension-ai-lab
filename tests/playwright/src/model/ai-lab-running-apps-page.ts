@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +90,18 @@ export class AiRunningAppsPage extends AILabBasePage {
         throw error;
       }
     }
+  }
+
+  async getAppPort(appName: string): Promise<string> {
+    const appRow = await this.getRowForApp(appName);
+    //Update this locator after issue https://github.com/containers/podman-desktop-extension-ai-lab/issues/3113 is resolved
+    const portCell = appRow.getByRole('cell').nth(3);
+    const rawPortText = await portCell.getByText(/PORT\s\d+/).textContent();
+    if (!rawPortText) {
+      throw new Error(`Failed to extract port for app: ${appName}.`);
+    }
+    const portNumber = rawPortText.replace(/[^\d]/g, '');
+    return portNumber;
   }
 
   private async getAllTableRows(): Promise<Locator[]> {

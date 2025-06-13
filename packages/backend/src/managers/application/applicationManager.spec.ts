@@ -31,6 +31,7 @@ import { VMType } from '@shared/models/IPodman';
 import { POD_LABEL_MODEL_ID, POD_LABEL_RECIPE_ID } from '../../utils/RecipeConstants';
 import type { InferenceServer } from '@shared/models/IInference';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
+import type { ApplicationOptions } from '../../models/ApplicationOptions';
 
 const taskRegistryMock = {
   createTask: vi.fn(),
@@ -290,54 +291,63 @@ describe('startApplication', () => {
   });
 });
 
-describe('pullApplication', () => {
+describe.each([true, false])('pullApplication, with model is %o', withModel => {
+  let applicationOptions: ApplicationOptions;
+  beforeEach(() => {
+    applicationOptions = withModel
+      ? {
+          connection: connectionMock,
+          recipe: recipeMock,
+          model: remoteModelMock,
+        }
+      : {
+          connection: connectionMock,
+          recipe: recipeMock,
+        };
+  });
+
   test('labels should be propagated', async () => {
-    await getInitializedApplicationManager().pullApplication(
-      {
-        connection: connectionMock,
-        recipe: recipeMock,
-        model: remoteModelMock,
-      },
-      {
-        'test-label': 'test-value',
-      },
-    );
+    await getInitializedApplicationManager().pullApplication(applicationOptions, {
+      'test-label': 'test-value',
+    });
 
     // clone the recipe
     expect(recipeManager.cloneRecipe).toHaveBeenCalledWith(recipeMock, {
       'test-label': 'test-value',
-      'model-id': remoteModelMock.id,
+      'model-id': withModel ? remoteModelMock.id : '<none>',
     });
-    // download model
-    expect(modelsManagerMock.requestDownloadModel).toHaveBeenCalledWith(remoteModelMock, {
-      'test-label': 'test-value',
-      'recipe-id': recipeMock.id,
-      'model-id': remoteModelMock.id,
-    });
-    // upload model to podman machine
-    expect(modelsManagerMock.uploadModelToPodmanMachine).toHaveBeenCalledWith(connectionMock, remoteModelMock, {
-      'test-label': 'test-value',
-      'recipe-id': recipeMock.id,
-      'model-id': remoteModelMock.id,
-    });
+    if (withModel) {
+      // download model
+      expect(modelsManagerMock.requestDownloadModel).toHaveBeenCalledWith(remoteModelMock, {
+        'test-label': 'test-value',
+        'recipe-id': recipeMock.id,
+        'model-id': remoteModelMock.id,
+      });
+      // upload model to podman machine
+      expect(modelsManagerMock.uploadModelToPodmanMachine).toHaveBeenCalledWith(connectionMock, remoteModelMock, {
+        'test-label': 'test-value',
+        'recipe-id': recipeMock.id,
+        'model-id': remoteModelMock.id,
+      });
+    }
     // build the recipe
     expect(recipeManager.buildRecipe).toHaveBeenCalledWith(
       {
         connection: connectionMock,
         recipe: recipeMock,
-        model: remoteModelMock,
+        model: withModel ? remoteModelMock : undefined,
       },
       {
         'test-label': 'test-value',
         'recipe-id': recipeMock.id,
-        'model-id': remoteModelMock.id,
+        'model-id': withModel ? remoteModelMock.id : '<none>',
       },
     );
     // create AI App task must be created
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Creating AI App', 'loading', {
       'test-label': 'test-value',
       'recipe-id': recipeMock.id,
-      'model-id': remoteModelMock.id,
+      'model-id': withModel ? remoteModelMock.id : '<none>',
     });
 
     // a pod must have been created
@@ -346,7 +356,7 @@ describe('pullApplication', () => {
       name: expect.any(String),
       portmappings: [],
       labels: {
-        [POD_LABEL_MODEL_ID]: remoteModelMock.id,
+        [POD_LABEL_MODEL_ID]: withModel ? remoteModelMock.id : '<none>',
         [POD_LABEL_RECIPE_ID]: recipeMock.id,
       },
     });
@@ -376,48 +386,43 @@ describe('pullApplication', () => {
       } as InferenceServer,
     });
     vi.mocked(modelsManagerMock.requestDownloadModel).mockResolvedValue('/path/to/model');
-    await getInitializedApplicationManager().pullApplication(
-      {
-        connection: connectionMock,
-        recipe: recipeMock,
-        model: remoteModelMock,
-      },
-      {
-        'test-label': 'test-value',
-      },
-    );
+    await getInitializedApplicationManager().pullApplication(applicationOptions, {
+      'test-label': 'test-value',
+    });
 
     // clone the recipe
     expect(recipeManager.cloneRecipe).toHaveBeenCalledWith(recipeMock, {
       'test-label': 'test-value',
-      'model-id': remoteModelMock.id,
+      'model-id': withModel ? remoteModelMock.id : '<none>',
     });
-    // download model
-    expect(modelsManagerMock.requestDownloadModel).toHaveBeenCalledWith(remoteModelMock, {
-      'test-label': 'test-value',
-      'recipe-id': recipeMock.id,
-      'model-id': remoteModelMock.id,
-    });
-    // upload model to podman machine
-    expect(modelsManagerMock.uploadModelToPodmanMachine).not.toHaveBeenCalled();
+    if (withModel) {
+      // download model
+      expect(modelsManagerMock.requestDownloadModel).toHaveBeenCalledWith(remoteModelMock, {
+        'test-label': 'test-value',
+        'recipe-id': recipeMock.id,
+        'model-id': remoteModelMock.id,
+      });
+      // upload model to podman machine
+      expect(modelsManagerMock.uploadModelToPodmanMachine).not.toHaveBeenCalled();
+    }
     // build the recipe
     expect(recipeManager.buildRecipe).toHaveBeenCalledWith(
       {
         connection: connectionMock,
         recipe: recipeMock,
-        model: remoteModelMock,
+        model: withModel ? remoteModelMock : undefined,
       },
       {
         'test-label': 'test-value',
         'recipe-id': recipeMock.id,
-        'model-id': remoteModelMock.id,
+        'model-id': withModel ? remoteModelMock.id : '<none>',
       },
     );
     // create AI App task must be created
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Creating AI App', 'loading', {
       'test-label': 'test-value',
       'recipe-id': recipeMock.id,
-      'model-id': remoteModelMock.id,
+      'model-id': withModel ? remoteModelMock.id : '<none>',
     });
 
     // a pod must have been created
@@ -426,7 +431,7 @@ describe('pullApplication', () => {
       name: expect.any(String),
       portmappings: [],
       labels: {
-        [POD_LABEL_MODEL_ID]: remoteModelMock.id,
+        [POD_LABEL_MODEL_ID]: withModel ? remoteModelMock.id : '<none>',
         [POD_LABEL_RECIPE_ID]: recipeMock.id,
       },
     });
@@ -434,7 +439,7 @@ describe('pullApplication', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith('test-engine-id', {
       Image: recipeImageInfoMock.id,
       name: expect.any(String),
-      Env: ['MODEL_ENDPOINT=http://host.containers.internal:56001'],
+      Env: withModel ? ['MODEL_ENDPOINT=http://host.containers.internal:56001'] : [],
       HealthCheck: undefined,
       HostConfig: undefined,
       Detach: true,
@@ -456,16 +461,12 @@ describe('pullApplication', () => {
       },
     } as unknown as PodInfo);
 
-    await getInitializedApplicationManager().pullApplication({
-      connection: connectionMock,
-      recipe: recipeMock,
-      model: remoteModelMock,
-    });
+    await getInitializedApplicationManager().pullApplication(applicationOptions);
 
     // removing existing application should create a task to notify the user
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Removing AI App', 'loading', {
       'recipe-id': recipeMock.id,
-      'model-id': remoteModelMock.id,
+      'model-id': withModel ? remoteModelMock.id : '<none>',
     });
     // the remove pod should have been called
     expect(podManager.removePod).toHaveBeenCalledWith('test-engine-id', 'test-pod-id-existing');
@@ -489,26 +490,24 @@ describe('pullApplication', () => {
       ],
     });
 
-    await getInitializedApplicationManager().pullApplication({
-      connection: connectionMock,
-      recipe: recipeMock,
-      model: remoteModelMock,
-    });
+    await getInitializedApplicationManager().pullApplication(applicationOptions);
 
     // the remove pod should have been called
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       recipeImageInfoMock.engineId,
       expect.objectContaining({
-        HostConfig: {
-          Mounts: [
-            {
-              Mode: 'Z',
-              Source: 'downloaded-model-path',
-              Target: '/downloaded-model-path',
-              Type: 'bind',
-            },
-          ],
-        },
+        HostConfig: withModel
+          ? {
+              Mounts: [
+                {
+                  Mode: 'Z',
+                  Source: 'downloaded-model-path',
+                  Target: '/downloaded-model-path',
+                  Type: 'bind',
+                },
+              ],
+            }
+          : undefined,
       }),
     );
   });

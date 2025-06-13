@@ -54,7 +54,7 @@ import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { TaskRunner } from '../TaskRunner';
 import { getInferenceType } from '../../utils/inferenceUtils';
-import { type ApplicationOptions } from '../../models/ApplicationOptions';
+import { isApplicationOptionsWithModelInference, type ApplicationOptions } from '../../models/ApplicationOptions';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
   #applications: ApplicationRegistry<ApplicationState>;
@@ -115,10 +115,17 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   async pullApplication(options: ApplicationOptions, labels: Record<string, string> = {}): Promise<void> {
+    let modelId: string;
+    if (isApplicationOptionsWithModelInference(options)) {
+      modelId = options.model.id;
+    } else {
+      modelId = '<none>';
+    }
+
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
       'recipe-id': options.recipe.id,
-      'model-id': options.model.id,
+      'model-id': modelId,
     });
 
     const startTime = performance.now();
@@ -129,7 +136,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       await this.runApplication(podInfo, {
         ...labels,
         'recipe-id': options.recipe.id,
-        'model-id': options.model.id,
+        'model-id': modelId,
       });
 
       // measure init + start time
@@ -169,41 +176,53 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
    * @private
    */
   private async initApplication(options: ApplicationOptions, labels: Record<string, string> = {}): Promise<PodInfo> {
-    // clone the recipe
-    await this.recipeManager.cloneRecipe(options.recipe, { ...labels, 'model-id': options.model.id });
+    let modelId: string;
+    if (isApplicationOptionsWithModelInference(options)) {
+      modelId = options.model.id;
+    } else {
+      modelId = '<none>';
+    }
 
-    // get model by downloading it or retrieving locally
-    let modelPath = await this.modelsManager.requestDownloadModel(options.model, {
-      ...labels,
-      'recipe-id': options.recipe.id,
-      'model-id': options.model.id,
-    });
+    // clone the recipe
+    await this.recipeManager.cloneRecipe(options.recipe, { ...labels, 'model-id': modelId });
+
+    let modelPath: string | undefined;
+    if (isApplicationOptionsWithModelInference(options)) {
+      // get model by downloading it or retrieving locally
+      modelPath = await this.modelsManager.requestDownloadModel(options.model, {
+        ...labels,
+        'recipe-id': options.recipe.id,
+        'model-id': modelId,
+      });
+    }
     // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
     const recipeComponents = await this.recipeManager.buildRecipe(options, {
       ...labels,
       'recipe-id': options.recipe.id,
-      'model-id': options.model.id,
+      'model-id': modelId,
     });
 
-    // upload model to podman machine if user system is supported
-    if (!recipeComponents.inferenceServer) {
-      modelPath = await this.modelsManager.uploadModelToPodmanMachine(options.connection, options.model, {
-        ...labels,
-        'recipe-id': options.recipe.id,
-        'model-id': options.model.id,
-      });
+    if (isApplicationOptionsWithModelInference(options)) {
+      // upload model to podman machine if user system is supported
+      if (!recipeComponents.inferenceServer) {
+        modelPath = await this.modelsManager.uploadModelToPodmanMachine(options.connection, options.model, {
+          ...labels,
+          'recipe-id': options.recipe.id,
+          'model-id': modelId,
+        });
+      }
     }
 
     // first delete any existing pod with matching labels
-    if (await this.hasApplicationPod(options.recipe.id, options.model.id)) {
-      await this.removeApplication(options.recipe.id, options.model.id);
+    if (await this.hasApplicationPod(options.recipe.id, modelId)) {
+      await this.removeApplication(options.recipe.id, modelId);
     }
 
     // create a pod containing all the containers to run the application
     return this.createApplicationPod(options, recipeComponents, modelPath, {
       ...labels,
       'recipe-id': options.recipe.id,
-      'model-id': options.model.id,
+      'model-id': modelId,
     });
   }
 
@@ -248,7 +267,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   protected async createApplicationPod(
     options: ApplicationOptions,
     components: RecipeComponents,
-    modelPath: string,
+    modelPath: string | undefined,
     labels?: { [key: string]: string },
   ): Promise<PodInfo> {
     return this.#taskRunner.runAsTask<PodInfo>(
@@ -273,7 +292,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     options: ApplicationOptions,
     podInfo: PodInfo,
     components: RecipeComponents,
-    modelPath: string,
+    modelPath: string | undefined,
   ): Promise<void> {
     const vmType = options.connection.vmType ?? VMType.UNKNOWN;
     // temporary check to set Z flag or not - to be removed when switching to podman 5
@@ -283,28 +302,30 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         let envs: string[] = [];
         let healthcheck: HealthConfig | undefined = undefined;
         // if it's a model service we mount the model as a volume
-        if (image.modelService) {
-          const modelName = path.basename(modelPath);
-          hostConfig = {
-            Mounts: [
-              {
-                Target: `/${modelName}`,
-                Source: modelPath,
-                Type: 'bind',
-                Mode: vmType === VMType.QEMU ? undefined : 'Z',
-              },
-            ],
-          };
-          envs = [`MODEL_PATH=/${modelName}`];
-          envs.push(...getModelPropertiesForEnvironment(options.model));
-        } else if (components.inferenceServer) {
-          const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
-          envs = [`MODEL_ENDPOINT=${endPoint}`];
-        } else {
-          const modelService = components.images.find(image => image.modelService);
-          if (modelService && modelService.ports.length > 0) {
-            const endPoint = `http://localhost:${modelService.ports[0]}`;
+        if (modelPath && isApplicationOptionsWithModelInference(options)) {
+          if (image.modelService) {
+            const modelName = path.basename(modelPath);
+            hostConfig = {
+              Mounts: [
+                {
+                  Target: `/${modelName}`,
+                  Source: modelPath,
+                  Type: 'bind',
+                  Mode: vmType === VMType.QEMU ? undefined : 'Z',
+                },
+              ],
+            };
+            envs = [`MODEL_PATH=/${modelName}`];
+            envs.push(...getModelPropertiesForEnvironment(options.model));
+          } else if (components.inferenceServer) {
+            const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
+          } else {
+            const modelService = components.images.find(image => image.modelService);
+            if (modelService && modelService.ports.length > 0) {
+              const endPoint = `http://localhost:${modelService.ports[0]}`;
+              envs = [`MODEL_ENDPOINT=${endPoint}`];
+            }
           }
         }
         if (image.ports.length > 0) {
@@ -360,8 +381,13 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     // create new pod
     const labels: Record<string, string> = {
       [POD_LABEL_RECIPE_ID]: options.recipe.id,
-      [POD_LABEL_MODEL_ID]: options.model.id,
     };
+
+    if (isApplicationOptionsWithModelInference(options)) {
+      labels[POD_LABEL_MODEL_ID] = options.model.id;
+    } else {
+      labels[POD_LABEL_MODEL_ID] = '<none>';
+    }
     // collecting all modelService ports
     const modelPorts = images
       .filter(img => img.modelService)
@@ -616,10 +642,23 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     const appPod = await this.getApplicationPod(recipeId, modelId);
     await this.removeApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
-    const model = this.catalogManager.getModelById(appPod.Labels[POD_LABEL_MODEL_ID]);
+    let opts: ApplicationOptions;
+    if (appPod.Labels[POD_LABEL_MODEL_ID] === '<none>') {
+      opts = {
+        connection,
+        recipe,
+      };
+    } else {
+      const model = this.catalogManager.getModelById(appPod.Labels[POD_LABEL_MODEL_ID]);
+      opts = {
+        connection,
+        recipe,
+        model,
+      };
+    }
 
     // init the recipe
-    const podInfo = await this.initApplication({ connection, recipe, model });
+    const podInfo = await this.initApplication(opts);
 
     // start the pod
     return this.runApplication(podInfo, {

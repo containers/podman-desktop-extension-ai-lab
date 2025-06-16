@@ -69,6 +69,14 @@ const fakeRecipe: Recipe = {
   categories: [],
 } as unknown as Recipe;
 
+const fakeLlamaStackRecipe: Recipe = {
+  id: 'dummy-llama-stack-recipe-id',
+  backend: 'llama-stack',
+  name: 'Dummy Llama Stack Recipe',
+  description: 'Dummy description',
+  categories: [],
+} as unknown as Recipe;
+
 const fakeRecommendedModel: ModelInfo = {
   id: 'dummy-model-1',
   backend: InferenceType.LLAMA_CPP,
@@ -100,7 +108,7 @@ beforeEach(() => {
   router.location.query.clear();
 
   vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
-    recipes: [fakeRecipe],
+    recipes: [fakeRecipe, fakeLlamaStackRecipe],
     models: [],
     categories: [],
     version: '',
@@ -147,7 +155,7 @@ test('Recipe Local Repository should be visible when defined', async () => {
   expect(span.textContent).toBe('dummy-recipe-path');
 });
 
-test('Submit button should be disabled when no model is selected', async () => {
+test('Submit button should be disabled when model is required and no model is selected', async () => {
   vi.mocked(ModelsInfoStore).modelsInfo = readable([]);
 
   render(StartRecipe, {
@@ -157,6 +165,18 @@ test('Submit button should be disabled when no model is selected', async () => {
   const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
   expect(button).toBeDefined();
   expect(button).toBeDisabled();
+});
+
+test('Submit button should be enabled when model is not required', async () => {
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([]);
+
+  render(StartRecipe, {
+    recipeId: 'dummy-llama-stack-recipe-id',
+  });
+
+  const button = screen.getByTitle(`Start ${fakeLlamaStackRecipe.name} recipe`);
+  expect(button).toBeDefined();
+  expect(button).toBeEnabled();
 });
 
 test('First recommended model should be selected as default model', async () => {

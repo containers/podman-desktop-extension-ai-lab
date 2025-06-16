@@ -18,13 +18,14 @@
 
 import type { ContainerProviderConnection } from '@podman-desktop/api';
 import type { ModelInfo } from '@shared/models/IModelInfo';
-import type { Recipe } from '@shared/models/IRecipe';
+import type { Recipe, RecipeDependencies } from '@shared/models/IRecipe';
 
 export type ApplicationOptions = ApplicationOptionsDefault | ApplicationOptionsWithModelInference;
 
 export interface ApplicationOptionsDefault {
   connection: ContainerProviderConnection;
   recipe: Recipe;
+  dependencies?: RecipeDependencies;
 }
 
 export type ApplicationOptionsWithModelInference = ApplicationOptionsDefault & {

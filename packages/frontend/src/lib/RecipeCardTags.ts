@@ -22,7 +22,7 @@ import { gte } from 'semver';
 const USE_CASES = ['natural-language-processing', 'audio', 'computer-vision'];
 const LANGUAGES = ['java', 'javascript', 'python'];
 export const FRAMEWORKS = ['langchain', 'langchain4j', 'quarkus', 'react', 'streamlit', 'vectordb'];
-export const TOOLS = ['none', 'llama-cpp', 'whisper-cpp'];
+export const TOOLS = ['none', 'llama-cpp', 'whisper-cpp', 'llama-stack'];
 
 // Defaulting to Podman Desktop min version we need to run
 let version: string = '1.8.0';

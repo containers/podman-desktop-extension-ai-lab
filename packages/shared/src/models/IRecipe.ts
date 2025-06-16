@@ -24,11 +24,16 @@ export type RecipePullOptions = RecipePullOptionsDefault | RecipePullOptionsWith
 export interface RecipePullOptionsDefault {
   connection?: ContainerProviderConnectionInfo;
   recipeId: string;
+  dependencies?: RecipeDependencies;
 }
 
 export type RecipePullOptionsWithModelInference = RecipePullOptionsDefault & {
   modelId: string;
 };
+
+export interface RecipeDependencies {
+  llamaStack?: boolean;
+}
 
 export function isRecipePullOptionsWithModelInference(
   options: RecipePullOptions,

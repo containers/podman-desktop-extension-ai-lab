@@ -2,7 +2,7 @@
 import { faFolder, faRocket, faUpRightFromSquare, faWarning } from '@fortawesome/free-solid-svg-icons';
 import { catalog } from '/@/stores/catalog';
 import Fa from 'svelte-fa';
-import type { Recipe } from '@shared/models/IRecipe';
+import type { Recipe, RecipePullOptions, RecipePullOptionsWithModelInference } from '@shared/models/IRecipe';
 import type { LocalRepository } from '@shared/models/ILocalRepository';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 import { localRepositories } from '/@/stores/localRepositories';
@@ -53,6 +53,16 @@ let completed: boolean = $state(false);
 
 let errorMsg: string | undefined = $state(undefined);
 
+let formValid = $derived.by<boolean>((): boolean => {
+  if (!recipe) {
+    return false;
+  }
+  if (!isModelNeeded(recipe)) {
+    return true;
+  }
+  return !!model;
+});
+
 $effect(() => {
   // Select default connection
   if (!containerProviderConnection && startedContainerProviderConnectionInfo.length > 0) {
@@ -100,16 +110,22 @@ function populateModelFromTasks(trackedTasks: Task[]): void {
 }
 
 async function submit(): Promise<void> {
-  if (!recipe || !model) return;
+  if (!recipe || !formValid) return;
 
   errorMsg = undefined;
 
   try {
-    const trackingId = await studioClient.requestPullApplication({
+    const options: RecipePullOptions = {
       recipeId: $state.snapshot(recipe.id),
-      modelId: $state.snapshot(model.id),
       connection: $state.snapshot(containerProviderConnection),
-    });
+      dependencies: {
+        llamaStack: recipe.backend === 'llama-stack',
+      },
+    };
+    if (model) {
+      (options as RecipePullOptionsWithModelInference).modelId = $state.snapshot(model.id);
+    }
+    const trackingId = await studioClient.requestPullApplication(options);
     router.location.query.set('trackingId', trackingId);
   } catch (err: unknown) {
     console.error('Something wrong while trying to create the inference server.', err);
@@ -123,6 +139,10 @@ export function goToUpPage(): void {
 
 function handleOnClick(): void {
   router.goto(`/recipe/${recipeId}/running`);
+}
+
+function isModelNeeded(recipe: Recipe): boolean {
+  return recipe.backend !== 'llama-stack';
 }
 </script>
 
@@ -183,17 +203,18 @@ function handleOnClick(): void {
                 bind:value={containerProviderConnection}
                 containerProviderConnections={startedContainerProviderConnectionInfo} />
             {/if}
-
-            <!-- model form -->
-            <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Model</label>
-            <ModelSelect bind:value={model} disabled={loading} recommended={recipe.recommended} models={models} />
-            {#if model && model.file === undefined}
-              <div class="text-gray-800 text-sm flex items-center">
-                <Fa class="mr-2" icon={faWarning} />
-                <span role="alert"
-                  >The selected model will be downloaded. This action can take some time depending on your connection</span>
-              </div>
+            {#if isModelNeeded(recipe)}
+              <!-- model form -->
+              <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+                >Model</label>
+              <ModelSelect bind:value={model} disabled={loading} recommended={recipe.recommended} models={models} />
+              {#if model && model.file === undefined}
+                <div class="text-gray-800 text-sm flex items-center">
+                  <Fa class="mr-2" icon={faWarning} />
+                  <span role="alert"
+                    >The selected model will be downloaded. This action can take some time depending on your connection</span>
+                </div>
+              {/if}
             {/if}
           </div>
 
@@ -209,7 +230,7 @@ function handleOnClick(): void {
                   title="Start {recipe.name} recipe"
                   inProgress={loading}
                   on:click={submit}
-                  disabled={!model || loading || !containerProviderConnection}
+                  disabled={!formValid || loading || !containerProviderConnection}
                   icon={faRocket}>
                   Start {recipe.name} recipe
                 </Button>

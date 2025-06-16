@@ -170,36 +170,42 @@ beforeEach(async () => {
   } as unknown as EventEmitter<unknown>);
 });
 
-test('expect requestPullApplication to provide a tracking id', async () => {
-  const connectionMock = {
-    name: 'Podman machine',
-  } as unknown as ContainerProviderConnection;
-  vi.mocked(podmanConnectionMock.findRunningContainerProviderConnection).mockReturnValue(connectionMock);
-  vi.spyOn(catalogManager, 'getRecipes').mockReturnValue([
-    {
-      id: 'recipe 1',
-    } as unknown as Recipe,
-  ]);
-  vi.spyOn(catalogManager, 'getModelById').mockReturnValue({
-    id: 'model 1',
-  } as unknown as ModelInfo);
-
-  vi.mocked(applicationManager.requestPullApplication).mockResolvedValue('dummy-tracker');
-
-  const trackingId = await studioApiImpl.requestPullApplication({
-    modelId: 'model1',
-    recipeId: 'recipe 1',
-  });
-  expect(applicationManager.requestPullApplication).toHaveBeenCalledWith({
-    connection: connectionMock,
-    recipe: expect.objectContaining({
-      id: 'recipe 1',
-    }),
-    model: expect.objectContaining({
+describe.each([true, false])('with model is %o', withModel => {
+  test('expect requestPullApplication to provide a tracking id', async () => {
+    const connectionMock = {
+      name: 'Podman machine',
+    } as unknown as ContainerProviderConnection;
+    vi.mocked(podmanConnectionMock.findRunningContainerProviderConnection).mockReturnValue(connectionMock);
+    vi.spyOn(catalogManager, 'getRecipes').mockReturnValue([
+      {
+        id: 'recipe 1',
+      } as unknown as Recipe,
+    ]);
+    vi.spyOn(catalogManager, 'getModelById').mockReturnValue({
       id: 'model 1',
-    }),
+    } as unknown as ModelInfo);
+
+    vi.mocked(applicationManager.requestPullApplication).mockResolvedValue('dummy-tracker');
+
+    const recipeId = 'recipe 1';
+    let modelId: string | undefined;
+    if (withModel) {
+      modelId = 'model1';
+    }
+    const trackingId = await studioApiImpl.requestPullApplication(withModel ? { recipeId, modelId } : { recipeId });
+    expect(applicationManager.requestPullApplication).toHaveBeenCalledWith({
+      connection: connectionMock,
+      recipe: expect.objectContaining({
+        id: 'recipe 1',
+      }),
+      model: withModel
+        ? expect.objectContaining({
+            id: 'model 1',
+          })
+        : undefined,
+    });
+    expect(trackingId).toBe('dummy-tracker');
   });
-  expect(trackingId).toBe('dummy-tracker');
 });
 
 test('requestRemoveApplication should ask confirmation', async () => {

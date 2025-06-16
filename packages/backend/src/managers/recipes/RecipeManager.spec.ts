@@ -30,6 +30,7 @@ import { goarch } from '../../utils/arch';
 import { VMType } from '@shared/models/IPodman';
 import type { InferenceManager } from '../inference/inferenceManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { ApplicationOptions } from '../../models/ApplicationOptions';
 
 const taskRegistryMock = {
   createTask: vi.fn(),
@@ -184,34 +185,36 @@ describe('cloneRecipe', () => {
   });
 });
 
-describe('buildRecipe', () => {
+describe.each([true, false])('buildRecipe, with model is %o', withModel => {
+  let applicationOptions: ApplicationOptions;
+  beforeEach(() => {
+    applicationOptions = withModel
+      ? {
+          connection: connectionMock,
+          recipe: recipeMock,
+          model: modelInfoMock,
+        }
+      : {
+          connection: connectionMock,
+          recipe: recipeMock,
+        };
+  });
   test('error in build propagate it', async () => {
     vi.mocked(builderManagerMock.build).mockRejectedValue(new Error('build error'));
 
     const manager = await getInitializedRecipeManager();
 
     await expect(() => {
-      return manager.buildRecipe({
-        connection: connectionMock,
-        recipe: recipeMock,
-        model: modelInfoMock,
-      });
+      return manager.buildRecipe(applicationOptions);
     }).rejects.toThrowError('build error');
   });
 
   test('labels should be propagated', async () => {
     const manager = await getInitializedRecipeManager();
 
-    await manager.buildRecipe(
-      {
-        connection: connectionMock,
-        recipe: recipeMock,
-        model: modelInfoMock,
-      },
-      {
-        'test-label': 'test-value',
-      },
-    );
+    await manager.buildRecipe(applicationOptions, {
+      'test-label': 'test-value',
+    });
 
     expect(taskRegistryMock.createTask).toHaveBeenCalledWith('Loading configuration', 'loading', {
       'test-label': 'test-value',

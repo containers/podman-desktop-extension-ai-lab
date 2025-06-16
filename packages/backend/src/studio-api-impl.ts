@@ -246,12 +246,14 @@ export class StudioApiImpl implements StudioAPI {
       opts = {
         connection,
         recipe,
+        dependencies: options.dependencies,
         model,
       };
     } else {
       opts = {
         connection,
         recipe,
+        dependencies: options.dependencies,
       };
     }
 

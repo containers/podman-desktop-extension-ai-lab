@@ -314,6 +314,9 @@ describe.each([true, false])('pullApplication, with model is %o', withModel => {
       : {
           connection: connectionMock,
           recipe: recipeMock,
+          dependencies: {
+            llamaStack: true,
+          },
         };
   });
 
@@ -347,6 +350,7 @@ describe.each([true, false])('pullApplication, with model is %o', withModel => {
         connection: connectionMock,
         recipe: recipeMock,
         model: withModel ? remoteModelMock : undefined,
+        dependencies: applicationOptions.dependencies,
       },
       {
         'test-label': 'test-value',
@@ -422,6 +426,7 @@ describe.each([true, false])('pullApplication, with model is %o', withModel => {
         connection: connectionMock,
         recipe: recipeMock,
         model: withModel ? remoteModelMock : undefined,
+        dependencies: applicationOptions.dependencies,
       },
       {
         'test-label': 'test-value',

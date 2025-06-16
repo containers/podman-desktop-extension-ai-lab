@@ -285,6 +285,29 @@ test('Submit button should call requestPullApplication with proper arguments', a
       connection: containerProviderConnection,
       recipeId: fakeRecipe.id,
       modelId: fakeRecommendedModel.id,
+      dependencies: {
+        llamaStack: false,
+      },
+    });
+  });
+});
+
+test('Submit button should call requestPullApplication with proper arguments for llama-stack recipe', async () => {
+  render(StartRecipe, {
+    recipeId: 'dummy-llama-stack-recipe-id',
+  });
+
+  const button = screen.getByTitle(`Start ${fakeLlamaStackRecipe.name} recipe`);
+  expect(button).toBeEnabled();
+  await fireEvent.click(button);
+
+  await vi.waitFor(() => {
+    expect(studioClient.requestPullApplication).toHaveBeenCalledWith({
+      connection: containerProviderConnection,
+      recipeId: fakeLlamaStackRecipe.id,
+      dependencies: {
+        llamaStack: true,
+      },
     });
   });
 });

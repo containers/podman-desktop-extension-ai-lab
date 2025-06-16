@@ -2,7 +2,7 @@
 import { faFolder, faRocket, faUpRightFromSquare, faWarning } from '@fortawesome/free-solid-svg-icons';
 import { catalog } from '/@/stores/catalog';
 import Fa from 'svelte-fa';
-import type { Recipe, RecipePullOptionsWithModelInference } from '@shared/models/IRecipe';
+import type { Recipe, RecipePullOptions, RecipePullOptionsWithModelInference } from '@shared/models/IRecipe';
 import type { LocalRepository } from '@shared/models/ILocalRepository';
 import { findLocalRepositoryByRecipeId } from '/@/utils/localRepositoriesUtils';
 import { localRepositories } from '/@/stores/localRepositories';
@@ -115,9 +115,12 @@ async function submit(): Promise<void> {
   errorMsg = undefined;
 
   try {
-    const options = {
+    const options: RecipePullOptions = {
       recipeId: $state.snapshot(recipe.id),
       connection: $state.snapshot(containerProviderConnection),
+      dependencies: {
+        llamaStack: recipe.backend === 'llama-stack',
+      },
     };
     if (model) {
       (options as RecipePullOptionsWithModelInference).modelId = $state.snapshot(model.id);

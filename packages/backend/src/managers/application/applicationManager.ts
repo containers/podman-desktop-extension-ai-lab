@@ -330,7 +330,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
               envs = [`MODEL_ENDPOINT=${endPoint}`];
             }
           }
-        } else {
+        } else if (options.dependencies?.llamaStack) {
           let stack = await this.llamaStackManager.getLlamaStackContainer();
           if (!stack) {
             await this.llamaStackManager.createLlamaStackContainer(options.connection, labels ?? {});

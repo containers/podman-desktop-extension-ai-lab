@@ -22,7 +22,8 @@ import { render, fireEvent, within } from '@testing-library/svelte';
 import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
 
-const getExpectedOptions = (): InferenceType[] => Object.values(InferenceType).filter(t => t !== InferenceType.NONE);
+const getFilteredOptions = (exclude: InferenceType[] = []): InferenceType[] =>
+  Object.values(InferenceType).filter(type => !exclude.includes(type));
 
 beforeEach(() => {
   // mock scrollIntoView
@@ -39,7 +40,7 @@ test('Lists all runtime options', async () => {
   await fireEvent.pointerUp(input);
 
   const items = container.querySelectorAll('div[class~="list-item"]');
-  const expectedOptions = getExpectedOptions();
+  const expectedOptions = getFilteredOptions();
 
   expect(items.length).toBe(expectedOptions.length);
 
@@ -58,7 +59,7 @@ test('Selected value should be visible', async () => {
   await fireEvent.pointerUp(input);
 
   const items = container.querySelectorAll('div[class~="list-item"]');
-  const expectedOptions = getExpectedOptions();
+  const expectedOptions = getFilteredOptions();
 
   await fireEvent.click(items[0]);
 
@@ -88,9 +89,9 @@ test('Exclude specific runtime from list', async () => {
     expect(itemTexts).not.toContain(excludedType);
   });
 
-  const includedTypes = Object.values(InferenceType).filter(t => t !== InferenceType.NONE && !excluded.includes(t));
+  const expected = getFilteredOptions(excluded);
 
-  includedTypes.forEach(included => {
+  expected.forEach(included => {
     expect(itemTexts).toContain(included);
   });
 });

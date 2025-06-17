@@ -71,7 +71,7 @@ importers:
         version: 12.1.1(eslint@9.29.0(jiti@2.4.2))
       eslint-plugin-sonarjs:
         specifier: ^3.0.2
-        version: 3.0.2(eslint@9.29.0(jiti@2.4.2))
+        version: 3.0.3(eslint@9.29.0(jiti@2.4.2))
       eslint-plugin-svelte:
         specifier: ^3.8.1
         version: 3.9.2(eslint@9.29.0(jiti@2.4.2))(svelte@5.34.3)
@@ -142,8 +142,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       openai:
-        specifier: ^5.1.0
-        version: 5.5.0(ws@8.18.1)(zod@3.24.4)
+        specifier: ^5.5.1
+        version: 5.5.1(ws@8.18.1)(zod@3.24.4)
       postman-code-generators:
         specifier: 1.10.1
         version: 1.10.1
@@ -161,7 +161,7 @@ importers:
         version: 5.0.1(express@4.21.2)
       systeminformation:
         specifier: ^5.26.2
-        version: 5.27.2
+        version: 5.27.3
       xml-js:
         specifier: ^1.6.11
         version: 1.6.11
@@ -2410,8 +2410,8 @@ packages:
   electron-to-chromium@1.5.150:
     resolution: {integrity: sha512-rOOkP2ZUMx1yL4fCxXQKDHQ8ZXwisb2OycOQVKHgvB3ZI4CvehOd4y2tfnnLDieJ3Zs1RL1Dlp3cMkyIn7nnXA==}
 
-  electron-to-chromium@1.5.168:
-    resolution: {integrity: sha512-RUNQmFLNIWVW6+z32EJQ5+qx8ci6RGvdtDC0Ls+F89wz6I2AthpXF0w0DIrn2jpLX0/PU9ZCo+Qp7bg/EckJmA==}
+  electron-to-chromium@1.5.169:
+    resolution: {integrity: sha512-q7SQx6mkLy0GTJK9K9OiWeaBMV4XQtBSdf6MJUzDB/H/5tFXfIiX38Lci1Kl6SsgiEhz1SQI1ejEOU5asWEhwQ==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -2613,8 +2613,8 @@ packages:
     peerDependencies:
       eslint: '>=5.0.0'
 
-  eslint-plugin-sonarjs@3.0.2:
-    resolution: {integrity: sha512-LxjbfwI7ypENeTmGyKmDyNux3COSkMi7H/6Cal5StSLQ6edf0naP45SZR43OclaNR7WfhVTZdhOn63q3/Y6puQ==}
+  eslint-plugin-sonarjs@3.0.3:
+    resolution: {integrity: sha512-/UrTz8wyTW0MQVJKUF70vSjsMMf54+0cKHWAuYObuE82vNM8zrscm0wvZprolHNN0PIdnvVQ9Dm6MQkIzOKu4A==}
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0
 
@@ -3805,8 +3805,8 @@ packages:
   ono@7.1.3:
     resolution: {integrity: sha512-9jnfVriq7uJM4o5ganUY54ntUm+5EK21EGaQ5NWnkWg3zz5ywbbonlBguRcnmF1/HDiIe3zxNxXcO1YPBmPcQQ==}
 
-  openai@5.5.0:
-    resolution: {integrity: sha512-j6y9a/VyEWTqm8mS2FT6Qboz6aTgwlRIpKlgP0cTmvkaKYEfnginPsiEAzqtk0O/fQBXTyNS3v0wRc2QmkGePw==}
+  openai@5.5.1:
+    resolution: {integrity: sha512-5i19097mGotHA1eFsM6Tjd/tJ8uo9sa5Ysv4Q6bKJ2vtN6rc0MzMrUefXnLXYAJcmMQrC1Efhj0AvfIkXrQamw==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -4247,11 +4247,6 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  semver@7.7.1:
-    resolution: {integrity: sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   semver@7.7.2:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
@@ -4547,8 +4542,8 @@ packages:
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
-  systeminformation@5.27.2:
-    resolution: {integrity: sha512-Xsv9p3pU0QPpWl+VWVxXnc017Ld7yEcWSJz56ydoyJ1XULrne37PEFq/J2JcLE+ll2Fr1U5IdhPT0Cyx28OupA==}
+  systeminformation@5.27.3:
+    resolution: {integrity: sha512-SFgXCnmO/z0Nvln3aQ3fQRjbVVP5ybUPifyInJU6pIs6PpCjm/HuMGl3UenEd03tpeZLk44nxEikT/LON4UDrA==}
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -6713,7 +6708,7 @@ snapshots:
   browserslist@4.25.0:
     dependencies:
       caniuse-lite: 1.0.30001723
-      electron-to-chromium: 1.5.168
+      electron-to-chromium: 1.5.169
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.0)
     optional: true
@@ -7089,7 +7084,7 @@ snapshots:
 
   electron-to-chromium@1.5.150: {}
 
-  electron-to-chromium@1.5.168:
+  electron-to-chromium@1.5.169:
     optional: true
 
   emoji-regex@8.0.0: {}
@@ -7447,7 +7442,7 @@ snapshots:
     dependencies:
       eslint: 9.29.0(jiti@2.4.2)
 
-  eslint-plugin-sonarjs@3.0.2(eslint@9.29.0(jiti@2.4.2)):
+  eslint-plugin-sonarjs@3.0.3(eslint@9.29.0(jiti@2.4.2)):
     dependencies:
       '@eslint-community/regexpp': 4.12.1
       builtin-modules: 3.3.0
@@ -7457,7 +7452,7 @@ snapshots:
       jsx-ast-utils: 3.3.5
       minimatch: 9.0.5
       scslre: 0.3.0
-      semver: 7.7.1
+      semver: 7.7.2
       typescript: 5.8.3
 
   eslint-plugin-svelte@3.9.2(eslint@9.29.0(jiti@2.4.2))(svelte@5.34.3):
@@ -8703,7 +8698,7 @@ snapshots:
     dependencies:
       '@jsdevtools/ono': 7.1.3
 
-  openai@5.5.0(ws@8.18.1)(zod@3.24.4):
+  openai@5.5.1(ws@8.18.1)(zod@3.24.4):
     optionalDependencies:
       ws: 8.18.1
       zod: 3.24.4
@@ -9169,8 +9164,6 @@ snapshots:
 
   semver@6.3.1: {}
 
-  semver@7.7.1: {}
-
   semver@7.7.2: {}
 
   send@0.19.0:
@@ -9510,7 +9503,7 @@ snapshots:
 
   symbol-tree@3.2.4: {}
 
-  systeminformation@5.27.2: {}
+  systeminformation@5.27.3: {}
 
   tailwindcss@4.1.10: {}
 

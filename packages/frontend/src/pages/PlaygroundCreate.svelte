@@ -17,16 +17,14 @@ import { InferenceType } from '@shared/models/IInference';
 import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
 
 // Preset the runtime selection
-let runtime: InferenceType;
-runtime = InferenceType.ALL;
+let runtime: InferenceType | undefined = undefined;
 // exlude whisper.cpp from selection
 let exclude: InferenceType[] = [InferenceType.WHISPER_CPP];
 let localModels: ModelInfo[];
 // Special case for "ALL" returns runtimes with optional exclution
-$: localModels =
-  runtime === InferenceType.ALL
-    ? $modelsInfo.filter(model => model.file && !exclude.includes(model.backend as InferenceType))
-    : $modelsInfo.filter(model => model.file && model.backend === runtime);
+$: localModels = $modelsInfo.filter(
+  model => model.file && (!runtime || model.backend === runtime) && !exclude.includes(model.backend as InferenceType),
+);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;
 let submitted: boolean = false;
@@ -160,42 +158,33 @@ export function goToUpPage(): void {
             Inference Runtime
           </label>
           <InferenceRuntimeSelect bind:value={runtime} exclude={exclude} />
-          {#if !runtime}
+          <!-- model input -->
+          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
+          <ModelSelect models={localModels} disabled={submitted} bind:value={model} />
+          {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">
               <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
               <div role="alert" aria-label="Error Message Content" class="ml-2">
-                Please select an inference runtime before selecting a model.
+                You don't have any models downloaded. You can download them in <a
+                  href="javascript:void(0);"
+                  class="underline"
+                  title="Models page"
+                  on:click={openModelsPage}>models page</a
+                >.
               </div>
             </div>
-          {:else}
-            <!-- model input -->
-            <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
-            <ModelSelect models={localModels} disabled={submitted} bind:value={model} />
-            {#if localModels.length === 0}
-              <div class="text-red-500 p-1 flex flex-row items-center">
-                <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
-                <div role="alert" aria-label="Error Message Content" class="ml-2">
-                  You don't have any models downloaded. You can download them in <a
-                    href="javascript:void(0);"
-                    class="underline"
-                    title="Models page"
-                    on:click={openModelsPage}>models page</a
-                  >.
-                </div>
+          {:else if availModels.length > 0}
+            <div class="text-sm p-1 flex flex-row items-center text-[var(--pd-content-card-text)]">
+              <Fa size="1.1x" class="cursor-pointer" icon={faInfoCircle} />
+              <div role="alert" aria-label="Info Message Content" class="ml-2">
+                Other models are available, but must be downloaded from the <a
+                  href="javascript:void(0);"
+                  class="underline"
+                  title="Models page"
+                  on:click={openModelsPage}>models page</a
+                >.
               </div>
-            {:else if availModels.length > 0}
-              <div class="text-sm p-1 flex flex-row items-center text-[var(--pd-content-card-text)]">
-                <Fa size="1.1x" class="cursor-pointer" icon={faInfoCircle} />
-                <div role="alert" aria-label="Info Message Content" class="ml-2">
-                  Other models are available, but must be downloaded from the <a
-                    href="javascript:void(0);"
-                    class="underline"
-                    title="Models page"
-                    on:click={openModelsPage}>models page</a
-                  >.
-                </div>
-              </div>
-            {/if}
+            </div>
           {/if}
         </div>
         {#if errorMsg !== undefined}

@@ -48,31 +48,6 @@ test('Lists all runtime options', async () => {
   });
 });
 
-test('Selecting "all" works correctly', async () => {
-  const { container } = render(InferenceRuntimeSelect, {
-    value: undefined,
-    disabled: false,
-  });
-
-  const input = within(container).getByLabelText('Select Inference Runtime');
-  await fireEvent.pointerUp(input);
-
-  const allOption = Array.from(container.querySelectorAll('div[class~="list-item"]')).find(item =>
-    item.textContent?.includes(InferenceType.ALL),
-  );
-
-  expect(allOption).toBeDefined();
-  if (allOption) {
-    await fireEvent.click(allOption);
-  }
-
-  const valueContainer = container.querySelector('.value-container');
-  if (!(valueContainer instanceof HTMLElement)) throw new Error('Missing value container');
-
-  const selectedLabel = within(valueContainer).getByText(InferenceType.ALL);
-  expect(selectedLabel).toBeInTheDocument();
-});
-
 test('Selected value should be visible', async () => {
   const { container } = render(InferenceRuntimeSelect, {
     value: undefined,

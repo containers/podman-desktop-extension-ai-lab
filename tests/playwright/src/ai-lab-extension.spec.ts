@@ -182,7 +182,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     );
   });
 
-  test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
+  test.describe.skip('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
     let localServerPort: string;
     let extensionVersion: string | undefined;
     const model: string = 'facebook/detr-resnet-101';

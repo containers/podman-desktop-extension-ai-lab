@@ -133,6 +133,7 @@ export class VLLM extends InferenceProvider {
           `--model=${modelCache}`,
           `--served_model_name=${modelInfo.name}`,
           '--chat-template-content-format=openai',
+          '--dtype=float32',
         ],
       },
       labels,

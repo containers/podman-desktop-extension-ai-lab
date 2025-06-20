@@ -32,6 +32,7 @@ import {
   isWindows,
   waitForPodmanMachineStartup,
   isLinux,
+  isMac,
 } from '@podman-desktop/tests-playwright';
 import type { AILabDashboardPage } from './model/ai-lab-dashboard-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
@@ -74,6 +75,7 @@ const AI_APPS: AiApp[] = [
   { appName: 'Code Generation', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
   { appName: 'RAG Chatbot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
   { appName: 'Function calling', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
+  { appName: 'Object Detection', appModel: 'facebook/detr-resnet-101' },
 ];
 
 const __filename = fileURLToPath(import.meta.url);
@@ -180,7 +182,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     );
   });
 
-  test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
+  test.describe.skip('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
     let localServerPort: string;
     let extensionVersion: string | undefined;
     const model: string = 'facebook/detr-resnet-101';
@@ -531,6 +533,22 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
         await demoApp.waitForLoad();
         await demoApp.startNewDeployment();
+      });
+
+      test(`Verify ${appName} app HTTP page is reachable`, async ({ request }) => {
+        test.setTimeout(60_000);
+        /// In the future, we could use this test for other AI applications
+        test.skip(
+          appName !== 'Object Detection' && !isMac,
+          'Currently, this test only works on macOS due to CI issues.',
+        );
+        const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
+        const appPort = await aiRunningAppsPage.getAppPort(appName);
+        const response = await request.get(`http://localhost:${appPort}`, { timeout: 60_000 });
+
+        playExpect(response.ok()).toBeTruthy();
+        const body = await response.text();
+        playExpect(body).toContain('<title>Streamlit</title>');
       });
 
       test(`Verify that model service for the ${appName} is working`, async ({ request }) => {

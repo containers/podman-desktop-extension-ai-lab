@@ -16,12 +16,10 @@ import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
 import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
 
-// Preset the runtime selection
 let runtime: InferenceType | undefined = undefined;
-// exlude whisper.cpp from selection
+// exlude certain runtimes from selection
 let exclude: InferenceType[] = [InferenceType.WHISPER_CPP];
 let localModels: ModelInfo[];
-// Special case for "ALL" returns runtimes with optional exclution
 $: localModels = $modelsInfo.filter(
   model => model.file && (!runtime || model.backend === runtime) && !exclude.includes(model.backend as InferenceType),
 );
@@ -38,7 +36,8 @@ let trackingId: string | undefined = undefined;
 // The trackedTasks are the tasks linked to the trackingId
 let trackedTasks: Task[] = [];
 
-$: if (localModels.length > 0) {
+// Preset model selection depending on runtime
+$: if (runtime && localModels.length > 0) {
   model = localModels[0];
 } else {
   model = undefined;
@@ -158,6 +157,7 @@ export function goToUpPage(): void {
             Inference Runtime
           </label>
           <InferenceRuntimeSelect bind:value={runtime} exclude={exclude} />
+
           <!-- model input -->
           <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
           <ModelSelect models={localModels} disabled={submitted} bind:value={model} />

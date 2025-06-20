@@ -23,7 +23,7 @@ import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte'
 import { InferenceType } from '@shared/models/IInference';
 
 const getFilteredOptions = (exclude: InferenceType[] = []): InferenceType[] =>
-  Object.values(InferenceType).filter(type => !exclude.includes(type));
+  Object.values(InferenceType).filter(type => type !== InferenceType.NONE && !exclude.includes(type));
 
 beforeEach(() => {
   // mock scrollIntoView

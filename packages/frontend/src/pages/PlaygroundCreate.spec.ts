@@ -102,13 +102,31 @@ beforeEach(() => {
   vi.mocked(tasksStore).tasks = tasksList;
 });
 
-test('model should be selected by default', () => {
+test('model should not be selected by default when no runtime is set', () => {
+  const modelsInfoList = writable<ModelInfo[]>([dummyLlamaCppModel]);
+  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+
+  const { container } = render(PlaygroundCreate);
+
+  // Model should not be displayed because it's filtered out when runtime is undefined
+  const model = within(container).queryByText(dummyLlamaCppModel.name);
+  expect(model).toBeNull();
+});
+
+test('model should be selected by default when runtime is set', async () => {
   const modelsInfoList = writable<ModelInfo[]>([dummyLlamaCppModel]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
 
   vi.mocked(studioClient.requestCreatePlayground).mockRejectedValue('error creating playground');
 
   const { container } = render(PlaygroundCreate);
+
+  // Select our runtime
+  const dropdown = within(container).getByLabelText('Select Inference Runtime');
+  await userEvent.click(dropdown);
+
+  const llamacppOption = within(container).getByText(InferenceType.LLAMA_CPP);
+  await userEvent.click(llamacppOption);
 
   const model = within(container).getByText(dummyLlamaCppModel.name);
   expect(model).toBeInTheDocument();
@@ -151,6 +169,12 @@ test('should display error message if createPlayground fails', async () => {
 
   const errorMessage = within(container).queryByLabelText('Error Message Content');
   expect(errorMessage).not.toBeInTheDocument();
+
+  //make sure to select model
+  const dropdown = within(container).getByLabelText('Select Model');
+  await userEvent.click(dropdown);
+  const option = within(container).getByText(dummyLlamaCppModel.name);
+  await userEvent.click(option);
 
   const createButton = within(container).getByTitle('Create playground');
   await userEvent.click(createButton);

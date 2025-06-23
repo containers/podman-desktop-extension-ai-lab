@@ -21,6 +21,7 @@ COPY packages/backend/package.json /extension/
 COPY packages/backend/media/ /extension/media
 COPY LICENSE /extension/
 COPY packages/backend/icon.png /extension/
+COPY packages/backend/brain.woff2 /extension/
 COPY README.md /extension/
 COPY api/openapi.yaml /extension/api/
 

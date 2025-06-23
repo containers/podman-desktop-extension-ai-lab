@@ -138,7 +138,7 @@
     "@types/node": "^22",
     "@types/postman-collection": "^3.5.11",
     "@types/supertest": "^6.0.3",
-    "@types/swagger-ui-dist": "^3.30.5",
+    "@types/swagger-ui-dist": "^3.30.6",
     "@types/swagger-ui-express": "^4.1.8",
     "openapi-typescript": "^7.8.0",
     "supertest": "^7.1.1",

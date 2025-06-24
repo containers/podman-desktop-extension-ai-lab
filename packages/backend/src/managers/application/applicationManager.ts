@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Recipe, RecipeComponents, RecipeImage } from '@shared/models/IRecipe';
+import type { RecipeComponents, RecipeImage } from '@shared/models/IRecipe';
 import * as path from 'node:path';
 import { containerEngine, Disposable, window, ProgressLocation } from '@podman-desktop/api';
 import type {
@@ -28,7 +28,6 @@ import type {
   PodContainerInfo,
   ContainerProviderConnection,
 } from '@podman-desktop/api';
-import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ModelsManager } from '../modelsManager';
 import { getPortsFromLabel, getPortsInfo } from '../../utils/ports';
 import { getDurationSecondsSince, timeout } from '../../utils/utils';
@@ -55,6 +54,8 @@ import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { TaskRunner } from '../TaskRunner';
 import { getInferenceType } from '../../utils/inferenceUtils';
+import type { LlamaStackManager } from '../llama-stack/llamaStackManager';
+import { isApplicationOptionsWithModelInference, type ApplicationOptions } from '../../models/ApplicationOptions';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
   #applications: ApplicationRegistry<ApplicationState>;
@@ -71,6 +72,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     private telemetry: TelemetryLogger,
     private podManager: PodManager,
     private recipeManager: RecipeManager,
+    private llamaStackManager: LlamaStackManager,
   ) {
     super(rpcExtension, MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
@@ -78,11 +80,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     this.#disposables = [];
   }
 
-  async requestPullApplication(
-    connection: ContainerProviderConnection,
-    recipe: Recipe,
-    model: ModelInfo,
-  ): Promise<string> {
+  async requestPullApplication(options: ApplicationOptions): Promise<string> {
     // create a tracking id to put in the labels
     const trackingId: string = getRandomString();
 
@@ -94,23 +92,23 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       .runAsTask(
         {
           ...labels,
-          'recipe-pulling': recipe.id, // this label should only be on the master task
+          'recipe-pulling': options.recipe.id, // this label should only be on the master task
         },
         {
-          loadingLabel: `Pulling ${recipe.name} recipe`,
-          errorMsg: err => `Something went wrong while pulling ${recipe.name}: ${String(err)}`,
+          loadingLabel: `Pulling ${options.recipe.name} recipe`,
+          errorMsg: err => `Something went wrong while pulling ${options.recipe.name}: ${String(err)}`,
         },
         () =>
           window.withProgress(
             {
               location: ProgressLocation.TASK_WIDGET,
-              title: `Pulling ${recipe.name}.`,
+              title: `Pulling ${options.recipe.name}.`,
               details: {
                 routeId: RECIPE_START_ROUTE,
-                routeArgs: [recipe.id, trackingId],
+                routeArgs: [options.recipe.id, trackingId],
               },
             },
-            () => this.pullApplication(connection, recipe, model, labels),
+            () => this.pullApplication(options, labels),
           ),
       )
       .catch(() => {});
@@ -118,37 +116,43 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     return trackingId;
   }
 
-  async pullApplication(
-    connection: ContainerProviderConnection,
-    recipe: Recipe,
-    model: ModelInfo,
-    labels: Record<string, string> = {},
-  ): Promise<void> {
+  async pullApplication(options: ApplicationOptions, labels: Record<string, string> = {}): Promise<void> {
+    let modelId: string;
+    if (isApplicationOptionsWithModelInference(options)) {
+      modelId = options.model.id;
+    } else {
+      modelId = '<none>';
+    }
+
     // clear any existing status / tasks related to the pair recipeId-modelId.
     this.taskRegistry.deleteByLabels({
-      'recipe-id': recipe.id,
-      'model-id': model.id,
+      'recipe-id': options.recipe.id,
+      'model-id': modelId,
     });
 
     const startTime = performance.now();
     try {
       // init application (git clone, models download etc.)
-      const podInfo: PodInfo = await this.initApplication(connection, recipe, model, labels);
+      const podInfo: PodInfo = await this.initApplication(options, labels);
       // start the pod
       await this.runApplication(podInfo, {
         ...labels,
-        'recipe-id': recipe.id,
-        'model-id': model.id,
+        'recipe-id': options.recipe.id,
+        'model-id': modelId,
       });
 
       // measure init + start time
       const durationSeconds = getDurationSecondsSince(startTime);
-      this.telemetry.logUsage('recipe.pull', { 'recipe.id': recipe.id, 'recipe.name': recipe.name, durationSeconds });
+      this.telemetry.logUsage('recipe.pull', {
+        'recipe.id': options.recipe.id,
+        'recipe.name': options.recipe.name,
+        durationSeconds,
+      });
     } catch (err: unknown) {
       const durationSeconds = getDurationSecondsSince(startTime);
       this.telemetry.logError('recipe.pull', {
-        'recipe.id': recipe.id,
-        'recipe.name': recipe.name,
+        'recipe.id': options.recipe.id,
+        'recipe.name': options.recipe.name,
         durationSeconds,
         message: 'error pulling application',
         error: err,
@@ -173,48 +177,54 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
    * @param labels
    * @private
    */
-  private async initApplication(
-    connection: ContainerProviderConnection,
-    recipe: Recipe,
-    model: ModelInfo,
-    labels: Record<string, string> = {},
-  ): Promise<PodInfo> {
+  private async initApplication(options: ApplicationOptions, labels: Record<string, string> = {}): Promise<PodInfo> {
+    let modelId: string;
+    if (isApplicationOptionsWithModelInference(options)) {
+      modelId = options.model.id;
+    } else {
+      modelId = '<none>';
+    }
+
     // clone the recipe
-    await this.recipeManager.cloneRecipe(recipe, { ...labels, 'model-id': model.id });
+    await this.recipeManager.cloneRecipe(options.recipe, { ...labels, 'model-id': modelId });
 
-    // get model by downloading it or retrieving locally
-    let modelPath = await this.modelsManager.requestDownloadModel(model, {
-      ...labels,
-      'recipe-id': recipe.id,
-      'model-id': model.id,
-    });
-
-    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
-    const recipeComponents = await this.recipeManager.buildRecipe(connection, recipe, model, {
-      ...labels,
-      'recipe-id': recipe.id,
-      'model-id': model.id,
-    });
-
-    // upload model to podman machine if user system is supported
-    if (!recipeComponents.inferenceServer) {
-      modelPath = await this.modelsManager.uploadModelToPodmanMachine(connection, model, {
+    let modelPath: string | undefined;
+    if (isApplicationOptionsWithModelInference(options)) {
+      // get model by downloading it or retrieving locally
+      modelPath = await this.modelsManager.requestDownloadModel(options.model, {
         ...labels,
-        'recipe-id': recipe.id,
-        'model-id': model.id,
+        'recipe-id': options.recipe.id,
+        'model-id': modelId,
       });
+    }
+    // build all images, one per container (for a basic sample we should have 2 containers = sample app + model service)
+    const recipeComponents = await this.recipeManager.buildRecipe(options, {
+      ...labels,
+      'recipe-id': options.recipe.id,
+      'model-id': modelId,
+    });
+
+    if (isApplicationOptionsWithModelInference(options)) {
+      // upload model to podman machine if user system is supported
+      if (!recipeComponents.inferenceServer) {
+        modelPath = await this.modelsManager.uploadModelToPodmanMachine(options.connection, options.model, {
+          ...labels,
+          'recipe-id': options.recipe.id,
+          'model-id': modelId,
+        });
+      }
     }
 
     // first delete any existing pod with matching labels
-    if (await this.hasApplicationPod(recipe.id, model.id)) {
-      await this.removeApplication(recipe.id, model.id);
+    if (await this.hasApplicationPod(options.recipe.id, modelId)) {
+      await this.removeApplication(options.recipe.id, modelId);
     }
 
     // create a pod containing all the containers to run the application
-    return this.createApplicationPod(connection, recipe, model, recipeComponents, modelPath, {
+    return this.createApplicationPod(options, recipeComponents, modelPath, {
       ...labels,
-      'recipe-id': recipe.id,
-      'model-id': model.id,
+      'recipe-id': options.recipe.id,
+      'model-id': modelId,
     });
   }
 
@@ -257,11 +267,9 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
   }
 
   protected async createApplicationPod(
-    connection: ContainerProviderConnection,
-    recipe: Recipe,
-    model: ModelInfo,
+    options: ApplicationOptions,
     components: RecipeComponents,
-    modelPath: string,
+    modelPath: string | undefined,
     labels?: { [key: string]: string },
   ): Promise<PodInfo> {
     return this.#taskRunner.runAsTask<PodInfo>(
@@ -271,25 +279,25 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         errorMsg: err => `Something went wrong while creating pod: ${String(err)}`,
       },
       async ({ updateLabels }): Promise<PodInfo> => {
-        const podInfo = await this.createPod(connection, recipe, model, components.images);
+        const podInfo = await this.createPod(options, components.images);
         updateLabels(labels => ({
           ...labels,
           'pod-id': podInfo.Id,
         }));
-        await this.createContainerAndAttachToPod(connection, podInfo, components, model, modelPath);
+        await this.createContainerAndAttachToPod(options, podInfo, components, modelPath, labels);
         return podInfo;
       },
     );
   }
 
   protected async createContainerAndAttachToPod(
-    connection: ContainerProviderConnection,
+    options: ApplicationOptions,
     podInfo: PodInfo,
     components: RecipeComponents,
-    modelInfo: ModelInfo,
-    modelPath: string,
+    modelPath: string | undefined,
+    labels?: { [key: string]: string },
   ): Promise<void> {
-    const vmType = connection.vmType ?? VMType.UNKNOWN;
+    const vmType = options.connection.vmType ?? VMType.UNKNOWN;
     // temporary check to set Z flag or not - to be removed when switching to podman 5
     await Promise.all(
       components.images.map(async image => {
@@ -297,28 +305,39 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
         let envs: string[] = [];
         let healthcheck: HealthConfig | undefined = undefined;
         // if it's a model service we mount the model as a volume
-        if (image.modelService) {
-          const modelName = path.basename(modelPath);
-          hostConfig = {
-            Mounts: [
-              {
-                Target: `/${modelName}`,
-                Source: modelPath,
-                Type: 'bind',
-                Mode: vmType === VMType.QEMU ? undefined : 'Z',
-              },
-            ],
-          };
-          envs = [`MODEL_PATH=/${modelName}`];
-          envs.push(...getModelPropertiesForEnvironment(modelInfo));
-        } else if (components.inferenceServer) {
-          const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
-          envs = [`MODEL_ENDPOINT=${endPoint}`];
-        } else {
-          const modelService = components.images.find(image => image.modelService);
-          if (modelService && modelService.ports.length > 0) {
-            const endPoint = `http://localhost:${modelService.ports[0]}`;
+        if (modelPath && isApplicationOptionsWithModelInference(options)) {
+          if (image.modelService) {
+            const modelName = path.basename(modelPath);
+            hostConfig = {
+              Mounts: [
+                {
+                  Target: `/${modelName}`,
+                  Source: modelPath,
+                  Type: 'bind',
+                  Mode: vmType === VMType.QEMU ? undefined : 'Z',
+                },
+              ],
+            };
+            envs = [`MODEL_PATH=/${modelName}`];
+            envs.push(...getModelPropertiesForEnvironment(options.model));
+          } else if (components.inferenceServer) {
+            const endPoint = `http://host.containers.internal:${components.inferenceServer.connection.port}`;
             envs = [`MODEL_ENDPOINT=${endPoint}`];
+          } else {
+            const modelService = components.images.find(image => image.modelService);
+            if (modelService && modelService.ports.length > 0) {
+              const endPoint = `http://localhost:${modelService.ports[0]}`;
+              envs = [`MODEL_ENDPOINT=${endPoint}`];
+            }
+          }
+        } else if (options.dependencies?.llamaStack) {
+          let stack = await this.llamaStackManager.getLlamaStackContainer();
+          if (!stack) {
+            await this.llamaStackManager.createLlamaStackContainer(options.connection, labels ?? {});
+            stack = await this.llamaStackManager.getLlamaStackContainer();
+          }
+          if (stack) {
+            envs = [`MODEL_ENDPOINT=http://host.containers.internal:${stack.port}`];
           }
         }
         if (image.ports.length > 0) {
@@ -346,12 +365,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     );
   }
 
-  protected async createPod(
-    connection: ContainerProviderConnection,
-    recipe: Recipe,
-    model: ModelInfo,
-    images: RecipeImage[],
-  ): Promise<PodInfo> {
+  protected async createPod(options: ApplicationOptions, images: RecipeImage[]): Promise<PodInfo> {
     // find the exposed port of the sample app so we can open its ports on the new pod
     const sampleAppImageInfo = images.find(image => !image.modelService);
     if (!sampleAppImageInfo) {
@@ -378,9 +392,14 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
 
     // create new pod
     const labels: Record<string, string> = {
-      [POD_LABEL_RECIPE_ID]: recipe.id,
-      [POD_LABEL_MODEL_ID]: model.id,
+      [POD_LABEL_RECIPE_ID]: options.recipe.id,
     };
+
+    if (isApplicationOptionsWithModelInference(options)) {
+      labels[POD_LABEL_MODEL_ID] = options.model.id;
+    } else {
+      labels[POD_LABEL_MODEL_ID] = '<none>';
+    }
     // collecting all modelService ports
     const modelPorts = images
       .filter(img => img.modelService)
@@ -398,7 +417,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       labels[POD_LABEL_APP_PORTS] = appPorts.join(',');
     }
     const { engineId, Id } = await this.podManager.createPod({
-      provider: connection,
+      provider: options.connection,
       name: getRandomName(`pod-${sampleAppImageInfo.appName}`),
       portmappings: portmappings,
       labels,
@@ -635,15 +654,28 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     const appPod = await this.getApplicationPod(recipeId, modelId);
     await this.removeApplication(recipeId, modelId);
     const recipe = this.catalogManager.getRecipeById(recipeId);
-    const model = this.catalogManager.getModelById(appPod.Labels[POD_LABEL_MODEL_ID]);
+    let opts: ApplicationOptions;
+    if (appPod.Labels[POD_LABEL_MODEL_ID] === '<none>') {
+      opts = {
+        connection,
+        recipe,
+      };
+    } else {
+      const model = this.catalogManager.getModelById(appPod.Labels[POD_LABEL_MODEL_ID]);
+      opts = {
+        connection,
+        recipe,
+        model,
+      };
+    }
 
     // init the recipe
-    const podInfo = await this.initApplication(connection, recipe, model);
+    const podInfo = await this.initApplication(opts);
 
     // start the pod
     return this.runApplication(podInfo, {
-      'recipe-id': recipe.id,
-      'model-id': model.id,
+      'recipe-id': recipeId,
+      'model-id': modelId,
     });
   }
 

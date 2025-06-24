@@ -53,10 +53,11 @@ import type { ExtensionConfiguration } from '@shared/models/IExtensionConfigurat
 import type { ConfigurationRegistry } from './registries/ConfigurationRegistry';
 import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
-import type { RecipePullOptions } from '@shared/models/IRecipe';
+import { isRecipePullOptionsWithModelInference, type RecipePullOptions } from '@shared/models/IRecipe';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
 import type { NavigationRegistry } from './registries/NavigationRegistry';
 import type { FilterRecipesResult, RecipeFilters } from '@shared/models/FilterRecipesResult';
+import type { ApplicationOptions } from './models/ApplicationOptions';
 
 interface PortQuickPickItem extends podmanDesktopApi.QuickPickItem {
   port: number;
@@ -229,8 +230,6 @@ export class StudioApiImpl implements StudioAPI {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === options.recipeId);
     if (!recipe) throw new Error(`recipe with if ${options.recipeId} not found`);
 
-    const model = this.catalogManager.getModelById(options.modelId);
-
     let connection: ContainerProviderConnection | undefined = undefined;
     if (options.connection) {
       connection = this.podmanConnection.getContainerProviderConnection(options.connection);
@@ -240,7 +239,25 @@ export class StudioApiImpl implements StudioAPI {
 
     if (!connection) throw new Error('no running container provider connection found.');
 
-    return this.applicationManager.requestPullApplication(connection, recipe, model);
+    let model: ModelInfo | undefined;
+    let opts: ApplicationOptions;
+    if (isRecipePullOptionsWithModelInference(options)) {
+      model = this.catalogManager.getModelById(options.modelId);
+      opts = {
+        connection,
+        recipe,
+        dependencies: options.dependencies,
+        model,
+      };
+    } else {
+      opts = {
+        connection,
+        recipe,
+        dependencies: options.dependencies,
+      };
+    }
+
+    return this.applicationManager.requestPullApplication(opts);
   }
 
   async getModelsInfo(): Promise<ModelInfo[]> {

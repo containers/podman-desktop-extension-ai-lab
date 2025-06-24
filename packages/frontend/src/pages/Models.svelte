@@ -24,21 +24,21 @@ const columns = [
     comparator: (a, b): number => (a.file ? 0 : 1) - (b.file ? 0 : 1),
   }),
   new TableColumn<ModelInfo>('Name', {
-    width: '3fr',
+    width: 'minmax(100px,1fr)',
     renderer: ModelColumnName,
     comparator: (a, b): number => b.name.localeCompare(a.name),
   }),
   new TableColumn<ModelInfo>('Size', {
-    width: '50px',
+    width: 'minmax(10px,50px)',
     renderer: ModelColumnSize,
     comparator: (a, b): number => (a.file?.size ?? 0) - (b.file?.size ?? 0),
   }),
   new TableColumn<ModelInfo>('Age', {
-    width: '70px',
+    width: 'minmax(10px,70px)',
     renderer: ModelColumnAge,
     comparator: (a, b): number => (a.file?.creation?.getTime() ?? 0) - (b.file?.creation?.getTime() ?? 0),
   }),
-  new TableColumn<ModelInfo>('', { width: '225px', align: 'right', renderer: ModelColumnLabels }),
+  new TableColumn<ModelInfo>('', { width: 'minmax(50px,175px)', align: 'right', renderer: ModelColumnLabels }),
   new TableColumn<ModelInfo>('Actions', { align: 'right', width: '120px', renderer: ModelColumnActions }),
 ];
 const row = new TableRow<ModelInfo>({});

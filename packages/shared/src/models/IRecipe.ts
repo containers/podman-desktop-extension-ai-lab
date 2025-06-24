@@ -19,10 +19,26 @@ import type { ContainerProviderConnectionInfo } from './IContainerConnectionInfo
 
 import type { InferenceServer } from './IInference';
 
-export interface RecipePullOptions {
+export type RecipePullOptions = RecipePullOptionsDefault | RecipePullOptionsWithModelInference;
+
+export interface RecipePullOptionsDefault {
   connection?: ContainerProviderConnectionInfo;
   recipeId: string;
+  dependencies?: RecipeDependencies;
+}
+
+export type RecipePullOptionsWithModelInference = RecipePullOptionsDefault & {
   modelId: string;
+};
+
+export interface RecipeDependencies {
+  llamaStack?: boolean;
+}
+
+export function isRecipePullOptionsWithModelInference(
+  options: RecipePullOptions,
+): options is RecipePullOptionsWithModelInference {
+  return 'modelId' in options;
 }
 
 export interface RecipeComponents {

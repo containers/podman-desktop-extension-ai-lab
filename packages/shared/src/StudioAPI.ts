@@ -122,6 +122,11 @@ export interface StudioAPI {
   getInferenceServers(): Promise<InferenceServer[]>;
 
   /**
+   * Get inference providers
+   */
+  getProviders(): Promise<string[]>;
+
+  /**
    * Request to start an inference server
    * @param options The options to use
    *

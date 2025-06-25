@@ -398,6 +398,7 @@ export class Studio {
       this.#localRepositoryRegistry,
       this.#taskRegistry,
       this.#inferenceManager,
+      this.#inferenceProviderRegistry,
       this.#playgroundManager,
       this.#snippetManager,
       this.#cancellationTokenRegistry,

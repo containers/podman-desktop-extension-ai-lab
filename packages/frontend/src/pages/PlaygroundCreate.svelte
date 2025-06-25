@@ -36,7 +36,7 @@ let trackingId: string | undefined = undefined;
 // The trackedTasks are the tasks linked to the trackingId
 let trackedTasks: Task[] = [];
 
-// Preset model selection
+// Preset model selection depending on runtime
 $: if (localModels.length > 0) {
   model = localModels[0];
 } else {

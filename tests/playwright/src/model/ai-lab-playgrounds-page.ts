@@ -42,25 +42,15 @@ export class AILabPlaygroundsPage extends AILabBasePage {
     await playExpect(this.heading).toBeVisible();
   }
 
-  async createNewPlayground(name: string, runtime = 'llama-cpp', timeout = 180_000): Promise<this> {
+  async createNewPlayground(name: string, timeout = 180_000): Promise<this> {
     await playExpect(this.newPlaygroundButton).toBeEnabled();
     await this.newPlaygroundButton.click();
-
     await playExpect(this.playgroundNameInput).toBeVisible();
     await this.playgroundNameInput.fill(name);
     await playExpect(this.playgroundNameInput).toHaveValue(name);
-
-    await playExpect(this.runtimeInput).toBeVisible();
-    await this.runtimeInput.click();
-
-    // Select the runtime
-    await this.runtimeInput.fill(runtime);
-    await this.webview.keyboard.press('Enter');
-
     await playExpect(this.createPlaygroundButton).toBeEnabled();
     await this.createPlaygroundButton.click();
     await playExpect(this.createPlaygroundButton).not.toBeVisible({ timeout });
-
     return this;
   }
 

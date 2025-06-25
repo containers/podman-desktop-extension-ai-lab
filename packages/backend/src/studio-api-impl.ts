@@ -33,6 +33,7 @@ import path from 'node:path';
 import type { InferenceServer } from '@shared/models/IInference';
 import type { CreationInferenceServerOptions } from '@shared/models/InferenceServerConfig';
 import type { InferenceManager } from './managers/inference/inferenceManager';
+import type { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
 import type { Conversation } from '@shared/models/IPlaygroundMessage';
 import type { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { getFreeRandomPort } from './utils/ports';
@@ -72,6 +73,7 @@ export class StudioApiImpl implements StudioAPI {
     private localRepositories: LocalRepositoryRegistry,
     private taskRegistry: TaskRegistry,
     private inferenceManager: InferenceManager,
+    private InferenceProviderRegistry: InferenceProviderRegistry,
     private playgroundV2: PlaygroundV2Manager,
     private snippetManager: SnippetManager,
     private cancellationTokenRegistry: CancellationTokenRegistry,
@@ -142,6 +144,10 @@ export class StudioApiImpl implements StudioAPI {
 
   async getInferenceServers(): Promise<InferenceServer[]> {
     return this.inferenceManager.getServers();
+  }
+
+  async getProviders(): Promise<string[]> {
+    return this.InferenceProviderRegistry.getAll().map(provider => provider.type);
   }
 
   async requestDeleteInferenceServer(...containerIds: string[]): Promise<void> {

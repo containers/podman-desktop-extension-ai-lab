@@ -538,7 +538,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         /// In the future, we could use this test for other AI applications
         test.skip(
           appName !== 'Object Detection' || (isCI && !isMac),
-          'Currently, this test only works on macOS due to CI issues.',
+          'Runs only for Object Detection app on macOS CI or any local platform',
         );
         const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
         const appPort = await aiRunningAppsPage.getAppPort(appName);

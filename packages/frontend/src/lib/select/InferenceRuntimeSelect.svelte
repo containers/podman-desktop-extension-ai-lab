@@ -1,27 +1,28 @@
 <script lang="ts">
 import Select from '/@/lib/select/Select.svelte';
-import { inferenceProviders } from '/@/stores/inferenceProviders';
+import { InferenceType } from '@shared/models/IInference';
 
 interface Props {
   disabled?: boolean;
-  value: string | undefined;
-  exclude?: string[];
+  value: InferenceType | undefined;
+  /**
+   * List of providers
+   */
+  providers: InferenceType[];
+  exclude?: InferenceType[];
 }
-let { value = $bindable(), disabled, exclude = [] }: Props = $props();
+let { value = $bindable(), disabled, providers, exclude = [] }: Props = $props();
 
-// Create a derived store for providerOptions filtering by exclude and enabled
-let providerOptions = $derived(() => {
-  return $inferenceProviders
-    .filter(name => !exclude.includes(name))
-    .map(name => ({
-      value: name,
-      label: name,
-    }));
-});
+// Filter options based on optional exclude list
+const options = $derived(() =>
+  providers
+    .filter(type => type !== InferenceType.NONE && !exclude.includes(type))
+    .map(type => ({ value: type, label: type })),
+);
 
 function handleOnChange(nValue: { value: string } | undefined): void {
   if (nValue) {
-    value = nValue.value;
+    value = nValue.value as InferenceType;
   } else {
     value = undefined;
   }
@@ -29,10 +30,10 @@ function handleOnChange(nValue: { value: string } | undefined): void {
 </script>
 
 <Select
-  label="Select Inference Provider"
-  name="select-inference-provider"
+  label="Select Inference Runtime"
+  name="select-inference-runtime"
   disabled={disabled}
   value={value ? { label: value, value: value } : undefined}
   onchange={handleOnChange}
-  placeholder="Select Inference Provider to use"
-  items={providerOptions()} />
+  placeholder="Select Inference Runtime to use"
+  items={options()} />

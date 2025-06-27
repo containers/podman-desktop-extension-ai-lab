@@ -27,7 +27,6 @@ export class AILabPlaygroundsPage extends AILabBasePage {
   readonly newPlaygroundButton: Locator;
   readonly playgroundNameInput: Locator;
   readonly createPlaygroundButton: Locator;
-  readonly runtimeInput: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Playground Environments');
@@ -35,7 +34,6 @@ export class AILabPlaygroundsPage extends AILabBasePage {
     this.newPlaygroundButton = this.additionalActions.getByRole('button', { name: 'New Playground', exact: true });
     this.playgroundNameInput = this.webview.getByRole('textbox', { name: 'playgroundName' });
     this.createPlaygroundButton = this.webview.getByRole('button', { name: 'Create playground', exact: true });
-    this.runtimeInput = this.webview.getByLabel('Select Inference Runtime', { exact: true });
   }
 
   async waitForLoad(): Promise<void> {

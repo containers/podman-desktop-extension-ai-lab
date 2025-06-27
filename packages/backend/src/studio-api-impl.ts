@@ -30,7 +30,7 @@ import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepository } from '@shared/models/ILocalRepository';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import path from 'node:path';
-import type { InferenceServer } from '@shared/models/IInference';
+import type { InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { CreationInferenceServerOptions } from '@shared/models/InferenceServerConfig';
 import type { InferenceManager } from './managers/inference/inferenceManager';
 import type { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
@@ -146,8 +146,10 @@ export class StudioApiImpl implements StudioAPI {
     return this.inferenceManager.getServers();
   }
 
-  async getProviders(): Promise<string[]> {
-    return this.InferenceProviderRegistry.getAll().map(provider => provider.type);
+  async getRegisteredProviders(): Promise<InferenceType[]> {
+    const types = this.InferenceProviderRegistry.getAll().map(provider => provider.type);
+    // get unique types
+    return [...new Set(types)];
   }
 
   async requestDeleteInferenceServer(...containerIds: string[]): Promise<void> {

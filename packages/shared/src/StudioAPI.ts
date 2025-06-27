@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import type { ModelInfo } from './models/IModelInfo';
+import type { InferenceType } from '@shared/models/IInference';
 import type { ApplicationCatalog } from './models/IApplicationCatalog';
 import type { OpenDialogOptions, Uri } from '@podman-desktop/api';
 import type { ApplicationState } from './models/IApplicationState';
@@ -124,7 +125,7 @@ export interface StudioAPI {
   /**
    * Get inference providers
    */
-  getProviders(): Promise<string[]>;
+  getRegisteredProviders(): Promise<InferenceType[]>;
 
   /**
    * Request to start an inference server

@@ -26,6 +26,8 @@
 import type { APIResponse, Locator } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
+  ContainerDetailsPage,
+  ContainerState,
   expect as playExpect,
   test,
   RunnerOptions,
@@ -52,6 +54,7 @@ import {
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { AILabTryInstructLabPage } from './model/ai-lab-try-instructlab-page';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -109,7 +112,7 @@ test.afterAll(async ({ runner }) => {
 });
 
 test.describe.serial(`AI Lab extension installation and verification`, () => {
-  test.describe.serial(`AI Lab extension installation`, { tag: '@smoke' }, () => {
+  test.describe.serial(`AI Lab extension installation`, { tag: ['@smoke', '@instructLab'] }, () => {
     let extensionsPage: ExtensionsPage;
 
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
@@ -632,6 +635,64 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         await cleanupServiceModels();
         await deleteUnusedImages(navigationBar);
       });
+    });
+  });
+
+  test.describe.serial('InstructLab container startup', { tag: '@instructlab' }, () => {
+    let instructLabPage: AILabTryInstructLabPage;
+    const instructLabContainerName = /^instructlab-\d+$/;
+    let exactInstructLabContainerName = '';
+
+    if (process.env.GITHUB_ACTIONS && isLinux) {
+      //Current GHA Linux machine doesnt have enough resources
+      test.skip();
+    }
+    test.beforeAll('Open Try InstructLab page', async ({ runner, page, navigationBar }) => {
+      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+      await aiLabPage.navigationBar.waitForLoad();
+
+      instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();
+      await instructLabPage.waitForLoad();
+    });
+
+    test('Start and verify InstructLab container', async ({ page }) => {
+      test.setTimeout(1_000_000);
+      await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
+      await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
+      await instructLabPage.startInstructLabButton.click();
+      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 900_000 });
+
+      await instructLabPage.openInstructLabButton.click();
+
+      const containerName = await page
+        .getByRole('region', { name: 'Header' })
+        .getByLabel(instructLabContainerName)
+        .textContent();
+      if (typeof containerName === 'string') {
+        exactInstructLabContainerName = containerName;
+      }
+      const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
+      await playExpect(containerDetailsPage.heading).toBeVisible();
+      await playExpect(containerDetailsPage.heading).toContainText(exactInstructLabContainerName);
+      const containerState = await containerDetailsPage.getState();
+      playExpect(containerState).toContain(ContainerState.Running);
+    });
+
+    test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
+      const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
+      await containerDetailsPage.deleteContainer();
+      const containersPage = await navigationBar.openContainers();
+      await playExpect(containersPage.heading).toBeVisible();
+      await playExpect
+        .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 100_000 })
+        .toBeFalsy();
+
+      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+      await aiLabPage.navigationBar.waitForLoad();
+      instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();
+      await instructLabPage.waitForLoad();
+      await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
+      await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
     });
   });
 });

@@ -14,9 +14,21 @@ import type { Unsubscriber } from 'svelte/store';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
+import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
 
+// Get Registered List of Providers
+let providers: InferenceType[] = [];
+onMount(async () => {
+  providers = await studioClient.getRegisteredProviders();
+});
+
+let runtime: InferenceType | undefined = undefined;
+// exlude certain runtimes from selection
+let exclude: InferenceType[] = [InferenceType.WHISPER_CPP];
 let localModels: ModelInfo[];
-$: localModels = $modelsInfo.filter(model => model.file && model.backend !== InferenceType.WHISPER_CPP);
+$: localModels = $modelsInfo.filter(
+  model => model.file && (!runtime || model.backend === runtime) && !exclude.includes(model.backend as InferenceType),
+);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;
 let submitted: boolean = false;
@@ -30,10 +42,11 @@ let trackingId: string | undefined = undefined;
 // The trackedTasks are the tasks linked to the trackingId
 let trackedTasks: Task[] = [];
 
-$: {
-  if (!model && localModels.length > 0) {
-    model = localModels[0];
-  }
+// Preset model selection depending on runtime
+$: if (localModels.length > 0) {
+  model = localModels[0];
+} else {
+  model = undefined;
 }
 
 function openModelsPage(): void {
@@ -144,6 +157,12 @@ export function goToUpPage(): void {
             on:input={onNameInput}
             placeholder="Leave blank to generate a name"
             aria-label="playgroundName" />
+
+          <!-- inference runtime -->
+          <label for="inference-runtime" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+            Inference Runtime
+          </label>
+          <InferenceRuntimeSelect bind:value={runtime} providers={providers} exclude={exclude} />
 
           <!-- model input -->
           <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>

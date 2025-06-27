@@ -43,6 +43,7 @@ import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
 import type { NavigationRegistry } from './registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
+import type { InferenceProviderRegistry } from './registries/InferenceProviderRegistry';
 
 vi.mock('./ai.json', () => {
   return {
@@ -148,6 +149,7 @@ beforeEach(async () => {
     localRepositoryRegistry,
     {} as unknown as TaskRegistry,
     {} as unknown as InferenceManager,
+    {} as unknown as InferenceProviderRegistry,
     {} as unknown as PlaygroundV2Manager,
     {} as unknown as SnippetManager,
     {} as unknown as CancellationTokenRegistry,

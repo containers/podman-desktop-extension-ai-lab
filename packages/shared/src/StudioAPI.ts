@@ -199,7 +199,7 @@ export interface StudioAPI {
    */
   createSnippet(options: RequestOptions, language: string, variant: string): Promise<string>;
 
-  requestCreatePlayground(name: string, model: ModelInfo): Promise<string>;
+  requestCreatePlayground(name: string, model: ModelInfo, selectedService?: InferenceServer): Promise<string>;
 
   /**
    * Delete a conversation

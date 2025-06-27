@@ -33,6 +33,7 @@ import { AiStreamProcessor } from './playground/aiSdk';
 import { type McpServerManager } from './playground/McpServerManager';
 import type { ToolSet } from 'ai';
 import { simulateStreamingMiddleware, wrapLanguageModel } from 'ai';
+import type { InferenceServer } from '@shared/models/IInference';
 
 export class PlaygroundV2Manager implements Disposable {
   readonly #conversationRegistry: ConversationRegistry;
@@ -57,7 +58,7 @@ export class PlaygroundV2Manager implements Disposable {
     this.#conversationRegistry.deleteConversation(conversationId);
   }
 
-  async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
+  async requestCreatePlayground(name: string, model: ModelInfo, selectedService?: InferenceServer): Promise<string> {
     const trackingId: string = getRandomString();
     const task = this.taskRegistry.createTask('Creating Playground environment', 'loading', {
       trackingId: trackingId,
@@ -67,7 +68,7 @@ export class PlaygroundV2Manager implements Disposable {
       hasName: !!name,
       modelId: getHash(model.id),
     };
-    this.createPlayground(name, model, trackingId)
+    this.createPlayground(name, model, trackingId, selectedService)
       .then((playgroundId: string) => {
         this.taskRegistry.updateTask({
           ...task,
@@ -106,7 +107,12 @@ export class PlaygroundV2Manager implements Disposable {
     return trackingId;
   }
 
-  async createPlayground(name: string, model: ModelInfo, trackingId: string): Promise<string> {
+  async createPlayground(
+    name: string,
+    model: ModelInfo,
+    trackingId: string,
+    selectedService?: InferenceServer,
+  ): Promise<string> {
     if (!name) {
       name = this.getFreeName();
     }
@@ -114,14 +120,24 @@ export class PlaygroundV2Manager implements Disposable {
       throw new Error(`a playground with the name ${name} already exists`);
     }
 
-    // Create conversation
-    const conversationId = this.#conversationRegistry.createConversation(name, model.id);
+    let server: InferenceServer | undefined;
+    let containerId: string;
 
-    // create/start inference server if necessary
-    const servers = this.inferenceManager.getServers();
-    const server = servers.find(s => s.models.map(mi => mi.id).includes(model.id));
-    if (!server) {
-      await this.inferenceManager.createInferenceServer(
+    if (selectedService) {
+      // Use selected running service
+      server = this.inferenceManager
+        .getServers()
+        .find(s => s.container.containerId === selectedService.container.containerId);
+      if (!server) {
+        throw new Error(`Selected inference server ${selectedService.container.containerId} not found`);
+      }
+      if (server.status === 'stopped') {
+        await this.inferenceManager.startInferenceServer(server.container.containerId);
+      }
+      containerId = server.container.containerId;
+    } else {
+      // Create new inference server and get its containerId
+      containerId = await this.inferenceManager.createInferenceServer(
         await withDefaultConfiguration({
           modelsInfo: [model],
           labels: {
@@ -129,10 +145,13 @@ export class PlaygroundV2Manager implements Disposable {
           },
         }),
       );
-    } else if (server.status === 'stopped') {
-      await this.inferenceManager.startInferenceServer(server.container.containerId);
+      // Retrieve the server after creation
+      server = this.inferenceManager.getServers().find(s => s.container.containerId === containerId);
+      if (!server) {
+        throw new Error(`Inference server with containerId ${containerId} was not registered correctly.`);
+      }
     }
-
+    const conversationId = this.#conversationRegistry.createConversation(name, model.id, containerId);
     return conversationId;
   }
 
@@ -192,8 +211,26 @@ export class PlaygroundV2Manager implements Disposable {
   async submit(conversationId: string, userInput: string, options?: ModelOptions): Promise<number> {
     const conversation = this.#conversationRegistry.get(conversationId);
 
+    console.log('conversation model id', conversation.modelId);
+
     const servers = this.inferenceManager.getServers();
-    const server = servers.find(s => s.models.map(mi => mi.id).includes(conversation.modelId));
+
+    console.log('Available Inference Services:');
+    servers.forEach((server, index) => {
+      console.log(`--- Service ${index + 1} ---`);
+      console.log('Container ID:', server.container?.containerId);
+      console.log('Status:', server.status || 'unknown');
+      console.log('Health:', server.health?.Status ?? 'unknown');
+      console.log('Models:', server.models?.map(m => m.id).join(', ') || 'No models');
+      console.log('Inference Type:', server.type || 'N/A');
+    });
+
+    const server = this.inferenceManager.getServers().find(s => s.container.containerId === conversation.containerId);
+
+    console.log('picked service', server?.container.containerId);
+    console.log('picked service status', server?.status);
+    console.log('picked service health', server?.health?.Status);
+
     if (server === undefined) throw new Error('Inference server not found.');
 
     if (server.status !== 'running') throw new Error('Inference server is not running.');

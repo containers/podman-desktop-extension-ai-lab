@@ -62,6 +62,7 @@ export interface Conversation {
   id: string;
   messages: Message[];
   modelId: string;
+  containerId?: string;
   name: string;
   usage?: ModelUsage;
 }

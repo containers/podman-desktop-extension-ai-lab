@@ -116,7 +116,7 @@
     "ai": "^4.3.16",
     "express": "^4.21.2",
     "express-openapi-validator": "^5.5.7",
-    "isomorphic-git": "^1.32.0",
+    "isomorphic-git": "^1.32.1",
     "js-yaml": "^4.1.0",
     "mustache": "^4.2.0",
     "openai": "^5.8.2",

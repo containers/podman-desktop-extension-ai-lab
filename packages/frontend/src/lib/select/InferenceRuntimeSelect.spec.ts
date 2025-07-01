@@ -22,7 +22,8 @@ import { render, fireEvent, within } from '@testing-library/svelte';
 import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
 
-const providers: InferenceType[] = [InferenceType.LLAMA_CPP, InferenceType.OPENVINO, InferenceType.WHISPER_CPP];
+const getFilteredOptions = (exclude: InferenceType[] = []): InferenceType[] =>
+  Object.values(InferenceType).filter(type => !exclude.includes(type));
 
 beforeEach(() => {
   // mock scrollIntoView
@@ -32,7 +33,6 @@ beforeEach(() => {
 test('Lists all runtime options', async () => {
   const { container } = render(InferenceRuntimeSelect, {
     value: undefined,
-    providers,
     disabled: false,
   });
 
@@ -40,7 +40,7 @@ test('Lists all runtime options', async () => {
   await fireEvent.pointerUp(input);
 
   const items = container.querySelectorAll('div[class~="list-item"]');
-  const expectedOptions = providers;
+  const expectedOptions = getFilteredOptions();
 
   expect(items.length).toBe(expectedOptions.length);
 
@@ -52,7 +52,6 @@ test('Lists all runtime options', async () => {
 test('Selected value should be visible', async () => {
   const { container } = render(InferenceRuntimeSelect, {
     value: undefined,
-    providers,
     disabled: false,
   });
 
@@ -60,7 +59,7 @@ test('Selected value should be visible', async () => {
   await fireEvent.pointerUp(input);
 
   const items = container.querySelectorAll('div[class~="list-item"]');
-  const expectedOptions = providers;
+  const expectedOptions = getFilteredOptions();
 
   await fireEvent.click(items[0]);
 
@@ -77,7 +76,6 @@ test('Exclude specific runtime from list', async () => {
   const { container } = render(InferenceRuntimeSelect, {
     value: undefined,
     disabled: false,
-    providers,
     exclude: excluded,
   });
 
@@ -91,7 +89,7 @@ test('Exclude specific runtime from list', async () => {
     expect(itemTexts).not.toContain(excludedType);
   });
 
-  const expected = providers.filter(type => !excluded.includes(type));
+  const expected = getFilteredOptions(excluded);
 
   expected.forEach(included => {
     expect(itemTexts).toContain(included);

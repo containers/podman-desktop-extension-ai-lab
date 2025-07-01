@@ -10,7 +10,7 @@ interface Props {
 
 let { value = $bindable(), disabled, exclude = [] }: Props = $props();
 
-const options = Object.values(InferenceType).filter(type => type !== InferenceType.NONE && !exclude.includes(type));
+const options = Object.values(InferenceType).filter(type => !exclude.includes(type));
 
 function handleOnChange(nValue: { value: string } | undefined): void {
   if (nValue) {

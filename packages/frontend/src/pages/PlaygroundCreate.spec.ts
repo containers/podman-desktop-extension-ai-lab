@@ -72,7 +72,6 @@ vi.mock('../utils/client', async () => {
     studioClient: {
       requestCreatePlayground: vi.fn(),
       getExtensionConfiguration: vi.fn().mockResolvedValue({}),
-      getRegisteredProviders: vi.fn().mockResolvedValue([]),
     },
     rpcBrowser: {
       subscribe: (): unknown => {
@@ -101,12 +100,6 @@ beforeEach(() => {
 
   const tasksList = writable<Task[]>([]);
   vi.mocked(tasksStore).tasks = tasksList;
-
-  vi.mocked(studioClient.getRegisteredProviders).mockResolvedValue([
-    InferenceType.LLAMA_CPP,
-    InferenceType.WHISPER_CPP,
-    InferenceType.OPENVINO,
-  ]);
 });
 
 test('model should be selected by default when runtime is set', async () => {
@@ -115,7 +108,7 @@ test('model should be selected by default when runtime is set', async () => {
 
   vi.mocked(studioClient.requestCreatePlayground).mockRejectedValue('error creating playground');
 
-  const { container } = render(PlaygroundCreate);
+  const { container } = render(PlaygroundCreate, { props: { exclude: [InferenceType.NONE] } });
 
   // Select our runtime
   const dropdown = within(container).getByLabelText('Select Inference Runtime');
@@ -131,7 +124,8 @@ test('model should be selected by default when runtime is set', async () => {
 test('selecting a runtime filters the displayed models', async () => {
   const modelsInfoList = writable<ModelInfo[]>([dummyLlamaCppModel, dummyWhisperCppModel, dummyOpenVinoModel]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
-  const { container } = render(PlaygroundCreate);
+
+  const { container } = render(PlaygroundCreate, { props: { exclude: [InferenceType.NONE] } });
 
   // Select our runtime
   const dropdown = within(container).getByLabelText('Select Inference Runtime');

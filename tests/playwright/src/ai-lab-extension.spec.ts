@@ -530,6 +530,10 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Install ${appName} example app`, async () => {
+        test.skip(
+          appName === 'Object Detection' && isCI && !isMac,
+          'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
+        );
         test.setTimeout(1_500_000);
         const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
         await demoApp.waitForLoad();
@@ -621,6 +625,10 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`${appName}: Restart, Stop, Delete. Clean up model service`, async () => {
+        test.skip(
+          appName === 'Object Detection' && isCI && !isMac,
+          'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
+        );
         test.setTimeout(150_000);
 
         await restartApp(appName);

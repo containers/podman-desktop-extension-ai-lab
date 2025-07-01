@@ -16,13 +16,9 @@ import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
 import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
 
-// Get Registered List of Providers
-let providers: InferenceType[] = [];
-onMount(async () => {
-  providers = await studioClient.getRegisteredProviders();
-});
-
+// get recommended runtime
 let runtime: InferenceType | undefined = undefined;
+
 // exlude certain runtimes from selection
 let exclude: InferenceType[] = [InferenceType.WHISPER_CPP];
 let localModels: ModelInfo[];
@@ -160,9 +156,9 @@ export function goToUpPage(): void {
 
           <!-- inference runtime -->
           <label for="inference-runtime" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
-            Inference Runtime
+            Inference Runtime {runtime}
           </label>
-          <InferenceRuntimeSelect bind:value={runtime} providers={providers} exclude={exclude} />
+          <InferenceRuntimeSelect bind:value={runtime} exclude={exclude} />
 
           <!-- model input -->
           <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>

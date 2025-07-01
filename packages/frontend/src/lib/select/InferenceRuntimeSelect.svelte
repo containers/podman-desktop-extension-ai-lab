@@ -5,20 +5,12 @@ import { InferenceType } from '@shared/models/IInference';
 interface Props {
   disabled?: boolean;
   value: InferenceType | undefined;
-  /**
-   * List of providers
-   */
-  providers: InferenceType[];
   exclude?: InferenceType[];
 }
-let { value = $bindable(), disabled, providers, exclude = [] }: Props = $props();
 
-// Filter options based on optional exclude list
-const options = $derived(() =>
-  providers
-    .filter(type => type !== InferenceType.NONE && !exclude.includes(type))
-    .map(type => ({ value: type, label: type })),
-);
+let { value = $bindable(), disabled, exclude = [] }: Props = $props();
+
+const options = Object.values(InferenceType).filter(type => type !== InferenceType.NONE && !exclude.includes(type));
 
 function handleOnChange(nValue: { value: string } | undefined): void {
   if (nValue) {
@@ -36,4 +28,7 @@ function handleOnChange(nValue: { value: string } | undefined): void {
   value={value ? { label: value, value: value } : undefined}
   onchange={handleOnChange}
   placeholder="Select Inference Runtime to use"
-  items={options()} />
+  items={options.map(type => ({
+    value: type,
+    label: type,
+  }))} />

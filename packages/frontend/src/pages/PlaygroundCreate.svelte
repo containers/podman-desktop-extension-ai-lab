@@ -15,12 +15,24 @@ import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
 import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
+import { configuration } from '../stores/extensionConfiguration';
 
-// get recommended runtime
+// Get recommended runtime
 let runtime: InferenceType | undefined = undefined;
 
-// exlude certain runtimes from selection
-let exclude: InferenceType[] = [InferenceType.WHISPER_CPP];
+// Exlude certain runtimes from selection
+export let exclude: InferenceType[] = [InferenceType.NONE, InferenceType.WHISPER_CPP, InferenceType.OPENVINO];
+
+onMount(() => {
+  const inferenceRuntime = $configuration?.inferenceRuntime;
+  if (
+    Object.values(InferenceType).includes(inferenceRuntime as InferenceType) &&
+    !exclude.includes(inferenceRuntime as InferenceType)
+  ) {
+    runtime = inferenceRuntime as InferenceType;
+  }
+});
+
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(
   model => model.file && (!runtime || model.backend === runtime) && !exclude.includes(model.backend as InferenceType),

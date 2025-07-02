@@ -30,7 +30,7 @@ import type { TaskRegistry } from './registries/TaskRegistry';
 import type { LocalRepository } from '@shared/models/ILocalRepository';
 import type { LocalRepositoryRegistry } from './registries/LocalRepositoryRegistry';
 import path from 'node:path';
-import type { InferenceServer } from '@shared/models/IInference';
+import type { InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { CreationInferenceServerOptions } from '@shared/models/InferenceServerConfig';
 import type { InferenceManager } from './managers/inference/inferenceManager';
 import type { Conversation } from '@shared/models/IPlaygroundMessage';
@@ -142,6 +142,10 @@ export class StudioApiImpl implements StudioAPI {
 
   async getInferenceServers(): Promise<InferenceServer[]> {
     return this.inferenceManager.getServers();
+  }
+
+  async getRegisteredProviders(): Promise<InferenceType[]> {
+    return this.inferenceManager.getRegisteredProviders();
   }
 
   async requestDeleteInferenceServer(...containerIds: string[]): Promise<void> {

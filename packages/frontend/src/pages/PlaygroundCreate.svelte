@@ -23,7 +23,12 @@ let runtime: InferenceType | undefined = undefined;
 // Exlude certain runtimes from selection
 export let exclude: InferenceType[] = [InferenceType.NONE, InferenceType.WHISPER_CPP];
 
-onMount(() => {
+// Get registered list of providers
+let providers: InferenceType[] = [];
+
+onMount(async () => {
+  providers = await studioClient.getRegisteredProviders();
+
   const inferenceRuntime = $configuration?.inferenceRuntime;
   if (
     Object.values(InferenceType).includes(inferenceRuntime as InferenceType) &&
@@ -170,7 +175,7 @@ export function goToUpPage(): void {
           <label for="inference-runtime" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
             Inference Runtime
           </label>
-          <InferenceRuntimeSelect bind:value={runtime} exclude={exclude} />
+          <InferenceRuntimeSelect bind:value={runtime} providers={providers} exclude={exclude} />
 
           <!-- model input -->
           <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>

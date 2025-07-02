@@ -21,7 +21,7 @@ import { configuration } from '../stores/extensionConfiguration';
 let runtime: InferenceType | undefined = undefined;
 
 // Exlude certain runtimes from selection
-export let exclude: InferenceType[] = [InferenceType.NONE, InferenceType.WHISPER_CPP, InferenceType.OPENVINO];
+export let exclude: InferenceType[] = [InferenceType.NONE, InferenceType.WHISPER_CPP];
 
 onMount(() => {
   const inferenceRuntime = $configuration?.inferenceRuntime;
@@ -168,7 +168,7 @@ export function goToUpPage(): void {
 
           <!-- inference runtime -->
           <label for="inference-runtime" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
-            Inference Runtime {runtime}
+            Inference Runtime
           </label>
           <InferenceRuntimeSelect bind:value={runtime} exclude={exclude} />
 

@@ -13,15 +13,20 @@ import { filterByLabel } from '../utils/taskUtils';
 import type { Unsubscriber } from 'svelte/store';
 import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
+import ModelServiceSelect from '/@/lib/select/ModelServiceSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
+import type { InferenceServer } from '@shared/models/IInference';
+import { inferenceServers } from '/@/stores/inferenceServers';
 
 let localModels: ModelInfo[];
+let ModelServices: InferenceServer[];
 $: localModels = $modelsInfo.filter(model => model.file && model.backend !== InferenceType.WHISPER_CPP);
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;
 let submitted: boolean = false;
 let playgroundName: string;
 let errorMsg: string | undefined = undefined;
+let selectedService: InferenceServer | undefined;
 
 // The tracking id is a unique identifier provided by the
 // backend when calling requestCreateInferenceServer
@@ -34,10 +39,20 @@ $: {
   if (!model && localModels.length > 0) {
     model = localModels[0];
   }
+  ModelServices = model ? $inferenceServers.filter(server => server.models.some(m => m.id === model?.id)) : [];
+  if (ModelServices.length > 0) {
+    selectedService = ModelServices[0];
+  } else {
+    selectedService = undefined;
+  }
 }
 
 function openModelsPage(): void {
   router.goto(`/models`);
+}
+
+function openModelServicePage(): void {
+  router.goto(`/services`);
 }
 
 // Navigate to the new created playground environment
@@ -56,10 +71,10 @@ async function submit(): Promise<void> {
   submitted = true;
   try {
     // Using || and not && as we want to have the empty string systemPrompt passed as undefined
-    trackingId = await studioClient.requestCreatePlayground(playgroundName, model);
+    trackingId = await studioClient.requestCreatePlayground(playgroundName, model, selectedService);
   } catch (err: unknown) {
     trackingId = undefined;
-    console.error('Something wrong while trying to create the playground.', err);
+    console.error('Something wrong while tryinfghfghgfhfghgg to create the playground.', err);
     errorMsg = String(err);
     submitted = false;
   }
@@ -122,19 +137,17 @@ export function goToUpPage(): void {
   </svelte:fragment>
   <svelte:fragment slot="content">
     <div class="flex flex-col w-full">
-      <!-- tasks tracked -->
       {#if trackedTasks.length > 0}
         <div class="mx-5 mt-5" role="status">
           <TasksProgress tasks={trackedTasks} />
         </div>
       {/if}
 
-      <!-- form -->
       <div class="bg-[var(--pd-content-card-bg)] m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
-          <!-- playground name input -->
-          <label for="playgroundName" class="block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-            >Playground name</label>
+          <label for="playgroundName" class="block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+            Playground name
+          </label>
           <Input
             disabled={submitted}
             id="playgroundName"
@@ -145,38 +158,53 @@ export function goToUpPage(): void {
             placeholder="Leave blank to generate a name"
             aria-label="playgroundName" />
 
-          <!-- model input -->
-          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
+          <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"> Model </label>
           <ModelSelect models={localModels} disabled={submitted} bind:value={model} />
+
           {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">
               <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />
-              <div role="alert" aria-label="Error Message Content" class="ml-2">
-                You don't have any models downloaded. You can download them in <a
-                  href="javascript:void(0);"
-                  class="underline"
-                  title="Models page"
-                  on:click={openModelsPage}>models page</a
+              <div class="ml-2">
+                You don't have any models downloaded. Download them from the
+                <a href="javascript:void(0);" class="underline" title="Models page" on:click={openModelsPage}
+                  >models page</a
                 >.
               </div>
             </div>
           {:else if availModels.length > 0}
             <div class="text-sm p-1 flex flex-row items-center text-[var(--pd-content-card-text)]">
               <Fa size="1.1x" class="cursor-pointer" icon={faInfoCircle} />
-              <div role="alert" aria-label="Info Message Content" class="ml-2">
-                Other models are available, but must be downloaded from the <a
+              <div class="ml-2">
+                Other models are available on the <a
                   href="javascript:void(0);"
                   class="underline"
-                  title="Models page"
                   on:click={openModelsPage}>models page</a
                 >.
               </div>
             </div>
           {/if}
+          {#if ModelServices.length > 0}
+            <label class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"> Model Services </label>
+            {#key ModelServices}
+              <ModelServiceSelect bind:value={selectedService} servers={ModelServices} disabled={submitted} />
+            {/key}
+            <div class="text-sm p-1 flex flex-row items-center text-[var(--pd-content-card-text)]">
+              <Fa size="1.1x" class="cursor-pointer" icon={faInfoCircle} />
+              <div class="ml-2">
+                Create additional model services here <a
+                  href="javascript:void(0);"
+                  class="underline"
+                  on:click={openModelServicePage}>model service page</a
+                >.
+              </div>
+            </div>
+          {/if}
         </div>
+
         {#if errorMsg !== undefined}
           <ErrorMessage error={errorMsg} />
         {/if}
+
         <footer>
           <div class="w-full flex flex-col">
             <Button

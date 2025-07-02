@@ -108,7 +108,7 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 
 test.afterAll(async ({ runner }) => {
   test.setTimeout(120_000);
-  await runner.close();
+  await runner.close(90_000);
 });
 
 test.describe.serial(`AI Lab extension installation and verification`, () => {

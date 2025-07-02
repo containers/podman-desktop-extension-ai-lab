@@ -342,7 +342,8 @@ export class ApiServer implements Disposable {
 
     downloader
       .perform(modelName)
-      .then(() => {
+      .then(async () => {
+        await this.modelsManager.loadLocalModels();
         this.sendResult(
           res,
           {

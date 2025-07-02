@@ -65,6 +65,7 @@ const modelsManager = {
   getModelsInfo: vi.fn(),
   isModelOnDisk: vi.fn(),
   createDownloader: vi.fn(),
+  loadLocalModels: vi.fn(),
 } as unknown as ModelsManager;
 
 const catalogManager = {
@@ -278,6 +279,7 @@ describe.each([undefined, true, false])('/api/pull endpoint, stream is %o', stre
   });
 
   test('/api/pull downloads model and returns success', async () => {
+    const pdUpdate = vi.spyOn(modelsManager, 'loadLocalModels').mockResolvedValue();
     expect(server.getListener()).toBeDefined();
     vi.mocked(catalogManager.getModelByName).mockReturnValue({
       id: 'modelId',
@@ -312,6 +314,7 @@ describe.each([undefined, true, false])('/api/pull endpoint, stream is %o', stre
       expect(lines[2]).toEqual('{"status":"success"}');
       expect(lines[3]).toEqual('');
     }
+    expect(pdUpdate).toHaveBeenCalledTimes(1);
   });
 
   test('/api/pull should return an error if an error occurs during download', async () => {

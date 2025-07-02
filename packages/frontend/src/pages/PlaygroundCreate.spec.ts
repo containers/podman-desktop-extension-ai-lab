@@ -72,6 +72,7 @@ vi.mock('../utils/client', async () => {
     studioClient: {
       requestCreatePlayground: vi.fn(),
       getExtensionConfiguration: vi.fn().mockResolvedValue({}),
+      getRegisteredProviders: vi.fn().mockResolvedValue([]),
     },
     rpcBrowser: {
       subscribe: (): unknown => {
@@ -100,6 +101,11 @@ beforeEach(() => {
 
   const tasksList = writable<Task[]>([]);
   vi.mocked(tasksStore).tasks = tasksList;
+  vi.mocked(studioClient.getRegisteredProviders).mockResolvedValue([
+    InferenceType.LLAMA_CPP,
+    InferenceType.WHISPER_CPP,
+    InferenceType.OPENVINO,
+  ]);
 });
 
 test('model should be selected by default when runtime is set', async () => {

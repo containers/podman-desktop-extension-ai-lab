@@ -99,6 +99,15 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
+   * Get the Unique registered Inference provider types
+   */
+
+  public getRegisteredProviders(): InferenceType[] {
+    const types: InferenceType[] = this.inferenceProviderRegistry.getAll().map(provider => provider.type);
+    return [...new Set(types)];
+  }
+
+  /**
    * return an inference server
    * @param containerId the containerId of the inference server
    */

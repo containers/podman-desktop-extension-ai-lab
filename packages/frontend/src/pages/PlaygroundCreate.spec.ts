@@ -55,11 +55,24 @@ const dummyWhisperCppModel: ModelInfo = {
   backend: InferenceType.WHISPER_CPP,
 };
 
+const dummyOpenVinoModel: ModelInfo = {
+  id: 'openvino-model-id',
+  name: 'Dummy Openvino model',
+  file: {
+    file: 'file',
+    path: path.resolve(os.tmpdir(), 'path'),
+  },
+  properties: {},
+  description: '',
+  backend: InferenceType.OPENVINO,
+};
+
 vi.mock('../utils/client', async () => {
   return {
     studioClient: {
       requestCreatePlayground: vi.fn(),
       getExtensionConfiguration: vi.fn().mockResolvedValue({}),
+      getRegisteredProviders: vi.fn().mockResolvedValue([]),
     },
     rpcBrowser: {
       subscribe: (): unknown => {
@@ -88,28 +101,58 @@ beforeEach(() => {
 
   const tasksList = writable<Task[]>([]);
   vi.mocked(tasksStore).tasks = tasksList;
+  vi.mocked(studioClient.getRegisteredProviders).mockResolvedValue([
+    InferenceType.LLAMA_CPP,
+    InferenceType.WHISPER_CPP,
+    InferenceType.OPENVINO,
+  ]);
 });
 
-test('model should be selected by default', () => {
+test('model should be selected by default when runtime is set', async () => {
   const modelsInfoList = writable<ModelInfo[]>([dummyLlamaCppModel]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
 
   vi.mocked(studioClient.requestCreatePlayground).mockRejectedValue('error creating playground');
 
-  const { container } = render(PlaygroundCreate);
+  const { container } = render(PlaygroundCreate, { props: { exclude: [InferenceType.NONE] } });
+
+  // Select our runtime
+  const dropdown = within(container).getByLabelText('Select Inference Runtime');
+  await userEvent.click(dropdown);
+
+  const llamacppOption = within(container).getByText(InferenceType.LLAMA_CPP);
+  await userEvent.click(llamacppOption);
 
   const model = within(container).getByText(dummyLlamaCppModel.name);
   expect(model).toBeInTheDocument();
 });
 
-test('models with incompatible backend should not be listed', async () => {
-  const modelsInfoList = writable<ModelInfo[]>([dummyWhisperCppModel]);
+test('selecting a runtime filters the displayed models', async () => {
+  const modelsInfoList = writable<ModelInfo[]>([dummyLlamaCppModel, dummyWhisperCppModel, dummyOpenVinoModel]);
+  vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
+
+  const { container } = render(PlaygroundCreate, { props: { exclude: [InferenceType.NONE] } });
+
+  // Select our runtime
+  const dropdown = within(container).getByLabelText('Select Inference Runtime');
+  await userEvent.click(dropdown);
+
+  const openvinoOption = within(container).getByText(InferenceType.OPENVINO);
+  await userEvent.click(openvinoOption);
+
+  expect(within(container).queryByText(dummyOpenVinoModel.name)).toBeInTheDocument();
+  expect(within(container).queryByText(dummyLlamaCppModel.name)).toBeNull();
+  expect(within(container).queryByText(dummyWhisperCppModel.name)).toBeNull();
+});
+
+test('should show warning when no local models are available', () => {
+  const modelsInfoList = writable<ModelInfo[]>([]);
   vi.mocked(modelsInfoStore).modelsInfo = modelsInfoList;
 
   const { container } = render(PlaygroundCreate);
 
-  const model = within(container).queryByText(dummyWhisperCppModel.name);
-  expect(model).toBeNull();
+  const warning = within(container).getByText(/You don't have any models downloaded/);
+  expect(warning).toBeInTheDocument();
 });
 
 test('should display error message if createPlayground fails', async () => {
@@ -122,6 +165,13 @@ test('should display error message if createPlayground fails', async () => {
 
   const errorMessage = within(container).queryByLabelText('Error Message Content');
   expect(errorMessage).not.toBeInTheDocument();
+
+  // Select the runtime first
+  const runtimeDropdown = within(container).getByLabelText('Select Inference Runtime');
+  await userEvent.click(runtimeDropdown);
+
+  const runtimeOption = within(container).getByText(InferenceType.LLAMA_CPP);
+  await userEvent.click(runtimeOption);
 
   const createButton = within(container).getByTitle('Create playground');
   await userEvent.click(createButton);

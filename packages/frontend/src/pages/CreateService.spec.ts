@@ -421,3 +421,47 @@ test('model-id query should be used to select default model', async () => {
     });
   });
 });
+
+test('models with backend "none" should be filtered out', async () => {
+  const modelsInfoList = writable<ModelInfo[]>([
+    {
+      id: 'model-valid',
+      name: 'Valid Model',
+      description: 'A model with a valid backend',
+      backend: 'llama-cpp',
+      file: {
+        file: 'file',
+        path: '/valid-path',
+      },
+    } as unknown as ModelInfo,
+    {
+      id: 'model-none',
+      name: 'None Backend Model',
+      description: 'A model with backend none',
+      backend: 'none',
+      file: {
+        file: 'file',
+        path: '/none-path',
+      },
+    } as unknown as ModelInfo,
+  ]);
+
+  vi.mocked(ModelsInfoStore).modelsInfo = modelsInfoList;
+  router.location.query.set('model-id', 'model-valid');
+
+  render(CreateService);
+  expect(screen.queryByText('None Backend Model')).toBeNull();
+  const createBtn = screen.getByTitle('Create service');
+
+  await vi.waitFor(() => {
+    expect(createBtn).toBeEnabled();
+  });
+
+  await fireEvent.click(createBtn);
+
+  expect(vi.mocked(studioClient.requestCreateInferenceServer)).toHaveBeenCalledWith(
+    expect.objectContaining({
+      modelsInfo: [expect.objectContaining({ id: 'model-valid' })],
+    }),
+  );
+});

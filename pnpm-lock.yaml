@@ -121,8 +121,8 @@ importers:
         specifier: ^0.1.17
         version: 0.1.17
       '@huggingface/hub':
-        specifier: ^2.1.0
-        version: 2.2.0
+        specifier: ^2.3.0
+        version: 2.3.0
       ai:
         specifier: ^4.3.16
         version: 4.3.16(react@19.1.0)(zod@3.24.4)
@@ -967,13 +967,13 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.2.0':
-    resolution: {integrity: sha512-G+VS1eMp80KovIHBlsiEigS6I6qmI4j+VQ1UZ8CaXT+pw2A7tj6e/crfxFdKNE2uOK5oQkRFiCBJykMwrWQ8OA==}
+  '@huggingface/hub@2.3.0':
+    resolution: {integrity: sha512-B+svPg/zFCT0kamdcWqZxK1S88Ulry7mo2GCdTvCr9JDxEtDsVePwgOeYrs7uiN7l0JNhdHU6hywsDVnzUNyKQ==}
     engines: {node: '>=18'}
     hasBin: true
 
-  '@huggingface/tasks@0.19.11':
-    resolution: {integrity: sha512-oBhSgVlg7Pp643MsH8BiI3OAXIMJNxdSiMtv4mApRZV8dmAz8oasKhg6CVKIplO7vAO7F6dkmMn4bYM64I2A9w==}
+  '@huggingface/tasks@0.19.22':
+    resolution: {integrity: sha512-jtRXsJZTES01X4gJ5VOUnEm3ONyyfXUcWKObbWkr/SQmjaH/kxtWqc2zVWKaxL4QLoXqXJ+T+Pi5xupMStSudQ==}
 
   '@huggingface/tasks@0.19.5':
     resolution: {integrity: sha512-WEwM/tZsRqw0TinTkQwqPsK5pdaGffAV6Nu6xxSTSZUsBvkDJxE9kTiMNSwvjeHvt9/MYAJKjZ+CMSo6Rugs4g==}
@@ -2074,8 +2074,8 @@ packages:
   caniuse-lite@1.0.30001717:
     resolution: {integrity: sha512-auPpttCq6BDEG8ZAuHJIplGw6GODhjw+/11e7IjpnYCxZcW/ONgPs0KVBJ0d1bY3e2+7PRe5RCLyP+PfwVgkYw==}
 
-  caniuse-lite@1.0.30001726:
-    resolution: {integrity: sha512-VQAUIUzBiZ/UnlM28fSp2CRF3ivUn1BWEvxMcVTNwpw91Py1pGbPIyIKtd+tzct9C3ouceCVdGAXxZOpZAsgdw==}
+  caniuse-lite@1.0.30001727:
+    resolution: {integrity: sha512-pB68nIHmbN6L/4C6MH1DokyR3bYqFwjaSs/sWDHGj4CTcFtQUQMuJftVwWkXq7mNWOybD3KhUv3oWHoGxgP14Q==}
 
   chai@5.2.0:
     resolution: {integrity: sha512-mCuXncKXk5iCLhfhwTc0izo0gtEmpz5CtG2y8GiOINBlMVS6v8TMRc5TaLWKS6692m9+dVVfzgeVxR5UxWHTYw==}
@@ -5656,11 +5656,11 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.19.5
 
-  '@huggingface/hub@2.2.0':
+  '@huggingface/hub@2.3.0':
     dependencies:
-      '@huggingface/tasks': 0.19.11
+      '@huggingface/tasks': 0.19.22
 
-  '@huggingface/tasks@0.19.11': {}
+  '@huggingface/tasks@0.19.22': {}
 
   '@huggingface/tasks@0.19.5': {}
 
@@ -6738,7 +6738,7 @@ snapshots:
 
   browserslist@4.25.1:
     dependencies:
-      caniuse-lite: 1.0.30001726
+      caniuse-lite: 1.0.30001727
       electron-to-chromium: 1.5.179
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
@@ -6789,7 +6789,7 @@ snapshots:
 
   caniuse-lite@1.0.30001717: {}
 
-  caniuse-lite@1.0.30001726:
+  caniuse-lite@1.0.30001727:
     optional: true
 
   chai@5.2.0:

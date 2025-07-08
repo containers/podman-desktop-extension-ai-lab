@@ -99,9 +99,9 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
+  async requestCreatePlayground(name: string, model: ModelInfo, selectedService?: InferenceServer): Promise<string> {
     try {
-      return await this.playgroundV2.requestCreatePlayground(name, model);
+      return await this.playgroundV2.requestCreatePlayground(name, model, selectedService);
     } catch (err: unknown) {
       console.error('Something went wrong while trying to create playground environment', err);
       throw err;

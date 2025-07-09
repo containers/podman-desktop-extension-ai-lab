@@ -665,9 +665,16 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
       await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
       await instructLabPage.startInstructLabButton.click();
-      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 900_000 });
 
+      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 900_000 });
       await playExpect(instructLabPage.openInstructLabButton).toBeEnabled({ timeout: 10_000 });
+      await playExpect(instructLabPage.statusMessageBox).toContainText('Starting InstructLab container');
+
+      const checkMarkLocator = instructLabPage.statusMessageBox
+        .getByText('Started InstructLab container')
+        .locator('..')
+        .getByRole('img');
+      await playExpect(checkMarkLocator).toHaveClass(/text-green/);
       await instructLabPage.openInstructLabButton.click();
 
       const containerName = await page

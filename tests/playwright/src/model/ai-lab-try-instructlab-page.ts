@@ -23,11 +23,13 @@ import { AILabBasePage } from './ai-lab-base-page';
 export class AILabTryInstructLabPage extends AILabBasePage {
   readonly startInstructLabButton: Locator;
   readonly openInstructLabButton: Locator;
+  readonly statusMessageBox: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Run InstructLab as a container');
     this.startInstructLabButton = this.webview.getByRole('button', { name: 'Start InstructLab container' });
     this.openInstructLabButton = this.webview.getByRole('button', { name: 'Open InstructLab container' });
+    this.statusMessageBox = this.webview.getByRole('status');
   }
 
   async waitForLoad(): Promise<void> {

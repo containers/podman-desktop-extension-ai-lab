@@ -667,6 +667,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await instructLabPage.startInstructLabButton.click();
       await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 900_000 });
 
+      await playExpect(instructLabPage.openInstructLabButton).toBeEnabled({ timeout: 10_000 });
       await instructLabPage.openInstructLabButton.click();
 
       const containerName = await page
@@ -680,7 +681,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await playExpect(containerDetailsPage.heading).toBeVisible();
       await playExpect(containerDetailsPage.heading).toContainText(exactInstructLabContainerName);
       await playExpect
-        .poll(async () => containerDetailsPage.getState(), { timeout: 90_000 })
+        .poll(async () => containerDetailsPage.getState(), { timeout: 90_000, intervals: [1_000] })
         .toContain(ContainerState.Running);
     });
 

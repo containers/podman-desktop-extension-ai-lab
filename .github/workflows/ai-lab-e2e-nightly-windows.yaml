@@ -139,6 +139,7 @@ jobs:
     - name: Create instance
       run: |
         # Create instance
+        lsmod | grep fuse
         podman run -d --name windows-create --rm \
           -v ${PWD}:/workspace:z \
           -e ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }} \

@@ -129,6 +129,7 @@ jobs:
           -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
           -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
           -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
+          --user 0 \
           ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION }} azure \
             windows create \
             --project-name 'windows-desktop' \
@@ -287,7 +288,8 @@ jobs:
           -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
           -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
           -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
-          ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION }} azure \
+          --user 0 \
+          ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION_TAG }} azure \
             windows destroy \
             --project-name 'windows-desktop' \
             --backed-url 'file:///workspace'

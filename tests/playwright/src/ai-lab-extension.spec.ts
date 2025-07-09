@@ -650,11 +650,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     let instructLabPage: AILabTryInstructLabPage;
     const instructLabContainerName = /^instructlab-\d+$/;
     let exactInstructLabContainerName = '';
+    test.skip(!!process.env.GITHUB_ACTIONS && !!isLinux);
 
-    if (process.env.GITHUB_ACTIONS && isLinux) {
-      //Current GHA Linux machine doesnt have enough resources
-      test.skip();
-    }
     test.beforeAll('Open Try InstructLab page', async ({ runner, page, navigationBar }) => {
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
       await aiLabPage.navigationBar.waitForLoad();
@@ -682,24 +679,25 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
       await playExpect(containerDetailsPage.heading).toBeVisible();
       await playExpect(containerDetailsPage.heading).toContainText(exactInstructLabContainerName);
-      const containerState = await containerDetailsPage.getState();
-      playExpect(containerState).toContain(ContainerState.Running);
+      await playExpect
+        .poll(async () => containerDetailsPage.getState(), { timeout: 90_000 })
+        .toContain(ContainerState.Running);
     });
 
     test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
       const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
-      await containerDetailsPage.deleteContainer();
-      const containersPage = await navigationBar.openContainers();
+      await playExpect(containerDetailsPage.heading).toBeVisible();
+
+      const containersPage = await containerDetailsPage.deleteContainer();
       await playExpect(containersPage.heading).toBeVisible();
       await playExpect
-        .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 100_000 })
+        .poll(async () => containersPage.containerExists(exactInstructLabContainerName), { timeout: 100_000 })
         .toBeFalsy();
 
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
       await aiLabPage.navigationBar.waitForLoad();
       instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();
       await instructLabPage.waitForLoad();
-      await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
       await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
     });
   });

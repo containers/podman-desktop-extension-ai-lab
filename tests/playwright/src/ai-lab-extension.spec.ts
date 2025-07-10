@@ -670,11 +670,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await playExpect(instructLabPage.openInstructLabButton).toBeEnabled({ timeout: 10_000 });
       await playExpect(instructLabPage.statusMessageBox).toContainText('Starting InstructLab container');
 
-      const checkMarkLocator = instructLabPage.statusMessageBox
-        .getByText('Started InstructLab container')
-        .locator('..')
-        .getByRole('img');
-      await playExpect(checkMarkLocator).toHaveClass(/text-green/);
+      const checkMarkLocator = instructLabPage.statusMessageBox.locator('[class*="text-green"]');
+      await playExpect(checkMarkLocator).toHaveCount(3);
       await instructLabPage.openInstructLabButton.click();
 
       const containerName = await page
@@ -696,8 +693,9 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
       await playExpect(containerDetailsPage.heading).toBeVisible();
 
-      const containersPage = await containerDetailsPage.deleteContainer();
-      await playExpect(containersPage.heading).toBeVisible();
+      await containerDetailsPage.deleteContainer();
+      const containersPage = await navigationBar.openContainers();
+      await playExpect(containersPage.heading).toBeVisible({ timeout: 30_000 });
       await playExpect
         .poll(async () => containersPage.containerExists(exactInstructLabContainerName), { timeout: 100_000 })
         .toBeFalsy();

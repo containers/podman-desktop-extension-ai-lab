@@ -36,6 +36,7 @@ import {
   isLinux,
   isMac,
   isCI,
+  resetPodmanMachinesFromCLI,
 } from '@podman-desktop/tests-playwright';
 import type { AILabDashboardPage } from './model/ai-lab-dashboard-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
@@ -107,7 +108,8 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 });
 
 test.afterAll(async ({ runner }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
+  await resetPodmanMachinesFromCLI();
   await runner.close();
 });
 

@@ -227,8 +227,8 @@ importers:
         specifier: 1.16.0-202501131429-9076680fda2
         version: 1.16.0-202501131429-9076680fda2(svelte-fa@4.0.4(svelte@5.35.5))(svelte@5.35.5)
       filesize:
-        specifier: ^10.1.6
-        version: 10.1.6
+        specifier: ^11.0.0
+        version: 11.0.0
       humanize-duration:
         specifier: ^3.32.2
         version: 3.33.0
@@ -2789,8 +2789,8 @@ packages:
     resolution: {integrity: sha512-RLoqTXE8/vPmMuTI88DAzhMYC99I8BWv7zYP4A1puo5HIjEJ5EX48ighy4ZyKMG9EDXxBgW6e++cn7d1xuFghA==}
     engines: {node: '>=0.10.0'}
 
-  filesize@10.1.6:
-    resolution: {integrity: sha512-sJslQKU2uM33qH5nqewAwVB2QgR6w1aMNsYUp3aN5rMRyXEwJGmZvaWzeJFNTOXWlHQyBFCWrdj3fV/fsTOX8w==}
+  filesize@11.0.0:
+    resolution: {integrity: sha512-zirjFHy2G+wBsiU3HCRL088cHf2WA3F5R4FsJ+sy/nk7e+TGTFLNpJNrzRD5IcH5h3HqPUM9CCF5KvDV6zs0HQ==}
     engines: {node: '>= 10.4.0'}
 
   fill-range@7.1.1:
@@ -7724,7 +7724,7 @@ snapshots:
 
   file-type@3.9.0: {}
 
-  filesize@10.1.6: {}
+  filesize@11.0.0: {}
 
   fill-range@7.1.1:
     dependencies:

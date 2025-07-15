@@ -98,8 +98,7 @@ test('Instructions block should be displayed if Llama Stack container is found',
   });
   render(StartLlamaStackContainer);
 
-  await tick();
-  screen.getByText('Instructions');
+  await vi.waitFor(() => screen.getByText('Instructions'));
 });
 
 test('start button should be displayed and enabled', async () => {

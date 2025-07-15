@@ -124,8 +124,8 @@ importers:
         specifier: ^2.4.0
         version: 2.4.0
       ai:
-        specifier: ^4.3.18
-        version: 4.3.18(react@19.1.0)(zod@3.24.4)
+        specifier: ^4.3.19
+        version: 4.3.19(react@19.1.0)(zod@3.24.4)
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -1835,8 +1835,8 @@ packages:
     resolution: {integrity: sha512-jRR5wdylq8CkOe6hei19GGZnxM6rBGwFl3Bg0YItGDimvjGtAvdZk4Pu6Cl4u4Igsws4a1fd1Vq3ezrhn4KmFw==}
     engines: {node: '>= 14'}
 
-  ai@4.3.18:
-    resolution: {integrity: sha512-Mn6JdNGB56GOyrfGJ746zzK6e0f6Ozr7lwfEYkQZjhf261wj1aAJgCvUsgML5/7pSiBJq3ytNEBVcR1oUKTCZw==}
+  ai@4.3.19:
+    resolution: {integrity: sha512-dIE2bfNpqHN3r6IINp9znguYdhIOheKW2LDigAMrgt/upT3B8eBGPSCblENvaZGoq+hxaN9fSMzjWpbqloP+7Q==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -2413,8 +2413,8 @@ packages:
   electron-to-chromium@1.5.150:
     resolution: {integrity: sha512-rOOkP2ZUMx1yL4fCxXQKDHQ8ZXwisb2OycOQVKHgvB3ZI4CvehOd4y2tfnnLDieJ3Zs1RL1Dlp3cMkyIn7nnXA==}
 
-  electron-to-chromium@1.5.183:
-    resolution: {integrity: sha512-vCrDBYjQCAEefWGjlK3EpoSKfKbT10pR4XXPdn65q7snuNOZnthoVpBfZPykmDapOKfoD+MMIPG8ZjKyyc9oHA==}
+  electron-to-chromium@1.5.184:
+    resolution: {integrity: sha512-zlaUk/wwnR/27FHNarzOtMgfxD1Q0/2Aby7PnURumQTal7yauqQ3c2HHcG/pjLFTvF3AWv44kMWyArVlfHeDlw==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -6511,7 +6511,7 @@ snapshots:
 
   agent-base@7.1.3: {}
 
-  ai@4.3.18(react@19.1.0)(zod@3.24.4):
+  ai@4.3.19(react@19.1.0)(zod@3.24.4):
     dependencies:
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.8(zod@3.24.4)
@@ -6736,7 +6736,7 @@ snapshots:
   browserslist@4.25.1:
     dependencies:
       caniuse-lite: 1.0.30001727
-      electron-to-chromium: 1.5.183
+      electron-to-chromium: 1.5.184
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
     optional: true
@@ -7103,7 +7103,7 @@ snapshots:
 
   electron-to-chromium@1.5.150: {}
 
-  electron-to-chromium@1.5.183:
+  electron-to-chromium@1.5.184:
     optional: true
 
   emoji-regex@8.0.0: {}

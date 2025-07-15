@@ -101,7 +101,7 @@ jobs:
         DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.2' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
-        DEFAULT_AZURE_VM_SIZE: 'Standard_D8as_v5'
+        DEFAULT_AZURE_VM_SIZE: 'Standard_E8as_v5'
       run: |
         echo "FORK=${{ inputs.pd-fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
         echo "BRANCH=${{ inputs.pd-branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV

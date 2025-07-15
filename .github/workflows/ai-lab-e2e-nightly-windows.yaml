@@ -72,7 +72,7 @@ on:
         type: string
         required: true
       azure_vm_size:
-        default: 'Standard_D8s_v4'
+        default: 'Standard_E8as_v5'
         description: 'Azure VM size (Standard_E4as_v5 is cheapest, 4core AMD, 32GB RAM)'
         type: choice
         required: true

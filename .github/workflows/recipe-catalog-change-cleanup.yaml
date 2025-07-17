@@ -1,0 +1,34 @@
+name: recipe-catalog-change-cleanup
+
+on:
+  workflow_run:
+    workflows: ["recipe-catalog-change-windows-trigger"]
+    types:
+      - completed
+
+jobs:
+  debug:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Debug context
+        run: |
+          echo "Workflow run ID: ${{ github.event.workflow_run.id }}"
+          echo "Fork owner: ${{ github.event.workflow_run.head_repository.owner.login }}"
+          echo "Fork repo: ${{ github.event.workflow_run.head_repository.name }}"
+          echo "Fork branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Commit SHA: ${{ github.event.workflow_run.head_sha }}"
+          echo "Base repo: ${{ github.event.workflow_run.repository.full_name }}"
+          echo "Changes detected: ${{ github.event.workflow_run.outputs.changes-detected }}"
+          echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
+  cleanup:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'skipped' || github.event.workflow_run.conclusion == 'cancelled' }}
+    steps:
+      - name: Remove skipped or cancelled workflow run
+        run: |
+          echo "Cleaning up workflow run ID: ${{ github.event.workflow_run.id }}"
+          gh run delete ${{ github.event.workflow_run.id }} --repo ${{ github.event.workflow_run.repository.full_name }}
+          echo "Workflow run ID ${{ github.event.workflow_run.id }} has been cleaned up."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true

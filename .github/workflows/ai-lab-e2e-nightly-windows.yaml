@@ -117,7 +117,7 @@ jobs:
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
         DEFAULT_MAPT_VM_SIZE: "${{ vars.MAPT_VM_SIZE || 'Standard_D8s_v4' }}"
-        DEFAULT_MAPT_PARAMS: "IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }},VERSION_TAG=${{ vars.MAPT_VERSION_TAG || '0.9.3' }},EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\""
+        DEFAULT_MAPT_PARAMS: "IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }},VERSION_TAG=${{ vars.MAPT_VERSION_TAG || 'v0.9.3' }},EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\""
       run: |
         echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
         echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV

@@ -16,6 +16,7 @@ import { tasks } from '/@/stores/tasks';
 import ModelStatusIcon from '../lib/icons/ModelStatusIcon.svelte';
 import { router } from 'tinro';
 import { faBookOpen, faFileImport } from '@fortawesome/free-solid-svg-icons';
+import { SvelteSet } from 'svelte/reactivity';
 
 const columns = [
   new TableColumn<ModelInfo>('Status', {
@@ -70,7 +71,7 @@ onMount(() => {
   // Subscribe to the tasks store
   const tasksUnsubscribe = tasks.subscribe(value => {
     // Filter out duplicates
-    const modelIds = new Set<string>();
+    const modelIds = new SvelteSet<string>();
     pullingTasks = value.reduce((filtered: Task[], task: Task) => {
       if (
         (task.state === 'loading' || task.state === 'error') &&

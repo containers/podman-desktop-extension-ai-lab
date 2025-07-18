@@ -64,14 +64,14 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        status_context="ci/gh/e2e/windows-matrix-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}"
+        status_context="catalog-change-windows-matrix-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}"
         echo "status_context=${status_context}" >> "$GITHUB_ENV"
         set -xuo
         # Status msg
         data="{\"state\":\"pending\""
         data="${data},\"description\":\"Running recipe tests on catalog change on Windows ${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}\""
         data="${data},\"context\":\"$status_context\""
-        data="${data},\"target_url\":\"https://github.com/${{ inputs.trigger-workflow-base-repo }}/actions/runs/${{ inputs.trigger-workflow-run-id }}\"}"
+        data="${data},\"target_url\":\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
         # Create status by API call
         curl -L -v -X POST \
           -H "Accept: application/vnd.github+json" \
@@ -266,8 +266,8 @@ jobs:
           data="{\"state\":\"failure\""
         fi
         data="${data},\"description\":\"Finished recipe tests on catalog change on Windows ${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}\""
-        data="${data},\"context\":\"$status_context\""
-        data="${data},\"target_url\":\"https://github.com/${{ inputs.trigger-workflow-base-repo }}/actions/runs/${{ inputs.trigger-workflow-run-id }}\"}"
+        data="${data},\"context\":\"${{ env.status_context }}\""
+        data="${data},\"target_url\":\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
         # Create status by API call
         curl -L -v -X POST \
           -H "Accept: application/vnd.github+json" \

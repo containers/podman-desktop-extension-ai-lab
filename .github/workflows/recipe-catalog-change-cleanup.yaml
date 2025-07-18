@@ -37,7 +37,7 @@ jobs:
   cleanup:
     runs-on: ubuntu-24.04
     needs: extract-context
-    if: ${{ github.event.workflow_run.conclusion == 'success' && needs.extract-context.outputs.trigger-template == 'skipped' }}
+    if: ${{ github.event.workflow_run.conclusion == 'skipped' || (github.event.workflow_run.conclusion == 'success' && needs.extract-context.outputs.trigger-template == 'skipped') }}
     steps:
       - name: Remove skipped or cancelled workflow run
         env:

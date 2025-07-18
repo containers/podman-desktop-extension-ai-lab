@@ -1,0 +1,49 @@
+name: recipe-catalog-change-cleanup
+
+on:
+  workflow_run:
+    workflows: ["recipe-catalog-change-windows-trigger"]
+    types:
+      - completed
+
+jobs:
+  extract-context:
+    runs-on: ubuntu-24.04
+    outputs:
+      extract-context: ${{ steps.prepare-context.outputs.extract-context }}
+      trigger-template: ${{ steps.prepare-context.outputs.trigger-template }}
+    steps:
+      - name: Prepare context
+        id: prepare-context
+        env:
+          WORKFLOW_RUN: ${{ toJson(github.event.workflow_run) }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
+          echo "Fork owner: ${{ fromJson(env.WORKFLOW_RUN).head_repository.owner.login }}"
+          echo "Fork repo: ${{ fromJson(env.WORKFLOW_RUN).head_repository.name }}"
+          echo "Fork branch: ${{ fromJson(env.WORKFLOW_RUN).head_branch }}"
+          echo "Commit SHA: ${{ fromJson(env.WORKFLOW_RUN).head_sha }}"
+          echo "Base repo: ${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}"
+          echo "Conclusion: ${{ fromJson(env.WORKFLOW_RUN).conclusion }}"
+          # Fetch job conclusions using the GitHub CLI
+          echo "Fetching jobs for workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
+            gh api \
+            repos/${{ github.repository }}/actions/runs/${{ fromJson(env.WORKFLOW_RUN).id }}/jobs \
+            --jq '.jobs[] | "\(.name)=\(.conclusion)"' | while read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+            done
+          cat $GITHUB_OUTPUT
+  cleanup:
+    runs-on: ubuntu-24.04
+    needs: extract-context
+    if: ${{ github.event.workflow_run.conclusion == 'success' && needs.extract-context.outputs.trigger-template == 'skipped' }}
+    steps:
+      - name: Remove skipped or cancelled workflow run
+        env:
+          WORKFLOW_RUN: ${{ toJson(github.event.workflow_run) }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Cleaning up workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
+          gh run delete ${{ fromJson(env.WORKFLOW_RUN).id }} --repo ${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}
+          echo "Workflow run ID ${{ fromJson(env.WORKFLOW_RUN).id }} has been cleaned up."

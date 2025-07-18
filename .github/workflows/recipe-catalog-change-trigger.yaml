@@ -49,7 +49,6 @@ jobs:
           else
             echo "No changes detected in ai.json"
             echo "changes-detected=false" >> $GITHUB_OUTPUT
-            gh run cancel ${{ github.run_id}}
           fi
 
   trigger-template:

@@ -10,6 +10,7 @@ import { studioClient } from '../utils/client';
 import type { CatalogFilterKey, Choice, RecipeChoices, RecipeFilters } from '@shared/models/FilterRecipesResult';
 import { onMount } from 'svelte';
 import { configuration } from '../stores/extensionConfiguration';
+import { SvelteMap } from 'svelte/reactivity';
 
 // filters available in the dropdowns for the user to select
 let choices: RecipeChoices = $state({});
@@ -53,7 +54,7 @@ let groups: Map<Category, Recipe[]> = $derived.by(() => {
   if (!Object.keys(categoryDict).length) {
     return new Map();
   }
-  const output: Map<Category, Recipe[]> = new Map();
+  const output: Map<Category, Recipe[]> = new SvelteMap();
   for (const recipe of recipes) {
     if (recipe.categories.length === 0) {
       output.set(UNCLASSIFIED, [...(output.get(UNCLASSIFIED) ?? []), recipe]);

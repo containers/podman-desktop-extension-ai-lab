@@ -131,7 +131,7 @@ jobs:
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "MAPT_VM_SIZE=${{ github.event.inputs.azure_vm_size || env.DEFAULT_AZURE_VM_SIZE }}" >> $GITHUB_ENV
+        echo "MAPT_VM_SIZE=${{ github.event.inputs.azure_vm_size || env.DEFAULT_MAPT_VM_SIZE }}" >> $GITHUB_ENV
         echo "${{ github.event.inputs.mapt_params || env.DEFAULT_MAPT_PARAMS }}" | awk -F ',' \
           '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "MAPT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 

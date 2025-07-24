@@ -111,7 +111,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^0.2.16",
-    "@huggingface/gguf": "^0.1.18",
+    "@huggingface/gguf": "^0.2.0",
     "@huggingface/hub": "^2.4.0",
     "ai": "^4.3.19",
     "express": "^4.21.2",

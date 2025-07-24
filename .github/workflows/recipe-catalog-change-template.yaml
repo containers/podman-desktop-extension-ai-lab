@@ -97,7 +97,7 @@ jobs:
         DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.2' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
-        DEFAULT_MAPT_PARAMS: "IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }},VERSION_TAG=${{ vars.MAPT_VERSION_TAG || 'v0.9.3' }},VM_SIZE=${{ vars.MAPT_VM_SIZE || 'Standard_D8s_v4' }},EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\""
+        DEFAULT_MAPT_PARAMS: "IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }},VERSION_TAG=${{ vars.MAPT_VERSION_TAG || 'v0.9.5' }},CPUS=${{ vars.MAPT_CPUS || '4' }},MEMORY=${{ vars.MAPT_MEMORY || '32' }},EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\""
       run: |
         echo "FORK=${{ inputs.pd-fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
         echo "BRANCH=${{ inputs.pd-branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
@@ -134,7 +134,9 @@ jobs:
             --conn-details-output '/workspace' \
             --windows-version '${{ matrix.windows-version }}' \
             --windows-featurepack '${{ matrix.windows-featurepack }}' \
-            --vmsize '${{ env.MAPT_VM_SIZE }}' \
+            --cpus ${{ env.MAPT_CPUS }} \
+            --memory ${{ env.MAPT_MEMORY }} \
+            --nested-virt \
             --tags project=podman-desktop \
             --spot-excluded-regions ${{ env.MAPT_EXCLUDED_REGIONS }} \
             --spot

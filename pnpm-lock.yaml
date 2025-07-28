@@ -130,8 +130,8 @@ importers:
         specifier: ^4.21.2
         version: 4.21.2
       express-openapi-validator:
-        specifier: ^5.5.7
-        version: 5.5.7(express@4.21.2)
+        specifier: ^5.5.8
+        version: 5.5.8(express@4.21.2)
       isomorphic-git:
         specifier: ^1.32.2
         version: 1.32.2
@@ -365,9 +365,9 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@apidevtools/json-schema-ref-parser@12.0.2':
-    resolution: {integrity: sha512-SoZWqQz4YMKdw4kEMfG5w6QAy+rntjsoAT1FtvZAnVEnCR4uy9YSuDBNoVAFHgzSz0dJbISLLCSrGR2Zd7bcvA==}
-    engines: {node: '>= 16'}
+  '@apidevtools/json-schema-ref-parser@14.1.1':
+    resolution: {integrity: sha512-uGF1YGOzzD50L7HLNWclXmsEhQflw8/zZHIz0/AzkJrKL5r9PceUipZxR/cp/8veTk4TVfdDJLyIwXLjaP5ePg==}
+    engines: {node: '>= 20'}
 
   '@asamuzakjp/css-color@3.1.1':
     resolution: {integrity: sha512-hpRD68SV2OMcZCsrbdkccTw5FXjNDLo5OuqSHyHZfwweGsDWZwDJ2+gONyNAbazZclobMirACLw0lk8WVxIqxA==}
@@ -2681,8 +2681,8 @@ packages:
     resolution: {integrity: sha512-/kP8CAwxzLVEeFrMm4kMmy4CCDlpipyA7MYLVrdJIkV0fYF0UaigQHRsxHiuY/GEea+bh4KSv3TIlgr+2UL6bw==}
     engines: {node: '>=12.0.0'}
 
-  express-openapi-validator@5.5.7:
-    resolution: {integrity: sha512-QcV941hD3GHnCOg72y6kgqA7XsDkmZOGf7tvoIw9IyUlIRvJv/XDpYFnK7rOggt+ZUaM2P/9wsZCmdMXpr7z2A==}
+  express-openapi-validator@5.5.8:
+    resolution: {integrity: sha512-JNokdK39oGS174eEUhjJrzB3sfI2HMxOmSvPkbbZ6Q7XqywIlEFreZF99BtbTiTjZ7jZIknqFB1528xkVdNPcQ==}
     peerDependencies:
       express: '*'
 
@@ -3681,8 +3681,8 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  multer@2.0.1:
-    resolution: {integrity: sha512-Ug8bXeTIUlxurg8xLTEskKShvcKDZALo1THEX5E41pYCD2sCVub5/kIRIGqWNoqV6szyLyQKV6mD4QUrWE5GCQ==}
+  multer@2.0.2:
+    resolution: {integrity: sha512-u7f2xaZ/UG8oLXHvtF/oWTRvT44p9ecwBBqTwgJVq0+4BW1g8OW01TyMEGWBHbyMOYVHXslaut7qEQ1meATXgw==}
     engines: {node: '>= 10.16.0'}
 
   mustache@4.2.0:
@@ -5072,9 +5072,8 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.12
       '@jridgewell/trace-mapping': 0.3.29
 
-  '@apidevtools/json-schema-ref-parser@12.0.2':
+  '@apidevtools/json-schema-ref-parser@14.1.1':
     dependencies:
-      '@jsdevtools/ono': 7.1.3
       '@types/json-schema': 7.0.15
       js-yaml: 4.1.0
 
@@ -7539,9 +7538,9 @@ snapshots:
 
   expect-type@1.2.1: {}
 
-  express-openapi-validator@5.5.7(express@4.21.2):
+  express-openapi-validator@5.5.8(express@4.21.2):
     dependencies:
-      '@apidevtools/json-schema-ref-parser': 12.0.2
+      '@apidevtools/json-schema-ref-parser': 14.1.1
       '@types/multer': 1.4.13
       ajv: 8.17.1
       ajv-draft-04: 1.0.0(ajv@8.17.1)
@@ -7552,7 +7551,7 @@ snapshots:
       lodash.clonedeep: 4.5.0
       lodash.get: 4.4.2
       media-typer: 1.1.0
-      multer: 2.0.1
+      multer: 2.0.2
       ono: 7.1.3
       path-to-regexp: 8.2.0
       qs: 6.14.0
@@ -8547,7 +8546,7 @@ snapshots:
 
   ms@2.1.3: {}
 
-  multer@2.0.1:
+  multer@2.0.2:
     dependencies:
       append-field: 1.0.0
       busboy: 1.6.0

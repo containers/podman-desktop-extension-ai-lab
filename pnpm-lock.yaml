@@ -133,8 +133,8 @@ importers:
         specifier: ^5.5.7
         version: 5.5.7(express@4.21.2)
       isomorphic-git:
-        specifier: ^1.32.0
-        version: 1.32.1
+        specifier: ^1.32.2
+        version: 1.32.2
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -3264,8 +3264,8 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  isomorphic-git@1.32.1:
-    resolution: {integrity: sha512-NZCS7qpLkCZ1M/IrujYBD31sM6pd/fMVArK4fz4I7h6m0rUW2AsYU7S7zXeABuHL6HIfW6l53b4UQ/K441CQjg==}
+  isomorphic-git@1.32.2:
+    resolution: {integrity: sha512-pThiJmMDyPD5f4S8fpt3Zoq2P1pehetQNjAks7fco1N+UT3HFo3dRUYxxhrPqfBwrkYi7dguv25mZTt9DO/S+w==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -4248,8 +4248,9 @@ packages:
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
-  sha.js@2.4.11:
-    resolution: {integrity: sha512-QMEp5B7cftE7APOjk5Y6xgrbWu+WkLVQwk8JNjZ8nKRciZaByEW6MubieAiToS7+dwvrjGhH8jRXz3MVd0AYqQ==}
+  sha.js@2.4.12:
+    resolution: {integrity: sha512-8LzC5+bvI45BjpfXU8V5fdU2mfeKiQe1D1gIMn7XUlF3OTUrpdJpPPH4EMAnF0DsHHdSZqCdSss5qCmJKuiO3w==}
+    engines: {node: '>= 0.10'}
     hasBin: true
 
   shebang-command@2.0.0:
@@ -4586,6 +4587,10 @@ packages:
   tldts@6.1.86:
     resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
     hasBin: true
+
+  to-buffer@1.2.1:
+    resolution: {integrity: sha512-tB82LpAIWjhLYbqjx3X4zEeHN6M8CiuOEy2JY8SEQVdYRe3CCHOFaqrBW1doLDrfpWhplcW7BL+bO3/6S3pcDQ==}
+    engines: {node: '>= 0.4'}
 
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
@@ -8179,7 +8184,7 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  isomorphic-git@1.32.1:
+  isomorphic-git@1.32.2:
     dependencies:
       async-lock: 1.4.1
       clean-git-ref: 2.0.1
@@ -8191,7 +8196,7 @@ snapshots:
       path-browserify: 1.0.1
       pify: 4.0.1
       readable-stream: 3.6.2
-      sha.js: 2.4.11
+      sha.js: 2.4.12
       simple-get: 4.0.1
 
   istanbul-lib-coverage@3.2.2: {}
@@ -9162,10 +9167,11 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
-  sha.js@2.4.11:
+  sha.js@2.4.12:
     dependencies:
       inherits: 2.0.4
       safe-buffer: 5.2.1
+      to-buffer: 1.2.1
 
   shebang-command@2.0.0:
     dependencies:
@@ -9500,6 +9506,12 @@ snapshots:
   tldts@6.1.86:
     dependencies:
       tldts-core: 6.1.86
+
+  to-buffer@1.2.1:
+    dependencies:
+      isarray: 2.0.5
+      safe-buffer: 5.2.1
+      typed-array-buffer: 1.0.3
 
   to-regex-range@5.0.1:
     dependencies:

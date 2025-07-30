@@ -148,8 +148,8 @@ importers:
         specifier: 1.10.1
         version: 1.10.1
       postman-collection:
-        specifier: ^5.0.2
-        version: 5.0.2
+        specifier: ^5.1.0
+        version: 5.1.0
       semver:
         specifier: ^7.7.2
         version: 7.7.2
@@ -3965,8 +3965,8 @@ packages:
     resolution: {integrity: sha512-vDrXG/dclSu6RMqPqBz4ZqoQBwcj/a80sJYsQZmzWJ6dWgXiudPhwu6Vm3C1Hy7zX5W8A6am1Z6vb/TB4eyURA==}
     engines: {node: '>=10'}
 
-  postman-collection@5.0.2:
-    resolution: {integrity: sha512-6nq0D1n4TyCcw8XEQ57e/IiSDWhkFuwiSqNMxKCbRlVN2xRsJEkBtX2qtaNqlp+wFQW/2WsyYJA1R21HBAAllg==}
+  postman-collection@5.1.0:
+    resolution: {integrity: sha512-vlxZLPrXcF267wNjMKO6mFr7rGFB4aniIuqg+q9TCFGlhJsT8CQCblsov8XAKx74ZFerAozYRNI75sa1WNuLIw==}
     engines: {node: '>=18'}
 
   postman-url-encoder@3.0.1:
@@ -8756,7 +8756,7 @@ snapshots:
       semver: 7.7.2
       uuid: 8.3.2
 
-  postman-collection@5.0.2:
+  postman-collection@5.1.0:
     dependencies:
       '@faker-js/faker': 5.5.3
       file-type: 3.9.0

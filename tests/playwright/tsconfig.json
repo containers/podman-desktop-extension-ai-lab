@@ -2,11 +2,12 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution":"node",
+    "moduleResolution": "node",
     "strict": true,
     "preserveValueImports": false,
     "skipLibCheck": false,
     "baseUrl": ".",
+    "resolveJsonModule": true
   },
   "include": ["src/**/*.ts", "playwright.config.ts"],
   "exclude": ["node_modules/**"]

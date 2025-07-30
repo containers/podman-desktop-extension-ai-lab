@@ -41,7 +41,6 @@ import {
 import type { AILabDashboardPage } from './model/ai-lab-dashboard-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
 import type { AILabCatalogPage } from './model/ai-lab-catalog-page';
-import type { AILabServiceDetailsPage } from './model/ai-lab-service-details-page';
 import type { AILabPlaygroundsPage } from './model/ai-lab-playgrounds-page';
 import type { AILabPlaygroundDetailsPage } from './model/ai-lab-playground-details-page';
 import {
@@ -57,6 +56,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AILabTryInstructLabPage } from './model/ai-lab-try-instructlab-page';
 import type { AiLlamaStackPage } from './model/ai-lab-model-llamastack-page';
+import type { ApplicationCatalog } from '../../../packages/shared/src/models/IApplicationCatalog';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -69,21 +69,6 @@ const runnerOptions = {
   aiLabModelUploadDisabled: isWindows ? true : false,
 };
 
-interface AiApp {
-  appName: string;
-  appModel: string;
-}
-
-const AI_APPS: AiApp[] = [
-  { appName: 'Audio to Text', appModel: 'ggerganov/whisper.cpp' },
-  { appName: 'ChatBot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
-  { appName: 'Summarizer', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
-  { appName: 'Code Generation', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
-  { appName: 'RAG Chatbot', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
-  { appName: 'Function calling', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
-  { appName: 'Object Detection', appModel: 'facebook/detr-resnet-101' },
-];
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEST_AUDIO_FILE_PATH: string = path.resolve(
@@ -94,6 +79,49 @@ const TEST_AUDIO_FILE_PATH: string = path.resolve(
   'resources',
   `test-audio-to-text.wav`,
 );
+const AI_JSON_FILE_PATH: string = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  'packages',
+  'backend',
+  'src',
+  'assets',
+  'ai.json',
+);
+
+const aiJSONFile = fs.readFileSync(AI_JSON_FILE_PATH, 'utf8');
+const AI_JSON: ApplicationCatalog = JSON.parse(aiJSONFile) as ApplicationCatalog;
+const AI_APP_MODELS: Set<string> = new Set();
+AI_JSON.recipes.forEach(recipe => {
+  recipe.recommended?.forEach(model => {
+    AI_APP_MODELS.add(model);
+  });
+});
+// Create a set of AI models that are not the first recommended model for any app
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _AI_APP_UNUSED_MODELS: string[] = [
+  ...AI_APP_MODELS.values().filter(model => {
+    // Check if the model is not the first recommended model for any app
+    return !Array.from(AI_JSON.recipes).some(recipe => {
+      return recipe.recommended?.at(0) === model;
+    });
+  }),
+];
+const AI_APP_MODEL_AND_NAMES: Map<string, string[]> = new Map();
+AI_JSON.recipes.forEach(recipe => {
+  const recommendedModel = recipe.recommended?.at(0);
+  if (recommendedModel) {
+    const actualModelName = AI_JSON.models.find(model => model.id === recommendedModel)?.name;
+    if (actualModelName) {
+      if (!AI_APP_MODEL_AND_NAMES.has(actualModelName)) {
+        AI_APP_MODEL_AND_NAMES.set(actualModelName, []);
+      }
+      AI_APP_MODEL_AND_NAMES.get(actualModelName)?.push(recipe.name);
+    }
+  }
+});
 
 test.use({
   runnerOptions: new RunnerOptions(runnerOptions),
@@ -359,144 +387,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['ggerganov/whisper.cpp', 'facebook/detr-resnet-101'].forEach(modelName => {
-    test.describe.serial(`Model download and deletion`, { tag: '@smoke' }, () => {
-      let catalogPage: AILabCatalogPage;
-
-      test.beforeEach(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-        await aiLabPage.navigationBar.waitForLoad();
-
-        catalogPage = await aiLabPage.navigationBar.openCatalog();
-        await catalogPage.waitForLoad();
-      });
-
-      test(`Download ${modelName} model`, async () => {
-        test.setTimeout(610_000);
-        if (!(await catalogPage.isModelDownloaded(modelName))) {
-          await catalogPage.downloadModel(modelName);
-        }
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [5_000] })
-          .toBeTruthy();
-      });
-
-      test(`Delete ${modelName} model`, async () => {
-        test.skip(isWindows, 'Model deletion is currently very buggy in azure cicd');
-        test.setTimeout(610_000);
-        playExpect(await catalogPage.isModelDownloaded(modelName)).toBeTruthy();
-        await catalogPage.deleteModel(modelName);
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [2_500] })
-          .toBeFalsy();
-      });
-    });
-  });
-
-  ['ggerganov/whisper.cpp'].forEach(modelName => {
-    test.describe.serial(`Model service creation and deletion`, { tag: '@smoke' }, () => {
-      let catalogPage: AILabCatalogPage;
-      let modelServiceDetailsPage: AILabServiceDetailsPage;
-
-      test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-        await aiLabPage.navigationBar.waitForLoad();
-
-        catalogPage = await aiLabPage.navigationBar.openCatalog();
-        await catalogPage.waitForLoad();
-      });
-
-      test(`Download ${modelName} model if not available`, async () => {
-        test.setTimeout(610_000);
-        if (!(await catalogPage.isModelDownloaded(modelName))) {
-          await catalogPage.downloadModel(modelName);
-        }
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [5_000] })
-          .toBeTruthy();
-      });
-
-      test(`Create model service from catalog for ${modelName}`, async () => {
-        test.setTimeout(310_000);
-        const modelServiceCreationPage = await catalogPage.createModelService(modelName);
-        await modelServiceCreationPage.waitForLoad();
-
-        modelServiceDetailsPage = await modelServiceCreationPage.createService();
-        await modelServiceDetailsPage.waitForLoad();
-
-        await playExpect(modelServiceDetailsPage.modelName).toContainText(modelName);
-        await playExpect(modelServiceDetailsPage.inferenceServerType).toContainText('Inference');
-        await playExpect(modelServiceDetailsPage.inferenceServerType).toContainText(/CPU|GPU/);
-      });
-
-      test(`Make GET request to the model service for ${modelName}`, async ({ request }) => {
-        const port = await modelServiceDetailsPage.getInferenceServerPort();
-        const url = `http://localhost:${port}`;
-
-        // eslint-disable-next-line sonarjs/no-nested-functions
-        await playExpect(async () => {
-          const response = await request.get(url);
-          playExpect(response.ok()).toBeTruthy();
-        }).toPass({ timeout: 30_000 });
-      });
-
-      test(`Make POST request to the model service for ${modelName}`, async ({ request }) => {
-        test.skip(modelName === 'ggerganov/whisper.cpp', `Skipping POST request for ${modelName}`);
-        test.setTimeout(610_000);
-
-        const port = await modelServiceDetailsPage.getInferenceServerPort();
-        const url = `http://localhost:${port}/v1/chat/completions`;
-
-        // eslint-disable-next-line sonarjs/no-nested-functions
-        await playExpect(async () => {
-          const response = await request.post(url, {
-            data: {
-              messages: [
-                {
-                  content: 'You are a helpful assistant.',
-                  role: 'system',
-                },
-                {
-                  content: 'What is the capital of Spain?',
-                  role: 'user',
-                },
-              ],
-            },
-          });
-          playExpect(response.ok()).toBeTruthy();
-          playExpect(await response.text()).toContain('Madrid');
-        }).toPass({ timeout: 600_000, intervals: [5_000] });
-      });
-
-      test(`Restart model service for ${modelName}`, async () => {
-        test.skip(modelName === 'ggerganov/whisper.cpp');
-        test.setTimeout(180_000);
-
-        await modelServiceDetailsPage.stopService();
-        await playExpect(modelServiceDetailsPage.startServiceButton).toBeEnabled({ timeout: 120_000 });
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await modelServiceDetailsPage.getServiceState(), { timeout: 120_000 })
-          .toBe('');
-
-        await modelServiceDetailsPage.startService();
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await modelServiceDetailsPage.getServiceState(), { timeout: 120_000 })
-          .toBe('RUNNING');
-      });
-
-      test(`Delete model service and model for ${modelName}`, async () => {
-        test.setTimeout(150_000);
-        await cleanupServices();
-        await deleteAllModels();
-      });
-    });
-  });
-
   // Do not use non-instruct models in playground tests.
   // They break out of guilderails and fail the tests.
   ['ibm-granite/granite-3.3-8b-instruct-GGUF'].forEach(modelName => {
@@ -586,133 +476,148 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  AI_APPS.forEach(({ appName, appModel }) => {
-    test.describe.serial(`AI Recipe installation`, () => {
-      test.skip(
-        !process.env.EXT_TEST_RAG_CHATBOT && appName === 'RAG Chatbot',
-        'EXT_TEST_RAG_CHATBOT variable not set, skipping test',
-      );
-      let recipesCatalogPage: AILabRecipesCatalogPage;
+  AI_APP_MODEL_AND_NAMES.forEach((appNames, appModel) => {
+    /* eslint-disable sonarjs/no-nested-functions */
+    test.describe.serial(`AI Recipe installation for ${appModel}`, { tag: '@smoke' }, () => {
+      appNames.forEach(appName => {
+        test.describe.serial(`AI Recipe installation ${appName}`, () => {
+          test.skip(
+            !process.env.EXT_TEST_RAG_CHATBOT &&
+              (appName === 'RAG Chatbot' ||
+                appName === 'Node.js RAG Chatbot' ||
+                appName === 'Graph RAG Chat Application'),
+            'EXT_TEST_RAG_CHATBOT variable not set, skipping test',
+          );
+          let recipesCatalogPage: AILabRecipesCatalogPage;
 
-      test.beforeAll(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
+          test(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
+            aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+            await aiLabPage.navigationBar.waitForLoad();
+
+            recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
+            await recipesCatalogPage.waitForLoad();
+          });
+
+          test(`Install ${appName} example app`, async () => {
+            test.setTimeout(1_500_000);
+            test.skip(
+              appName === 'Object Detection' && isCI && !isMac,
+              'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
+            );
+            const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
+            await demoApp.waitForLoad();
+            await demoApp.startNewDeployment();
+          });
+
+          test(`Verify ${appName} app HTTP page is reachable`, async ({ request }) => {
+            test.setTimeout(60_000);
+            test.skip(
+              appName === 'Object Detection' && isCI && !isMac,
+              'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
+            );
+            let response: APIResponse | undefined = undefined;
+
+            switch (appName) {
+              case 'Object Detection': {
+                const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
+                const appPort = await aiRunningAppsPage.getAppPort(appName);
+                response = await request.get(`http://localhost:${appPort}`, { timeout: 60_000 });
+                playExpect(response.ok()).toBeTruthy();
+                const body = await response.text();
+                playExpect(body).toContain('<title>Streamlit</title>');
+                break;
+              }
+
+              default:
+                console.warn(`Unhandled AI App: ${appName}`);
+            }
+          });
+
+          test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
+            test.setTimeout(600_000);
+            test.fail(
+              appName === 'Audio to Text',
+              'Expected failure due to issue #3111: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
+            );
+            test.skip(
+              appName === 'Object Detection' && isCI && !isMac,
+              'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
+            );
+
+            let port: string = '';
+            let baseUrl: string = '';
+            let response: APIResponse | undefined = undefined;
+            let expectedResponse: string = '';
+
+            switch (appName) {
+              case 'Audio to Text': {
+                port = await getModelServicePort(appModel);
+                baseUrl = `http://localhost:${port}`;
+                expectedResponse =
+                  'And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country';
+                const audioFileContent = fs.readFileSync(TEST_AUDIO_FILE_PATH);
+
+                response = await request.post(`${baseUrl}/inference`, {
+                  headers: {
+                    Accept: 'application/json',
+                  },
+                  multipart: {
+                    file: {
+                      name: 'test.wav',
+                      mimeType: 'audio/wav',
+                      buffer: audioFileContent,
+                    },
+                  },
+                  timeout: 600_000,
+                });
+                break;
+              }
+
+              case 'Function calling': {
+                port = await getModelServicePort(appModel);
+                baseUrl = `http://localhost:${port}`;
+                expectedResponse = 'Prague';
+                response = await request.post(`${baseUrl}/v1/chat/completions`, {
+                  data: {
+                    messages: [
+                      { role: 'system', content: 'You are a helpful assistant.' },
+                      { role: 'user', content: 'What is the capital of Czech Republic?' },
+                    ],
+                  },
+                  timeout: 600_000,
+                });
+                break;
+              }
+
+              default:
+                console.warn(`Unhandled AI App: ${appName}`);
+            }
+
+            if (response) {
+              playExpect(response.ok()).toBeTruthy();
+              const body = await response?.body();
+              const text = body?.toString() ?? '';
+              playExpect(text).toContain(expectedResponse);
+            }
+          });
+
+          test(`${appName}: Restart, Stop, Delete.`, async () => {
+            test.setTimeout(150_000);
+            test.skip(
+              appName === 'Object Detection' && isCI && !isMac,
+              'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
+            );
+
+            await restartApp(appName);
+            await stopAndDeleteApp(appName);
+            await cleanupServices();
+          });
+        });
+      });
+
+      test(`Ensure cleanup of "${appModel}", related services, and images`, async ({ runner, page, navigationBar }) => {
+        test.setTimeout(150_000);
         aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-        await aiLabPage.navigationBar.waitForLoad();
-
-        recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
-        await recipesCatalogPage.waitForLoad();
-      });
-
-      test(`Install ${appName} example app`, async () => {
-        test.skip(
-          appName === 'Object Detection' && isCI && !isMac,
-          'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
-        );
-        test.setTimeout(1_500_000);
-        const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
-        await demoApp.waitForLoad();
-        await demoApp.startNewDeployment();
-      });
-
-      test(`Verify ${appName} app HTTP page is reachable`, async ({ request }) => {
-        test.setTimeout(60_000);
-        /// In the future, we could use this test for other AI applications
-        test.skip(
-          appName !== 'Object Detection' || (isCI && !isMac),
-          'Runs only for Object Detection app on macOS CI or any local platform',
-        );
-        const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
-        const appPort = await aiRunningAppsPage.getAppPort(appName);
-        const response = await request.get(`http://localhost:${appPort}`, { timeout: 60_000 });
-
-        playExpect(response.ok()).toBeTruthy();
-        const body = await response.text();
-        playExpect(body).toContain('<title>Streamlit</title>');
-      });
-
-      test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
-        test.skip(appName !== 'Function calling' && appName !== 'Audio to Text');
-        test.fail(
-          appName === 'Audio to Text',
-          'Expected failure due to issue #3111: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
-        );
-        test.setTimeout(600_000);
-
-        const modelServicePage = await aiLabPage.navigationBar.openServices();
-        const serviceDetailsPage = await modelServicePage.openServiceDetails(appModel);
-
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await serviceDetailsPage.getServiceState(), { timeout: 60_000 })
-          .toBe('RUNNING');
-
-        const port = await serviceDetailsPage.getInferenceServerPort();
-        const baseUrl = `http://localhost:${port}`;
-
-        let response: APIResponse;
-        let expectedResponse: string;
-
-        switch (appModel) {
-          case 'ggerganov/whisper.cpp': {
-            expectedResponse =
-              'And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country';
-            const audioFileContent = fs.readFileSync(TEST_AUDIO_FILE_PATH);
-
-            response = await request.post(`${baseUrl}/inference`, {
-              headers: {
-                Accept: 'application/json',
-              },
-              multipart: {
-                file: {
-                  name: 'test.wav',
-                  mimeType: 'audio/wav',
-                  buffer: audioFileContent,
-                },
-              },
-              timeout: 600_000,
-            });
-            break;
-          }
-
-          case 'ibm-granite/granite-3.3-8b-instruct-GGUF': {
-            expectedResponse = 'Prague';
-            response = await request.post(`${baseUrl}/v1/chat/completions`, {
-              data: {
-                messages: [
-                  { role: 'system', content: 'You are a helpful assistant.' },
-                  { role: 'user', content: 'What is the capital of Czech Republic?' },
-                ],
-              },
-              timeout: 600_000,
-            });
-            break;
-          }
-
-          default:
-            throw new Error(`Unhandled model type: ${appModel}`);
-        }
-
-        playExpect(response.ok()).toBeTruthy();
-        const body = await response.body();
-        const text = body.toString();
-        playExpect(text).toContain(expectedResponse);
-      });
-
-      test(`${appName}: Restart, Stop, Delete. Clean up model service`, async () => {
-        test.skip(
-          appName === 'Object Detection' && isCI && !isMac,
-          'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
-        );
-        test.setTimeout(150_000);
-
-        await restartApp(appName);
-        await stopAndDeleteApp(appName);
-        await cleanupServices();
-      });
-
-      test.afterAll(`Ensure cleanup of "${appName}" app, related service, and images`, async ({ navigationBar }) => {
-        test.setTimeout(150_000);
-
-        await stopAndDeleteApp(appName);
         await cleanupServices();
         await deleteAllModels();
         await deleteUnusedImages(navigationBar);
@@ -787,11 +692,25 @@ async function cleanupServices(): Promise<void> {
   try {
     const modelServicePage = await aiLabPage.navigationBar.openServices();
     await modelServicePage.waitForLoad();
+    if ((await modelServicePage.getCurrentModelCount()) === 0) return;
     await modelServicePage.deleteAllCurrentModels();
     await playExpect.poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 }).toBe(0);
   } catch (error) {
     console.log(`Error while cleaning up service models: ${error}`);
   }
+}
+
+async function getModelServicePort(appModelName: string): Promise<string> {
+  const modelServicePage = await aiLabPage.navigationBar.openServices();
+  await modelServicePage.waitForLoad();
+  const serviceDetailsPage = await modelServicePage.openServiceDetails(appModelName);
+
+  await playExpect
+    // eslint-disable-next-line sonarjs/no-nested-functions
+    .poll(async () => await serviceDetailsPage.getServiceState(), { timeout: 60_000 })
+    .toBe('RUNNING');
+
+  return await serviceDetailsPage.getInferenceServerPort();
 }
 
 async function deleteAllModels(): Promise<void> {

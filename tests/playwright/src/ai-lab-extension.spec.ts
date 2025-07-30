@@ -429,8 +429,13 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['ibm-research/granite-3.2-8b-instruct-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lab playground creation and deletion`, { tag: '@smoke' }, () => {
+  [
+    'ibm-granite/granite-3.3-8b-instruct-GGUF',
+    'instructlab/granite-7b-lab-GGUF',
+    'instructlab/merlinite-7b-lab-GGUF',
+    'TheBloke/Mistral-7B-Instruct-v0.2-GGUF',
+  ].forEach(modelName => {
+    test.describe.serial(`AI Lab playground creation and deletion for ${modelName}`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;

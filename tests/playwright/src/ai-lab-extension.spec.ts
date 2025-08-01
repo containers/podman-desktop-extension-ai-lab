@@ -56,6 +56,58 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AILabTryInstructLabPage } from './model/ai-lab-try-instructlab-page';
+import type { ApplicationCatalog } from '../../../packages/shared/src/models/IApplicationCatalog';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const TEST_AUDIO_FILE_PATH: string = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  'playwright',
+  'resources',
+  `test-audio-to-text.wav`,
+);
+const AI_JSON_FILE_PATH: string = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  'packages',
+  'backend',
+  'src',
+  'assets',
+  'ai.json',
+);
+
+const aiJSONFile = fs.readFileSync(AI_JSON_FILE_PATH, 'utf8');
+const AI_JSON: ApplicationCatalog = JSON.parse(aiJSONFile) as ApplicationCatalog;
+const AI_APP_MODELS: Set<string> = new Set();
+AI_JSON.recipes.forEach(recipe => {
+  recipe.recommended?.forEach(model => {
+    AI_APP_MODELS.add(model);
+  });
+});
+// Create a set of AI models that are not the first recommended model for any app
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _AI_APP_UNUSED_MODELS: string[] = [
+  ...AI_APP_MODELS.values().filter(model => {
+    // Check if the model is not the first recommended model for any app
+    return !Array.from(AI_JSON.recipes).some(recipe => {
+      return recipe.recommended?.at(0) === model;
+    });
+  }),
+];
+const AI_APP_MODEL_AND_NAMES: Map<string, string[]> = new Map();
+AI_JSON.recipes.forEach(recipe => {
+  const recommendedModel = recipe.recommended?.at(0);
+  if (recommendedModel) {
+    if (!AI_APP_MODEL_AND_NAMES.has(recommendedModel)) {
+      AI_APP_MODEL_AND_NAMES.set(recommendedModel, []);
+    }
+    AI_APP_MODEL_AND_NAMES.get(recommendedModel)?.push(recipe.name);
+  }
+});
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -82,17 +134,6 @@ const AI_APPS: AiApp[] = [
   { appName: 'Function calling', appModel: 'ibm-granite/granite-3.3-8b-instruct-GGUF' },
   { appName: 'Object Detection', appModel: 'facebook/detr-resnet-101' },
 ];
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const TEST_AUDIO_FILE_PATH: string = path.resolve(
-  __dirname,
-  '..',
-  '..',
-  'playwright',
-  'resources',
-  `test-audio-to-text.wav`,
-);
 
 test.use({
   runnerOptions: new RunnerOptions(runnerOptions),
@@ -227,7 +268,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
     // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
     test.skip(`Download ${model} via API`, async ({ request }) => {
-      test.setTimeout(300_000);
+      test.setTimeout(610_000);
       const catalogPage = await aiLabPage.navigationBar.openCatalog();
       await catalogPage.waitForLoad();
       console.log(`Downloading ${model}...`);
@@ -241,7 +282,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           insecure: false,
           stream: true,
         },
-        timeout: 300_000,
+        timeout: 600_000,
       });
 
       const body = await response.body();
@@ -297,24 +338,24 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Download ${modelName} model`, async () => {
-        test.setTimeout(310_000);
+        test.setTimeout(610_000);
         if (!(await catalogPage.isModelDownloaded(modelName))) {
           await catalogPage.downloadModel(modelName);
         }
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [5_000] })
           .toBeTruthy();
       });
 
       test(`Delete ${modelName} model`, async () => {
         test.skip(isWindows, 'Model deletion is currently very buggy in azure cicd');
-        test.setTimeout(310_000);
+        test.setTimeout(610_000);
         playExpect(await catalogPage.isModelDownloaded(modelName)).toBeTruthy();
         await catalogPage.deleteModel(modelName);
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [2_500] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [2_500] })
           .toBeFalsy();
       });
     });

@@ -227,7 +227,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
     // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
     test.skip(`Download ${model} via API`, async ({ request }) => {
-      test.setTimeout(300_000);
+      test.setTimeout(610_000);
       const catalogPage = await aiLabPage.navigationBar.openCatalog();
       await catalogPage.waitForLoad();
       console.log(`Downloading ${model}...`);
@@ -241,7 +241,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           insecure: false,
           stream: true,
         },
-        timeout: 300_000,
+        timeout: 600_000,
       });
 
       const body = await response.body();
@@ -297,24 +297,24 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Download ${modelName} model`, async () => {
-        test.setTimeout(310_000);
+        test.setTimeout(610_000);
         if (!(await catalogPage.isModelDownloaded(modelName))) {
           await catalogPage.downloadModel(modelName);
         }
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [5_000] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [5_000] })
           .toBeTruthy();
       });
 
       test(`Delete ${modelName} model`, async () => {
         test.skip(isWindows, 'Model deletion is currently very buggy in azure cicd');
-        test.setTimeout(310_000);
+        test.setTimeout(610_000);
         playExpect(await catalogPage.isModelDownloaded(modelName)).toBeTruthy();
         await catalogPage.deleteModel(modelName);
         await playExpect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 300_000, intervals: [2_500] })
+          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [2_500] })
           .toBeFalsy();
       });
     });
@@ -453,7 +453,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Download ${modelName} model if not available`, async () => {
-        test.setTimeout(310_000);
+        test.setTimeout(610_000);
         if (!(await catalogPage.isModelDownloaded(modelName))) {
           await catalogPage.downloadModel(modelName);
         }

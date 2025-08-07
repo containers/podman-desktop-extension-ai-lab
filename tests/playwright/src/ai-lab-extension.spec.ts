@@ -262,9 +262,9 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
       playExpect(response.ok()).toBeTruthy();
       const parsedJson = await response.json();
-      console.log(parsedJson);
       playExpect(parsedJson.models.length).not.toBe(0);
-      playExpect(parsedJson.models).toContain(model);
+      const modelNames = parsedJson.models.map((entry: { model: string }) => entry.model);
+      playExpect(modelNames).toContain(model);
     });
 
     test(`Delete ${model} model`, async () => {

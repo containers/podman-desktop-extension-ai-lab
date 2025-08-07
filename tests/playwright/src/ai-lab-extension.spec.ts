@@ -225,8 +225,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       playExpect(apiResponse.version).toBe(extensionVersion);
     });
 
-    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
-    test.skip(`Download ${model} via API`, async ({ request }) => {
+    test(`Download ${model} via API`, async ({ request }) => {
       test.setTimeout(610_000);
       const catalogPage = await aiLabPage.navigationBar.openCatalog();
       await catalogPage.waitForLoad();
@@ -255,8 +254,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         .toBeTruthy();
     });
 
-    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
-    test.skip(`Verify ${model} is listed in models fetched from API`, async ({ request }) => {
+    test(`Verify ${model} is listed in models fetched from API`, async ({ request }) => {
       const response = await request.get(`http://127.0.0.1:${localServerPort}/api/tags`, {
         headers: {
           Accept: 'application/json',
@@ -269,8 +267,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       playExpect(parsedJson.models).toContain(model);
     });
 
-    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
-    test.skip(`Delete ${model} model`, async () => {
+    test(`Delete ${model} model`, async () => {
       test.skip(isWindows, 'Model deletion is currently very buggy in azure cicd');
       test.setTimeout(310_000);
       const catalogPage = await aiLabPage.navigationBar.openCatalog();

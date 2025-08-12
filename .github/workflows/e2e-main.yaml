@@ -46,20 +46,20 @@ jobs:
     name: Run E2E tests ${{ github.event_name == 'schedule' && '[nightly]' || '' }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: github.event_name == 'workflow_dispatch'
         with:
           repository: ${{ github.event.inputs.organization }}/${{ github.event.inputs.repositoryName }}
           ref: ${{ github.event.inputs.branch }}
           path: ${{ github.event.inputs.repositoryName }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: github.event_name == 'push' || github.event_name == 'schedule'
         with:
           path: podman-desktop-extension-ai-lab
 
       # Checkout podman desktop
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: containers/podman-desktop
           ref: main

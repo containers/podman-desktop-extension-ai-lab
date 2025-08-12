@@ -50,6 +50,12 @@ export class AILabCatalogPage extends AILabBasePage {
     return undefined;
   }
 
+  async getModelNameByRow(row: Locator): Promise<string> {
+    const modelNameCell = row.getByLabel('Model Name');
+    const modelName = await modelNameCell.textContent();
+    return modelName?.trim() ?? '';
+  }
+
   async downloadModel(modelName: string): Promise<void> {
     const modelRow = await this.getModelRowByName(modelName);
     if (!modelRow) {
@@ -75,16 +81,35 @@ export class AILabCatalogPage extends AILabBasePage {
   }
 
   async deleteModel(modelName: string): Promise<void> {
+    if (!modelName || modelName.trim() === '') {
+      console.warn('Model name is empty, skipping deletion.');
+      return;
+    }
     const modelRow = await this.getModelRowByName(modelName);
     if (!modelRow) {
       throw new Error(`Model ${modelName} not found`);
     }
     const deleteButton = modelRow.getByRole('button', { name: 'Delete Model' });
-    await playExpect(deleteButton).toBeEnabled();
+    await playExpect.poll(async () => await deleteButton.isEnabled(), { timeout: 10_000 }).toBeTruthy();
     await deleteButton.focus();
     await deleteButton.click();
     await this.page.waitForTimeout(1_000);
     await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+    await playExpect.poll(async () => await this.isModelDownloaded(modelName), { timeout: 30_000 }).toBeFalsy();
+  }
+
+  async deleteAllModels(): Promise<void> {
+    const modelRows = await this.getAllModelRows();
+    if (modelRows.length === 0) {
+      return;
+    }
+
+    for (const modelRow of modelRows) {
+      const modelName = await this.getModelNameByRow(modelRow);
+      if (await this.isModelDownloaded(modelName)) {
+        await this.deleteModel(modelName);
+      }
+    }
   }
 
   async isModelDownloaded(modelName: string): Promise<boolean> {

@@ -421,20 +421,17 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           .toBe('RUNNING');
       });
 
-      test(`Delete model service for ${modelName}`, async () => {
+      test(`Delete model service and model for ${modelName}`, async () => {
         test.setTimeout(150_000);
-        const modelServicePage = await modelServiceDetailsPage.deleteService();
-        await playExpect(modelServicePage.heading).toBeVisible({ timeout: 120_000 });
+        await cleanupServices();
+        await deleteAllModels();
       });
     });
   });
 
-  [
-    'ibm-granite/granite-3.3-8b-instruct-GGUF',
-    'instructlab/granite-7b-lab-GGUF',
-    'instructlab/merlinite-7b-lab-GGUF',
-    'TheBloke/Mistral-7B-Instruct-v0.2-GGUF',
-  ].forEach(modelName => {
+  // Do not use non-instruct models in playground tests.
+  // They break out of guilderails and fail the tests.
+  ['ibm-granite/granite-3.3-8b-instruct-GGUF', 'TheBloke/Mistral-7B-Instruct-v0.2-GGUF'].forEach(modelName => {
     test.describe.serial(`AI Lab playground creation and deletion for ${modelName}`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
@@ -515,7 +512,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
       test.afterAll(`Cleaning up service model`, async () => {
         test.setTimeout(60_000);
-        await cleanupServiceModels();
+        await cleanupServices();
+        await deleteAllModels();
       });
     });
   });
@@ -640,14 +638,15 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
         await restartApp(appName);
         await stopAndDeleteApp(appName);
-        await cleanupServiceModels();
+        await cleanupServices();
       });
 
       test.afterAll(`Ensure cleanup of "${appName}" app, related service, and images`, async ({ navigationBar }) => {
         test.setTimeout(150_000);
 
         await stopAndDeleteApp(appName);
-        await cleanupServiceModels();
+        await cleanupServices();
+        await deleteAllModels();
         await deleteUnusedImages(navigationBar);
       });
     });
@@ -716,7 +715,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
   });
 });
 
-async function cleanupServiceModels(): Promise<void> {
+async function cleanupServices(): Promise<void> {
   try {
     const modelServicePage = await aiLabPage.navigationBar.openServices();
     await modelServicePage.waitForLoad();
@@ -725,6 +724,12 @@ async function cleanupServiceModels(): Promise<void> {
   } catch (error) {
     console.log(`Error while cleaning up service models: ${error}`);
   }
+}
+
+async function deleteAllModels(): Promise<void> {
+  const modelCatalogPage = await aiLabPage.navigationBar.openCatalog();
+  await modelCatalogPage.waitForLoad();
+  await modelCatalogPage.deleteAllModels();
 }
 
 async function restartApp(appName: string): Promise<void> {

@@ -331,13 +331,13 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
             }
           }
         } else if (options.dependencies?.llamaStack) {
-          let stack = await this.llamaStackManager.getLlamaStackContainer();
+          let stack = await this.llamaStackManager.getLlamaStackContainers();
           if (!stack) {
-            await this.llamaStackManager.createLlamaStackContainer(options.connection, labels ?? {});
-            stack = await this.llamaStackManager.getLlamaStackContainer();
+            await this.llamaStackManager.createLlamaStackContainers(options.connection, labels ?? {});
+            stack = await this.llamaStackManager.getLlamaStackContainers();
           }
           if (stack) {
-            envs = [`MODEL_ENDPOINT=http://host.containers.internal:${stack.port}`];
+            envs = [`MODEL_ENDPOINT=http://host.containers.internal:${stack.server?.port}`];
           }
         }
         if (image.ports.length > 0) {

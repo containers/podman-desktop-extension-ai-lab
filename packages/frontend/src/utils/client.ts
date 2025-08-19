@@ -31,7 +31,9 @@ export const studioClient: StudioAPI = rpcBrowser.getProxy<StudioAPI>(STUDIO_API
   noTimeoutMethods: ['openDialog'],
 });
 export const instructlabClient: InstructlabAPI = rpcBrowser.getProxy<InstructlabAPI>(INSTRUCTLAB_API_CHANNEL);
-export const llamaStackClient: LlamaStackAPI = rpcBrowser.getProxy<LlamaStackAPI>(LLAMA_STACK_API_CHANNEL);
+export const llamaStackClient: LlamaStackAPI = rpcBrowser.getProxy<LlamaStackAPI>(LLAMA_STACK_API_CHANNEL, {
+  noTimeoutMethods: ['requestcreateLlamaStackContainerss'],
+});
 
 export const saveRouterState = (state: RouterState): void => {
   podmanDesktopApi.setState(state);

@@ -133,8 +133,8 @@ importers:
         specifier: ^5.5.8
         version: 5.5.8(express@4.21.2)
       isomorphic-git:
-        specifier: ^1.32.3
-        version: 1.32.3
+        specifier: ^1.33.0
+        version: 1.33.0
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -2446,8 +2446,8 @@ packages:
   electron-to-chromium@1.5.189:
     resolution: {integrity: sha512-y9D1ntS1ruO/pZ/V2FtLE+JXLQe28XoRpZ7QCCo0T8LdQladzdcOVQZH/IWLVJvCw12OGMb6hYOeOAjntCmJRQ==}
 
-  electron-to-chromium@1.5.203:
-    resolution: {integrity: sha512-uz4i0vLhfm6dLZWbz/iH88KNDV+ivj5+2SA+utpgjKaj9Q0iDLuwk6Idhe9BTxciHudyx6IvTvijhkPvFGUQ0g==}
+  electron-to-chromium@1.5.204:
+    resolution: {integrity: sha512-s9VbBXWxfDrl67PlO4avwh0/GU2vcwx8Fph3wlR8LJl7ySGYId59EFE17VWVcuC3sLWNPENm6Z/uGqKbkPCcXA==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -3320,8 +3320,8 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  isomorphic-git@1.32.3:
-    resolution: {integrity: sha512-gTcJH3JaUdj7WFGnPKnn7XpO1qAeu3nsiC7m2vEdHEsJx8fmBVQ8ji4FQG26JJArFd3MYyuA43pA7bk0DI6+Ww==}
+  isomorphic-git@1.33.0:
+    resolution: {integrity: sha512-a90aVhiBFtkUUe8JaqmR0gL7Thk1Ol/30rLS9c7nM20CwSbVqDctnwxX9VFSDLz5iq1wyzV6p4uyU7GStQKkag==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -6820,7 +6820,7 @@ snapshots:
   browserslist@4.25.2:
     dependencies:
       caniuse-lite: 1.0.30001735
-      electron-to-chromium: 1.5.203
+      electron-to-chromium: 1.5.204
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.2)
     optional: true
@@ -7174,7 +7174,7 @@ snapshots:
 
   electron-to-chromium@1.5.189: {}
 
-  electron-to-chromium@1.5.203:
+  electron-to-chromium@1.5.204:
     optional: true
 
   emoji-regex@8.0.0: {}
@@ -8309,7 +8309,7 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  isomorphic-git@1.32.3:
+  isomorphic-git@1.33.0:
     dependencies:
       async-lock: 1.4.1
       clean-git-ref: 2.0.1

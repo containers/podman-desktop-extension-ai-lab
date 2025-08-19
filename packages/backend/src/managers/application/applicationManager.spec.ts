@@ -78,7 +78,7 @@ const recipeManager = {
 } as unknown as RecipeManager;
 
 const llamaStackManager = {
-  getLlamaStackContainer: vi.fn(),
+  getLlamaStackContainers: vi.fn(),
 } as unknown as LlamaStackManager;
 
 vi.mock('@podman-desktop/api', () => ({
@@ -145,10 +145,9 @@ beforeEach(() => {
     id: 'fake-task',
   }));
   vi.mocked(modelsManagerMock.uploadModelToPodmanMachine).mockResolvedValue('downloaded-model-path');
-  vi.mocked(llamaStackManager.getLlamaStackContainer).mockResolvedValue({
-    containerId: 'container1',
-    port: 10001,
-    playgroundPort: 10002,
+  vi.mocked(llamaStackManager.getLlamaStackContainers).mockResolvedValue({
+    server: { containerId: 'container1', port: 10001, state: 'running' },
+    playground: { containerId: 'playground1', port: 10002, state: 'running' },
   });
 });
 

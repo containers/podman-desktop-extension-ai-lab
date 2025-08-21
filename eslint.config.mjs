@@ -166,7 +166,7 @@ export default [
       /**
        * Just for beauty
        */
-      quotes: ['error', 'single', { allowTemplateLiterals: true }],
+      quotes: ['error', 'single', { allowTemplateLiterals: "avoidEscape" }],
 
       // disabled import/namespace rule as the plug-in is not fully compatible using the compat mode
       'import/namespace': 'off',

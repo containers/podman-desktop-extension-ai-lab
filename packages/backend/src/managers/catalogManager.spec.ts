@@ -19,6 +19,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import content from '../tests/ai-test.json';
+import userContent from '../tests/ai-user-test.json';
 import { EventEmitter, window } from '@podman-desktop/api';
 import { CatalogManager } from './catalogManager';
 
@@ -26,14 +28,18 @@ import type { Stats } from 'node:fs';
 import { promises, existsSync } from 'node:fs';
 import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import path from 'node:path';
+import { version } from '../assets/ai.json';
 import * as catalogUtils from '../utils/catalogUtils';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
-import { testCatalog } from '../tests/ai-test';
-import { defaultCatalog } from '../assets/ai';
-import { userTestCatalog } from '../tests/ai-user-test';
 
-const content = testCatalog;
-const userContent = userTestCatalog;
+vi.mock('../assets/ai.json', async importOriginal => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  const { version } = await importOriginal<typeof import('../assets/ai.json')>();
+  return {
+    default: { ...content, version: version },
+    version: version,
+  };
+});
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
@@ -84,7 +90,6 @@ beforeEach(async () => {
       fire: vi.fn().mockResolvedValue(true),
     } as unknown as RpcExtension,
     appUserDirectory,
-    testCatalog,
   );
 });
 
@@ -249,7 +254,7 @@ test('catalog should use user items in favour of default', async () => {
 });
 
 test('default catalog should have latest version', () => {
-  expect(defaultCatalog.version).toBe(catalogUtils.CatalogFormat.CURRENT);
+  expect(version).toBe(catalogUtils.CatalogFormat.CURRENT);
 });
 
 test('wrong catalog version should create a notification', () => {

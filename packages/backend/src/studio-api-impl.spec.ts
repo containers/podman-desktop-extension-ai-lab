@@ -19,7 +19,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { beforeEach, expect, test, vi, describe } from 'vitest';
-import content from './tests/ai-test.json';
 import type { ApplicationManager } from './managers/application/applicationManager';
 import { StudioApiImpl } from './studio-api-impl';
 import type { InferenceManager } from './managers/inference/inferenceManager';
@@ -43,12 +42,7 @@ import type { RecipeManager } from './managers/recipes/RecipeManager';
 import type { PodmanConnection } from './managers/podmanConnection';
 import type { NavigationRegistry } from './registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
-
-vi.mock('./ai.json', () => {
-  return {
-    default: content,
-  };
-});
+import { testCatalog } from './tests/ai-test';
 
 vi.mock('node:fs', () => {
   return {
@@ -119,6 +113,7 @@ beforeEach(async () => {
       fire: vi.fn().mockResolvedValue(true),
     } as unknown as RpcExtension,
     appUserDirectory,
+    testCatalog,
   );
 
   applicationManager = {

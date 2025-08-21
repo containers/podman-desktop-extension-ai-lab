@@ -65,6 +65,7 @@ import { LlamaStackManager } from './managers/llama-stack/llamaStackManager';
 import { OpenVINO } from './workers/provider/OpenVINO';
 import { McpServerManager } from './managers/playground/McpServerManager';
 import os from 'node:os';
+import { defaultCatalog } from './assets/ai';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -211,7 +212,7 @@ export class Studio {
     /**
      * Create catalog manager, responsible for loading the catalog files and watching for changes
      */
-    this.#catalogManager = new CatalogManager(this.#rpcExtension, appUserDirectory);
+    this.#catalogManager = new CatalogManager(this.#rpcExtension, appUserDirectory, defaultCatalog);
     await this.#catalogManager.init();
 
     /**

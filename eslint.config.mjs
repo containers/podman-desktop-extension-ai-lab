@@ -163,10 +163,6 @@ export default [
        * This will make the history of changes in the hit a little cleaner
        */
       'comma-dangle': ['warn', 'always-multiline'],
-      /**
-       * Just for beauty
-       */
-      quotes: ['error', 'single', { allowTemplateLiterals: "avoidEscape" }],
 
       // disabled import/namespace rule as the plug-in is not fully compatible using the compat mode
       'import/namespace': 'off',

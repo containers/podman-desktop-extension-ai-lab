@@ -164,9 +164,9 @@ export default [
        */
       'comma-dangle': ['warn', 'always-multiline'],
       /**
-       * Let prettier handle the quotes cause I had conflicts
+       * Just for beauty
        */
-      quotes: "off",
+      quotes: ['error', 'single', { allowTemplateLiterals: true }],
 
       // disabled import/namespace rule as the plug-in is not fully compatible using the compat mode
       'import/namespace': 'off',

@@ -20,7 +20,6 @@ import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import defaultCatalog from '../assets/ai.json';
 import type { Recipe } from '@shared/models/IRecipe';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { MSG_NEW_CATALOG_STATE } from '@shared/Messages';
@@ -40,12 +39,14 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   readonly onUpdate: Event<ApplicationCatalog> = this._onUpdate.event;
 
   private catalog: ApplicationCatalog;
+  private defaultCatalog: ApplicationCatalog;
   #jsonWatcher: JsonWatcher<ApplicationCatalog> | undefined;
   #notification: Disposable | undefined;
 
   constructor(
     rpcExtension: RpcExtension,
     private appUserDirectory: string,
+    defaultCatalog: ApplicationCatalog,
   ) {
     super(rpcExtension, MSG_NEW_CATALOG_STATE, () => this.getCatalog());
     // We start with an empty catalog, for the methods to work before the catalog is loaded
@@ -55,6 +56,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       models: [],
       recipes: [],
     };
+    this.defaultCatalog = defaultCatalog;
   }
 
   /**
@@ -78,7 +80,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   }
 
   private loadDefaultCatalog(): void {
-    this.catalog = defaultCatalog as ApplicationCatalog;
+    this.catalog = this.defaultCatalog;
     this.notify();
   }
 
@@ -128,7 +130,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
 
     // merging default catalog with user catalog
     try {
-      this.catalog = merge(sanitize(defaultCatalog), sanitize({ ...content, version: userCatalogFormat }));
+      this.catalog = merge(sanitize(this.defaultCatalog), sanitize({ ...content, version: userCatalogFormat }));
 
       // reset notification if everything went smoothly
       this.#notification?.dispose();

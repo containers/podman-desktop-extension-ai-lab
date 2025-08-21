@@ -1,0 +1,45 @@
+import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
+
+export const userTestCatalog: ApplicationCatalog = {
+  version: '1.0',
+  recipes: [
+    {
+      id: 'recipe 1',
+      description: 'Recipe 1',
+      name: 'Recipe 1',
+      repository: 'https://recipe1.example.com',
+      icon: 'natural-language-processing',
+      categories: ['category1'],
+      basedir: 'chatbot',
+      readme: 'Readme for recipe 1',
+      recommended: ['model1', 'model2'],
+    },
+  ],
+  models: [
+    {
+      id: 'model1',
+      name: 'Model 1',
+      description: 'Readme for model 1',
+      registry: 'Hugging Face',
+      license: '?',
+      url: 'https://model1.example.com',
+      memory: 0,
+    },
+    {
+      id: 'model2',
+      name: 'Model 2',
+      description: 'Readme for model 2',
+      registry: 'Civital',
+      license: '?',
+      url: 'https://model2.example.com',
+      memory: 0,
+    },
+  ],
+  categories: [
+    {
+      id: 'category1',
+      name: 'Category 1',
+      description: 'Readme for category 1',
+    },
+  ],
+};

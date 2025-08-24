@@ -114,49 +114,51 @@ onMount(() => {
 </script>
 
 <NavPage title="Recipe Catalog" searchEnabled={false}>
-  <div slot="content" class="flex flex-col min-w-full min-h-full">
-    <div class="min-w-full min-h-full flex-1">
-      <div class="px-5 space-y-5">
-        <!-- Add the summary here -->
-        <div class="text-sm text-[var(--pd-modal-text)] space-y-3">
-          <p>
-            Recipes help you explore and get started with a number of core AI use cases like chatbots, code generators,
-            text summarizers, agents, and more. Each recipe comes with detailed explanations and runnable source code
-            compatible with various large language models (LLMs).
-          </p>
-          <p>
-            Recipes are organized into categories:
-            <span class="text-[var(--pd-link)]">audio, computer vision, multimodal, natural language processing</span>.
-          </p>
-          <p>Want to contribute more AI applications? The catalog is open source and available on GitHub!</p>
-          <Button
-            title="https://github.com/containers/ai-lab-recipes/blob/main/CONTRIBUTING.md"
-            on:click={openContribution}
-            size="lg">
-            <div class="flex items-center space-x-2">
-              <Fa icon={faGithub} />
-              <span>Browse Recipe Repository</span>
-            </div>
-          </Button>
+  {#snippet content()}
+    <div class="flex flex-col min-w-full min-h-full">
+      <div class="min-w-full min-h-full flex-1">
+        <div class="px-5 space-y-5">
+          <!-- Add the summary here -->
+          <div class="text-sm text-[var(--pd-modal-text)] space-y-3">
+            <p>
+              Recipes help you explore and get started with a number of core AI use cases like chatbots, code
+              generators, text summarizers, agents, and more. Each recipe comes with detailed explanations and runnable
+              source code compatible with various large language models (LLMs).
+            </p>
+            <p>
+              Recipes are organized into categories:
+              <span class="text-[var(--pd-link)]">audio, computer vision, multimodal, natural language processing</span
+              >.
+            </p>
+            <p>Want to contribute more AI applications? The catalog is open source and available on GitHub!</p>
+            <Button
+              title="https://github.com/containers/ai-lab-recipes/blob/main/CONTRIBUTING.md"
+              on:click={openContribution}>
+              <div class="flex items-center space-x-2">
+                <Fa icon={faGithub} />
+                <span>Browse Recipe Repository</span>
+              </div>
+            </Button>
+          </div>
+          <div class="flex flex-row space-x-2 text-[var(--pd-modal-text)]">
+            {#each filtersComponents as filterComponent (filterComponent.key)}
+              <div class="w-full">
+                <label for={filterComponent.key} class="block mb-2 text-sm font-medium">{filterComponent.label}</label>
+                <Dropdown
+                  id={filterComponent.key}
+                  value={filterComponent.key === 'tools' ? defaultRuntime : ''}
+                  options={choicesToOptions(choices[filterComponent.key])}
+                  onChange={(v): void => onFilterChange(filterComponent.key, v)}></Dropdown>
+              </div>
+            {/each}
+          </div>
+          {#if groups}
+            {#each groups.entries() as [category, recipes] (category.id)}
+              <RecipesCard category={category} recipes={recipes} />
+            {/each}
+          {/if}
         </div>
-        <div class="flex flex-row space-x-2 text-[var(--pd-modal-text)]">
-          {#each filtersComponents as filterComponent (filterComponent.key)}
-            <div class="w-full">
-              <label for={filterComponent.key} class="block mb-2 text-sm font-medium">{filterComponent.label}</label>
-              <Dropdown
-                id={filterComponent.key}
-                value={filterComponent.key === 'tools' ? defaultRuntime : ''}
-                options={choicesToOptions(choices[filterComponent.key])}
-                onChange={(v): void => onFilterChange(filterComponent.key, v)}></Dropdown>
-            </div>
-          {/each}
-        </div>
-        {#if groups}
-          {#each groups.entries() as [category, recipes] (category.id)}
-            <RecipesCard category={category} recipes={recipes} />
-          {/each}
-        {/if}
       </div>
     </div>
-  </div>
+  {/snippet}
 </NavPage>

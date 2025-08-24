@@ -48,15 +48,17 @@ onMount(() => {
 </script>
 
 <NavPage title="InstructLab Sessions" searchEnabled={false}>
-  <svelte:fragment slot="tabs">
+  {#snippet tabs()}
     <Tab title="All" url="/tune" selected={$router.path === '/tune'} />
     <Tab title="Running" url="/tune/running" selected={$router.path === '/tune/running'} />
     <Tab title="Completed" url="/tune/completed" selected={$router.path === '/tune/completed'} />
-  </svelte:fragment>
-  <svelte:fragment slot="additional-actions">
+  {/snippet}
+
+  {#snippet additionalActions()}
     <Button icon={faPlusCircle} on:click={start}>Start Fine Tuning</Button>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+
+  {#snippet content()}
     <div class="flex min-w-full">
       <!-- All models -->
       <Route path="/">
@@ -109,5 +111,5 @@ onMount(() => {
         {/if}
       </Route>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </NavPage>

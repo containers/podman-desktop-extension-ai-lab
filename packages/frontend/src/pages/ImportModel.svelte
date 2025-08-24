@@ -108,15 +108,14 @@ function handleDragLeave(): void {
   title="Import Model"
   breadcrumbLeftPart="Models"
   breadcrumbRightPart="Import Model"
-  breadcrumbTitle="Go back to Models Catalog"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
-  <svelte:fragment slot="icon">
+  {#snippet icon()}
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
       <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faFileImport} />
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+  {#snippet content()}
     <div class="flex m-5 flex-col w-full">
       <!-- Error banner -->
       <div aria-label="importError">
@@ -197,5 +196,5 @@ function handleDragLeave(): void {
         </div>
       </div>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </FormPage>

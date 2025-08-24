@@ -199,29 +199,29 @@ function handleOnChange(): void {
   title="Service details"
   breadcrumbLeftPart="Model Services"
   breadcrumbRightPart="Service details"
-  breadcrumbTitle="Go back to Model Services"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
-  <svelte:fragment slot="icon">
+  <!-- Removed breadcrumbTitle above, no longer needed for svelte 5 detailspage -->
+  {#snippet iconSnippet()}
     <div class="mr-3">
       {#if service !== undefined}
         <ServiceStatus object={service} />
       {/if}
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="subtitle">
+  {/snippet}
+  {#snippet subtitleSnippet()}
     <div class="flex gap-x-2 items-center text-[var(--pd-content-sub-header)]">
       {#if service}
         <span class="text-xs">{service.container.containerId}</span>
       {/if}
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="actions">
+  {/snippet}
+  {#snippet actionsSnippet()}
     {#if service !== undefined}
       <ServiceAction detailed object={service} />
     {/if}
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+  {#snippet contentSnippet()}
     <div class="h-full overflow-y-auto bg-[var(--pd-content-bg)]">
       <div class="flex flex-col min-w-full min-h-full">
         <div class="min-w-full min-h-full flex-1">
@@ -402,5 +402,5 @@ function handleOnChange(): void {
         </div>
       </div>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </DetailsPage>

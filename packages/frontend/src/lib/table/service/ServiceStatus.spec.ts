@@ -40,11 +40,12 @@ describe('transition statuses', () => {
           status: status,
           container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
           type: InferenceType.LLAMA_CPP,
+          labels: {},
         },
       });
 
-      const img = screen.getByRole('img');
-      expect(img).toBeDefined();
+      const spinner = screen.queryByRole('progressbar');
+      expect(spinner).toBeDefined();
 
       const button = screen.queryByRole('button');
       expect(button).toBeNull();
@@ -64,11 +65,12 @@ describe('stable statuses', () => {
           status: status,
           container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
           type: InferenceType.LLAMA_CPP,
+          labels: {},
         },
       });
 
-      const img = screen.queryByRole('img');
-      expect(img).toBeNull();
+      const spinner = screen.queryByRole('progressbar');
+      expect(spinner).toBeNull();
 
       const button = screen.getByRole('button');
       expect(button).toBeDefined();
@@ -89,11 +91,12 @@ test('defined health should not display a spinner', async () => {
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.LLAMA_CPP,
+      labels: {},
     },
   });
 
-  const img = screen.queryByRole('img');
-  expect(img).toBeNull();
+  const spinner = screen.queryByRole('progressbar');
+  expect(spinner).toBeNull();
 
   const button = screen.getByRole('button');
   expect(button).toBeDefined();
@@ -112,6 +115,7 @@ test('click on status icon should redirect to container', async () => {
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.LLAMA_CPP,
+      labels: {},
     },
   });
   // Get button and click on it
@@ -131,6 +135,7 @@ test('error status should show degraded', async () => {
       status: 'error',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.LLAMA_CPP,
+      labels: {},
     },
   });
   // Get button and click on it
@@ -146,6 +151,7 @@ test('running status with no healthcheck should show starting', async () => {
       status: 'running',
       container: { containerId: 'dummyContainerId', engineId: 'dummyEngineId' },
       type: InferenceType.LLAMA_CPP,
+      labels: {},
     },
   });
   // Get button and click on it

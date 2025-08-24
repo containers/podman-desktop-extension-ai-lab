@@ -18,21 +18,20 @@ export function goToUpPage(): void {
   title={model?.name ?? modelId}
   breadcrumbLeftPart="Models"
   breadcrumbRightPart={model?.name ?? ''}
-  breadcrumbTitle="Go back to Models"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
-  <svelte:fragment slot="icon">
+  {#snippet iconSnippet()}
     {#if model}
       <div class="mr-3">
         <ModelStatusIcon object={model} />
       </div>
     {/if}
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+  {#snippet contentSnippet()}
     <div class="flex flex-row w-full h-full bg-[var(--pd-content-bg)] overflow-y-auto">
       <div class="grow p-5">
         <MarkdownRenderer source={model?.description} />
       </div>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </DetailsPage>

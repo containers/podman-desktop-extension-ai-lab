@@ -27,7 +27,7 @@ const columns: TableColumn<ApplicationState>[] = [
   }),
 ];
 const row = new TableRow<ApplicationState>({});
-let data: (ApplicationState & { selected?: boolean })[];
+let data: ApplicationState[] = [];
 onMount(() => {
   return applicationStates.subscribe(items => {
     data = filter ? filter(items) : items;

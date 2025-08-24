@@ -28,10 +28,11 @@ function createNewPlayground(): void {
 </script>
 
 <NavPage title="Playground Environments" searchEnabled={false}>
-  <svelte:fragment slot="additional-actions">
+  {#snippet additionalActions()}
     <Button icon={faPlusCircle} on:click={createNewPlayground}>New Playground</Button>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+
+  {#snippet content()}
     <div class="flex min-w-full">
       {#if $conversations.length > 0}
         <Table kind="playground" data={$conversations} columns={columns} row={row}></Table>
@@ -46,5 +47,5 @@ function createNewPlayground(): void {
         </EmptyScreen>
       {/if}
     </div>
-  </svelte:fragment>
+  {/snippet}
 </NavPage>

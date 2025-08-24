@@ -149,16 +149,17 @@ function isModelNeeded(recipe: Recipe): boolean {
 <FormPage
   breadcrumbLeftPart="Recipes"
   breadcrumbRightPart="Start recipe"
-  breadcrumbTitle="Go back to recipes page"
   title="Start recipe"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
-  <svelte:fragment slot="icon">
+  <!-- Removed breadcrumbTitle above, no longer needed for svelte 5 formpage -->
+  {#snippet icon()}
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
       <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faRocket} />
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+
+  {#snippet content()}
     <div class="flex flex-col w-full">
       <!-- warning machine resources -->
       {#if containerProviderConnection}
@@ -203,6 +204,7 @@ function isModelNeeded(recipe: Recipe): boolean {
                 bind:value={containerProviderConnection}
                 containerProviderConnections={startedContainerProviderConnectionInfo} />
             {/if}
+
             {#if isModelNeeded(recipe)}
               <!-- model form -->
               <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
@@ -221,6 +223,7 @@ function isModelNeeded(recipe: Recipe): boolean {
           {#if errorMsg !== undefined || !containerProviderConnection}
             <ErrorMessage error={errorMsg ?? 'No running container engine found'} />
           {/if}
+
           <footer>
             <div class="w-full flex flex-col">
               {#if completed}
@@ -240,5 +243,5 @@ function isModelNeeded(recipe: Recipe): boolean {
         </div>
       {/if}
     </div>
-  </svelte:fragment>
+  {/snippet}
 </FormPage>

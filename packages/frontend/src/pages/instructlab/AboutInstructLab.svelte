@@ -76,65 +76,71 @@ let cards: AboutInstructLabExploreCardInterface[] = [
 ];
 </script>
 
+{#snippet card(cardItem: AboutInstructLabExploreCardInterface)}
+  <AboutInstructLabExploreCard
+    title={cardItem.title}
+    link={cardItem.link}
+    image={cardItem.image}
+    isVideo={cardItem.isVideo} />
+{/snippet}
+
 <NavPage title="About InstructLab" searchEnabled={false}>
-  <div slot="additional-actions">
+  {#snippet additionalActions()}
     {#if experimentalTuning}
       <Button icon={faPlusCircle} on:click={start}>Start Fine Tuning</Button>
     {/if}
-  </div>
-  <div slot="content" class="flex flex-col min-w-full min-h-full">
-    <div class="min-w-full min-h-full flex-1">
-      <div class="text-[var(--pd-details-body-text)] mt-4 px-5 space-y-5" aria-label="inner-content">
-        <div class="flex bg-[var(--pd-content-card-bg)] rounded-md p-5 gap-3 flex-row flex-nowrap items-center">
-          <img
-            src={instructLabTitleImage}
-            class="max-h-[100%] w-auto max-w-[20%] object-contain rounded-md self-start"
-            alt="InstructLab" />
-          <div class="flex flex-col flex-1 h-100% self-start gap-4">
-            <div
-              class="text-[var(--pd-content-card-text)] truncate text-ellipsis overflow-hidden whitespace-pre-line flex flex-col gap-4">
-              <div>
-                Here you can create an InstructLab session to improve trained models with specialized knowledge and
-                skill tuning. InstructLab is a model-agnostic open source AI project that facilitates contributions to
-                Large Language Models (LLMs).
-              </div>
-              <!-- Remove hidden once we have some samples data -->
-              <div class="hidden">Start by trying one of our samples or bring your own knowledge and skills files.</div>
-            </div>
-            <div class="flex flex-row justify-start items-center gap-3 mt-2">
-              <Link on:click={openInstructLabDocumentation}>Access InstructLab documentation</Link>
-              <Link on:click={openInstructLabHuggingFace}>View InstructLab on HuggingFace</Link>
-            </div>
-          </div>
-        </div>
+  {/snippet}
 
-        <!-- Remove hidden once we have some samples data -->
-        <div class="flex flex-1 flex-col hidden">
-          <p class="text-xl text-[var(--pd-details-body-text)]">
-            Discover from available <Link on:click={openSamples} class="font-bold">SAMPLES</Link>
-          </p>
-          <div class="flex flex-col pt-5 grow">
-            <div class="grid grid-cols-3 gap-x-2">
-              <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
-              <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
-              <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
+  {#snippet content()}
+    <div class="flex flex-col min-w-full min-h-full">
+      <div class="min-w-full min-h-full flex-1">
+        <div class="text-[var(--pd-details-body-text)] mt-4 px-5 space-y-5" aria-label="inner-content">
+          <div class="flex bg-[var(--pd-content-card-bg)] rounded-md p-5 gap-3 flex-row flex-nowrap items-center">
+            <img
+              src={instructLabTitleImage}
+              class="max-h-[100%] w-auto max-w-[20%] object-contain rounded-md self-start"
+              alt="InstructLab" />
+            <div class="flex flex-col flex-1 h-100% self-start gap-4">
+              <div
+                class="text-[var(--pd-content-card-text)] truncate text-ellipsis overflow-hidden whitespace-pre-line flex flex-col gap-4">
+                <div>
+                  Here you can create an InstructLab session to improve trained models with specialized knowledge and
+                  skill tuning. InstructLab is a model-agnostic open source AI project that facilitates contributions to
+                  Large Language Models (LLMs).
+                </div>
+                <!-- Remove hidden once we have some samples data -->
+                <div class="hidden">
+                  Start by trying one of our samples or bring your own knowledge and skills files.
+                </div>
+              </div>
+              <div class="flex flex-row justify-start items-center gap-3 mt-2">
+                <Link on:click={openInstructLabDocumentation}>Access InstructLab documentation</Link>
+                <Link on:click={openInstructLabHuggingFace}>View InstructLab on HuggingFace</Link>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="flex flex-1 flex-col">
-          <p class="text-xl text-[var(--pd-details-body-text)]">Explore articles and videos</p>
-          <div class="rounded-md my-5 bg-[var(--pd-content-card-bg)] p-2">
-            <Carousel cards={cards} cardWidth={300} let:card>
-              {@const Card = card as AboutInstructLabExploreCardInterface}
-              <AboutInstructLabExploreCard
-                title={Card.title}
-                link={Card.link}
-                image={Card.image}
-                isVideo={Card.isVideo} />
-            </Carousel>
+
+          <!-- Remove hidden once we have some samples data -->
+          <div class="flex flex-1 flex-col hidden">
+            <p class="text-xl text-[var(--pd-details-body-text)]">
+              Discover from available <Link on:click={openSamples} class="font-bold">SAMPLES</Link>
+            </p>
+            <div class="flex flex-col pt-5 grow">
+              <div class="grid grid-cols-3 gap-x-2">
+                <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
+                <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
+                <AboutInstructLabDiscoverCard title="asdas" link="asd" image={instructLabTitleImage} desc="aaaa" />
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-1 flex-col">
+            <p class="text-xl text-[var(--pd-details-body-text)]">Explore articles and videos</p>
+            <div class="rounded-md my-5 bg-[var(--pd-content-card-bg)] p-2">
+              <Carousel cards={cards} card={card} />
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  {/snippet}
 </NavPage>

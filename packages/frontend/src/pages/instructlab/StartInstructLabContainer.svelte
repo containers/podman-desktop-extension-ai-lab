@@ -79,7 +79,7 @@ function openDocumentation(): void {
 </script>
 
 <FormPage title="Run InstructLab as a container">
-  <svelte:fragment slot="content">
+  {#snippet content()}
     <div class="flex flex-col w-full">
       <header class="mx-5 mt-5">
         <div class="w-full flex flex-row">
@@ -147,5 +147,6 @@ function openDocumentation(): void {
           {/if}
         </div>
       </div>
-    </div></svelte:fragment>
+    </div>
+  {/snippet}
 </FormPage>

@@ -55,35 +55,36 @@ async function onAiLabPortInput(event: Event): Promise<void> {
 </script>
 
 <NavPage title="Local Server" searchEnabled={false}>
-  <div slot="content" class="flex flex-col min-w-full min-h-full">
-    <div class="min-w-full min-h-full flex-1">
-      <div class="text-[var(--pd-details-body-text)] mt-4 px-5 space-y-5" aria-label="inner-content">
-        <p>
-          Integrate Podman AI Lab directly into your development workflows by using its REST API endpoints. Compatible
-          with Ollama's endpoints, you can seamlessly access and utilize the capabilities of Podman AI Lab without
-          relying on its graphical interface.
-        </p>
-      </div>
-      <div class="px-5 space-y-5">
-        <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
-          <div class="w-full">
-            <!-- aiLabPort input -->
-            <label for="aiLabPort" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Port on which the API is listening (requires restart of extension):</label>
-            <Input
-              type="number"
-              value={String(aiLabPort ?? 0)}
-              on:input={onAiLabPortInput}
-              class="w-full ml-2"
-              placeholder="10434"
-              name="aiLabPort"
-              aria-label="Port input" />
+  {#snippet content()}
+    <div class="flex flex-col min-w-full min-h-full">
+      <div class="min-w-full min-h-full flex-1">
+        <div class="text-[var(--pd-details-body-text)] mt-4 px-5 space-y-5" aria-label="inner-content">
+          <p>
+            Integrate Podman AI Lab directly into your development workflows by using its REST API endpoints. Compatible
+            with Ollama's endpoints, you can seamlessly access and utilize the capabilities of Podman AI Lab without
+            relying on its graphical interface.
+          </p>
+        </div>
+        <div class="px-5 space-y-5">
+          <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
+            <div class="w-full">
+              <label for="aiLabPort" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+                Port on which the API is listening (requires restart of extension):
+              </label>
+              <Input
+                value={String(aiLabPort ?? 0)}
+                on:input={onAiLabPortInput}
+                class="w-full ml-2"
+                placeholder="10434"
+                name="aiLabPort"
+                aria-label="Port input" />
+            </div>
+            {#if errorMsg}
+              <ErrorMessage error={errorMsg} />
+            {/if}
           </div>
-          {#if errorMsg}
-            <ErrorMessage error={errorMsg} />
-          {/if}
         </div>
       </div>
     </div>
-  </div>
+  {/snippet}
 </NavPage>

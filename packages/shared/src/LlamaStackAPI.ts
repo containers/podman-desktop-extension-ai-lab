@@ -18,13 +18,13 @@
 
 import { createRpcChannel } from './messages/MessageProxy';
 import type { LlamaStackContainerConfiguration } from './models/llama-stack/LlamaStackContainerConfiguration';
-import type { LlamaStackContainerInfo } from './models/llama-stack/LlamaStackContainerInfo';
+import type { LlamaStackContainers } from './models/llama-stack/LlamaStackContainerInfo';
 
 export const LLAMA_STACK_API_CHANNEL = createRpcChannel<LlamaStackAPI>('LlamaStackAPI');
 export interface LlamaStackAPI {
-  requestCreateLlamaStackContainer(config: LlamaStackContainerConfiguration): Promise<void>;
+  requestcreateLlamaStackContainerss(config: LlamaStackContainerConfiguration): Promise<void>;
 
   routeToLlamaStackContainerTerminal(containerId: string): Promise<void>;
 
-  getLlamaStackContainerInfo(): Promise<LlamaStackContainerInfo | undefined>;
+  getLlamaStackContainersInfo(): Promise<LlamaStackContainers | undefined>;
 }

@@ -189,7 +189,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     );
   });
 
-  test.describe.serial(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
+  //The test is currently failing on ci, relates to https://github.com/redhat-developer/mapt/issues/583
+  test.describe.skip(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
     let llamaStackPage: AiLlamaStackPage;
     const llamaStackContainerNames: string[] = [];
 

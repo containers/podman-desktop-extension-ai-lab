@@ -121,8 +121,8 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1
       '@huggingface/hub':
-        specifier: ^2.5.0
-        version: 2.5.0
+        specifier: ^2.5.1
+        version: 2.5.1
       ai:
         specifier: ^4.3.19
         version: 4.3.19(react@19.1.0)(zod@3.24.4)
@@ -957,8 +957,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.5.0':
-    resolution: {integrity: sha512-YIsgr6uvnQpxacizt6YQMp4Hmr7kZ1gYZtmxOvb4Ef/zPrghYatmXgil0wHRJ6SmfjMz7ySrZqQLm2nDI9aidQ==}
+  '@huggingface/hub@2.5.1':
+    resolution: {integrity: sha512-3TNsBEcUROBPC2ygMgSkwgJeIMjvZ/ggD7HiVK8HgDQqMaw2wIqmhcCUbwsrkxUaXs2ITrwKHeTJWB+3xL1QnA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -5608,7 +5608,7 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.19.34
 
-  '@huggingface/hub@2.5.0':
+  '@huggingface/hub@2.5.1':
     dependencies:
       '@huggingface/tasks': 0.19.37
 

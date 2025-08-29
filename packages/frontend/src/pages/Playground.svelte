@@ -11,20 +11,22 @@ import {
   isAssistantToolCall,
   type Message,
 } from '@shared/models/IPlaygroundMessage';
-import { catalog } from '../stores/catalog';
+import { catalog } from '/@/stores/catalog';
+import { mcpSettings } from '/@/stores/mcpSettings';
 import ContentDetailsLayout from '../lib/ContentDetailsLayout.svelte';
 import RangeInput from '../lib/RangeInput.svelte';
 import Fa from 'svelte-fa';
 
-import ChatMessage from '../lib/conversation/ChatMessage.svelte';
+import ChatMessage from '/@/lib/conversation/ChatMessage.svelte';
+import ConversationActions from '/@/lib/conversation/ConversationActions.svelte';
 import SystemPromptBanner from '/@/lib/conversation/SystemPromptBanner.svelte';
+import ToolCallMessage from '/@/lib/conversation/ToolCallMessage.svelte';
+import ToolSelectionModal from '/@/lib/conversation/ToolSelectionModal.svelte';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import { faCircleInfo, faPaperPlane, faStop } from '@fortawesome/free-solid-svg-icons';
 import { Button, Tooltip, DetailsPage, StatusIcon } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
-import ConversationActions from '../lib/conversation/ConversationActions.svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
-import ToolCallMessage from '/@/lib/conversation/ToolCallMessage.svelte';
 import type { InferenceServer } from '@shared/models/IInference';
 import type { ModelOptions } from '@shared/models/IModelOptions';
 
@@ -40,6 +42,7 @@ let errorMsg = $state('');
 let cancellationTokenId: number | undefined = $state(undefined);
 
 // settings
+let mcpServers = $derived(Object.values($mcpSettings.servers).filter(s => s.enabled === true));
 let temperature = $state(0.8);
 let max_tokens = $state(-1);
 let top_p = $state(0.5);
@@ -343,6 +346,11 @@ function handleOnClick(): void {
                     </div>
                   </div>
                 </div>
+                {#if mcpServers.length > 0}
+                  <div class="text-[var(--pd-content-card-text)] w-full">
+                    <ToolSelectionModal mcpServers={mcpServers} />
+                  </div>
+                {/if}
               </svelte:fragment>
             </ContentDetailsLayout>
           </div>

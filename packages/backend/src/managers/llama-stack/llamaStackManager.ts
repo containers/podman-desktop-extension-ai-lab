@@ -245,7 +245,7 @@ export class LlamaStackManager implements Disposable {
     await this.#taskRunner.runAsTask(
       labels,
       {
-        loadingLabel: 'Starting server and playground',
+        loadingLabel: 'Starting Server and/or Playground',
         errorMsg: err => `Failed to start existing containers: ${String(err)}`,
       },
       async ({ updateLabels }) => {
@@ -296,7 +296,7 @@ export class LlamaStackManager implements Disposable {
     await this.#taskRunner.runAsTask(
       labels,
       {
-        loadingLabel: 'Creating playground container',
+        loadingLabel: 'Creating Playground container',
         errorMsg: err => `Failed to create playground: ${String(err)}`,
       },
       async ({ updateLabels }) => {
@@ -341,7 +341,7 @@ export class LlamaStackManager implements Disposable {
     await this.#taskRunner.runAsTask(
       labels,
       {
-        loadingLabel: 'Creating server and playground',
+        loadingLabel: 'Creating Server and Playground',
         errorMsg: err => `Failed to create Llama Stack containers: ${String(err)}`,
         failFastSubtasks: true,
       },
@@ -467,7 +467,7 @@ export class LlamaStackManager implements Disposable {
     return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
       labels,
       {
-        loadingLabel: 'Waiting Llama Stack server to be healthy',
+        loadingLabel: 'Waiting for Llama Stack server to be healthy',
         errorMsg: err => `Something went wrong while checking server health: ${String(err)}`,
       },
       () =>
@@ -547,7 +547,7 @@ export class LlamaStackManager implements Disposable {
     return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
       labels,
       {
-        loadingLabel: 'Starting Llama Stack playground container',
+        loadingLabel: 'Starting Llama Stack Playground container',
         errorMsg: err => `Something went wrong while creating playground container: ${String(err)}`,
       },
       async () => {

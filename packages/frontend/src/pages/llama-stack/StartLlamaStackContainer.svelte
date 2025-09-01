@@ -31,6 +31,9 @@ let stack_containers = $state<LlamaStackContainers | undefined>(undefined);
 let available: boolean = $derived(
   stack_containers?.server?.state === 'running' && stack_containers?.playground?.state === 'running',
 );
+// flag to immediately show the spinner on submit button
+let start_spinner: boolean = $state(false);
+
 let loading = $derived(
   stack_containers === undefined &&
     filterByLabel($tasks, { trackingId: LLAMA_STACK_CONTAINER_TRACKINGID }).length > 0 &&
@@ -45,9 +48,6 @@ let uiReady = $derived(available && !hasActiveTasks);
 
 onMount(async () => {
   stack_containers = await llamaStackClient.getLlamaStackContainersInfo();
-  console.log('stack_containers', stack_containers);
-  console.log('server', stack_containers?.server);
-  console.log('playground', stack_containers?.playground);
 });
 
 $effect(() => {
@@ -90,6 +90,7 @@ function processTasks(trackedTasks: Task[]): void {
 
 // Submit method when the form is valid
 async function submit(): Promise<void> {
+  start_spinner = true;
   errorMsg = undefined;
   try {
     await llamaStackClient.requestcreateLlamaStackContainerss({
@@ -98,6 +99,8 @@ async function submit(): Promise<void> {
   } catch (err: unknown) {
     console.error('Something wrong while trying to create the Llama Stack container.', err);
     errorMsg = String(err);
+  } finally {
+    start_spinner = false;
   }
 }
 
@@ -145,7 +148,10 @@ function openLink(url: string): void {
               Explore LLama-Stack environment
             </Button>
           {:else}
-            <Button title="Start Llama Stack container" inProgress={hasActiveTasks || loading} on:click={submit}>
+            <Button
+              title="Start Llama Stack container"
+              inProgress={hasActiveTasks || loading || start_spinner}
+              on:click={submit}>
               Start Llama Stack container
             </Button>
           {/if}
@@ -159,7 +165,7 @@ function openLink(url: string): void {
         tasks={$tasks} />
 
       <!-- form -->
-      {#if startedContainerProviderConnectionInfo.length > 1 || stack_containers !== undefined || errorMsg !== undefined}
+      {#if startedContainerProviderConnectionInfo.length > 1 || available || errorMsg !== undefined}
         <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
           <div class="w-full text-[var(--pd-details-body-text)]">
             <!-- container provider connection input -->
@@ -171,17 +177,17 @@ function openLink(url: string): void {
                 containerProviderConnections={startedContainerProviderConnectionInfo} />
             {/if}
 
-            {#if stack_containers !== undefined || errorMsg !== undefined}
+            {#if available || errorMsg !== undefined}
               <h1 class="pt-4 mb-2 text-lg first-letter:uppercase">Instructions</h1>
 
-              {#if stack_containers}
-                <p>Llama Stack API is accessible at http://localhost:{stack_containers.server?.port}</p>
+              {#if available}
+                <p>Llama Stack Server API is accessible at http://localhost:{stack_containers?.server?.port}</p>
                 <p>
                   Access
                   <Tooltip tip="Open swagger documentation">
                     <Link
                       aria-label="swagger documentation"
-                      on:click={openLink.bind(undefined, `http://localhost:${stack_containers.server?.port}/docs`)}>
+                      on:click={openLink.bind(undefined, `http://localhost:${stack_containers?.server?.port}/docs`)}>
                       swagger documentation
                     </Link>
                   </Tooltip>

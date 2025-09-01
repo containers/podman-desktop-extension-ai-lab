@@ -75,6 +75,7 @@ const containerProviderConnection: ContainerProviderConnectionInfo = {
 
 beforeEach(() => {
   getContainerConnectionInfoMock.mockReturnValue([containerProviderConnection]);
+  vi.mocked(llamaStackClient.getLlamaStackContainersInfo).mockResolvedValue(undefined);
   vi.mocked(tasks).tasks = writable([]);
 });
 
@@ -96,7 +97,7 @@ test('Instructions block should not be displayed if no Llama Stack container', a
 test('Instructions block should be displayed if Llama Stack container is found', async () => {
   vi.mocked(llamaStackClient.getLlamaStackContainersInfo).mockResolvedValue({
     server: { containerId: 'containerId', port: 10000, state: 'running' },
-    playground: undefined,
+    playground: { containerId: 'pgId', port: 60000, state: 'running' },
   });
   render(StartLlamaStackContainer);
 
@@ -189,7 +190,7 @@ test('click open button should redirect to Llama Stack server container', async 
 test('port should be displayed', async () => {
   vi.mocked(llamaStackClient.getLlamaStackContainersInfo).mockResolvedValue({
     server: { containerId: 'containerId', port: 10000, state: 'running' },
-    playground: undefined,
+    playground: { containerId: 'pgId', port: 60000, state: 'running' },
   });
   render(StartLlamaStackContainer);
 
@@ -201,7 +202,7 @@ test('port should be displayed', async () => {
 test('link to Swagger UI should be displayed', async () => {
   vi.mocked(llamaStackClient.getLlamaStackContainersInfo).mockResolvedValue({
     server: { containerId: 'containerId', port: 10000, state: 'running' },
-    playground: undefined,
+    playground: { containerId: 'pgId', port: 60000, state: 'running' },
   });
   render(StartLlamaStackContainer);
 

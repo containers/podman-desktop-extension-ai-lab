@@ -107,16 +107,16 @@ async function importModel(): Promise<void> {
 </script>
 
 <NavPage title="Models" searchEnabled={false}>
-  <svelte:fragment slot="tabs">
+  {#snippet tabs()}
     <Tab title="All" url="/models" selected={$router.path === '/models'} />
     <Tab title="Downloaded" url="/models/downloaded" selected={$router.path === '/models/downloaded'} />
     <Tab title="Imported" url="/models/imported" selected={$router.path === '/models/imported'} />
     <Tab title="Available" url="/models/available" selected={$router.path === '/models/available'} />
-  </svelte:fragment>
-  <svelte:fragment slot="additional-actions">
+  {/snippet}
+  {#snippet additionalActions()}
     <Button on:click={importModel} icon={faFileImport} aria-label="Import Models">Import</Button>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+  {#snippet content()}
     <div class="flex flex-col min-w-full min-h-full space-y-5">
       {#if !loading}
         {#if pullingTasks.length > 0}
@@ -177,5 +177,5 @@ async function importModel(): Promise<void> {
         </div>
       {/if}
     </div>
-  </svelte:fragment>
+  {/snippet}
 </NavPage>

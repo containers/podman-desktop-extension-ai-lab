@@ -247,7 +247,9 @@ export class RpcBrowser {
   }
 
   isSubscribedMessage(content: any): content is ISubscribedMessage {
-    return !!content && 'id' in content && 'body' in content && this.subscribers.has(content.id);
+    // After migrating Svelte 4 → 5, snippets don’t always render at startup
+    // so `content.id` may not be in `this.subscribers` yet
+    return !!content && 'id' in content && 'body' in content;
   }
 }
 

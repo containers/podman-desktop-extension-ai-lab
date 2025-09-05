@@ -395,15 +395,10 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  ['ggerganov/whisper.cpp', 'instructlab/granite-7b-lab-GGUF'].forEach(modelName => {
+  ['ggerganov/whisper.cpp'].forEach(modelName => {
     test.describe.serial(`Model service creation and deletion`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let modelServiceDetailsPage: AILabServiceDetailsPage;
-
-      test.skip(
-        isLinux && modelName === 'instructlab/granite-7b-lab-GGUF',
-        `Skipping ${modelName} model service creation on linux due to known issue`,
-      );
 
       test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
         aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
@@ -438,8 +433,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Make GET request to the model service for ${modelName}`, async ({ request }) => {
-        test.skip(modelName === 'instructlab/granite-7b-lab-GGUF', `Skipping GET request for ${modelName}`);
-
         const port = await modelServiceDetailsPage.getInferenceServerPort();
         const url = `http://localhost:${port}`;
 

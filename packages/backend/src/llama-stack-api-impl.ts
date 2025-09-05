@@ -20,20 +20,20 @@ import { navigation } from '@podman-desktop/api';
 import type { LlamaStackAPI } from '@shared/LlamaStackAPI';
 import type { LlamaStackContainerConfiguration } from '@shared/models/llama-stack/LlamaStackContainerConfiguration';
 import type { LlamaStackManager } from './managers/llama-stack/llamaStackManager';
-import type { LlamaStackContainerInfo } from '@shared/models/llama-stack/LlamaStackContainerInfo';
+import type { LlamaStackContainers } from '@shared/models/llama-stack/LlamaStackContainerInfo';
 
 export class LlamaStackApiImpl implements LlamaStackAPI {
   constructor(private llamaStackManager: LlamaStackManager) {}
 
-  requestCreateLlamaStackContainer(config: LlamaStackContainerConfiguration): Promise<void> {
-    return this.llamaStackManager.requestCreateLlamaStackContainer(config);
+  requestcreateLlamaStackContainerss(config: LlamaStackContainerConfiguration): Promise<void> {
+    return this.llamaStackManager.requestcreateLlamaStackContainerss(config);
   }
 
   routeToLlamaStackContainerTerminal(containerId: string): Promise<void> {
     return navigation.navigateToContainerTerminal(containerId);
   }
 
-  getLlamaStackContainerInfo(): Promise<LlamaStackContainerInfo | undefined> {
-    return this.llamaStackManager.getLlamaStackContainer();
+  getLlamaStackContainersInfo(): Promise<LlamaStackContainers | undefined> {
+    return this.llamaStackManager.getLlamaStackContainers();
   }
 }

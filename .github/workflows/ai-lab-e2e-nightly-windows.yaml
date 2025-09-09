@@ -66,17 +66,6 @@ on:
         description: 'PDE2E runner, builder, podman image versions'
         type: string
         required: true
-      azure_vm_size:
-        default: ''
-        description: 'Azure VM size (Standard_E4as_v5 is cheapest, 4core AMD, 32GB RAM)'
-        type: choice
-        required: false
-        options:
-          - ''
-          - Standard_D8as_v5
-          - Standard_D8s_v4
-          - Standard_E8as_v5
-          - Standard_E4as_v5
       mapt_params:
         default: 'IMAGE=quay.io/redhat-developer/mapt;VERSION_TAG=v0.9.7;CPUS=4;MEMORY=32;EXCLUDED_REGIONS="westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest"'
         description: 'MAPT image, version tag, cpus and memory request, and excluded regions in format IMAGE=xxx;VERSION_TAG=xxx;CPUS=xxx;MEMORY=xxx;EXCLUDED_REGIONS=xxx'
@@ -131,180 +120,70 @@ jobs:
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "MAPT_VM_SIZE=${{ github.event.inputs.azure_vm_size || '' }}" >> $GITHUB_ENV
         echo "${{ github.event.inputs.mapt_params || env.DEFAULT_MAPT_PARAMS }}" | awk -F ';' \
           '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "MAPT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Create instance
-      run: |
-        # Create instance
-        if [ -z "${{ env.MAPT_VM_SIZE }}" ]; then
-          echo "MAPT_VM_SIZE is not set, using resources approach"
-          podman run -d --name windows-create --rm \
-            -v ${PWD}:/workspace:z \
-            -e ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }} \
-            -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
-            -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
-            -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
-            --user 0 \
-            ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION_TAG }} azure \
-              windows create \
-              --project-name 'windows-desktop' \
-              --backed-url 'file:///workspace' \
-              --conn-details-output '/workspace' \
-              --windows-version '${{ matrix.windows-version }}' \
-              --windows-featurepack '${{ matrix.windows-featurepack }}' \
-              --cpus ${{ env.MAPT_CPUS }} \
-              --memory ${{env.MAPT_MEMORY}} \
-              --nested-virt \
-              --tags project=podman-desktop \
-              --spot-excluded-regions ${{ env.MAPT_EXCLUDED_REGIONS }} \
-              --spot
-          # Check logs
-          podman logs -f windows-create
-        else
-          echo "MAPT_VM_SIZE is set to '${{ env.MAPT_VM_SIZE }}', using size approach"
-          # Create instance with VM size
-          podman run -d --name windows-create --rm \
-            -v ${PWD}:/workspace:z \
-            -e ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }} \
-            -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
-            -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
-            -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
-            --user 0 \
-            ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION_TAG }} azure \
-              windows create \
-              --project-name 'windows-desktop' \
-              --backed-url 'file:///workspace' \
-              --conn-details-output '/workspace' \
-              --windows-version '${{ matrix.windows-version }}' \
-              --windows-featurepack '${{ matrix.windows-featurepack }}' \
-              --vmsize '${{ env.MAPT_VM_SIZE }}' \
-              --tags project=podman-desktop \
-              --spot-excluded-regions ${{ env.MAPT_EXCLUDED_REGIONS }} \
-              --spot
-          # Check logs
-          podman logs -f windows-create
-        fi
-
+      uses: podman-desktop/e2e/.github/actions/create-instance@6891d8a376ac0a5ae641613a7338a92052b17044
+      with:
+        mapt-image: ${{ env.MAPT_IMAGE || '' }}
+        mapt-version: ${{ env.MAPT_VERSION_TAG || '' }}
+        windows-version: ${{ matrix.windows-version }}
+        windows-featurepack: ${{ matrix.windows-featurepack }}
+        cpus: ${{ env.MAPT_CPUS || '' }}
+        memory: ${{ env.MAPT_MEMORY || '' }}
+        excluded-regions: ${{ env.MAPT_EXCLUDED_REGIONS || '' }}
+        azure-tenant-id: ${{ secrets.ARM_TENANT_ID }}
+        azure-subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        azure-client-id: ${{ secrets.ARM_CLIENT_ID }}
+        azure-client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
+      
     - name: Check instance system info
-      run: |
-        ssh -i id_rsa \
-          -o StrictHostKeyChecking=no \
-          -o UserKnownHostsFile=/dev/null \
-          -o ServerAliveInterval=30 \
-          -o ServerAliveCountMax=1200 \
-          $(cat username)@$(cat host) "systeminfo"
+      uses: podman-desktop/e2e/.github/actions/instance-system-info@3548105f45def129d5e3aaa5a3d922e09ac892d9
 
     - name: Emulate X session
-      run: |
-        # use fake rdp to emulate an active x session
-        podman run -d --name x-session \
-          -e RDP_HOST=$(cat host) \
-          -e RDP_USER=$(cat username) \
-          -e RDP_PASSWORD=$(cat userpassword) \
-          quay.io/rhqp/frdp:v0.0.1
-        # Wait until the x session has been created
-        podman wait --condition running x-session
-        # Check logs for the x session
-        podman logs x-session
+      uses: podman-desktop/e2e/.github/actions/instance-x-session@3548105f45def129d5e3aaa5a3d922e09ac892d9
 
     - name: Download Podman, do not initialize
-      run: |
-        podman run --rm -d --name pde2e-podman-run \
-          -e TARGET_HOST=$(cat host) \
-          -e TARGET_HOST_USERNAME=$(cat username) \
-          -e TARGET_HOST_KEY_PATH=/data/id_rsa \
-          -e TARGET_FOLDER=pd-e2e \
-          -e TARGET_CLEANUP=false \
-          -e TARGET_RESULTS=results \
-          -e OUTPUT_FOLDER=/data \
-          -e DEBUG=true \
-          -v $PWD:/data:z \
-          quay.io/odockal/pde2e-podman:${{ env.PDE2E_IMAGE_VERSION }} \
-            pd-e2e/podman.ps1 \
-              -downloadUrl ${{ env.PODMAN_URL }} \
-              -targetFolder pd-e2e \
-              -resultsFolder results \
-              -initialize 0 \
-              -rootful 0 \
-              -start 0 \
-              -installWSL 0
-        # check logs
-        podman logs -f pde2e-podman-run
+      uses: podman-desktop/e2e/.github/actions/download-podman-nightly@952cafee20ca82b1ce48b29c848bac1c31062245
+      with:
+        podman-image-tag: ${{ env.PDE2E_IMAGE_VERSION }}
+        podman-download-url: ${{ env.PODMAN_URL }}
 
     - name: Build Podman Desktop Electron Inspect Enabled binary
-      run: |
-        podman run --rm -d --name pde2e-builder-run \
-          -e TARGET_HOST=$(cat host) \
-          -e TARGET_HOST_USERNAME=$(cat username) \
-          -e TARGET_HOST_KEY_PATH=/data/id_rsa \
-          -e TARGET_FOLDER=pd-e2e \
-          -e TARGET_CLEANUP=false \
-          -e TARGET_RESULTS=results \
-          -e OUTPUT_FOLDER=/data \
-          -e DEBUG=true \
-          -v $PWD:/data:z \
-          quay.io/odockal/pde2e-builder:${{ env.PDE2E_IMAGE_VERSION }} \
-            pd-e2e/builder.ps1 \
-              -targetFolder pd-e2e \
-              -resultsFolder results \
-              -fork ${{ env.PD_FORK }} \
-              -branch ${{ env.PD_BRANCH }} \
-              -envVars ${{ env.ENV_VARS }}
-        # check logs
-        podman logs -f pde2e-builder-run
+      uses: podman-desktop/e2e/.github/actions/build-podman-desktop@0c1f0a035e0949941fd6abf959ab556ceec13f03
+      with:
+        fork: ${{ env.PD_FORK }}
+        branch: ${{ env.PD_BRANCH }}
+        env-vars: ${{ env.ENV_VARS }}
 
     - name: Run Podman Desktop Playwright E2E tests
-      run: |
-        podman run -d --name pde2e-runner-run \
-          -e TARGET_HOST=$(cat host) \
-          -e TARGET_HOST_USERNAME=$(cat username) \
-          -e TARGET_HOST_KEY_PATH=/data/id_rsa \
-          -e TARGET_FOLDER=pd-e2e \
-          -e TARGET_RESULTS=results \
-          -e OUTPUT_FOLDER=/data \
-          -e DEBUG=true \
-          -v $PWD:/data:z \
-          quay.io/odockal/pde2e-runner:${{ env.PDE2E_IMAGE_VERSION }} \
-              pd-e2e/runner.ps1 \
-                -targetFolder pd-e2e \
-                -resultsFolder results \
-                -podmanPath $(cat results/podman-location.log) \
-                -pdPath "$(cat results/pde2e-binary-path.log | tr '\n' " ")" \
-                -fork ${{ env.PD_FORK }} \
-                -branch ${{ env.PD_BRANCH }} \
-                -extRepo ${{ env.EXT_REPO }} \
-                -extFork ${{ env.EXT_FORK }} \
-                -extBranch ${{ env.EXT_BRANCH }} \
-                -extTests ${{ env.EXT_RUN_TESTS_FROM_EXTENSION }} \
-                -npmTarget ${{ env.NPM_TARGET }} \
-                -initialize ${{ env.PODMAN_INIT }} \
-                -rootful ${{ env.PODMAN_ROOTFUL }} \
-                -start ${{ env.PODMAN_START }} \
-                -userNetworking ${{ env.PODMAN_NETWORKING }} \
-                -envVars ${{ env.ENV_VARS }} \
-                -runAsAdmin ${{ env.EXT_RUN_TESTS_AS_ADMIN }}
-        # check logs
-        podman logs -f pde2e-runner-run
+      uses: podman-desktop/e2e/.github/actions/run-playwright-test@952cafee20ca82b1ce48b29c848bac1c31062245
+      with:
+        pde2e-runner-tag: ${{ env.PDE2E_IMAGE_VERSION }}
+        fork-repo: ${{ env.PD_FORK }}
+        branch-name: ${{ env.PD_BRANCH }}
+        ext-repo: ${{ env.EXT_REPO }}
+        ext-fork: ${{ env.EXT_FORK }}
+        ext-branch: ${{ env.EXT_BRANCH }}
+        ext-tests: ${{ env.EXT_RUN_TESTS_FROM_EXTENSION }}
+        npm-target: ${{ env.NPM_TARGET }}
+        podman-init: ${{ env.PODMAN_INIT }}
+        podman-start: ${{ env.PODMAN_START }}
+        rootful: ${{ env.PODMAN_ROOTFUL }}
+        user-networking: ${{ env.PODMAN_NETWORKING }}
+        env-vars: ${{ env.ENV_VARS }}
 
     - name: Destroy instance
       if: always()
-      run: |
-        # Destroy instance
-        podman run -d --name windows-destroy --rm \
-          -v ${PWD}:/workspace:z \
-          -e ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }} \
-          -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
-          -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
-          -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
-          --user 0 \
-          ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION_TAG }} azure \
-            windows destroy \
-            --project-name 'windows-desktop' \
-            --backed-url 'file:///workspace'
-        # Check logs
-        podman logs -f windows-destroy
+      uses: podman-desktop/e2e/.github/actions/destroy-instance@b6600267f9ff4735602b77948c68ffb5497261af
+      with:
+        mapt-image: ${{ env.MAPT_IMAGE }}
+        mapt-version: ${{ env.MAPT_VERSION_TAG }}
+        azure-tenant-id: ${{ secrets.ARM_TENANT_ID }}
+        azure-subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        azure-client-id: ${{ secrets.ARM_CLIENT_ID }}
+        azure-client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
 
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v5

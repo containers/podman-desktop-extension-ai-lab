@@ -134,11 +134,11 @@ jobs:
         cpus: ${{ env.MAPT_CPUS || '' }}
         memory: ${{ env.MAPT_MEMORY || '' }}
         excluded-regions: ${{ env.MAPT_EXCLUDED_REGIONS || '' }}
-        azure-tenant-id: ${{ secrets.ARM_TENANT_ID }}
-        azure-subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        azure-client-id: ${{ secrets.ARM_CLIENT_ID }}
-        azure-client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
-      
+        arm-tenant-id: ${{ secrets.ARM_TENANT_ID }}
+        arm-subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        arm-client-id: ${{ secrets.ARM_CLIENT_ID }}
+        arm-client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
+
     - name: Check instance system info
       uses: podman-desktop/e2e/.github/actions/instance-system-info@3548105f45def129d5e3aaa5a3d922e09ac892d9
 

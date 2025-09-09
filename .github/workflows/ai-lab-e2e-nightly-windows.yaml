@@ -143,7 +143,7 @@ jobs:
       uses: podman-desktop/e2e/.github/actions/instance-system-info@3548105f45def129d5e3aaa5a3d922e09ac892d9
 
     - name: Emulate X session
-      uses: podman-desktop/e2e/.github/actions/instance-x-session@3548105f45def129d5e3aaa5a3d922e09ac892d9
+      uses: podman-desktop/e2e/.github/actions/emulate-x-session@3548105f45def129d5e3aaa5a3d922e09ac892d9
 
     - name: Download Podman, do not initialize
       uses: podman-desktop/e2e/.github/actions/download-podman-nightly@952cafee20ca82b1ce48b29c848bac1c31062245

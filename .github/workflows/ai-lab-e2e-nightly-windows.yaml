@@ -62,7 +62,7 @@ on:
         type: string
         required: true
       pde2e_image_version:
-        default: 'v0.0.3-windows'
+        default: 'v0.0.3'
         description: 'PDE2E runner, builder, podman image versions'
         type: string
         required: true
@@ -181,10 +181,10 @@ jobs:
       with:
         mapt-image: ${{ env.MAPT_IMAGE }}
         mapt-version: ${{ env.MAPT_VERSION_TAG }}
-        azure-tenant-id: ${{ secrets.ARM_TENANT_ID }}
-        azure-subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        azure-client-id: ${{ secrets.ARM_CLIENT_ID }}
-        azure-client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
+        arm-tenant-id: ${{ secrets.ARM_TENANT_ID }}
+        arm-subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        arm-client-id: ${{ secrets.ARM_CLIENT_ID }}
+        arm-client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
 
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v5

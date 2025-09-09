@@ -125,9 +125,6 @@ export class LlamaStackManager implements Disposable {
   private async onStopContainerEvent(event: ContainerEvent): Promise<void> {
     const serverId = this.#stack_containers?.server?.containerId;
     const playgroundId = this.#stack_containers?.playground?.containerId;
-
-    console.log('event id:', event.id, ' serverId: ', serverId, ' playgroundId: ', playgroundId);
-
     if (this.#creationInProgress) return;
 
     if (serverId === event.id || playgroundId === event.id) {
@@ -226,7 +223,7 @@ export class LlamaStackManager implements Disposable {
         }
       } else {
         this.#creationInProgress = true;
-        await this.CreateBoth(playground, labels, connection);
+        await this.createBoth(playground, labels, connection);
         this.#creationInProgress = false;
       }
     } catch (err) {
@@ -333,7 +330,7 @@ export class LlamaStackManager implements Disposable {
   /**
    * Helper: Only playground exists → delete it and create both containers
    */
-  private async CreateBoth(
+  private async createBoth(
     playground: ContainerInfo | undefined,
     labels: { [p: string]: string },
     connection: ContainerProviderConnection,

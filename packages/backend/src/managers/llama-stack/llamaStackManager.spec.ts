@@ -458,7 +458,7 @@ test('requestcreateLlamaStackContainerss deletes existing playground and creates
 
   vi.mocked(containerEngine.listContainers).mockResolvedValue([playground]);
   const createBothSpy = vi
-    .spyOn(llamaStackManager as unknown as { CreateBoth: () => Promise<void> }, 'CreateBoth')
+    .spyOn(llamaStackManager as unknown as { createBoth: () => Promise<void> }, 'createBoth')
     .mockResolvedValue(undefined);
 
   await llamaStackManager.requestcreateLlamaStackContainerss({});
@@ -479,7 +479,7 @@ test('requestcreateLlamaStackContainerss creates both if server and playground m
   });
   vi.mocked(containerEngine.listContainers).mockResolvedValue([]);
   const createBothSpy = vi
-    .spyOn(llamaStackManager as unknown as { CreateBoth: () => Promise<void> }, 'CreateBoth')
+    .spyOn(llamaStackManager as unknown as { createBoth: () => Promise<void> }, 'createBoth')
     .mockResolvedValue(undefined);
 
   await llamaStackManager.requestcreateLlamaStackContainerss({});

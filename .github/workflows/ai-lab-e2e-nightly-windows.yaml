@@ -159,10 +159,10 @@ jobs:
         env-vars: ${{ env.ENV_VARS }}
 
     - name: Run Podman Desktop Playwright E2E tests
-      uses: podman-desktop/e2e/.github/actions/run-playwright-test@20c6a16618604e4fa01364e4625135fc65ff5313
+      uses: podman-desktop/e2e/.github/actions/run-playwright-test@update-playwright-action
       with:
         pde2e-runner-tag: ${{ env.PDE2E_IMAGE_VERSION }}
-        podman-desktop-path: true
+        podman-desktop-path: 'true'
         fork-repo: ${{ env.PD_FORK }}
         branch-name: ${{ env.PD_BRANCH }}
         ext-repo: ${{ env.EXT_REPO }}
@@ -175,6 +175,7 @@ jobs:
         rootful: ${{ env.PODMAN_ROOTFUL }}
         user-networking: ${{ env.PODMAN_NETWORKING }}
         env-vars: ${{ env.ENV_VARS }}
+        ci-bot-token: ${{ secrets.PODMAN_DESKTOP_BOT_TOKEN }}
 
     - name: Destroy instance
       if: always()

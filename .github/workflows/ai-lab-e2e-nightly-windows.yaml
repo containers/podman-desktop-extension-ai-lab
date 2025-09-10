@@ -162,7 +162,7 @@ jobs:
       uses: podman-desktop/e2e/.github/actions/run-playwright-test@529fd6fc258b29cfee1630c1bc5292e92e738ccc
       with:
         pde2e-runner-tag: ${{ env.PDE2E_IMAGE_VERSION }}
-        podman-desktop-path: 'true'
+        podman-desktop-path: true
         fork-repo: ${{ env.PD_FORK }}
         branch-name: ${{ env.PD_BRANCH }}
         ext-repo: ${{ env.EXT_REPO }}

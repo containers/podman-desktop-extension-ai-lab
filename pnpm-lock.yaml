@@ -118,8 +118,8 @@ importers:
         specifier: ^0.2.16
         version: 0.2.16(zod@3.24.4)
       '@huggingface/gguf':
-        specifier: ^0.2.1
-        version: 0.2.1
+        specifier: ^0.3.0
+        version: 0.3.0
       '@huggingface/hub':
         specifier: ^2.6.2
         version: 2.6.2
@@ -950,8 +950,8 @@ packages:
     resolution: {integrity: sha512-GsBrnOzU8uj0LECDfD5zomZJIjrPhIlWU82AHwa2s40FKH+kcxQaBvBo3Z4TxyZHIyX8XTDxsyA33/Vx9eFuQA==}
     engines: {node: '>=6'}
 
-  '@huggingface/gguf@0.2.1':
-    resolution: {integrity: sha512-+OSzPDzWz4S3EGwsIpngOr7+hiemTJKlV+JK+HyKrjsGZCM4r2ptSQLitPEogLacbNZbwNfpYt5mEE9UkBq/dQ==}
+  '@huggingface/gguf@0.3.0':
+    resolution: {integrity: sha512-hcWxKMPp1pV6oi2kpMmvnfD7v9dIkV8LJI+8vr/OEgFsoDsQrq31Szg3jdc03jfWsBB4gLri1+5GnNLduj5sew==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -960,11 +960,11 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@huggingface/tasks@0.19.34':
-    resolution: {integrity: sha512-dIl3jyeddCEFJeogJOcbhfIq1tlo3N9K4EAxG/MfkGL0l7hI2kfs91Ut+1h6i09TQM8A9XM91NV7Jz6PgfWE7Q==}
-
   '@huggingface/tasks@0.19.43':
     resolution: {integrity: sha512-ANO23K3ugclBl6VLwdt+7MxBkRkKEE17USUSqprHb29UB5ISigH+0AJcEuDA064uzn0hqYrG/nOcv1yARRt8bw==}
+
+  '@huggingface/tasks@0.19.45':
+    resolution: {integrity: sha512-lM3QOgbfkGZ5gAZOYWOmzMM6BbKcXOIHjgnUAoymTdZEcEcGSr0vy/LWGEiK+vBXC4vU+sCT+WNoA/JZ8TEWdA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5589,17 +5589,17 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 6.7.2
 
-  '@huggingface/gguf@0.2.1':
+  '@huggingface/gguf@0.3.0':
     dependencies:
-      '@huggingface/tasks': 0.19.34
+      '@huggingface/tasks': 0.19.45
 
   '@huggingface/hub@2.6.2':
     dependencies:
       '@huggingface/tasks': 0.19.43
 
-  '@huggingface/tasks@0.19.34': {}
-
   '@huggingface/tasks@0.19.43': {}
+
+  '@huggingface/tasks@0.19.45': {}
 
   '@humanfs/core@0.19.1': {}
 

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2024 Red Hat, Inc.
+# Copyright (C) 2025 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ on:
         type: string
         required: true
       podman_remote_url:
-        default: 'https://github.com/containers/podman/releases/download/v5.3.2/podman-5.3.2-setup.exe'
+        default: 'https://github.com/containers/podman/releases/download/v5.6.1/podman-5.6.1-setup.exe'
         description: 'podman remote setup exe'
         type: string
         required: true
@@ -104,9 +104,9 @@ jobs:
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_EXT_TESTS_OPTIONS: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=1'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
-        DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.6' }}"
+        DEFAULT_PODMAN_VERSION: "${{ env.PD_PODMAN_VERSION || '5.6.1' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_PODMAN_VERSION/podman-$DEFAULT_PODMAN_VERSION-setup.exe"
-        DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3-windows'
+        DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3'
         DEFAULT_MAPT_PARAMS: "IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }};VERSION_TAG=${{ vars.MAPT_VERSION_TAG || 'v0.9.7' }};CPUS=${{ vars.MAPT_CPUS || '4' }};MEMORY=${{ vars.MAPT_MEMORY || '32' }};EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\""
       run: |
         echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV

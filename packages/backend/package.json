@@ -115,7 +115,7 @@
     "@huggingface/hub": "^2.6.2",
     "ai": "^4.3.19",
     "express": "^4.21.2",
-    "express-openapi-validator": "^5.5.8",
+    "express-openapi-validator": "^5.6.0",
     "isomorphic-git": "^1.33.1",
     "js-yaml": "^4.1.0",
     "mustache": "^4.2.0",
@@ -123,7 +123,7 @@
     "postman-code-generators": "^1.14.1",
     "postman-collection": "^5.1.0",
     "semver": "^7.7.2",
-    "swagger-ui-dist": "^5.28.1",
+    "swagger-ui-dist": "^5.29.0",
     "swagger-ui-express": "^5.0.1",
     "systeminformation": "^5.27.8",
     "xml-js": "^1.6.11"

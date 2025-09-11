@@ -148,8 +148,8 @@ importers:
         specifier: 1.10.1
         version: 1.10.1
       postman-collection:
-        specifier: ^5.1.0
-        version: 5.1.0
+        specifier: ^5.1.1
+        version: 5.1.1
       semver:
         specifier: ^7.7.2
         version: 7.7.2
@@ -1018,6 +1018,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.30':
     resolution: {integrity: sha512-GQ7Nw5G2lTu/BtHTKfXhKHok2WGetd4XYcVKGx00SjAk8GMwgJM3zr6zORiPGuOE+/vkc90KtTosSSvaCjKb2Q==}
+
+  '@jridgewell/trace-mapping@0.3.31':
+    resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
   '@jsdevtools/ono@7.1.3':
     resolution: {integrity: sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==}
@@ -3992,16 +3995,16 @@ packages:
     resolution: {integrity: sha512-vDrXG/dclSu6RMqPqBz4ZqoQBwcj/a80sJYsQZmzWJ6dWgXiudPhwu6Vm3C1Hy7zX5W8A6am1Z6vb/TB4eyURA==}
     engines: {node: '>=10'}
 
-  postman-collection@5.1.0:
-    resolution: {integrity: sha512-vlxZLPrXcF267wNjMKO6mFr7rGFB4aniIuqg+q9TCFGlhJsT8CQCblsov8XAKx74ZFerAozYRNI75sa1WNuLIw==}
+  postman-collection@5.1.1:
+    resolution: {integrity: sha512-WSC4Pi1hfRHDnGN/qH2HlFPtHxK+CAX2XXFzZgpv1oDeossWF8piV2La9MGN5E5yIWdV60p21Yh1rYDTsaCoUA==}
     engines: {node: '>=18'}
 
   postman-url-encoder@3.0.1:
     resolution: {integrity: sha512-dMPqXnkDlstM2Eya+Gw4MIGWEan8TzldDcUKZIhZUsJ/G5JjubfQPhFhVWKzuATDMvwvrWbSjF+8VmAvbu6giw==}
     engines: {node: '>=10'}
 
-  postman-url-encoder@3.0.7:
-    resolution: {integrity: sha512-JlWT4yLtL01ogxL+PSzs89++2sKdxsJrk5QrWken/VzKx5b+UMQ646/glZA3MbqfL3KtsUqanLhL0PQtkmcUyg==}
+  postman-url-encoder@3.0.8:
+    resolution: {integrity: sha512-EOgUMBazo7JNP4TDrd64TsooCiWzzo4143Ws8E8WYGEpn2PKpq+S4XRTDhuRTYHm3VKOpUZs7ZYZq7zSDuesqA==}
     engines: {node: '>=10'}
 
   prelude-ls@1.2.1:
@@ -5119,7 +5122,7 @@ snapshots:
       '@babel/parser': 7.28.4
       '@babel/types': 7.28.4
       '@jridgewell/gen-mapping': 0.3.13
-      '@jridgewell/trace-mapping': 0.3.30
+      '@jridgewell/trace-mapping': 0.3.31
       jsesc: 3.1.0
     optional: true
 
@@ -5654,6 +5657,12 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@jridgewell/trace-mapping@0.3.31':
+    dependencies:
+      '@jridgewell/resolve-uri': 3.1.2
+      '@jridgewell/sourcemap-codec': 1.5.5
+    optional: true
 
   '@jsdevtools/ono@7.1.3': {}
 
@@ -8807,7 +8816,7 @@ snapshots:
       semver: 7.7.2
       uuid: 8.3.2
 
-  postman-collection@5.1.0:
+  postman-collection@5.1.1:
     dependencies:
       '@faker-js/faker': 5.5.3
       file-type: 3.9.0
@@ -8817,7 +8826,7 @@ snapshots:
       lodash: 4.17.21
       mime-format: 2.0.2
       mime-types: 2.1.35
-      postman-url-encoder: 3.0.7
+      postman-url-encoder: 3.0.8
       semver: 7.7.2
       uuid: 8.3.2
 
@@ -8825,7 +8834,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  postman-url-encoder@3.0.7:
+  postman-url-encoder@3.0.8:
     dependencies:
       punycode: 2.3.1
 

@@ -18,14 +18,15 @@
 
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import {
+  containerEngine,
+  env,
+  process,
+  type ContainerInfo,
   type Disposable,
   type TelemetryLogger,
-  containerEngine,
   type ContainerProviderConnection,
   type ContainerCreateOptions,
-  env,
   type ImageInfo,
-  process,
 } from '@podman-desktop/api';
 import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnection';
 import llama_stack_images from '../../assets/llama-stack-images.json';
@@ -34,7 +35,7 @@ import { getImageInfo } from '../../utils/inferenceUtils';
 import type { ContainerRegistry, ContainerEvent, ContainerHealthy } from '../../registries/ContainerRegistry';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { getRandomName } from '../../utils/randomUtils';
-import type { LlamaStackContainerInfo } from '@shared/models/llama-stack/LlamaStackContainerInfo';
+import type { LlamaStackContainerInfo, LlamaStackContainers } from '@shared/models/llama-stack/LlamaStackContainerInfo';
 import { LLAMA_STACK_CONTAINER_TRACKINGID } from '@shared/models/llama-stack/LlamaStackContainerInfo';
 import type { LlamaStackContainerConfiguration } from '@shared/models/llama-stack/LlamaStackContainerConfiguration';
 import path from 'node:path';
@@ -78,7 +79,8 @@ async function getLocalIPAddress(connection: ContainerProviderConnection): Promi
 
 export class LlamaStackManager implements Disposable {
   #initialized: boolean;
-  #containerInfo: LlamaStackContainerInfo | undefined;
+  #stack_containers: LlamaStackContainers | undefined;
+  #creationInProgress = false;
   #disposables: Disposable[];
   #taskRunner: TaskRunner;
 
@@ -108,111 +110,270 @@ export class LlamaStackManager implements Disposable {
   }
 
   private async watchMachineEvent(event: PodmanConnectionEvent): Promise<void> {
-    if ((event.status === 'started' && !this.#containerInfo) || (event.status === 'stopped' && this.#containerInfo)) {
-      await this.refreshLlamaStackContainer();
+    if (
+      (event.status === 'started' && (!this.#stack_containers?.server || !this.#stack_containers?.playground)) ||
+      (event.status === 'stopped' && (this.#stack_containers?.server || this.#stack_containers?.playground))
+    ) {
+      await this.refreshLlamaStackContainers();
     }
   }
 
   private async onStartContainerEvent(): Promise<void> {
-    await this.refreshLlamaStackContainer();
+    await this.refreshLlamaStackContainers();
   }
 
   private async onStopContainerEvent(event: ContainerEvent): Promise<void> {
-    console.log('event id:', event.id, ' containerId: ', this.#containerInfo?.containerId);
-    if (this.#containerInfo?.containerId === event.id) {
-      this.#containerInfo = undefined;
+    const serverId = this.#stack_containers?.server?.containerId;
+    const playgroundId = this.#stack_containers?.playground?.containerId;
+    if (this.#creationInProgress) return;
+
+    if (serverId === event.id || playgroundId === event.id) {
+      this.#stack_containers = undefined;
       this.taskRegistry.deleteByLabels({ trackingId: LLAMA_STACK_CONTAINER_TRACKINGID });
     }
-    await this.refreshLlamaStackContainer();
+
+    await this.refreshLlamaStackContainers();
   }
 
   /**
-   * getLlamaStackContainer returns the first running container with a Llama Stack label.
+   * getLlamaStackContainers returns the first running container with a Llama Stack label.
    * The container is searched only the first time and the result is cached for subsequent calls.
    *
    * Returns undefined if no container is found
    */
-  async getLlamaStackContainer(): Promise<LlamaStackContainerInfo | undefined> {
+  async getLlamaStackContainers(): Promise<LlamaStackContainers | undefined> {
     if (!this.#initialized) {
-      await this.refreshLlamaStackContainer();
+      await this.refreshLlamaStackContainers();
       this.#initialized = true;
     }
-    return this.#containerInfo;
+    return this.#stack_containers;
   }
 
-  protected async refreshLlamaStackContainer(): Promise<void> {
+  /**
+   * refreshLlamaStackContainers refreshes the container info.
+   * It is called when the machine is started or when a container is stopped.
+   */
+  protected async refreshLlamaStackContainers(): Promise<void> {
     const containers = await containerEngine.listContainers();
-    const containerInfo = containers
-      .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_CONTAINER_LABEL in c.Labels)
-      .map(c => ({
-        containerId: c.Id,
-        port: parseInt(c.Labels[LLAMA_STACK_API_PORT_LABEL]),
-        playgroundPort: 0,
-      }))
-      .at(0);
-    this.#containerInfo = containerInfo;
-    if (containerInfo) {
-      const containerInfoWithPlayground = containers
-        .filter(c => c.State === 'running' && c.Labels && LLAMA_STACK_PLAYGROUND_PORT_LABEL in c.Labels)
-        .map(c => ({
-          ...containerInfo,
-          playgroundPort: parseInt(c.Labels[LLAMA_STACK_PLAYGROUND_PORT_LABEL]),
-        }))
-        .at(0);
-      if (containerInfoWithPlayground) {
-        this.#containerInfo = containerInfoWithPlayground;
-      }
-    }
-  }
 
-  async requestCreateLlamaStackContainer(config: LlamaStackContainerConfiguration): Promise<void> {
-    let connection: ContainerProviderConnection | undefined;
-    if (config.connection) {
-      connection = this.podmanConnection.getContainerProviderConnection(config.connection);
-    } else {
-      connection = this.podmanConnection.findRunningContainerProviderConnection();
+    const serverContainer = containers.find(c => c.Labels && LLAMA_STACK_API_PORT_LABEL in c.Labels);
+    let serverInfo: LlamaStackContainerInfo | undefined;
+
+    if (serverContainer) {
+      serverInfo = {
+        containerId: serverContainer.Id,
+        port: parseInt(serverContainer.Labels[LLAMA_STACK_API_PORT_LABEL], 10),
+        state: serverContainer.State,
+      };
     }
 
-    if (!connection) throw new Error('cannot find running container provider connection');
+    const playgroundContainer = containers.find(c => c.Labels && LLAMA_STACK_PLAYGROUND_PORT_LABEL in c.Labels);
+    let playgroundInfo: LlamaStackContainerInfo | undefined;
 
-    // create a tracking id to put in the labels
-    const trackingId: string = LLAMA_STACK_CONTAINER_TRACKINGID;
+    if (playgroundContainer) {
+      playgroundInfo = {
+        containerId: playgroundContainer.Id,
+        port: parseInt(playgroundContainer.Labels[LLAMA_STACK_PLAYGROUND_PORT_LABEL], 10),
+        state: playgroundContainer.State,
+      };
+    }
 
-    const labels = {
-      trackingId: trackingId,
+    this.#stack_containers = {
+      server: serverInfo,
+      playground: playgroundInfo,
     };
-
-    this.#taskRunner
-      .runAsTask(
-        {
-          trackingId: trackingId,
-        },
-        {
-          loadingLabel: 'Creating Llama Stack container',
-          errorMsg: err => `Something went wrong while trying to create an inference server ${String(err)}.`,
-          failFastSubtasks: true,
-        },
-        async ({ updateLabels }) => {
-          const containerInfo = await this.createLlamaStackContainer(connection, labels);
-          this.#containerInfo = containerInfo;
-          updateLabels(labels => ({
-            ...labels,
-            containerId: containerInfo.containerId,
-            port: `${containerInfo.port}`,
-            playgroundPort: `${containerInfo.playgroundPort}`,
-          }));
-          this.telemetryLogger.logUsage('llamaStack.startContainer');
-        },
-      )
-      .catch((err: unknown) => {
-        this.telemetryLogger.logError('llamaStack.startContainer', { error: err });
-      });
   }
 
-  async createLlamaStackContainer(
+  /**
+   * requestcreateLlamaStackContainerss creates the Llama Stack containers.
+   * It is called when the user clicks the "Start" button.
+   *
+   * Flowchart for checking containers and handling them:
+   *
+   * Server exists
+   *   ├─ Playground exists
+   *   │    └─ Start both
+   *   └─ Playground doesn't exist
+   *        └─ Create new playground
+   *
+   * Server doesn't exist
+   *   ├─ Playground exists
+   *   │    └─ Delete playground and update state
+   *   └─ Playground doesn't exist
+   *        └─ Create both
+   */
+  async requestcreateLlamaStackContainerss(config: LlamaStackContainerConfiguration): Promise<void> {
+    const connection: ContainerProviderConnection | undefined = config.connection
+      ? this.podmanConnection.getContainerProviderConnection(config.connection)
+      : this.podmanConnection.findRunningContainerProviderConnection();
+
+    if (!connection) throw new Error('Cannot find running container provider connection');
+
+    const labels = { trackingId: LLAMA_STACK_CONTAINER_TRACKINGID };
+    const containers = await containerEngine.listContainers();
+    const server = containers.find(c => c.Labels && LLAMA_STACK_API_PORT_LABEL in c.Labels);
+    const playground = containers.find(c => c.Labels && LLAMA_STACK_PLAYGROUND_PORT_LABEL in c.Labels);
+
+    try {
+      if (server) {
+        if (playground) {
+          await this.startBoth(server, playground, labels);
+        } else {
+          await this.createPlaygroundFromServer(server, labels, connection);
+        }
+      } else {
+        this.#creationInProgress = true;
+        await this.createBoth(playground, labels, connection);
+        this.#creationInProgress = false;
+      }
+    } catch (err) {
+      this.telemetryLogger.logError('llamaStack.startContainer', { error: err });
+    }
+  }
+
+  /**
+   * Helper: Both server and playground exist → start both
+   */
+  private async startBoth(
+    server: ContainerInfo,
+    playground: ContainerInfo,
+    labels: { [p: string]: string },
+  ): Promise<void> {
+    await this.#taskRunner.runAsTask(
+      labels,
+      {
+        loadingLabel: 'Starting Server and/or Playground',
+        errorMsg: err => `Failed to start existing containers: ${String(err)}`,
+      },
+      async ({ updateLabels }) => {
+        if (server.State !== 'running') await containerEngine.startContainer(server.engineId, server.Id);
+        if (playground.State !== 'running') await containerEngine.startContainer(playground.engineId, playground.Id);
+
+        const serverInfo = await this.waitLlamaStackServerHealthy(
+          {
+            containerId: server.Id,
+            port: parseInt(server.Labels[LLAMA_STACK_API_PORT_LABEL], 10),
+            state: server.State,
+          },
+          labels,
+        );
+
+        this.#stack_containers = {
+          server: serverInfo,
+          playground: {
+            containerId: playground.Id,
+            port: parseInt(playground.Labels[LLAMA_STACK_PLAYGROUND_PORT_LABEL], 10),
+            state: 'running',
+          },
+        };
+
+        updateLabels(l => ({
+          ...l,
+          containerId: serverInfo.containerId,
+          port: `${serverInfo.port}`,
+          state: serverInfo.state,
+          playgroundId: playground.Id,
+          playgroundPort: `${parseInt(playground.Labels[LLAMA_STACK_PLAYGROUND_PORT_LABEL], 10)}`,
+          playgroundState: 'running',
+        }));
+
+        this.telemetryLogger.logUsage('llamaStack.startContainer');
+      },
+    );
+  }
+
+  /**
+   * Helper: Only server exists → create playground
+   */
+  private async createPlaygroundFromServer(
+    server: ContainerInfo,
+    labels: { [p: string]: string },
+    connection: ContainerProviderConnection,
+  ): Promise<void> {
+    await this.#taskRunner.runAsTask(
+      labels,
+      {
+        loadingLabel: 'Creating Playground container',
+        errorMsg: err => `Failed to create playground: ${String(err)}`,
+      },
+      async ({ updateLabels }) => {
+        if (server.State !== 'running') await containerEngine.startContainer(server.engineId, server.Id);
+
+        const serverInfo = await this.waitLlamaStackServerHealthy(
+          {
+            containerId: server.Id,
+            port: parseInt(server.Labels[LLAMA_STACK_API_PORT_LABEL], 10),
+            state: server.State,
+          },
+          labels,
+        );
+
+        const playgroundInfo = await this.createPlaygroundContainer(serverInfo, labels, connection);
+
+        this.#stack_containers = { server: serverInfo, playground: playgroundInfo };
+
+        updateLabels(l => ({
+          ...l,
+          containerId: serverInfo.containerId,
+          port: `${serverInfo.port}`,
+          state: serverInfo.state,
+          playgroundId: playgroundInfo.containerId,
+          playgroundPort: `${playgroundInfo.port}`,
+          playgroundState: playgroundInfo.state,
+        }));
+
+        this.telemetryLogger.logUsage('llamaStack.startContainer');
+      },
+    );
+  }
+
+  /**
+   * Helper: Only playground exists → delete it and create both containers
+   */
+  private async createBoth(
+    playground: ContainerInfo | undefined,
+    labels: { [p: string]: string },
+    connection: ContainerProviderConnection,
+  ): Promise<void> {
+    await this.#taskRunner.runAsTask(
+      labels,
+      {
+        loadingLabel: 'Creating Server and Playground',
+        errorMsg: err => `Failed to create Llama Stack containers: ${String(err)}`,
+        failFastSubtasks: true,
+      },
+      async ({ updateLabels }) => {
+        // If playground exists, stop & delete it
+        if (playground) {
+          if (playground.State === 'running') {
+            await containerEngine.stopContainer(playground.engineId, playground.Id);
+          }
+          await containerEngine.deleteContainer(playground.engineId, playground.Id);
+        }
+
+        // Create new server + playground
+        const stackInfo = await this.createLlamaStackContainers(connection, labels);
+        this.#stack_containers = stackInfo;
+
+        // Update task labels for UI
+        updateLabels(l => ({
+          ...l,
+          containerId: stackInfo.server?.containerId ?? '',
+          port: `${stackInfo.server?.port}`,
+          state: stackInfo.server?.state ?? '',
+          playgroundId: stackInfo.playground?.containerId ?? '',
+          playgroundPort: `${stackInfo.playground?.port}`,
+          playgroundState: stackInfo.playground?.state ?? '',
+        }));
+
+        this.telemetryLogger.logUsage('llamaStack.startContainer');
+      },
+    );
+  }
+  async createLlamaStackContainers(
     connection: ContainerProviderConnection,
     labels: { [p: string]: string },
-  ): Promise<LlamaStackContainerInfo> {
+  ): Promise<LlamaStackContainers> {
     const image = llama_stack_images.default;
     const imageInfo = await this.#taskRunner.runAsTask<ImageInfo>(
       labels,
@@ -223,25 +384,32 @@ export class LlamaStackManager implements Disposable {
       () => getImageInfo(connection, image, () => {}),
     );
 
-    let containerInfo = await this.createContainer(connection, image, imageInfo, labels);
-    containerInfo = await this.waitLlamaStackContainerHealthy(containerInfo, labels);
-    containerInfo = await this.registerModels(containerInfo, labels, connection);
-    containerInfo = await this.startPlayground(containerInfo, labels, connection);
-    return containerInfo;
+    // Create the server container
+    let serverInfo = await this.createServerContainer(connection, image, imageInfo, labels);
+    serverInfo = await this.waitLlamaStackServerHealthy(serverInfo, labels);
+    serverInfo = await this.registerModels(serverInfo, labels, connection);
+    const playgroundInfo = await this.createPlaygroundContainer(serverInfo, labels, connection);
+
+    // Return both in proper interface
+    return {
+      server: serverInfo,
+      playground: playgroundInfo,
+    };
   }
 
-  private async createContainer(
+  private async createServerContainer(
     connection: ContainerProviderConnection,
     image: string,
     imageInfo: ImageInfo,
     labels: { [p: string]: string },
   ): Promise<LlamaStackContainerInfo> {
-    const folder = await this.getLlamaStackContainerFolder();
+    const folder = await this.getLlamaStackContainersFolder();
 
     const aiLabApiHost =
       env.isWindows && connection.vmType === 'wsl' ? await getLocalIPAddress(connection) : 'host.docker.internal';
     const aiLabApiPort = this.configurationRegistry.getExtensionConfiguration().apiPort;
     const llamaStackApiPort = await getFreeRandomPort('0.0.0.0');
+
     const createContainerOptions: ContainerCreateOptions = {
       Image: imageInfo.Id,
       name: getRandomName('llama-stack'),
@@ -250,7 +418,7 @@ export class LlamaStackManager implements Disposable {
         [LLAMA_STACK_API_PORT_LABEL]: `${llamaStackApiPort}`,
       },
       HostConfig: {
-        AutoRemove: true,
+        AutoRemove: false,
         SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
         Mounts: [
           {
@@ -260,77 +428,61 @@ export class LlamaStackManager implements Disposable {
           },
         ],
         UsernsMode: 'keep-id:uid=0,gid=0',
-        PortBindings: {
-          '8321/tcp': [
-            {
-              HostPort: `${llamaStackApiPort}`,
-            },
-          ],
-        },
+        PortBindings: { '8321/tcp': [{ HostPort: `${llamaStackApiPort}` }] },
       },
       Env: [`PODMAN_AI_LAB_URL=http://${aiLabApiHost}:${aiLabApiPort}`],
       OpenStdin: true,
       start: true,
       HealthCheck: {
-        // must be the port INSIDE the container not the exposed one
         Test: ['CMD-SHELL', `curl -sSf localhost:8321/v1/models > /dev/null`],
         Interval: SECOND * 5,
-        Retries: 4 * 5,
+        Retries: 20,
       },
     };
 
     return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
       labels,
       {
-        loadingLabel: 'Starting Llama Stack container',
-        errorMsg: err => `Something went wrong while creating container: ${String(err)}`,
+        loadingLabel: 'Starting Llama Stack server container',
+        errorMsg: err => `Something went wrong while creating server container: ${String(err)}`,
       },
       async () => {
         const { id } = await containerEngine.createContainer(imageInfo.engineId, createContainerOptions);
         return {
           containerId: id,
           port: llamaStackApiPort,
-          playgroundPort: 0,
+          state: 'starting',
         };
       },
     );
   }
 
-  async waitLlamaStackContainerHealthy(
-    containerInfo: LlamaStackContainerInfo,
+  async waitLlamaStackServerHealthy(
+    serverInfo: LlamaStackContainerInfo,
     labels: { [p: string]: string },
   ): Promise<LlamaStackContainerInfo> {
     return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
       labels,
       {
-        loadingLabel: 'Waiting Llama Stack to be started',
-        errorMsg: err => `Something went wrong while trying to check container health check: ${String(err)}.`,
+        loadingLabel: 'Waiting for Llama Stack server to be healthy',
+        errorMsg: err => `Something went wrong while checking server health: ${String(err)}`,
       },
-      async ({ updateLabels }) => {
-        let disposable: Disposable;
-        return new Promise(resolve => {
-          disposable = this.containerRegistry.onHealthyContainerEvent((event: ContainerHealthy) => {
-            if (event.id !== containerInfo.containerId) {
-              return;
-            }
+      () =>
+        new Promise((resolve, _reject) => {
+          const disposable = this.containerRegistry.onHealthyContainerEvent((event: ContainerHealthy) => {
+            if (event.id !== serverInfo.containerId) return;
+
             disposable.dispose();
-            // eslint-disable-next-line sonarjs/no-nested-functions
-            updateLabels(labels => ({
-              ...labels,
-              containerId: containerInfo.containerId,
-              port: `${containerInfo.port}`,
-              playgroundPort: `${containerInfo.playgroundPort}`,
-            }));
+            serverInfo.state = 'running';
             this.telemetryLogger.logUsage('llamaStack.startContainer');
-            resolve(containerInfo);
+            resolve(serverInfo);
           });
-        });
-      },
+        }),
     );
   }
 
   async registerModels(
-    containerInfo: LlamaStackContainerInfo,
+    serverInfo: LlamaStackContainerInfo,
     labels: { [p: string]: string },
     connection: ContainerProviderConnection,
   ): Promise<LlamaStackContainerInfo> {
@@ -339,12 +491,12 @@ export class LlamaStackManager implements Disposable {
         labels,
         {
           loadingLabel: `Registering model ${model.name}`,
-          errorMsg: err => `Something went wrong while registering model: ${String(err)}.`,
+          errorMsg: err => `Something went wrong while registering model: ${String(err)}`,
         },
         async () => {
           await this.podmanConnection.execute(connection, [
             'exec',
-            containerInfo.containerId,
+            serverInfo.containerId,
             'llama-stack-client',
             'models',
             'register',
@@ -353,11 +505,11 @@ export class LlamaStackManager implements Disposable {
         },
       );
     }
-    return containerInfo;
+    return serverInfo;
   }
 
-  async startPlayground(
-    containerInfo: LlamaStackContainerInfo,
+  private async createPlaygroundContainer(
+    serverInfo: LlamaStackContainerInfo,
     labels: { [p: string]: string },
     connection: ContainerProviderConnection,
   ): Promise<LlamaStackContainerInfo> {
@@ -371,25 +523,20 @@ export class LlamaStackManager implements Disposable {
       () => getImageInfo(connection, image, () => {}),
     );
 
-    const llamaStackPlaygroundPort = await getFreeRandomPort('0.0.0.0');
+    const playgroundPort = await getFreeRandomPort('0.0.0.0');
+
     const createContainerOptions: ContainerCreateOptions = {
       Image: imageInfo.Id,
       name: getRandomName('llama-stack-playground'),
       Labels: {
         [LLAMA_STACK_CONTAINER_LABEL]: image,
-        [LLAMA_STACK_PLAYGROUND_PORT_LABEL]: `${llamaStackPlaygroundPort}`,
+        [LLAMA_STACK_PLAYGROUND_PORT_LABEL]: `${playgroundPort}`,
       },
       HostConfig: {
-        AutoRemove: true,
-        PortBindings: {
-          '8501/tcp': [
-            {
-              HostPort: `${llamaStackPlaygroundPort}`,
-            },
-          ],
-        },
+        AutoRemove: false,
+        PortBindings: { '8501/tcp': [{ HostPort: `${playgroundPort}` }] },
       },
-      Env: [`LLAMA_STACK_ENDPOINT=http://host.containers.internal:${containerInfo.port}`],
+      Env: [`LLAMA_STACK_ENDPOINT=http://host.containers.internal:${serverInfo.port}`],
       OpenStdin: true,
       start: true,
     };
@@ -397,28 +544,28 @@ export class LlamaStackManager implements Disposable {
     return this.#taskRunner.runAsTask<LlamaStackContainerInfo>(
       labels,
       {
-        loadingLabel: 'Starting Llama Stack Playground',
-        errorMsg: err => `Something went wrong while creating container: ${String(err)}`,
+        loadingLabel: 'Starting Llama Stack Playground container',
+        errorMsg: err => `Something went wrong while creating playground container: ${String(err)}`,
       },
       async () => {
-        await containerEngine.createContainer(imageInfo.engineId, createContainerOptions);
+        const { id } = await containerEngine.createContainer(imageInfo.engineId, createContainerOptions);
         return {
-          containerId: containerInfo.containerId,
-          port: containerInfo.port,
-          playgroundPort: llamaStackPlaygroundPort,
+          containerId: id,
+          port: playgroundPort,
+          state: 'running',
         };
       },
     );
   }
 
-  private async getLlamaStackContainerFolder(): Promise<string> {
+  private async getLlamaStackContainersFolder(): Promise<string> {
     const llamaStackPath = path.join(this.appUserDirectory, 'llama-stack', 'container');
     await fs.mkdir(path.join(llamaStackPath, '.llama'), { recursive: true });
     return llamaStackPath;
   }
 
   // For tests only
-  protected getContainerInfo(): LlamaStackContainerInfo | undefined {
-    return this.#containerInfo;
+  protected getContainersInfo(): LlamaStackContainers | undefined {
+    return this.#stack_containers;
   }
 }

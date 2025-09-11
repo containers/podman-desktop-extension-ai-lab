@@ -20,5 +20,9 @@ export const LLAMA_STACK_CONTAINER_TRACKINGID = 'llama-stack.trackingid';
 export interface LlamaStackContainerInfo {
   containerId: string;
   port: number;
-  playgroundPort: number;
+  state: string;
+}
+export interface LlamaStackContainers {
+  server: LlamaStackContainerInfo | undefined;
+  playground: LlamaStackContainerInfo | undefined;
 }

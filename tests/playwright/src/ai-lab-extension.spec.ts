@@ -133,7 +133,7 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 
   runner.setVideoAndTraceName('ai-lab-e2e');
   await welcomePage.handleWelcomePage(true);
-  await waitForPodmanMachineStartup(page);
+  await waitForPodmanMachineStartup(page, 180_000);
 });
 
 test.afterAll(async ({ runner }) => {

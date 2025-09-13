@@ -123,7 +123,7 @@ function openLink(url: string): void {
 </script>
 
 <FormPage title="Run Llama Stack as a container">
-  <svelte:fragment slot="content">
+  {#snippet content()}
     <div class="flex flex-col w-full">
       <header class="mx-5 mt-5">
         <div class="w-full flex flex-row space-x-2">
@@ -200,5 +200,6 @@ function openLink(url: string): void {
           </div>
         </div>
       {/if}
-    </div></svelte:fragment>
+    </div>
+  {/snippet}
 </FormPage>

@@ -96,4 +96,8 @@ export interface InferenceServer {
    * Inference labels
    */
   labels: Record<string, string>;
+  /**
+   * Optional name
+   */
+  name?: string;
 }

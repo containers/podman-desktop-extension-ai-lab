@@ -47,22 +47,24 @@ function getFilter(items: ApplicationState[]): ApplicationState[] {
   title={recipe?.name ?? ''}
   breadcrumbLeftPart="Recipes"
   breadcrumbRightPart={recipe?.name ?? ''}
-  breadcrumbTitle="Go back to Recipes"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
-  <svelte:fragment slot="icon">
+  {#snippet iconSnippet()}
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
       <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={getIcon(recipe?.icon)} />
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="tabs">
+  {/snippet}
+
+  {#snippet tabsSnippet()}
     <Tab title="Summary" url="/recipe/{recipeId}" selected={$router.path === `/recipe/${recipeId}`} />
     <Tab title="Running" url="/recipe/{recipeId}/running" selected={$router.path === `/recipe/${recipeId}/running`} />
-  </svelte:fragment>
-  <svelte:fragment slot="actions">
+  {/snippet}
+
+  {#snippet actionsSnippet()}
     <Button on:click={handleOnClick} icon={faRocket} aria-label="Start recipe">Start</Button>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+
+  {#snippet contentSnippet()}
     <div class="bg-[var(--pd-content-bg)] h-full overflow-y-auto">
       <Route path="/">
         <ContentDetailsLayout
@@ -88,8 +90,8 @@ function getFilter(items: ApplicationState[]): ApplicationState[] {
         </div>
       </Route>
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="subtitle">
+  {/snippet}
+  {#snippet subtitleSnippet()}
     <div class="mt-2">
       {#each recipe?.categories ?? [] as categoryId (categoryId)}
         <Card
@@ -97,5 +99,5 @@ function getFilter(items: ApplicationState[]): ApplicationState[] {
           classes="bg-[var(--pd-label-bg)] p-1 text-xs w-fit" />
       {/each}
     </div>
-  </svelte:fragment>
+  {/snippet}
 </DetailsPage>

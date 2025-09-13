@@ -47,15 +47,15 @@ function createNewService(): void {
 </script>
 
 <NavPage title="Model Services" searchEnabled={false}>
-  <svelte:fragment slot="additional-actions">
+  {#snippet additionalActions()}
     {#if selectedItemsNumber > 0}
       <Button title="Delete selected items" on:click={deleteSelected} icon={faTrash}
         >Delete {selectedItemsNumber} selected items</Button>
     {/if}
     <Button icon={faPlusCircle} title="Create a new model service" on:click={createNewService}
       >New Model Service</Button>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+  {#snippet content()}
     <div class="flex min-w-full min-h-full">
       {#if data?.length > 0}
         <Table kind="service" data={data} columns={columns} row={row} bind:selectedItemsNumber={selectedItemsNumber} />
@@ -70,5 +70,5 @@ function createNewService(): void {
         </EmptyScreen>
       {/if}
     </div>
-  </svelte:fragment>
+  {/snippet}
 </NavPage>

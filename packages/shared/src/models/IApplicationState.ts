@@ -29,4 +29,5 @@ export interface ApplicationState {
   modelPorts: number[];
   health: PodHealth;
   backend: InferenceType;
+  name?: string;
 }

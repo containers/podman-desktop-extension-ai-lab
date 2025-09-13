@@ -138,15 +138,16 @@ export function goToUpPage(): void {
   title="New Playground environment"
   breadcrumbLeftPart="Playgrounds"
   breadcrumbRightPart="New Playground environment"
-  breadcrumbTitle="Go back to Playgrounds"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
-  <svelte:fragment slot="icon">
+  <!-- Removed breadcrumbTitle above, no longer needed for svelte 5 formpage -->
+  {#snippet icon()}
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
       <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faPlus} />
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+
+  {#snippet content()}
     <div class="flex flex-col w-full">
       <!-- tasks tracked -->
       {#if trackedTasks.length > 0}
@@ -165,7 +166,6 @@ export function goToUpPage(): void {
             disabled={submitted}
             id="playgroundName"
             class="w-full"
-            type="text"
             name="playgroundName"
             on:input={onNameInput}
             placeholder="Leave blank to generate a name"
@@ -223,5 +223,5 @@ export function goToUpPage(): void {
         </footer>
       </div>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </FormPage>

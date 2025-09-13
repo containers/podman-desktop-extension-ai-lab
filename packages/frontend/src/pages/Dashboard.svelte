@@ -50,10 +50,10 @@ const openDiscussionsPage = (): void => {
 </script>
 
 <NavPage title="Welcome to Podman AI Lab" searchEnabled={false}>
-  <svelte:fragment slot="additional-actions">
+  {#snippet additionalActions()}
     <Button type="secondary" title="Open GitHub repository" on:click={openGithub} icon={faGithub}>Github</Button>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+  {#snippet content()}
     <div class="flex flex-col min-w-full min-h-full text-[var(--pd-details-body-text)]">
       <div class="mt-4 px-5 space-y-5" aria-label="inner-content">
         <DashboardBanner class="rounded-md my-2 w-full" />
@@ -117,5 +117,5 @@ const openDiscussionsPage = (): void => {
         </p>
       </div>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </NavPage>

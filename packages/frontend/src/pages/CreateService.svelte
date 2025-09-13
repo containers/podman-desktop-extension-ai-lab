@@ -157,15 +157,14 @@ export function goToUpPage(): void {
   title="Creating Model service"
   breadcrumbLeftPart="Model Services"
   breadcrumbRightPart="Creating Model service"
-  breadcrumbTitle="Go back to Model Services"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
-  <svelte:fragment slot="icon">
+  {#snippet icon()}
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
       <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faPlus} />
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+  {#snippet content()}
     <div class="flex flex-col w-full">
       <!-- warning machine resources -->
       {#if containerProviderConnection}
@@ -211,7 +210,6 @@ export function goToUpPage(): void {
           <label for="containerPort" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
             >Container port</label>
           <Input
-            type="number"
             value={String(containerPort ?? 0)}
             on:input={onContainerPortInput}
             class="w-full"
@@ -220,6 +218,7 @@ export function goToUpPage(): void {
             aria-label="Port input"
             disabled={loading}
             required />
+          <!-- Removed "type" above, svelte 5 "Input" no longer uses it -->
         </div>
         {#if errorMsg !== undefined || !containerProviderConnection}
           <ErrorMessage error={errorMsg ?? 'No running container engine found'} />
@@ -248,5 +247,5 @@ export function goToUpPage(): void {
         </footer>
       </div>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </FormPage>

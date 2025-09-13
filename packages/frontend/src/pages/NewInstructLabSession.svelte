@@ -86,15 +86,15 @@ function openInstructLabDocumentation(): void {
   title="New InstructLab Session"
   breadcrumbLeftPart="InstructLab Sessions"
   breadcrumbRightPart="New session"
-  breadcrumbTitle="Go back to sessions"
   onclose={goToUpPage}
   onbreadcrumbClick={goToUpPage}>
-  <svelte:fragment slot="icon">
+  <!-- Removed breadcrumbTitle above, no longer needed for svelte 5 formpage -->
+  {#snippet icon()}
     <div class="rounded-full w-8 h-8 flex items-center justify-center">
       <Fa size="1.125x" class="text-[var(--pd-content-header-icon)]" icon={faPlus} />
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="content">
+  {/snippet}
+  {#snippet content()}
     <div class="flex flex-col w-full">
       <!-- form -->
       <div class="bg-[var(--pd-content-card-bg)] m-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
@@ -248,5 +248,5 @@ function openInstructLabDocumentation(): void {
         </footer>
       </div>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </FormPage>

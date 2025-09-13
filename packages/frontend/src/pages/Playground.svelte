@@ -200,18 +200,17 @@ function handleOnClick(): void {
       title={conversation?.name}
       breadcrumbLeftPart="Playgrounds"
       breadcrumbRightPart={conversation?.name}
-      breadcrumbTitle="Go back to Playgrounds"
       onclose={goToUpPage}
       onbreadcrumbClick={goToUpPage}>
-      <svelte:fragment slot="icon">
+      {#snippet iconSnippet()}
         <div class="mr-3">
           <StatusIcon
             icon={ContainerIcon}
             size={24}
             status={getStatusForIcon(server?.status, server?.health?.Status)} />
         </div>
-      </svelte:fragment>
-      <svelte:fragment slot="subtitle">
+      {/snippet}
+      {#snippet subtitleSnippet()}
         <div class="flex gap-x-2 items-center text-[var(--pd-content-sub-header)]">
           {#if model}
             <div class="text-sm" aria-label="Model name">
@@ -219,11 +218,11 @@ function handleOnClick(): void {
             </div>
           {/if}
         </div>
-      </svelte:fragment>
-      <svelte:fragment slot="actions">
+      {/snippet}
+      {#snippet actionsSnippet()}
         <ConversationActions detailed conversation={conversation} />
-      </svelte:fragment>
-      <svelte:fragment slot="content">
+      {/snippet}
+      {#snippet contentSnippet()}
         <div class="flex flex-col w-full h-full bg-[var(--pd-content-bg)]">
           <div class="h-full overflow-auto" bind:this={scrollable}>
             <ContentDetailsLayout
@@ -376,7 +375,7 @@ function handleOnClick(): void {
             </div>
           </div>
         </div>
-      </svelte:fragment>
+      {/snippet}
     </DetailsPage>
   </div>
 {/if}

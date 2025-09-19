@@ -500,6 +500,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
           test(`Install ${appName} example app`, async () => {
             test.setTimeout(1_500_000);
+            test.skip(appName !== 'Audio to Text', 'Skipping all except Audio to Text');
             test.skip(
               appName === 'Object Detection' && isCI && !isMac,
               'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',

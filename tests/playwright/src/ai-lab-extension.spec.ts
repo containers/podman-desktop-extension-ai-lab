@@ -217,8 +217,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     );
   });
 
-  //The test is currently failing on ci, relates to https://github.com/redhat-developer/mapt/issues/583
-  test.describe.skip(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
+  test.describe.serial(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
+    test.skip(!!isCI && !!isWindows, 'Skipping Llama Stack tests on GitHub Actions with Windows platform');
     let llamaStackPage: AiLlamaStackPage;
     const llamaStackContainerNames: string[] = [];
 

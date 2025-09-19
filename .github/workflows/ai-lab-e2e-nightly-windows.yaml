@@ -98,6 +98,7 @@ jobs:
 
     - name: Set the default env. variables
       env:
+        CI: true
         DEFAULT_PODMAN_DESKTOP_REPO_ARGS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
         DEFAULT_NPM_TARGET: 'test:e2e'
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'

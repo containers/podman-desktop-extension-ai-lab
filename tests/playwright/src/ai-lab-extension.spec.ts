@@ -498,6 +498,11 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
             await recipesCatalogPage.waitForLoad();
           });
 
+          test.skip(
+            appName === 'Audio to Text' && !!isCI && !!isLinux,
+            'Audio to Text app is skipped on Linux CI due to stability issues',
+          );
+
           test(`Install ${appName} example app`, async () => {
             test.setTimeout(1_500_000);
             test.skip(

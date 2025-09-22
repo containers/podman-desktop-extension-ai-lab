@@ -690,6 +690,7 @@ test.describe.serial(`Start Llama Stack from sidebar and verify containers`, { t
         .poll(async () => await containersPage.containerExists(container), { timeout: 30_000 })
         .toBeFalsy();
     }
+    await deleteUnusedImages(navigationBar);
   });
 });
 

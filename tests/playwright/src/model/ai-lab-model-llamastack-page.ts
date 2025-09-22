@@ -26,7 +26,9 @@ export class AiLlamaStackPage extends AILabBasePage {
   constructor(page: Page, webview: Page) {
     super(page, webview, 'Llama Stack');
     this.startLlamaStackContainerButton = this.webview.getByRole('button', { name: 'Start Llama Stack container' });
-    this.openLlamaStackContainerButton = this.webview.getByRole('button', { name: 'Open Llama Stack container' });
+    this.openLlamaStackContainerButton = this.webview.getByRole('button', {
+      name: 'Open Llama Stack Server container',
+    });
     this.exploreLlamaStackEnvironmentButton = this.webview.getByRole('button', {
       name: 'Explore Llama-Stack environment',
     });

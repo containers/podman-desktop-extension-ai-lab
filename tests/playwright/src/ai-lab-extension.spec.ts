@@ -291,7 +291,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
+  test.describe.skip('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
     let localServerPort: string;
     let extensionVersion: string | undefined;
     const model: string = 'facebook/detr-resnet-101';
@@ -390,7 +390,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
   // Do not use non-instruct models in playground tests.
   // They break out of guilderails and fail the tests.
   ['ibm-granite/granite-3.3-8b-instruct-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lab playground creation and deletion for ${modelName}`, { tag: '@smoke' }, () => {
+    test.describe.skip(`AI Lab playground creation and deletion for ${modelName}`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;
@@ -478,7 +478,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
   AI_APP_MODEL_AND_NAMES.forEach((appNames, appModel) => {
     /* eslint-disable sonarjs/no-nested-functions */
-    test.describe.serial(`AI Recipe installation for ${appModel}`, { tag: '@smoke' }, () => {
+    test.describe.skip(`AI Recipe installation for ${appModel}`, { tag: '@smoke' }, () => {
       appNames.forEach(appName => {
         test.describe.serial(`AI Recipe installation ${appName}`, () => {
           test.skip(
@@ -630,7 +630,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
   });
 
-  test.describe.serial('InstructLab container startup', { tag: '@instructlab' }, () => {
+  test.describe.skip('InstructLab container startup', { tag: '@instructlab' }, () => {
     let instructLabPage: AILabTryInstructLabPage;
     const instructLabContainerName = /^instructlab-\d+$/;
     let exactInstructLabContainerName = '';

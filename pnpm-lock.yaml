@@ -148,8 +148,8 @@ importers:
         specifier: 1.10.1
         version: 1.10.1
       postman-collection:
-        specifier: ^5.1.1
-        version: 5.1.1
+        specifier: ^5.2.0
+        version: 5.2.0
       semver:
         specifier: ^7.7.2
         version: 7.7.2
@@ -3669,6 +3669,11 @@ packages:
     engines: {node: '>=4.0.0'}
     hasBin: true
 
+  mime@3.0.0:
+    resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
+    engines: {node: '>=10.0.0'}
+    hasBin: true
+
   mimic-function@5.0.1:
     resolution: {integrity: sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==}
     engines: {node: '>=18'}
@@ -4047,8 +4052,8 @@ packages:
     resolution: {integrity: sha512-vDrXG/dclSu6RMqPqBz4ZqoQBwcj/a80sJYsQZmzWJ6dWgXiudPhwu6Vm3C1Hy7zX5W8A6am1Z6vb/TB4eyURA==}
     engines: {node: '>=10'}
 
-  postman-collection@5.1.1:
-    resolution: {integrity: sha512-WSC4Pi1hfRHDnGN/qH2HlFPtHxK+CAX2XXFzZgpv1oDeossWF8piV2La9MGN5E5yIWdV60p21Yh1rYDTsaCoUA==}
+  postman-collection@5.2.0:
+    resolution: {integrity: sha512-ktjlchtpoCw+FZRg+WwnGWH1w9oQDNUBLSRh+9ETPqFAz3SupqHqRuMh74xjQ+PvTWY/WH2JR4ZW+1sH58Ul1g==}
     engines: {node: '>=18'}
 
   postman-url-encoder@3.0.1:
@@ -8595,6 +8600,8 @@ snapshots:
 
   mime@2.6.0: {}
 
+  mime@3.0.0: {}
+
   mimic-function@5.0.1: {}
 
   mimic-response@3.1.0: {}
@@ -8923,7 +8930,7 @@ snapshots:
       semver: 7.7.2
       uuid: 8.3.2
 
-  postman-collection@5.1.1:
+  postman-collection@5.2.0:
     dependencies:
       '@faker-js/faker': 5.5.3
       file-type: 3.9.0
@@ -8931,8 +8938,8 @@ snapshots:
       iconv-lite: 0.6.3
       liquid-json: 0.3.1
       lodash: 4.17.21
+      mime: 3.0.0
       mime-format: 2.0.2
-      mime-types: 2.1.35
       postman-url-encoder: 3.0.8
       semver: 7.7.2
       uuid: 8.3.2

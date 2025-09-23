@@ -560,7 +560,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     let instructLabPage: AILabTryInstructLabPage;
     const instructLabContainerName = /^instructlab-\d+$/;
     let exactInstructLabContainerName = '';
-    test.skip(!!process.env.GITHUB_ACTIONS && !!isLinux);
 
     test.beforeAll('Open Try InstructLab page', async ({ runner, page, navigationBar }) => {
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
@@ -600,16 +599,13 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
-      const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
-      await playExpect(containerDetailsPage.heading).toBeVisible();
-
-      await containerDetailsPage.deleteContainer();
       const containersPage = await navigationBar.openContainers();
-      await playExpect(containersPage.heading).toBeVisible({ timeout: 30_000 });
+      await playExpect(containersPage.heading).toBeVisible();
+      await containersPage.deleteContainer(exactInstructLabContainerName);
       await playExpect
-        .poll(async () => containersPage.containerExists(exactInstructLabContainerName), { timeout: 100_000 })
+        .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 60_000 })
         .toBeFalsy();
-
+      await deleteUnusedImages(navigationBar);
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
       await aiLabPage.navigationBar.waitForLoad();
       instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();

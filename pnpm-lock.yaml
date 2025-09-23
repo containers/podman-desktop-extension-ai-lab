@@ -227,8 +227,8 @@ importers:
         specifier: 1.21.0
         version: 1.21.0(svelte-fa@4.0.4(svelte@5.39.5))(svelte@5.39.5)
       filesize:
-        specifier: ^11.0.2
-        version: 11.0.2
+        specifier: ^11.0.13
+        version: 11.0.13
       humanize-duration:
         specifier: ^3.33.1
         version: 3.33.1
@@ -2786,9 +2786,9 @@ packages:
     resolution: {integrity: sha512-RLoqTXE8/vPmMuTI88DAzhMYC99I8BWv7zYP4A1puo5HIjEJ5EX48ighy4ZyKMG9EDXxBgW6e++cn7d1xuFghA==}
     engines: {node: '>=0.10.0'}
 
-  filesize@11.0.2:
-    resolution: {integrity: sha512-s/iAeeWLk5BschUIpmdrF8RA8lhFZ/xDZgKw1Tan72oGws1/dFGB06nYEiyyssWUfjKNQTNRlrwMVjO9/hvXDw==}
-    engines: {node: '>= 10.4.0'}
+  filesize@11.0.13:
+    resolution: {integrity: sha512-mYJ/qXKvREuO0uH8LTQJ6v7GsUvVOguqxg2VTwQUkyTPXXRRWPdjuUPVqdBrJQhvci48OHlNGRnux+Slr2Rnvw==}
+    engines: {node: '>= 10.8.0'}
 
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
@@ -7712,7 +7712,7 @@ snapshots:
 
   file-type@3.9.0: {}
 
-  filesize@11.0.2: {}
+  filesize@11.0.13: {}
 
   fill-range@7.1.1:
     dependencies:

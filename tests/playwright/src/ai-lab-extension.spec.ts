@@ -613,80 +613,80 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
     });
   });
-});
 
-test.describe.serial(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
-  test.skip(!!isCI && !!isWindows, 'Skipping Llama Stack tests on GitHub Actions with Windows platform');
-  let llamaStackPage: AiLlamaStackPage;
-  const llamaStackContainerNames: string[] = [];
+  test.describe.serial(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
+    test.skip(!!isCI && !!isWindows, 'Skipping Llama Stack tests on GitHub Actions with Windows platform');
+    let llamaStackPage: AiLlamaStackPage;
+    const llamaStackContainerNames: string[] = [];
 
-  test.beforeAll(`Open Llama Stack`, async ({ runner, page, navigationBar }) => {
-    aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-    await aiLabPage.navigationBar.waitForLoad();
-    llamaStackPage = await aiLabPage.navigationBar.openLlamaStack();
-    await llamaStackPage.waitForLoad();
-  });
+    test.beforeAll(`Open Llama Stack`, async ({ runner, page, navigationBar }) => {
+      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+      await aiLabPage.navigationBar.waitForLoad();
+      llamaStackPage = await aiLabPage.navigationBar.openLlamaStack();
+      await llamaStackPage.waitForLoad();
+    });
 
-  test(`Start Llama Stack containers`, async () => {
-    test.setTimeout(300_000);
-    await llamaStackPage.waitForLoad();
-    await llamaStackPage.runLlamaStackContainer();
-    await playExpect(llamaStackPage.openLlamaStackContainerButton).toBeVisible({ timeout: 120_000 });
-    await playExpect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeVisible({ timeout: 120_000 });
-    await playExpect(llamaStackPage.openLlamaStackContainerButton).toBeEnabled({ timeout: 30_000 });
-    await playExpect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeEnabled({ timeout: 30_000 });
-  });
+    test(`Start Llama Stack containers`, async () => {
+      test.setTimeout(300_000);
+      await llamaStackPage.waitForLoad();
+      await llamaStackPage.runLlamaStackContainer();
+      await playExpect(llamaStackPage.openLlamaStackContainerButton).toBeVisible({ timeout: 120_000 });
+      await playExpect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeVisible({ timeout: 120_000 });
+      await playExpect(llamaStackPage.openLlamaStackContainerButton).toBeEnabled({ timeout: 30_000 });
+      await playExpect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeEnabled({ timeout: 30_000 });
+    });
 
-  test(`Verify Llama Stack containers are running`, async ({ navigationBar }) => {
-    let containersPage = await navigationBar.openContainers();
-    await playExpect(containersPage.heading).toBeVisible();
+    test(`Verify Llama Stack containers are running`, async ({ navigationBar }) => {
+      let containersPage = await navigationBar.openContainers();
+      await playExpect(containersPage.heading).toBeVisible();
 
-    await playExpect
-      .poll(
-        async () => {
-          const allRows = await containersPage.getAllTableRows();
-          llamaStackContainerNames.length = 0;
-          for (const row of allRows) {
-            const text = await row.textContent();
-            if (text?.includes('llama-stack')) {
-              const containerNameMatch = RegExp(/\b(llama-stack[^\s]*)/).exec(text);
-              if (containerNameMatch) {
-                llamaStackContainerNames.push(containerNameMatch[1]);
+      await playExpect
+        .poll(
+          async () => {
+            const allRows = await containersPage.getAllTableRows();
+            llamaStackContainerNames.length = 0;
+            for (const row of allRows) {
+              const text = await row.textContent();
+              if (text?.includes('llama-stack')) {
+                const containerNameMatch = RegExp(/\b(llama-stack[^\s]*)/).exec(text);
+                if (containerNameMatch) {
+                  llamaStackContainerNames.push(containerNameMatch[1]);
+                }
               }
             }
-          }
-          return llamaStackContainerNames.length;
-        },
-        {
-          timeout: 30_000,
-          intervals: [5_000],
-        },
-      )
-      .toBe(2);
+            return llamaStackContainerNames.length;
+          },
+          {
+            timeout: 30_000,
+            intervals: [5_000],
+          },
+        )
+        .toBe(2);
 
-    console.log(`Found containers: ${llamaStackContainerNames.join(', ')}`);
+      console.log(`Found containers: ${llamaStackContainerNames.join(', ')}`);
 
-    for (const container of llamaStackContainerNames) {
-      containersPage = await navigationBar.openContainers();
-      await playExpect(containersPage.heading).toBeVisible();
-      const containersDetailsPage = await containersPage.openContainersDetails(container);
-      await playExpect(containersDetailsPage.heading).toBeVisible();
-      await playExpect
-        .poll(async () => containersDetailsPage.getState(), { timeout: 30_000 })
-        .toContain(ContainerState.Running);
-    }
-  });
+      for (const container of llamaStackContainerNames) {
+        containersPage = await navigationBar.openContainers();
+        await playExpect(containersPage.heading).toBeVisible();
+        const containersDetailsPage = await containersPage.openContainersDetails(container);
+        await playExpect(containersDetailsPage.heading).toBeVisible();
+        await playExpect
+          .poll(async () => containersDetailsPage.getState(), { timeout: 30_000 })
+          .toContain(ContainerState.Running);
+      }
+    });
 
-  test.afterAll(`Stop Llama Stack containers`, async ({ navigationBar }) => {
-    for (const container of llamaStackContainerNames) {
-      const containersPage = await navigationBar.openContainers();
-      await playExpect(containersPage.heading).toBeVisible();
-      await containersPage.deleteContainer(container);
-      await playExpect
-        .poll(async () => await containersPage.containerExists(container), { timeout: 30_000 })
-        .toBeFalsy();
-    }
-    await deleteUnusedImages(navigationBar);
+    test.afterAll(`Stop Llama Stack containers`, async ({ navigationBar }) => {
+      for (const container of llamaStackContainerNames) {
+        const containersPage = await navigationBar.openContainers();
+        await playExpect(containersPage.heading).toBeVisible();
+        await containersPage.deleteContainer(container);
+        await playExpect
+          .poll(async () => await containersPage.containerExists(container), { timeout: 30_000 })
+          .toBeFalsy();
+      }
+      await deleteUnusedImages(navigationBar);
+    });
   });
 });
 

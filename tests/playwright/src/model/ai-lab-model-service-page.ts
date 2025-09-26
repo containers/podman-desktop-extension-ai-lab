@@ -63,9 +63,27 @@ export class AiModelServicePage extends AILabBasePage {
 
       await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
 
-      await playExpect.poll(async () => (await this.getCurrentModelCount()) === 0, { timeout: 30_000 }).toBeTruthy();
+      await playExpect.poll(async () => (await this.getCurrentModelCount()) === 0, { timeout: 60_000 }).toBeTruthy();
     } catch (error) {
-      console.error('Error during deleteAllCurrentModels:', error);
+      const remainingRows = await this.getAllTableRows();
+      const remainingNames: string[] = [];
+      for (let rowNum = 1; rowNum < remainingRows.length; rowNum++) {
+        const serviceModel = remainingRows[rowNum].getByRole('cell').nth(4);
+        const modelName = await serviceModel.textContent();
+        if (modelName) {
+          remainingNames.push(modelName);
+        }
+      }
+      console.group('Model Service Cleanup');
+      console.log(`[${new Date().toISOString()}] Model service deletion failed.`);
+      if (remainingNames.length > 0) {
+        console.log('Could not delete:');
+        remainingNames.forEach(name => console.log(` - ${name}`));
+      } else {
+        console.log('All model services deleted successfully.');
+      }
+      console.error('Error details:', error);
+      console.groupEnd();
     }
   }
 

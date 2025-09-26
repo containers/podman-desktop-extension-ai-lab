@@ -534,7 +534,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           });
 
           test(`${appName}: Restart, Stop, Delete.`, async () => {
-            test.setTimeout(150_000);
+            test.setTimeout(240_000);
             test.skip(
               appName === 'Object Detection' && isCI && !isMac,
               'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',

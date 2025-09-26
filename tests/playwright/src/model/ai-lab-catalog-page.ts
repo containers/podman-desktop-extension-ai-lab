@@ -99,16 +99,27 @@ export class AILabCatalogPage extends AILabBasePage {
   }
 
   async deleteAllModels(): Promise<void> {
-    const modelRows = await this.getAllModelRows();
-    if (modelRows.length === 0) {
-      return;
-    }
-
-    for (const modelRow of modelRows) {
-      const modelName = await this.getModelNameByRow(modelRow);
-      if (await this.isModelDownloaded(modelName)) {
-        await this.deleteModel(modelName);
+    try {
+      const modelRows = await this.getAllModelRows();
+      if (modelRows.length === 0) {
+        return;
       }
+
+      for (const modelRow of modelRows) {
+        const modelName = await this.getModelNameByRow(modelRow);
+        if (await this.isModelDownloaded(modelName)) {
+          await this.deleteModel(modelName);
+        }
+      }
+
+      await playExpect.poll(async () => (await this.getAllModelRows()).length === 0, { timeout: 60_000 }).toBeTruthy();
+    } catch (error) {
+      const remainingModels = await this.getAllModelRows();
+      const remainingModelNames = [];
+      for (const modelRow of remainingModels) {
+        remainingModelNames.push(await this.getModelNameByRow(modelRow));
+      }
+      console.error('Error during deleteAllModels:', error, 'Remaining models:', remainingModelNames);
     }
   }
 

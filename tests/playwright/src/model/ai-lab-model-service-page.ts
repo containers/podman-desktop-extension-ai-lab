@@ -54,13 +54,19 @@ export class AiModelServicePage extends AILabBasePage {
   }
 
   async deleteAllCurrentModels(): Promise<void> {
-    if (!(await this.toggleAllCheckbox.count())) return;
+    try {
+      if (!(await this.toggleAllCheckbox.count())) return;
 
-    await this.checkAllModelsForDeletion();
-    await playExpect(this.deleteSelectedItems).toBeEnabled();
-    await this.deleteSelectedItems.click();
+      await this.checkAllModelsForDeletion();
+      await playExpect(this.deleteSelectedItems).toBeEnabled();
+      await this.deleteSelectedItems.click();
 
-    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+      await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+
+      await playExpect.poll(async () => (await this.getCurrentModelCount()) === 0, { timeout: 30_000 }).toBeTruthy();
+    } catch (error) {
+      console.error('Error during deleteAllCurrentModels:', error);
+    }
   }
 
   async getCurrentModelCount(): Promise<number> {

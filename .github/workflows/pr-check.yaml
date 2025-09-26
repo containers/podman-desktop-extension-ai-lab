@@ -87,6 +87,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+
       # Checkout podman desktop
       - uses: actions/checkout@v5
         with:
@@ -158,6 +159,16 @@ jobs:
           podman export $CONTAINER_ID | tar -x -C tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins/
           podman rm -f $CONTAINER_ID
           podman rmi -f localhost/local_ai_lab_image:latest
+
+      # Show disk space before cleanup
+      - name: Show disk space before cleanup
+        run: df -h
+      # Minimal disk cleanup after install/build
+      - name: Free up disk space
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/local/share/powershell /usr/local/share/chromium /usr/local/share/edge /usr/local/share/firefox /usr/local/share/google
+          df -h
 
       - name: Run E2E Smoke tests
         working-directory: ./podman-desktop-extension-ai-lab

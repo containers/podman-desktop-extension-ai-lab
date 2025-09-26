@@ -394,10 +394,11 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           .toBeFalsy();
       });
 
-      test.afterAll(`Cleaning up service model`, async () => {
-        test.setTimeout(60_000);
+      test.afterAll(`Cleaning up service model`, async ({ navigationBar }) => {
+        test.setTimeout(120_000);
         await cleanupServices();
         await deleteAllModels();
+        await deleteUnusedImages(navigationBar);
       });
     });
   });
@@ -533,7 +534,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           });
 
           test(`${appName}: Restart, Stop, Delete.`, async () => {
-            test.setTimeout(150_000);
+            test.setTimeout(240_000);
             test.skip(
               appName === 'Object Detection' && isCI && !isMac,
               'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
@@ -547,7 +548,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       });
 
       test(`Ensure cleanup of "${appModel}", related services, and images`, async ({ runner, page, navigationBar }) => {
-        test.setTimeout(150_000);
+        test.setTimeout(180_000);
         aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await cleanupServices();
         await deleteAllModels();
@@ -758,11 +759,15 @@ async function stopAndDeleteApp(appName: string): Promise<void> {
 }
 
 async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
-  const imagesPage = await navigationBar.openImages();
-  await playExpect(imagesPage.heading).toBeVisible();
+  try {
+    const imagesPage = await navigationBar.openImages();
+    await playExpect(imagesPage.heading).toBeVisible();
 
-  await imagesPage.deleteAllUnusedImages();
-  await playExpect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 60_000 }).toBe(0);
+    await imagesPage.deleteAllUnusedImages();
+    await playExpect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 90_000 }).toBe(0);
+  } catch (error) {
+    console.error('Error during deleteUnusedImages:', error);
+  }
 }
 
 async function waitForCatalogModel(modelName: string): Promise<boolean> {

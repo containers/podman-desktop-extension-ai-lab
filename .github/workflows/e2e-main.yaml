@@ -130,6 +130,15 @@ jobs:
         working-directory: ./podman-desktop-extension-ai-lab
         run: pnpm install
 
+      - name: Show disk space before cleanup
+        run: df -h
+      
+      - name: Free up disk space
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/local/share/powershell /usr/local/share/chromium /usr/local/share/edge /usr/local/share/firefox /usr/local/share/google
+          df -h
+
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-ai-lab
         env:

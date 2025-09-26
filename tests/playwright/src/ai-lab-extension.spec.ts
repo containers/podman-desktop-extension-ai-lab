@@ -394,10 +394,11 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           .toBeFalsy();
       });
 
-      test.afterAll(`Cleaning up service model`, async () => {
-        test.setTimeout(60_000);
+      test.afterAll(`Cleaning up service model`, async ({ navigationBar }) => {
+        test.setTimeout(120_000);
         await cleanupServices();
         await deleteAllModels();
+        await deleteUnusedImages(navigationBar);
       });
     });
   });

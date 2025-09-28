@@ -125,6 +125,9 @@ jobs:
           podman rm -f $CONTAINER_ID
           podman rmi -f localhost/local_ai_lab_image:latest
 
+      - name: Free up disk space
+        uses: podman-desktop/e2e/.github/actions/disk-cleanup@6a406f8f24bacffc481553266f9ba8a5293f3077
+
       - name: Run E2E tests
         working-directory: ./podman-desktop-extension-ai-lab
         env:

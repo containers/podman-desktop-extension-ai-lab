@@ -160,15 +160,8 @@ jobs:
           podman rm -f $CONTAINER_ID
           podman rmi -f localhost/local_ai_lab_image:latest
 
-      # Show disk space before cleanup
-      - name: Show disk space before cleanup
-        run: df -h
-      # Minimal disk cleanup after install/build
       - name: Free up disk space
-        run: |
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/local/share/powershell /usr/local/share/chromium /usr/local/share/edge /usr/local/share/firefox /usr/local/share/google
-          df -h
+        uses: podman-desktop/e2e/.github/actions/disk-cleanup@6a406f8f24bacffc481553266f9ba8a5293f3077
 
       - name: Run E2E Smoke tests
         working-directory: ./podman-desktop-extension-ai-lab

@@ -501,6 +501,8 @@ export class LlamaStackManager implements Disposable {
             'models',
             'register',
             model.name,
+            '--provider-id',
+            'podman-ai-lab',
           ]);
         },
       );

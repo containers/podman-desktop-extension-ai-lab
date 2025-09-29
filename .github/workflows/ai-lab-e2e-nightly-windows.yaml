@@ -30,46 +30,46 @@ on:
         default: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
         description: 'Podman Desktop repo fork and branch'
         type: string
-        required: true
+        required: false
       ext_repo_options:
         default: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
         description: 'Podman Desktop Extension repo, fork and branch'
         type: string
-        required: true
+        required: false
       ext_tests_options:
         default: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=1'
         description: 'E2E tests options in format VAR1=xxx,VAR2=true,VAR3=15 etc.'
         type: string
-        required: true
+        required: false
       npm_target:
         default: 'test:e2e'
         description: 'npm target to run tests'
         type: string
-        required: true
+        required: false
       podman_remote_url:
         default: 'https://github.com/containers/podman/releases/download/v5.6.1/podman-5.6.1-setup.exe'
         description: 'podman remote setup exe'
         type: string
-        required: true
+        required: false
       podman_options:
         default: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         description: 'Podman machine configuration options, no spaces'
         type: string
-        required: true
+        required: false
       env_vars:
         default: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true... use EXT_TEST_RAG_CHATBOT=1 to run RAG Chatbot test"'
         type: string
-        required: true
+        required: false
       pde2e_image_version:
         default: 'v0.0.3'
         description: 'PDE2E runner, builder, podman image versions'
         type: string
-        required: true
+        required: false
       mapt_params:
         default: 'IMAGE=quay.io/redhat-developer/mapt;VERSION_TAG=v0.9.7;CPUS=4;MEMORY=32;EXCLUDED_REGIONS="westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest"'
         description: 'MAPT image, version tag, cpus and memory request, and excluded regions in format IMAGE=xxx;VERSION_TAG=xxx;CPUS=xxx;MEMORY=xxx;EXCLUDED_REGIONS=xxx'
-        required: true
+        required: false
         type: string
 
 jobs:

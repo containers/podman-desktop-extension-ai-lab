@@ -110,19 +110,19 @@ jobs:
         DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3'
         DEFAULT_MAPT_PARAMS: "IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }};VERSION_TAG=${{ vars.MAPT_VERSION_TAG || 'v0.9.7' }};CPUS=${{ vars.MAPT_CPUS || '4' }};MEMORY=${{ vars.MAPT_MEMORY || '32' }};EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\""
       run: |
-        echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
-        echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
-        echo "PODMAN_URL=${{ github.event.inputs.podman_remote_url || env.DEFAULT_URL }}" >> $GITHUB_ENV
-        echo "PDE2E_IMAGE_VERSION=${{ github.event.inputs.pde2e_image_version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
-        echo "${{ github.event.inputs.podman_desktop_repo_args || env.DEFAULT_PODMAN_DESKTOP_REPO_ARGS }}" | awk -F ',' \
+        echo "NPM_TARGET=${{ (github.event.inputs.npm_target != '' && github.event.inputs.npm_target) || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
+        echo "ENV_VARS=${{ (github.event.inputs.env_vars != '' && github.event.inputs.env_vars) || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
+        echo "PODMAN_URL=${{ (github.event.inputs.podman_remote_url != '' && github.event.inputs.podman_remote_url) || env.DEFAULT_URL }}" >> $GITHUB_ENV
+        echo "PDE2E_IMAGE_VERSION=${{ (github.event.inputs.pde2e_image_version != '' && github.event.inputs.pde2e_image_version) || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
+        echo "${{ (github.event.inputs.podman_desktop_repo_args != '' && github.event.inputs.podman_desktop_repo_args) || env.DEFAULT_PODMAN_DESKTOP_REPO_ARGS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "${{ github.event.inputs.ext_tests_options || env.DEFAULT_EXT_TESTS_OPTIONS }}" | awk -F ',' \
+        echo "${{ (github.event.inputs.ext_tests_options != '' && github.event.inputs.ext_tests_options) || env.DEFAULT_EXT_TESTS_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "${{ github.event.inputs.podman_options || env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
+        echo "${{ (github.event.inputs.podman_options != '' && github.event.inputs.podman_options) || env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
+        echo "${{ (github.event.inputs.ext_repo_options != '' && github.event.inputs.ext_repo_options) || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "${{ github.event.inputs.mapt_params || env.DEFAULT_MAPT_PARAMS }}" | awk -F ';' \
+        echo "${{ (github.event.inputs.mapt_params != '' && github.event.inputs.mapt_params) || env.DEFAULT_MAPT_PARAMS }}" | awk -F ';' \
           '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "MAPT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Create instance

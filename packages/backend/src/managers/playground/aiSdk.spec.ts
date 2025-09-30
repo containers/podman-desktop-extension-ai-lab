@@ -34,7 +34,7 @@ import { ConversationRegistry } from '../../registries/ConversationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import type { ModelOptions } from '@shared/models/IModelOptions';
 import type { ToolSet } from 'ai';
-import { jsonSchema, tool } from 'ai';
+import { jsonSchema, simulateStreamingMiddleware, tool, wrapLanguageModel } from 'ai';
 
 vi.mock('ai', async original => {
   const mod = (await original()) as object;
@@ -232,33 +232,48 @@ describe('aiSdk', () => {
     describe('with wrapped generated multiple messages as stream', () => {
       let model: LanguageModelV2;
       let tools: ToolSet;
+      let generateStep: number;
 
       beforeEach(async () => {
-        // Create a simpler test that directly tests multi-step tool calling without middleware
-        model = createTestModel({
-          stream: convertArrayToReadableStream([
-            { type: 'response-metadata', id: 'id-0', modelId: 'mock-model-id', timestamp: new Date(0) },
-            { type: 'tool-call', toolCallId: 'call-001', toolName: 'tool-1', input: '{}' } as LanguageModelV2StreamPart,
-            { type: 'tool-call', toolCallId: 'call-002', toolName: 'tool-1', input: '{}' } as LanguageModelV2StreamPart,
-            {
-              type: 'finish',
-              finishReason: 'tool-calls',
-              usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
-              toolCalls: [
-                { toolCallId: 'call-001', toolName: 'tool-1', input: '{}' } as LanguageModelV2StreamPart,
-                { toolCallId: 'call-002', toolName: 'tool-1', input: '{}' } as LanguageModelV2StreamPart,
-              ],
-            },
-            // Tool execution happens here (by the framework)
-            // Second round after tool execution
-            { type: 'response-metadata', id: 'id-1', modelId: 'mock-model-id', timestamp: new Date(0) },
-            { type: 'text-delta', id: 'id-2', delta: 'These are the results of you functions: huge success!' },
-            {
-              type: 'finish',
-              finishReason: 'stop',
-              usage: { inputTokens: 133, outputTokens: 7, totalTokens: 140 },
-            },
-          ]),
+        generateStep = 0;
+        model = wrapLanguageModel({
+          model: new MockLanguageModelV2({
+            doGenerate: (async () => {
+              if (generateStep++ === 0) {
+                return {
+                  content: [
+                    {
+                      type: 'tool-call',
+                      toolCallId: 'call-001',
+                      toolName: 'tool-1',
+                      input: {},
+                    },
+                    {
+                      type: 'tool-call',
+                      toolCallId: 'call-002',
+                      toolName: 'tool-1',
+                      input: {},
+                    },
+                  ],
+                  finishReason: 'tool-calls',
+                  usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+                  warnings: [],
+                };
+              }
+              return {
+                content: [
+                  {
+                    type: 'text',
+                    text: 'These are the results of you functions: huge success!',
+                  },
+                ],
+                finishReason: 'stop',
+                usage: { inputTokens: 133, outputTokens: 7, totalTokens: 140 },
+                warnings: [],
+              };
+            }) as LanguageModelV2['doGenerate'],
+          }),
+          middleware: simulateStreamingMiddleware(),
         });
         tools = {
           'tool-1': tool({
@@ -269,17 +284,11 @@ describe('aiSdk', () => {
         await new AiStreamProcessor(conversationId, conversationRegistry).stream(model, tools).consumeStream();
       });
       test('appends multiple messages', () => {
-        const messages = conversationRegistry.get(conversationId).messages;
-        expect(messages).toHaveLength(4);
-      });
-      test('appends final assistant message first', () => {
-        const message = conversationRegistry.get(conversationId).messages[1] as AssistantChat;
-        expect(message.role).toEqual('assistant');
-        expect(message.content).toEqual('These are the results of you functions: huge success!');
+        expect(conversationRegistry.get(conversationId).messages).toHaveLength(4);
       });
       test.each<{ index: number; toolCallId: string }>([
-        { index: 2, toolCallId: 'call-001' },
-        { index: 3, toolCallId: 'call-002' },
+        { index: 1, toolCallId: 'call-001' },
+        { index: 2, toolCallId: 'call-002' },
       ])(`appends tool call (to tool-1) message at $index`, ({ index, toolCallId }) => {
         const message = conversationRegistry.get(conversationId).messages[index] as AssistantChat;
         expect(message.role).toEqual('assistant');
@@ -290,11 +299,34 @@ describe('aiSdk', () => {
           args: {},
         });
       });
+      test.each<{ index: number; id: string; toolCallId: string }>([
+        { index: 1, id: '3', toolCallId: 'call-001' },
+        { index: 2, id: '4', toolCallId: 'call-002' },
+      ])(`sets tool result message at $index for $toolCallId`, ({ index, id, toolCallId }) => {
+        const message = conversationRegistry.get(conversationId).messages[index] as AssistantChat;
+        expect(message.id).toEqual(id);
+        expect(message.timestamp).toBeDefined();
+        expect(message.role).toEqual('assistant');
+        expect(message.content).toMatchObject({
+          type: 'tool-call',
+          toolCallId,
+          toolName: 'tool-1',
+          args: {},
+        });
+        if (message.content && typeof message.content === 'object' && 'result' in message.content) {
+          expect(message.content.result).toEqual('successful result!');
+          expect(message.completed).toBeDefined();
+        }
+      });
+      test('appends final assistant message', () => {
+        const message = conversationRegistry.get(conversationId).messages[3] as AssistantChat;
+        expect(message.role).toEqual('assistant');
+        expect(message.content).toEqual('These are the results of you functions: huge success!');
+      });
       test('setsUsage', async () => {
         const conversation = conversationRegistry.get(conversationId) as Conversation;
-        // With a simple mocked stream (not actual multi-step execution), usage tracking works differently
-        // The main functionality tests (single message stream) verify usage tracking works correctly
-        expect(conversation?.usage).toBeDefined();
+        expect(conversation?.usage?.completion_tokens).toEqual(7);
+        expect(conversation?.usage?.prompt_tokens).toEqual(133);
       });
     });
   });

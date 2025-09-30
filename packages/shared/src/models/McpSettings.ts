@@ -37,7 +37,7 @@ export interface McpServer {
 }
 
 export interface McpClient {
-  init(): Promise<this>;
+  init?(): Promise<this>;
   close(): Promise<void>;
   tools(): Promise<ToolSet>;
 }

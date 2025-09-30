@@ -30,7 +30,7 @@ import type { CancellationTokenRegistry } from '../registries/CancellationTokenR
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
 import { convertArrayToReadableStream } from '@ai-sdk/provider-utils/test';
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { type McpServerManager } from './playground/McpServerManager';
 
 vi.mock('@ai-sdk/openai-compatible', () => ({
@@ -65,8 +65,8 @@ const cancellationTokenRegistryMock = {
 } as unknown as CancellationTokenRegistry;
 
 let mcpServerManager: McpServerManager;
-let createTestModel: (options: object) => LanguageModelV1;
-let MockLanguageModelV1: unknown;
+let createTestModel: (options: object) => LanguageModelV2;
+let MockLanguageModelV2: unknown;
 
 beforeEach(async () => {
   vi.resetAllMocks();
@@ -78,7 +78,7 @@ beforeEach(async () => {
   } as unknown as McpServerManager;
   const aiSdkSpecShared = await import('./playground/aiSdk.spec');
   createTestModel = aiSdkSpecShared.createTestModel;
-  MockLanguageModelV1 = aiSdkSpecShared.MockLanguageModelV1;
+  MockLanguageModelV2 = aiSdkSpecShared.MockLanguageModelV2;
 });
 
 afterEach(async () => {
@@ -217,12 +217,12 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
       labels: [],
     } as unknown as InferenceServer,
   ]);
-  // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
+  // @ts-expect-error - Mock return type for testing
   vi.mocked(createOpenAICompatible).mockReturnValue(() =>
     createTestModel({
       stream: convertArrayToReadableStream([
-        { type: 'text-delta', textDelta: 'The message from the model' },
-        { type: 'finish', finishReason: 'stop', usage: { completionTokens: 133, promptTokens: 7 } },
+        { type: 'text-delta', id: 'id-1', delta: 'The message from the model' },
+        { type: 'finish', finishReason: 'stop', usage: { outputTokens: 133, inputTokens: 7, totalTokens: 140 } },
       ]),
     }),
   );
@@ -297,13 +297,16 @@ test('error', async () => {
       labels: [],
     } as unknown as InferenceServer,
   ]);
-  const doStream: LanguageModelV1['doStream'] = async () => {
+  const doStream: LanguageModelV2['doStream'] = async () => {
     throw new Error('Please reduce the length of the messages or completion.');
   };
   vi.mocked(createOpenAICompatible).mockReturnValue(
-    // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
+    // @ts-expect-error MockLanguageModelV2 test mock
     // eslint-disable-next-line sonarjs/new-operator-misuse
-    () => new MockLanguageModelV1({ doStream }),
+    () =>
+      new (MockLanguageModelV2 as unknown as new (options: {
+        doStream: LanguageModelV2['doStream'];
+      }) => LanguageModelV2)({ doStream }),
   );
 
   const manager = new PlaygroundV2Manager(
@@ -700,12 +703,12 @@ describe('system prompt', () => {
         labels: [],
       } as unknown as InferenceServer,
     ]);
-    // @ts-expect-error the mocked return value is just a partial of the real OpenAI provider
+    // @ts-expect-error - Mock return type for testing
     vi.mocked(createOpenAICompatible).mockReturnValue(() =>
       createTestModel({
         stream: convertArrayToReadableStream([
-          { type: 'text-delta', textDelta: 'The message from the model' },
-          { type: 'finish', finishReason: 'stop', usage: { completionTokens: 133, promptTokens: 7 } },
+          { type: 'text-delta', id: 'id-1', delta: 'The message from the model' },
+          { type: 'finish', finishReason: 'stop', usage: { outputTokens: 133, inputTokens: 7, totalTokens: 140 } },
         ]),
       }),
     );

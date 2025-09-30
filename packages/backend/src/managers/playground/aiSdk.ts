@@ -16,12 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { streamText } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import type {
-  CoreAssistantMessage,
-  CoreToolMessage,
   LanguageModel,
-  CoreMessage,
+  ModelMessage,
   StepResult,
   StreamTextResult,
   StreamTextOnFinishCallback,
@@ -43,8 +41,8 @@ import {
 import { isChatMessage } from '@shared/models/IPlaygroundMessage';
 import type { ConversationRegistry } from '../../registries/ConversationRegistry';
 
-export function toCoreMessage(...messages: Message[]): CoreMessage[] {
-  const ret: CoreMessage[] = [];
+export function toCoreMessage(...messages: Message[]): ModelMessage[] {
+  const ret: ModelMessage[] = [];
   for (const message of messages) {
     if (isAssistantToolCall(message)) {
       const toolCall = message.content as ToolCall;
@@ -55,10 +53,10 @@ export function toCoreMessage(...messages: Message[]): CoreMessage[] {
             type: 'tool-call',
             toolCallId: toolCall.toolCallId,
             toolName: toolCall.toolName,
-            args: toolCall.args,
+            input: toolCall.args,
           } as ToolCallPart,
         ] as ToolCallPart[],
-      } as CoreAssistantMessage);
+      } as ModelMessage);
       if (toolCall.result) {
         ret.push({
           role: 'tool',
@@ -67,16 +65,16 @@ export function toCoreMessage(...messages: Message[]): CoreMessage[] {
               type: 'tool-result',
               toolCallId: toolCall.toolCallId,
               toolName: toolCall.toolName,
-              result: toolCall.result,
+              output: toolCall.result,
             } as ToolResultPart,
           ] as ToolResultPart[],
-        } as CoreToolMessage);
+        } as ModelMessage);
       }
     } else if (isChatMessage(message)) {
       ret.push({
         role: message.role,
         content: message.content ?? '',
-      } as CoreMessage);
+      } as ModelMessage);
     }
   }
   return ret;
@@ -97,8 +95,8 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
 
   private onStepFinish = (stepResult: StepResult<TOOLS>): void => {
     this.conversationRegistry.setUsage(this.conversationId, {
-      completion_tokens: stepResult.usage.completionTokens,
-      prompt_tokens: stepResult.usage.promptTokens,
+      completion_tokens: stepResult.usage.outputTokens,
+      prompt_tokens: stepResult.usage.inputTokens,
     } as ModelUsage);
     if (this.currentMessageId !== undefined) {
       this.conversationRegistry.completeMessage(this.conversationId, this.currentMessageId);
@@ -113,37 +111,25 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
             type: 'tool-call',
             toolCallId: toolCall.toolCallId,
             toolName: toolCall.toolName,
-            args: toolCall.args,
+            args: toolCall.input,
           } as ToolCall,
         } as AssistantChat);
       }
     }
     if (stepResult.toolResults?.length > 0) {
       for (const toolResult of stepResult.toolResults) {
-        this.conversationRegistry.toolResult(this.conversationId, toolResult.toolCallId, toolResult.result);
+        this.conversationRegistry.toolResult(
+          this.conversationId,
+          toolResult.toolCallId,
+          toolResult.output as string | object,
+        );
       }
     }
     this.currentMessageId = undefined;
     this.stepStartTime = Date.now();
   };
 
-  private onChunk = ({
-    chunk,
-  }: {
-    chunk: Extract<
-      TextStreamPart<TOOLS>,
-      {
-        type:
-          | 'text-delta'
-          | 'reasoning'
-          | 'source'
-          | 'tool-call'
-          | 'tool-call-streaming-start'
-          | 'tool-call-delta'
-          | 'tool-result';
-      }
-    >;
-  }): void => {
+  private onChunk = ({ chunk }: { chunk: TextStreamPart<TOOLS> }): void => {
     if (chunk.type !== 'text-delta') {
       return;
     }
@@ -157,7 +143,7 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
         completed: undefined,
       } as PendingChat);
     }
-    this.conversationRegistry.textDelta(this.conversationId, this.currentMessageId, chunk.textDelta);
+    this.conversationRegistry.textDelta(this.conversationId, this.currentMessageId, chunk.text);
   };
 
   private onError = (error: unknown): void => {
@@ -188,8 +174,8 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
 
   private onFinish: StreamTextOnFinishCallback<TOOLS> = stepResult => {
     this.conversationRegistry.setUsage(this.conversationId, {
-      completion_tokens: stepResult.usage.completionTokens,
-      prompt_tokens: stepResult.usage.promptTokens,
+      completion_tokens: stepResult.usage.outputTokens,
+      prompt_tokens: stepResult.usage.inputTokens,
     } as ModelUsage);
   };
 
@@ -198,9 +184,9 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
     return streamText({
       model,
       tools,
-      maxSteps: 10, // TODO: configurable option
+      stopWhen: stepCountIs(10),
       temperature: options?.temperature,
-      maxTokens: (options?.max_tokens ?? -1) < 1 ? undefined : options?.max_tokens,
+      maxOutputTokens: (options?.max_tokens ?? -1) < 1 ? undefined : options?.max_tokens,
       topP: options?.top_p,
       abortSignal: this.abortController.signal,
       messages: toCoreMessage(...this.conversationRegistry.get(this.conversationId).messages),

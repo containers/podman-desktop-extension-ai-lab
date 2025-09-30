@@ -83,7 +83,8 @@
     ]
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "zod": "^4.1.11"
   },
   "scarfSettings": {
     "enabled": false

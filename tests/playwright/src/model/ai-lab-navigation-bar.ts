@@ -62,55 +62,55 @@ export class AILabNavigationBar extends AILabBasePage {
   }
 
   async openDashboard(): Promise<AILabDashboardPage> {
-    await playExpect(this.dashboardButton).toBeEnabled();
+    await playExpect(this.dashboardButton).toBeVisible();
     await this.dashboardButton.click();
     return new AILabDashboardPage(this.page, this.webview);
   }
 
   async openRecipesCatalog(): Promise<AILabRecipesCatalogPage> {
-    await playExpect(this.recipesCatalogButton).toBeEnabled();
+    await playExpect(this.recipesCatalogButton).toBeVisible();
     await this.recipesCatalogButton.click();
     return new AILabRecipesCatalogPage(this.page, this.webview);
   }
 
   async openRunningApps(): Promise<AiRunningAppsPage> {
-    await playExpect(this.runningAppsButton).toBeEnabled();
+    await playExpect(this.runningAppsButton).toBeVisible();
     await this.runningAppsButton.click();
     return new AiRunningAppsPage(this.page, this.webview);
   }
 
   async openServices(): Promise<AiModelServicePage> {
-    await playExpect(this.servicesButton).toBeEnabled();
+    await playExpect(this.servicesButton).toBeVisible();
     await this.servicesButton.click();
     return new AiModelServicePage(this.page, this.webview);
   }
 
   async openCatalog(): Promise<AILabCatalogPage> {
-    await playExpect(this.catalogButton).toBeEnabled();
+    await playExpect(this.catalogButton).toBeVisible();
     await this.catalogButton.click();
     return new AILabCatalogPage(this.page, this.webview);
   }
 
   async openPlaygrounds(): Promise<AILabPlaygroundsPage> {
-    await playExpect(this.playgroundsButton).toBeEnabled();
+    await playExpect(this.playgroundsButton).toBeVisible();
     await this.playgroundsButton.click();
     return new AILabPlaygroundsPage(this.page, this.webview);
   }
 
   async openLlamaStack(): Promise<AiLlamaStackPage> {
-    await playExpect(this.llamaStackButton).toBeEnabled();
+    await playExpect(this.llamaStackButton).toBeVisible();
     await this.llamaStackButton.click();
     return new AiLlamaStackPage(this.page, this.webview);
   }
 
   async openLocalServer(): Promise<AILabLocalServerPage> {
-    await playExpect(this.localServerButton).toBeEnabled();
+    await playExpect(this.localServerButton).toBeVisible();
     await this.localServerButton.click();
     return new AILabLocalServerPage(this.page, this.webview);
   }
 
   async openTryInstructLab(): Promise<AILabTryInstructLabPage> {
-    await playExpect(this.tryInstructLabButton).toBeEnabled();
+    await playExpect(this.tryInstructLabButton).toBeVisible();
     await this.tryInstructLabButton.click();
     return new AILabTryInstructLabPage(this.page, this.webview);
   }

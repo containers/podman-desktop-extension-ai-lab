@@ -40,8 +40,8 @@ importers:
         specifier: ^10.4.21
         version: 10.4.21(postcss@8.5.6)
       commitlint:
-        specifier: ^20.0.0
-        version: 20.0.0(@types/node@24.6.0)(typescript@5.9.2)
+        specifier: ^20.1.0
+        version: 20.1.0(@types/node@24.6.0)(typescript@5.9.2)
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -469,6 +469,11 @@ packages:
     engines: {node: '>=v18'}
     hasBin: true
 
+  '@commitlint/cli@20.1.0':
+    resolution: {integrity: sha512-pW5ujjrOovhq5RcYv5xCpb4GkZxkO2+GtOdBW2/qrr0Ll9tl3PX0aBBobGQl3mdZUbOBgwAexEQLeH6uxL0VYg==}
+    engines: {node: '>=v18'}
+    hasBin: true
+
   '@commitlint/config-conventional@20.0.0':
     resolution: {integrity: sha512-q7JroPIkDBtyOkVe9Bca0p7kAUYxZMxkrBArCfuD3yN4KjRAenP9PmYwnn7rsw8Q+hHq1QB2BRmBh0/Z19ZoJw==}
     engines: {node: '>=v18'}
@@ -501,6 +506,10 @@ packages:
     resolution: {integrity: sha512-WiNKO9fDPlLY90Rruw2HqHKcghrmj5+kMDJ4GcTlX1weL8K07Q6b27C179DxnsrjGCRAKVwFKyzxV4x+xDY28Q==}
     engines: {node: '>=v18'}
 
+  '@commitlint/load@20.1.0':
+    resolution: {integrity: sha512-qo9ER0XiAimATQR5QhvvzePfeDfApi/AFlC1G+YN+ZAY8/Ua6IRrDrxRvQAr+YXUKAxUsTDSp9KXeXLBPsNRWg==}
+    engines: {node: '>=v18'}
+
   '@commitlint/message@20.0.0':
     resolution: {integrity: sha512-gLX4YmKnZqSwkmSB9OckQUrI5VyXEYiv3J5JKZRxIp8jOQsWjZgHSG/OgEfMQBK9ibdclEdAyIPYggwXoFGXjQ==}
     engines: {node: '>=v18'}
@@ -515,6 +524,10 @@ packages:
 
   '@commitlint/resolve-extends@20.0.0':
     resolution: {integrity: sha512-BA4vva1hY8y0/Hl80YDhe9TJZpRFMsUYzVxvwTLPTEBotbGx/gS49JlVvtF1tOCKODQp7pS7CbxCpiceBgp3Dg==}
+    engines: {node: '>=v18'}
+
+  '@commitlint/resolve-extends@20.1.0':
+    resolution: {integrity: sha512-cxKXQrqHjZT3o+XPdqDCwOWVFQiae++uwd9dUBC7f2MdV58ons3uUvASdW7m55eat5sRiQ6xUHyMWMRm6atZWw==}
     engines: {node: '>=v18'}
 
   '@commitlint/rules@20.0.0':
@@ -2214,8 +2227,8 @@ packages:
     resolution: {integrity: sha512-2JkV3gUZUVrbNA+1sjBOYLsMZ5cEEl8GTFP2a4AVz5hvasAMCQ1D2l2le/cX+pV4N6ZU17zjUahLpIXRrnWL8A==}
     engines: {node: '>=20'}
 
-  commitlint@20.0.0:
-    resolution: {integrity: sha512-BZlx+WZzmt9aX15d9WwRbhr+RZ7rmuu3MCSerqyZ3ierfPuwWqKqERsIMeDxSfZe/WSpxVb25QdtHYV4kT+DEQ==}
+  commitlint@20.1.0:
+    resolution: {integrity: sha512-3W3CTUpZl6R98UquFiZA/C9yGdzGJU2rmVIXlx6tvKNX8hzLuiPsoZINFfzKnfCnaSP07Xys5aXP+FE7vXZmEg==}
     engines: {node: '>=v18'}
     hasBin: true
 
@@ -2468,8 +2481,8 @@ packages:
   electron-to-chromium@1.5.215:
     resolution: {integrity: sha512-TIvGp57UpeNetj/wV/xpFNpWGb0b/ROw372lHPx5Aafx02gjTBtWnEEcaSX3W2dLM3OSdGGyHX/cHl01JQsLaQ==}
 
-  electron-to-chromium@1.5.227:
-    resolution: {integrity: sha512-ITxuoPfJu3lsNWUi2lBM2PaBPYgH3uqmxut5vmBxgYvyI4AlJ6P3Cai1O76mOrkJCBzq0IxWg/NtqOrpu/0gKA==}
+  electron-to-chromium@1.5.228:
+    resolution: {integrity: sha512-nxkiyuqAn4MJ1QbobwqJILiDtu/jk14hEAWaMiJmNPh1Z+jqoFlBFZjdXwLWGeVSeu9hGLg6+2G9yJaW8rBIFA==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -5319,6 +5332,19 @@ snapshots:
       - '@types/node'
       - typescript
 
+  '@commitlint/cli@20.1.0(@types/node@24.6.0)(typescript@5.9.2)':
+    dependencies:
+      '@commitlint/format': 20.0.0
+      '@commitlint/lint': 20.0.0
+      '@commitlint/load': 20.1.0(@types/node@24.6.0)(typescript@5.9.2)
+      '@commitlint/read': 20.0.0
+      '@commitlint/types': 20.0.0
+      tinyexec: 1.0.1
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - typescript
+
   '@commitlint/config-conventional@20.0.0':
     dependencies:
       '@commitlint/types': 20.0.0
@@ -5373,6 +5399,22 @@ snapshots:
       - '@types/node'
       - typescript
 
+  '@commitlint/load@20.1.0(@types/node@24.6.0)(typescript@5.9.2)':
+    dependencies:
+      '@commitlint/config-validator': 20.0.0
+      '@commitlint/execute-rule': 20.0.0
+      '@commitlint/resolve-extends': 20.1.0
+      '@commitlint/types': 20.0.0
+      chalk: 5.6.2
+      cosmiconfig: 9.0.0(typescript@5.9.2)
+      cosmiconfig-typescript-loader: 6.1.0(@types/node@24.6.0)(cosmiconfig@9.0.0(typescript@5.9.2))(typescript@5.9.2)
+      lodash.isplainobject: 4.0.6
+      lodash.merge: 4.6.2
+      lodash.uniq: 4.5.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - typescript
+
   '@commitlint/message@20.0.0': {}
 
   '@commitlint/parse@20.0.0':
@@ -5390,6 +5432,15 @@ snapshots:
       tinyexec: 1.0.1
 
   '@commitlint/resolve-extends@20.0.0':
+    dependencies:
+      '@commitlint/config-validator': 20.0.0
+      '@commitlint/types': 20.0.0
+      global-directory: 4.0.1
+      import-meta-resolve: 4.2.0
+      lodash.mergewith: 4.6.2
+      resolve-from: 5.0.0
+
+  '@commitlint/resolve-extends@20.1.0':
     dependencies:
       '@commitlint/config-validator': 20.0.0
       '@commitlint/types': 20.0.0
@@ -6857,7 +6908,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.8.9
       caniuse-lite: 1.0.30001746
-      electron-to-chromium: 1.5.227
+      electron-to-chromium: 1.5.228
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.26.2)
     optional: true
@@ -6985,9 +7036,9 @@ snapshots:
 
   commander@14.0.1: {}
 
-  commitlint@20.0.0(@types/node@24.6.0)(typescript@5.9.2):
+  commitlint@20.1.0(@types/node@24.6.0)(typescript@5.9.2):
     dependencies:
-      '@commitlint/cli': 20.0.0(@types/node@24.6.0)(typescript@5.9.2)
+      '@commitlint/cli': 20.1.0(@types/node@24.6.0)(typescript@5.9.2)
       '@commitlint/types': 20.0.0
     transitivePeerDependencies:
       - '@types/node'
@@ -7225,7 +7276,7 @@ snapshots:
 
   electron-to-chromium@1.5.215: {}
 
-  electron-to-chromium@1.5.227:
+  electron-to-chromium@1.5.228:
     optional: true
 
   emoji-regex@8.0.0: {}

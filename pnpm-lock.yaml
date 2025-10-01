@@ -121,8 +121,8 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2
       '@huggingface/hub':
-        specifier: ^2.6.7
-        version: 2.6.7
+        specifier: ^2.6.8
+        version: 2.6.8
       ai:
         specifier: ^4.3.19
         version: 4.3.19(react@19.1.0)(zod@3.24.4)
@@ -984,16 +984,16 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.6.7':
-    resolution: {integrity: sha512-Btkxe+apgg9DTMMGBv5EcoGa0Qc5hGsECQg9Fl53h4oCu8ixpotrVsOJfvroGXVPcFLbaX1P8q6aJT+fBmPcMQ==}
+  '@huggingface/hub@2.6.8':
+    resolution: {integrity: sha512-qxfKYsnD42YbfgaFPaydg0l0xFDddbNxm+GmeexXcMZzIiImT29lki8UVzyBddlX5wjVyLzpOFQhp6cn+jV1zQ==}
     engines: {node: '>=18'}
     hasBin: true
 
   '@huggingface/tasks@0.19.47':
     resolution: {integrity: sha512-YI+DKLpWQGNpIBkOCTcv3nIoCi3USpUPyfRu0IfMEi2Do0q6r5pQPfy+GWhQFZEPCHsxOwoc8S8hPmmejeK9Cg==}
 
-  '@huggingface/tasks@0.19.48':
-    resolution: {integrity: sha512-9OIMhl6lSvuim0EisMPbwO4fUmMlbAXh5/GIMVAQALoByouockaaDxMuzJ9IffHRsl3qjS+QSD/mPe65kuPeyQ==}
+  '@huggingface/tasks@0.19.49':
+    resolution: {integrity: sha512-TBBs2klFqo0f9BgLBeG5sNH/oXt3nDxp8wEjwcR1/AepHb8VJAFf9oAW1SS9jmiWRrW8ZjXQJ3THOxsonHVBJA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5756,15 +5756,15 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.19.47
 
-  '@huggingface/hub@2.6.7':
+  '@huggingface/hub@2.6.8':
     dependencies:
-      '@huggingface/tasks': 0.19.48
+      '@huggingface/tasks': 0.19.49
     optionalDependencies:
       cli-progress: 3.12.0
 
   '@huggingface/tasks@0.19.47': {}
 
-  '@huggingface/tasks@0.19.48': {}
+  '@huggingface/tasks@0.19.49': {}
 
   '@humanfs/core@0.19.1': {}
 

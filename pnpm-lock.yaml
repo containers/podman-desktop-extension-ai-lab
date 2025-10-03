@@ -121,8 +121,8 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2
       '@huggingface/hub':
-        specifier: ^2.6.8
-        version: 2.6.8
+        specifier: ^2.6.10
+        version: 2.6.10
       ai:
         specifier: ^4.3.19
         version: 4.3.19(react@19.1.0)(zod@3.24.4)
@@ -971,8 +971,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.6.8':
-    resolution: {integrity: sha512-qxfKYsnD42YbfgaFPaydg0l0xFDddbNxm+GmeexXcMZzIiImT29lki8UVzyBddlX5wjVyLzpOFQhp6cn+jV1zQ==}
+  '@huggingface/hub@2.6.10':
+    resolution: {integrity: sha512-V5jITCLwNAvmOnIwzF+cEiSJFgE4Ho0xQWZge+OlsbsSYCONlFj5GhNGHX+QpEg0sABc5TKtOH6NEqrSXSf6Rw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -2002,8 +2002,8 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  baseline-browser-mapping@2.8.10:
-    resolution: {integrity: sha512-uLfgBi+7IBNay8ECBO2mVMGZAc1VgZWEChxm4lv+TobGdG82LnXMjuNGo/BSSZZL4UmkWhxEHP2f5ziLNwGWMA==}
+  baseline-browser-mapping@2.8.11:
+    resolution: {integrity: sha512-i+sRXGhz4+QW8aACZ3+r1GAKMt0wlFpeA8M5rOQd0HEYw9zhDrlx9Wc8uQ0IdXakjJRthzglEwfB/yqIjO6iDg==}
     hasBin: true
 
   bidi-js@1.0.3:
@@ -2087,8 +2087,8 @@ packages:
   caniuse-lite@1.0.30001741:
     resolution: {integrity: sha512-QGUGitqsc8ARjLdgAfxETDhRbJ0REsP6O3I96TAth/mVjh2cYzN2u+3AzPP3aVSm2FehEItaJw1xd+IGBXWeSw==}
 
-  caniuse-lite@1.0.30001746:
-    resolution: {integrity: sha512-eA7Ys/DGw+pnkWWSE/id29f2IcPHVoE8wxtvE5JdvD2V28VTDPy1yEeo11Guz0sJ4ZeGRcm3uaTcAqK1LXaphA==}
+  caniuse-lite@1.0.30001747:
+    resolution: {integrity: sha512-mzFa2DGIhuc5490Nd/G31xN1pnBnYMadtkyTjefPI7wzypqgCEpeWu9bJr0OnDsyKrW75zA9ZAt7pbQFmwLsQg==}
 
   chai@5.2.0:
     resolution: {integrity: sha512-mCuXncKXk5iCLhfhwTc0izo0gtEmpz5CtG2y8GiOINBlMVS6v8TMRc5TaLWKS6692m9+dVVfzgeVxR5UxWHTYw==}
@@ -2431,8 +2431,8 @@ packages:
   electron-to-chromium@1.5.215:
     resolution: {integrity: sha512-TIvGp57UpeNetj/wV/xpFNpWGb0b/ROw372lHPx5Aafx02gjTBtWnEEcaSX3W2dLM3OSdGGyHX/cHl01JQsLaQ==}
 
-  electron-to-chromium@1.5.229:
-    resolution: {integrity: sha512-cwhDcZKGcT/rEthLRJ9eBlMDkh1sorgsuk+6dpsehV0g9CABsIqBxU4rLRjG+d/U6pYU1s37A4lSKrVc5lSQYg==}
+  electron-to-chromium@1.5.230:
+    resolution: {integrity: sha512-A6A6Fd3+gMdaed9wX83CvHYJb4UuapPD5X5SLq72VZJzxHSY0/LUweGXRWmQlh2ln7KV7iw7jnwXK7dlPoOnHQ==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -5650,7 +5650,7 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.19.47
 
-  '@huggingface/hub@2.6.8':
+  '@huggingface/hub@2.6.10':
     dependencies:
       '@huggingface/tasks': 0.19.49
     optionalDependencies:
@@ -6686,7 +6686,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  baseline-browser-mapping@2.8.10:
+  baseline-browser-mapping@2.8.11:
     optional: true
 
   bidi-js@1.0.3:
@@ -6739,9 +6739,9 @@ snapshots:
 
   browserslist@4.26.3:
     dependencies:
-      baseline-browser-mapping: 2.8.10
-      caniuse-lite: 1.0.30001746
-      electron-to-chromium: 1.5.229
+      baseline-browser-mapping: 2.8.11
+      caniuse-lite: 1.0.30001747
+      electron-to-chromium: 1.5.230
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.26.3)
     optional: true
@@ -6791,7 +6791,7 @@ snapshots:
 
   caniuse-lite@1.0.30001741: {}
 
-  caniuse-lite@1.0.30001746:
+  caniuse-lite@1.0.30001747:
     optional: true
 
   chai@5.2.0:
@@ -7109,7 +7109,7 @@ snapshots:
 
   electron-to-chromium@1.5.215: {}
 
-  electron-to-chromium@1.5.229:
+  electron-to-chromium@1.5.230:
     optional: true
 
   emoji-regex@8.0.0: {}

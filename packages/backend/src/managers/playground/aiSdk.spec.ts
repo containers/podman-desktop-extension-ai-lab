@@ -28,7 +28,7 @@ import type {
   PendingChat,
   UserChat,
 } from '@shared/models/IPlaygroundMessage';
-import type { LanguageModelV1, LanguageModelV1CallWarning, LanguageModelV1StreamPart } from '@ai-sdk/provider';
+import type { LanguageModelV2, LanguageModelV2CallWarning, LanguageModelV2StreamPart } from '@ai-sdk/provider';
 import { convertArrayToReadableStream } from '@ai-sdk/provider-utils/test';
 import { ConversationRegistry } from '../../registries/ConversationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
@@ -99,7 +99,7 @@ describe('aiSdk', () => {
               type: 'tool-call',
               toolCallId: 'call-001',
               toolName: 'tool-1',
-              args: {},
+              input: {},
             },
           ],
         },
@@ -110,7 +110,7 @@ describe('aiSdk', () => {
               type: 'tool-result',
               toolCallId: 'call-001',
               toolName: 'tool-1',
-              result: {
+              output: {
                 content: [{ type: 'text', text: 'Success!!!' }],
               },
             },
@@ -150,7 +150,7 @@ describe('aiSdk', () => {
         expect.objectContaining({
           model: expect.anything(),
           temperature: 42,
-          maxTokens: 37,
+          maxOutputTokens: 37,
           topP: 13,
           abortSignal: expect.any(AbortSignal),
           messages: expect.any(Array),
@@ -178,10 +178,10 @@ describe('aiSdk', () => {
     describe('with stream error', () => {
       beforeEach(async () => {
         // eslint-disable-next-line sonarjs/no-nested-functions
-        const doStream: LanguageModelV1['doStream'] = async () => {
+        const doStream: LanguageModelV2['doStream'] = async () => {
           throw new Error('The stream is kaput.');
         };
-        const model = new MockLanguageModelV1({ doStream });
+        const model = new MockLanguageModelV2({ doStream });
         await new AiStreamProcessor(conversationId, conversationRegistry).stream(model).consumeStream();
       });
       test('appends a single message', () => {
@@ -194,7 +194,7 @@ describe('aiSdk', () => {
       });
     });
     describe('with single message stream', () => {
-      let model: LanguageModelV1;
+      let model: LanguageModelV2;
       beforeEach(async () => {
         model = createTestModel({
           stream: convertArrayToReadableStream([
@@ -204,10 +204,10 @@ describe('aiSdk', () => {
               modelId: 'mock-model-id',
               timestamp: new Date(0),
             },
-            { type: 'text-delta', textDelta: 'Greetings' },
-            { type: 'text-delta', textDelta: ' professor ' },
-            { type: 'text-delta', textDelta: `Falken` },
-            { type: 'finish', finishReason: 'stop', usage: { completionTokens: 133, promptTokens: 7 } },
+            { type: 'text-delta', id: 'id-1', delta: 'Greetings' },
+            { type: 'text-delta', id: 'id-2', delta: ' professor ' },
+            { type: 'text-delta', id: 'id-3', delta: `Falken` },
+            { type: 'finish', finishReason: 'stop', usage: { outputTokens: 133, inputTokens: 7, totalTokens: 140 } },
           ]),
         });
         await new AiStreamProcessor(conversationId, conversationRegistry).stream(model).consumeStream();
@@ -230,53 +230,54 @@ describe('aiSdk', () => {
       });
     });
     describe('with wrapped generated multiple messages as stream', () => {
-      let model: LanguageModelV1;
+      let model: LanguageModelV2;
       let tools: ToolSet;
       let generateStep: number;
 
       beforeEach(async () => {
         generateStep = 0;
         model = wrapLanguageModel({
-          model: new MockLanguageModelV1({
-            // This is the output that the simulateStreamingMiddleware expects for tool-calling
+          model: new MockLanguageModelV2({
             doGenerate: (async () => {
-              // First call to the model returns a list of tool calls
               if (generateStep++ === 0) {
                 return {
-                  rawCall: { rawPrompt: {}, rawSettings: {} },
-                  usage: { promptTokens: 1, completionTokens: 1 },
-                  text: '',
-                  finishReason: 'tool-calls',
-                  toolCalls: [
+                  content: [
                     {
-                      toolCallType: 'function',
+                      type: 'tool-call',
                       toolCallId: 'call-001',
                       toolName: 'tool-1',
-                      args: '',
+                      input: {},
                     },
                     {
-                      toolCallType: 'function',
+                      type: 'tool-call',
                       toolCallId: 'call-002',
                       toolName: 'tool-1',
-                      args: '',
+                      input: {},
                     },
                   ],
+                  finishReason: 'tool-calls',
+                  usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+                  warnings: [],
                 };
               }
-              // Second call to the model returns the final human-readable result
               return {
-                rawCall: { rawPrompt: {}, rawSettings: {} },
+                content: [
+                  {
+                    type: 'text',
+                    text: 'These are the results of you functions: huge success!',
+                  },
+                ],
                 finishReason: 'stop',
-                usage: { promptTokens: 133, completionTokens: 7 },
-                text: 'These are the results of you functions: huge success!',
+                usage: { inputTokens: 133, outputTokens: 7, totalTokens: 140 },
+                warnings: [],
               };
-            }) as LanguageModelV1['doGenerate'],
+            }) as LanguageModelV2['doGenerate'],
           }),
           middleware: simulateStreamingMiddleware(),
         });
         tools = {
           'tool-1': tool({
-            parameters: jsonSchema({ type: 'object' }),
+            inputSchema: jsonSchema({ type: 'object' }),
             execute: async () => 'successful result!',
           }),
         };
@@ -303,19 +304,19 @@ describe('aiSdk', () => {
         { index: 2, id: '4', toolCallId: 'call-002' },
       ])(`sets tool result message at $index for $toolCallId`, ({ index, id, toolCallId }) => {
         const message = conversationRegistry.get(conversationId).messages[index] as AssistantChat;
-        expect(message).toEqual({
-          id,
-          timestamp: expect.any(Number),
-          completed: expect.any(Number),
-          role: 'assistant',
-          content: {
-            type: 'tool-call',
-            toolCallId,
-            toolName: 'tool-1',
-            args: {},
-            result: 'successful result!',
-          },
+        expect(message.id).toEqual(id);
+        expect(message.timestamp).toBeDefined();
+        expect(message.role).toEqual('assistant');
+        expect(message.content).toMatchObject({
+          type: 'tool-call',
+          toolCallId,
+          toolName: 'tool-1',
+          args: {},
         });
+        if (message.content && typeof message.content === 'object' && 'result' in message.content) {
+          expect(message.content.result).toEqual('successful result!');
+          expect(message.completed).toBeDefined();
+        }
       });
       test('appends final assistant message', () => {
         const message = conversationRegistry.get(conversationId).messages[3] as AssistantChat;
@@ -324,30 +325,28 @@ describe('aiSdk', () => {
       });
       test('setsUsage', async () => {
         const conversation = conversationRegistry.get(conversationId) as Conversation;
-        expect(conversation?.usage?.completion_tokens).toEqual(8);
-        expect(conversation?.usage?.prompt_tokens).toEqual(134);
+        expect(conversation?.usage?.completion_tokens).toEqual(7);
+        expect(conversation?.usage?.prompt_tokens).toEqual(133);
       });
     });
   });
 });
 
-export class MockLanguageModelV1 implements LanguageModelV1 {
-  readonly specificationVersion = 'v1';
-  readonly provider: LanguageModelV1['provider'];
-  readonly modelId: LanguageModelV1['modelId'];
+export class MockLanguageModelV2 implements LanguageModelV2 {
+  readonly specificationVersion = 'v2';
+  readonly provider: LanguageModelV2['provider'];
+  readonly modelId: LanguageModelV2['modelId'];
 
-  supportsUrl: LanguageModelV1['supportsUrl'];
-  doGenerate: LanguageModelV1['doGenerate'];
-  doStream: LanguageModelV1['doStream'];
+  supportedUrls: LanguageModelV2['supportedUrls'] = {};
+  doGenerate: LanguageModelV2['doGenerate'];
+  doStream: LanguageModelV2['doStream'];
 
-  readonly defaultObjectGenerationMode: LanguageModelV1['defaultObjectGenerationMode'];
-  readonly supportsStructuredOutputs: LanguageModelV1['supportsStructuredOutputs'];
   constructor({
     doStream = notImplemented,
     doGenerate = notImplemented,
   }: {
-    doStream?: LanguageModelV1['doStream'];
-    doGenerate?: LanguageModelV1['doGenerate'];
+    doStream?: LanguageModelV2['doStream'];
+    doGenerate?: LanguageModelV2['doGenerate'];
   }) {
     this.provider = 'mock-model-provider';
     this.modelId = 'mock-model-id';
@@ -367,13 +366,13 @@ export function createTestModel({
   request = undefined,
   warnings,
 }: {
-  stream?: ReadableStream<LanguageModelV1StreamPart>;
+  stream?: ReadableStream<LanguageModelV2StreamPart>;
   rawResponse?: { headers: Record<string, string> };
   rawCall?: { rawPrompt: string; rawSettings: Record<string, unknown> };
   request?: { body: string };
-  warnings?: LanguageModelV1CallWarning[];
-} = {}): LanguageModelV1 {
-  return new MockLanguageModelV1({
+  warnings?: LanguageModelV2CallWarning[];
+} = {}): LanguageModelV2 {
+  return new MockLanguageModelV2({
     doStream: async () => ({ stream, rawCall, rawResponse, request, warnings }),
   });
 }

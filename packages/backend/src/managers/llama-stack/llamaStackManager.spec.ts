@@ -308,6 +308,8 @@ test('requestcreateLlamaStackContainerss registers all local models', async () =
     'models',
     'register',
     'Model 1',
+    '--provider-id',
+    'podman-ai-lab',
   ]);
   expect(podmanConnection.execute).toHaveBeenCalledWith(expect.anything(), [
     'exec',
@@ -316,6 +318,8 @@ test('requestcreateLlamaStackContainerss registers all local models', async () =
     'models',
     'register',
     'Model 2',
+    '--provider-id',
+    'podman-ai-lab',
   ]);
 });
 

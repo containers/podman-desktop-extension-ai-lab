@@ -37,6 +37,8 @@ import {
   isMac,
   isCI,
   resetPodmanMachinesFromCLI,
+  handleConfirmationDialog,
+  podmanAILabExtension,
 } from '@podman-desktop/tests-playwright';
 import type { AILabDashboardPage } from './model/ai-lab-dashboard-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
@@ -731,7 +733,12 @@ async function restartApp(appName: string): Promise<void> {
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');
   await aiRunningAppsPage.restartApp(appName);
-
+  // handle possible reset project confirmation dialog https://github.com/containers/podman-desktop-extension-ai-lab/issues/3663
+  try {
+    await handleConfirmationDialog(aiLabPage.page, podmanAILabExtension.extensionName, true, 'Reset', 'Cancel', 25_000);
+  } catch (error) {
+    console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
+  }
   const appProgressBar = aiApp.getByRole('progressbar', { name: 'Loading' });
   await playExpect(appProgressBar).toBeVisible({ timeout: 60_000 });
   await playExpect

@@ -25,19 +25,14 @@ on:
 
   workflow_dispatch:
     inputs:
-      organization:
-        default: 'containers'
-        description: 'Organization of the Podman Desktop repository'
+      podman_desktop_repo_args:
+        default: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
+        description: 'Podman Desktop repo fork and branch'
         type: string
         required: true
-      repositoryName:
-        default: 'podman-desktop-extension-ai-lab'
-        description: 'Podman Desktop Extension AI Lab repository name'
-        type: string
-        required: true
-      branch:
-        default: 'main'
-        description: 'Podman Desktop Extension AI Lab repo branch'
+      ext_repo_options:
+        default: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
+        description: 'Podman Desktop Extension repo, fork and branch'
         type: string
         required: true
 
@@ -46,23 +41,35 @@ jobs:
     name: Run E2E tests ${{ github.event_name == 'schedule' && '[nightly]' || '' }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
-        if: github.event_name == 'workflow_dispatch'
-        with:
-          repository: ${{ github.event.inputs.organization }}/${{ github.event.inputs.repositoryName }}
-          ref: ${{ github.event.inputs.branch }}
-          path: ${{ github.event.inputs.repositoryName }}
+      - name: Set default env variables
+        env:
+          DEFAULT_PODMAN_DESKTOP_REPO_ARGS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
+          DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
+        run: |
+          echo "${{ github.event.inputs.podman_desktop_repo_args || env.DEFAULT_PODMAN_DESKTOP_REPO_ARGS }}" | awk -F ',' \
+           '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
+          echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
+           '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
       - uses: actions/checkout@v5
+        name: Checkout AI Lab - Workflow Dispatch
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          repository: ${{ env.EXT_FORK }}/${{ env.EXT_REPO }}
+          ref: ${{ env.EXT_BRANCH }}
+          path: podman-desktop-extension-ai-lab
+
+      - uses: actions/checkout@v5
+        name: Checkout AI Lab - Push or Schedule
         if: github.event_name == 'push' || github.event_name == 'schedule'
         with:
           path: podman-desktop-extension-ai-lab
 
-      # Checkout podman desktop
       - uses: actions/checkout@v5
+        name: Checkout Podman Desktop
         with:
-          repository: containers/podman-desktop
-          ref: main
+          repository: ${{ env.PD_FORK }}/${{ env.PD_REPO }}
+          ref: ${{ env.PD_BRANCH }}
           path: podman-desktop
 
       - uses: pnpm/action-setup@v4

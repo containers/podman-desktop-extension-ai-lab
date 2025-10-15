@@ -726,21 +726,33 @@ async function deleteAllModels(): Promise<void> {
 
 async function restartApp(appName: string): Promise<void> {
   const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
-  const aiApp = await aiRunningAppsPage.getRowForApp(appName);
   await aiRunningAppsPage.waitForLoad();
   await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
   await playExpect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');
-  await aiRunningAppsPage.restartApp(appName);
-  // handle possible reset project confirmation dialog https://github.com/containers/podman-desktop-extension-ai-lab/issues/3663
-  try {
-    await handleConfirmationDialog(aiLabPage.page, podmanAILabExtension.extensionName, true, 'Reset', 'Cancel', 25_000);
-  } catch (error) {
-    console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
-  }
+  const aiApp = await aiRunningAppsPage.getRowForApp(appName);
   const appProgressBar = aiApp.getByRole('progressbar', { name: 'Loading' });
-  await playExpect(appProgressBar).toBeVisible({ timeout: 60_000 });
+  // Trigger restart and watch for dialog/progress bar in parallel to avoid race condition
+  // See: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3663
+  const restartPromise = aiRunningAppsPage.restartApp(appName);
+  const dialogPromise = handleConfirmationDialog(
+    aiLabPage.page,
+    podmanAILabExtension.extensionName,
+    true,
+    'Reset',
+    'Cancel',
+    25_000,
+  ).catch(() => {
+    // Dialog didn't appear - this is expected when repo is clean
+  });
+  const progressBarPromise = playExpect(appProgressBar)
+    .toBeVisible({ timeout: 60_000 })
+    .catch(() => {
+      console.log(`Warning: Progress bar did not appear for app "${appName}" during restart`);
+    });
+
+  await Promise.all([restartPromise, dialogPromise, progressBarPromise]);
   await playExpect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');

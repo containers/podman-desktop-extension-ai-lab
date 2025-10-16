@@ -317,7 +317,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
   // Do not use non-instruct models in playground tests.
   // They break out of guilderails and fail the tests.
-  ['ibm-granite/granite-3.3-8b-instruct-GGUF'].forEach(modelName => {
+  ['ibm-granite/granite-4.0-micro-GGUF'].forEach(modelName => {
     test.describe.serial(`AI Lab playground creation and deletion for ${modelName}`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;

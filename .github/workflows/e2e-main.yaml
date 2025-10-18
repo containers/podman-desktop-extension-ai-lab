@@ -137,6 +137,18 @@ jobs:
         working-directory: ./podman-desktop-extension-ai-lab
         run: pnpm install
 
+      - name: Build Image
+        working-directory: ./podman-desktop-extension-ai-lab
+        id: build-image
+        run: |
+          pnpm build
+          podman build -t local_ai_lab_image ./
+          CONTAINER_ID=$(podman create localhost/local_ai_lab_image --entrypoint "")
+          mkdir -p tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins
+          podman export $CONTAINER_ID | tar -x -C tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins/
+          podman rm -f $CONTAINER_ID
+          podman rmi -f localhost/local_ai_lab_image:latest
+
       - name: Free up disk space
         uses: podman-desktop/e2e/.github/actions/disk-cleanup@6a406f8f24bacffc481553266f9ba8a5293f3077
 
@@ -144,6 +156,7 @@ jobs:
         working-directory: ./podman-desktop-extension-ai-lab
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
+          EXTENSION_PREINSTALLED: true
         run: pnpm test:e2e
 
       - name: Publish Test Report

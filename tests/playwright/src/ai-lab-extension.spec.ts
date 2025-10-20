@@ -140,7 +140,9 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
 
 test.afterAll(async ({ runner }) => {
   test.setTimeout(180_000);
-  await resetPodmanMachinesFromCLI();
+  if (isCI) {
+    await resetPodmanMachinesFromCLI();
+  }
   await runner.close();
 });
 
@@ -735,7 +737,7 @@ async function restartApp(appName: string): Promise<void> {
   const appProgressBar = aiApp.getByRole('progressbar', { name: 'Loading' });
   // Trigger restart and watch for dialog/progress bar in parallel to avoid race condition
   // See: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3663
-  const restartPromise = aiRunningAppsPage.restartApp(appName);
+
   const dialogPromise = handleConfirmationDialog(
     aiLabPage.page,
     podmanAILabExtension.extensionName,
@@ -752,7 +754,9 @@ async function restartApp(appName: string): Promise<void> {
       console.log(`Warning: Progress bar did not appear for app "${appName}" during restart`);
     });
 
-  await Promise.all([restartPromise, dialogPromise, progressBarPromise]);
+  const restartPromise = aiRunningAppsPage.restartApp(appName);
+
+  await Promise.all([dialogPromise, progressBarPromise, restartPromise]);
   await playExpect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');

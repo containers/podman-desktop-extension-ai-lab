@@ -464,6 +464,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
               default:
                 console.warn(`Unhandled AI App: ${appName}`);
+                test.skip(true, 'Test is not implemented yet');
             }
           });
 
@@ -525,6 +526,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
               default:
                 console.warn(`Unhandled AI App: ${appName}`);
+                test.skip(true, 'Test is not implemented yet');
             }
 
             if (response) {

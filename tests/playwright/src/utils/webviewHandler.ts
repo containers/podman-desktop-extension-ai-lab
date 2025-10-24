@@ -38,14 +38,23 @@ export async function handleWebview(
 
   const webView = page.getByRole('document', { name: AI_LAB_PAGE_BODY_LABEL });
   await playExpect(webView).toBeVisible();
-  await new Promise(resolve => setTimeout(resolve, 1_000));
+
+  // Wait for webview window to be ready
+  await playExpect
+    .poll(
+      async () => {
+        const windows = runner.getElectronApp().windows();
+        return windows.length >= 2;
+      },
+      { timeout: 10_000, intervals: [500] },
+    )
+    .toBeTruthy();
+
   const [mainPage, webViewPage] = runner.getElectronApp().windows();
   await mainPage.evaluate(() => {
     const element = document.querySelector('webview');
     if (element) {
       (element as HTMLElement).focus();
-    } else {
-      console.log(`element is null`);
     }
   });
   const aiLabNavigationBar = new AILabNavigationBar(mainPage, webViewPage);

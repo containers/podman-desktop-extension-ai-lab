@@ -39,24 +39,37 @@ export async function handleWebview(
   const webView = page.getByRole('document', { name: AI_LAB_PAGE_BODY_LABEL });
   await playExpect(webView).toBeVisible();
 
-  // Wait for webview window to be ready
   await playExpect
     .poll(
       async () => {
         const windows = runner.getElectronApp().windows();
-        return windows.length >= 2;
+        if (windows.length < 2 || !windows[1]) {
+          return false;
+        }
+        try {
+          await windows[1].evaluate(() => true);
+          return true;
+        } catch {
+          return false;
+        }
       },
       { timeout: 10_000, intervals: [500] },
     )
     .toBeTruthy();
 
   const [mainPage, webViewPage] = runner.getElectronApp().windows();
-  await mainPage.evaluate(() => {
-    const element = document.querySelector('webview');
-    if (element) {
-      (element as HTMLElement).focus();
-    }
-  });
+
+  try {
+    await mainPage.evaluate(() => {
+      const element = document.querySelector('webview');
+      if (element) {
+        (element as HTMLElement).focus();
+      }
+    });
+  } catch (error) {
+    console.log(`Warning: Could not focus webview element: ${error}`);
+  }
+
   const aiLabNavigationBar = new AILabNavigationBar(mainPage, webViewPage);
   return [mainPage, webViewPage, aiLabNavigationBar];
 }

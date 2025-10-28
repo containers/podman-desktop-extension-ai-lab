@@ -146,7 +146,7 @@ jobs:
           require_tests:  true
           report_paths: '**/*results.xml'
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: e2e-check
@@ -158,14 +158,14 @@ jobs:
             !./**/output/traces/*
 
       - name: Upload test videos
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: e2e-check-videos
           path: ./**/output/videos/*
 
       - name: Upload test traces
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: e2e-check-traces

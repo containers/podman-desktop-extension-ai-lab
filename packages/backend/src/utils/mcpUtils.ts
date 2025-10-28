@@ -15,8 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { experimental_createMCPClient as createMCPClient } from 'ai';
-import { Experimental_StdioMCPTransport as StdioClientTransport } from 'ai/mcp-stdio';
+import { experimental_createMCPClient as createMCPClient } from '@ai-sdk/mcp';
+import { Experimental_StdioMCPTransport as StdioClientTransport } from '@ai-sdk/mcp/mcp-stdio';
 import { type McpClient, type McpServer, McpServerType } from '@shared/models/McpSettings';
 
 export async function toMcpClients(...mcpServers: McpServer[]): Promise<McpClient[]> {

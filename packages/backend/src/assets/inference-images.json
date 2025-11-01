@@ -1,12 +1,12 @@
 {
   "whispercpp": {
-    "default": "quay.io/ramalama/ramalama-whisper-server@sha256:377f9a91ba0030548bca8a3845be1c8396bd2255a0aae01e1be43845b1ee5f1e"
+    "default": "quay.io/ramalama/ramalama-whisper-server@sha256:e6d5c73cb8a5daa6a30945c79e806c14047951886b5d00daecd92711ebf9d06d"
   },
   "llamacpp": {
-    "default": "quay.io/ramalama/ramalama-llama-server@sha256:9560fdb4f0bf4f44fddc4b1d8066b3e65d233c1673607e0029b78ebc812f3e5a",
-    "cuda": "quay.io/ramalama/cuda-llama-server@sha256:1a6d4fe31b527ad34b3d049eea11f142ad660485700cb9ac8c1d41d8887390cf"
+    "default": "quay.io/ramalama/ramalama-llama-server@sha256:6180fe0f8a9884c8f5580719aa90bbe3387571aa8206fd55d658774c1dd53808",
+    "cuda": "quay.io/ramalama/cuda-llama-server@sha256:81e4732336f6adc05a61d1a7ccd52fb1ad164571bf85d23b4f4e8c4327c621d5"
   },
   "openvino": {
-    "default": "quay.io/ramalama/openvino@sha256:e026ecbdf6ae222a193badad5b0dd2253362e366e22c8b402f5a492803b10fd5"
+    "default": "quay.io/ramalama/openvino@sha256:d70b154b46e1e1532c6cac779aad31c457a22a7ab1bea2e51fd2fc01724b4a1a"
   }
 }

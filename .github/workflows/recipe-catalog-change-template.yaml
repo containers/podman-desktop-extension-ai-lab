@@ -246,7 +246,7 @@ jobs:
 
     - name: Publish Test Report
       id: test-report
-      uses: mikepenz/action-junit-report@v5
+      uses: mikepenz/action-junit-report@v6
       if: always() # always run even if the previous step fails
       with:
         annotate_only: true

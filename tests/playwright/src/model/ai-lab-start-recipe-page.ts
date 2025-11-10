@@ -74,15 +74,29 @@ export class AILabStartRecipePage extends AILabBasePage {
     }
 
     await playExpect
-      .poll(async () => await this.getModelDownloadProgress(), { timeout: 60_000, intervals: [5_000] })
+      .poll(
+        async () => {
+          const modelDownloadProgress = await this.getModelDownloadProgress();
+          console.log(`Polled model download progress: ${modelDownloadProgress}%`);
+          return modelDownloadProgress;
+        },
+        { timeout: 60_000, intervals: [5_000] },
+      )
       .toBe(100);
 
     try {
-      await waitUntil(async () => (await this.getLatestStatus()).includes('AI App is running'), {
-        timeout: 600_000,
-        diff: 10_000,
-        message: 'WaitTimeout reached when waiting for text: AI App is running',
-      });
+      await waitUntil(
+        async () => {
+          const latestStatus = await this.getLatestStatus();
+          console.log(`Latest status: ${latestStatus}`);
+          return latestStatus.includes('AI App is running');
+        },
+        {
+          timeout: 600_000,
+          diff: 10_000,
+          message: 'WaitTimeout reached when waiting for text: AI App is running',
+        },
+      );
     } catch {
       await this.refreshStartRecipeUI(this.page, this.webview, appName);
     }

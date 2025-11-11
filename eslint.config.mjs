@@ -57,6 +57,7 @@ export default [
       '**/.svelte-kit/',
       'scripts/**',
       '**/src-generated/',
+      'tests/playwright/tests/playwright/output/**',
     ],
   },
   js.configs.recommended,

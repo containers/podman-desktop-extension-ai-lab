@@ -31,9 +31,10 @@ import {
   expect as playExpect,
   test,
   RunnerOptions,
-  isWindows,
   waitForPodmanMachineStartup,
+  isWindows,
   isLinux,
+  isMac,
   isCI,
   resetPodmanMachinesFromCLI,
   handleConfirmationDialog,
@@ -62,6 +63,7 @@ import type { ApplicationCatalog } from '../../../packages/shared/src/models/IAp
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
+const EXT_TEST_RAG_CHATBOT: boolean = process.env.EXT_TEST_RAG_CHATBOT === 'true';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 const AI_LAB_TESTS_WITH_GPU_ENABLED: boolean = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === 'true';
 
@@ -147,6 +149,28 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
   runner.setVideoAndTraceName('ai-lab-e2e');
   await welcomePage.handleWelcomePage(true);
   await waitForPodmanMachineStartup(page, 180_000);
+
+  console.log(`
+**********************************
+* TEST CONFIGURATION INFORMATION *
+**********************************
+
+  AI Lab Extension OCI Image: ${AI_LAB_EXTENSION_OCI_IMAGE}
+  AI Lab Extension Preinstalled: ${AI_LAB_EXTENSION_PREINSTALLED}
+  Test Audio File Path: ${TEST_AUDIO_FILE_PATH}
+  Playground Test Models: ${PLAYGROUND_TEST_MODELS.join(', ')}
+  AI App HTTP Tests: ${AI_APP_HTTP_TEST_APP_NAMES.join(', ')}
+  AI App Service Response Tests: ${AI_APP_SERVICE_RESPONSE_TEST_APP_NAMES.join(', ')}
+
+  Test RAG Chatbot Apps: ${EXT_TEST_RAG_CHATBOT}
+
+  IS WINDOWS: ${isWindows}
+  IS LINUX: ${isLinux}
+  IS MAC: ${isMac}
+  IS CI: ${isCI} CI env variable: ${process.env.CI ?? 'undefined'}
+
+**********************************
+`);
 });
 
 test.afterAll(async ({ runner }) => {

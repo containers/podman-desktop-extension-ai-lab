@@ -417,6 +417,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
        */
       appNames.forEach(appName => {
         test.describe.serial(`AI Recipe installation ${appName}`, () => {
+          let recipesCatalogPage: AILabRecipesCatalogPage;
+
           test.skip(
             !process.env.EXT_TEST_RAG_CHATBOT &&
               (appName === 'RAG Chatbot' ||
@@ -424,15 +426,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
                 appName === 'Graph RAG Chat Application'),
             'EXT_TEST_RAG_CHATBOT variable not set, skipping test',
           );
-          let recipesCatalogPage: AILabRecipesCatalogPage;
-
-          test(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
-            aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-            await aiLabPage.navigationBar.waitForLoad();
-
-            recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
-            await recipesCatalogPage.waitForLoad();
-          });
 
           test.skip(
             appName === 'Audio to Text' && !!isCI && !!isLinux,
@@ -443,6 +436,19 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
             appName === 'Object Detection' && !!isCI && !!isWindows,
             'Object Detection app is skipped on Windows CI due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3197',
           );
+
+          test.skip(
+            appName === 'Node.js based ChatBot' && !!isWindows,
+            'Node.js based ChatBot app is skipped on Windows due to installation getting stuck on application build step',
+          );
+
+          test(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
+            aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+            await aiLabPage.navigationBar.waitForLoad();
+
+            recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
+            await recipesCatalogPage.waitForLoad();
+          });
 
           test(`Install ${appName} example app`, async () => {
             test.setTimeout(1_500_000);

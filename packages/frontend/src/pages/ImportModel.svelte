@@ -56,7 +56,7 @@ async function requestExplorerModal(): Promise<void> {
         },
       ],
     });
-    if (!models || models.length !== 1) {
+    if (models?.length !== 1) {
       return;
     }
 

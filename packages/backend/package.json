@@ -118,7 +118,7 @@
     "express": "^5.1.0",
     "express-openapi-validator": "^5.6.0",
     "isomorphic-git": "^1.35.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "mustache": "^4.2.0",
     "openai": "^6.8.1",
     "postman-code-generators": "^1.14.1",

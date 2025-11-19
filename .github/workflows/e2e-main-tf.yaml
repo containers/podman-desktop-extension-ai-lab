@@ -56,7 +56,7 @@ jobs:
 
       - name: Run Podman Desktop Playwright E2E tests on Testing Farm CI
         id: run-e2e-tf
-        uses: sclorg/testing-farm-as-github-action@f3a39272a197ed060d5f786186b0e7a3ee7b0b4f
+        uses: sclorg/testing-farm-as-github-action@f3a39272a197ed060d5f786186b0e7a3ee7b0b4f #v4.1.0
         with:
           api_key: ${{ secrets.TF_TOKEN }}
           create_github_summary: "false"
@@ -84,7 +84,7 @@ jobs:
 
       - name: Publish test report to PR
         if: always()
-        uses: mikepenz/action-junit-report@5b7ee5a21e8674b695313d769f3cbdfd5d4d53a4
+        uses: mikepenz/action-junit-report@5b7ee5a21e8674b695313d769f3cbdfd5d4d53a4 #v6.0.0
         with:
           fail_on_failure: true
           include_passed: true

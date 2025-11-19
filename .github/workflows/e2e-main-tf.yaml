@@ -44,11 +44,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        fedora-version: ['Fedora-41', 'Fedora-42']
+        fedora-version: ['Fedora-42', 'Fedora-43']
     steps:
       - name: Set the default env. variables
         env:
-          DEFAULT_NPM_TARGET: 'e2e'
+          DEFAULT_NPM_TARGET: 'smoke'
           DEFAULT_PODMAN_VERSION: 'latest'
         run: |
           echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV

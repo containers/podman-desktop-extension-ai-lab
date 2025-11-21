@@ -63,6 +63,7 @@ import type { ApplicationCatalog } from '../../../packages/shared/src/models/IAp
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
+const AI_LAB_TESTS_WITH_GPU: boolean = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === 'true';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 
 let aiLabPage: AILabDashboardPage;
@@ -206,6 +207,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     test.afterAll(
       `Disable GPU support, return to AI Lab Dashboard and hide banner`,
       async ({ runner, page, navigationBar }) => {
+        test.skip(AI_LAB_TESTS_WITH_GPU, 'Skipping GPU preference reset as tests are running with GPU support enabled');
         test.setTimeout(30_000);
         const preferencesPage = await openAILabPreferences(navigationBar, page);
         await preferencesPage.waitForLoad();

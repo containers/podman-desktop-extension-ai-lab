@@ -30,7 +30,7 @@ jobs:
     name: publish
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd #v5.0.1
+      - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5 #v5.0.1
         with:
           repository: meta-llama/llama-stack
           ref: ${{ github.event.inputs.version }}

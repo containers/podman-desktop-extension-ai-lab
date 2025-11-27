@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onDestroy, onMount } from 'svelte';
-import type * as Monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import type * as Monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import './monaco';
 import type { HTMLAttributes } from 'svelte/elements';
 
@@ -50,7 +50,7 @@ onMount(async () => {
   const isDarkTheme: boolean = terminalBg === '#000000';
 
   // solution from https://github.com/vitejs/vite/discussions/1791#discussioncomment-9281911
-  import('monaco-editor/esm/vs/editor/editor.api')
+  import('monaco-editor/esm/vs/editor/editor.api.js')
     .then(monaco => {
       // define custom theme
       monaco.editor.defineTheme('podmanDesktopTheme', {

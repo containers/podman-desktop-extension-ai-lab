@@ -25,4 +25,4 @@ self.MonacoEnvironment = {
   },
 };
 
-monaco.languages.typescript?.typescriptDefaults?.setEagerModelSync(true);
+monaco.typescript?.typescriptDefaults?.setEagerModelSync(true);

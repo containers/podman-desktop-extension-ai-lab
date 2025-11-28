@@ -18,7 +18,7 @@ name: PD AI Lab E2E Nightly Testing Farm
 
 on:
   schedule:
-    - cron:  '0 0 * * *'
+    - cron: '0 0 * * *'
     
   workflow_dispatch:
     inputs:
@@ -35,16 +35,24 @@ on:
           - e2e
           - smoke
           - instructlab
+      plan:
+        description: plans to run
+        type: choice
+        default: 'default'
+        options:
+          - default
+          - gpu
 
 jobs:
   pd-ai-lab-e2e-testing-farm:
-    timeout-minutes: 90
     name: pd-e2e-testing-farm-ci
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
         fedora-version: ['Fedora-42', 'Fedora-43']
+        plan: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.plan != '' && fromJSON(format('["{0}"]', github.event.inputs.plan)) || fromJSON('["default", "gpu"]') }}
     steps:
       - name: Set the default env. variables
         env:
@@ -52,6 +60,7 @@ jobs:
           DEFAULT_PODMAN_VERSION: 'latest'
         run: |
           echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
+          echo "PLAN=${{ matrix.plan }}" >> $GITHUB_ENV
           echo "PODMAN_VERSION=${{ github.event.inputs.podman_version || env.DEFAULT_PODMAN_VERSION }}" >> $GITHUB_ENV
 
       - name: Run Podman Desktop Playwright E2E tests on Testing Farm CI
@@ -61,7 +70,7 @@ jobs:
           api_key: ${{ secrets.TF_TOKEN }}
           create_github_summary: "false"
           compose: ${{ matrix.fedora-version }}
-          tmt_plan_filter: 'name:/tests/tmt/plans/ai-lab-e2e-plan/${{ env.NPM_TARGET }}'
+          tmt_plan_filter: 'name:/tests/tmt/plans/ai-lab-e2e-plan-${{ env.PLAN }}/${{ env.NPM_TARGET }}'
           variables: COMPOSE=${{ matrix.fedora-version }};ARCH=x86_64;PODMAN_VERSION=${{ env.PODMAN_VERSION }}
 
       - name: Extract Testing Farm work ID and base URL
@@ -79,7 +88,7 @@ jobs:
       - name: Download Playwright JUnit report from Testing Farm
         if: always()
         run: |
-          TF_PLAYWRIGHT_JUNIT_URL="${{ env.TF_ARTIFACTS_URL }}/${{ env.TF_WORK_ID }}/tests/tmt/plans/ai-lab-e2e-plan/${{ env.NPM_TARGET }}/execute/data/guest/default-0/tests/tmt/tests/${{ env.NPM_TARGET }}-test-1/data/junit-results.xml"
+          TF_PLAYWRIGHT_JUNIT_URL="${{ env.TF_ARTIFACTS_URL }}/${{ env.TF_WORK_ID }}/tests/tmt/plans/ai-lab-e2e-plan-${{ env.PLAN }}/${{ env.NPM_TARGET }}/execute/data/guest/default-0/tests/tmt/tests/${{ env.NPM_TARGET }}-test-1/data/junit-results.xml"
           curl -o junit-playwright-results.xml "$TF_PLAYWRIGHT_JUNIT_URL"
 
       - name: Publish test report to PR
@@ -98,7 +107,7 @@ jobs:
         run: |
           mkdir -p results
 
-          TF_TEST_DATA_URL="${{ env.TF_ARTIFACTS_URL }}/${{ env.TF_WORK_ID }}/tests/tmt/plans/ai-lab-e2e-plan/${{ env.NPM_TARGET }}/execute/data/guest/default-0/tests/tmt/tests/${{ env.NPM_TARGET }}-test-1/data"
+          TF_TEST_DATA_URL="${{ env.TF_ARTIFACTS_URL }}/${{ env.TF_WORK_ID }}/tests/tmt/plans/ai-lab-e2e-plan-${{ env.PLAN }}/${{ env.NPM_TARGET }}/execute/data/guest/default-0/tests/tmt/tests/${{ env.NPM_TARGET }}-test-1/data"
           TF_TRACES_URL="${TF_TEST_DATA_URL}/traces/"
           TF_VIDEOS_URL="${TF_TEST_DATA_URL}/videos/"
 
@@ -126,7 +135,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
-          name: ai-lab-testing-farm-artifacts-${{ matrix.fedora-version }}
+          name: ai-lab-testing-farm-artifacts-${{ matrix.fedora-version }}-${{ env.PLAN }}
           path: |
             results/*
             **/junit-playwright-results.xml

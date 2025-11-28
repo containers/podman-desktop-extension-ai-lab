@@ -121,8 +121,8 @@ importers:
   packages/backend:
     dependencies:
       '@ai-sdk/mcp':
-        specifier: ^0.0.10
-        version: 0.0.10(zod@4.1.13)
+        specifier: ^0.0.11
+        version: 0.0.11(zod@4.1.13)
       '@ai-sdk/openai-compatible':
         specifier: ^1.0.28
         version: 1.0.28(zod@4.1.13)
@@ -133,8 +133,8 @@ importers:
         specifier: ^2.7.1
         version: 2.7.1
       ai:
-        specifier: ^5.0.102
-        version: 5.0.102(zod@4.1.13)
+        specifier: ^5.0.104
+        version: 5.0.104(zod@4.1.13)
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -344,14 +344,14 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
-  '@ai-sdk/gateway@2.0.15':
-    resolution: {integrity: sha512-i1YVKzC1dg9LGvt+GthhD7NlRhz9J4+ZRj3KELU14IZ/MHPsOBiFeEoCCIDLR+3tqT8/+5nIsK3eZ7DFRfMfdw==}
+  '@ai-sdk/gateway@2.0.17':
+    resolution: {integrity: sha512-oVAG6q72KsjKlrYdLhWjRO7rcqAR8CjokAbYuyVZoCO4Uh2PH/VzZoxZav71w2ipwlXhHCNaInGYWNs889MMDA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/mcp@0.0.10':
-    resolution: {integrity: sha512-BZ7DQkFFg+oTrLkoAHyd7E8tKbPCR2flVo75ruxjQejPt5gXIVcEXhgC1aE8yvuL9O/rGQ+pzYVRAsU0gX2FmA==}
+  '@ai-sdk/mcp@0.0.11':
+    resolution: {integrity: sha512-n0oZsxhPdMaXhAn6LrpMpxABufmeSatfhR3epbrCjJcLEHPOucKwQciwE8CTgIGgwBxHNy1FFLZmcFI77JmJfg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -1908,8 +1908,8 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  ai@5.0.102:
-    resolution: {integrity: sha512-snRK3nS5DESOjjpq7S74g8YszWVMzjagfHqlJWZsbtl9PyOS+2XUd8dt2wWg/jdaq/jh0aU66W1mx5qFjUQyEg==}
+  ai@5.0.104:
+    resolution: {integrity: sha512-MZOkL9++nY5PfkpWKBR3Rv+Oygxpb9S16ctv8h91GvrSif7UnNEdPMVZe3bUyMd2djxf0AtBk/csBixP0WwWZQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -4904,17 +4904,17 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@ai-sdk/gateway@2.0.15(zod@4.1.13)':
+  '@ai-sdk/gateway@2.0.17(zod@4.1.13)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
+      '@ai-sdk/provider-utils': 3.0.18(zod@4.1.13)
       '@vercel/oidc': 3.0.5
       zod: 4.1.13
 
-  '@ai-sdk/mcp@0.0.10(zod@4.1.13)':
+  '@ai-sdk/mcp@0.0.11(zod@4.1.13)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
+      '@ai-sdk/provider-utils': 3.0.18(zod@4.1.13)
       pkce-challenge: 5.0.1
       zod: 4.1.13
 
@@ -6357,11 +6357,11 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@5.0.102(zod@4.1.13):
+  ai@5.0.104(zod@4.1.13):
     dependencies:
-      '@ai-sdk/gateway': 2.0.15(zod@4.1.13)
+      '@ai-sdk/gateway': 2.0.17(zod@4.1.13)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
+      '@ai-sdk/provider-utils': 3.0.18(zod@4.1.13)
       '@opentelemetry/api': 1.9.0
       zod: 4.1.13
 

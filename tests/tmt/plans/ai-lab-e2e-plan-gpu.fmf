@@ -29,11 +29,17 @@ execute:
 
 provision: 
   hardware: 
+    gpu:
+      device-name: GV100 (Tesla V100)
+      vendor-name: NVIDIA
     memory: ">= 16 GB"
     cpu: 
       cores: ">= 4"
     disk:
       - size: ">= 20 GB"
+
+environment: 
+  EXT_TEST_GPU_SUPPORT_ENABLED: true
 
 prepare:
   - name: Install required packages

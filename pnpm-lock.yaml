@@ -179,8 +179,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@ai-sdk/provider-utils':
-        specifier: ^3.0.17
-        version: 3.0.17(zod@4.1.13)
+        specifier: ^3.0.18
+        version: 3.0.18(zod@4.1.13)
       '@podman-desktop/api':
         specifier: 1.13.0-202409181313-78725a6565
         version: 1.13.0-202409181313-78725a6565

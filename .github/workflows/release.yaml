@@ -41,7 +41,7 @@ jobs:
       releaseId: ${{ steps.create_release.outputs.id}}
 
     steps:
-      - uses: actions/checkout@v6.0.0
+      - uses: actions/checkout@v6.0.1
         with:
           ref: ${{ github.event.inputs.branch }}
       - name: Generate tag utilities
@@ -116,7 +116,7 @@ jobs:
     needs: [tag]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.0
+      - uses: actions/checkout@v6.0.1
         with:
           ref: ${{ needs.tag.outputs.githubTag }}
 

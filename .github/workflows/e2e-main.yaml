@@ -51,7 +51,7 @@ jobs:
           echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
            '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
-      - uses: actions/checkout@v6.0.0
+      - uses: actions/checkout@v6.0.1
         name: Checkout AI Lab - Workflow Dispatch
         if: github.event_name == 'workflow_dispatch'
         with:
@@ -59,13 +59,13 @@ jobs:
           ref: ${{ env.EXT_BRANCH }}
           path: podman-desktop-extension-ai-lab
 
-      - uses: actions/checkout@v6.0.0
+      - uses: actions/checkout@v6.0.1
         name: Checkout AI Lab - Push or Schedule
         if: github.event_name == 'push' || github.event_name == 'schedule'
         with:
           path: podman-desktop-extension-ai-lab
 
-      - uses: actions/checkout@v6.0.0
+      - uses: actions/checkout@v6.0.1
         name: Checkout Podman Desktop
         with:
           repository: ${{ env.PD_FORK }}/${{ env.PD_REPO }}

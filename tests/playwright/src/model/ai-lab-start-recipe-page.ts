@@ -19,7 +19,13 @@
 import { expect as playExpect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { AILabBasePage } from './ai-lab-base-page';
-import { StatusBar, handleConfirmationDialog, podmanAILabExtension, waitUntil } from '@podman-desktop/tests-playwright';
+import {
+  StatusBar,
+  TasksPage,
+  handleConfirmationDialog,
+  podmanAILabExtension,
+  waitUntil,
+} from '@podman-desktop/tests-playwright';
 import { AILabNavigationBar } from './ai-lab-navigation-bar';
 
 export class AILabStartRecipePage extends AILabBasePage {
@@ -152,19 +158,10 @@ export class AILabStartRecipePage extends AILabBasePage {
     const statusBar = new StatusBar(page);
     await statusBar.tasksButton.click();
     console.log('Opened Tasks in status Bar');
-    const tasksManager = this.page.getByTitle('Tasks Manager');
-    await playExpect(tasksManager).toBeVisible();
-    console.log('Finding particular task in task manager');
-    const task = tasksManager.getByTitle(new RegExp(`Pulling ${appName}`)).locator('../..');
-    console.log(`Content Text of task: ${await task.allInnerTexts()}`);
-    const viewButton = task.getByRole('button', { name: 'action button' }).and(task.getByText('View'));
-    await playExpect(viewButton).toBeVisible();
-    await viewButton.click();
+    const tasksManager = new TasksPage(page);
+    console.log('Finding particular task in task manager and switching to it');
+    await tasksManager.navigateToTask(`Pulling ${appName}`);
     console.log('Start recipe page should be back');
-    // we need to get rid of the task manager that is in the front now
-    const hideButton = tasksManager.getByRole('button').and(tasksManager.getByTitle('Hide'));
-    await playExpect(hideButton).toBeVisible();
-    await hideButton.click();
     await playExpect(this.heading).toBeVisible();
   }
 }

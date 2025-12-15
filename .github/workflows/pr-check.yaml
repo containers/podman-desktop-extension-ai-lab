@@ -181,7 +181,7 @@ jobs:
           require_tests:  true
           report_paths: '**/*results.xml'
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: e2e-pr-check
@@ -193,14 +193,14 @@ jobs:
             !./**/output/traces/*
 
       - name: Upload test videos
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: e2e-pr-check-videos
           path: ./**/output/videos/*
 
       - name: Upload test traces
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: e2e-pr-check-traces

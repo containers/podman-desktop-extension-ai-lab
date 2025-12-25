@@ -39,6 +39,14 @@ import * as fs from 'node:fs';
 
 export const SECOND: number = 1_000_000_000;
 
+// Intel IPEX container configuration
+const INTEL_ENTRYPOINT = '/bin/bash';
+const INTEL_CMD = [
+  '-c',
+  'cd /llm && mkdir -p llama-server && cd llama-server && init-llama-cpp && ' +
+    'exec ./llama-server -m ${MODEL_PATH} --host ${HOST} --port ${PORT} -ngl 999',
+];
+
 interface Device {
   PathOnHost: string;
   PathInContainer: string;
@@ -109,29 +117,37 @@ export class LlamaCppPython extends InferenceProvider {
       let supported: boolean = false;
       switch (vmType) {
         case VMType.WSL:
-          // WSL Only support NVIDIA
-          if (gpu.vendor !== GPUVendor.NVIDIA) break;
+          if (gpu.vendor === GPUVendor.NVIDIA) {
+            supported = true;
+            mounts.push({
+              Target: '/usr/lib/wsl',
+              Source: '/usr/lib/wsl',
+              Type: 'bind',
+            });
 
-          supported = true;
-          mounts.push({
-            Target: '/usr/lib/wsl',
-            Source: '/usr/lib/wsl',
-            Type: 'bind',
-          });
+            devices.push({
+              PathOnHost: '/dev/dxg',
+              PathInContainer: '/dev/dxg',
+              CgroupPermissions: 'r',
+            });
 
-          devices.push({
-            PathOnHost: '/dev/dxg',
-            PathInContainer: '/dev/dxg',
-            CgroupPermissions: 'r',
-          });
+            user = '0';
 
-          user = '0';
-
-          entrypoint = '/usr/bin/sh';
-          cmd = [
-            '-c',
-            '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
-          ];
+            entrypoint = '/usr/bin/sh';
+            cmd = [
+              '-c',
+              '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
+            ];
+          } else if (gpu.vendor === GPUVendor.INTEL) {
+            supported = true;
+            devices.push({
+              PathOnHost: '/dev/dxg',
+              PathInContainer: '/dev/dxg',
+              CgroupPermissions: 'r',
+            });
+            entrypoint = INTEL_ENTRYPOINT;
+            cmd = INTEL_CMD;
+          }
           break;
         case VMType.LIBKRUN:
         case VMType.LIBKRUN_LABEL:
@@ -141,21 +157,37 @@ export class LlamaCppPython extends InferenceProvider {
             PathInContainer: '/dev/dri',
             CgroupPermissions: '',
           });
+          // Intel IPEX container requires custom entrypoint
+          if (gpu?.vendor === GPUVendor.INTEL) {
+            entrypoint = INTEL_ENTRYPOINT;
+            cmd = INTEL_CMD;
+          }
           break;
         case VMType.UNKNOWN:
           // This is linux with podman locally installed
 
           // Linux GPU support currently requires NVIDIA GPU with CDI configured
-          if (!this.isNvidiaCDIConfigured(gpu)) break;
+          if (this.isNvidiaCDIConfigured(gpu)) {
+            supported = true;
+            devices.push({
+              PathOnHost: 'nvidia.com/gpu=all',
+              PathInContainer: '',
+              CgroupPermissions: '',
+            });
 
-          supported = true;
-          devices.push({
-            PathOnHost: 'nvidia.com/gpu=all',
-            PathInContainer: '',
-            CgroupPermissions: '',
-          });
-
-          user = '0';
+            user = '0';
+          } else if (gpu.vendor === GPUVendor.INTEL) {
+            // Intel GPU support via /dev/dri device passthrough
+            supported = true;
+            devices.push({
+              PathOnHost: '/dev/dri',
+              PathInContainer: '/dev/dri',
+              CgroupPermissions: 'rwm',
+            });
+            // Intel IPEX container uses llama-server to directly serve model from /models
+            entrypoint = INTEL_ENTRYPOINT;
+            cmd = INTEL_CMD;
+          }
 
           break;
       }
@@ -170,6 +202,11 @@ export class LlamaCppPython extends InferenceProvider {
         // label the container
         labels['gpu'] = gpu.model;
         envs.push(`GPU_LAYERS=${config.gpuLayers ?? 999}`);
+
+        // Add Intel-specific environment variables
+        if (gpu.vendor === GPUVendor.INTEL) {
+          envs.push('ZES_ENABLE_SYSMAN=1');
+        }
       } else {
         console.warn(`gpu ${gpu.model} is not supported on ${vmType}.`);
       }
@@ -277,13 +314,18 @@ export class LlamaCppPython extends InferenceProvider {
   protected getLlamaCppInferenceImage(vmType: VMType, gpu?: IGPUInfo): string {
     switch (vmType) {
       case VMType.WSL:
-        return gpu?.vendor === GPUVendor.NVIDIA ? llamacpp.cuda : llamacpp.default;
+        if (gpu?.vendor === GPUVendor.NVIDIA) return llamacpp.cuda;
+        if (gpu?.vendor === GPUVendor.INTEL) return llamacpp.intel;
+        return llamacpp.default;
       case VMType.LIBKRUN:
       case VMType.LIBKRUN_LABEL:
+        if (gpu?.vendor === GPUVendor.INTEL) return llamacpp.intel;
         return llamacpp.default;
       // no GPU support
       case VMType.UNKNOWN:
-        return this.isNvidiaCDIConfigured(gpu) ? llamacpp.cuda : llamacpp.default;
+        if (this.isNvidiaCDIConfigured(gpu)) return llamacpp.cuda;
+        if (gpu?.vendor === GPUVendor.INTEL) return llamacpp.intel;
+        return llamacpp.default;
       default:
         return llamacpp.default;
     }

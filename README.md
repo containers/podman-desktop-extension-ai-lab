@@ -2,7 +2,6 @@
 
 Podman AI Lab is an open source extension for Podman Desktop to work with LLMs (Large Language Models) on a local environment. Featuring a recipe catalog with common AI use cases, a curated set of open source models, and a playground for learning, prototyping and experimentation, Podman AI Lab helps you to quickly and easily get started bringing AI into your applications, without depending on infrastructure beyond your laptop ensuring data privacy and security.
 
-
 ## Topics
 - [Technology](#technology)
 - [Extension features](#extension-features)
@@ -12,8 +11,6 @@ Podman AI Lab is an open source extension for Podman Desktop to work with LLMs (
 - [Contributing](#contributing)
 - [Feedback](#feedback)
 
-
-
 ## Technology
 
 Podman AI Lab uses [Podman](https://podman.io) machines to run inference servers for LLM models and AI applications.
@@ -21,7 +18,7 @@ The AI models can be downloaded, and common formats like [GGUF](https://github.c
 
 ## Extension features
 
-### AI Models
+### AI models
 
 Podman AI Lab provides a curated list of open source AI models and LLMs. Once downloaded, the models are available to be used for AI applications, model services and playgrounds.
 
@@ -35,36 +32,29 @@ The integrated Playground environments allow for experimenting with available mo
 
 ### AI applications
 
-Once an AI model is available through a well known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. Podman AI Lab supports AI applications as a set of containers that are connected together.
+Once an AI model is available through a well-known endpoint, it's easy to imagine a new world of applications that will connect and use the AI model. Podman AI Lab supports AI applications as a set of containers that are connected together.
 
 Podman AI Lab ships with a so-called Recipes Catalog that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
 
 ## Requirements
 
-### Requirement 1. Software and hardware requirements
-
-**OS:**
-
-Compatible on Windows, macOS & Linux
-
-**Software:**
+### Software
 
 - [Podman Desktop 1.8.0+](https://github.com/containers/podman-desktop)
 - [Podman 4.9.0+](https://github.com/containers/podman)
+- Compatible with Windows, macOS & Linux
 
-**Hardware**
+### Hardware
 
 LLMs AI models are heavy resource consumers both in terms of memory and CPU. Each of the provided models consumes about 4GiB of memory and requires at least 4 CPUs to run.
 
-So we recommend that a minimum of 12GB of memory and at least 4 CPUs for the Podman machine.
+We recommend a minimum of 12GB of memory and at least 4 CPUs for the Podman machine. On Windows, the podman machine shares memory and CPU with all the Windows Subsystem for Linux (WSL) machines. By default, WSL is set to 50% of total memory and all logical processors. This can be changed in the WSL Settings (See [WSL Config](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#wslconfig)).
 
-As an additional recommended practice, do nor run more than 3 simultaneous models concurrently.
-
-Please note that this is not relevant for WSL on Windows as the WSL technology the memory and CPU with the host desktop.
+As an additional recommended practice, do not run more than 3 models simultaneously.
 
 ## Installation
 
-You can install the Podman AI Lab extension directly inside of Podman Desktop.
+You can install the Podman AI Lab extension directly inside Podman Desktop.
 
 Go to Extensions > Catalog > Install Podman AI Lab.
 
@@ -104,7 +94,7 @@ Want to help develop and contribute to Podman AI Lab?
 
 You can use `pnpm watch --extension-folder` from the Podman Desktop directory to automatically rebuild and test the AI Lab extension:
 
-> **_Note_**: make sure you have the appropriate [pre-requisits](https://github.com/containers/podman-desktop/blob/main/CONTRIBUTING.md#prerequisites-prepare-your-environment)
+> **_Note_**: make sure you have the appropriate [prerequisites](https://github.com/containers/podman-desktop/blob/main/CONTRIBUTING.md#prerequisites-prepare-your-environment)
   installed.
 
 ```sh
@@ -160,7 +150,7 @@ We will be working on the following items:
 - **API/CLI**: Interact with Podman AI Lab from CLI and APIs.
 - **Enhanced Playgrounds**: Streamlined workflows and UX giving a better space to experiment with LLMs and quickly iterate.
 - **Fine Tuning with [InstructLab](https://instructlab.ai/)**: Re-train LLMs with a set of taxonomy knowledges. Learn more about [the InstructLab project](https://github.com/instructlab).
-- **Enable Function Calling**: Use LLMs to retrieve or interact with external tool by doing API calls.
+- **Enable Function Calling**: Use LLMs to retrieve or interact with external tools by doing API calls.
 - **Local RAG**: Explore RAG pattern, load your document and test behavior of the model.
 - **Bridge with AI Platforms (incl. K8s)**: Connect to remote models and ease deployment of applications.
 

@@ -137,7 +137,7 @@
     "@types/express": "^5.0.6",
     "@types/js-yaml": "^4.0.9",
     "@types/mustache": "^4.2.6",
-    "@types/node": "^22",
+    "@types/node": "^24",
     "@types/postman-collection": "^3.5.11",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-dist": "^3.30.5",

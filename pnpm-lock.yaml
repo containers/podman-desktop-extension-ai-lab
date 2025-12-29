@@ -194,8 +194,13 @@ importers:
         specifier: ^4.2.6
         version: 4.2.6
       '@types/node':
+<<<<<<< HEAD
         specifier: ^22
         version: 22.18.8
+=======
+        specifier: ^24
+        version: 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       '@types/postman-collection':
         specifier: ^3.5.11
         version: 3.5.11
@@ -216,7 +221,11 @@ importers:
         version: 7.1.4
       vitest:
         specifier: ^3.0.5
+<<<<<<< HEAD
         version: 3.2.4(@types/node@22.18.8)(jiti@2.6.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.11.3(@types/node@22.18.8)(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 3.2.4(@types/node@24.10.4)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.4(@types/node@24.10.4)(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   packages/frontend:
     dependencies:
@@ -1291,8 +1300,16 @@ packages:
   '@types/node@22.18.8':
     resolution: {integrity: sha512-pAZSHMiagDR7cARo/cch1f3rXy0AEXwsVsVH09FcyeJVAzCnGgmYis7P3JidtTUjyadhTeSo8TgRPswstghDaw==}
 
+<<<<<<< HEAD
   '@types/node@24.6.2':
     resolution: {integrity: sha512-d2L25Y4j+W3ZlNAeMKcy7yDsK425ibcAOO2t7aPTz6gNMH0z2GThtwENCDc0d/Pw9wgyRqE5Px1wkV7naz8ang==}
+=======
+  '@types/node@24.10.4':
+    resolution: {integrity: sha512-vnDVpYPMzs4wunl27jHrfmwojOGKya0xyM3sH+UE5iv5uPS6vX7UIoh6m+vQc5LGBq52HBKPIn/zcSZVzeDEZg==}
+
+  '@types/node@25.0.2':
+    resolution: {integrity: sha512-gWEkeiyYE4vqjON/+Obqcoeffmk0NF15WSBwSs7zwVA2bAbTaE0SJ7P0WNGoJn8uE7fiaV5a7dKYIJriEqOrmA==}
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@types/postman-collection@3.5.11':
     resolution: {integrity: sha512-BZgBJDdX6jyy9hzSTIMRhCsxhF0IlzPr1i98q2wdkDo8rZrbNoBvs+3/Vw+LOIIAFH1G+FyXo5Fjf8qbawGeHg==}
@@ -4491,6 +4508,7 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
@@ -5048,12 +5066,21 @@ snapshots:
 
   '@inquirer/ansi@1.0.0': {}
 
+<<<<<<< HEAD
   '@inquirer/confirm@5.1.18(@types/node@22.18.8)':
     dependencies:
       '@inquirer/core': 10.2.2(@types/node@22.18.8)
       '@inquirer/type': 3.0.8(@types/node@22.18.8)
     optionalDependencies:
       '@types/node': 22.18.8
+=======
+  '@inquirer/confirm@5.1.21(@types/node@24.10.4)':
+    dependencies:
+      '@inquirer/core': 10.3.2(@types/node@24.10.4)
+      '@inquirer/type': 3.0.10(@types/node@24.10.4)
+    optionalDependencies:
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     optional: true
 
   '@inquirer/confirm@5.1.18(@types/node@24.6.2)':
@@ -5063,18 +5090,30 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.6.2
 
+<<<<<<< HEAD
   '@inquirer/core@10.2.2(@types/node@22.18.8)':
     dependencies:
       '@inquirer/ansi': 1.0.0
       '@inquirer/figures': 1.0.13
       '@inquirer/type': 3.0.8(@types/node@22.18.8)
+=======
+  '@inquirer/core@10.3.2(@types/node@24.10.4)':
+    dependencies:
+      '@inquirer/ansi': 1.0.2
+      '@inquirer/figures': 1.0.15
+      '@inquirer/type': 3.0.10(@types/node@24.10.4)
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       cli-width: 4.1.0
       mute-stream: 2.0.0
       signal-exit: 4.1.0
       wrap-ansi: 7.0.0
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     optional: true
 
   '@inquirer/core@10.2.2(@types/node@24.6.2)':
@@ -5092,9 +5131,15 @@ snapshots:
 
   '@inquirer/figures@1.0.13': {}
 
+<<<<<<< HEAD
   '@inquirer/type@3.0.8(@types/node@22.18.8)':
     optionalDependencies:
       '@types/node': 22.18.8
+=======
+  '@inquirer/type@3.0.10(@types/node@24.10.4)':
+    optionalDependencies:
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     optional: true
 
   '@inquirer/type@3.0.8(@types/node@24.6.2)':
@@ -5464,7 +5509,11 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@types/chai@5.2.2':
     dependencies:
@@ -5472,13 +5521,21 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@types/conventional-commits-parser@5.0.1':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 22.18.8
 
   '@types/cookie@0.6.0': {}
+=======
+      '@types/node': 22.19.3
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@types/cookiejar@2.1.5': {}
 
@@ -5488,7 +5545,11 @@ snapshots:
 
   '@types/express-serve-static-core@5.0.7':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.0
@@ -5525,13 +5586,25 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+<<<<<<< HEAD
   '@types/node@24.6.2':
+=======
+  '@types/node@24.10.4':
+    dependencies:
+      undici-types: 7.16.0
+
+  '@types/node@25.0.2':
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     dependencies:
       undici-types: 7.13.0
 
   '@types/postman-collection@3.5.11':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@types/qs@6.14.0': {}
 
@@ -5542,23 +5615,39 @@ snapshots:
   '@types/send@0.17.5':
     dependencies:
       '@types/mime': 1.3.5
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@types/send@1.2.0':
     dependencies:
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@types/serve-static@1.15.8':
     dependencies:
       '@types/http-errors': 2.0.5
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       '@types/send': 0.17.5
 
   '@types/serve-static@1.15.9':
     dependencies:
       '@types/http-errors': 2.0.5
+<<<<<<< HEAD
       '@types/node': 22.18.8
       '@types/send': 0.17.5
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@types/statuses@2.0.6': {}
 
@@ -5566,7 +5655,11 @@ snapshots:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       form-data: 4.0.4
 
   '@types/supertest@6.0.3':
@@ -5939,14 +6032,23 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
+<<<<<<< HEAD
   '@vitest/mocker@3.2.4(msw@2.11.3(@types/node@22.18.8)(typescript@5.9.3))(vite@7.1.7(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1))':
+=======
+  '@vitest/mocker@3.2.4(msw@2.12.4(@types/node@24.10.4)(typescript@5.9.3))(vite@7.1.7(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1))':
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.19
     optionalDependencies:
+<<<<<<< HEAD
       msw: 2.11.3(@types/node@22.18.8)(typescript@5.9.3)
       vite: 7.1.7(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1)
+=======
+      msw: 2.12.4(@types/node@24.10.4)(typescript@5.9.3)
+      vite: 7.1.7(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
 
   '@vitest/mocker@3.2.4(msw@2.11.3(@types/node@24.6.2)(typescript@5.9.3))(vite@7.1.7(@types/node@24.6.2)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1))':
     dependencies:
@@ -7793,12 +7895,19 @@ snapshots:
 
   ms@2.1.3: {}
 
+<<<<<<< HEAD
   msw@2.11.3(@types/node@22.18.8)(typescript@5.9.3):
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
       '@inquirer/confirm': 5.1.18(@types/node@22.18.8)
       '@mswjs/interceptors': 0.39.7
+=======
+  msw@2.12.4(@types/node@24.10.4)(typescript@5.9.3):
+    dependencies:
+      '@inquirer/confirm': 5.1.21(@types/node@24.10.4)
+      '@mswjs/interceptors': 0.40.0
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       '@open-draft/deferred-promise': 2.2.0
       '@types/cookie': 0.6.0
       '@types/statuses': 2.0.6
@@ -8889,13 +8998,21 @@ snapshots:
 
   vary@1.1.2: {}
 
+<<<<<<< HEAD
   vite-node@3.2.4(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1):
+=======
+  vite-node@3.2.4(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1):
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     dependencies:
       cac: 6.7.14
       debug: 4.4.3(supports-color@10.2.2)
       es-module-lexer: 1.7.0
       pathe: 2.0.3
+<<<<<<< HEAD
       vite: 7.1.9(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1)
+=======
+      vite: 7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -8931,7 +9048,11 @@ snapshots:
       - tsx
       - yaml
 
+<<<<<<< HEAD
   vite@7.1.7(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1):
+=======
+  vite@7.1.7(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1):
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     dependencies:
       esbuild: 0.25.10
       fdir: 6.5.0(picomatch@4.0.3)
@@ -8940,7 +9061,11 @@ snapshots:
       rollup: 4.52.3
       tinyglobby: 0.2.15
     optionalDependencies:
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       fsevents: 2.3.3
       jiti: 2.6.1
       lightningcss: 1.30.1
@@ -8961,7 +9086,11 @@ snapshots:
       lightningcss: 1.30.1
       yaml: 2.8.1
 
+<<<<<<< HEAD
   vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1):
+=======
+  vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1):
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     dependencies:
       esbuild: 0.25.10
       fdir: 6.5.0(picomatch@4.0.3)
@@ -8970,7 +9099,11 @@ snapshots:
       rollup: 4.52.3
       tinyglobby: 0.2.15
     optionalDependencies:
+<<<<<<< HEAD
       '@types/node': 22.18.8
+=======
+      '@types/node': 24.10.4
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       fsevents: 2.3.3
       jiti: 2.6.1
       lightningcss: 1.30.1
@@ -8995,11 +9128,19 @@ snapshots:
     optionalDependencies:
       vite: 7.1.9(@types/node@24.6.2)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1)
 
+<<<<<<< HEAD
   vitest@3.2.4(@types/node@22.18.8)(jiti@2.6.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.1)(msw@2.11.3(@types/node@22.18.8)(typescript@5.9.3))(yaml@2.8.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
       '@vitest/mocker': 3.2.4(msw@2.11.3(@types/node@22.18.8)(typescript@5.9.3))(vite@7.1.7(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1))
+=======
+  vitest@3.2.4(@types/node@24.10.4)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.4(@types/node@24.10.4)(typescript@5.9.3))(yaml@2.8.1):
+    dependencies:
+      '@types/chai': 5.2.2
+      '@vitest/expect': 3.2.4
+      '@vitest/mocker': 3.2.4(msw@2.12.4(@types/node@24.10.4)(typescript@5.9.3))(vite@7.1.7(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1))
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -9017,12 +9158,21 @@ snapshots:
       tinyglobby: 0.2.15
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
+<<<<<<< HEAD
       vite: 7.1.7(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1)
       vite-node: 3.2.4(@types/node@22.18.8)(jiti@2.6.1)(lightningcss@1.30.1)(yaml@2.8.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.18.8
       jsdom: 27.0.0(postcss@8.5.6)
+=======
+      vite: 7.1.7(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
+      vite-node: 3.2.4(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 24.10.4
+      jsdom: 27.3.0(postcss@8.5.6)
+>>>>>>> 248b619 (chore(deps): update to Node 24 (#4011))
     transitivePeerDependencies:
       - jiti
       - less

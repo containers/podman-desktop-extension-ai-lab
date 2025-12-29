@@ -4,7 +4,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "lib": ["ES2017", "webworker", "dom"],
+    "lib": ["ES2022", "webworker", "dom"],
     "sourceMap": true,
     "outDir": "dist",
     "allowSyntheticDefaultImports": true,

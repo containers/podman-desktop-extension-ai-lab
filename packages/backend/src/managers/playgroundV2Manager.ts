@@ -249,26 +249,29 @@ export class PlaygroundV2Manager implements Disposable {
     }
 
     const start = Date.now();
+    const finalBlock = (): void => {
+      this.telemetry.logUsage('playground.submit', telemetry);
+      this.cancellationTokenRegistry.delete(cancelTokenId);
+      Promise.all(mcpClients.map(client => client.close())).catch((e: unknown) =>
+        console.error(`Error closing MCP client`, e),
+      );
+    };
     streamProcessor
       .stream(model, tools, options)
       .consumeStream()
-      .then(() => {
-        this.telemetry.logUsage('playground.message.complete', {
-          duration: Date.now() - start,
-          modelId: getHash(conversation.modelId),
-        });
-      })
-      .catch((err: unknown) => {
-        console.error('Something went wrong while processing stream', err);
-      })
-      .finally(() => {
-        this.telemetry.logUsage('playground.submit', telemetry);
-        this.cancellationTokenRegistry.delete(cancelTokenId);
-        Promise.all(mcpClients.map(client => client.close())).catch((e: unknown) =>
-          console.error(`Error closing MCP client`, e),
-        );
-      });
-
+      .then(
+        () => {
+          this.telemetry.logUsage('playground.message.complete', {
+            duration: Date.now() - start,
+            modelId: getHash(conversation.modelId),
+          });
+          finalBlock();
+        },
+        (err: unknown) => {
+          console.error('Something went wrong while processing stream', err);
+          finalBlock();
+        },
+      );
     return cancelTokenId;
   }
 

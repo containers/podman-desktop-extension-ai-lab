@@ -120,6 +120,12 @@ export class LlamaCppPython extends InferenceProvider {
           });
 
           devices.push({
+            PathOnHost: 'nvidia.com/gpu=all',
+            PathInContainer: '',
+            CgroupPermissions: '',
+          });
+
+          devices.push({
             PathOnHost: '/dev/dxg',
             PathInContainer: '/dev/dxg',
             CgroupPermissions: 'r',

@@ -17,15 +17,12 @@
  ***********************************************************************/
 import { arch } from 'node:os';
 
-const nodeArch2GoArch = new Map<string, string>([
+const nodeArch2GoArch = new Map<NodeJS.Architecture, string>([
   ['ia32', '386'],
   ['x64', 'amd64'],
 ]);
 
 export function goarch(): string {
-  let localArch = arch();
-  if (nodeArch2GoArch.has(localArch)) {
-    localArch = nodeArch2GoArch.get(localArch) ?? localArch;
-  }
-  return localArch;
+  const localArch = arch();
+  return nodeArch2GoArch.get(localArch) ?? (localArch as string);
 }

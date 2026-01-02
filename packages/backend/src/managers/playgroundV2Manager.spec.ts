@@ -29,9 +29,10 @@ import type { ChatMessage, ErrorMessage } from '@shared/models/IPlaygroundMessag
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
-import { convertArrayToReadableStream } from '@ai-sdk/provider-utils/test';
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV2CallWarning, LanguageModelV3, LanguageModelV3StreamPart } from '@ai-sdk/provider';
 import { type McpServerManager } from './playground/McpServerManager';
+import { MockLanguageModelV3 } from 'ai/test';
+import { simulateReadableStream } from 'ai';
 
 vi.mock('@ai-sdk/openai-compatible', () => ({
   createOpenAICompatible: vi.fn(),
@@ -65,8 +66,13 @@ const cancellationTokenRegistryMock = {
 } as unknown as CancellationTokenRegistry;
 
 let mcpServerManager: McpServerManager;
-let createTestModel: (options: object) => LanguageModelV2;
-let MockLanguageModelV2: unknown;
+let createTestModel: (options: {
+  stream?: ReadableStream<LanguageModelV3StreamPart>;
+  rawResponse?: { headers: Record<string, string> };
+  rawCall?: { rawPrompt: string; rawSettings: Record<string, unknown> };
+  request?: { body: string };
+  warnings?: LanguageModelV2CallWarning[];
+}) => LanguageModelV3;
 
 beforeEach(async () => {
   vi.resetAllMocks();
@@ -76,9 +82,7 @@ beforeEach(async () => {
     getMcpSettings: vi.fn(() => {}),
     toMcpClients: vi.fn(() => []),
   } as unknown as McpServerManager;
-  const aiSdkSpecShared = await import('./playground/aiSdk.spec');
-  createTestModel = aiSdkSpecShared.createTestModel;
-  MockLanguageModelV2 = aiSdkSpecShared.MockLanguageModelV2;
+  createTestModel = (await import('./playground/aiSdk.spec')).createTestModel;
 });
 
 afterEach(async () => {
@@ -220,10 +224,19 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
   // @ts-expect-error - Mock return type for testing
   vi.mocked(createOpenAICompatible).mockReturnValue(() =>
     createTestModel({
-      stream: convertArrayToReadableStream([
-        { type: 'text-delta', id: 'id-1', delta: 'The message from the model' },
-        { type: 'finish', finishReason: 'stop', usage: { outputTokens: 133, inputTokens: 7, totalTokens: 140 } },
-      ]),
+      stream: simulateReadableStream({
+        chunks: [
+          { type: 'text-delta', id: 'id-1', delta: 'The message from the model' },
+          {
+            type: 'finish',
+            finishReason: { unified: 'stop', raw: undefined },
+            usage: {
+              outputTokens: { total: 133, text: undefined, reasoning: undefined },
+              inputTokens: { total: 7, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+            },
+          },
+        ],
+      }),
     }),
   );
 
@@ -245,7 +258,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
 
   // Wait for assistant message to be completed
   await vi.waitFor(() => {
-    expect(manager.getConversations()[0].messages.length).toEqual(2);
+    expect(manager.getConversations()[0].usage?.completion_tokens).toBeGreaterThan(0);
   });
 
   const conversations = manager.getConversations();
@@ -297,16 +310,16 @@ test('error', async () => {
       labels: [],
     } as unknown as InferenceServer,
   ]);
-  const doStream: LanguageModelV2['doStream'] = async () => {
+  const doStream: LanguageModelV3['doStream'] = async () => {
     throw new Error('Please reduce the length of the messages or completion.');
   };
   vi.mocked(createOpenAICompatible).mockReturnValue(
     // @ts-expect-error MockLanguageModelV2 test mock
     // eslint-disable-next-line sonarjs/new-operator-misuse
     () =>
-      new (MockLanguageModelV2 as unknown as new (options: {
-        doStream: LanguageModelV2['doStream'];
-      }) => LanguageModelV2)({ doStream }),
+      new (MockLanguageModelV3 as unknown as new (options: {
+        doStream: LanguageModelV3['doStream'];
+      }) => LanguageModelV3)({ doStream }),
   );
 
   const manager = new PlaygroundV2Manager(
@@ -706,10 +719,19 @@ describe('system prompt', () => {
     // @ts-expect-error - Mock return type for testing
     vi.mocked(createOpenAICompatible).mockReturnValue(() =>
       createTestModel({
-        stream: convertArrayToReadableStream([
-          { type: 'text-delta', id: 'id-1', delta: 'The message from the model' },
-          { type: 'finish', finishReason: 'stop', usage: { outputTokens: 133, inputTokens: 7, totalTokens: 140 } },
-        ]),
+        stream: simulateReadableStream({
+          chunks: [
+            { type: 'text-delta', id: 'id-1', delta: 'The message from the model' },
+            {
+              type: 'finish',
+              finishReason: { unified: 'stop', raw: undefined },
+              usage: {
+                outputTokens: { total: 133, text: undefined, reasoning: undefined },
+                inputTokens: { total: 7, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+              },
+            },
+          ],
+        }),
       }),
     );
 

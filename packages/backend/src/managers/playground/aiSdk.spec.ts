@@ -18,6 +18,7 @@
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import * as ai from 'ai';
+import { MockLanguageModelV3 } from 'ai/test';
 import { AiStreamProcessor, toCoreMessage } from './aiSdk';
 import type {
   AssistantChat,
@@ -28,8 +29,12 @@ import type {
   PendingChat,
   UserChat,
 } from '@shared/models/IPlaygroundMessage';
-import type { LanguageModelV2, LanguageModelV2CallWarning, LanguageModelV2StreamPart } from '@ai-sdk/provider';
-import { convertArrayToReadableStream } from '@ai-sdk/provider-utils/test';
+import type {
+  LanguageModelV3,
+  LanguageModelV2CallWarning,
+  LanguageModelV3StreamPart,
+  LanguageModelV3GenerateResult,
+} from '@ai-sdk/provider';
 import { ConversationRegistry } from '../../registries/ConversationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import type { ModelOptions } from '@shared/models/IModelOptions';
@@ -178,10 +183,10 @@ describe('aiSdk', () => {
     describe('with stream error', () => {
       beforeEach(async () => {
         // eslint-disable-next-line sonarjs/no-nested-functions
-        const doStream: LanguageModelV2['doStream'] = async () => {
+        const doStream: LanguageModelV3['doStream'] = async () => {
           throw new Error('The stream is kaput.');
         };
-        const model = new MockLanguageModelV2({ doStream });
+        const model = new MockLanguageModelV3({ doStream });
         await new AiStreamProcessor(conversationId, conversationRegistry).stream(model).consumeStream();
       });
       test('appends a single message', () => {
@@ -194,21 +199,31 @@ describe('aiSdk', () => {
       });
     });
     describe('with single message stream', () => {
-      let model: LanguageModelV2;
+      let model: LanguageModelV3;
       beforeEach(async () => {
         model = createTestModel({
-          stream: convertArrayToReadableStream([
-            {
-              type: 'response-metadata',
-              id: 'id-0',
-              modelId: 'mock-model-id',
-              timestamp: new Date(0),
-            },
-            { type: 'text-delta', id: 'id-1', delta: 'Greetings' },
-            { type: 'text-delta', id: 'id-2', delta: ' professor ' },
-            { type: 'text-delta', id: 'id-3', delta: `Falken` },
-            { type: 'finish', finishReason: 'stop', usage: { outputTokens: 133, inputTokens: 7, totalTokens: 140 } },
-          ]),
+          stream: ai.simulateReadableStream({
+            chunks: [
+              {
+                type: 'response-metadata',
+                id: 'id-0',
+                modelId: 'mock-model-id',
+                timestamp: new Date(0),
+              },
+              { type: 'text-delta', id: 'id-1', delta: 'Greetings' },
+              { type: 'text-delta', id: 'id-2', delta: ' professor ' },
+              { type: 'text-delta', id: 'id-3', delta: `Falken` },
+              {
+                type: 'finish',
+                finishReason: { unified: 'stop', raw: undefined },
+                usage: {
+                  outputTokens: { total: 133, text: undefined, reasoning: undefined },
+                  inputTokens: { total: 7, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+                  totalTokens: 140,
+                },
+              },
+            ],
+          }),
         });
         await new AiStreamProcessor(conversationId, conversationRegistry).stream(model).consumeStream();
       });
@@ -230,15 +245,15 @@ describe('aiSdk', () => {
       });
     });
     describe('with wrapped generated multiple messages as stream', () => {
-      let model: LanguageModelV2;
+      let model: LanguageModelV3;
       let tools: ToolSet;
       let generateStep: number;
 
       beforeEach(async () => {
         generateStep = 0;
         model = wrapLanguageModel({
-          model: new MockLanguageModelV2({
-            doGenerate: (async () => {
+          model: new MockLanguageModelV3({
+            doGenerate: async (): Promise<LanguageModelV3GenerateResult> => {
               if (generateStep++ === 0) {
                 return {
                   content: [
@@ -246,17 +261,20 @@ describe('aiSdk', () => {
                       type: 'tool-call',
                       toolCallId: 'call-001',
                       toolName: 'tool-1',
-                      input: {},
+                      input: '{}',
                     },
                     {
                       type: 'tool-call',
                       toolCallId: 'call-002',
                       toolName: 'tool-1',
-                      input: {},
+                      input: '{}',
                     },
                   ],
-                  finishReason: 'tool-calls',
-                  usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+                  finishReason: { unified: 'tool-calls', raw: undefined },
+                  usage: {
+                    inputTokens: { total: 1, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+                    outputTokens: { total: 1, text: undefined, reasoning: undefined },
+                  },
                   warnings: [],
                 };
               }
@@ -267,11 +285,14 @@ describe('aiSdk', () => {
                     text: 'These are the results of you functions: huge success!',
                   },
                 ],
-                finishReason: 'stop',
-                usage: { inputTokens: 133, outputTokens: 7, totalTokens: 140 },
+                finishReason: { unified: 'stop', raw: undefined },
+                usage: {
+                  inputTokens: { total: 133, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+                  outputTokens: { total: 7, text: undefined, reasoning: undefined },
+                },
                 warnings: [],
               };
-            }) as LanguageModelV2['doGenerate'],
+            },
           }),
           middleware: simulateStreamingMiddleware(),
         });
@@ -332,47 +353,20 @@ describe('aiSdk', () => {
   });
 });
 
-export class MockLanguageModelV2 implements LanguageModelV2 {
-  readonly specificationVersion = 'v2';
-  readonly provider: LanguageModelV2['provider'];
-  readonly modelId: LanguageModelV2['modelId'];
-
-  supportedUrls: LanguageModelV2['supportedUrls'] = {};
-  doGenerate: LanguageModelV2['doGenerate'];
-  doStream: LanguageModelV2['doStream'];
-
-  constructor({
-    doStream = notImplemented,
-    doGenerate = notImplemented,
-  }: {
-    doStream?: LanguageModelV2['doStream'];
-    doGenerate?: LanguageModelV2['doGenerate'];
-  }) {
-    this.provider = 'mock-model-provider';
-    this.modelId = 'mock-model-id';
-    this.doGenerate = doGenerate;
-    this.doStream = doStream;
-  }
-}
-
-function notImplemented(): never {
-  throw new Error('Not implemented');
-}
-
 export function createTestModel({
-  stream = convertArrayToReadableStream([]),
+  stream = ai.simulateReadableStream({ chunks: [] }),
   rawCall = { rawPrompt: 'prompt', rawSettings: {} },
   rawResponse = undefined,
   request = undefined,
   warnings,
 }: {
-  stream?: ReadableStream<LanguageModelV2StreamPart>;
+  stream?: ReadableStream<LanguageModelV3StreamPart>;
   rawResponse?: { headers: Record<string, string> };
   rawCall?: { rawPrompt: string; rawSettings: Record<string, unknown> };
   request?: { body: string };
   warnings?: LanguageModelV2CallWarning[];
-} = {}): LanguageModelV2 {
-  return new MockLanguageModelV2({
+} = {}): LanguageModelV3 {
+  return new MockLanguageModelV3({
     doStream: async () => ({ stream, rawCall, rawResponse, request, warnings }),
   });
 }

@@ -215,8 +215,8 @@ importers:
         specifier: ^7.10.1
         version: 7.10.1(typescript@5.9.3)
       supertest:
-        specifier: ^7.1.4
-        version: 7.1.4
+        specifier: ^7.2.2
+        version: 7.2.2
       vitest:
         specifier: ^3.0.5
         version: 3.2.4(@types/node@24.10.4)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@24.10.4)(typescript@5.9.3))(yaml@2.8.1)
@@ -1087,8 +1087,8 @@ packages:
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
 
-  '@paralleldrive/cuid2@2.2.2':
-    resolution: {integrity: sha512-ZOBkgDwEdoYVlSeRbYYXs0S9MejQofiVYoTbKzy/6GQa39/q5tQU2IX46+shYnUkpEl3wc+J6wRlar7r2EK2xA==}
+  '@paralleldrive/cuid2@2.3.1':
+    resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
 
   '@phenomnomnominal/tsquery@5.0.1':
     resolution: {integrity: sha512-3nVv+e2FQwsW8Aw6qTU6f+1rfcJ3hrcnvH/mu9i8YhxO+9sqbOfpL8m6PbET5+xKOlz/VSbp0RoYWYCtIsnmuA==}
@@ -2880,6 +2880,10 @@ packages:
     resolution: {integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow==}
     engines: {node: '>= 6'}
 
+  form-data@4.0.5:
+    resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
+    engines: {node: '>= 6'}
+
   formidable@3.5.4:
     resolution: {integrity: sha512-YikH+7CUTOtP44ZTnUhR7Ic2UASBPOqmaRkRKxRbywPTe5VxF7RRCck4af9wutiZ/QKM5nME9Bie2fFaPz5Gug==}
     engines: {node: '>=14.0.0'}
@@ -4042,6 +4046,10 @@ packages:
     resolution: {integrity: sha512-YWWTjgABSKcvs/nWBi9PycY/JiPJqOD4JA6o9Sej2AtvSGarXxKC3OQSk4pAarbdQlKAh5D4FCQkJNkW+GAn3w==}
     engines: {node: '>=0.6'}
 
+  qs@6.14.1:
+    resolution: {integrity: sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ==}
+    engines: {node: '>=0.6'}
+
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -4374,12 +4382,12 @@ packages:
   strip-literal@3.1.0:
     resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
 
-  superagent@10.2.3:
-    resolution: {integrity: sha512-y/hkYGeXAj7wUMjxRbB21g/l6aAEituGXM9Rwl4o20+SX3e8YOSV6BxFXl+dL3Uk0mjSL3kCbNkwURm8/gEDig==}
+  superagent@10.3.0:
+    resolution: {integrity: sha512-B+4Ik7ROgVKrQsXTV0Jwp2u+PXYLSlqtDAhYnkkD+zn3yg8s/zjA2MeGayPoY/KICrbitwneDHrjSotxKL+0XQ==}
     engines: {node: '>=14.18.0'}
 
-  supertest@7.1.4:
-    resolution: {integrity: sha512-tjLPs7dVyqgItVFirHYqe2T+MfWc2VOBQ8QFKKbWTA3PU7liZR8zoSpAi/C1k1ilm9RsXIKYf197oap9wXGVYg==}
+  supertest@7.2.2:
+    resolution: {integrity: sha512-oK8WG9diS3DlhdUkcFn4tkNIiIbBx9lI2ClF8K+b2/m8Eyv47LSawxUzZQSNKUrVb2KsqeTDCcjAAVPYaSLVTA==}
     engines: {node: '>=14.18.0'}
 
   supports-color@10.2.2:
@@ -5614,7 +5622,7 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
-  '@paralleldrive/cuid2@2.2.2':
+  '@paralleldrive/cuid2@2.3.1':
     dependencies:
       '@noble/hashes': 1.8.0
 
@@ -7604,9 +7612,17 @@ snapshots:
       hasown: 2.0.2
       mime-types: 2.1.35
 
+  form-data@4.0.5:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
+      mime-types: 2.1.35
+
   formidable@3.5.4:
     dependencies:
-      '@paralleldrive/cuid2': 2.2.2
+      '@paralleldrive/cuid2': 2.3.1
       dezalgo: 1.0.4
       once: 1.4.0
 
@@ -8719,6 +8735,10 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
+  qs@6.14.1:
+    dependencies:
+      side-channel: 1.1.0
+
   queue-microtask@1.2.3: {}
 
   range-parser@1.2.1: {}
@@ -9134,24 +9154,25 @@ snapshots:
     dependencies:
       js-tokens: 9.0.1
 
-  superagent@10.2.3:
+  superagent@10.3.0:
     dependencies:
       component-emitter: 1.3.1
       cookiejar: 2.1.4
       debug: 4.4.3(supports-color@10.2.2)
       fast-safe-stringify: 2.1.1
-      form-data: 4.0.4
+      form-data: 4.0.5
       formidable: 3.5.4
       methods: 1.1.2
       mime: 2.6.0
-      qs: 6.14.0
+      qs: 6.14.1
     transitivePeerDependencies:
       - supports-color
 
-  supertest@7.1.4:
+  supertest@7.2.2:
     dependencies:
+      cookie-signature: 1.2.2
       methods: 1.1.2
-      superagent: 10.2.3
+      superagent: 10.3.0
     transitivePeerDependencies:
       - supports-color
 

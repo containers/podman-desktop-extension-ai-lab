@@ -169,8 +169,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(express@5.2.1)
       systeminformation:
-        specifier: ^5.28.9
-        version: 5.28.9
+        specifier: ^5.29.1
+        version: 5.29.1
       xml-js:
         specifier: ^1.6.11
         version: 1.6.11
@@ -4484,8 +4484,8 @@ packages:
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
-  systeminformation@5.28.9:
-    resolution: {integrity: sha512-/+QlBcOBTRTGWpZMTCvvDf32dtGlECpX5TNiqOtNJhzjflGCcRQ2ADNJ05+DAO0b7ZUv/4pwMdWWCFCTDl3VPg==}
+  systeminformation@5.29.1:
+    resolution: {integrity: sha512-bBroZc2we1tpgTBKZL7JguBdObC1OY+eXAoEBdsTp3utfcCa8+jUf+Wq/intTCJmiKJcuLEPsjCU6uMye0qvsQ==}
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -9246,7 +9246,7 @@ snapshots:
 
   symbol-tree@3.2.4: {}
 
-  systeminformation@5.28.9: {}
+  systeminformation@5.29.1: {}
 
   tagged-tag@1.0.0: {}
 

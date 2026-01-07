@@ -114,7 +114,7 @@
     "@ai-sdk/openai-compatible": "^2.0.4",
     "@huggingface/gguf": "^0.3.2",
     "@huggingface/hub": "^2.7.1",
-    "ai": "^6.0.13",
+    "ai": "^6.0.19",
     "express": "^5.2.1",
     "express-openapi-validator": "^5.6.0",
     "isomorphic-git": "^1.36.1",

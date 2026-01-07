@@ -143,7 +143,7 @@
     "@types/swagger-ui-dist": "^3.30.5",
     "@types/swagger-ui-express": "^4.1.8",
     "openapi-typescript": "^7.10.1",
-    "supertest": "^7.1.4",
+    "supertest": "^7.2.2",
     "vitest": "^3.0.5"
   }
 }

@@ -131,7 +131,7 @@
   },
   "devDependencies": {
     "@podman-desktop/api": "1.13.0-202409181313-78725a6565",
-    "@ai-sdk/provider": "^3.0.1",
+    "@ai-sdk/provider": "^3.0.2",
     "@ai-sdk/provider-utils": "^4.0.4",
     "@rollup/plugin-replace": "^6.0.3",
     "@types/express": "^5.0.6",

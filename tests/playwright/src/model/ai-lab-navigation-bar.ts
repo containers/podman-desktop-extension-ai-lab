@@ -22,7 +22,7 @@ import { AILabBasePage } from './ai-lab-base-page';
 import { AILabRecipesCatalogPage } from './ai-lab-recipes-catalog-page';
 import { AiRunningAppsPage } from './ai-lab-running-apps-page';
 import { AiModelServicePage } from './ai-lab-model-service-page';
-import { AILabCatalogPage } from './ai-lab-catalog-page';
+import { AILabCatalogPage as AILabModelCatalogPage } from './ai-lab-model-catalog-page';
 import { AILabPlaygroundsPage } from './ai-lab-playgrounds-page';
 import { AILabLocalServerPage } from './ai-lab-local-server-page';
 import { AILabDashboardPage } from './ai-lab-dashboard-page';
@@ -85,10 +85,10 @@ export class AILabNavigationBar extends AILabBasePage {
     return new AiModelServicePage(this.page, this.webview);
   }
 
-  async openCatalog(): Promise<AILabCatalogPage> {
+  async openCatalog(): Promise<AILabModelCatalogPage> {
     await playExpect(this.catalogButton).toBeVisible();
     await this.catalogButton.click();
-    return new AILabCatalogPage(this.page, this.webview);
+    return new AILabModelCatalogPage(this.page, this.webview);
   }
 
   async openPlaygrounds(): Promise<AILabPlaygroundsPage> {

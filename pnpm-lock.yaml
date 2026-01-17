@@ -176,8 +176,8 @@ importers:
         version: 1.6.11
     devDependencies:
       '@ai-sdk/provider':
-        specifier: ^3.0.3
-        version: 3.0.3
+        specifier: ^3.0.4
+        version: 3.0.4
       '@ai-sdk/provider-utils':
         specifier: ^4.0.8
         version: 4.0.8(zod@4.3.5)

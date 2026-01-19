@@ -139,8 +139,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1
       express-openapi-validator:
-        specifier: ^5.6.0
-        version: 5.6.0(@types/json-schema@7.0.15)(express@5.2.1)
+        specifier: ^5.6.1
+        version: 5.6.1(@types/json-schema@7.0.15)(express@5.2.1)
       isomorphic-git:
         specifier: ^1.36.1
         version: 1.36.1
@@ -368,10 +368,6 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider@3.0.3':
-    resolution: {integrity: sha512-qGPYdoAuECaUXPrrz0BPX1SacZQuJ6zky0aakxpW89QW1hrY0eF4gcFm/3L9Pk8C5Fwe+RvBf2z7ZjDhaPjnlg==}
-    engines: {node: '>=18'}
-
   '@ai-sdk/provider@3.0.4':
     resolution: {integrity: sha512-5KXyBOSEX+l67elrEa+wqo/LSsSTtrPj9Uoh3zMbe/ceQX4ucHI3b9nUEfNkGF3Ry1svv90widAt+aiKdIJasQ==}
     engines: {node: '>=18'}
@@ -380,9 +376,9 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@apidevtools/json-schema-ref-parser@14.2.1':
-    resolution: {integrity: sha512-HmdFw9CDYqM6B25pqGBpNeLCKvGPlIx1EbLrVL0zPvj50CJQUHyBNBw45Muk0kEIkogo1VZvOKHajdMuAzSxRg==}
-    engines: {node: '>= 20'}
+  '@apidevtools/json-schema-ref-parser@15.2.1':
+    resolution: {integrity: sha512-XaFfxKmYHUlYla8VMG1sOaX+uZwX2Bbk51pC7D4Oy723HVmzTrJuh5oEFAeFfPQX3HkILXabuvlXzs1YcQmvJQ==}
+    engines: {node: '>=20'}
     peerDependencies:
       '@types/json-schema': ^7.0.15
 
@@ -2753,8 +2749,8 @@ packages:
     resolution: {integrity: sha512-JhFGDVJ7tmDJItKhYgJCGLOWjuK9vPxiXoUFLwLDc99NlmklilbiQJwoctZtt13+xMw91MCk/REan6MWHqDjyA==}
     engines: {node: '>=12.0.0'}
 
-  express-openapi-validator@5.6.0:
-    resolution: {integrity: sha512-gNaMgDb1cAT8QKcuh9WrED9p3mqi/V7yocNrvnE1fOz7e8p8JkbYaTUcOB4VsZKerz/X+Sey7ptTGF5FwsXh8Q==}
+  express-openapi-validator@5.6.1:
+    resolution: {integrity: sha512-qogGGyuqE5Qrf8j2lIok4JRW6QGknQ4EvZn5t/dJt26UhsmQEcTwV75UH4Lu01Vil6XjP0nI9TsNLLT8lKHRtw==}
     peerDependencies:
       express: '*'
 
@@ -4969,10 +4965,6 @@ snapshots:
       eventsource-parser: 3.0.6
       zod: 4.3.5
 
-  '@ai-sdk/provider@3.0.3':
-    dependencies:
-      json-schema: 0.4.0
-
   '@ai-sdk/provider@3.0.4':
     dependencies:
       json-schema: 0.4.0
@@ -4982,7 +4974,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
 
-  '@apidevtools/json-schema-ref-parser@14.2.1(@types/json-schema@7.0.15)':
+  '@apidevtools/json-schema-ref-parser@15.2.1(@types/json-schema@7.0.15)':
     dependencies:
       '@types/json-schema': 7.0.15
       js-yaml: 4.1.1
@@ -7365,9 +7357,9 @@ snapshots:
 
   expect-type@1.2.2: {}
 
-  express-openapi-validator@5.6.0(@types/json-schema@7.0.15)(express@5.2.1):
+  express-openapi-validator@5.6.1(@types/json-schema@7.0.15)(express@5.2.1):
     dependencies:
-      '@apidevtools/json-schema-ref-parser': 14.2.1(@types/json-schema@7.0.15)
+      '@apidevtools/json-schema-ref-parser': 15.2.1(@types/json-schema@7.0.15)
       '@types/multer': 1.4.13
       ajv: 8.17.1
       ajv-draft-04: 1.0.0(ajv@8.17.1)
@@ -7381,7 +7373,7 @@ snapshots:
       multer: 2.0.2
       ono: 7.1.3
       path-to-regexp: 8.3.0
-      qs: 6.14.0
+      qs: 6.14.1
     transitivePeerDependencies:
       - '@types/json-schema'
 

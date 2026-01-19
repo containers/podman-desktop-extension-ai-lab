@@ -130,8 +130,8 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2
       '@huggingface/hub':
-        specifier: ^2.7.1
-        version: 2.7.1
+        specifier: ^2.7.2
+        version: 2.7.2
       ai:
         specifier: ^6.0.39
         version: 6.0.39(zod@4.3.5)
@@ -367,10 +367,6 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider@3.0.3':
-    resolution: {integrity: sha512-qGPYdoAuECaUXPrrz0BPX1SacZQuJ6zky0aakxpW89QW1hrY0eF4gcFm/3L9Pk8C5Fwe+RvBf2z7ZjDhaPjnlg==}
-    engines: {node: '>=18'}
 
   '@ai-sdk/provider@3.0.4':
     resolution: {integrity: sha512-5KXyBOSEX+l67elrEa+wqo/LSsSTtrPj9Uoh3zMbe/ceQX4ucHI3b9nUEfNkGF3Ry1svv90widAt+aiKdIJasQ==}
@@ -966,16 +962,16 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.7.1':
-    resolution: {integrity: sha512-XzDVwF8ISi1R7JL+KP44ax4LbG/RhYRyfwaWTg/+zCaCDLTLpIW8LGDgBVQsuSkBBHiPdWp8PaNUGZ04yQCIOQ==}
+  '@huggingface/hub@2.7.2':
+    resolution: {integrity: sha512-5Ese3lMSTKa0QDDKrarf68YymzQX8KK+jU6pp9Xmkwaiwo/33Q1VHlWXITSjPVqbSfWuCzOtPhZXgWxQXPfRYg==}
     engines: {node: '>=18'}
     hasBin: true
 
   '@huggingface/tasks@0.19.49':
     resolution: {integrity: sha512-TBBs2klFqo0f9BgLBeG5sNH/oXt3nDxp8wEjwcR1/AepHb8VJAFf9oAW1SS9jmiWRrW8ZjXQJ3THOxsonHVBJA==}
 
-  '@huggingface/tasks@0.19.64':
-    resolution: {integrity: sha512-uF1PGQp2lLh1Z9YpQWNz2xKeWuKNDFHma3gIWsF7AP8WD1bWYGfS7np0EyqOHBxti40LI6xGGq96JEwI1n7G/Q==}
+  '@huggingface/tasks@0.19.78':
+    resolution: {integrity: sha512-M/bBx72EcP22yVsPv31o0yMewVsCWl28Q/MJQMpbkxhbnSywX6jyPuftVSP4uuf0sw5kJe2DE/c+Q9/61+BYjg==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -4969,10 +4965,6 @@ snapshots:
       eventsource-parser: 3.0.6
       zod: 4.3.5
 
-  '@ai-sdk/provider@3.0.3':
-    dependencies:
-      json-schema: 0.4.0
-
   '@ai-sdk/provider@3.0.4':
     dependencies:
       json-schema: 0.4.0
@@ -5441,15 +5433,15 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.19.49
 
-  '@huggingface/hub@2.7.1':
+  '@huggingface/hub@2.7.2':
     dependencies:
-      '@huggingface/tasks': 0.19.64
+      '@huggingface/tasks': 0.19.78
     optionalDependencies:
       cli-progress: 3.12.0
 
   '@huggingface/tasks@0.19.49': {}
 
-  '@huggingface/tasks@0.19.64': {}
+  '@huggingface/tasks@0.19.78': {}
 
   '@humanfs/core@0.19.1': {}
 

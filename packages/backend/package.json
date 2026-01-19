@@ -113,7 +113,7 @@
     "@ai-sdk/mcp": "^1.0.10",
     "@ai-sdk/openai-compatible": "^2.0.13",
     "@huggingface/gguf": "^0.3.2",
-    "@huggingface/hub": "^2.7.1",
+    "@huggingface/hub": "^2.7.2",
     "ai": "^6.0.39",
     "express": "^5.2.1",
     "express-openapi-validator": "^5.6.0",

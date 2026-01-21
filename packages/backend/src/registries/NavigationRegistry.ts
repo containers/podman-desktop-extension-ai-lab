@@ -19,12 +19,42 @@ import { type Disposable, navigation, type WebviewPanel, commands } from '@podma
 import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 
+// Route identifiers and commands
+export const DASHBOARD_ROUTE = 'dashboard';
+export const DASHBOARD_NAVIGATE_COMMAND = 'ai-lab.navigation.dashboard';
+
+export const RECIPES_ROUTE = 'recipes';
+export const RECIPES_NAVIGATE_COMMAND = 'ai-lab.navigation.recipes';
+
 export const RECIPE_START_ROUTE = 'recipe.start';
 export const RECIPE_START_NAVIGATE_COMMAND = 'ai-lab.navigation.recipe.start';
+
+export const APPLICATIONS_ROUTE = 'applications';
+export const APPLICATIONS_NAVIGATE_COMMAND = 'ai-lab.navigation.applications';
+
+export const MODELS_ROUTE = 'models';
+export const MODELS_NAVIGATE_COMMAND = 'ai-lab.navigation.models';
+
+export const PLAYGROUNDS_ROUTE = 'playgrounds';
+export const PLAYGROUNDS_NAVIGATE_COMMAND = 'ai-lab.navigation.playgrounds';
+
+export const SERVICES_ROUTE = 'services';
+export const SERVICES_NAVIGATE_COMMAND = 'ai-lab.navigation.services';
 
 export const INFERENCE_CREATE_ROUTE = 'inference.create';
 export const INFERENCE_CREATE_NAVIGATE_COMMAND = 'ai-lab.navigation.inference.create';
 
+export const LLAMASTACK_ROUTE = 'llamastack';
+export const LLAMASTACK_NAVIGATE_COMMAND = 'ai-lab.navigation.llamastack';
+
+export const LOCAL_SERVER_ROUTE = 'localserver';
+export const LOCAL_SERVER_NAVIGATE_COMMAND = 'ai-lab.navigation.localserver';
+
+export const ABOUT_INSTRUCTLAB_ROUTE = 'about-instructlab';
+export const ABOUT_INSTRUCTLAB_NAVIGATE_COMMAND = 'ai-lab.navigation.about-instructlab';
+
+export const INSTRUCTLAB_ROUTE = 'instructlab';
+export const INSTRUCTLAB_NAVIGATE_COMMAND = 'ai-lab.navigation.instructlab';
 export class NavigationRegistry implements Disposable {
   #disposables: Disposable[] = [];
   #route: string | undefined = undefined;
@@ -51,6 +81,106 @@ export class NavigationRegistry implements Disposable {
       commands.registerCommand(INFERENCE_CREATE_NAVIGATE_COMMAND, this.navigateToInferenceCreate.bind(this)),
     );
     this.#disposables.push(navigation.register(INFERENCE_CREATE_ROUTE, INFERENCE_CREATE_NAVIGATE_COMMAND));
+
+    // Register Dashboard
+    this.#disposables.push(commands.registerCommand(DASHBOARD_NAVIGATE_COMMAND, this.navigateToDashboard.bind(this)));
+    this.#disposables.push(
+      navigation.register(DASHBOARD_ROUTE, DASHBOARD_NAVIGATE_COMMAND, {
+        title: 'Dashboard',
+        icon: 'fas fa-house',
+      }),
+    );
+
+    // Register Recipes Catalog
+    this.#disposables.push(commands.registerCommand(RECIPES_NAVIGATE_COMMAND, this.navigateToRecipes.bind(this)));
+    this.#disposables.push(
+      navigation.register(RECIPES_ROUTE, RECIPES_NAVIGATE_COMMAND, {
+        title: 'Recipe Catalog',
+        icon: 'fas fa-book-open',
+      }),
+    );
+
+    // Register Applications
+    this.#disposables.push(
+      commands.registerCommand(APPLICATIONS_NAVIGATE_COMMAND, this.navigateToApplications.bind(this)),
+    );
+    this.#disposables.push(
+      navigation.register(APPLICATIONS_ROUTE, APPLICATIONS_NAVIGATE_COMMAND, {
+        title: 'Running',
+        icon: 'fas fa-server',
+      }),
+    );
+
+    // Register Models Catalog
+    this.#disposables.push(commands.registerCommand(MODELS_NAVIGATE_COMMAND, this.navigateToModels.bind(this)));
+    this.#disposables.push(
+      navigation.register(MODELS_ROUTE, MODELS_NAVIGATE_COMMAND, {
+        title: 'Catalog',
+        icon: 'fas fa-book-open',
+      }),
+    );
+
+    // Register Services
+    this.#disposables.push(commands.registerCommand(SERVICES_NAVIGATE_COMMAND, this.navigateToServices.bind(this)));
+    this.#disposables.push(
+      navigation.register(SERVICES_ROUTE, SERVICES_NAVIGATE_COMMAND, {
+        title: 'Services',
+        icon: 'fas fa-rocket',
+      }),
+    );
+
+    // Register Playgrounds
+    this.#disposables.push(
+      commands.registerCommand(PLAYGROUNDS_NAVIGATE_COMMAND, this.navigateToPlaygrounds.bind(this)),
+    );
+    this.#disposables.push(
+      navigation.register(PLAYGROUNDS_ROUTE, PLAYGROUNDS_NAVIGATE_COMMAND, {
+        title: 'Playgrounds',
+        icon: 'fas fa-message',
+      }),
+    );
+
+    // Register Llama Stack
+    this.#disposables.push(commands.registerCommand(LLAMASTACK_NAVIGATE_COMMAND, this.navigateToLlamaStack.bind(this)));
+    this.#disposables.push(
+      navigation.register(LLAMASTACK_ROUTE, LLAMASTACK_NAVIGATE_COMMAND, {
+        title: 'Llama Stack',
+        icon: 'fas fa-rocket',
+      }),
+    );
+
+    // Register Local Server
+    this.#disposables.push(
+      commands.registerCommand(LOCAL_SERVER_NAVIGATE_COMMAND, this.navigateToLocalServer.bind(this)),
+    );
+    this.#disposables.push(
+      navigation.register(LOCAL_SERVER_ROUTE, LOCAL_SERVER_NAVIGATE_COMMAND, {
+        title: 'Local Server',
+        icon: 'fas fa-gear',
+      }),
+    );
+
+    // Register About InstructLab
+    this.#disposables.push(
+      commands.registerCommand(ABOUT_INSTRUCTLAB_NAVIGATE_COMMAND, this.navigateToAboutInstructLab.bind(this)),
+    );
+    this.#disposables.push(
+      navigation.register(ABOUT_INSTRUCTLAB_ROUTE, ABOUT_INSTRUCTLAB_NAVIGATE_COMMAND, {
+        title: 'About InstructLab',
+        icon: 'fas fa-info-circle',
+      }),
+    );
+
+    // Register InstructLab
+    this.#disposables.push(
+      commands.registerCommand(INSTRUCTLAB_NAVIGATE_COMMAND, this.navigateToInstructLab.bind(this)),
+    );
+    this.#disposables.push(
+      navigation.register(INSTRUCTLAB_ROUTE, INSTRUCTLAB_NAVIGATE_COMMAND, {
+        title: 'Try InstructLab',
+        icon: 'fas fa-circle-down',
+      }),
+    );
   }
 
   /**
@@ -73,11 +203,51 @@ export class NavigationRegistry implements Disposable {
     this.panel.reveal();
   }
 
+  public async navigateToDashboard(): Promise<void> {
+    return this.updateRoute('/');
+  }
+
+  public async navigateToRecipes(): Promise<void> {
+    return this.updateRoute('/recipes');
+  }
+
   public async navigateToRecipeStart(recipeId: string, trackingId: string): Promise<void> {
     return this.updateRoute(`/recipe/${recipeId}/start?trackingId=${trackingId}`);
   }
 
+  public async navigateToApplications(): Promise<void> {
+    return this.updateRoute('/applications');
+  }
+
+  public async navigateToModels(): Promise<void> {
+    return this.updateRoute('/models');
+  }
+
+  public async navigateToPlaygrounds(): Promise<void> {
+    return this.updateRoute('/playgrounds');
+  }
+
+  public async navigateToServices(): Promise<void> {
+    return this.updateRoute('/services');
+  }
+
   public async navigateToInferenceCreate(trackingId: string): Promise<void> {
     return this.updateRoute(`/service/create?trackingId=${trackingId}`);
+  }
+
+  public async navigateToLlamaStack(): Promise<void> {
+    return this.updateRoute('/llamastack/try');
+  }
+
+  public async navigateToInstructLab(): Promise<void> {
+    return this.updateRoute('/instructlab/try');
+  }
+
+  public async navigateToAboutInstructLab(): Promise<void> {
+    return this.updateRoute('/about-instructlab');
+  }
+
+  public async navigateToLocalServer(): Promise<void> {
+    return this.updateRoute('/local-server');
   }
 }

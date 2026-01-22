@@ -15,7 +15,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - uses: actions/checkout@v6.0.1
+    - uses: actions/checkout@v6.0.2
     # Runs a single command using the runners shell
     - name: Compute model size
       run: ./tools/compute-model-sizes.sh

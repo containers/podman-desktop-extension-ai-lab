@@ -36,7 +36,7 @@ jobs:
     env:
       SKIP_INSTALLATION: true
     steps:
-      - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@v6.0.2
         with:
           path: podman-desktop-extension-ai-lab
       # Set up pnpm
@@ -50,7 +50,7 @@ jobs:
         with:
           node-version: 24
       # Checkout podman desktop
-      - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@v6.0.2
         with:
           repository: podman-desktop/podman-desktop
           ref: main

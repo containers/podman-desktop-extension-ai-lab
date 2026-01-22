@@ -100,7 +100,7 @@ export class AILabCatalogPage extends AILabBasePage {
 
   async deleteAllModels(): Promise<void> {
     try {
-      const modelRows = await this.getAllModelRows();
+      let modelRows = await this.getAllModelRows();
       if (modelRows.length === 0) {
         return;
       }
@@ -112,14 +112,26 @@ export class AILabCatalogPage extends AILabBasePage {
         }
       }
 
-      await playExpect.poll(async () => (await this.getAllModelRows()).length === 0, { timeout: 60_000 }).toBeTruthy();
+      modelRows = await this.getAllModelRows();
+      if (modelRows.length === 0) {
+        return;
+      }
+
+      for (const modelRow of modelRows) {
+        const modelName = await this.getModelNameByRow(modelRow);
+        playExpect(await this.isModelDownloaded(modelName)).toBeFalsy();
+      }
     } catch (error) {
       const remainingModels = await this.getAllModelRows();
       const remainingModelNames = [];
       for (const modelRow of remainingModels) {
-        remainingModelNames.push(await this.getModelNameByRow(modelRow));
+        const modelName = await this.getModelNameByRow(modelRow);
+        if (await this.isModelDownloaded(modelName)) {
+          remainingModelNames.push(modelName);
+        }
       }
-      console.error('Error during deleteAllModels:', error, 'Remaining models:', remainingModelNames);
+      const errInfo = error instanceof Error ? { message: error.message } : error;
+      console.error('Error during deleteAllModels:', errInfo, 'Remaining models:', remainingModelNames);
     }
   }
 

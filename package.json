@@ -3,7 +3,7 @@
   "displayName": "ai-lab-monorepo",
   "description": "ai-lab-monorepo",
   "publisher": "redhat",
-  "version": "1.9.0",
+  "version": "1.9.234",
   "license": "Apache-2.0",
   "private": true,
   "engines": {
@@ -92,7 +92,16 @@
   },
   "pnpm": {
     "overrides": {
-      "postman-collection>semver": "^7.5.2"
+      "postman-collection>semver": "^7.5.2",
+      "@types/node": "^24.10.4",
+      "eslint": "^9.37.0",
+      "@typescript-eslint/eslint-plugin": "^8.45.0",
+      "@typescript-eslint/parser": "^8.46.0",
+      "ai": "^5.0.60",
+      "@ai-sdk/openai-compatible": "^1.0.19",
+      "msw": "^2.11.3",
+      "vitest": "^3.0.5",
+      "vite": "^7.1.9"
     },
     "ignoredBuiltDependencies": [
       "@scarf/scarf",

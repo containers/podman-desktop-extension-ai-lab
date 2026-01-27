@@ -59,6 +59,7 @@ vi.mock('@podman-desktop/api', async () => {
       onDidChangeConfiguration: vi.fn(),
     },
     version: '1.8.0',
+    apiVersion: undefined, // PD 1.25+
     fs: {
       createFileSystemWatcher: (): unknown => ({
         onDidCreate: vi.fn(),

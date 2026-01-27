@@ -16,8 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { env, version } from '@podman-desktop/api';
-import { satisfies, minVersion, coerce } from 'semver';
+import { env } from '@podman-desktop/api';
 import type {
   ExtensionContext,
   TelemetryLogger,
@@ -38,7 +37,6 @@ import { InferenceManager } from './managers/inference/inferenceManager';
 import { PlaygroundV2Manager } from './managers/playgroundV2Manager';
 import { SnippetManager } from './managers/SnippetManager';
 import { CancellationTokenRegistry } from './registries/CancellationTokenRegistry';
-import { engines } from '../package.json';
 import { BuilderManager } from './managers/recipes/BuilderManager';
 import { PodManager } from './managers/recipes/PodManager';
 import { initWebview } from './webviewUtils';
@@ -109,34 +107,9 @@ export class Studio {
     this.#extensionContext = extensionContext;
   }
 
-  private checkVersion(): boolean {
-    if (!version) return false;
-
-    const current = coerce(version);
-    if (!current) return false;
-
-    return satisfies(current, engines['podman-desktop']);
-  }
-
   public async activate(): Promise<void> {
     console.log('starting AI Lab extension');
     this.#telemetry = env.createTelemetryLogger();
-
-    /**
-     * Ensure the running version of podman is compatible with
-     * our minimum requirement
-     */
-    if (!this.checkVersion()) {
-      const min = minVersion(engines['podman-desktop']) ?? { version: 'unknown' };
-      const current = version ?? 'unknown';
-      this.#telemetry.logError('start.incompatible', {
-        version: current,
-        message: `error activating extension on version below ${min.version}`,
-      });
-      throw new Error(
-        `Extension is not compatible with Podman Desktop version below ${min.version}. Current ${current}`,
-      );
-    }
 
     /**
      * Storage directory for the extension provided by podman desktop

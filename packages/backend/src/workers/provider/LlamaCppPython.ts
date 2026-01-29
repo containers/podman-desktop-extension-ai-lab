@@ -109,29 +109,43 @@ export class LlamaCppPython extends InferenceProvider {
       let supported: boolean = false;
       switch (vmType) {
         case VMType.WSL:
-          // WSL Only support NVIDIA
-          if (gpu.vendor !== GPUVendor.NVIDIA) break;
+          if (gpu.vendor === GPUVendor.NVIDIA) {
+            supported = true;
+            mounts.push({
+              Target: '/usr/lib/wsl',
+              Source: '/usr/lib/wsl',
+              Type: 'bind',
+            });
 
-          supported = true;
-          mounts.push({
-            Target: '/usr/lib/wsl',
-            Source: '/usr/lib/wsl',
-            Type: 'bind',
-          });
+            devices.push({
+              PathOnHost: '/dev/dxg',
+              PathInContainer: '/dev/dxg',
+              CgroupPermissions: 'r',
+            });
 
-          devices.push({
-            PathOnHost: '/dev/dxg',
-            PathInContainer: '/dev/dxg',
-            CgroupPermissions: 'r',
-          });
+            user = '0';
 
-          user = '0';
+            entrypoint = '/usr/bin/sh';
+            cmd = [
+              '-c',
+              '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
+            ];
+          } else if (gpu.vendor === GPUVendor.INTEL) {
+            supported = true;
+            mounts.push({
+              Target: '/usr/lib/wsl',
+              Source: '/usr/lib/wsl',
+              Type: 'bind',
+            });
 
-          entrypoint = '/usr/bin/sh';
-          cmd = [
-            '-c',
-            '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
-          ];
+            devices.push({
+              PathOnHost: '/dev/dxg',
+              PathInContainer: '/dev/dxg',
+              CgroupPermissions: 'r',
+            });
+
+            user = '0';
+          }
           break;
         case VMType.LIBKRUN:
         case VMType.LIBKRUN_LABEL:
@@ -146,30 +160,50 @@ export class LlamaCppPython extends InferenceProvider {
           // This is linux with podman locally installed
 
           // Linux GPU support currently requires NVIDIA GPU with CDI configured
-          if (!this.isNvidiaCDIConfigured(gpu)) break;
+          if (this.isNvidiaCDIConfigured(gpu)) {
+            supported = true;
+            devices.push({
+              PathOnHost: 'nvidia.com/gpu=all',
+              PathInContainer: '',
+              CgroupPermissions: '',
+            });
 
-          supported = true;
-          devices.push({
-            PathOnHost: 'nvidia.com/gpu=all',
-            PathInContainer: '',
-            CgroupPermissions: '',
-          });
+            user = '0';
+          } else if (gpu.vendor === GPUVendor.INTEL) {
+            // Intel GPU support via /dev/dri device passthrough
+            supported = true;
+            devices.push({
+              PathOnHost: '/dev/dri',
+              PathInContainer: '/dev/dri',
+              CgroupPermissions: 'rwm',
+            });
 
-          user = '0';
+            user = '0';
+          }
 
           break;
       }
 
       // adding gpu capabilities in supported architectures
       if (supported) {
-        deviceRequests.push({
-          Capabilities: [['gpu']],
-          Count: -1, // -1: all
-        });
+        if (gpu.vendor !== GPUVendor.INTEL || vmType !== VMType.UNKNOWN) {
+          deviceRequests.push({
+            Capabilities: [['gpu']],
+            Count: -1, // -1: all
+          });
+        }
 
         // label the container
         labels['gpu'] = gpu.model;
         envs.push(`GPU_LAYERS=${config.gpuLayers ?? 999}`);
+
+        // Add Intel-specific environment variables
+        if (gpu.vendor === GPUVendor.INTEL) {
+          envs.push('ZES_ENABLE_SYSMAN=1');
+          // Add the library path for the Unified Memory Framework (UMF) which is required for the Level Zero adapter
+          // This is a workaround for the missing LD_LIBRARY_PATH in the ramalama image
+          envs.push('LD_LIBRARY_PATH=/opt/intel/oneapi/umf/0.11/lib/');
+        }
       } else {
         console.warn(`gpu ${gpu.model} is not supported on ${vmType}.`);
       }
@@ -277,13 +311,17 @@ export class LlamaCppPython extends InferenceProvider {
   protected getLlamaCppInferenceImage(vmType: VMType, gpu?: IGPUInfo): string {
     switch (vmType) {
       case VMType.WSL:
-        return gpu?.vendor === GPUVendor.NVIDIA ? llamacpp.cuda : llamacpp.default;
+        if (gpu?.vendor === GPUVendor.NVIDIA) return llamacpp.cuda;
+        if (gpu?.vendor === GPUVendor.INTEL) return llamacpp.intel;
+        return llamacpp.default;
       case VMType.LIBKRUN:
       case VMType.LIBKRUN_LABEL:
         return llamacpp.default;
       // no GPU support
       case VMType.UNKNOWN:
-        return this.isNvidiaCDIConfigured(gpu) ? llamacpp.cuda : llamacpp.default;
+        if (this.isNvidiaCDIConfigured(gpu)) return llamacpp.cuda;
+        if (gpu?.vendor === GPUVendor.INTEL) return llamacpp.intel;
+        return llamacpp.default;
       default:
         return llamacpp.default;
     }

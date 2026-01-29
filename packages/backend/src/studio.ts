@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import { env, version } from '@podman-desktop/api';
+import * as podmanDesktopApi from '@podman-desktop/api';
 import { satisfies, minVersion, coerce } from 'semver';
 import type {
   ExtensionContext,
@@ -110,9 +111,12 @@ export class Studio {
   }
 
   private checkVersion(): boolean {
-    if (!version) return false;
+    // Use apiVersion when available (PD 1.25+),
+    // fall back to version for older Podman Desktop versions
+    const apiVersion = (podmanDesktopApi as { apiVersion?: string }).apiVersion ?? version;
+    if (!apiVersion) return false;
 
-    const current = coerce(version);
+    const current = coerce(apiVersion);
     if (!current) return false;
 
     return satisfies(current, engines['podman-desktop']);

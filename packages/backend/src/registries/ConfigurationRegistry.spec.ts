@@ -36,6 +36,8 @@ vi.mock('@podman-desktop/api', async () => {
       getConfiguration: (): unknown => fakeConfiguration,
       onDidChangeConfiguration: vi.fn(),
     },
+    version: '1.8.0',
+    apiVersion: undefined, // PD 1.25+
   };
 });
 

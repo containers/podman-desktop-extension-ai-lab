@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { configuration, version, type Configuration, type Disposable } from '@podman-desktop/api';
+import * as podmanDesktopApi from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
 import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import { MSG_CONFIGURATION_UPDATE } from '@shared/Messages';
@@ -64,7 +65,9 @@ export class ConfigurationRegistry extends Publisher<ExtensionConfiguration> imp
   }
 
   getPodmanDesktopVersion(): string {
-    return version;
+    // Use apiVersion when available (PD 1.25+),
+    // fall back to version for older Podman Desktop versions
+    return (podmanDesktopApi as { apiVersion?: string }).apiVersion ?? version;
   }
 
   private getFieldName(section: string): keyof Partial<ExtensionConfiguration> {

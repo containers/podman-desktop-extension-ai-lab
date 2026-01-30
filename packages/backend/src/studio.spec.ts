@@ -18,9 +18,9 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { afterEach, beforeEach, expect, test, vi, describe, type MockInstance } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi, type MockInstance } from 'vitest';
 import { Studio } from './studio';
-import { type ExtensionContext, EventEmitter, version } from '@podman-desktop/api';
+import { type ExtensionContext, EventEmitter } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 
 import * as fs from 'node:fs';
@@ -44,12 +44,6 @@ const mocks = vi.hoisted(() => ({
   consoleLogMock: vi.fn(),
 }));
 
-vi.mock('../package.json', () => ({
-  engines: {
-    'podman-desktop': '>=1.0.0',
-  },
-}));
-
 vi.mock('@podman-desktop/api', async () => {
   return {
     configuration: {
@@ -58,7 +52,6 @@ vi.mock('@podman-desktop/api', async () => {
       }),
       onDidChangeConfiguration: vi.fn(),
     },
-    version: '1.8.0',
     fs: {
       createFileSystemWatcher: (): unknown => ({
         onDidCreate: vi.fn(),
@@ -139,7 +132,6 @@ afterEach(() => {
 });
 
 test('check activate', async () => {
-  expect(version).toBe('1.8.0');
   mocks.listContainers.mockReturnValue([]);
   mocks.getContainerConnections.mockReturnValue([]);
   (vi.spyOn(fs.promises, 'readFile') as unknown as MockInstance<() => Promise<string>>).mockImplementation(() => {
@@ -149,61 +141,6 @@ test('check activate', async () => {
 
   // expect the activate method to be called on the studio class
   expect(mocks.consoleLogMock).toBeCalledWith('starting AI Lab extension');
-});
-
-describe('version checker', () => {
-  test('check activate incompatible', async () => {
-    (version as string) = '0.7.0';
-    await expect(studio.activate()).rejects.toThrowError(
-      'Extension is not compatible with Podman Desktop version below 1.0.0. Current 0.7.0',
-    );
-
-    // expect the activate method to be called on the studio class
-    expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
-      version: '0.7.0',
-      message: 'error activating extension on version below 1.0.0',
-    });
-  });
-
-  test('version undefined', async () => {
-    (version as string | undefined) = undefined;
-    await expect(studio.activate()).rejects.toThrowError(
-      'Extension is not compatible with Podman Desktop version below 1.0.0. Current unknown',
-    );
-
-    // expect the activate method to be called on the studio class
-    expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
-      version: 'unknown',
-      message: 'error activating extension on version below 1.0.0',
-    });
-  });
-
-  test('check activate next value', async () => {
-    (version as string) = '1.0.1-next';
-    await studio.activate();
-
-    expect(mocks.logErrorMock).not.toHaveBeenCalled();
-  });
-
-  /**
-   * This check ensure we do not support old nighties version to be used
-   * update introduced in https://github.com/containers/podman-desktop/pull/7643
-   */
-  test('check activate old nighties value', async () => {
-    (version as string) = 'v0.0.202404030805-3cb4544';
-    await expect(studio.activate()).rejects.toThrowError(
-      'Extension is not compatible with Podman Desktop version below 1.0.0. Current v0.0.202404030805-3cb4544',
-    );
-
-    expect(mocks.logErrorMock).toHaveBeenCalled();
-  });
-
-  test('check activate version nighties', async () => {
-    (version as string) = `1.0.0-${Date.now()}-b35e7bef`;
-    await studio.activate();
-
-    expect(mocks.logErrorMock).not.toHaveBeenCalled();
-  });
 });
 
 test('check deactivate ', async () => {

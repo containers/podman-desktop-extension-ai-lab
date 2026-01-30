@@ -575,8 +575,103 @@ describe('perform', () => {
     });
 
     expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.cuda, expect.any(Function));
-    expect(gpuManager.collectGPUs).toHaveBeenCalled();
     expect('gpu' in server.labels).toBeTruthy();
+  });
+
+  test('WSL vmtype with Intel GPU should use llamacpp.intel image and no custom entrypoint', async () => {
+    vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
+      ...dummyConnection,
+      vmType: VMType.WSL,
+    });
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+      apiPort: 10434,
+      inferenceRuntime: 'llama-cpp',
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+      appearance: 'dark',
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'intel-gpu',
+        vendor: GPUVendor.INTEL,
+      },
+    ]);
+
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.intel, expect.any(Function));
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Entrypoint: undefined,
+        Cmd: [],
+        Env: expect.arrayContaining(['ZES_ENABLE_SYSMAN=1']),
+      }),
+    );
+  });
+
+  test('UNKNOWN vmtype with Intel GPU should use llamacpp.intel image and no custom entrypoint', async () => {
+    vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
+      ...dummyConnection,
+      vmType: VMType.UNKNOWN,
+    });
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+      apiPort: 10434,
+      inferenceRuntime: 'llama-cpp',
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+      appearance: 'dark',
+    });
+
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'intel-gpu',
+        vendor: GPUVendor.INTEL,
+      },
+    ]);
+
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.intel, expect.any(Function));
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Entrypoint: undefined,
+        User: '0',
+        Cmd: [],
+        HostConfig: expect.objectContaining({
+          DeviceRequests: [],
+          Devices: expect.arrayContaining([
+            expect.objectContaining({
+              PathOnHost: '/dev/dri',
+            }),
+          ]),
+        }),
+      }),
+    );
   });
 
   test('UNKNOWN vmtype should use llamacpp.default image - if gpu but cdi not configured', async () => {

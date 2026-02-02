@@ -242,17 +242,17 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
    * @private
    */
   private updateServerStatus(engineId: string, containerId: string): void {
+    const server = this.#servers.get(containerId);
+    if (server === undefined)
+      throw new Error('Something went wrong while trying to get container status got undefined Inference Server.');
+
+    // we should not update the server while we are in a transition state.
+    if (isTransitioning(server)) return;
+
     // Inspect container
     containerEngine
       .inspectContainer(engineId, containerId)
       .then(result => {
-        const server = this.#servers.get(containerId);
-        if (server === undefined)
-          throw new Error('Something went wrong while trying to get container status got undefined Inference Server.');
-
-        // we should not update the server while we are in a transition state.
-        if (isTransitioning(server)) return;
-
         // Update server
         this.#servers.set(containerId, {
           ...server,

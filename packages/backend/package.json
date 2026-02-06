@@ -122,7 +122,7 @@
     "mustache": "^4.2.0",
     "openai": "^6.17.0",
     "postman-code-generators": "^1.14.1",
-    "postman-collection": "^5.2.0",
+    "postman-collection": "^5.2.1",
     "semver": "^7.7.3",
     "swagger-ui-dist": "^5.31.0",
     "swagger-ui-express": "^5.0.1",

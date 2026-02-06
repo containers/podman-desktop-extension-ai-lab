@@ -4,7 +4,8 @@
   },
   "llamacpp": {
     "default": "quay.io/ramalama/ramalama-llama-server@sha256:293f66f2dfea8e21393dc03e898616b2a71f0a72a0f3bc5f936439130ada2648",
-    "cuda": "quay.io/ramalama/cuda-llama-server@sha256:b9ced640539c72edee2f946b69618a6d30b68700ac9342d1b9483831988d40ef"
+    "cuda": "quay.io/ramalama/cuda-llama-server@sha256:b9ced640539c72edee2f946b69618a6d30b68700ac9342d1b9483831988d40ef",
+    "intel": "quay.io/ramalama/intel-gpu-llama-server@sha256:ea2aa37c0a4af544de80da9d8aa53a0641c91ccfdca3a329a251685a96210551"
   },
   "openvino": {
     "default": "quay.io/ramalama/openvino@sha256:e026ecbdf6ae222a193badad5b0dd2253362e366e22c8b402f5a492803b10fd5"

@@ -67,7 +67,7 @@
     "globals": "^17.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "msw": "^2.12.8",
+    "msw": "^2.12.9",
     "prettier": "^3.8.1",
     "prettier-plugin-svelte": "^3.4.1",
     "svelte-check": "^4.3.5",

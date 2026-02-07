@@ -30,7 +30,10 @@ interface Props {
 
 let { containerId }: Props = $props();
 
-let service: InferenceServer | undefined = $state();
+let servers: InferenceServer[] = $derived($inferenceServers);
+let service: InferenceServer | undefined = $derived(
+  servers.find(server => server.container.containerId === containerId),
+);
 let selectedLanguage: string = $state('curl');
 
 let variants: LanguageVariant[] = $derived(
@@ -172,12 +175,12 @@ function copySnippet(): void {
 }
 
 onMount(() => {
-  return inferenceServers.subscribe(servers => {
-    service = servers.find(server => server.container.containerId === containerId);
+  const timeout = setTimeout(() => {
     if (!service) {
       router.goto('/services');
     }
-  });
+  }, 1000);
+  return (): void => clearTimeout(timeout);
 });
 
 export function goToUpPage(): void {

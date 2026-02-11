@@ -130,8 +130,8 @@ importers:
         specifier: ^0.3.3
         version: 0.3.3
       '@huggingface/hub':
-        specifier: ^2.8.1
-        version: 2.8.1
+        specifier: ^2.9.0
+        version: 2.9.0
       ai:
         specifier: ^6.0.78
         version: 6.0.78(zod@4.3.6)
@@ -953,16 +953,16 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.8.1':
-    resolution: {integrity: sha512-VAsXdMiIHPteXQJhrwaBEiePTWiJ0zBSymHdnX4J+AijjNN0h3RzGfkKemXcu75gu/TmRLFY9l8+2Tkdmpis0w==}
+  '@huggingface/hub@2.9.0':
+    resolution: {integrity: sha512-g0UKVcPq0ULnakTB6ZGPNTHBVj9nHgsbukbI/gCp1a7uAp8/Jp8fxrKbNqJgeMiLLJcuQGd/4HXJLUYhjd5xxw==}
     engines: {node: '>=18'}
     hasBin: true
 
   '@huggingface/tasks@0.19.78':
     resolution: {integrity: sha512-M/bBx72EcP22yVsPv31o0yMewVsCWl28Q/MJQMpbkxhbnSywX6jyPuftVSP4uuf0sw5kJe2DE/c+Q9/61+BYjg==}
 
-  '@huggingface/tasks@0.19.83':
-    resolution: {integrity: sha512-nBt3S6x+MWUTmfey1drQZRMuEopEbz2aEMUsoddfpCuzIYAMCsJDX7xeNuJnzvbVGis3gXXCRcLHVhFtHaaiyA==}
+  '@huggingface/tasks@0.19.84':
+    resolution: {integrity: sha512-nn8DtUW7EZb4QcV+AdNbggPDbvaN32+FldkJakDVml0Aa18fSWjxePdxaRejfTlJYX9oGanOjQKj++NDVRYFXw==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5431,15 +5431,15 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.19.78
 
-  '@huggingface/hub@2.8.1':
+  '@huggingface/hub@2.9.0':
     dependencies:
-      '@huggingface/tasks': 0.19.83
+      '@huggingface/tasks': 0.19.84
     optionalDependencies:
       cli-progress: 3.12.0
 
   '@huggingface/tasks@0.19.78': {}
 
-  '@huggingface/tasks@0.19.83': {}
+  '@huggingface/tasks@0.19.84': {}
 
   '@humanfs/core@0.19.1': {}
 

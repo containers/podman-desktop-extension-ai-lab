@@ -12,10 +12,10 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^7.1.0",
-    "@fortawesome/free-brands-svg-icons": "^7.1.0",
-    "@fortawesome/free-solid-svg-icons": "^7.1.0",
-    "@fortawesome/free-regular-svg-icons": "^7.1.0",
+    "@fortawesome/fontawesome-free": "^7.2.0",
+    "@fortawesome/free-brands-svg-icons": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/free-regular-svg-icons": "^7.2.0",
     "@podman-desktop/ui-svelte": "1.21.0",
     "tinro": "^0.6.12",
     "filesize": "^11.0.13",

@@ -212,8 +212,8 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8
       openapi-typescript:
-        specifier: ^7.12.0
-        version: 7.12.0(typescript@5.9.3)
+        specifier: ^7.13.0
+        version: 7.13.0(typescript@5.9.3)
       supertest:
         specifier: ^7.2.2
         version: 7.2.2
@@ -3788,8 +3788,8 @@ packages:
       zod:
         optional: true
 
-  openapi-typescript@7.12.0:
-    resolution: {integrity: sha512-dtk3h5rbILWfDEUCNgMeBHSpvVsslM0ik1psDxxlrIAJk34SDqZIbhF+qKZy6MytW7Fp+wxynq9y5S3wgJcn0g==}
+  openapi-typescript@7.13.0:
+    resolution: {integrity: sha512-EFP392gcqXS7ntPvbhBzbF8TyBA+baIYEm791Hy5YkjDYKTnk/Tn5OQeKm5BIZvJihpp8Zzr4hzx0Irde1LNGQ==}
     hasBin: true
     peerDependencies:
       typescript: ^5.x
@@ -8440,7 +8440,7 @@ snapshots:
       ws: 8.18.3
       zod: 4.3.6
 
-  openapi-typescript@7.12.0(typescript@5.9.3):
+  openapi-typescript@7.13.0(typescript@5.9.3):
     dependencies:
       '@redocly/openapi-core': 1.34.6(supports-color@10.2.2)
       ansi-colors: 4.1.3

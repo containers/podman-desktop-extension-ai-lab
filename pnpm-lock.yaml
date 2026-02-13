@@ -127,8 +127,8 @@ importers:
         specifier: ^2.0.30
         version: 2.0.30(zod@4.3.6)
       '@huggingface/gguf':
-        specifier: ^0.3.3
-        version: 0.3.3
+        specifier: ^0.3.4
+        version: 0.3.4
       '@huggingface/hub':
         specifier: ^2.9.0
         version: 2.9.0
@@ -954,8 +954,8 @@ packages:
     resolution: {integrity: sha512-YTVITFGN0/24PxzXrwqCgnyd7njDuzp5ZvaCx5nq/jg55kUYd94Nj8UTchBdBofi/L0nwRfjGOg0E41d2u9T1w==}
     engines: {node: '>=6'}
 
-  '@huggingface/gguf@0.3.3':
-    resolution: {integrity: sha512-CCN/uCmncfbBl89T1k98oyRcT7/QC2+KJe///gCZaMfjbgp8EZ5ke7svQGKlrbeaW658n28WxVQPpQ85y21RVg==}
+  '@huggingface/gguf@0.3.4':
+    resolution: {integrity: sha512-+qAgKfIXF75oonWfLzN4X5kc2gUvmbbiBXRZzZ99wQ4pe7RqpaNdByzRb9/BIJXFQB1MJiXdbEXFFWeeISiIZw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -964,11 +964,11 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@huggingface/tasks@0.19.78':
-    resolution: {integrity: sha512-M/bBx72EcP22yVsPv31o0yMewVsCWl28Q/MJQMpbkxhbnSywX6jyPuftVSP4uuf0sw5kJe2DE/c+Q9/61+BYjg==}
-
   '@huggingface/tasks@0.19.84':
     resolution: {integrity: sha512-nn8DtUW7EZb4QcV+AdNbggPDbvaN32+FldkJakDVml0Aa18fSWjxePdxaRejfTlJYX9oGanOjQKj++NDVRYFXw==}
+
+  '@huggingface/tasks@0.19.85':
+    resolution: {integrity: sha512-4s5+GV257GRmT7Hrt190KlGsuq53IwFtCBj+J+bvoeIpn119589wY7WY/LS5VJMLwu7pUQnouLmMKeEOKO4BSQ==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5383,9 +5383,9 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.2.0
 
-  '@huggingface/gguf@0.3.3':
+  '@huggingface/gguf@0.3.4':
     dependencies:
-      '@huggingface/tasks': 0.19.78
+      '@huggingface/tasks': 0.19.85
 
   '@huggingface/hub@2.9.0':
     dependencies:
@@ -5393,9 +5393,9 @@ snapshots:
     optionalDependencies:
       cli-progress: 3.12.0
 
-  '@huggingface/tasks@0.19.78': {}
-
   '@huggingface/tasks@0.19.84': {}
+
+  '@huggingface/tasks@0.19.85': {}
 
   '@humanfs/core@0.19.1': {}
 

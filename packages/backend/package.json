@@ -110,11 +110,11 @@
     "typecheck": "pnpm run generate && tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/mcp": "^1.0.20",
+    "@ai-sdk/mcp": "^1.0.21",
     "@ai-sdk/openai-compatible": "^2.0.30",
     "@huggingface/gguf": "^0.3.4",
     "@huggingface/hub": "^2.9.0",
-    "ai": "^6.0.83",
+    "ai": "^6.0.86",
     "express": "^5.2.1",
     "express-openapi-validator": "^5.6.2",
     "isomorphic-git": "^1.37.1",

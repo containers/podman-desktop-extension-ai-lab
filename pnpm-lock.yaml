@@ -130,8 +130,8 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4
       '@huggingface/hub':
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.10.1
+        version: 2.10.1
       ai:
         specifier: ^6.0.86
         version: 6.0.86(zod@4.3.6)
@@ -957,13 +957,10 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.9.0':
-    resolution: {integrity: sha512-g0UKVcPq0ULnakTB6ZGPNTHBVj9nHgsbukbI/gCp1a7uAp8/Jp8fxrKbNqJgeMiLLJcuQGd/4HXJLUYhjd5xxw==}
+  '@huggingface/hub@2.10.1':
+    resolution: {integrity: sha512-FVqG3qoqlynDBfL4SfWsA5A16e61PUaiWGlrvP4YaxWLrnvhQ+224IR7O3CKu23OqBNAppWG8rBinTInK88+uA==}
     engines: {node: '>=18'}
     hasBin: true
-
-  '@huggingface/tasks@0.19.84':
-    resolution: {integrity: sha512-nn8DtUW7EZb4QcV+AdNbggPDbvaN32+FldkJakDVml0Aa18fSWjxePdxaRejfTlJYX9oGanOjQKj++NDVRYFXw==}
 
   '@huggingface/tasks@0.19.85':
     resolution: {integrity: sha512-4s5+GV257GRmT7Hrt190KlGsuq53IwFtCBj+J+bvoeIpn119589wY7WY/LS5VJMLwu7pUQnouLmMKeEOKO4BSQ==}
@@ -5438,13 +5435,11 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.19.85
 
-  '@huggingface/hub@2.9.0':
+  '@huggingface/hub@2.10.1':
     dependencies:
-      '@huggingface/tasks': 0.19.84
+      '@huggingface/tasks': 0.19.85
     optionalDependencies:
       cli-progress: 3.12.0
-
-  '@huggingface/tasks@0.19.84': {}
 
   '@huggingface/tasks@0.19.85': {}
 

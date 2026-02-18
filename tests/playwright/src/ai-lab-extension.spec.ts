@@ -264,12 +264,15 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     const modelName: string = 'facebook/detr-resnet-101';
     let localServerPort: string;
     let extensionVersion: string | undefined;
-    test.skip(true, `Skipping test due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3406`);
-    test('Get AI Lab extension version and open AI Lab navigation bar', async ({ page, runner, navigationBar }) => {
-      extensionVersion = await getExtensionVersion(navigationBar);
-      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-      await aiLabPage.navigationBar.waitForLoad();
-    });
+
+    test.beforeAll(
+      'Get AI Lab extension version and open AI Lab navigation bar',
+      async ({ page, runner, navigationBar }) => {
+        extensionVersion = await getExtensionVersion(navigationBar);
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+        await aiLabPage.navigationBar.waitForLoad();
+      },
+    );
 
     test('Retrieve local server dynamic port and verify server response', async () => {
       const localServerPage = await aiLabPage.navigationBar.openLocalServer();
@@ -296,6 +299,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test(`Download ${modelName} via API`, async ({ request }) => {
+      test.skip(true, `Skipping test due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3406`);
       test.setTimeout(610_000);
       const catalogPage = await aiLabPage.navigationBar.openCatalog();
       await catalogPage.waitForLoad();
@@ -325,6 +329,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test(`Verify ${modelName} is listed in models fetched from API`, async ({ request }) => {
+      test.skip(true, `Skipping test due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3406`);
       const response = await request.get(`http://127.0.0.1:${localServerPort}/api/tags`, {
         headers: {
           Accept: 'application/json',
@@ -344,7 +349,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
   AI_APP_MODEL_AND_NAMES.forEach((appNames, appModel) => {
     /* eslint-disable sonarjs/no-nested-functions */
-    test.describe.serial(`AI Recipe installations for ${appModel}`, { tag: '@smoke' }, () => {
+    test.describe.serial(`Model download, Playground, AI App tests for ${appModel}`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;
@@ -453,17 +458,12 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
           test.skip(
             appName === 'Audio to Text' && !!isCI && !!isLinux,
-            'Audio to Text app is skipped on Linux CI due to stability issues https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
+            'Audio to Text app is skipped on Linux CI due to stability issues https://github.com/containers/podman-desktop-extension-ai-lab/issues/4227 , https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
           );
 
           test.skip(
             appName === 'Object Detection' && !!isCI && !!isWindows,
             'Object Detection app is skipped on Windows CI due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3197',
-          );
-
-          test.skip(
-            appName === 'Node.js based ChatBot' && !!isWindows,
-            'Node.js based ChatBot app is skipped on Windows due to installation getting stuck on application build step',
           );
 
           test(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
@@ -478,7 +478,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
             test.setTimeout(1_500_000);
             const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
             await demoApp.waitForLoad();
-            await demoApp.startNewDeployment();
+            await demoApp.startNewDeployment(1_400_000);
           });
 
           /*

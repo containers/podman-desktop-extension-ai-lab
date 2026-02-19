@@ -31,8 +31,8 @@ import {
   expect as playExpect,
   test,
   RunnerOptions,
-  isWindows,
   waitForPodmanMachineStartup,
+  isWindows,
   isLinux,
   isMac,
   isCI,
@@ -42,7 +42,7 @@ import {
 } from '@podman-desktop/tests-playwright';
 import type { AILabDashboardPage } from './model/ai-lab-dashboard-page';
 import type { AILabRecipesCatalogPage } from './model/ai-lab-recipes-catalog-page';
-import type { AILabCatalogPage } from './model/ai-lab-catalog-page';
+import type { AILabCatalogPage } from './model/ai-lab-model-catalog-page';
 import type { AILabPlaygroundsPage } from './model/ai-lab-playgrounds-page';
 import type { AILabPlaygroundDetailsPage } from './model/ai-lab-playground-details-page';
 import {
@@ -63,6 +63,7 @@ import type { ApplicationCatalog } from '../../../packages/shared/src/models/IAp
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
+const EXT_TEST_RAG_CHATBOT: boolean = process.env.EXT_TEST_RAG_CHATBOT === 'true';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 const AI_LAB_TESTS_WITH_GPU_ENABLED: boolean = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === 'true';
 
@@ -126,9 +127,20 @@ AI_JSON.recipes.forEach(recipe => {
   }
 });
 
+// Do not use non-instruct models in playground tests.
+// They break out of guiderails and fail the tests.
+const PLAYGROUND_TEST_MODELS: string[] = ['ibm-granite/granite-4.0-micro-GGUF'];
+
+const AI_APP_HTTP_TEST_APP_NAMES: string[] = ['Object Detection'];
+const AI_APP_SERVICE_RESPONSE_TEST_APP_NAMES: string[] = ['Audio to Text', 'Function calling'];
+
+const PLAYGROUND_NAME = 'test playground';
+const SYSTEM_PROMPT = 'Always respond with: "Hello, I am Chat Bot"';
+
 test.use({
   runnerOptions: new RunnerOptions(runnerOptions),
 });
+
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   const window = await runner.getElectronApp().firstWindow();
   // Increase Window Size to improve video recording and screenshots
@@ -137,6 +149,28 @@ test.beforeAll(async ({ runner, welcomePage, page }) => {
   runner.setVideoAndTraceName('ai-lab-e2e');
   await welcomePage.handleWelcomePage(true);
   await waitForPodmanMachineStartup(page, 180_000);
+
+  console.log(`
+**********************************
+* TEST CONFIGURATION INFORMATION *
+**********************************
+
+  AI Lab Extension OCI Image: ${AI_LAB_EXTENSION_OCI_IMAGE}
+  AI Lab Extension Preinstalled: ${AI_LAB_EXTENSION_PREINSTALLED}
+  Test Audio File Path: ${TEST_AUDIO_FILE_PATH}
+  Playground Test Models: ${PLAYGROUND_TEST_MODELS.join(', ')}
+  AI App HTTP Tests: ${AI_APP_HTTP_TEST_APP_NAMES.join(', ')}
+  AI App Service Response Tests: ${AI_APP_SERVICE_RESPONSE_TEST_APP_NAMES.join(', ')}
+
+  Test RAG Chatbot Apps: ${EXT_TEST_RAG_CHATBOT}
+
+  IS WINDOWS: ${isWindows}
+  IS LINUX: ${isLinux}
+  IS MAC: ${isMac}
+  IS CI: ${isCI} CI env variable: ${process.env.CI ?? 'undefined'}
+
+**********************************
+`);
 });
 
 test.afterAll(async ({ runner }) => {
@@ -226,10 +260,11 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     );
   });
 
-  test.describe.serial('AI Lab API endpoint e2e test', { tag: '@smoke' }, () => {
+  test.describe.serial(`Download model facebook/detr-resnet-101 via Local Server API`, () => {
+    const modelName: string = 'facebook/detr-resnet-101';
     let localServerPort: string;
     let extensionVersion: string | undefined;
-    const model: string = 'facebook/detr-resnet-101';
+
     test.beforeAll(
       'Get AI Lab extension version and open AI Lab navigation bar',
       async ({ page, runner, navigationBar }) => {
@@ -263,19 +298,19 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       playExpect(apiResponse.version).toBe(extensionVersion);
     });
 
-    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
-    test.skip(`Download ${model} via API`, async ({ request }) => {
+    test(`Download ${modelName} via API`, async ({ request }) => {
+      test.skip(true, `Skipping test due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3406`);
       test.setTimeout(610_000);
       const catalogPage = await aiLabPage.navigationBar.openCatalog();
       await catalogPage.waitForLoad();
-      console.log(`Downloading ${model}...`);
+      console.log(`Downloading ${modelName}...`);
       const response = await request.post(`http://127.0.0.1:${localServerPort}/api/pull`, {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/x-ndjson',
         },
         data: {
-          model: model,
+          model: modelName,
           insecure: false,
           stream: true,
         },
@@ -289,12 +324,12 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await catalogPage.waitForLoad();
       await playExpect
         // eslint-disable-next-line sonarjs/no-nested-functions
-        .poll(async () => await waitForCatalogModel(model))
+        .poll(async () => await waitForCatalogModel(modelName))
         .toBeTruthy();
     });
 
-    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
-    test.skip(`Verify ${model} is listed in models fetched from API`, async ({ request }) => {
+    test(`Verify ${modelName} is listed in models fetched from API`, async ({ request }) => {
+      test.skip(true, `Skipping test due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3406`);
       const response = await request.get(`http://127.0.0.1:${localServerPort}/api/tags`, {
         headers: {
           Accept: 'application/json',
@@ -304,119 +339,115 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       const parsedJson = await response.json();
       console.log(parsedJson);
       playExpect(parsedJson.models.length).not.toBe(0);
-      playExpect(parsedJson.models).toContain(model);
-    });
-
-    // This test is currently failing due to a known issue: https://github.com/containers/podman-desktop-extension-ai-lab/issues/2925
-    test.skip(`Delete ${model} model`, async () => {
-      test.skip(isWindows, 'Model deletion is currently very buggy in azure cicd');
-      test.setTimeout(310_000);
-      const catalogPage = await aiLabPage.navigationBar.openCatalog();
-      await catalogPage.waitForLoad();
-      playExpect(await catalogPage.isModelDownloaded(model)).toBeTruthy();
-      await catalogPage.deleteModel(model);
-      await playExpect
-        // eslint-disable-next-line sonarjs/no-nested-functions
-        .poll(async () => await waitForCatalogModel(model))
-        .toBeFalsy();
+      playExpect(
+        (parsedJson.models as unknown[]).find(modelEntry => (modelEntry as { model: string }).model === modelName),
+      ).toBeTruthy();
     });
   });
 
-  // Do not use non-instruct models in playground tests.
-  // They break out of guilderails and fail the tests.
-  ['ibm-granite/granite-4.0-micro-GGUF'].forEach(modelName => {
-    test.describe.serial(`AI Lab playground creation and deletion for ${modelName}`, { tag: '@smoke' }, () => {
+  //todo: implement model service tests for appropriate models https://github.com/containers/podman-desktop-extension-ai-lab/issues/3844
+
+  AI_APP_MODEL_AND_NAMES.forEach((appNames, appModel) => {
+    /* eslint-disable sonarjs/no-nested-functions */
+    test.describe.serial(`Model download, Playground, AI App tests for ${appModel}`, { tag: '@smoke' }, () => {
       let catalogPage: AILabCatalogPage;
       let playgroundsPage: AILabPlaygroundsPage;
       let playgroundDetailsPage: AILabPlaygroundDetailsPage;
       let assistantResponse: Locator;
 
-      const playgroundName = 'test playground';
-      const systemPrompt = 'Always respond with: "Hello, I am Chat Bot"';
+      /*
+       * Model Download
+       */
+      test.describe.serial(`Download model ${appModel} via AI Lab Catalog`, () => {
+        test(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
+          aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+          await aiLabPage.navigationBar.waitForLoad();
 
-      test.beforeAll(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-        await aiLabPage.navigationBar.waitForLoad();
+          catalogPage = await aiLabPage.navigationBar.openCatalog();
+          await catalogPage.waitForLoad();
+        });
 
-        catalogPage = await aiLabPage.navigationBar.openCatalog();
-        await catalogPage.waitForLoad();
+        test(`Download ${appModel} model if not available`, async () => {
+          test.setTimeout(610_000);
+          if (!(await catalogPage.isModelDownloaded(appModel))) {
+            await catalogPage.downloadModel(appModel);
+          }
+          await playExpect
+            // eslint-disable-next-line sonarjs/no-nested-functions
+            .poll(async () => await waitForCatalogModel(appModel), { timeout: 600_000, intervals: [5_000] })
+            .toBeTruthy();
+        });
       });
 
-      test(`Download ${modelName} model if not available`, async () => {
-        test.setTimeout(610_000);
-        if (!(await catalogPage.isModelDownloaded(modelName))) {
-          await catalogPage.downloadModel(modelName);
-        }
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(modelName), { timeout: 600_000, intervals: [5_000] })
-          .toBeTruthy();
-      });
+      /*
+       * Playground tests
+       */
+      if (PLAYGROUND_TEST_MODELS.includes(appModel)) {
+        test.describe.serial(`Run Playground tests for ${appModel}`, () => {
+          test(`Create AI Lab playground for ${appModel}`, async () => {
+            test.setTimeout(310_000);
+            playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
+            await playgroundsPage.waitForLoad();
 
-      test(`Create AI Lab playground for ${modelName}`, async () => {
-        test.setTimeout(310_000);
-        playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
-        await playgroundsPage.waitForLoad();
+            await playgroundsPage.createNewPlayground(PLAYGROUND_NAME);
+            await playgroundsPage.waitForLoad();
+            await playExpect
+              // eslint-disable-next-line sonarjs/no-nested-functions
+              .poll(async () => await playgroundsPage.doesPlaygroundExist(PLAYGROUND_NAME), { timeout: 60_000 })
+              .toBeTruthy();
+          });
 
-        await playgroundsPage.createNewPlayground(playgroundName);
-        await playgroundsPage.waitForLoad();
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await playgroundsPage.doesPlaygroundExist(playgroundName), { timeout: 60_000 })
-          .toBeTruthy();
-      });
+          test(`Go to AI Lab playground details for ${appModel}`, async () => {
+            playgroundDetailsPage = await playgroundsPage.goToPlaygroundDetails(PLAYGROUND_NAME);
+            await playgroundDetailsPage.waitForLoad();
 
-      test(`Go to AI Lab playground details for ${modelName}`, async () => {
-        playgroundDetailsPage = await playgroundsPage.goToPlaygroundDetails(playgroundName);
-        await playgroundDetailsPage.waitForLoad();
+            await playExpect(playgroundDetailsPage.conversationSectionLocator).toBeVisible();
+            await playExpect(playgroundDetailsPage.temperatureSliderLocator).toBeVisible();
+            await playExpect(playgroundDetailsPage.maxTokensSliderLocator).toBeVisible();
+            await playExpect(playgroundDetailsPage.topPSliderLocator).toBeVisible();
+            await playExpect(playgroundDetailsPage.deletePlaygroundButton).toBeEnabled();
+          });
 
-        await playExpect(playgroundDetailsPage.conversationSectionLocator).toBeVisible();
-        await playExpect(playgroundDetailsPage.temperatureSliderLocator).toBeVisible();
-        await playExpect(playgroundDetailsPage.maxTokensSliderLocator).toBeVisible();
-        await playExpect(playgroundDetailsPage.topPSliderLocator).toBeVisible();
-        await playExpect(playgroundDetailsPage.deletePlaygroundButton).toBeEnabled();
-      });
+          test('Set system prompt, submit user input, and verify assistant response is visible', async () => {
+            test.setTimeout(100_000);
+            await playgroundDetailsPage.defineSystemPrompt(SYSTEM_PROMPT);
+            await playgroundDetailsPage.submitUserInput('Hello');
+            // Get the first assistant response
+            assistantResponse = await playgroundDetailsPage.getAssistantResponse(0);
+            await playExpect(assistantResponse).toBeVisible();
+          });
 
-      test('Set system prompt, submit user input, and verify assistant response is visible', async () => {
-        test.setTimeout(100_000);
-        await playgroundDetailsPage.defineSystemPrompt(systemPrompt);
-        await playgroundDetailsPage.submitUserInput('Hello');
-        // Get the first assistant response
-        assistantResponse = await playgroundDetailsPage.getAssistantResponse(0);
-        await playExpect(assistantResponse).toBeVisible();
-      });
+          test('Verify assistant response contains the expected system prompt', async () => {
+            playExpect(await assistantResponse.innerText()).toContain('Hello, I am Chat Bot');
+          });
 
-      test('Verify assistant response contains the expected system prompt', async () => {
-        playExpect(await assistantResponse.innerText()).toContain('Hello, I am Chat Bot');
-      });
+          test(`Delete AI Lab playground for ${appModel}`, async () => {
+            test.setTimeout(70_000);
+            playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
+            await playgroundsPage.waitForLoad();
 
-      test(`Delete AI Lab playground for ${modelName}`, async () => {
-        test.setTimeout(70_000);
-        playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
-        await playgroundsPage.waitForLoad();
+            await playgroundsPage.deletePlayground(PLAYGROUND_NAME);
 
-        await playgroundsPage.deletePlayground(playgroundName);
+            await playExpect
+              // eslint-disable-next-line sonarjs/no-nested-functions
+              .poll(async () => await playgroundsPage.doesPlaygroundExist(PLAYGROUND_NAME), { timeout: 60_000 })
+              .toBeFalsy();
+          });
 
-        await playExpect
-          // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await playgroundsPage.doesPlaygroundExist(playgroundName), { timeout: 60_000 })
-          .toBeFalsy();
-      });
+          test(`Cleaning up model service`, async () => {
+            test.setTimeout(120_000);
+            await cleanupServices();
+          });
+        });
+      }
 
-      test.afterAll(`Cleaning up service model`, async ({ navigationBar }) => {
-        test.setTimeout(120_000);
-        await cleanupServices();
-        await deleteAllModels();
-        await deleteUnusedImages(navigationBar);
-      });
-    });
-  });
-
-  AI_APP_MODEL_AND_NAMES.forEach((appNames, appModel) => {
-    /* eslint-disable sonarjs/no-nested-functions */
-    test.describe.serial(`AI Recipe installation for ${appModel}`, { tag: '@smoke' }, () => {
+      /*
+       * Perform app installation tests for each app name associated with the model
+       */
       appNames.forEach(appName => {
         test.describe.serial(`AI Recipe installation ${appName}`, () => {
+          let recipesCatalogPage: AILabRecipesCatalogPage;
+
           test.skip(
             !process.env.EXT_TEST_RAG_CHATBOT &&
               (appName === 'RAG Chatbot' ||
@@ -424,7 +455,16 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
                 appName === 'Graph RAG Chat Application'),
             'EXT_TEST_RAG_CHATBOT variable not set, skipping test',
           );
-          let recipesCatalogPage: AILabRecipesCatalogPage;
+
+          test.skip(
+            appName === 'Audio to Text' && !!isCI && !!isLinux,
+            'Audio to Text app is skipped on Linux CI due to stability issues https://github.com/containers/podman-desktop-extension-ai-lab/issues/4227 , https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
+          );
+
+          test.skip(
+            appName === 'Object Detection' && !!isCI && !!isWindows,
+            'Object Detection app is skipped on Windows CI due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3197',
+          );
 
           test(`Open Recipes Catalog`, async ({ runner, page, navigationBar }) => {
             aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
@@ -434,126 +474,103 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
             await recipesCatalogPage.waitForLoad();
           });
 
-          test.skip(
-            appName === 'Audio to Text' && !!isCI && !!isLinux,
-            'Audio to Text app is skipped on Linux CI due to stability issues',
-          );
-
           test(`Install ${appName} example app`, async () => {
             test.setTimeout(1_500_000);
-            test.skip(
-              appName === 'Object Detection' && isCI && !isMac,
-              'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
-            );
             const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
             await demoApp.waitForLoad();
-            await demoApp.startNewDeployment();
+            await demoApp.startNewDeployment(1_400_000);
           });
 
-          test(`Verify ${appName} app HTTP page is reachable`, async ({ request }) => {
-            test.setTimeout(60_000);
-            test.skip(
-              appName === 'Object Detection' && isCI && !isMac,
-              'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
-            );
-            let response: APIResponse | undefined = undefined;
+          /*
+           * Test application functionality
+           */
+          if (AI_APP_HTTP_TEST_APP_NAMES.includes(appName)) {
+            test(`Verify ${appName} app HTTP page is reachable`, async ({ request }) => {
+              test.setTimeout(60_000);
+              let response: APIResponse | undefined = undefined;
 
-            switch (appName) {
-              case 'Object Detection': {
-                const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
-                const appPort = await aiRunningAppsPage.getAppPort(appName);
-                response = await request.get(`http://localhost:${appPort}`, { timeout: 60_000 });
-                playExpect(response.ok()).toBeTruthy();
-                const body = await response.text();
-                playExpect(body).toContain('<title>Streamlit</title>');
-                break;
+              switch (appName) {
+                case 'Object Detection': {
+                  const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
+                  const appPort = await aiRunningAppsPage.getAppPort(appName);
+                  response = await request.get(`http://localhost:${appPort}`, { timeout: 60_000 });
+                  playExpect(response.ok()).toBeTruthy();
+                  const body = await response.text();
+                  playExpect(body).toContain('<title>Streamlit</title>');
+                  break;
+                }
               }
+            });
+          }
 
-              default:
-                console.warn(`Unhandled AI App: ${appName}`);
-                test.skip(true, 'Test is not implemented yet');
-            }
-          });
+          if (AI_APP_SERVICE_RESPONSE_TEST_APP_NAMES.includes(appName)) {
+            test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
+              test.setTimeout(600_000);
 
-          test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
-            test.setTimeout(600_000);
-            test.fail(
-              appName === 'Audio to Text',
-              'Expected failure due to issue #3111: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
-            );
-            test.skip(
-              appName === 'Object Detection' && isCI && !isMac,
-              'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
-            );
+              let port: string = '';
+              let baseUrl: string = '';
+              let response: APIResponse | undefined = undefined;
+              let expectedResponse: string = '';
 
-            let port: string = '';
-            let baseUrl: string = '';
-            let response: APIResponse | undefined = undefined;
-            let expectedResponse: string = '';
+              switch (appName) {
+                case 'Audio to Text': {
+                  test.fail(
+                    appName === 'Audio to Text',
+                    'Expected failure due to issue #3111: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
+                  );
+                  port = await getModelServicePort(appModel);
+                  baseUrl = `http://localhost:${port}`;
+                  expectedResponse =
+                    'And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country';
+                  const audioFileContent = fs.readFileSync(TEST_AUDIO_FILE_PATH);
 
-            switch (appName) {
-              case 'Audio to Text': {
-                port = await getModelServicePort(appModel);
-                baseUrl = `http://localhost:${port}`;
-                expectedResponse =
-                  'And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country';
-                const audioFileContent = fs.readFileSync(TEST_AUDIO_FILE_PATH);
-
-                response = await request.post(`${baseUrl}/inference`, {
-                  headers: {
-                    Accept: 'application/json',
-                  },
-                  multipart: {
-                    file: {
-                      name: 'test.wav',
-                      mimeType: 'audio/wav',
-                      buffer: audioFileContent,
+                  response = await request.post(`${baseUrl}/inference`, {
+                    headers: {
+                      Accept: 'application/json',
                     },
-                  },
-                  timeout: 600_000,
-                });
-                break;
+                    multipart: {
+                      file: {
+                        name: 'test.wav',
+                        mimeType: 'audio/wav',
+                        buffer: audioFileContent,
+                      },
+                    },
+                    timeout: 600_000,
+                  });
+                  break;
+                }
+
+                case 'Function calling': {
+                  port = await getModelServicePort(appModel);
+                  baseUrl = `http://localhost:${port}`;
+                  expectedResponse = 'Prague';
+                  response = await request.post(`${baseUrl}/v1/chat/completions`, {
+                    data: {
+                      messages: [
+                        { role: 'system', content: 'You are a helpful assistant.' },
+                        { role: 'user', content: 'What is the capital of Czech Republic?' },
+                      ],
+                    },
+                    timeout: 600_000,
+                  });
+                  break;
+                }
               }
 
-              case 'Function calling': {
-                port = await getModelServicePort(appModel);
-                baseUrl = `http://localhost:${port}`;
-                expectedResponse = 'Prague';
-                response = await request.post(`${baseUrl}/v1/chat/completions`, {
-                  data: {
-                    messages: [
-                      { role: 'system', content: 'You are a helpful assistant.' },
-                      { role: 'user', content: 'What is the capital of Czech Republic?' },
-                    ],
-                  },
-                  timeout: 600_000,
-                });
-                break;
+              if (response) {
+                playExpect(response.ok()).toBeTruthy();
+                const body = await response?.body();
+                const text = body?.toString() ?? '';
+                playExpect(text).toContain(expectedResponse);
               }
-
-              default:
-                console.warn(`Unhandled AI App: ${appName}`);
-                test.skip(true, 'Test is not implemented yet');
-            }
-
-            if (response) {
-              playExpect(response.ok()).toBeTruthy();
-              const body = await response?.body();
-              const text = body?.toString() ?? '';
-              playExpect(text).toContain(expectedResponse);
-            }
-          });
+            });
+          }
 
           test(`${appName}: Restart, Stop, Delete.`, async () => {
             test.setTimeout(240_000);
-            test.skip(
-              appName === 'Object Detection' && isCI && !isMac,
-              'Currently we are facing issues with the Object Detection app installation on Windows and Linux CI.',
-            );
 
             await restartApp(appName);
             await stopAndDeleteApp(appName);
-            await cleanupServices();
           });
         });
       });
@@ -801,8 +818,8 @@ async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
 }
 
 async function waitForCatalogModel(modelName: string): Promise<boolean> {
-  const recipeCatalogOage = await aiLabPage.navigationBar.openRecipesCatalog();
-  await recipeCatalogOage.waitForLoad();
+  const recipeCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
+  await recipeCatalogPage.waitForLoad();
 
   const catalogPage = await aiLabPage.navigationBar.openCatalog();
   await catalogPage.waitForLoad();

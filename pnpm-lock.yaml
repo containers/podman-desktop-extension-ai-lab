@@ -127,8 +127,8 @@ importers:
         specifier: ^2.0.30
         version: 2.0.30(zod@4.3.6)
       '@huggingface/gguf':
-        specifier: ^0.3.4
-        version: 0.3.4
+        specifier: ^0.3.5
+        version: 0.3.5
       '@huggingface/hub':
         specifier: ^2.10.1
         version: 2.10.1
@@ -952,8 +952,8 @@ packages:
     resolution: {integrity: sha512-YTVITFGN0/24PxzXrwqCgnyd7njDuzp5ZvaCx5nq/jg55kUYd94Nj8UTchBdBofi/L0nwRfjGOg0E41d2u9T1w==}
     engines: {node: '>=6'}
 
-  '@huggingface/gguf@0.3.4':
-    resolution: {integrity: sha512-+qAgKfIXF75oonWfLzN4X5kc2gUvmbbiBXRZzZ99wQ4pe7RqpaNdByzRb9/BIJXFQB1MJiXdbEXFFWeeISiIZw==}
+  '@huggingface/gguf@0.3.5':
+    resolution: {integrity: sha512-gVYq/HiCzyJr1UdykB4XLAPD41a/N7LCNUCdjfHuc+mCAXhx+nOEkP1+XAxknmLfw9x0h8bnkEXPG2V6HKeKww==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -5379,7 +5379,7 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.2.0
 
-  '@huggingface/gguf@0.3.4':
+  '@huggingface/gguf@0.3.5':
     dependencies:
       '@huggingface/tasks': 0.19.85
 

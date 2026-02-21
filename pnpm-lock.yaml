@@ -130,8 +130,8 @@ importers:
         specifier: ^0.3.5
         version: 0.3.5
       '@huggingface/hub':
-        specifier: ^2.10.1
-        version: 2.10.1
+        specifier: ^2.10.3
+        version: 2.10.3
       ai:
         specifier: ^6.0.95
         version: 6.0.95(zod@4.3.6)
@@ -957,8 +957,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.10.1':
-    resolution: {integrity: sha512-FVqG3qoqlynDBfL4SfWsA5A16e61PUaiWGlrvP4YaxWLrnvhQ+224IR7O3CKu23OqBNAppWG8rBinTInK88+uA==}
+  '@huggingface/hub@2.10.3':
+    resolution: {integrity: sha512-qSk4FcVFdTGx0lNpFyy7p2KwgAPCsjM2+tupG/MGToEvUGVLsy+dCmela1BcU/VvJNweCtnH5HwdNr7IQa4Zzw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -5386,7 +5386,7 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.19.85
 
-  '@huggingface/hub@2.10.1':
+  '@huggingface/hub@2.10.3':
     dependencies:
       '@huggingface/tasks': 0.19.85
     optionalDependencies:

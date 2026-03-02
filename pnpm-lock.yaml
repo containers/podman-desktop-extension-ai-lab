@@ -121,8 +121,8 @@ importers:
   packages/backend:
     dependencies:
       '@ai-sdk/mcp':
-        specifier: ^1.0.21
-        version: 1.0.21(zod@4.3.6)
+        specifier: ^1.0.22
+        version: 1.0.22(zod@4.3.6)
       '@ai-sdk/openai-compatible':
         specifier: ^2.0.30
         version: 2.0.30(zod@4.3.6)
@@ -133,8 +133,8 @@ importers:
         specifier: ^2.10.3
         version: 2.10.3
       ai:
-        specifier: ^6.0.95
-        version: 6.0.95(zod@4.3.6)
+        specifier: ^6.0.105
+        version: 6.0.105(zod@4.3.6)
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -344,14 +344,14 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
-  '@ai-sdk/gateway@3.0.53':
-    resolution: {integrity: sha512-QT3FEoNARMRlk8JJVR7L98exiK9C8AGfrEJVbRxBT1yIXKs/N19o/+PsjTRVsARgDJNcy9JbJp1FspKucEat0Q==}
+  '@ai-sdk/gateway@3.0.59':
+    resolution: {integrity: sha512-MbtheWHgEFV/8HL1Z6E3hOAsmP73zZlNFg0F0nJAD0Adnjp4J/plqNK00Y896d+dWTw+r0OXzyov9/2wCFjH0Q==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/mcp@1.0.21':
-    resolution: {integrity: sha512-dRX2X6GDadZNpiylNnw0HP7zJC8ggVOOJV/JtxuF6CgtP8CKnc7a/wEzpUw1m/4AGdD3mTDhKnKFwC4y10a8FQ==}
+  '@ai-sdk/mcp@1.0.22':
+    resolution: {integrity: sha512-EY8WpJd6htzXJDK67ahab4Rtn1omz7r82i+6vOrImtAenaBp2nXsSL7T4GxbtQBieRJVEtyg6lzgyYOOV3YVpg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -364,6 +364,12 @@ packages:
 
   '@ai-sdk/provider-utils@4.0.15':
     resolution: {integrity: sha512-8XiKWbemmCbvNN0CLR9u3PQiet4gtEVIrX4zzLxnCj06AwsEDJwJVBbKrEI4t6qE8XRSIvU2irka0dcpziKW6w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/provider-utils@4.0.16':
+    resolution: {integrity: sha512-kBvDqNkt5EwlzF9FujmNhhtl8FYg3e8FO8P5uneKliqfRThWemzBj+wfYr7ZCymAQhTRnwSSz1/SOqhOAwmx9g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -1960,8 +1966,8 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  ai@6.0.95:
-    resolution: {integrity: sha512-10emBqMtiAqyR0xyVdVw2/mZgKWKSWagUHdkE54BNd9b5KSW9ez1BtAmO78nyOtLbOiDfLHUWSUtcJ276/fiKA==}
+  ai@6.0.105:
+    resolution: {integrity: sha512-rp+exWtZS3J0DDvZIfetpKCIg7D3cCsvBPoFN3I67IDTs9aoBZDbpecoIkmNLT+U9RBkoEial3OGHRvme23HCw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -2956,6 +2962,7 @@ packages:
   git-raw-commits@4.0.0:
     resolution: {integrity: sha512-ICsMM1Wk8xSGMowkOmPrzo2Fgmfo4bMHLNX6ytHjajRJUqvHOw/TFapQ+QG75c3X/tTDDhOSRPGC52dDbNM8FQ==}
     engines: {node: '>=16'}
+    deprecated: This package is no longer maintained. For the JavaScript API, please use @conventional-changelog/git-client instead.
     hasBin: true
 
   glob-parent@5.1.2:
@@ -4947,17 +4954,17 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@ai-sdk/gateway@3.0.53(zod@4.3.6)':
+  '@ai-sdk/gateway@3.0.59(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.15(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.16(zod@4.3.6)
       '@vercel/oidc': 3.1.0
       zod: 4.3.6
 
-  '@ai-sdk/mcp@1.0.21(zod@4.3.6)':
+  '@ai-sdk/mcp@1.0.22(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.15(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.16(zod@4.3.6)
       pkce-challenge: 5.0.1
       zod: 4.3.6
 
@@ -4968,6 +4975,13 @@ snapshots:
       zod: 4.3.6
 
   '@ai-sdk/provider-utils@4.0.15(zod@4.3.6)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.8
+      '@standard-schema/spec': 1.1.0
+      eventsource-parser: 3.0.6
+      zod: 4.3.6
+
+  '@ai-sdk/provider-utils@4.0.16(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@standard-schema/spec': 1.1.0
@@ -6464,11 +6478,11 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@6.0.95(zod@4.3.6):
+  ai@6.0.105(zod@4.3.6):
     dependencies:
-      '@ai-sdk/gateway': 3.0.53(zod@4.3.6)
+      '@ai-sdk/gateway': 3.0.59(zod@4.3.6)
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.15(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.16(zod@4.3.6)
       '@opentelemetry/api': 1.9.0
       zod: 4.3.6
 

@@ -41,7 +41,7 @@ importers:
         version: 3.2.4(vitest@3.2.4(@types/node@25.0.6)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.0.6)(typescript@5.9.3))(yaml@2.8.1))
       autoprefixer:
         specifier: ^10.4.24
-        version: 10.4.24(postcss@8.5.6)
+        version: 10.4.24(postcss@8.5.8)
       commitlint:
         specifier: ^20.4.2
         version: 20.4.2(@types/node@25.0.6)(typescript@5.9.3)
@@ -103,8 +103,8 @@ importers:
         specifier: ^4.4.4
         version: 4.4.4(picomatch@4.0.3)(svelte@5.53.0)(typescript@5.9.3)
       svelte-eslint-parser:
-        specifier: ^1.4.1
-        version: 1.4.1(svelte@5.53.0)
+        specifier: ^1.5.1
+        version: 1.5.1(svelte@5.53.0)
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -3992,6 +3992,10 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.5.8:
+    resolution: {integrity: sha512-OW/rX8O/jXnm82Ey1k44pObPtdblfiuWnrd8X7GJ7emImCOstunGbXUpp7HdBrFQX6rJzn3sPT397Wp5aCwCHg==}
+    engines: {node: ^10 || ^12 || >=14}
+
   postman-code-generators@1.10.1:
     resolution: {integrity: sha512-VGjqIFezG6tZRP3GvSbYjLDq3bQtXUeNDnBrN5CUIbgc9siu5Ubkva9hZnFpk+/qfi+PXs3CUR5mvV+WzpMhsg==}
     engines: {node: '>=12'}
@@ -4410,9 +4414,9 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: '>=5.0.0'
 
-  svelte-eslint-parser@1.4.1:
-    resolution: {integrity: sha512-1eqkfQ93goAhjAXxZiu1SaKI9+0/sxp4JIWQwUpsz7ybehRE5L8dNuz7Iry7K22R47p5/+s9EM+38nHV2OlgXA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0, pnpm: 10.24.0}
+  svelte-eslint-parser@1.5.1:
+    resolution: {integrity: sha512-UbY7DYoDg+x4AKLUcX5xWuEWylgmm8ZD2Z89YT/AK6Wm/ckeMTnOMwr6AVC99znXbRC26xzWEPhSgmB62E07Gg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0, pnpm: 10.30.2}
     peerDependencies:
       svelte: ^3.37.0 || ^4.0.0 || ^5.0.0
     peerDependenciesMeta:
@@ -6615,13 +6619,13 @@ snapshots:
 
   asynckit@0.4.0: {}
 
-  autoprefixer@10.4.24(postcss@8.5.6):
+  autoprefixer@10.4.24(postcss@8.5.8):
     dependencies:
       browserslist: 4.28.1
       caniuse-lite: 1.0.30001767
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.6
+      postcss: 8.5.8
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
@@ -7324,7 +7328,7 @@ snapshots:
       postcss-load-config: 3.1.4(postcss@8.5.6)
       postcss-safe-parser: 7.0.1(postcss@8.5.6)
       semver: 7.7.4
-      svelte-eslint-parser: 1.4.1(svelte@5.53.0)
+      svelte-eslint-parser: 1.5.1(svelte@5.53.0)
     optionalDependencies:
       svelte: 5.53.0
     transitivePeerDependencies:
@@ -8608,9 +8612,9 @@ snapshots:
     dependencies:
       postcss: 8.5.6
 
-  postcss-scss@4.0.9(postcss@8.5.6):
+  postcss-scss@4.0.9(postcss@8.5.8):
     dependencies:
-      postcss: 8.5.6
+      postcss: 8.5.8
 
   postcss-selector-parser@6.0.10:
     dependencies:
@@ -8625,6 +8629,12 @@ snapshots:
   postcss-value-parser@4.2.0: {}
 
   postcss@8.5.6:
+    dependencies:
+      nanoid: 3.3.11
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
+  postcss@8.5.8:
     dependencies:
       nanoid: 3.3.11
       picocolors: 1.1.1
@@ -9168,14 +9178,15 @@ snapshots:
     transitivePeerDependencies:
       - picomatch
 
-  svelte-eslint-parser@1.4.1(svelte@5.53.0):
+  svelte-eslint-parser@1.5.1(svelte@5.53.0):
     dependencies:
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
-      postcss: 8.5.6
-      postcss-scss: 4.0.9(postcss@8.5.6)
+      postcss: 8.5.8
+      postcss-scss: 4.0.9(postcss@8.5.8)
       postcss-selector-parser: 7.1.1
+      semver: 7.7.4
     optionalDependencies:
       svelte: 5.53.0
 

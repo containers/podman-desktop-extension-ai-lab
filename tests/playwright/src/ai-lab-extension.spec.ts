@@ -358,25 +358,21 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       /*
        * Model Download
        */
-      test.describe.serial(`Download model ${appModel} via AI Lab Catalog`, () => {
-        test(`Open AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-          aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-          await aiLabPage.navigationBar.waitForLoad();
+      test.beforeAll(`Download model ${appModel} via AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
+        test.setTimeout(620_000);
+        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+        await aiLabPage.navigationBar.waitForLoad();
 
-          catalogPage = await aiLabPage.navigationBar.openCatalog();
-          await catalogPage.waitForLoad();
-        });
+        catalogPage = await aiLabPage.navigationBar.openCatalog();
+        await catalogPage.waitForLoad();
 
-        test(`Download ${appModel} model if not available`, async () => {
-          test.setTimeout(610_000);
-          if (!(await catalogPage.isModelDownloaded(appModel))) {
-            await catalogPage.downloadModel(appModel);
-          }
-          await playExpect
-            // eslint-disable-next-line sonarjs/no-nested-functions
-            .poll(async () => await waitForCatalogModel(appModel), { timeout: 600_000, intervals: [5_000] })
-            .toBeTruthy();
-        });
+        if (!(await catalogPage.isModelDownloaded(appModel))) {
+          await catalogPage.downloadModel(appModel);
+        }
+        await playExpect
+          // eslint-disable-next-line sonarjs/no-nested-functions
+          .poll(async () => await waitForCatalogModel(appModel), { timeout: 600_000, intervals: [5_000] })
+          .toBeTruthy();
       });
 
       /*
@@ -575,13 +571,16 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         });
       });
 
-      test(`Ensure cleanup of "${appModel}", related services, and images`, async ({ runner, page, navigationBar }) => {
-        test.setTimeout(180_000);
-        aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-        await cleanupServices();
-        await deleteAllModels();
-        await deleteUnusedImages(navigationBar);
-      });
+      test.afterAll(
+        `Ensure cleanup of "${appModel}", related services, and images`,
+        async ({ runner, page, navigationBar }) => {
+          test.setTimeout(180_000);
+          aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
+          await cleanupServices();
+          await deleteAllModels();
+          await deleteUnusedImages(navigationBar);
+        },
+      );
     });
   });
 

@@ -39,12 +39,15 @@ export class AILabAppDetailsPage extends AILabBasePage {
     throw new Error('Method Not implemented');
   }
 
-  async startNewDeployment(): Promise<void> {
+  async startNewDeployment(timeout: number = 1_400_000): Promise<void> {
     await playExpect(this.startRecipeButton).toBeEnabled();
     await this.startRecipeButton.click();
     const starRecipePage = new AILabStartRecipePage(this.page, this.webview);
     await starRecipePage.waitForLoad();
-    await starRecipePage.startRecipe(this.appName);
+    // ensure model download tumeout is the closest integer to two fifths of total timeout divisible by 10_000
+    const modelDownloadTimeout = Math.ceil(Math.floor((timeout * 2) / 5) / 10_000) * 10_000;
+    const appStartupTimeout = timeout - modelDownloadTimeout;
+    await starRecipePage.startRecipe(this.appName, modelDownloadTimeout, appStartupTimeout);
   }
 
   async openRunningApps(): Promise<void> {

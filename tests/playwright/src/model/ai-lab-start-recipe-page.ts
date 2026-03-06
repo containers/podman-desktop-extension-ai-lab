@@ -48,45 +48,72 @@ export class AILabStartRecipePage extends AILabBasePage {
     await playExpect(this.heading).toBeVisible();
   }
 
-  async startRecipe(appName: string): Promise<void> {
+  async startRecipe(
+    appName: string,
+    modelDownloadTimeout: number = 500_000,
+    applicationStartTimeout: number = 900_000,
+  ): Promise<void> {
     await playExpect(this.startRecipeButton).toBeEnabled();
     await this.startRecipeButton.click();
+    const POLLING_INTERVAL = 10_000;
+    let latestStatus = '';
+    let latestStatusTimeout = 0;
+
     try {
       await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Reset');
     } catch (error) {
       console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
     }
 
-    try {
-      await waitUntil(
-        async () => {
-          const progress = await this.getModelDownloadProgress();
-          return progress === 100;
-        },
-        {
-          timeout: 600_000,
-          diff: 10_000,
-          message: 'WaitTimeout reached when waiting for mode download progress to be 100 percent',
-        },
-      );
-    } catch {
-      await this.refreshStartRecipeUI(this.page, this.webview, appName);
-    }
+    await waitUntil(
+      async () => {
+        latestStatus = await this.getLatestStatus();
+        if (/[Ee]rror/.test(latestStatus)) {
+          throw new Error(`Error encountered while starting application: ${latestStatus}`);
+        }
+        const progress = await this.getModelDownloadProgress();
+        if (progress < 100) {
+          console.log(
+            `Current model download progress: ${progress}%. Waiting for it to reach 100%. (timeout: ${latestStatusTimeout}ms of ${modelDownloadTimeout}ms)`,
+          );
+          latestStatusTimeout += POLLING_INTERVAL;
+          await this.refreshStartRecipeUI(this.page, this.webview, appName);
+        }
+        return progress === 100;
+      },
+      {
+        timeout: modelDownloadTimeout,
+        diff: POLLING_INTERVAL,
+        message: 'WaitTimeout reached when waiting for mode download progress to be 100 percent',
+      },
+    );
 
-    await playExpect
-      .poll(async () => await this.getModelDownloadProgress(), { timeout: 60_000, intervals: [5_000] })
-      .toBe(100);
-
-    try {
-      await waitUntil(async () => (await this.getLatestStatus()).includes('AI App is running'), {
-        timeout: 600_000,
-        diff: 10_000,
+    await waitUntil(
+      async () => {
+        const currentStatus = await this.getLatestStatus();
+        if (currentStatus !== latestStatus) {
+          latestStatus = currentStatus;
+          latestStatusTimeout = 0;
+        } else {
+          latestStatusTimeout += POLLING_INTERVAL;
+        }
+        if (/[Ee]rror/.test(latestStatus)) {
+          throw new Error(`Error encountered while starting application: ${latestStatus}`);
+        }
+        if (!latestStatus.includes('AI App is running')) {
+          console.log(
+            `Latest status: ${latestStatus} (timeout: ${latestStatusTimeout}ms of ${applicationStartTimeout}ms)`,
+          );
+          await this.refreshStartRecipeUI(this.page, this.webview, appName);
+        }
+        return latestStatus.includes('AI App is running');
+      },
+      {
+        timeout: applicationStartTimeout,
+        diff: POLLING_INTERVAL,
         message: 'WaitTimeout reached when waiting for text: AI App is running',
-      });
-    } catch {
-      await this.refreshStartRecipeUI(this.page, this.webview, appName);
-    }
-    await playExpect(this.recipeStatus).toContainText('AI App is running', { timeout: 60_000 });
+      },
+    );
   }
 
   async getModelDownloadProgress(): Promise<number> {
@@ -150,18 +177,18 @@ export class AILabStartRecipePage extends AILabBasePage {
   }
 
   private async refreshStartRecipeUI(page: Page, webView: Page, appName: string): Promise<void> {
-    console.log('UI might be stuck, refreshing...');
+    console.debug('UI might be stuck, refreshing...');
     // do not leave webview, ie. do not switch to Dashboard
     const aiNavBar = new AILabNavigationBar(page, webView);
     await aiNavBar.openRunningApps();
-    console.log('Finding Tasks in status Bar');
+    console.debug('Finding Tasks in status Bar');
     const statusBar = new StatusBar(page);
     await statusBar.tasksButton.click();
-    console.log('Opened Tasks in status Bar');
+    console.debug('Opened Tasks in status Bar');
     const tasksManager = new TasksPage(page);
-    console.log('Finding particular task in task manager and switching to it');
+    console.debug('Finding particular task in task manager and switching to it');
     await tasksManager.navigateToTask(`Pulling ${appName}`);
-    console.log('Start recipe page should be back');
+    console.debug('Start recipe page should be back');
     await playExpect(this.heading).toBeVisible();
   }
 }

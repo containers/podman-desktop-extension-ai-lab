@@ -43,8 +43,8 @@ importers:
         specifier: ^10.4.27
         version: 10.4.27(postcss@8.5.8)
       commitlint:
-        specifier: ^20.4.2
-        version: 20.4.2(@types/node@25.0.6)(conventional-commits-parser@6.3.0)(typescript@5.9.3)
+        specifier: ^20.4.4
+        version: 20.4.4(@types/node@25.0.6)(conventional-commits-parser@6.3.0)(typescript@5.9.3)
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -2260,8 +2260,8 @@ packages:
     resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
     engines: {node: '>=20'}
 
-  commitlint@20.4.2:
-    resolution: {integrity: sha512-y11c0fuclx7vsP3Onm+sUdjrq4FuKhpFCxG7pW1yWNLMKcTq356Cji6Js+dQ0DU8lSwPm26FURjtcd/G77lDTQ==}
+  commitlint@20.4.4:
+    resolution: {integrity: sha512-6KQrKZlNLfyK8TKdU5HMljMWLa+dHJsgm58eXy2r/4c0dQfZiEtGeZELtjArEFW5XR1Z+lyrcifqtBNN3ksbbg==}
     engines: {node: '>=v18'}
     hasBin: true
 
@@ -6701,10 +6701,10 @@ snapshots:
 
   commander@14.0.3: {}
 
-  commitlint@20.4.2(@types/node@25.0.6)(conventional-commits-parser@6.3.0)(typescript@5.9.3):
+  commitlint@20.4.4(@types/node@25.0.6)(conventional-commits-parser@6.3.0)(typescript@5.9.3):
     dependencies:
       '@commitlint/cli': 20.4.4(@types/node@25.0.6)(conventional-commits-parser@6.3.0)(typescript@5.9.3)
-      '@commitlint/types': 20.4.0
+      '@commitlint/types': 20.4.4
     transitivePeerDependencies:
       - '@types/node'
       - conventional-commits-filter

@@ -44,7 +44,7 @@
     "*.{md,css,json}": "prettier --write"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.4.4",
+    "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.4.4",
     "@eslint/compat": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^8.57.0",

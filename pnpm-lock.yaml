@@ -127,8 +127,8 @@ importers:
         specifier: ^2.0.35
         version: 2.0.35(zod@4.3.6)
       '@huggingface/gguf':
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.1
+        version: 0.4.1
       '@huggingface/hub':
         specifier: ^2.11.0
         version: 2.11.0
@@ -494,10 +494,6 @@ packages:
 
   '@commitlint/top-level@20.4.3':
     resolution: {integrity: sha512-qD9xfP6dFg5jQ3NMrOhG0/w5y3bBUsVGyJvXxdWEwBm8hyx4WOk3kKXw28T5czBYvyeCVJgJJ6aoJZUWDpaacQ==}
-    engines: {node: '>=v18'}
-
-  '@commitlint/types@20.4.4':
-    resolution: {integrity: sha512-dwTGzyAblFXHJNBOgrTuO5Ee48ioXpS5XPRLLatxhQu149DFAHUcB3f0Q5eea3RM4USSsP1+WVT2dBtLVod4fg==}
     engines: {node: '>=v18'}
 
   '@commitlint/types@20.5.0':
@@ -972,8 +968,8 @@ packages:
     resolution: {integrity: sha512-YTVITFGN0/24PxzXrwqCgnyd7njDuzp5ZvaCx5nq/jg55kUYd94Nj8UTchBdBofi/L0nwRfjGOg0E41d2u9T1w==}
     engines: {node: '>=6'}
 
-  '@huggingface/gguf@0.4.0':
-    resolution: {integrity: sha512-ZTNM32dLPI06f2L3rLRS7WMnCN5r7QUqBhqGYcML90TXcRwC/eaNTb2UWEiEnp3VHh+16gR3jDq9aLlAloGEvQ==}
+  '@huggingface/gguf@0.4.1':
+    resolution: {integrity: sha512-HV+ZPOdHJ1e477te0mWNgBmsuW1LBPkTKD+EVeiuctQg2FB9QdhAhVcONvtJm48Gb9aTls3iUSYcZdX9tTquFA==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -984,6 +980,9 @@ packages:
 
   '@huggingface/tasks@0.19.90':
     resolution: {integrity: sha512-nfV9luJbvwGQ/5oKXkKhCV9h4X7mwh1YaGG3ORd6UMLDSwr1OFSSatcBX0O9OtBtmNK19aGSjbLFqqgcIR6+IA==}
+
+  '@huggingface/tasks@0.20.3':
+    resolution: {integrity: sha512-5tmzXT1sq57ELQ2Mf+gmIshUp18Vn8UI7iL1NX/CSzJMmBvHCtul6vdrLQvc7UTJZ+GNqDELnC6HweyqqrFs7Q==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5155,11 +5154,6 @@ snapshots:
     dependencies:
       escalade: 3.2.0
 
-  '@commitlint/types@20.4.4':
-    dependencies:
-      conventional-commits-parser: 6.3.0
-      picocolors: 1.1.1
-
   '@commitlint/types@20.5.0':
     dependencies:
       conventional-commits-parser: 6.3.0
@@ -5463,9 +5457,9 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.2.0
 
-  '@huggingface/gguf@0.4.0':
+  '@huggingface/gguf@0.4.1':
     dependencies:
-      '@huggingface/tasks': 0.19.90
+      '@huggingface/tasks': 0.20.3
 
   '@huggingface/hub@2.11.0':
     dependencies:
@@ -5474,6 +5468,8 @@ snapshots:
       cli-progress: 3.12.0
 
   '@huggingface/tasks@0.19.90': {}
+
+  '@huggingface/tasks@0.20.3': {}
 
   '@humanfs/core@0.19.1': {}
 

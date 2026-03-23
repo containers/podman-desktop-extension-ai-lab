@@ -324,8 +324,8 @@ importers:
         specifier: ^1.58.2
         version: 1.58.2
       '@podman-desktop/tests-playwright':
-        specifier: 1.25.1
-        version: 1.25.1
+        specifier: 1.26.1
+        version: 1.26.1
       '@types/node':
         specifier: ^24
         version: 24.10.4
@@ -1118,8 +1118,8 @@ packages:
   '@podman-desktop/api@1.13.0-202409181313-78725a6565':
     resolution: {integrity: sha512-tsgjYU8bXAO9QlED6J+aUPOYXA1Nw1no6CsTTkFaZKVmL3B+jQwNxPJcVAHTz9anmqwITiEtQDpopVMg2s2buQ==}
 
-  '@podman-desktop/tests-playwright@1.25.1':
-    resolution: {integrity: sha512-Jn3QPkVraSZ6etiuZEaCGYss9EzA7SjPKz8xGG9wEVQDBZsq3KlQeRPalzcd1lAj1o6+LAKNsV67bqp6OqftBg==}
+  '@podman-desktop/tests-playwright@1.26.1':
+    resolution: {integrity: sha512-hzHKJ2Bz28Ml5TIZuKkm0NsmApy1qtpQkB2qyH3vOfZ8MC+7icjzW6TD+68mhA58kWsbFRqIyOsS8uONVTbNSQ==}
 
   '@podman-desktop/ui-svelte@1.21.0':
     resolution: {integrity: sha512-5ptTIAflI191jgF5q0n4YHxCo588OC4eUEAJhgUz01EglCIRSCUluI7WzQ8ML7X90iLbcJ5O8gsbXj6eERdbkg==}
@@ -1794,6 +1794,11 @@ packages:
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     resolution: {integrity: sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==}
     cpu: [arm]
+    os: [android]
+
+  '@unrs/resolver-binding-android-arm64@1.11.1':
+    resolution: {integrity: sha512-lCxkVtb4wp1v+EoN+HjIG9cIIzPkX5OtM03pQYkG+U5O/wL53LC4QbIeazgiKqluGeVEeBlZahHalCaBvU1a2g==}
+    cpu: [arm64]
     os: [android]
 
   '@unrs/resolver-binding-darwin-arm64@1.11.1':
@@ -5567,7 +5572,7 @@ snapshots:
 
   '@podman-desktop/api@1.13.0-202409181313-78725a6565': {}
 
-  '@podman-desktop/tests-playwright@1.25.1': {}
+  '@podman-desktop/tests-playwright@1.26.1': {}
 
   '@podman-desktop/ui-svelte@1.21.0(svelte-fa@4.0.4(svelte@5.54.0))(svelte@5.54.0)':
     dependencies:
@@ -6214,6 +6219,9 @@ snapshots:
       eslint-visitor-keys: 5.0.1
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
+    optional: true
+
+  '@unrs/resolver-binding-android-arm64@1.11.1':
     optional: true
 
   '@unrs/resolver-binding-darwin-arm64@1.11.1':
@@ -9268,6 +9276,7 @@ snapshots:
       napi-postinstall: 0.3.3
     optionalDependencies:
       '@unrs/resolver-binding-android-arm-eabi': 1.11.1
+      '@unrs/resolver-binding-android-arm64': 1.11.1
       '@unrs/resolver-binding-darwin-arm64': 1.11.1
       '@unrs/resolver-binding-darwin-x64': 1.11.1
       '@unrs/resolver-binding-freebsd-x64': 1.11.1

@@ -179,8 +179,8 @@ importers:
         specifier: ^3.0.8
         version: 3.0.8
       '@ai-sdk/provider-utils':
-        specifier: ^4.0.22
-        version: 4.0.22(zod@4.3.6)
+        specifier: ^4.0.23
+        version: 4.0.23(zod@4.3.6)
       '@podman-desktop/api':
         specifier: 1.13.0-202409181313-78725a6565
         version: 1.13.0-202409181313-78725a6565
@@ -355,12 +355,6 @@ packages:
 
   '@ai-sdk/openai-compatible@2.0.39':
     resolution: {integrity: sha512-vEbA2yZcNbdYoxcLTpGwrHBBdq444CJlm/8nLg+lI65s9PclSPgUxpn6qKk+bGyEnBUhvhZ9uda2e06YC0xsbA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider-utils@4.0.22':
-    resolution: {integrity: sha512-B2OTFcRw/Pdka9ZTjpXv6T6qZ6RruRuLokyb8HwW+aoW9ndJ3YasA3/mVswyJw7VMBF8ofXgqvcrCt9KYvFifg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -4936,13 +4930,6 @@ snapshots:
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
-      zod: 4.3.6
-
-  '@ai-sdk/provider-utils@4.0.22(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.8
-      '@standard-schema/spec': 1.1.0
-      eventsource-parser: 3.0.6
       zod: 4.3.6
 
   '@ai-sdk/provider-utils@4.0.23(zod@4.3.6)':

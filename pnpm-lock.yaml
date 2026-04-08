@@ -124,8 +124,8 @@ importers:
         specifier: ^1.0.35
         version: 1.0.35(zod@4.3.6)
       '@ai-sdk/openai-compatible':
-        specifier: ^2.0.40
-        version: 2.0.40(zod@4.3.6)
+        specifier: ^2.0.41
+        version: 2.0.41(zod@4.3.6)
       '@huggingface/gguf':
         specifier: ^0.4.1
         version: 0.4.1
@@ -353,8 +353,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/openai-compatible@2.0.40':
-    resolution: {integrity: sha512-mhJQJh/CijoHOHby0jYeWZVCflyc6vVLz8LJ+XLEkoOl47/BsEJzhDz7YRZnrmDnO1oXtqq/awfgwPyd4VStWg==}
+  '@ai-sdk/openai-compatible@2.0.41':
+    resolution: {integrity: sha512-kNAGINk71AlOXx10Dq/PXw4t/9XjdK8uxfpVElRwtSFMdeSiLVt58p9TPx4/FJD+hxZuVhvxYj9r42osxWq79g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -4926,7 +4926,7 @@ snapshots:
       pkce-challenge: 5.0.1
       zod: 4.3.6
 
-  '@ai-sdk/openai-compatible@2.0.40(zod@4.3.6)':
+  '@ai-sdk/openai-compatible@2.0.41(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)

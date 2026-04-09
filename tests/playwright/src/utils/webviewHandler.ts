@@ -42,7 +42,7 @@ export async function handleWebview(
   await playExpect
     .poll(
       async () => {
-        const windows = runner.getElectronApp().windows();
+        const windows = runner.getWindows();
         if (windows.length < 2 || !windows[1]) {
           return false;
         }
@@ -57,7 +57,7 @@ export async function handleWebview(
     )
     .toBeTruthy();
 
-  const [mainPage, webViewPage] = runner.getElectronApp().windows();
+  const [mainPage, webViewPage] = runner.getWindows();
 
   try {
     await mainPage.evaluate(() => {

@@ -19,6 +19,7 @@ import { type Disposable } from '@podman-desktop/api';
 import { GPUVendor, type IGPUInfo } from '@shared/models/IGPUInfo';
 import { Publisher } from '../utils/Publisher';
 import { graphics } from 'systeminformation';
+import { platform } from 'node:os';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_GPUS_UPDATE } from '@shared/Messages';
 
@@ -47,6 +48,11 @@ export class GPUManager extends Publisher<IGPUInfo[]> implements Disposable {
       model: controller.model,
       vram: controller.vram ?? undefined,
     }));
+  }
+
+  #isPodmanMachineAvailable(): boolean {
+    const osPlatform = platform();
+    return osPlatform === 'darwin' || osPlatform === 'win32';
   }
 
   protected getVendor(raw: string): GPUVendor {

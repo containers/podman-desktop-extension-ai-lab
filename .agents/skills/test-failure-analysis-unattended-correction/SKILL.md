@@ -4,6 +4,37 @@ description: >-
   Use when a Playwright E2E test fails and you have a trace archive to investigate.
   Optionally accepts a GitHub Actions pipeline link for additional CI context.
   Runs non-interactively.
+allowed-tools:
+  # GitHub CLI — CI investigation, PR/issue/gist creation
+  - Bash(gh run:*)
+  - Bash(gh api:*)
+  - Bash(gh pr:*)
+  - Bash(gh issue:*)
+  - Bash(gh gist:*)
+  - Bash(gh label:*)
+  # Project verification — read-only checks from package.json
+  - Bash(pnpm lint:check)
+  - Bash(pnpm format:check)
+  - Bash(pnpm typecheck*)
+  - Bash(pnpm svelte:check)
+  # Git — read-only inspection
+  - Bash(git status*)
+  - Bash(git diff*)
+  - Bash(git log*)
+  - Bash(git remote*)
+  - Bash(git branch*)
+  # Git — branch and commit operations
+  - Bash(git checkout*)
+  - Bash(git add *)
+  - Bash(git commit -m *)
+  - Bash(git push -u origin *)
+  # Artifact extraction
+  - Bash(unzip:*)
+  - Bash(mkdir -p *)
+  # YAML validation
+  - 'Bash(python3 -c "import yaml:*)'
+  # Web search for upstream context
+  - WebSearch
 ---
 
 # Test Failure Analysis & Unattended Correction
@@ -14,15 +45,22 @@ Orchestration meta-skill: dispatches parallel analysis agents against trace arti
 
 ## When NOT to Use
 
-- No trace file available
+- No trace file AND no GitHub Actions pipeline link (need at least one)
 - Unit test failures (this is E2E/Playwright focused)
 
 ## Prerequisites
 
-- Playwright trace archive (required) — may be a nested zip (artifacts zip containing a `trace.zip` inside). Extract outer zip first, then locate the inner trace zip.
-- GitHub Actions pipeline link (optional — enables CI environment analysis)
+- **At least one of:**
+  - Playwright trace archive — may be a nested zip (artifacts zip containing a `trace.zip` inside). Extract outer zip first, then locate the inner trace zip.
+  - GitHub Actions pipeline link — enables CI log analysis. Sufficient on its own when tests never executed (e.g., infrastructure/setup failures).
 - `gh` CLI installed and authenticated
 - **Upstream targeting:** PRs and issues MUST be opened against the upstream repository (organizations `github.com/containers` or `github.com/podman-desktop`). Use `git remote -v` to identify the upstream remote. Do NOT open PRs or issues in user fork repositories.
+
+## Tooling
+
+- **Use dedicated tools over Bash equivalents:** prefer `Grep` over `bash grep/rg`, `Read` over `bash cat/head/tail`, `Glob` over `bash find/ls`. Reserve Bash for operations that require shell features (piping, unzip, git, gh).
+- **Package manager:** this project uses **pnpm** (not npm/npx). Always use `pnpm` to run scripts. Available scripts are defined in the root `package.json` — read it to discover the correct commands.
+- **Artifact handling:** CI artifacts expire (typically 90 days). When `gh run download` returns "no valid artifacts found", fall back to `gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs` to download raw job logs as a zip.
 
 ## Configuration
 
@@ -77,15 +115,14 @@ digraph correction_decision {
 6. Code Corrector implements corrections (see Code Corrector Agent Instructions below).
 7. Final verification:
    - Code review (superpowers:requesting-code-review) — high-confidence review of all changes
-   - Compilation validation — ensure the project compiles without errors or warnings caused by our changes
-   - Run `npm run lint:check` — no lint errors introduced
-   - Run `npm run format:check` — no formatting violations introduced
+   - Run `pnpm typecheck` — no type errors introduced
+   - Run `pnpm svelte:check` — no Svelte component errors introduced
+   - Run `pnpm lint:check` — no lint errors introduced
+   - Run `pnpm format:check` — no formatting violations introduced
    - **If any check fails:** launch a code-review sub-agent to diagnose, fix the issues, then re-run the failed checks. Max 3 fix-verify cycles. If still failing after 3 cycles, revert all code changes and follow the **Abort & Escalate** procedure (see below).
 8. **If `LOCAL=true`:** commit changes locally only. Do not create a PR, gist, or issue. End execution — the user will test and create a branch/PR manually.
-   **If `LOCAL=false` (default):** Create a **draft** PR via `gh pr create --draft`. Draft PRs prevent CI from firing on unattended changes — a human must review and mark ready before CI runs. Commits and PR title must be semantic — run `git log` to match the repository's commit message style. Keep commit messages short and precise. **IMPORTANT:** Check for a PR template at `.github/PULL_REQUEST_TEMPLATE.md` (use `gh api repos/{owner}/{repo}/contents/.github/PULL_REQUEST_TEMPLATE.md` to fetch it). The PR body MUST follow the repository's PR template structure. Only code/pipeline changes are committed — reports are local-only files.
-9. Post analysis to the PR:
-   - Create a gist containing both files: `gh gist create docs/superpowers/analysis/DATETIME_summary.md docs/superpowers/analysis/DATETIME_analysis_report.md`
-   - Post a single PR comment with the short summary inline and a link to the gist for the full analysis report. Keep the comment concise — long comments create spam in the PR.
+   **If `LOCAL=false` (default):** Create a **draft** PR via `gh pr create --draft`. Draft PRs prevent CI from firing on unattended changes — a human must review and mark ready before CI runs. Commits must be semantic — run `git log` to match the repository's commit message style. **Keep commit messages to a single subject line** (no body) — detailed context belongs in the PR description, not duplicated in the commit. **IMPORTANT:** Check for a PR template at `.github/PULL_REQUEST_TEMPLATE.md` (use `gh api repos/{owner}/{repo}/contents/.github/PULL_REQUEST_TEMPLATE.md` to fetch it). The PR body MUST follow the repository's PR template structure. Only code/pipeline changes are committed — reports are local-only files.
+9. Create a **public** gist containing both files: `gh gist create --public docs/superpowers/analysis/DATETIME_summary.md docs/superpowers/analysis/DATETIME_analysis_report.md` — include the gist link in the PR body (under the analysis/reference section of the PR template). Do NOT post a separate PR comment — all context belongs in the PR description.
 10. _Future: send `DATETIME_summary.md` to Slack channel (for internal CI integration)._
 
 ## Code Corrector Agent Instructions
@@ -110,6 +147,6 @@ When the skill cannot resolve issues after exhausting fix-verify cycles (step 7)
 1. Revert all code changes.
 2. **If `LOCAL=true`:** document failures in the analysis report. End execution.
    **If `LOCAL=false` (default):**
-3. Create a gist with the analysis report, summary, and failure documentation: `gh gist create docs/superpowers/analysis/DATETIME_summary.md docs/superpowers/analysis/DATETIME_analysis_report.md`
+3. Create a **public** gist with the analysis report, summary, and failure documentation: `gh gist create --public docs/superpowers/analysis/DATETIME_summary.md docs/superpowers/analysis/DATETIME_analysis_report.md`
 4. Open a GitHub issue using the repository's bug report template (`.github/ISSUE_TEMPLATE/bug_report.yml`). Use `gh issue create` with appropriate labels — check available labels via `gh label list` and pick what fits (e.g., `area/tests`, `kind/bug`, `qe/test-case`). Include the gist link and a concise description of the failure and what was attempted.
 5. Do not create a PR. End execution.

@@ -38,7 +38,7 @@ export type ContainerConnectionInfo =
   | NoContainerConnection
   | NativeContainerConnection;
 
-export type ContainerConnectionInfoStatus = 'running' | 'no-machine' | 'low-resources';
+export type ContainerConnectionInfoStatus = 'running' | 'no-machine' | 'low-resources' | 'native';
 
 export interface RunningContainerConnection {
   name: string;

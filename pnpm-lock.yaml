@@ -176,8 +176,8 @@ importers:
         version: 1.6.11
     devDependencies:
       '@ai-sdk/provider':
-        specifier: ^3.0.8
-        version: 3.0.8
+        specifier: ^3.0.9
+        version: 3.0.9
       '@ai-sdk/provider-utils':
         specifier: ^4.0.23
         version: 4.0.23(zod@4.3.6)
@@ -367,6 +367,10 @@ packages:
 
   '@ai-sdk/provider@3.0.8':
     resolution: {integrity: sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==}
+    engines: {node: '>=18'}
+
+  '@ai-sdk/provider@3.0.9':
+    resolution: {integrity: sha512-/ngMKqKdL9dSlY/eQ3NFDzzFyw0Hix+cbFFlyuKEKcOgpHdBt/spKUvX/i0wGrDLFPYJeVvv3N0j92LxWRL7yQ==}
     engines: {node: '>=18'}
 
   '@ampproject/remapping@2.3.0':
@@ -4972,6 +4976,10 @@ snapshots:
       zod: 4.3.6
 
   '@ai-sdk/provider@3.0.8':
+    dependencies:
+      json-schema: 0.4.0
+
+  '@ai-sdk/provider@3.0.9':
     dependencies:
       json-schema: 0.4.0
 

@@ -64,7 +64,7 @@
     "eslint-plugin-sonarjs": "^4.0.3",
     "eslint-plugin-svelte": "^3.17.1",
     "eslint-plugin-unicorn": "^64.0.0",
-    "globals": "^17.5.0",
+    "globals": "^17.6.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.4",
     "msw": "^2.14.2",

@@ -25,8 +25,8 @@ importers:
         specifier: ^20.5.2
         version: 20.5.2(@types/node@25.6.0)(conventional-commits-parser@6.4.0)(typescript@5.9.3)
       '@commitlint/config-conventional':
-        specifier: ^20.5.0
-        version: 20.5.0
+        specifier: ^21.0.1
+        version: 21.0.1
       '@eslint/compat':
         specifier: ^2.1.0
         version: 2.1.0(eslint@9.39.2(jiti@2.7.0))
@@ -450,9 +450,9 @@ packages:
     engines: {node: '>=v18'}
     hasBin: true
 
-  '@commitlint/config-conventional@20.5.0':
-    resolution: {integrity: sha512-t3Ni88rFw1XMa4nZHgOKJ8fIAT9M2j5TnKyTqJzsxea7FUetlNdYFus9dz+MhIRZmc16P0PPyEfh6X2d/qw8SA==}
-    engines: {node: '>=v18'}
+  '@commitlint/config-conventional@21.0.1':
+    resolution: {integrity: sha512-gRorrkfWOh/+V5X8GYWWbQvrzPczopGMS4CCNrQdHkK4xWElv82BDvIsDhJZWTlI7TazOlYea6VATufCsFs+sw==}
+    engines: {node: '>=22.12.0'}
 
   '@commitlint/config-validator@20.5.0':
     resolution: {integrity: sha512-T/Uh6iJUzyx7j35GmHWdIiGRQB+ouZDk0pwAaYq4SXgB54KZhFdJ0vYmxiW6AMYICTIWuyMxDBl1jK74oFp/Gw==}
@@ -513,6 +513,10 @@ packages:
   '@commitlint/types@20.5.0':
     resolution: {integrity: sha512-ZJoS8oSq2CAZEpc/YI9SulLrdiIyXeHb/OGqGrkUP6Q7YV+0ouNAa7GjqRdXeQPncHQIDz/jbCTlHScvYvO/gA==}
     engines: {node: '>=v18'}
+
+  '@commitlint/types@21.0.1':
+    resolution: {integrity: sha512-4u7w8jcoCUFWhjWnASYzZHAP34OqOtuFBN87nQmFvqda03YU0T6z+yB4w0gSAMpekiRqqGk5rt+qSlW+a2vSEg==}
+    engines: {node: '>=22.12.0'}
 
   '@conventional-changelog/git-client@2.7.0':
     resolution: {integrity: sha512-j7A8/LBEQ+3rugMzPXoKYzyUPpw/0CBQCyvtTR7Lmu4olG4yRC/Tfkq79Mr3yuPs0SUitlO2HwGP3gitMJnRFw==}
@@ -2382,8 +2386,8 @@ packages:
     resolution: {integrity: sha512-6gfI3otXK5Ph5DfCOI1dblr+kN3FAm5a97hYoQkqNZxOaYa5WKfXH+AnpsmS+iUH2mgVC2Cg2Qw9m5OKcmNrIg==}
     engines: {node: '>=18'}
 
-  conventional-changelog-conventionalcommits@9.3.0:
-    resolution: {integrity: sha512-kYFx6gAyjSIMwNtASkI3ZE99U1fuVDJr0yTYgVy+I2QG46zNZfl2her+0+eoviG82c5WQvW1jMt1eOQTeJLodA==}
+  conventional-changelog-conventionalcommits@9.3.1:
+    resolution: {integrity: sha512-dTYtpIacRpcZgrvBYvBfArMmK2xvIpv2TaxM0/ZI5CBtNUzvF2x0t15HsbRABWprS6UPmvj+PzHVjSx4qAVKyw==}
     engines: {node: '>=18'}
 
   conventional-commits-parser@6.3.0:
@@ -5145,10 +5149,10 @@ snapshots:
       - conventional-commits-parser
       - typescript
 
-  '@commitlint/config-conventional@20.5.0':
+  '@commitlint/config-conventional@21.0.1':
     dependencies:
-      '@commitlint/types': 20.5.0
-      conventional-changelog-conventionalcommits: 9.3.0
+      '@commitlint/types': 21.0.1
+      conventional-changelog-conventionalcommits: 9.3.1
 
   '@commitlint/config-validator@20.5.0':
     dependencies:
@@ -5242,6 +5246,11 @@ snapshots:
   '@commitlint/types@20.5.0':
     dependencies:
       conventional-commits-parser: 6.3.0
+      picocolors: 1.1.1
+
+  '@commitlint/types@21.0.1':
+    dependencies:
+      conventional-commits-parser: 6.4.0
       picocolors: 1.1.1
 
   '@conventional-changelog/git-client@2.7.0(conventional-commits-parser@6.4.0)':
@@ -6993,7 +7002,7 @@ snapshots:
     dependencies:
       compare-func: 2.0.0
 
-  conventional-changelog-conventionalcommits@9.3.0:
+  conventional-changelog-conventionalcommits@9.3.1:
     dependencies:
       compare-func: 2.0.0
 

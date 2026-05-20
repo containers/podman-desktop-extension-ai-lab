@@ -1,5 +1,7 @@
 {
   "name": "ai-lab-monorepo",
+  "repository": "https://github.com/containers/podman-desktop-extension-ai-lab",
+  "homepage": "https://github.com/containers/podman-desktop-extension-ai-lab#readme",
   "displayName": "ai-lab-monorepo",
   "description": "ai-lab-monorepo",
   "publisher": "redhat",

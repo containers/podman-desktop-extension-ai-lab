@@ -811,6 +811,12 @@ async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
 
     await imagesPage.deleteAllUnusedImages();
     await playExpect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 90_000 }).toBe(0);
+    // Wait for all in-progress deletions to complete before proceeding.
+    // Without this, Podman storage may still be removing layers when the next
+    // test group starts a build, causing "image not known" / "layer not known" errors.
+    await playExpect
+      .poll(async () => await imagesPage.getCountOfImagesByStatus('DELETING'), { timeout: 90_000 })
+      .toBe(0);
   } catch (error) {
     console.error('Error during deleteUnusedImages:', error);
   }

@@ -67,31 +67,45 @@ Orchestration meta-skill: dispatches parallel analysis agents against trace arti
 - **`git push` safety:** before pushing, verify with `git remote -v` that `origin` points to the user's fork, not the upstream repository. Never push directly to upstream.
 - **Artifact extraction:** always extract to `/tmp/`. Never unzip into the project working tree.
 - **Repo scoping:** all `gh pr create`, `gh gist create`, and `gh issue create` commands must target the upstream repo identified via `git remote -v`. Never target arbitrary repositories.
+- **NEVER `git checkout -b`, `git add`, or `git commit` when `COMMIT=false`.** These commands are gated. If `COMMIT` is not explicitly `true`, any attempt to branch, stage, or commit is a skill violation. Leave changes as unstaged working-tree modifications.
+- **NEVER `git push`, `gh pr create`, `gh gist create`, or `gh issue create` when `PUBLISH=false`.** These commands are gated. If `PUBLISH` is not explicitly `true`, any attempt to push or interact with GitHub is a skill violation. No remote side effects.
 
 ### Command Reference
 
-| Command                                                   | When to use                                               |
-| --------------------------------------------------------- | --------------------------------------------------------- |
-| `gh run view {id} --repo {owner}/{repo} --json jobs`      | Get run metadata, job details, step names and conclusions |
-| `gh run view {id} --repo {owner}/{repo} --log`            | Download job logs (fallback when artifacts expired)       |
-| `gh run list --repo {owner}/{repo} --workflow {name}`     | Check failure frequency across recent runs                |
-| `gh run download {id} --repo {owner}/{repo} --dir {path}` | Download test artifacts (traces, videos, results)         |
-| `gh pr create --draft`                                    | Create draft PR with fix                                  |
-| `gh gist create --public`                                 | Create public gist with analysis report                   |
-| `gh issue create`                                         | Escalation: file issue when fix fails                     |
-| `gh label list`                                           | List available labels for issue creation                  |
-| `pnpm typecheck`                                          | Verify no type errors introduced                          |
-| `pnpm svelte:check`                                       | Verify no Svelte component errors                         |
-| `pnpm lint:check`                                         | Verify no lint errors introduced                          |
-| `pnpm format:check`                                       | Verify no formatting violations                           |
+| Command                                                   | When to use                                               | Guard          |
+| --------------------------------------------------------- | --------------------------------------------------------- | -------------- |
+| `gh run view {id} --repo {owner}/{repo} --json jobs`      | Get run metadata, job details, step names and conclusions | —              |
+| `gh run view {id} --repo {owner}/{repo} --log`            | Download job logs (fallback when artifacts expired)       | —              |
+| `gh run list --repo {owner}/{repo} --workflow {name}`     | Check failure frequency across recent runs                | —              |
+| `gh run download {id} --repo {owner}/{repo} --dir {path}` | Download test artifacts (traces, videos, results)         | —              |
+| `git checkout -b`                                         | Create feature branch for committing changes              | `COMMIT=true`  |
+| `git add`                                                 | Stage code/pipeline changes (never reports)               | `COMMIT=true`  |
+| `git commit -m`                                           | Commit staged changes                                     | `COMMIT=true`  |
+| `git push -u origin`                                      | Push branch to remote                                     | `PUBLISH=true` |
+| `gh pr create --draft`                                    | Create draft PR with fix                                  | `PUBLISH=true` |
+| `gh gist create --public`                                 | Create public gist with analysis report                   | `PUBLISH=true` |
+| `gh issue create`                                         | Escalation: file issue when fix fails                     | `PUBLISH=true` |
+| `gh label list`                                           | List available labels for issue creation                  | `PUBLISH=true` |
+| `pnpm typecheck`                                          | Verify no type errors introduced                          | —              |
+| `pnpm svelte:check`                                       | Verify no Svelte component errors                         | —              |
+| `pnpm lint:check`                                         | Verify no lint errors introduced                          | —              |
+| `pnpm format:check`                                       | Verify no formatting violations                           | —              |
+
+**Guard column enforcement:** A command with a Guard value MUST NOT be executed unless that variable is `true`. Before running any guarded command, re-verify the variable value. If the guard is not satisfied, skip the command and log why.
 
 ## Configuration
 
-| Variable | Default | Description                                                                                                                                                                |
-| -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `LOCAL`  | `false` | When `true`: skip draft PR creation, gist upload, and issue filing. Commit changes locally only. The user can test modifications directly and create a branch/PR manually. |
+| Variable  | Default | Description                                                                                                                       |
+| --------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `COMMIT`  | `false` | When `true`: create git commits for code changes. When `false`: leave changes unstaged — the user commits manually.               |
+| `PUBLISH` | `false` | When `true`: create draft PRs, public gists, and GitHub issues. When `false`: skip all remote operations. Requires `COMMIT=true`. |
 
-Set variables by including them when invoking the skill (e.g., `LOCAL=true`).
+**Enforcement rules:**
+
+- `PUBLISH=true` is only valid when `COMMIT=true`. If `PUBLISH=true` and `COMMIT=false`, treat as a configuration error — log a warning, override `PUBLISH` to `false`, and continue.
+- Default behavior (`COMMIT=false PUBLISH=false`): analysis and code corrections are produced as local file changes only. Nothing is committed or published.
+
+Set variables by including them when invoking the skill (e.g., `COMMIT=true PUBLISH=true`).
 
 ## Conventions
 
@@ -117,6 +131,23 @@ Set variables by including them when invoking the skill (e.g., `LOCAL=true`).
 
 ## Execution Flow
 
+0. **Configuration validation (mandatory first step).** Before any other action, resolve and log the configuration:
+   - Read `COMMIT` and `PUBLISH` from the invocation. If not provided, default both to `false`.
+   - If `PUBLISH=true` and `COMMIT=false`: log `⚠ PUBLISH=true requires COMMIT=true. Overriding PUBLISH to false.` and set `PUBLISH=false`.
+   - Log the resolved configuration:
+     ```
+     ── Config ──────────────────────────
+     COMMIT:  {true|false}
+     PUBLISH: {true|false}
+     ────────────────────────────────────
+     Will commit:  {yes|no}
+     Will push:    {yes|no}
+     Will create PR: {yes|no}
+     Will create gist: {yes|no}
+     Will create issue: {yes|no}
+     ────────────────────────────────────
+     ```
+   - This log is the contract for the rest of the execution. Any action that contradicts it is a skill violation.
 1. Extract the artifacts zip into a temp folder. Locate the inner trace zip (typically under `traces/`). Dispatch Trace Analyzer immediately. If GH Actions link provided, dispatch CI Investigator in parallel.
 2. Correlate findings from agent(s) to identify potential issues. If only trace data is available, note in the report that CI-side factors (runner resources, environment config) could not be ruled out.
 3. Write analysis report → `docs/superpowers/analysis/DATETIME_analysis_report.md`
@@ -131,7 +162,7 @@ digraph correction_decision {
 }
 ```
 
-**If "Report only":** No further agent action. Reports remain as local files (do NOT commit them to git). _Future: send `DATETIME_summary.md` to Slack channel for visibility (CI instability notification)._ End execution here.
+**If "Report only":** No further agent action. Reports remain as local files (do NOT commit them to git regardless of `COMMIT` setting — reports are never committed). _Future: send `DATETIME_summary.md` to Slack channel for visibility (CI instability notification)._ End execution here.
 
 **If "Dispatch Code Corrector":** Continue with the following steps:
 
@@ -143,9 +174,16 @@ digraph correction_decision {
    - Run `pnpm lint:check` — no lint errors introduced
    - Run `pnpm format:check` — no formatting violations introduced
    - **If any check fails:** launch a code-review sub-agent to diagnose, fix the issues, then re-run the failed checks. Max 3 fix-verify cycles. If still failing after 3 cycles, revert all code changes and follow the **Abort & Escalate** procedure (see below).
-8. **If `LOCAL=true`:** commit changes locally only. Do not create a PR, gist, or issue. End execution — the user will test and create a branch/PR manually.
-   **If `LOCAL=false` (default):** Create a **draft** PR via `gh pr create --draft`. Draft PRs prevent CI from firing on unattended changes — a human must review and mark ready before CI runs. Commits must be semantic — run `git log` to match the repository's commit message style. **Keep commit messages to a single subject line** (no body) — detailed context belongs in the PR description, not duplicated in the commit. **IMPORTANT:** Check for a PR template at `.github/PULL_REQUEST_TEMPLATE.md` in the local checkout (use the `Read` tool). The PR body MUST follow the repository's PR template structure. Only code/pipeline changes are committed — reports are local-only files.
-9. Create a **public** gist containing both files: `gh gist create --public docs/superpowers/analysis/DATETIME_summary.md docs/superpowers/analysis/DATETIME_analysis_report.md` — include the gist link in the PR body (under the analysis/reference section of the PR template). Do NOT post a separate PR comment — all context belongs in the PR description.
+8. **Commit gate** — only execute this step if `COMMIT=true`:
+   - Create a feature branch via `git checkout -b`.
+   - Stage only code/pipeline changes (`git add` — never stage reports).
+   - Commits must be semantic — run `git log` to match the repository's commit message style. **Keep commit messages to a single subject line** (no body) — detailed context belongs in the PR description, not duplicated in the commit.
+   - **If `COMMIT=false`:** leave all changes unstaged. Log: `COMMIT=false — skipping git commit. Changes are local working-tree modifications only.` End execution here.
+9. **Publish gate** — only execute this step if `PUBLISH=true` (which requires `COMMIT=true`; see enforcement rules):
+   - Push the branch: `git push -u origin {branch}`.
+   - Create a **draft** PR via `gh pr create --draft`. Draft PRs prevent CI from firing on unattended changes — a human must review and mark ready before CI runs. **IMPORTANT:** Check for a PR template at `.github/PULL_REQUEST_TEMPLATE.md` in the local checkout (use the `Read` tool). The PR body MUST follow the repository's PR template structure.
+   - Create a **public** gist containing both report files: `gh gist create --public docs/superpowers/analysis/DATETIME_summary.md docs/superpowers/analysis/DATETIME_analysis_report.md` — include the gist link in the PR body (under the analysis/reference section of the PR template). Do NOT post a separate PR comment — all context belongs in the PR description.
+   - **If `PUBLISH=false`:** do NOT push, create PRs, create gists, or create issues. Log: `PUBLISH=false — skipping all remote operations.` End execution here.
 10. _Future: send `DATETIME_summary.md` to Slack channel (for internal CI integration)._
 
 ## Code Corrector Agent Instructions
@@ -168,8 +206,9 @@ When dispatched, this agent operates **fully non-interactively — no user inter
 When the skill cannot resolve issues after exhausting fix-verify cycles (step 7) or encounters an unrecoverable error:
 
 1. Revert all code changes.
-2. **If `LOCAL=true`:** document failures in the analysis report. End execution.
-   **If `LOCAL=false` (default):**
-3. Create a **public** gist with the analysis report, summary, and failure documentation: `gh gist create --public docs/superpowers/analysis/DATETIME_summary.md docs/superpowers/analysis/DATETIME_analysis_report.md`
-4. Open a GitHub issue using the repository's bug report template (`.github/ISSUE_TEMPLATE/bug_report.yml`). Use `gh issue create` with appropriate labels — check available labels via `gh label list` and pick what fits (e.g., `area/tests`, `kind/bug`, `qe/test-case`). Include the gist link and a concise description of the failure and what was attempted.
+2. Document failures in the analysis report.
+3. **If `PUBLISH=true`:**
+   - Create a **public** gist with the analysis report, summary, and failure documentation: `gh gist create --public docs/superpowers/analysis/DATETIME_summary.md docs/superpowers/analysis/DATETIME_analysis_report.md`
+   - Open a GitHub issue using the repository's bug report template (`.github/ISSUE_TEMPLATE/bug_report.yml`). Use `gh issue create` with appropriate labels — check available labels via `gh label list` and pick what fits (e.g., `area/tests`, `kind/bug`, `qe/test-case`). Include the gist link and a concise description of the failure and what was attempted.
+4. **If `PUBLISH=false`:** do NOT create gists or issues. Log: `PUBLISH=false — skipping escalation to GitHub. Failure documented in local analysis report only.`
 5. Do not create a PR. End execution.

@@ -60,13 +60,13 @@ export class URLModelHandler extends ModelHandler {
     const entries = await fs.promises.readdir(this.modelsDir, { withFileTypes: true });
     const dirs = entries.filter(dir => dir.isDirectory());
     for (const d of dirs) {
-      const modelEntries = await fs.promises.readdir(resolve(d.parentPath, d.name));
+      const modelEntries = await fs.promises.readdir(resolve(this.modelsDir, d.name));
       if (modelEntries.length !== 1) {
         // we support models with one file only for now
         continue;
       }
       const modelFile = modelEntries[0];
-      const fullPath = resolve(d.parentPath, d.name, modelFile);
+      const fullPath = resolve(this.modelsDir, d.name, modelFile);
 
       // Check for corresponding models or tmp file that should be ignored
       try {
@@ -84,7 +84,7 @@ export class URLModelHandler extends ModelHandler {
 
         model.file = {
           file: modelFile,
-          path: resolve(d.parentPath, d.name),
+          path: resolve(this.modelsDir, d.name),
           size: info.size,
           creation: info.mtime,
         };

@@ -110,7 +110,7 @@
     "typecheck": "pnpm run generate && tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/mcp": "^1.0.43",
+    "@ai-sdk/mcp": "^1.0.44",
     "@ai-sdk/openai-compatible": "^2.0.48",
     "@huggingface/gguf": "^0.4.2",
     "@huggingface/hub": "^2.13.0",

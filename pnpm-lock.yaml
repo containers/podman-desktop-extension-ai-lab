@@ -43,8 +43,8 @@ importers:
         specifier: ^10.5.0
         version: 10.5.0(postcss@8.5.15)
       commitlint:
-        specifier: ^21.0.1
-        version: 21.0.1(@types/node@25.9.1)(conventional-commits-parser@6.4.0)(typescript@5.9.3)
+        specifier: ^21.0.2
+        version: 21.0.2(@types/node@25.9.1)(conventional-commits-parser@6.4.0)(typescript@5.9.3)
       concurrently:
         specifier: ^10.0.3
         version: 10.0.3
@@ -2394,8 +2394,8 @@ packages:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
 
-  commitlint@21.0.1:
-    resolution: {integrity: sha512-FC5Mx2Hmvoe3fBQzE2FdwtfACj1hf5lIwK4dfX5Syc3FC3bXFiuWvHsO0Dl65iTSaEpZwe4eOpVn5ZIlQkVCuQ==}
+  commitlint@21.0.2:
+    resolution: {integrity: sha512-396jFlB/RPVbd8/fM959insMb1WHNV8a5QlBDtBHfX3k5+APHpJI9b7quP3TFDtwBiVfXVTItE6mOhc08hKzlg==}
     engines: {node: '>=22.12.0'}
     hasBin: true
 
@@ -6944,7 +6944,7 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
-  commitlint@21.0.1(@types/node@25.9.1)(conventional-commits-parser@6.4.0)(typescript@5.9.3):
+  commitlint@21.0.2(@types/node@25.9.1)(conventional-commits-parser@6.4.0)(typescript@5.9.3):
     dependencies:
       '@commitlint/cli': 21.0.2(@types/node@25.9.1)(conventional-commits-parser@6.4.0)(typescript@5.9.3)
       '@commitlint/types': 21.0.1

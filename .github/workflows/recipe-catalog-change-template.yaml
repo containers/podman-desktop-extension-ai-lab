@@ -246,7 +246,7 @@ jobs:
 
     - name: Publish Test Report
       id: test-report
-      uses: mikepenz/action-junit-report@v6
+      uses: mikepenz/action-junit-report@3a81627bfac62268172037048872e8ebd4207e6d # v6
       if: always() # always run even if the previous step fails
       with:
         annotate_only: true
@@ -296,7 +296,7 @@ jobs:
         podman logs -f windows-destroy
 
     - name: Upload test artifacts
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       if: always()
       with:
         name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}
@@ -308,14 +308,14 @@ jobs:
           !./**/output/traces/*
 
     - name: Upload test videos
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       if: always()
       with:
         name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}-videos
         path: ./**/output/videos/*
 
     - name: Upload test traces
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       if: always()
       with:
         name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}-traces

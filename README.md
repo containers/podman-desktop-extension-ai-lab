@@ -41,7 +41,7 @@ Podman AI Lab ships with a so-called Recipes Catalog that helps you navigate a n
 ### Software
 
 - [Podman Desktop 1.8.0+](https://github.com/containers/podman-desktop)
-- [Podman 4.9.0+](https://github.com/containers/podman)
+- [Podman 4.9.0+](https://github.com/podman-container-tools/podman)
 - Compatible with Windows, macOS & Linux
 
 ### Hardware

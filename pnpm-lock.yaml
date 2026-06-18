@@ -258,8 +258,8 @@ importers:
         specifier: 7.1.2
         version: 7.1.2(svelte@5.56.1(@typescript-eslint/types@8.60.1))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.0))
       '@tailwindcss/typography':
-        specifier: ^0.5.19
-        version: 0.5.19(tailwindcss@4.3.1)
+        specifier: ^0.5.20
+        version: 0.5.20(tailwindcss@4.3.1)
       '@tailwindcss/vite':
         specifier: ^4.3.1
         version: 4.3.1(vite@8.0.14(@types/node@25.9.1)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.0))
@@ -1633,10 +1633,10 @@ packages:
     resolution: {integrity: sha512-yVPyo8RNkabVr3O2EhHEE0Rewu7YKzc1DhIqfL46LKveFrmu9XbDazNOJY7/GRuvw1h6u3utWnR29H/p5JPlgA==}
     engines: {node: '>= 20'}
 
-  '@tailwindcss/typography@0.5.19':
-    resolution: {integrity: sha512-w31dd8HOx3k9vPtcQh5QHP9GwKcgbMp87j58qi6xgiBnFFtKEAgCWnDw4qUT8aHwkCp8bKvb/KGKWWHedP0AAg==}
+  '@tailwindcss/typography@0.5.20':
+    resolution: {integrity: sha512-hwbzQuNUfcPvbegQFatVPl/MY/tcM9KLl963hQ5laJKPh81TEZ1+dNG9PirGvcaDBkp+BCshExAyKVPW91dozw==}
     peerDependencies:
-      tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
+      tailwindcss: '>=3.0.0 || >=4.0.0 || insiders'
 
   '@tailwindcss/vite@4.3.1':
     resolution: {integrity: sha512-hItDHuIIlEV61R+faXu66s1K36aTurO/Qw0e45Vskz57gXl9pWOT6eg3zmcEui6CZXddbN7zd41bwmvag4JGwQ==}
@@ -6124,7 +6124,7 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.3.1
       '@tailwindcss/oxide-win32-x64-msvc': 4.3.1
 
-  '@tailwindcss/typography@0.5.19(tailwindcss@4.3.1)':
+  '@tailwindcss/typography@0.5.20(tailwindcss@4.3.1)':
     dependencies:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.3.1

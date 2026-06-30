@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { join } from 'node:path';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { getImageInfo, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
@@ -53,8 +54,8 @@ const DummyModel: ModelInfo = {
   name: 'dummy model',
   id: 'dummy-model-id',
   file: {
-    file: '',
-    path: 'dummy-path/snapshots/032c17573f64eacffe8514e7ee47cc0e532ed9a2',
+    file: 'dummy-model.gguf',
+    path: 'dummy-path',
   },
   properties: {},
   description: 'dummy-desc',
@@ -184,7 +185,7 @@ describe('perform', () => {
       },
       labels: {
         [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
-        api: 'http://localhost:8888/v3',
+        api: 'http://localhost:8888/v1',
         docs: 'http://localhost:10434/api-docs/8888',
       },
       models: [DummyModel],
@@ -196,30 +197,25 @@ describe('perform', () => {
     });
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
-      Cmd: [
-        'ovms',
-        '--rest_port',
-        '8000',
-        '--config_path',
-        '/model/snapshots/032c17573f64eacffe8514e7ee47cc0e532ed9a2/config-all.json',
-        '--metrics_enable',
-      ],
+      Entrypoint: '/bin/sh',
+      Cmd: ['-c', 'llama-server --model $MODEL_PATH --host $HOST --port $PORT'],
       Detach: true,
-      Env: ['MODEL_PATH=/model', 'HOST=0.0.0.0', 'PORT=8000'],
+      Env: ['MODEL_PATH=/models/dummy-model.gguf', 'HOST=0.0.0.0', 'PORT=8000', 'GGML_OPENVINO_DEVICE=CPU'],
       ExposedPorts: {
         '8888': {},
       },
       HealthCheck: {
         Interval: SECOND * 5,
         Retries: 20,
-        Test: ['CMD-SHELL', 'curl -sSf localhost:8000/metrics > /dev/null'],
+        Test: ['CMD-SHELL', 'curl -sSf localhost:8000 > /dev/null'],
       },
       HostConfig: {
         AutoRemove: false,
+        Devices: [],
         Mounts: [
           {
-            Source: 'dummy-path',
-            Target: '/model',
+            Source: join('dummy-path', 'dummy-model.gguf'),
+            Target: '/models/dummy-model.gguf',
             Type: 'bind',
           },
         ],
@@ -235,10 +231,112 @@ describe('perform', () => {
       Image: DummyImageInfo.Id,
       Labels: {
         [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
-        api: 'http://localhost:8888/v3',
+        api: 'http://localhost:8888/v1',
         docs: 'http://localhost:10434/api-docs/8888',
       },
+      User: undefined,
     });
+  });
+
+  test('experimental GPU enabled on WSL should set GPU env vars and mount WSL libs', async () => {
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: 'model-path',
+      apiPort: 10434,
+      inferenceRuntime: 'llama-cpp',
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+      appearance: 'dark',
+    });
+
+    const provider = new OpenVINO(taskRegistry, podmanConnection, modelsManager, configurationRegistry);
+
+    vi.mocked(modelsManager.getModelInfo).mockReturnValue(DummyModel);
+
+    await provider.perform({
+      port: 8888,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Env: expect.arrayContaining(['GGML_OPENVINO_DEVICE=GPU', 'GGML_OPENVINO_STATEFUL_EXECUTION=1']),
+        User: '0',
+        HostConfig: expect.objectContaining({
+          Devices: [
+            {
+              PathOnHost: '/dev/dxg',
+              PathInContainer: '/dev/dxg',
+              CgroupPermissions: 'r',
+            },
+          ],
+          Mounts: expect.arrayContaining([
+            {
+              Target: '/usr/lib/wsl',
+              Source: '/usr/lib/wsl',
+              Type: 'bind',
+            },
+          ]),
+        }),
+      }),
+    );
+
+    // Should NOT contain CPU device when GPU is enabled
+    const call = vi.mocked(containerEngine.createContainer).mock.calls[0];
+    const envs = (call[1] as { Env: string[] }).Env;
+    expect(envs).not.toContain('GGML_OPENVINO_DEVICE=CPU');
+  });
+
+  test('experimental GPU enabled on Linux should mount /dev/dri', async () => {
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: 'model-path',
+      apiPort: 10434,
+      inferenceRuntime: 'llama-cpp',
+      experimentalTuning: false,
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+      appearance: 'dark',
+    });
+
+    const linuxConnection: ContainerProviderConnection = {
+      ...dummyConnection,
+      vmType: VMType.UNKNOWN,
+    };
+    vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue(linuxConnection);
+
+    const provider = new OpenVINO(taskRegistry, podmanConnection, modelsManager, configurationRegistry);
+
+    vi.mocked(modelsManager.getModelInfo).mockReturnValue(DummyModel);
+
+    await provider.perform({
+      port: 8888,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+    });
+
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        User: '0',
+        HostConfig: expect.objectContaining({
+          Devices: [
+            {
+              PathOnHost: '/dev/dri',
+              PathInContainer: '/dev/dri',
+              CgroupPermissions: 'rwm',
+            },
+          ],
+        }),
+      }),
+    );
   });
 
   test('model properties should be made uppercased', async () => {
@@ -269,6 +367,7 @@ describe('perform', () => {
         'MODEL_LOWERCASE=lowercase',
         'MODEL_CHAT_FORMAT=dummyChatFormat',
       ]),
+      Entrypoint: expect.anything(),
       Cmd: expect.anything(),
       HealthCheck: expect.anything(),
       HostConfig: expect.anything(),

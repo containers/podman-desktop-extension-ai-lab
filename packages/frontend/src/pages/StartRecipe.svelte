@@ -41,8 +41,16 @@ let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = 
 // recipe local path
 let localPath: LocalRepository | undefined = $derived(findLocalRepositoryByRecipeId($localRepositories, recipe?.id));
 // Filter all models based on backend property
+// OpenVINO uses llama.cpp backend, so show openvino models for llama-cpp recipes too
 let models: ModelInfo[] = $derived(
-  $modelsInfo.filter(model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE)),
+  $modelsInfo.filter(model => {
+    const modelBackend = model.backend ?? InferenceType.NONE;
+    const recipeBackend = recipe?.backend ?? InferenceType.NONE;
+    if (recipeBackend === InferenceType.LLAMA_CPP && modelBackend === InferenceType.OPENVINO) {
+      return true;
+    }
+    return modelBackend === recipeBackend;
+  }),
 );
 // Hold the selected model
 let model: ModelInfo | undefined = $state(undefined);

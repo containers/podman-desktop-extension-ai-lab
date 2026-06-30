@@ -18,7 +18,7 @@
 import type { ContainerCreateOptions, ContainerProviderConnection, ImageInfo, MountConfig } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import { InferenceProvider } from './InferenceProvider';
-import { getHuggingFaceModelMountInfo, getModelPropertiesForEnvironment } from '../../utils/modelsUtils';
+import { getModelPropertiesForEnvironment, getMountPath } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
@@ -27,51 +27,10 @@ import { VMType } from '@shared/models/IPodman';
 import type { PodmanConnection } from '../../managers/podmanConnection';
 import type { ConfigurationRegistry } from '../../registries/ConfigurationRegistry';
 import { openvino } from '../../assets/inference-images.json';
-import { existsSync } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ModelsManager } from '../../managers/modelsManager';
 
 export const SECOND: number = 1_000_000_000;
-
-const CONFIG_FILE_NAME = `config-all.json`;
-
-const GRAPH_CONTENT = `input_stream: "HTTP_REQUEST_PAYLOAD:input"
-output_stream: "HTTP_RESPONSE_PAYLOAD:output"
-
-node: {
-  name: "LLMExecutor"
-  calculator: "HttpLLMCalculator"
-  input_stream: "LOOPBACK:loopback"
-  input_stream: "HTTP_REQUEST_PAYLOAD:input"
-  input_side_packet: "LLM_NODE_RESOURCES:llm"
-  output_stream: "LOOPBACK:loopback"
-  output_stream: "HTTP_RESPONSE_PAYLOAD:output"
-  input_stream_info: {
-    tag_index: 'LOOPBACK:0',
-    back_edge: true
-  }
-  node_options: {
-      [type.googleapis.com / mediapipe.LLMCalculatorOptions]: {
-          models_path: "./",
-          plugin_config: '{ "KV_CACHE_PRECISION": "u8"}',
-          enable_prefix_caching: false,
-          cache_size: 10,
-          max_num_seqs: 256,
-          device: "CPU",
-      }
-  }
-  input_stream_handler {
-    input_stream_handler: "SyncSetInputStreamHandler",
-    options {
-      [mediapipe.SyncSetInputStreamHandlerOptions.ext] {
-        sync_set {
-          tag_index: "LOOPBACK:0"
-        }
-      }
-    }
-  }
-}`;
 
 export class OpenVINO extends InferenceProvider {
   constructor(
@@ -91,33 +50,68 @@ export class OpenVINO extends InferenceProvider {
     config: InferenceServerConfig,
     imageInfo: ImageInfo,
     modelInfo: ModelInfo,
+    vmType: VMType,
   ): Promise<ContainerCreateOptions> {
+    if (modelInfo.file === undefined) {
+      throw new Error('The model info file provided is undefined');
+    }
+
     const labels: Record<string, string> = {
       ...config.labels,
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     };
 
     // get model mount settings
-    const mountInfo = getHuggingFaceModelMountInfo(modelInfo);
-    const target = `/model`;
+    const filename = getMountPath(modelInfo);
+    const target = `/models/${modelInfo.file.file}`;
 
-    // mount the file directory to avoid adding other files to the containers
+    // mount the model file
     const mounts: MountConfig = [
       {
         Target: target,
-        Source: mountInfo.mount,
+        Source: filename,
         Type: 'bind',
       },
     ];
-    const configFilePath = mountInfo.suffix
-      ? `/model/${mountInfo.suffix}/${CONFIG_FILE_NAME}`
-      : `/model/${CONFIG_FILE_NAME}`;
 
     // provide envs
     const envs: string[] = [`MODEL_PATH=${target}`, 'HOST=0.0.0.0', 'PORT=8000'];
     envs.push(...getModelPropertiesForEnvironment(modelInfo));
 
-    const cmd: string[] = ['ovms', '--rest_port', '8000', '--config_path', configFilePath, '--metrics_enable'];
+    // Add OpenVINO GGML environment variables and GPU device passthrough
+    const devices: { PathOnHost: string; PathInContainer: string; CgroupPermissions: string }[] = [];
+    let user: string | undefined = undefined;
+
+    if (this.configurationRegistry.getExtensionConfiguration().experimentalGPU) {
+      envs.push('GGML_OPENVINO_DEVICE=GPU');
+      envs.push('GGML_OPENVINO_STATEFUL_EXECUTION=1');
+
+      if (vmType === VMType.WSL) {
+        mounts.push({
+          Target: '/usr/lib/wsl',
+          Source: '/usr/lib/wsl',
+          Type: 'bind',
+        });
+
+        devices.push({
+          PathOnHost: '/dev/dxg',
+          PathInContainer: '/dev/dxg',
+          CgroupPermissions: 'r',
+        });
+
+        user = '0';
+      } else if (vmType === VMType.UNKNOWN) {
+        devices.push({
+          PathOnHost: '/dev/dri',
+          PathInContainer: '/dev/dri',
+          CgroupPermissions: 'rwm',
+        });
+
+        user = '0';
+      }
+    } else {
+      envs.push('GGML_OPENVINO_DEVICE=CPU');
+    }
 
     // add the link to our openAPI instance using the instance as the host
     const aiLabPort = this.configurationRegistry.getExtensionConfiguration().apiPort;
@@ -125,14 +119,18 @@ export class OpenVINO extends InferenceProvider {
     const aiLabDocsLink = `http://localhost:${aiLabPort}/api-docs/${config.port}`;
     // adding labels to inference server
     labels['docs'] = aiLabDocsLink;
-    labels['api'] = `http://localhost:${config.port}/v3`;
+    labels['api'] = `http://localhost:${config.port}/v1`;
 
     return {
       Image: imageInfo.Id,
       Detach: true,
+      Entrypoint: '/bin/sh',
+      Cmd: ['-c', 'llama-server --model $MODEL_PATH --host $HOST --port $PORT'],
+      User: user,
       ExposedPorts: { [`${config.port}`]: {} },
       HostConfig: {
         AutoRemove: false,
+        Devices: devices,
         Mounts: mounts,
         SecurityOpt: [DISABLE_SELINUX_LABEL_SECURITY_OPTION],
         PortBindings: {
@@ -145,26 +143,13 @@ export class OpenVINO extends InferenceProvider {
       },
       HealthCheck: {
         // must be the port INSIDE the container not the exposed one
-        Test: ['CMD-SHELL', `curl -sSf localhost:8000/metrics > /dev/null`],
+        Test: ['CMD-SHELL', `curl -sSf localhost:8000 > /dev/null`],
         Interval: SECOND * 5,
         Retries: 4 * 5,
       },
       Labels: labels,
       Env: envs,
-      Cmd: cmd,
     };
-  }
-
-  override async prePerform(config: InferenceServerConfig): Promise<void> {
-    const modelInfo = this.validateAndGetModelInfo(config);
-
-    if (modelInfo.file === undefined) {
-      throw new Error('The model info file provided is undefined');
-    }
-
-    await this.ensureGraphFile(modelInfo.file.path);
-
-    await this.ensureConfigFile(modelInfo);
   }
 
   async perform(config: InferenceServerConfig): Promise<InferenceServer> {
@@ -197,6 +182,7 @@ export class OpenVINO extends InferenceProvider {
       config,
       imageInfo,
       modelInfo,
+      vmType,
     );
 
     // Create the container
@@ -227,34 +213,6 @@ export class OpenVINO extends InferenceProvider {
     }
 
     return config.modelsInfo[0];
-  }
-
-  private async ensureGraphFile(modelFolder: string): Promise<string> {
-    // check if the file exists
-    const graphFile = `${modelFolder}/graph.pbtxt`;
-    // check if the graph file exists
-    if (!existsSync(graphFile)) {
-      // create the graph file
-      await writeFile(graphFile, GRAPH_CONTENT);
-    }
-    return graphFile;
-  }
-
-  private async ensureConfigFile(modelInfo: ModelInfo): Promise<string> {
-    const configFile = `${modelInfo.file?.path}/${CONFIG_FILE_NAME}`;
-    if (!existsSync(configFile)) {
-      const config = {
-        mediapipe_config_list: [
-          {
-            name: modelInfo.name,
-            base_path: '.',
-          },
-        ],
-        model_config_list: [],
-      };
-      await writeFile(configFile, JSON.stringify(config));
-    }
-    return configFile;
   }
 
   protected getOpenVINOInferenceImage(_vmType: VMType): string {

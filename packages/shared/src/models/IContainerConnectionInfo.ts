@@ -33,10 +33,7 @@ export interface CheckContainerConnectionResourcesOptions {
 }
 
 export type ContainerConnectionInfo =
-  | RunningContainerConnection
-  | LowResourcesContainerConnection
-  | NoContainerConnection
-  | NativeContainerConnection;
+  RunningContainerConnection | LowResourcesContainerConnection | NoContainerConnection | NativeContainerConnection;
 
 export type ContainerConnectionInfoStatus = 'running' | 'no-machine' | 'low-resources';
 

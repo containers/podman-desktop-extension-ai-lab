@@ -58,7 +58,12 @@ export function assertString(value: unknown): string {
 export function parseYamlFile(filepath: string, defaultArch: string): AIConfig {
   const raw: string = fs.readFileSync(filepath, 'utf-8');
 
-  const aiLabConfig: unknown = jsYaml.load(raw);
+  let aiLabConfig: unknown;
+  try {
+    aiLabConfig = jsYaml.load(raw);
+  } catch {
+    throw new Error('malformed configuration file.');
+  }
   if (!aiLabConfig || typeof aiLabConfig !== 'object') {
     throw new Error('malformed configuration file.');
   }

@@ -29,9 +29,9 @@ import type { ChatMessage, ErrorMessage } from '@shared/models/IPlaygroundMessag
 import type { CancellationTokenRegistry } from '../registries/CancellationTokenRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
-import type { LanguageModelV2CallWarning, LanguageModelV3, LanguageModelV3StreamPart } from '@ai-sdk/provider';
+import type { LanguageModelV4, LanguageModelV4StreamPart } from '@ai-sdk/provider';
 import { type McpServerManager } from './playground/McpServerManager';
-import { MockLanguageModelV3 } from 'ai/test';
+import { MockLanguageModelV4 } from 'ai/test';
 import { simulateReadableStream } from 'ai';
 
 vi.mock('@ai-sdk/openai-compatible', () => ({
@@ -66,13 +66,7 @@ const cancellationTokenRegistryMock = {
 } as unknown as CancellationTokenRegistry;
 
 let mcpServerManager: McpServerManager;
-let createTestModel: (options: {
-  stream?: ReadableStream<LanguageModelV3StreamPart>;
-  rawResponse?: { headers: Record<string, string> };
-  rawCall?: { rawPrompt: string; rawSettings: Record<string, unknown> };
-  request?: { body: string };
-  warnings?: LanguageModelV2CallWarning[];
-}) => LanguageModelV3;
+let createTestModel: (options: { stream?: ReadableStream<LanguageModelV4StreamPart> }) => LanguageModelV4;
 
 beforeEach(async () => {
   vi.resetAllMocks();
@@ -221,8 +215,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
       labels: [],
     } as unknown as InferenceServer,
   ]);
-  // @ts-expect-error - Mock return type for testing
-  vi.mocked(createOpenAICompatible).mockReturnValue(() =>
+  vi.mocked(createOpenAICompatible).mockReturnValue((() =>
     createTestModel({
       stream: simulateReadableStream({
         chunks: [
@@ -237,8 +230,7 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
           },
         ],
       }),
-    }),
-  );
+    })) as unknown as ReturnType<typeof createOpenAICompatible>);
 
   const manager = new PlaygroundV2Manager(
     rpcExtensionMock,
@@ -310,16 +302,11 @@ test('error', async () => {
       labels: [],
     } as unknown as InferenceServer,
   ]);
-  const doStream: LanguageModelV3['doStream'] = async () => {
+  const doStream: LanguageModelV4['doStream'] = async () => {
     throw new Error('Please reduce the length of the messages or completion.');
   };
   vi.mocked(createOpenAICompatible).mockReturnValue(
-    // @ts-expect-error MockLanguageModelV2 test mock
-    // eslint-disable-next-line sonarjs/new-operator-misuse
-    () =>
-      new (
-        MockLanguageModelV3 as unknown as new (options: { doStream: LanguageModelV3['doStream'] }) => LanguageModelV3
-      )({ doStream }),
+    (() => new MockLanguageModelV4({ doStream })) as unknown as ReturnType<typeof createOpenAICompatible>,
   );
 
   const manager = new PlaygroundV2Manager(
@@ -716,8 +703,7 @@ describe('system prompt', () => {
         labels: [],
       } as unknown as InferenceServer,
     ]);
-    // @ts-expect-error - Mock return type for testing
-    vi.mocked(createOpenAICompatible).mockReturnValue(() =>
+    vi.mocked(createOpenAICompatible).mockReturnValue((() =>
       createTestModel({
         stream: simulateReadableStream({
           chunks: [
@@ -732,8 +718,7 @@ describe('system prompt', () => {
             },
           ],
         }),
-      }),
-    );
+      })) as unknown as ReturnType<typeof createOpenAICompatible>);
 
     const manager = new PlaygroundV2Manager(
       rpcExtensionMock,

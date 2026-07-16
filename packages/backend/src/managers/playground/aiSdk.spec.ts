@@ -18,7 +18,7 @@
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import * as ai from 'ai';
-import { MockLanguageModelV3 } from 'ai/test';
+import { MockLanguageModelV4 } from 'ai/test';
 import { AiStreamProcessor, toCoreMessage } from './aiSdk';
 import type {
   AssistantChat,
@@ -29,12 +29,7 @@ import type {
   PendingChat,
   UserChat,
 } from '@shared/models/IPlaygroundMessage';
-import type {
-  LanguageModelV3,
-  LanguageModelV2CallWarning,
-  LanguageModelV3StreamPart,
-  LanguageModelV3GenerateResult,
-} from '@ai-sdk/provider';
+import type { LanguageModelV4, LanguageModelV4StreamPart, LanguageModelV4GenerateResult } from '@ai-sdk/provider';
 import { ConversationRegistry } from '../../registries/ConversationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import type { ModelOptions } from '@shared/models/IModelOptions';
@@ -159,9 +154,10 @@ describe('aiSdk', () => {
           topP: 13,
           abortSignal: expect.any(AbortSignal),
           messages: expect.any(Array),
-          onStepFinish: expect.any(Function),
+          onStepEnd: expect.any(Function),
           onError: expect.any(Function),
           onChunk: expect.any(Function),
+          onEnd: expect.any(Function),
         }),
       );
     });
@@ -183,10 +179,10 @@ describe('aiSdk', () => {
     describe('with stream error', () => {
       beforeEach(async () => {
         // eslint-disable-next-line sonarjs/no-nested-functions
-        const doStream: LanguageModelV3['doStream'] = async () => {
+        const doStream: LanguageModelV4['doStream'] = async () => {
           throw new Error('The stream is kaput.');
         };
-        const model = new MockLanguageModelV3({ doStream });
+        const model = new MockLanguageModelV4({ doStream });
         await new AiStreamProcessor(conversationId, conversationRegistry).stream(model).consumeStream();
       });
       test('appends a single message', () => {
@@ -199,7 +195,7 @@ describe('aiSdk', () => {
       });
     });
     describe('with single message stream', () => {
-      let model: LanguageModelV3;
+      let model: LanguageModelV4;
       beforeEach(async () => {
         model = createTestModel({
           stream: ai.simulateReadableStream({
@@ -245,15 +241,15 @@ describe('aiSdk', () => {
       });
     });
     describe('with wrapped generated multiple messages as stream', () => {
-      let model: LanguageModelV3;
+      let model: LanguageModelV4;
       let tools: ToolSet;
       let generateStep: number;
 
       beforeEach(async () => {
         generateStep = 0;
         model = wrapLanguageModel({
-          model: new MockLanguageModelV3({
-            doGenerate: async (): Promise<LanguageModelV3GenerateResult> => {
+          model: new MockLanguageModelV4({
+            doGenerate: async (): Promise<LanguageModelV4GenerateResult> => {
               if (generateStep++ === 0) {
                 return {
                   content: [
@@ -346,8 +342,8 @@ describe('aiSdk', () => {
       });
       test('setsUsage', async () => {
         const conversation = conversationRegistry.get(conversationId) as Conversation;
-        expect(conversation?.usage?.completion_tokens).toEqual(7);
-        expect(conversation?.usage?.prompt_tokens).toEqual(133);
+        expect(conversation?.usage?.completion_tokens).toEqual(8);
+        expect(conversation?.usage?.prompt_tokens).toEqual(134);
       });
     });
   });
@@ -355,18 +351,10 @@ describe('aiSdk', () => {
 
 export function createTestModel({
   stream = ai.simulateReadableStream({ chunks: [] }),
-  rawCall = { rawPrompt: 'prompt', rawSettings: {} },
-  rawResponse = undefined,
-  request = undefined,
-  warnings,
 }: {
-  stream?: ReadableStream<LanguageModelV3StreamPart>;
-  rawResponse?: { headers: Record<string, string> };
-  rawCall?: { rawPrompt: string; rawSettings: Record<string, unknown> };
-  request?: { body: string };
-  warnings?: LanguageModelV2CallWarning[];
-} = {}): LanguageModelV3 {
-  return new MockLanguageModelV3({
-    doStream: async () => ({ stream, rawCall, rawResponse, request, warnings }),
+  stream?: ReadableStream<LanguageModelV4StreamPart>;
+} = {}): LanguageModelV4 {
+  return new MockLanguageModelV4({
+    doStream: async () => ({ stream }),
   });
 }

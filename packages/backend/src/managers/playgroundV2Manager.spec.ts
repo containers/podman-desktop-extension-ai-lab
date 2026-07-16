@@ -317,9 +317,9 @@ test('error', async () => {
     // @ts-expect-error MockLanguageModelV2 test mock
     // eslint-disable-next-line sonarjs/new-operator-misuse
     () =>
-      new (MockLanguageModelV3 as unknown as new (options: {
-        doStream: LanguageModelV3['doStream'];
-      }) => LanguageModelV3)({ doStream }),
+      new (
+        MockLanguageModelV3 as unknown as new (options: { doStream: LanguageModelV3['doStream'] }) => LanguageModelV3
+      )({ doStream }),
   );
 
   const manager = new PlaygroundV2Manager(

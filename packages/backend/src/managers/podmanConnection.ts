@@ -137,15 +137,13 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
 
     for (const [providerId, connections] of Array.from(this.#providers.entries())) {
       output.push(
-        ...connections.map(
-          (connection): ContainerProviderConnectionInfo => ({
-            providerId: providerId,
-            name: connection.name,
-            vmType: this.parseVMType(connection.vmType),
-            type: 'podman',
-            status: connection.status(),
-          }),
-        ),
+        ...connections.map((connection): ContainerProviderConnectionInfo => ({
+          providerId: providerId,
+          name: connection.name,
+          vmType: this.parseVMType(connection.vmType),
+          type: 'podman',
+          status: connection.status(),
+        })),
       );
     }
 

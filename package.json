@@ -72,7 +72,7 @@
     "msw": "^2.15.0",
     "prettier": "^3.8.5",
     "prettier-plugin-svelte": "^4.1.1",
-    "svelte-check": "^4.7.1",
+    "svelte-check": "^4.7.3",
     "svelte-eslint-parser": "^1.8.0",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.63.0",

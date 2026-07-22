@@ -16,13 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { streamText, stepCountIs } from 'ai';
+import { streamText, isStepCount } from 'ai';
 import type {
+  GenerateTextOnEndCallback,
   LanguageModel,
   ModelMessage,
   StepResult,
-  StreamTextResult,
-  StreamTextOnFinishCallback,
   TextStreamPart,
   ToolCallPart,
   ToolResultPart,
@@ -172,28 +171,29 @@ export class AiStreamProcessor<TOOLS extends ToolSet> {
     }
   };
 
-  private onFinish: StreamTextOnFinishCallback<TOOLS> = stepResult => {
+  private onEnd: GenerateTextOnEndCallback<TOOLS> = stepResult => {
     this.conversationRegistry.setUsage(this.conversationId, {
       completion_tokens: stepResult.usage.outputTokens,
       prompt_tokens: stepResult.usage.inputTokens,
     } as ModelUsage);
   };
 
-  stream = (model: LanguageModel, tools?: TOOLS, options?: ModelOptions): StreamTextResult<TOOLS, never> => {
+  stream = (model: LanguageModel, tools?: TOOLS, options?: ModelOptions): ReturnType<typeof streamText<TOOLS>> => {
     this.stepStartTime = Date.now();
     return streamText({
       model,
       tools,
-      stopWhen: stepCountIs(10),
+      stopWhen: isStepCount(10),
       temperature: options?.temperature,
       maxOutputTokens: (options?.max_tokens ?? -1) < 1 ? undefined : options?.max_tokens,
       topP: options?.top_p,
       abortSignal: this.abortController.signal,
       messages: toCoreMessage(...this.conversationRegistry.get(this.conversationId).messages),
-      onStepFinish: this.onStepFinish,
+      allowSystemInMessages: true,
+      onStepEnd: this.onStepFinish,
       onError: this.onError,
       onChunk: this.onChunk,
-      onFinish: this.onFinish,
+      onEnd: this.onEnd,
     });
   };
 }

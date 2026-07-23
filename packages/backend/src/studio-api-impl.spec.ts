@@ -317,10 +317,12 @@ describe('validateLocalModel', () => {
         },
       } as unknown as ModelInfo,
     ]);
-    await studioApiImpl.validateLocalModel({
-      path: 'path',
-      name: 'file.gguf',
-    });
+    await expect(
+      studioApiImpl.validateLocalModel({
+        path: 'path',
+        name: 'file.gguf',
+      }),
+    ).resolves.not.toThrow();
   });
 
   test('Expect validateLocalModel to raise an error as path is valid', async () => {

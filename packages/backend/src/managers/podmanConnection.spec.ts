@@ -414,7 +414,7 @@ describe('container connection event', () => {
     });
 
     // ensure it has properly been added
-    expect(podmanConnection.getContainerProviderConnectionInfo().length).toBe(1);
+    expect(podmanConnection.getContainerProviderConnectionInfo()).toHaveLength(1);
   });
 
   test('onDidRegisterContainerConnection should fire PodmanConnectionEvent', async () => {

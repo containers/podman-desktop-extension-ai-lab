@@ -63,15 +63,8 @@ function simplifiedCallback(callback: (arg: ContainerStatsInfo) => void, cpu: nu
 test('expect constructor to do nothing', () => {
   const manager = new MonitoringManager(rpcExtensionMock);
   expect(containerEngine.statsContainer).not.toHaveBeenCalled();
-  expect(manager.getStats().length).toBe(0);
+  expect(manager.getStats()).toHaveLength(0);
   expect(rpcExtensionMock.fire).not.toHaveBeenCalled();
-});
-
-test('expect monitor method to start stats container', async () => {
-  const manager = new MonitoringManager(rpcExtensionMock);
-  await manager.monitor('randomContainerId', 'dummyEngineId');
-
-  expect(containerEngine.statsContainer).toHaveBeenCalledWith('dummyEngineId', 'randomContainerId', expect.anything());
 });
 
 test('expect monitor method to start stats container', async () => {
@@ -149,8 +142,8 @@ test('expect stats to cumulate', async () => {
   simplifiedCallback(mCallback, 3, 3);
 
   const stats = manager.getStats();
-  expect(stats.length).toBe(1);
-  expect(stats[0].stats.length).toBe(4);
+  expect(stats).toHaveLength(1);
+  expect(stats[0].stats).toHaveLength(4);
 });
 
 test('expect old stats to be removed', async () => {
@@ -179,8 +172,8 @@ test('expect old stats to be removed', async () => {
   simplifiedCallback(mCallback, 3, 3);
 
   const stats = manager.getStats();
-  expect(stats.length).toBe(1);
-  expect(stats[0].stats.length).toBe(3);
+  expect(stats).toHaveLength(1);
+  expect(stats[0].stats).toHaveLength(3);
 });
 
 test('expect stats to be disposed if stats result is an error', async () => {
@@ -202,6 +195,6 @@ test('expect stats to be disposed if stats result is an error', async () => {
   mCallback({ cause: 'container is stopped' } as unknown as ContainerStatsInfo);
 
   const stats = manager.getStats();
-  expect(stats.length).toBe(0);
+  expect(stats).toHaveLength(0);
   expect(fakeDisposable).toHaveBeenCalled();
 });

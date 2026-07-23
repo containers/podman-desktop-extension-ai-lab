@@ -30,7 +30,7 @@ beforeEach(() => {
 
 test('should not have any tasks by default', () => {
   const taskRegistry = new TaskRegistry(rpcExtension);
-  expect(taskRegistry.getTasks().length).toBe(0);
+  expect(taskRegistry.getTasks()).toHaveLength(0);
 });
 
 test('dispose should cleanup all tasks', () => {
@@ -66,8 +66,8 @@ test('should get tasks by label', () => {
   const tasksWithIndex1 = taskRegistry.getTasksByLabels({ index: '1' });
   const tasksWithIndex2 = taskRegistry.getTasksByLabels({ index: '2' });
 
-  expect(tasksWithIndex1.length).toBe(1);
-  expect(tasksWithIndex2.length).toBe(1);
+  expect(tasksWithIndex1).toHaveLength(1);
+  expect(tasksWithIndex2).toHaveLength(1);
   expect(tasksWithIndex1[0].name).toBe('random-1');
   expect(tasksWithIndex2[0].name).toBe('random-2');
 });
@@ -80,7 +80,7 @@ test('should delete tasks by label', () => {
 
   taskRegistry.deleteByLabels({ index: '1' });
 
-  expect(taskRegistry.getTasks().length).toBe(1);
+  expect(taskRegistry.getTasks()).toHaveLength(1);
   expect(taskRegistry.getTasks()[0].name).toBe('random-2');
 });
 
@@ -95,8 +95,8 @@ test('should get tasks by multiple labels', () => {
   const tasksWithHighPriority = taskRegistry.getTasksByLabels({ priority: 'high' });
   const tasksWithTypeAAndHighPriority = taskRegistry.getTasksByLabels({ type: 'A', priority: 'high' });
 
-  expect(tasksWithTypeA.length).toBe(2);
-  expect(tasksWithHighPriority.length).toBe(1);
-  expect(tasksWithTypeAAndHighPriority.length).toBe(1);
+  expect(tasksWithTypeA).toHaveLength(2);
+  expect(tasksWithHighPriority).toHaveLength(1);
+  expect(tasksWithTypeAAndHighPriority).toHaveLength(1);
   expect(tasksWithTypeAAndHighPriority[0].name).toBe('task-1');
 });

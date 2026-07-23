@@ -250,7 +250,7 @@ describe.each([undefined, true, false])('/api/pull endpoint, stream is %o', stre
     } else {
       const res = await req.expect(200);
       const lines = res.text.split('\n');
-      expect(lines.length).toEqual(3);
+      expect(lines).toHaveLength(3);
       expect(lines[0]).toEqual('{"status":"pulling manifest"}');
       expect(lines[1]).toEqual('{"error":"pull model manifest: file does not exist"}');
       expect(lines[2]).toEqual('');
@@ -272,7 +272,7 @@ describe.each([undefined, true, false])('/api/pull endpoint, stream is %o', stre
     } else {
       const res = await req.expect(200).expect('transfer-encoding', 'chunked');
       const lines = res.text.split('\n');
-      expect(lines.length).toEqual(3);
+      expect(lines).toHaveLength(3);
       expect(lines[0]).toEqual('{"status":"pulling manifest"}');
       expect(lines[1]).toEqual('{"status":"success"}');
       expect(lines[2]).toEqual('');
@@ -308,7 +308,7 @@ describe.each([undefined, true, false])('/api/pull endpoint, stream is %o', stre
     } else {
       const res = await req.expect(200).expect('transfer-encoding', 'chunked');
       const lines = res.text.split('\n');
-      expect(lines.length).toEqual(4);
+      expect(lines).toHaveLength(4);
       expect(lines[0]).toEqual('{"status":"pulling manifest"}');
       expect(lines[1]).toEqual(
         '{"status":"pulling 123456","digest":"sha256:123456","total":100000,"completed":100000000}',
@@ -350,7 +350,7 @@ describe.each([undefined, true, false])('/api/pull endpoint, stream is %o', stre
     } else {
       const res = await req.expect(200).expect('transfer-encoding', 'chunked');
       const lines = res.text.split('\n');
-      expect(lines.length).toEqual(4);
+      expect(lines).toHaveLength(4);
       expect(lines[0]).toEqual('{"status":"pulling manifest"}');
       expect(lines[1]).toEqual(
         '{"status":"pulling 123456","digest":"sha256:123456","total":100000,"completed":100000000}',
@@ -375,7 +375,7 @@ describe.each([undefined, true, false])('stream is %o', stream => {
       } else {
         const res = await req.expect(200);
         const lines = res.text.split('\n');
-        expect(lines.length).toEqual(2);
+        expect(lines).toHaveLength(2);
         expect(lines[0]).toEqual('{"error":"chat: model \\"unknown-model-name\\" does not exist"}');
         expect(lines[1]).toEqual('');
       }
@@ -396,7 +396,7 @@ describe.each([undefined, true, false])('stream is %o', stream => {
       } else {
         const res = await req.expect(200).expect('transfer-encoding', 'chunked');
         const lines = res.text.split('\n');
-        expect(lines.length).toEqual(2);
+        expect(lines).toHaveLength(2);
         expect(lines[0]).toEqual('{"error":"chat: model \\"model-name\\" not found, try pulling it first"}');
         expect(lines[1]).toEqual('');
       }
@@ -481,7 +481,7 @@ describe.each([undefined, true, false])('stream is %o', stream => {
           } else {
             const res = await req.expect(200).expect('transfer-encoding', 'chunked');
             const lines = res.text.split('\n');
-            expect(lines.length).toEqual(2);
+            expect(lines).toHaveLength(2);
             expect(lines[0]).toEqual('{"model":"model-name","response":"","done":true,"done_reason":"load"}');
             expect(lines[1]).toEqual('');
           }
@@ -524,7 +524,7 @@ describe.each([undefined, true, false])('stream is %o', stream => {
           } else {
             const res = await req.expect(200).expect('transfer-encoding', 'chunked');
             const lines = res.text.split('\n');
-            expect(lines.length).toEqual(2);
+            expect(lines).toHaveLength(2);
             expect(lines[0]).toEqual('{"model":"model-name","response":"","done":true,"done_reason":"load"}');
             expect(lines[1]).toEqual('');
           }
@@ -590,7 +590,7 @@ describe.each([undefined, true, false])('stream is %o', stream => {
           } else {
             const res = await req.expect(200).expect('transfer-encoding', 'chunked');
             const lines = res.text.split('\n');
-            expect(lines.length).toEqual(2);
+            expect(lines).toHaveLength(2);
             expect(lines[0]).toEqual('{"model":"model-name","response":"","done":true,"done_reason":"load"}');
             expect(lines[1]).toEqual('');
           }
@@ -632,7 +632,7 @@ describe.each([undefined, true, false])('stream is %o', stream => {
           } else {
             const res = await req.expect(200).expect('transfer-encoding', 'chunked');
             const lines = res.text.split('\n');
-            expect(lines.length).toEqual(2);
+            expect(lines).toHaveLength(2);
             expect(lines[0]).toEqual('{"model":"model-name","response":"","done":true,"done_reason":"load"}');
             expect(lines[1]).toEqual('');
           }
@@ -676,7 +676,7 @@ describe.each([undefined, true, false])('stream is %o', stream => {
         } else {
           const res = await req.expect(200).expect('transfer-encoding', 'chunked');
           const lines = res.text.split('\n');
-          expect(lines.length).toEqual(2);
+          expect(lines).toHaveLength(2);
           expect(lines[0]).toEqual('{"model":"model-name","response":"","done":true,"done_reason":"load"}');
           expect(lines[1]).toEqual('');
         }
@@ -821,7 +821,7 @@ describe.each([undefined, true, false])('stream is %o', stream => {
           } else {
             const res = await req.expect(200).expect('transfer-encoding', 'chunked');
             const lines = res.text.split('\n');
-            expect(lines.length).toEqual(expectedStreamed.length);
+            expect(lines).toHaveLength(expectedStreamed.length);
             for (const [i, line] of lines.entries()) {
               expect(line).toEqual(expectedStreamed[i]);
             }

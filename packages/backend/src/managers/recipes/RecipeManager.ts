@@ -102,7 +102,11 @@ export class RecipeManager implements Disposable {
     let inferenceServer: InferenceServer | undefined;
     if (isApplicationOptionsWithModelInference(options)) {
       // if the recipe has a defined backend, we gives priority to using an inference server
-      if (options.recipe.backend && options.recipe.backend === options.model.backend) {
+      // OpenVINO uses llama.cpp backend, so treat openvino models as compatible with llama-cpp recipes
+      const compatibleBackend =
+        options.recipe.backend === options.model.backend ||
+        (options.recipe.backend === 'llama-cpp' && options.model.backend === 'openvino');
+      if (options.recipe.backend && compatibleBackend) {
         let task: Task | undefined;
         try {
           inferenceServer = this.inferenceManager.findServerByModel(options.model);

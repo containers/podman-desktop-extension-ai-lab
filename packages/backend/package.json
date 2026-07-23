@@ -112,7 +112,7 @@
   "dependencies": {
     "@ai-sdk/mcp": "^2.0.16",
     "@ai-sdk/openai-compatible": "^3.0.14",
-    "@huggingface/gguf": "^0.4.2",
+    "@huggingface/gguf": "^0.4.3",
     "@huggingface/hub": "^2.13.3",
     "ai": "^7.0.36",
     "express": "^5.2.1",

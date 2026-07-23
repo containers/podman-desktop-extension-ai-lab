@@ -28,7 +28,7 @@ import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwr
 import {
   ContainerDetailsPage,
   ContainerState,
-  expect as playExpect,
+  expect,
   test,
   RunnerOptions,
   waitForPodmanMachineStartup,
@@ -187,21 +187,23 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
       const dashboardPage = await navigationBar.openDashboard();
-      await playExpect(dashboardPage.mainPage).toBeVisible();
+      await expect(dashboardPage.mainPage).toBeVisible();
       extensionsPage = await navigationBar.openExtensions();
-      await playExpect(extensionsPage.header).toBeVisible();
+      await expect(extensionsPage.header).toBeVisible();
     });
 
     test(`Install AI Lab extension`, async () => {
+      // eslint-disable-next-line sonarjs/no-skipped-tests
       test.skip(AI_LAB_EXTENSION_PREINSTALLED, 'AI Lab extension is preinstalled');
       test.setTimeout(120_000);
       await extensionsPage.installExtensionFromOCIImage(AI_LAB_EXTENSION_OCI_IMAGE);
+      expect(extensionsPage).toBeDefined();
     });
 
     test('Extension (card) is installed, present and active', async ({ navigationBar }) => {
       await waitForExtensionToInitialize(navigationBar);
       const extensionCard = await getExtensionCard(navigationBar);
-      await playExpect(extensionCard.status).toHaveText(AI_LAB_CATALOG_STATUS_ACTIVE);
+      await expect(extensionCard.status).toHaveText(AI_LAB_CATALOG_STATUS_ACTIVE);
     });
 
     test(`Extension's details show correct status, no error`, async ({ navigationBar }) => {
@@ -209,23 +211,25 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await aiLabExtensionDetailsPage.waitForLoad();
       await aiLabExtensionDetailsPage.checkIsActive(AI_LAB_CATALOG_STATUS_ACTIVE);
       await aiLabExtensionDetailsPage.checkForErrors();
+      expect(aiLabExtensionDetailsPage).toBeDefined();
     });
 
     test(`Verify AI Lab is accessible`, async ({ runner, page, navigationBar }) => {
       aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
       await aiLabPage.navigationBar.waitForLoad();
+      expect(aiLabPage).toBeDefined();
     });
   });
 
   test.describe.serial(`AI Lab extension GPU preferences`, { tag: '@smoke' }, () => {
     test(`Verify GPU support banner is visible, preferences are disabled`, async ({ page, navigationBar }) => {
       test.setTimeout(15_000);
-      await playExpect(aiLabPage.gpuSupportBanner).toBeVisible();
-      await playExpect(aiLabPage.enableGpuButton).toBeVisible();
-      await playExpect(aiLabPage.dontDisplayButton).toBeVisible();
+      await expect(aiLabPage.gpuSupportBanner).toBeVisible();
+      await expect(aiLabPage.enableGpuButton).toBeVisible();
+      await expect(aiLabPage.dontDisplayButton).toBeVisible();
       const preferencesPage = await openAILabPreferences(navigationBar, page);
       await preferencesPage.waitForLoad();
-      playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
+      expect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
     });
 
     test(`Enable GPU support and verify preferences`, async ({ runner, page, navigationBar }) => {
@@ -235,12 +239,13 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await aiLabPage.enableGpuSupport();
       const preferencesPage = await openAILabPreferences(navigationBar, page);
       await preferencesPage.waitForLoad();
-      playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeTruthy();
+      expect(await preferencesPage.isGPUPreferenceEnabled()).toBeTruthy();
     });
 
     test.afterAll(
       `Disable GPU support, return to AI Lab Dashboard and hide banner`,
       async ({ runner, page, navigationBar }) => {
+        // eslint-disable-next-line sonarjs/no-skipped-tests
         test.skip(
           AI_LAB_TESTS_WITH_GPU_ENABLED,
           'Skipping GPU preference reset as tests are running with GPU support enabled',
@@ -249,13 +254,13 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         const preferencesPage = await openAILabPreferences(navigationBar, page);
         await preferencesPage.waitForLoad();
         await preferencesPage.disableGPUPreference();
-        playExpect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
+        expect(await preferencesPage.isGPUPreferenceEnabled()).toBeFalsy();
         aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-        await playExpect(aiLabPage.gpuSupportBanner).toBeVisible();
-        await playExpect(aiLabPage.enableGpuButton).toBeVisible();
-        await playExpect(aiLabPage.dontDisplayButton).toBeVisible();
+        await expect(aiLabPage.gpuSupportBanner).toBeVisible();
+        await expect(aiLabPage.enableGpuButton).toBeVisible();
+        await expect(aiLabPage.dontDisplayButton).toBeVisible();
         await aiLabPage.dontDisplayButton.click();
-        await playExpect(aiLabPage.gpuSupportBanner).toBeHidden();
+        await expect(aiLabPage.gpuSupportBanner).toBeHidden();
       },
     );
   });
@@ -282,7 +287,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       const response: Response = await fetch(`http://127.0.0.1:${localServerPort}/`, { cache: 'no-store' });
       const blob: Blob = await response.blob();
       const text: string = await blob.text();
-      playExpect(text).toContain('OK');
+      expect(text).toContain('OK');
     });
 
     test('Fetch API Version', async ({ request }) => {
@@ -291,14 +296,15 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           Accept: 'application/json',
         },
       });
-      playExpect(response.ok()).toBeTruthy();
+      expect(response.ok()).toBeTruthy();
       const apiResponse = await response.json();
 
       console.log(`API version: ${apiResponse.version}`);
-      playExpect(apiResponse.version).toBe(extensionVersion);
+      expect(apiResponse.version).toBe(extensionVersion);
     });
 
     test(`Download ${modelName} via API`, async ({ request }) => {
+      // eslint-disable-next-line sonarjs/no-skipped-tests
       test.skip(true, `Skipping test due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3406`);
       test.setTimeout(610_000);
       const catalogPage = await aiLabPage.navigationBar.openCatalog();
@@ -319,27 +325,28 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
       const body = await response.body();
       const text = body.toString();
-      playExpect(text).toContain('success');
+      expect(text).toContain('success');
       await aiLabPage.navigationBar.openCatalog();
       await catalogPage.waitForLoad();
-      await playExpect
+      await expect
         // eslint-disable-next-line sonarjs/no-nested-functions
         .poll(async () => await waitForCatalogModel(modelName))
         .toBeTruthy();
     });
 
     test(`Verify ${modelName} is listed in models fetched from API`, async ({ request }) => {
+      // eslint-disable-next-line sonarjs/no-skipped-tests
       test.skip(true, `Skipping test due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3406`);
       const response = await request.get(`http://127.0.0.1:${localServerPort}/api/tags`, {
         headers: {
           Accept: 'application/json',
         },
       });
-      playExpect(response.ok()).toBeTruthy();
+      expect(response.ok()).toBeTruthy();
       const parsedJson = await response.json();
       console.log(parsedJson);
-      playExpect(parsedJson.models.length).not.toBe(0);
-      playExpect(
+      expect(parsedJson.models).not.toHaveLength(0);
+      expect(
         (parsedJson.models as unknown[]).find(modelEntry => (modelEntry as { model: string }).model === modelName),
       ).toBeTruthy();
     });
@@ -369,7 +376,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         if (!(await catalogPage.isModelDownloaded(appModel))) {
           await catalogPage.downloadModel(appModel);
         }
-        await playExpect
+        await expect
           // eslint-disable-next-line sonarjs/no-nested-functions
           .poll(async () => await waitForCatalogModel(appModel), { timeout: 600_000, intervals: [5_000] })
           .toBeTruthy();
@@ -387,21 +394,22 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
             await playgroundsPage.createNewPlayground(PLAYGROUND_NAME);
             await playgroundsPage.waitForLoad();
-            await playExpect
-              // eslint-disable-next-line sonarjs/no-nested-functions
+            // eslint-disable-next-line sonarjs/no-nested-functions
+            await expect
               .poll(async () => await playgroundsPage.doesPlaygroundExist(PLAYGROUND_NAME), { timeout: 60_000 })
               .toBeTruthy();
+            expect(playgroundsPage).toBeDefined();
           });
 
           test(`Go to AI Lab playground details for ${appModel}`, async () => {
             playgroundDetailsPage = await playgroundsPage.goToPlaygroundDetails(PLAYGROUND_NAME);
             await playgroundDetailsPage.waitForLoad();
 
-            await playExpect(playgroundDetailsPage.conversationSectionLocator).toBeVisible();
-            await playExpect(playgroundDetailsPage.temperatureSliderLocator).toBeVisible();
-            await playExpect(playgroundDetailsPage.maxTokensSliderLocator).toBeVisible();
-            await playExpect(playgroundDetailsPage.topPSliderLocator).toBeVisible();
-            await playExpect(playgroundDetailsPage.deletePlaygroundButton).toBeEnabled();
+            await expect(playgroundDetailsPage.conversationSectionLocator).toBeVisible();
+            await expect(playgroundDetailsPage.temperatureSliderLocator).toBeVisible();
+            await expect(playgroundDetailsPage.maxTokensSliderLocator).toBeVisible();
+            await expect(playgroundDetailsPage.topPSliderLocator).toBeVisible();
+            await expect(playgroundDetailsPage.deletePlaygroundButton).toBeEnabled();
           });
 
           test('Set system prompt, submit user input, and verify assistant response is visible', async () => {
@@ -410,11 +418,11 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
             await playgroundDetailsPage.submitUserInput('Hello');
             // Get the first assistant response
             assistantResponse = await playgroundDetailsPage.getAssistantResponse(0);
-            await playExpect(assistantResponse).toBeVisible();
+            await expect(assistantResponse).toBeVisible();
           });
 
           test('Verify assistant response contains the expected system prompt', async () => {
-            playExpect(await assistantResponse.innerText()).toContain('Hello, I am Chat Bot');
+            expect(await assistantResponse.innerText()).toContain('Hello, I am Chat Bot');
           });
 
           test(`Delete AI Lab playground for ${appModel}`, async () => {
@@ -424,15 +432,17 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
             await playgroundsPage.deletePlayground(PLAYGROUND_NAME);
 
-            await playExpect
-              // eslint-disable-next-line sonarjs/no-nested-functions
+            // eslint-disable-next-line sonarjs/no-nested-functions
+            await expect
               .poll(async () => await playgroundsPage.doesPlaygroundExist(PLAYGROUND_NAME), { timeout: 60_000 })
               .toBeFalsy();
+            expect(playgroundsPage).toBeDefined();
           });
 
           test(`Cleaning up model service`, async () => {
             test.setTimeout(120_000);
             await cleanupServices();
+            expect(aiLabPage).toBeDefined();
           });
         });
       }
@@ -444,6 +454,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         test.describe.serial(`AI Recipe installation ${appName}`, () => {
           let recipesCatalogPage: AILabRecipesCatalogPage;
 
+          // eslint-disable-next-line sonarjs/no-skipped-tests
           test.skip(
             !process.env.EXT_TEST_RAG_CHATBOT &&
               (appName === 'RAG Chatbot' ||
@@ -452,11 +463,13 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
             'EXT_TEST_RAG_CHATBOT variable not set, skipping test',
           );
 
+          // eslint-disable-next-line sonarjs/no-skipped-tests
           test.skip(
             appName === 'Audio to Text' && !!isCI && !!isLinux,
             'Audio to Text app is skipped on Linux CI due to stability issues https://github.com/containers/podman-desktop-extension-ai-lab/issues/4227 , https://github.com/containers/podman-desktop-extension-ai-lab/issues/3111',
           );
 
+          // eslint-disable-next-line sonarjs/no-skipped-tests
           test.skip(
             appName === 'Object Detection' && !!isCI && !!isWindows,
             'Object Detection app is skipped on Windows CI due to https://github.com/containers/podman-desktop-extension-ai-lab/issues/3197',
@@ -468,6 +481,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
             recipesCatalogPage = await aiLabPage.navigationBar.openRecipesCatalog();
             await recipesCatalogPage.waitForLoad();
+            expect(recipesCatalogPage).toBeDefined();
           });
 
           test(`Install ${appName} example app`, async () => {
@@ -475,6 +489,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
             const demoApp = await recipesCatalogPage.openRecipesCatalogApp(appName);
             await demoApp.waitForLoad();
             await demoApp.startNewDeployment(1_400_000);
+            expect(demoApp).toBeDefined();
           });
 
           /*
@@ -490,9 +505,9 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
                   const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
                   const appPort = await aiRunningAppsPage.getAppPort(appName);
                   response = await request.get(`http://localhost:${appPort}`, { timeout: 60_000 });
-                  playExpect(response.ok()).toBeTruthy();
+                  expect(response.ok()).toBeTruthy();
                   const body = await response.text();
-                  playExpect(body).toContain('<title>Streamlit</title>');
+                  expect(body).toContain('<title>Streamlit</title>');
                   break;
                 }
               }
@@ -554,10 +569,10 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
               }
 
               if (response) {
-                playExpect(response.ok()).toBeTruthy();
+                expect(response.ok()).toBeTruthy();
                 const body = await response?.body();
                 const text = body?.toString() ?? '';
-                playExpect(text).toContain(expectedResponse);
+                expect(text).toContain(expectedResponse);
               }
             });
           }
@@ -567,6 +582,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
             await restartApp(appName);
             await stopAndDeleteApp(appName);
+            expect(aiLabPage).toBeDefined();
           });
         });
       });
@@ -599,16 +615,16 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
     test('Start and verify InstructLab container', async ({ page }) => {
       test.setTimeout(1_000_000);
-      await playExpect(instructLabPage.startInstructLabButton).toBeVisible();
-      await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
+      await expect(instructLabPage.startInstructLabButton).toBeVisible();
+      await expect(instructLabPage.startInstructLabButton).toBeEnabled();
       await instructLabPage.startInstructLabButton.click();
 
-      await playExpect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 900_000 });
-      await playExpect(instructLabPage.openInstructLabButton).toBeEnabled({ timeout: 10_000 });
-      await playExpect(instructLabPage.statusMessageBox).toContainText('Starting InstructLab container');
+      await expect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 900_000 });
+      await expect(instructLabPage.openInstructLabButton).toBeEnabled({ timeout: 10_000 });
+      await expect(instructLabPage.statusMessageBox).toContainText('Starting InstructLab container');
 
       const checkMarkLocator = instructLabPage.statusMessageBox.locator('[class*="text-green"]');
-      await playExpect(checkMarkLocator).toHaveCount(3);
+      await expect(checkMarkLocator).toHaveCount(3);
       await instructLabPage.openInstructLabButton.click();
 
       const containerName = await page
@@ -619,18 +635,18 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         exactInstructLabContainerName = containerName;
       }
       const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
-      await playExpect(containerDetailsPage.heading).toBeVisible();
-      await playExpect(containerDetailsPage.heading).toContainText(exactInstructLabContainerName);
-      await playExpect
+      await expect(containerDetailsPage.heading).toBeVisible();
+      await expect(containerDetailsPage.heading).toContainText(exactInstructLabContainerName);
+      await expect
         .poll(async () => containerDetailsPage.getState(), { timeout: 90_000, intervals: [1_000] })
         .toContain(ContainerState.Running);
     });
 
     test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
       const containersPage = await navigationBar.openContainers();
-      await playExpect(containersPage.heading).toBeVisible();
+      await expect(containersPage.heading).toBeVisible();
       await containersPage.deleteContainer(exactInstructLabContainerName);
-      await playExpect
+      await expect
         .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 60_000 })
         .toBeFalsy();
       await deleteUnusedImages(navigationBar);
@@ -638,11 +654,12 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       await aiLabPage.navigationBar.waitForLoad();
       instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();
       await instructLabPage.waitForLoad();
-      await playExpect(instructLabPage.startInstructLabButton).toBeEnabled();
+      await expect(instructLabPage.startInstructLabButton).toBeEnabled();
     });
   });
 
   test.describe.serial(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
+    // eslint-disable-next-line sonarjs/no-skipped-tests
     test.skip(!!isCI && !!isWindows, 'Skipping Llama Stack tests on GitHub Actions with Windows platform');
     let llamaStackPage: AiLlamaStackPage;
     const llamaStackContainerNames: string[] = [];
@@ -658,17 +675,17 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       test.setTimeout(300_000);
       await llamaStackPage.waitForLoad();
       await llamaStackPage.runLlamaStackContainer();
-      await playExpect(llamaStackPage.openLlamaStackContainerButton).toBeVisible({ timeout: 120_000 });
-      await playExpect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeVisible({ timeout: 120_000 });
-      await playExpect(llamaStackPage.openLlamaStackContainerButton).toBeEnabled({ timeout: 30_000 });
-      await playExpect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeEnabled({ timeout: 30_000 });
+      await expect(llamaStackPage.openLlamaStackContainerButton).toBeVisible({ timeout: 120_000 });
+      await expect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeVisible({ timeout: 120_000 });
+      await expect(llamaStackPage.openLlamaStackContainerButton).toBeEnabled({ timeout: 30_000 });
+      await expect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeEnabled({ timeout: 30_000 });
     });
 
     test(`Verify Llama Stack containers are running`, async ({ navigationBar }) => {
       let containersPage = await navigationBar.openContainers();
-      await playExpect(containersPage.heading).toBeVisible();
+      await expect(containersPage.heading).toBeVisible();
 
-      await playExpect
+      await expect
         .poll(
           async () => {
             const allRows = await containersPage.getAllTableRows();
@@ -695,10 +712,10 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
 
       for (const container of llamaStackContainerNames) {
         containersPage = await navigationBar.openContainers();
-        await playExpect(containersPage.heading).toBeVisible();
+        await expect(containersPage.heading).toBeVisible();
         const containersDetailsPage = await containersPage.openContainersDetails(container);
-        await playExpect(containersDetailsPage.heading).toBeVisible();
-        await playExpect
+        await expect(containersDetailsPage.heading).toBeVisible();
+        await expect
           .poll(async () => containersDetailsPage.getState(), { timeout: 30_000 })
           .toContain(ContainerState.Running);
       }
@@ -707,11 +724,9 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     test.afterAll(`Stop Llama Stack containers`, async ({ navigationBar }) => {
       for (const container of llamaStackContainerNames) {
         const containersPage = await navigationBar.openContainers();
-        await playExpect(containersPage.heading).toBeVisible();
+        await expect(containersPage.heading).toBeVisible();
         await containersPage.deleteContainer(container);
-        await playExpect
-          .poll(async () => await containersPage.containerExists(container), { timeout: 30_000 })
-          .toBeFalsy();
+        await expect.poll(async () => await containersPage.containerExists(container), { timeout: 30_000 }).toBeFalsy();
       }
       await deleteUnusedImages(navigationBar);
     });
@@ -724,7 +739,7 @@ async function cleanupServices(): Promise<void> {
     await modelServicePage.waitForLoad();
     if ((await modelServicePage.getCurrentModelCount()) === 0) return;
     await modelServicePage.deleteAllCurrentModels();
-    await playExpect.poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 }).toBe(0);
+    await expect.poll(async () => await modelServicePage.getCurrentModelCount(), { timeout: 60_000 }).toBe(0);
   } catch (error) {
     console.log(`Error while cleaning up service models: ${error}`);
   }
@@ -735,7 +750,7 @@ async function getModelServicePort(appModelName: string): Promise<string> {
   await modelServicePage.waitForLoad();
   const serviceDetailsPage = await modelServicePage.openServiceDetails(appModelName);
 
-  await playExpect
+  await expect
     // eslint-disable-next-line sonarjs/no-nested-functions
     .poll(async () => await serviceDetailsPage.getServiceState(), { timeout: 60_000 })
     .toBe('RUNNING');
@@ -752,8 +767,8 @@ async function deleteAllModels(): Promise<void> {
 async function restartApp(appName: string): Promise<void> {
   const aiRunningAppsPage = await aiLabPage.navigationBar.openRunningApps();
   await aiRunningAppsPage.waitForLoad();
-  await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
-  await playExpect
+  await expect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
+  await expect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');
   const aiApp = await aiRunningAppsPage.getRowForApp(appName);
@@ -771,7 +786,7 @@ async function restartApp(appName: string): Promise<void> {
   ).catch(() => {
     // Dialog didn't appear - this is expected when repo is clean
   });
-  const progressBarPromise = playExpect(appProgressBar)
+  const progressBarPromise = expect(appProgressBar)
     .toBeVisible({ timeout: 60_000 })
     .catch(() => {
       console.log(`Warning: Progress bar did not appear for app "${appName}" during restart`);
@@ -780,7 +795,7 @@ async function restartApp(appName: string): Promise<void> {
   const restartPromise = aiRunningAppsPage.restartApp(appName);
 
   await Promise.all([dialogPromise, progressBarPromise, restartPromise]);
-  await playExpect
+  await expect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');
 }
@@ -792,31 +807,29 @@ async function stopAndDeleteApp(appName: string): Promise<void> {
     console.log(`"${appName}" is not present in the running apps list. Skipping stop and delete operations.`);
     return;
   }
-  await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
-  await playExpect
+  await expect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 10_000 }).toBeTruthy();
+  await expect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('RUNNING');
   await aiRunningAppsPage.stopApp(appName);
-  await playExpect
+  await expect
     .poll(async () => await aiRunningAppsPage.getCurrentStatusForApp(appName), { timeout: 60_000 })
     .toBe('UNKNOWN');
   await aiRunningAppsPage.deleteAIApp(appName);
-  await playExpect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 60_000 }).toBeFalsy();
+  await expect.poll(async () => await aiRunningAppsPage.appExists(appName), { timeout: 60_000 }).toBeFalsy();
 }
 
 async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
   try {
     const imagesPage = await navigationBar.openImages();
-    await playExpect(imagesPage.heading).toBeVisible();
+    await expect(imagesPage.heading).toBeVisible();
 
     await imagesPage.deleteAllUnusedImages();
-    await playExpect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 90_000 }).toBe(0);
+    await expect.poll(async () => await imagesPage.getCountOfImagesByStatus('UNUSED'), { timeout: 90_000 }).toBe(0);
     // Wait for all in-progress deletions to complete before proceeding.
     // Without this, Podman storage may still be removing layers when the next
     // test group starts a build, causing "image not known" / "layer not known" errors.
-    await playExpect
-      .poll(async () => await imagesPage.getCountOfImagesByStatus('DELETING'), { timeout: 90_000 })
-      .toBe(0);
+    await expect.poll(async () => await imagesPage.getCountOfImagesByStatus('DELETING'), { timeout: 90_000 }).toBe(0);
   } catch (error) {
     console.error('Error during deleteUnusedImages:', error);
   }

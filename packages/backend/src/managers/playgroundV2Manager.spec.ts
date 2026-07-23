@@ -98,7 +98,7 @@ test('manager should be properly initialized', () => {
     cancellationTokenRegistryMock,
     mcpServerManager,
   );
-  expect(manager.getConversations().length).toBe(0);
+  expect(manager.getConversations()).toHaveLength(0);
 });
 
 test('submit should throw an error if the server is stopped', async () => {
@@ -192,11 +192,11 @@ test('create playground should create conversation.', async () => {
     cancellationTokenRegistryMock,
     mcpServerManager,
   );
-  expect(manager.getConversations().length).toBe(0);
+  expect(manager.getConversations()).toHaveLength(0);
   await manager.createPlayground('playground 1', { id: 'model-1' } as ModelInfo, 'tracking-1');
 
   const conversations = manager.getConversations();
-  expect(conversations.length).toBe(1);
+  expect(conversations).toHaveLength(1);
 });
 
 test('valid submit should create IPlaygroundMessage and notify the webview', async () => {
@@ -263,8 +263,8 @@ test('valid submit should create IPlaygroundMessage and notify the webview', asy
 
   const conversations = manager.getConversations();
 
-  expect(conversations.length).toBe(1);
-  expect(conversations[0].messages.length).toBe(2);
+  expect(conversations).toHaveLength(1);
+  expect(conversations[0].messages).toHaveLength(2);
   expect(conversations[0].messages[0]).toStrictEqual({
     content: 'dummyUserInput',
     id: expect.anything(),
@@ -345,8 +345,8 @@ test('error', async () => {
 
   const conversations = manager.getConversations();
 
-  expect(conversations.length).toBe(1);
-  expect(conversations[0].messages.length).toBe(2);
+  expect(conversations).toHaveLength(1);
+  expect(conversations[0].messages).toHaveLength(2);
   expect(conversations[0].messages[0]).toStrictEqual({
     content: 'dummyUserInput',
     id: expect.anything(),
@@ -541,7 +541,7 @@ test('delete conversation should delete the conversation', async () => {
     cancellationTokenRegistryMock,
     mcpServerManager,
   );
-  expect(manager.getConversations().length).toBe(0);
+  expect(manager.getConversations()).toHaveLength(0);
   await manager.createPlayground(
     'a name',
     {
@@ -552,9 +552,9 @@ test('delete conversation should delete the conversation', async () => {
   );
 
   const conversations = manager.getConversations();
-  expect(conversations.length).toBe(1);
+  expect(conversations).toHaveLength(1);
   manager.deleteConversation(conversations[0].id);
-  expect(manager.getConversations().length).toBe(0);
+  expect(manager.getConversations()).toHaveLength(0);
   expect(rpcExtensionMock.fire).toHaveBeenCalled();
 });
 

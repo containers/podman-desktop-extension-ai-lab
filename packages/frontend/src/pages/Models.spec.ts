@@ -179,7 +179,7 @@ test('should display downloaded model first', async () => {
   expect(table).toBeDefined();
 
   const rows = within(table).queryAllByRole('row');
-  expect(rows.length).toBe(3);
+  expect(rows).toHaveLength(3);
 
   // First row should be the headers
   const headers = within(rows[0]).queryAllByRole('columnheader');
@@ -284,7 +284,7 @@ describe('downloaded models', () => {
     await waitFor(() => expect(screen.getByRole('table')).toBeDefined());
 
     const rows = screen.getAllByRole('cell', { name: 'Model Name' });
-    expect(rows.length).toBe(2);
+    expect(rows).toHaveLength(2);
     expect(await within(rows[0]).findByTitle('dummy-downloaded-1')).toBeDefined();
     expect(await within(rows[1]).findByTitle('dummy-downloaded-2')).toBeDefined();
   });

@@ -45,9 +45,9 @@ describe('withDefaultConfiguration', () => {
     expect(getFreeRandomPort).toHaveBeenCalledWith('0.0.0.0');
 
     expect(result.port).toBe(8888);
-    expect(result.image).toBe(undefined);
+    expect(result.image).toBeUndefined();
     expect(result.labels).toStrictEqual({});
-    expect(result.connection).toBe(undefined);
+    expect(result.connection).toBeUndefined();
   });
 
   test('expect no default values', async () => {

@@ -135,8 +135,8 @@ describe('buildImages', () => {
       state: 'success',
       labels: {},
     });
-    expect(imageInfoList.length).toBe(1);
-    expect(imageInfoList[0].ports.length).toBe(1);
+    expect(imageInfoList).toHaveLength(1);
+    expect(imageInfoList[0].ports).toHaveLength(1);
     expect(imageInfoList[0].ports[0]).equals('8080');
 
     expect(containerEngine.buildImage).toHaveBeenCalledWith(

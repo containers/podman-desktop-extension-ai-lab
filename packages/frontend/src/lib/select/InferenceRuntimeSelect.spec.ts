@@ -42,7 +42,7 @@ test('Lists all runtime options', async () => {
   const items = container.querySelectorAll('div[class~="list-item"]');
   const expectedOptions = providers;
 
-  expect(items.length).toBe(expectedOptions.length);
+  expect(items).toHaveLength(expectedOptions.length);
 
   expectedOptions.forEach((option, i) => {
     expect(items[i]).toHaveTextContent(option);

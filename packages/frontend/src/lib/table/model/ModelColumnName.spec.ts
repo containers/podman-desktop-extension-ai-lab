@@ -55,7 +55,7 @@ test('Expect model info lower bar to be visible', async () => {
   expect(routerMock).toBeCalledWith('/model/my-model');
 });
 
-test('Expect model info lower bar to be visible', async () => {
+test('Expect model info lower bar to be visible with imported model', async () => {
   const routerMock = vi.spyOn(router, 'goto');
   const object: ModelInfo = {
     id: 'my-model',

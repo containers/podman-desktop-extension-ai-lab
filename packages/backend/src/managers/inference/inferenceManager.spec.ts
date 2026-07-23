@@ -150,6 +150,7 @@ describe('init Inference Manager', () => {
       interval: 200,
       timeout: 2000,
     });
+    expect(manager.isInitialize()).toBeTruthy();
   });
 
   test('should have listed containers', async () => {
@@ -167,7 +168,7 @@ describe('init Inference Manager', () => {
     ]);
 
     const inferenceManager = await getInitializedInferenceManager();
-    expect(inferenceManager.getServers().length).toBe(0);
+    expect(inferenceManager.getServers()).toHaveLength(0);
   });
 
   test('should have adopted the existing container', async () => {
@@ -226,7 +227,7 @@ describe('init Inference Manager', () => {
 
     const inferenceManager = await getInitializedInferenceManager();
     const servers = inferenceManager.getServers();
-    expect(servers.length).toBe(2);
+    expect(servers).toHaveLength(2);
     expect(servers.some(server => server.container.containerId === 'dummyContainerId-1')).toBeTruthy();
     expect(servers.some(server => server.container.containerId === 'dummyContainerId-3')).toBeTruthy();
   });
@@ -330,7 +331,7 @@ describe('Start Inference Server', () => {
     expect(containerEngine.startContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
 
     const servers = inferenceManager.getServers();
-    expect(servers.length).toBe(1);
+    expect(servers).toHaveLength(1);
     expect(servers[0].status).toBe('running');
   });
 });
@@ -362,7 +363,7 @@ describe('Stop Inference Server', () => {
     expect(containerEngine.stopContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
 
     const servers = inferenceManager.getServers();
-    expect(servers.length).toBe(1);
+    expect(servers).toHaveLength(1);
     expect(servers[0].status).toBe('stopped');
   });
 });
@@ -392,7 +393,7 @@ describe('Delete Inference Server', () => {
     expect(containerEngine.deleteContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
 
     const servers = inferenceManager.getServers();
-    expect(servers.length).toBe(0);
+    expect(servers).toHaveLength(0);
   });
 
   test('valid stopped containerId', async () => {
@@ -419,7 +420,7 @@ describe('Delete Inference Server', () => {
     expect(containerEngine.deleteContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
 
     const servers = inferenceManager.getServers();
-    expect(servers.length).toBe(0);
+    expect(servers).toHaveLength(0);
   });
 });
 

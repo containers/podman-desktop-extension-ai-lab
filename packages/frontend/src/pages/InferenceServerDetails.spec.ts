@@ -153,7 +153,7 @@ test('language select must have the mocked snippet languages', async () => {
 
   const select: HTMLSelectElement = screen.getByLabelText('snippet language selection');
   expect(select).toBeDefined();
-  expect(select.options.length).toBe(2);
+  expect(select.options).toHaveLength(2);
   expect(select.options[0].value).toBe('dummyLanguageKey');
 });
 

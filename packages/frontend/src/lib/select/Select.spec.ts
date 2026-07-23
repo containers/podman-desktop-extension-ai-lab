@@ -48,7 +48,7 @@ test('empty slot should use basic list', async () => {
   // get all options available
   const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
-  expect(items.length).toBe(2);
+  expect(items).toHaveLength(2);
   expect(items[0]).toHaveTextContent('Dummy Item 1');
   expect(items[1]).toHaveTextContent('Dummy Item 2');
 });
@@ -79,10 +79,10 @@ test('defined value should have corresponding active class to item', async () =>
   // get all options available
   const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
-  expect(items.length).toBe(2);
-  expect(items[0].children.length).toBe(1);
+  expect(items).toHaveLength(2);
+  expect(items[0].children).toHaveLength(1);
   expect(items[0].children[0].classList.value).not.toContain('active');
-  expect(items[1].children.length).toBe(1);
+  expect(items[1].children).toHaveLength(1);
   expect(items[1].children[0].classList.value).toContain('active');
 });
 
@@ -110,7 +110,7 @@ test('selecting value should call onchange callback', async () => {
   // get all options available
   const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
-  expect(items.length).toBe(2);
+  expect(items).toHaveLength(2);
 
   await fireEvent.click(items[1]);
 

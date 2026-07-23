@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { test, vi, beforeEach } from 'vitest';
+import { expect, test, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import ServiceColumnRuntime from './ServiceColumnRuntime.svelte';
 import { InferenceType, type InferenceServer } from '@shared/models/IInference';
@@ -32,5 +32,5 @@ test('should display label for type', async () => {
     } as InferenceServer,
   });
 
-  screen.getByText('llamacpp');
+  expect(screen.getByText('llamacpp')).toBeDefined();
 });

@@ -124,7 +124,7 @@ test('getPodsWithLabels should only return pods with proper labels', async () =>
     },
   ] as unknown as PodInfo[]);
   const pods = await new PodManager().getPodsWithLabels(['dummy-key']);
-  expect(pods.length).toBe(2);
+  expect(pods).toHaveLength(2);
   expect(pods.find(pod => pod.Id === 'pod-id-1')).toBeDefined();
   expect(pods.find(pod => pod.Id === 'pod-id-2')).toBeDefined();
   expect(pods.find(pod => pod.Id === 'pod-id-3')).toBeUndefined();

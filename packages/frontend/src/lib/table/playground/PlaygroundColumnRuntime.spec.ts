@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { test, vi, beforeEach } from 'vitest';
+import { expect, test, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import { InferenceType } from '@shared/models/IInference';
 import type { ConversationWithBackend } from '/@/stores/conversations';
@@ -33,5 +33,5 @@ test('should display label for backend', async () => {
     } as ConversationWithBackend,
   });
 
-  screen.getByText('llamacpp');
+  expect(screen.getByText('llamacpp')).toBeDefined();
 });

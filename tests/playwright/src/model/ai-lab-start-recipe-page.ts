@@ -125,7 +125,7 @@ export class AILabStartRecipePage extends AILabBasePage {
       return 100;
     }
 
-    // eslint-disable-next-line sonarjs/slow-regex
+    // eslint-disable-next-line sonarjs/slow-regex, sonarjs/super-linear-regex
     const regex = new RegExp(/(\d+)%/);
     const progressString = regex.exec(content);
     const progress = progressString ? parseInt(progressString[1]) : 0;

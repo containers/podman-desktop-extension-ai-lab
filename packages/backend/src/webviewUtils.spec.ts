@@ -50,29 +50,19 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-test('panel should have file content as html', async () => {
+test.each([
+  ['plain HTML', '<html></html>', '<html></html>'],
+  [
+    'script src replacement',
+    '<script type="module" crossorigin src="./index-RKnfBG18.js"></script>',
+    '<script type="module" crossorigin src="dummy-src"></script>',
+  ],
+  ['link href replacement', '<link rel="stylesheet" href="./styles.css">', '<link rel="stylesheet" href="dummy-src">'],
+])('panel should handle %s content', async (_name, input, expected) => {
   vi.mocked(promises.readFile as (path: PathLike) => Promise<string>).mockImplementation(() => {
-    return Promise.resolve('<html></html>');
+    return Promise.resolve(input);
   });
 
   const panel = await initWebview({} as unknown as Uri);
-  expect(panel.webview.html).toBe('<html></html>');
-});
-
-test('script src should be replaced with asWebviewUri result', async () => {
-  vi.mocked(promises.readFile as (path: PathLike) => Promise<string>).mockImplementation(() => {
-    return Promise.resolve('<script type="module" crossorigin src="./index-RKnfBG18.js"></script>');
-  });
-
-  const panel = await initWebview({} as unknown as Uri);
-  expect(panel.webview.html).toBe('<script type="module" crossorigin src="dummy-src"></script>');
-});
-
-test('links src should be replaced with asWebviewUri result', async () => {
-  vi.mocked(promises.readFile as (path: PathLike) => Promise<string>).mockImplementation(() => {
-    return Promise.resolve('<link rel="stylesheet" href="./styles.css">');
-  });
-
-  const panel = await initWebview({} as unknown as Uri);
-  expect(panel.webview.html).toBe('<link rel="stylesheet" href="dummy-src">');
+  expect(panel.webview.html).toBe(expected);
 });

@@ -49,7 +49,7 @@ beforeEach(() => {
 
 test('post constructor should have no items', () => {
   const manager = new GPUManager(rpcExtensionMock);
-  expect(manager.getAll().length).toBe(0);
+  expect(manager.getAll()).toHaveLength(0);
 });
 
 test('no controller should return empty array', async () => {

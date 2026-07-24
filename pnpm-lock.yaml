@@ -127,8 +127,8 @@ importers:
         specifier: ^3.0.14
         version: 3.0.14(zod@4.4.3)
       '@huggingface/gguf':
-        specifier: ^0.4.2
-        version: 0.4.2
+        specifier: ^0.4.3
+        version: 0.4.3
       '@huggingface/hub':
         specifier: ^2.13.3
         version: 2.13.3
@@ -996,8 +996,8 @@ packages:
   '@huggingface/blake3-jit@0.0.2':
     resolution: {integrity: sha512-Bq7B5qabyjrJfhBsl85Jd2QBtf+HzRD7h7A9GfN2lzrrsABhOa5evVPgzoCTxR7Ub0QFj7YDK1YkYRWBU25+2w==}
 
-  '@huggingface/gguf@0.4.2':
-    resolution: {integrity: sha512-pog57zGj/u8uZ6cFi2vH9MkWvq+ZtFDa5iUeNxggDSle+04htJQFbl31TcauGUhnxTBJokFexWK9WL2BakLR0Q==}
+  '@huggingface/gguf@0.4.3':
+    resolution: {integrity: sha512-imSYpdkA4GS2/uSUqIoeLctOuRgpCC7HaGkndavjxC3hvNd2l9UITg1ldKTWi9AibzoXMQ7tpXG+CyoxyeRfBg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -1006,11 +1006,11 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@huggingface/tasks@0.20.12':
-    resolution: {integrity: sha512-6X9lX5xfV3egpM0bBH6wogEstQa+B9wsffGbwt7tdOZ+Goz//5kdYOSSb7SlrVC/m/GmmJasC9RxM4zo6GlbZg==}
-
   '@huggingface/tasks@0.21.26':
     resolution: {integrity: sha512-6QGX2qBFEf3zU+qRz+kSTI8weoUpLtNINnl8i7NUC+VB1UBxKvgPrXGCLEEkUwcRGqC0DBpJBwB0OPFg1Aa25g==}
+
+  '@huggingface/tasks@0.21.28':
+    resolution: {integrity: sha512-PCduFL8/f3VfBIIY+fnjcBfRTLgsWHBWJls1xcYRNkJM4iKpwWfEsFnsH/4YP678zZRieNbTh8JUBP9/1NgMbg==}
 
   '@huggingface/xetchunk-wasm@0.1.0':
     resolution: {integrity: sha512-wWpp2qwPgf9kv1KLJjcDUk/OrpDOsFoQ3Qpz0U5LGn20csoymBf8eneOv6wm/GzPBzlWac1OYiR0aa1vT6aM2Q==}
@@ -5659,9 +5659,9 @@ snapshots:
 
   '@huggingface/blake3-jit@0.0.2': {}
 
-  '@huggingface/gguf@0.4.2':
+  '@huggingface/gguf@0.4.3':
     dependencies:
-      '@huggingface/tasks': 0.20.12
+      '@huggingface/tasks': 0.21.28
 
   '@huggingface/hub@2.13.3':
     dependencies:
@@ -5670,9 +5670,9 @@ snapshots:
     optionalDependencies:
       cli-progress: 3.12.0
 
-  '@huggingface/tasks@0.20.12': {}
-
   '@huggingface/tasks@0.21.26': {}
+
+  '@huggingface/tasks@0.21.28': {}
 
   '@huggingface/xetchunk-wasm@0.1.0':
     dependencies:

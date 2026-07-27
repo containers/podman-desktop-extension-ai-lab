@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024-2025 Red Hat, Inc.
+ * Copyright (C) 2024-2026 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ import { LlamaStackManager } from './managers/llama-stack/llamaStackManager';
 import { OpenVINO } from './workers/provider/OpenVINO';
 import { McpServerManager } from './managers/playground/McpServerManager';
 import os from 'node:os';
+import { CommandRegistry } from './registries/CommandRegistry';
 
 export class Studio {
   readonly #extensionContext: ExtensionContext;
@@ -100,6 +101,7 @@ export class Studio {
   #configurationRegistry: ConfigurationRegistry | undefined;
   #gpuManager: GPUManager | undefined;
   #navigationRegistry: NavigationRegistry | undefined;
+  #commandRegistry: CommandRegistry | undefined;
   #instructlabManager: InstructlabManager | undefined;
   #llamaStackManager: LlamaStackManager | undefined;
 
@@ -359,6 +361,18 @@ export class Studio {
      */
     this.#snippetManager = new SnippetManager(this.#rpcExtension, this.#telemetry);
     this.#snippetManager.init();
+
+    /**
+     * The command registry is used to register and managed the commands of the extension
+     */
+    this.#commandRegistry = new CommandRegistry(
+      this.#inferenceManager,
+      this.#playgroundManager,
+      this.#modelsManager,
+      this.#catalogManager,
+    );
+    this.#commandRegistry.init();
+    this.#extensionContext.subscriptions.push(this.#commandRegistry);
 
     /**
      * The StudioApiImpl is the implementation of our API between backend and frontend

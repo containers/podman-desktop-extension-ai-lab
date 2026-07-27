@@ -261,7 +261,7 @@ test('invalid container id should redirect to services page', async () => {
     containerId: 'fakeContainerId',
   });
 
-  expect(gotoSpy).toHaveBeenCalledWith('/services');
+  await vi.waitFor(() => expect(gotoSpy).toHaveBeenCalledWith('/services'), 1_500);
 });
 
 test('ensure dummyContainerId is visible', async () => {

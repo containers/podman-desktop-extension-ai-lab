@@ -234,7 +234,7 @@ test('getModelsInfo should get models in local directory', async () => {
       file: {
         size: 32000,
         creation: now,
-        path: path.resolve(dirent[0].parentPath, dirent[0].name),
+        path: path.resolve(modelsDir, dirent[0].name),
         file: 'model-id-1-model',
       },
     },
@@ -244,11 +244,53 @@ test('getModelsInfo should get models in local directory', async () => {
       file: {
         size: 32000,
         creation: now,
-        path: path.resolve(dirent[1].parentPath, dirent[1].name),
+        path: path.resolve(modelsDir, dirent[1].name),
         file: 'model-id-2-model',
       },
     },
   ]);
+});
+
+test('URLModelHandler.getLocalModelsFromDisk should work with undefined parentPath', async () => {
+  const modelsDir = 'models';
+  const manager = {
+    getModelInfo: vi.fn(id => ({ id, name: `${id}-model` }) as ModelInfo),
+  } as unknown as ModelsManager;
+
+  const handler = new URLModelHandler(manager, modelsDir);
+
+  vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+
+  const mockReaddir = vi.fn().mockImplementation(async path => {
+    if (path === modelsDir) {
+      return [
+        {
+          isDirectory: () => true,
+          parentPath: undefined, // This simulates the issue
+          name: 'test-model',
+          isFile: () => false,
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isSymbolicLink: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+        } as unknown as fs.Dirent,
+      ];
+    }
+    return ['test-model.gguf'];
+  });
+
+  vi.spyOn(fs.promises, 'readdir').mockImplementation(mockReaddir);
+  vi.spyOn(fs.promises, 'stat').mockResolvedValue({
+    size: 1000,
+    mtime: new Date(),
+  } as fs.Stats);
+
+  // Should not throw error even with undefined parentPath
+  await expect(handler.getLocalModelsFromDisk()).resolves.not.toThrow();
+
+  // Verify the model was updated with correct path
+  expect(manager.getModelInfo).toHaveBeenCalledWith('test-model');
 });
 
 test('getModelsInfo should return an empty array if the models folder does not exist', async () => {
@@ -327,7 +369,7 @@ test('getLocalModelsFromDisk should return undefined Date and size when stat fai
       file: {
         size: undefined,
         creation: undefined,
-        path: path.resolve(dirent[0].parentPath, dirent[0].name),
+        path: path.resolve(modelsDir, dirent[0].name),
         file: 'model-id-1-model',
       },
     },
@@ -425,7 +467,7 @@ test('loadLocalModels should post a message with the message on disk and on cata
         creation: now,
         file: 'model-id-1-model',
         size: 32000,
-        path: path.resolve(dirent[0].parentPath, dirent[0].name),
+        path: path.resolve(modelsDir, dirent[0].name),
       },
       id: 'model-id-1',
     },
@@ -552,8 +594,9 @@ describe('deleting models', () => {
           creation: now,
           file: 'model-id-1-model',
           size: 32000,
-          path: path.resolve(dirent[0].parentPath, dirent[0].name),
+          path: path.resolve(modelsDir, dirent[0].name),
         },
+        state: undefined,
       },
     ]);
     expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();

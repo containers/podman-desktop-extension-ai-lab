@@ -18,7 +18,7 @@
 import { ModelHandler } from './ModelHandler';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { Downloader } from '../utils/downloader';
-import { scanCacheDir, snapshotDownload } from '@huggingface/hub';
+import { scanCacheDir, snapshotDownload, getHFHubCachePath } from '@huggingface/hub';
 import type { CompletionEvent } from './baseEvent';
 import { getDurationSecondsSince } from '../utils/utils';
 import type { ModelsManager } from '../managers/modelsManager';
@@ -120,26 +120,38 @@ export class HuggingFaceModelHandler extends ModelHandler {
       })
       .filter(info => info.repo);
 
-    scanCacheDir()
-      .then(hfinfo => {
-        for (const repo of hfinfo.repos) {
-          for (const revision of repo.revisions) {
-            for (const ref of revision.refs) {
-              const model = hfModels.find(m => m.repo?.repo === repo.id.name && m.repo?.revision === ref);
-              if (model) {
-                model.model.file = {
-                  path: revision.path,
-                  file: '',
-                  creation: revision.lastModifiedAt,
-                  size: revision.size,
-                };
+    // Only scan cache if we have HF models to check
+    if (hfModels.length > 0) {
+      // Check if cache directory exists before scanning
+      try {
+        const cachePath = getHFHubCachePath();
+        await fs.access(cachePath);
+      } catch {
+        // Cache directory doesn't exist, skip scanning
+        return;
+      }
+
+      scanCacheDir()
+        .then(hfinfo => {
+          for (const repo of hfinfo.repos) {
+            for (const revision of repo.revisions) {
+              for (const ref of revision.refs) {
+                const model = hfModels.find(m => m.repo?.repo === repo.id.name && m.repo?.revision === ref);
+                if (model) {
+                  model.model.file = {
+                    path: revision.path,
+                    file: '',
+                    creation: revision.lastModifiedAt,
+                    size: revision.size,
+                  };
+                }
               }
             }
           }
-        }
-      })
-      .catch((err: unknown): void => {
-        console.error('Something went wrong while scanning cache.', err);
-      });
+        })
+        .catch((err: unknown): void => {
+          console.error('Something went wrong while scanning cache.', err);
+        });
+    }
   }
 }

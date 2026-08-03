@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v6.0.9
         name: Install pnpm
         with:
           run_install: false
@@ -78,7 +78,7 @@ jobs:
         with:
           path: podman-desktop-extension-ai-lab
       # Set up pnpm
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v6.0.9
         name: Install pnpm
         with:
           run_install: false

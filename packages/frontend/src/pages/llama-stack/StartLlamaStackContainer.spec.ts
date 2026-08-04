@@ -101,7 +101,9 @@ test('Instructions block should be displayed if Llama Stack container is found',
   });
   render(StartLlamaStackContainer);
 
-  await vi.waitFor(() => screen.getByText('Instructions'));
+  await vi.waitFor(() => {
+    expect(screen.getByText('Instructions')).toBeInTheDocument();
+  });
 });
 
 test('start button should be displayed and enabled', async () => {
@@ -195,7 +197,7 @@ test('port should be displayed', async () => {
   render(StartLlamaStackContainer);
 
   await vi.waitFor(() => {
-    screen.getByText(/http:\/\/localhost:10000/);
+    expect(screen.getByText(/http:\/\/localhost:10000/)).toBeInTheDocument();
   });
 });
 
@@ -237,7 +239,7 @@ test('displays error if requestcreateLlamaStackContainerss throws', async () => 
   await userEvent.click(startBtn);
 
   await vi.waitFor(() => {
-    screen.getByText('Error: Creation failed');
+    expect(screen.getByText('Error: Creation failed')).toBeInTheDocument();
   });
 });
 

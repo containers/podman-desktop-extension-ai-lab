@@ -620,6 +620,27 @@ describe('checkContainerConnectionStatusAndResources', () => {
     });
   });
 
+  test('return native on Linux even when a connection is explicitly provided', async () => {
+    const manager = new PodmanConnection(rpcExtensionMock);
+    vi.mocked(env).isLinux = true;
+
+    const result = await manager.checkContainerConnectionStatusAndResources({
+      model: modelMock,
+      context: 'inference',
+      connection: {
+        providerId: 'podman',
+        name: 'podman',
+        type: 'podman',
+        status: 'started',
+        vmType: VMType.UNKNOWN,
+      },
+    });
+    expect(result).toStrictEqual({
+      status: 'native',
+      canRedirect: expect.any(Boolean),
+    });
+  });
+
   test('return noMachineInfo if there is no running podman connection', async () => {
     const manager = new PodmanConnection(rpcExtensionMock);
     vi.mocked(env).isLinux = false;

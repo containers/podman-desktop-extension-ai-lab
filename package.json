@@ -92,18 +92,5 @@
   "scarfSettings": {
     "enabled": false
   },
-  "pnpm": {
-    "overrides": {
-      "postman-collection>semver": "^7.5.2"
-    },
-    "ignoredBuiltDependencies": [
-      "@scarf/scarf",
-      "@tailwindcss/oxide",
-      "esbuild",
-      "postman-code-generators",
-      "svelte-preprocess",
-      "unrs-resolver"
-    ]
-  },
-  "packageManager": "pnpm@10.12.4+sha512.5ea8b0deed94ed68691c9bad4c955492705c5eeb8a87ef86bc62c74a26b037b08ff9570f108b2e4dbd1dd1a9186fea925e527f141c648e85af45631074680184"
+  "packageManager": "pnpm@11.22.0+sha512.1ff870c4c6133dfd88fb2afc46dd13d47f09c9794b438c6fdb47ca98caf3bc16381ee0be93a091b8e3824cf01f889f46d7d9e20910fb0be1ab0fb5baa80dd621"
 }

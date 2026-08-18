@@ -113,9 +113,6 @@ jobs:
         working-directory: ./podman-desktop
         run: pnpm test:e2e:build
 
-      - name: Ensure getting current HEAD version of the test framework
-        working-directory: ./podman-desktop-extension-ai-lab/tests/playwright
-        run: pnpm add -D @podman-desktop/tests-playwright@next
 
       - name: Execute pnpm in AI Lab Extension
         working-directory: ./podman-desktop-extension-ai-lab

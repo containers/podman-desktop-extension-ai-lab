@@ -142,9 +142,8 @@ test.use({
 });
 
 test.beforeAll(async ({ runner, welcomePage, page }) => {
-  const window = await runner.getElectronApp().firstWindow();
   // Increase Window Size to improve video recording and screenshots
-  await window.setViewportSize({ width: 1050, height: 700 });
+  await page.setViewportSize({ width: 1050, height: 700 });
 
   runner.setVideoAndTraceName('ai-lab-e2e');
   await welcomePage.handleWelcomePage(true);
@@ -761,14 +760,12 @@ async function restartApp(appName: string): Promise<void> {
   // Trigger restart and watch for dialog/progress bar in parallel to avoid race condition
   // See: https://github.com/containers/podman-desktop-extension-ai-lab/issues/3663
 
-  const dialogPromise = handleConfirmationDialog(
-    aiLabPage.page,
-    podmanAILabExtension.extensionName,
-    true,
-    'Reset',
-    'Cancel',
-    25_000,
-  ).catch(() => {
+  const dialogPromise = handleConfirmationDialog({
+    page: aiLabPage.page,
+    dialogTitle: podmanAILabExtension.extensionName,
+    buttonName: 'Reset',
+    timeout: 25_000,
+  }).catch(() => {
     // Dialog didn't appear - this is expected when repo is clean
   });
   const progressBarPromise = playExpect(appProgressBar)

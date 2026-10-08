@@ -52,7 +52,11 @@ export class AiRunningAppsPage extends AILabBasePage {
     await playExpect(restartButton).toBeVisible();
     await restartButton.click();
 
-    await handleConfirmationDialog(this.page, 'Podman AI Lab', true, 'Confirm');
+    await handleConfirmationDialog({
+      page: this.page,
+      dialogTitle: podmanAILabExtension.extensionName,
+      buttonName: 'Confirm',
+    });
   }
 
   async stopApp(appName: string): Promise<void> {
@@ -76,7 +80,11 @@ export class AiRunningAppsPage extends AILabBasePage {
     await playExpect(deleteButton).toBeVisible();
     await deleteButton.click();
 
-    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+    await handleConfirmationDialog({
+      page: this.page,
+      dialogTitle: podmanAILabExtension.extensionName,
+      buttonName: 'Confirm',
+    });
   }
 
   async appExists(appName: string): Promise<boolean> {

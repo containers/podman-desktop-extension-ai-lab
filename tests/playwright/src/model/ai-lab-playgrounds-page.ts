@@ -60,7 +60,11 @@ export class AILabPlaygroundsPage extends AILabBasePage {
     const deleteButton = playgroundRow.getByRole('button', { name: 'Delete conversation', exact: true });
     await playExpect(deleteButton).toBeEnabled();
     await deleteButton.click();
-    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+    await handleConfirmationDialog({
+      page: this.page,
+      dialogTitle: podmanAILabExtension.extensionName,
+      buttonName: 'Confirm',
+    });
     return this;
   }
 

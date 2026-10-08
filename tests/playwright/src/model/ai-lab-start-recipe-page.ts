@@ -60,7 +60,11 @@ export class AILabStartRecipePage extends AILabBasePage {
     let latestStatusTimeout = 0;
 
     try {
-      await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Reset');
+      await handleConfirmationDialog({
+        page: this.page,
+        dialogTitle: podmanAILabExtension.extensionName,
+        buttonName: 'Reset',
+      });
     } catch (error) {
       console.warn(`Warning: Could not reset the app, repository probably clean.\n\t${error}`);
     }

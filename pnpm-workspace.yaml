@@ -2,3 +2,18 @@ packages:
   - 'packages/*'
   - 'tools'
   - 'tests/*'
+overrides:
+  postman-collection>semver: ^7.5.2
+nodeLinker: hoisted
+allowBuilds:
+  '@scarf/scarf': false
+  '@tailwindcss/oxide': false
+  esbuild: false
+  msw: true
+  postman-code-generators: false
+  svelte-preprocess: false
+  unrs-resolver: false
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@podman-desktop/tests-playwright'

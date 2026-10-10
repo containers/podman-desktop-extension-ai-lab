@@ -108,6 +108,34 @@ jobs:
         with:
           ubuntu-repository: 'questing'
 
+      # Podman 5.8.2 includes the fix for the flaky Buildah cache lookup race:
+      # https://github.com/containers/buildah/issues/5674
+      # https://github.com/containers/buildah/pull/6688
+      # The installer above supplies runtime dependencies, but its Ubuntu
+      # package is Podman 5.4.2 and its version input only supports Windows.
+      - name: Check out Podman 5.8.2
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: containers/podman
+          ref: 5b263b5f5b48004a87caac44e67349a8266d9ef4 # v5.8.2
+          path: podman-engine
+
+      - name: Set up Go for Podman
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: podman-engine/go.mod
+          cache-dependency-path: podman-engine/go.sum
+
+      - name: Build and install Podman 5.8.2
+        working-directory: ./podman-engine
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgpgme-dev libseccomp-dev libsystemd-dev
+          make podman rootlessport quadlet PREFIX=/usr
+          sudo make install.bin PREFIX=/usr GO="$(command -v go)"
+          test "$(podman --version)" = "podman version 5.8.2"
+          podman version
+
       - name: Revert unprivileged user namespace restrictions in Ubuntu 24.04
         run: |
           # allow unprivileged user namespace

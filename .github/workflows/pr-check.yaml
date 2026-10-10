@@ -88,12 +88,20 @@ jobs:
         with:
           node-version: 24
 
-      # Checkout podman desktop
-      - uses: actions/checkout@v7.0.1
+      # Dependabot updates this dependency and lockfile together with the binary version.
+      - name: Read Podman Desktop version from the test framework dependency
+        id: podman-desktop-version
+        working-directory: ./podman-desktop-extension-ai-lab
+        run: |
+          version=$(node -p "require('./tests/playwright/package.json').devDependencies['@podman-desktop/tests-playwright']")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Install Podman Desktop
+        id: podman-desktop-install
+        uses: podman-desktop/gh-extensions-actions/.github/actions/podman-desktop-install@3c89b3ea20c3262cb0f05894d0da4354d8c269a6 # v0.9.0
         with:
-          repository: containers/podman-desktop
-          ref: main
-          path: podman-desktop
+          version: ${{ steps.podman-desktop-version.outputs.version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update podman
         uses: redhat-actions/podman-install@92eb12467c2fc271e7781d006c413e17770230ed
@@ -114,23 +122,9 @@ jobs:
           EOT
           podman info
 
-      - name: Install pnpm deps and build Podman Desktop
-        working-directory: ./podman-desktop
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm test:e2e:build
-
-      - name: Ensure getting current HEAD version of the test framework
-        working-directory: ./podman-desktop-extension-ai-lab/tests/playwright
-        run: |
-          # workaround for https://github.com/containers/podman-desktop-extension-bootc/issues/712
-          version=$(npm view @podman-desktop/tests-playwright@next version)
-          echo "Version of @podman-desktop/tests-playwright to be used: $version"
-          jq --arg version "$version" '.devDependencies."@podman-desktop/tests-playwright" = $version' package.json > package.json_tmp && mv package.json_tmp package.json
-
       - name: Execute pnpm in AI Lab Extension
         working-directory: ./podman-desktop-extension-ai-lab
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build Image
         working-directory: ./podman-desktop-extension-ai-lab
@@ -150,7 +144,10 @@ jobs:
       - name: Run E2E Smoke tests
         working-directory: ./podman-desktop-extension-ai-lab
         env:
-          PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
+          ELECTRON_DISABLE_SANDBOX: '1'
+          NODE_OPTIONS: --no-experimental-strip-types
+          DEBUGGING_PORT: 9222
+          PODMAN_DESKTOP_BINARY: ${{ steps.podman-desktop-install.outputs.binary }}
           EXTENSION_PREINSTALLED: true
         run: pnpm test:e2e:smoke
 

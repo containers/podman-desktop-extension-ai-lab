@@ -26,14 +26,6 @@ vi.mock('../utils/inferenceUtils', () => ({
   getImageInfo: vi.fn(),
 }));
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    env: {
-      isWindows: false,
-    },
-  };
-});
-
 vi.mock('systeminformation', () => ({
   graphics: vi.fn(),
 }));

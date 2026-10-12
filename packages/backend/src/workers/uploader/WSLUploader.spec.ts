@@ -22,18 +22,6 @@ import type { ModelInfo } from '@shared/models/IModelInfo';
 import { configuration, env, process, type ContainerProviderConnection, type RunResult } from '@podman-desktop/api';
 import { VMType } from '@shared/models/IPodman';
 
-vi.mock('@podman-desktop/api', () => ({
-  env: {
-    isWindows: false,
-  },
-  process: {
-    exec: vi.fn(),
-  },
-  configuration: {
-    getConfiguration: vi.fn(),
-  },
-}));
-
 const connectionMock: ContainerProviderConnection = {
   name: 'machine2',
   type: 'podman',

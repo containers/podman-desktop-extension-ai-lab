@@ -34,12 +34,6 @@ import { llamacpp } from '../../assets/inference-images.json';
 import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import { join } from 'node:path';
 
-vi.mock('@podman-desktop/api', () => ({
-  containerEngine: {
-    createContainer: vi.fn(),
-  },
-}));
-
 vi.mock('../../utils/inferenceUtils', () => ({
   getProviderContainerConnection: vi.fn(),
   getImageInfo: vi.fn(),

@@ -40,32 +40,6 @@ const rpcExtensionMock = {
   fire: vi.fn(),
 } as unknown as RpcExtension;
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    EventEmitter: vi.fn(),
-    provider: {
-      onDidUnregisterContainerConnection: vi.fn(),
-      onDidRegisterContainerConnection: vi.fn(),
-      onDidUpdateContainerConnection: vi.fn(),
-      onDidUpdateProvider: vi.fn(),
-      getContainerConnections: vi.fn(),
-    },
-    process: {
-      exec: vi.fn(),
-    },
-    extensions: {
-      getExtension: vi.fn(),
-    },
-    containerEngine: {
-      listInfos: vi.fn(),
-    },
-    env: {
-      isLinux: vi.fn(),
-    },
-    navigation: {},
-  };
-});
-
 vi.mock('../utils/podman', () => {
   return {
     getPodmanCli: vi.fn(),

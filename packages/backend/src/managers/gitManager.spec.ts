@@ -38,14 +38,6 @@ vi.mock('isomorphic-git', () => {
 
 vi.mock('node:fs');
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    window: {
-      showWarningMessage: vi.fn(),
-    },
-  };
-});
-
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(git.resolveRef).mockResolvedValue('dummyCommit');

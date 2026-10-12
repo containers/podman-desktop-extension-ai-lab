@@ -18,27 +18,8 @@
 
 import { beforeEach, expect, test, vi } from 'vitest';
 import { initWebview } from './webviewUtils';
-import type { Uri } from '@podman-desktop/api';
+import { type Uri, type WebviewPanel, window } from '@podman-desktop/api';
 import { type PathLike, promises } from 'node:fs';
-
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    Uri: class {
-      static readonly joinPath = (): unknown => ({ fsPath: '.' });
-    },
-    window: {
-      createWebviewPanel: (): unknown => ({
-        webview: {
-          html: '',
-          onDidReceiveMessage: vi.fn(),
-          postMessage: vi.fn(),
-          asWebviewUri: () => 'dummy-src',
-        },
-        onDidChangeViewState: vi.fn(),
-      }),
-    },
-  };
-});
 
 vi.mock('node:fs', () => ({
   promises: {
@@ -48,6 +29,11 @@ vi.mock('node:fs', () => ({
 
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.mocked(window.createWebviewPanel).mockReturnValue({
+    webview: {
+      asWebviewUri: () => 'dummy-src',
+    },
+  } as unknown as WebviewPanel);
 });
 
 test('panel should have file content as html', async () => {

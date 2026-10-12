@@ -29,14 +29,6 @@ import type { ModelInfo } from '@shared/models/IModelInfo';
 import { getPodmanCli } from './podman';
 import { join, posix } from 'node:path';
 
-vi.mock('@podman-desktop/api', () => {
-  return {
-    process: {
-      exec: vi.fn(),
-    },
-  };
-});
-
 vi.mock('./podman', () => ({
   getPodmanCli: vi.fn(),
 }));

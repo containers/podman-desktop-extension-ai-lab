@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { vi, expect, test } from 'vitest';
+import { beforeEach, vi, expect, test } from 'vitest';
 import { configuration, type Configuration } from '@podman-desktop/api';
 import { ConfigurationRegistry } from './ConfigurationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
@@ -30,13 +30,8 @@ const rpcExtensionMock = {
   fire: vi.fn().mockResolvedValue(true),
 } as unknown as RpcExtension;
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    configuration: {
-      getConfiguration: (): unknown => fakeConfiguration,
-      onDidChangeConfiguration: vi.fn(),
-    },
-  };
+beforeEach(() => {
+  vi.mocked(configuration.getConfiguration).mockReturnValue(fakeConfiguration);
 });
 
 test('init should init listener', () => {

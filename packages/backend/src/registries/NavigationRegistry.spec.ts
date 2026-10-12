@@ -22,15 +22,6 @@ import { NavigationRegistry } from './NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 
-vi.mock('@podman-desktop/api', async () => ({
-  commands: {
-    registerCommand: vi.fn(),
-  },
-  navigation: {
-    register: vi.fn(),
-  },
-}));
-
 const panelMock: WebviewPanel = {
   reveal: vi.fn(),
   webview: {

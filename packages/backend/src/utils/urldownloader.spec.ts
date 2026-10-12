@@ -24,12 +24,6 @@ import https, { type RequestOptions } from 'node:https';
 import type { ClientRequest, IncomingMessage } from 'node:http';
 import { URLDownloader } from './urldownloader';
 
-vi.mock('@podman-desktop/api', () => {
-  return {
-    EventEmitter: vi.fn(),
-  };
-});
-
 vi.mock('node:https', () => {
   return {
     default: {

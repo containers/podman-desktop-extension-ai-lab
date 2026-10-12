@@ -40,22 +40,6 @@ import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 import * as randomUtils from '../../utils/randomUtils';
 import type { Task } from '@shared/models/ITask';
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    containerEngine: {
-      startContainer: vi.fn(),
-      stopContainer: vi.fn(),
-      inspectContainer: vi.fn(),
-      deleteContainer: vi.fn(),
-      listContainers: vi.fn(),
-    },
-    Disposable: {
-      from: vi.fn(),
-      create: vi.fn(),
-    },
-  };
-});
-
 vi.mock('../../utils/randomUtils');
 
 const rpcExtensionMock = {

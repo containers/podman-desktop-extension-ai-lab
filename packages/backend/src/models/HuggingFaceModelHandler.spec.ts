@@ -30,12 +30,6 @@ import { HuggingFaceModelHandler } from './HuggingFaceModelHandler';
 import { snapshotDownload } from '@huggingface/hub';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 
-vi.mock('@podman-desktop/api', () => {
-  return {
-    EventEmitter: vi.fn(),
-  };
-});
-
 vi.mock('@huggingface/hub', () => {
   return {
     scanCacheDir: vi.fn(),

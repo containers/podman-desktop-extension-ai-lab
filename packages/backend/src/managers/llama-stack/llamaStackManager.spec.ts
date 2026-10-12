@@ -41,26 +41,6 @@ import type { ExtensionConfiguration } from '@shared/models/IExtensionConfigurat
 import type { ModelsManager } from '../modelsManager';
 import * as utilsPorts from '../../utils/ports';
 
-vi.mock('@podman-desktop/api', () => {
-  return {
-    EventEmitter: vi.fn(),
-    containerEngine: {
-      listContainers: vi.fn(),
-      listImages: vi.fn(),
-      createContainer: vi.fn(),
-      onEvent: vi.fn(),
-      pullImage: vi.fn(),
-      inspectContainer: vi.fn(),
-      startContainer: vi.fn(),
-      stopContainer: vi.fn(),
-      deleteContainer: vi.fn(),
-    },
-    env: {
-      isWindows: false,
-    },
-  };
-});
-
 vi.mock('../../utils/ports');
 
 class TestLlamaStackManager extends LlamaStackManager {

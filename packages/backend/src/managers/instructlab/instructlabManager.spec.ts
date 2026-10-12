@@ -29,18 +29,6 @@ import instructlab_images from '../../assets/instructlab-images.json';
 import { INSTRUCTLAB_CONTAINER_TRACKINGID } from '@shared/models/instructlab/IInstructlabContainerInfo';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 
-vi.mock('@podman-desktop/api', () => {
-  return {
-    EventEmitter: vi.fn(),
-    containerEngine: {
-      listContainers: vi.fn(),
-      listImages: vi.fn(),
-      createContainer: vi.fn(),
-      onEvent: vi.fn(),
-    },
-  };
-});
-
 const taskRegistry = new TaskRegistry({ fire: vi.fn().mockResolvedValue(true) } as unknown as RpcExtension);
 
 const podmanConnection: PodmanConnection = {

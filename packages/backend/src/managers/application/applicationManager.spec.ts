@@ -81,24 +81,6 @@ const llamaStackManager = {
   getLlamaStackContainers: vi.fn(),
 } as unknown as LlamaStackManager;
 
-vi.mock('@podman-desktop/api', () => ({
-  window: {
-    withProgress: vi.fn(),
-  },
-  ProgressLocation: {
-    TASK_WIDGET: 'task-widget',
-  },
-  provider: {
-    getContainerConnections: vi.fn(),
-  },
-  containerEngine: {
-    createContainer: vi.fn(),
-  },
-  Disposable: {
-    create: vi.fn(),
-  },
-}));
-
 const recipeMock: Recipe = {
   id: 'recipe-test',
   name: 'Test Recipe',

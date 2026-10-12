@@ -45,25 +45,6 @@ vi.mock('node:fs');
 vi.mock('node:fs/promises');
 vi.mock('node:path');
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    EventEmitter: vi.fn(),
-    window: {
-      showNotification: vi.fn(),
-    },
-    ProgressLocation: {
-      TASK_WIDGET: 'TASK_WIDGET',
-    },
-    fs: {
-      createFileSystemWatcher: (): unknown => ({
-        onDidCreate: vi.fn(),
-        onDidDelete: vi.fn(),
-        onDidChange: vi.fn(),
-      }),
-    },
-  };
-});
-
 let catalogManager: CatalogManager;
 
 beforeEach(async () => {

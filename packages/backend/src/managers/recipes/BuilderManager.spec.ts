@@ -37,13 +37,6 @@ const taskRegistry = {
   deleteByLabels: vi.fn(),
 } as unknown as TaskRegistry;
 
-vi.mock('@podman-desktop/api', () => ({
-  containerEngine: {
-    buildImage: vi.fn(),
-    listImages: vi.fn(),
-  },
-}));
-
 const connectionMock: ContainerProviderConnection = {
   name: 'Podman Machine',
   vmType: VMType.UNKNOWN,

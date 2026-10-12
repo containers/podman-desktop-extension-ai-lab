@@ -83,12 +83,6 @@ vi.mock('node:fs', () => ({
   statSync: vi.fn(),
 }));
 
-vi.mock('@podman-desktop/api', () => ({
-  containerEngine: {
-    listImages: vi.fn(),
-  },
-}));
-
 vi.mock('../../utils/arch', () => ({
   goarch: vi.fn(),
 }));

@@ -22,14 +22,6 @@ import { containerEngine, type ContainerStatsInfo, type Disposable } from '@podm
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_MONITORING_UPDATE } from '@shared/Messages';
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    containerEngine: {
-      statsContainer: vi.fn(),
-    },
-  };
-});
-
 const rpcExtensionMock = {
   fire: vi.fn(),
 } as unknown as RpcExtension;

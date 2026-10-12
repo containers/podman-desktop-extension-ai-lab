@@ -32,12 +32,6 @@ vi.mock('../../utils/inferenceUtils', () => ({
   LABEL_INFERENCE_SERVER: 'ai-lab-inference-server',
 }));
 
-vi.mock('@podman-desktop/api', () => ({
-  containerEngine: {
-    createContainer: vi.fn(),
-  },
-}));
-
 const DummyImageInfo: ImageInfo = {
   Id: 'dummy-image-id',
   engineId: 'dummy-engine-id',

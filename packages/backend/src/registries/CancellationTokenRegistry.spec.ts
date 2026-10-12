@@ -19,13 +19,6 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { CancellationTokenRegistry } from './CancellationTokenRegistry';
 import { CancellationTokenSource, EventEmitter } from '@podman-desktop/api';
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    EventEmitter: vi.fn(),
-    CancellationTokenSource: vi.fn(),
-  };
-});
-
 beforeEach(() => {
   vi.resetAllMocks();
 

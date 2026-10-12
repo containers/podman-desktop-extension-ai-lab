@@ -29,12 +29,6 @@ import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerC
 import { VMType } from '@shared/models/IPodman';
 import { join } from 'node:path';
 
-vi.mock('@podman-desktop/api', () => ({
-  containerEngine: {
-    createContainer: vi.fn(),
-  },
-}));
-
 vi.mock('../../utils/inferenceUtils', () => ({
   getProviderContainerConnection: vi.fn(),
   getImageInfo: vi.fn(),

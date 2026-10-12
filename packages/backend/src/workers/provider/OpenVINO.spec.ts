@@ -32,12 +32,6 @@ import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerC
 import { OpenVINO, SECOND } from './OpenVINO';
 import type { ModelsManager } from '../../managers/modelsManager';
 
-vi.mock('@podman-desktop/api', () => ({
-  containerEngine: {
-    createContainer: vi.fn(),
-  },
-}));
-
 vi.mock('../../utils/inferenceUtils', () => ({
   getProviderContainerConnection: vi.fn(),
   getImageInfo: vi.fn(),

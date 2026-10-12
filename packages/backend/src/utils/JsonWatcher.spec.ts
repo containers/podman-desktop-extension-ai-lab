@@ -21,19 +21,6 @@ import type { FileSystemWatcher } from '@podman-desktop/api';
 import { EventEmitter, fs } from '@podman-desktop/api';
 import { JsonWatcher } from './JsonWatcher';
 
-vi.mock('@podman-desktop/api', () => {
-  return {
-    EventEmitter: vi.fn(),
-    fs: {
-      createFileSystemWatcher: (): unknown => ({
-        onDidCreate: vi.fn(),
-        onDidDelete: vi.fn(),
-        onDidChange: vi.fn(),
-      }),
-    },
-  };
-});
-
 vi.mock('node:fs', () => {
   return {
     existsSync: vi.fn(),

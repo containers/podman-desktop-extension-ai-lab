@@ -21,19 +21,6 @@ import { PodManager } from './PodManager';
 import type { ContainerInspectInfo, ContainerJSONEvent, PodCreateOptions, PodInfo } from '@podman-desktop/api';
 import { EventEmitter, containerEngine } from '@podman-desktop/api';
 
-vi.mock('@podman-desktop/api', () => ({
-  containerEngine: {
-    listPods: vi.fn(),
-    stopPod: vi.fn(),
-    removePod: vi.fn(),
-    startPod: vi.fn(),
-    createPod: vi.fn(),
-    inspectContainer: vi.fn(),
-    onEvent: vi.fn(),
-  },
-  EventEmitter: vi.fn(),
-}));
-
 beforeEach(() => {
   vi.resetAllMocks();
 

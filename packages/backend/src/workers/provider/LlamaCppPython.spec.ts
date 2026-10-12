@@ -306,6 +306,7 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       DummyImageInfo.engineId,
       expect.objectContaining({
+        Entrypoint: ['/usr/bin/sh'],
         Cmd: [
           '-c',
           '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
@@ -355,6 +356,7 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       DummyImageInfo.engineId,
       expect.objectContaining({
+        Entrypoint: ['/usr/bin/sh'],
         Cmd: [
           '-c',
           '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
@@ -404,6 +406,7 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       DummyImageInfo.engineId,
       expect.objectContaining({
+        Entrypoint: ['/usr/bin/sh'],
         Cmd: [
           '-c',
           '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',

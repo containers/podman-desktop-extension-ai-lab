@@ -101,7 +101,7 @@ export class LlamaCppPython extends InferenceProvider {
 
     const deviceRequests: DeviceRequest[] = [];
     const devices: Device[] = [];
-    let entrypoint: string | undefined = undefined;
+    let entrypoint: string[] | undefined = undefined;
     let cmd: string[] = [];
     let user: string | undefined = undefined;
 
@@ -125,7 +125,7 @@ export class LlamaCppPython extends InferenceProvider {
 
             user = '0';
 
-            entrypoint = '/usr/bin/sh';
+            entrypoint = ['/usr/bin/sh'];
             cmd = [
               '-c',
               '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',

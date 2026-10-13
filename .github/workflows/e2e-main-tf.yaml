@@ -110,10 +110,9 @@ jobs:
           mkdir -p results
 
           TF_TEST_DATA_URL="${{ env.TF_ARTIFACTS_URL }}/${{ env.TF_WORK_ID }}/tests/tmt/plans/ai-lab-e2e-plan-${{ env.PLAN }}/${{ env.NPM_TARGET }}/execute/data/guest/default-0/tests/tmt/tests/${{ env.NPM_TARGET }}-test-1/data"
-          TF_TRACES_URL="${TF_TEST_DATA_URL}/traces/"
-          TF_VIDEOS_URL="${TF_TEST_DATA_URL}/videos/"
+          TF_REPORT_URL="${TF_TEST_DATA_URL}/playwright-report/"
 
-          echo "Downloading traces"
+          echo "Downloading Playwright report (videos, traces, screenshots, error-context)"
           wget \
             --recursive \
             --no-parent \
@@ -121,17 +120,7 @@ jobs:
             --cut-dirs=10 \
             --reject "index.html*" \
             --directory-prefix=results \
-            "$TF_TRACES_URL"
-
-          echo "Downloading videos"
-          wget \
-            --recursive \
-            --no-parent \
-            --no-host-directories \
-            --cut-dirs=10 \
-            --reject "index.html*" \
-            --directory-prefix=results \
-            "$TF_VIDEOS_URL"
+            "$TF_REPORT_URL"
 
       - name: Upload test artifacts
         if: always()

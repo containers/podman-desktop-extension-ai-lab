@@ -20,7 +20,6 @@
 set -euo pipefail
 
 PLAYWRIGHT_JUNIT_DIR="$TMT_TREE/tests/playwright/output/"
-PLAYWRIGHT_TRACE_VIDEOS_DIR="$TMT_TREE/tests/playwright/tests/playwright/output/"
 
 cd "$TMT_TEST_DATA"
 
@@ -44,28 +43,23 @@ EOF
 
 elif [ "$1" -eq 255 ]; then
 
-  if [ -d "$PLAYWRIGHT_TRACE_VIDEOS_DIR/traces" ]; then
-    cp -r "$PLAYWRIGHT_TRACE_VIDEOS_DIR/traces" .
+  # Archive the full Playwright output (videos, traces, screenshots, error-context)
+  # so launch/blank-screen failures can be diagnosed from CI artifacts.
+  if [ -d "$PLAYWRIGHT_JUNIT_DIR" ]; then
+    cp -r "$PLAYWRIGHT_JUNIT_DIR" ./playwright-report
   else
-    echo "Warning: traces directory does not exist" >&2
-  fi
-
-  if [ -d "$PLAYWRIGHT_TRACE_VIDEOS_DIR/videos" ]; then 
-    cp -r "$PLAYWRIGHT_TRACE_VIDEOS_DIR/videos" .
-  else
-    echo "Warning: videos directory does not exist" >&2
+    echo "Warning: playwright output directory does not exist" >&2
   fi
 
   cat <<EOF > ./results.yaml
 - name: /tests/$2
   result: fail
-  note: 
+  note:
     - "Playwright tests failed."
   log:
     - ../output.txt
     - junit-results.xml
-    - videos
-    - traces
+    - playwright-report
 EOF
 
 else

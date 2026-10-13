@@ -35,7 +35,7 @@ test('TasksProgress should not renderer any tasks', async () => {
 
   const items = screen.queryAllByRole('listitem');
   expect(items).toBeDefined();
-  expect(items.length).toBe(0);
+  expect(items).toHaveLength(0);
 });
 
 test('TasksProgress should renderer one tasks', async () => {
@@ -52,7 +52,7 @@ test('TasksProgress should renderer one tasks', async () => {
 
   const items = screen.queryAllByRole('listitem');
   expect(items).toBeDefined();
-  expect(items.length).toBe(1);
+  expect(items).toHaveLength(1);
 });
 
 test('TasksProgress should renderer multiple tasks', async () => {
@@ -74,7 +74,7 @@ test('TasksProgress should renderer multiple tasks', async () => {
 
   const items = screen.queryAllByRole('listitem');
   expect(items).toBeDefined();
-  expect(items.length).toBe(2);
+  expect(items).toHaveLength(2);
 });
 
 describe('tasks types', () => {

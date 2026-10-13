@@ -63,7 +63,7 @@ beforeEach(() => {
 
 test('should not have any repositories by default', () => {
   const localRepositories = new LocalRepositoryRegistry(rpcExtensionMock, '/appUserDirectory', catalogManagerMock);
-  expect(localRepositories.getLocalRepositories().length).toBe(0);
+  expect(localRepositories.getLocalRepositories()).toHaveLength(0);
 });
 
 test('should notify webview when register', () => {

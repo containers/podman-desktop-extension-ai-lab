@@ -312,7 +312,7 @@ test('Submit button should call requestPullApplication with proper arguments for
   });
 });
 
-test('Submit button should call requestPullApplication with proper arguments', async () => {
+test('Submit button should call requestPullApplication with proper arguments when no connection available', async () => {
   // mock no container connection available
   vi.mocked(ConnectionStore).containerProviderConnections = readable([]);
 

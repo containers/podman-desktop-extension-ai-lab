@@ -65,7 +65,7 @@ test('ModelSelect should list all models provided', async () => {
   // get all options available
   const items = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
-  expect(items.length).toBe(2);
+  expect(items).toHaveLength(2);
   expect(items[0]).toHaveTextContent(fakeRecommendedModel.name);
   expect(items[1]).toHaveTextContent(fakeRemoteModel.name);
 });
@@ -85,7 +85,7 @@ test('ModelSelect should set star icon next to recommended model', async () => {
   // get all options available
   const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
-  expect(items.length).toBe(2);
+  expect(items).toHaveLength(2);
   expect(within(items[0]).getByTitle('Recommended model')).toBeDefined();
   expect(within(items[1]).queryByTitle('Recommended model')).toBeNull();
 });
@@ -105,7 +105,7 @@ test('models should be sorted', async () => {
   // get all options available
   const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
-  expect(items.length).toBe(3);
+  expect(items).toHaveLength(3);
   expect(items[0]).toHaveTextContent(fakeRecommendedModel.name);
   expect(items[1]).toHaveTextContent(fakeRecommendedRemoteModel.name);
   expect(items[2]).toHaveTextContent(fakeRemoteModel.name);

@@ -95,7 +95,7 @@ test('should display sessions', async () => {
 
   // Should display 2 sessions (+ header)
   const rows = screen.queryAllByRole('row');
-  expect(rows.length).toEqual(3);
+  expect(rows).toHaveLength(3);
 
   // First session is session 1
   const cellsSession1 = within(rows[1]).queryAllByRole('cell');
@@ -116,7 +116,7 @@ test('should display sessions', async () => {
 
   await waitFor(async () => {
     const rows = screen.queryAllByRole('row');
-    expect(rows.length).toEqual(2);
+    expect(rows).toHaveLength(2);
 
     // First session is session 2
     const cellsSession1 = within(rows[1]).queryAllByRole('cell');
@@ -130,7 +130,7 @@ test('should display sessions', async () => {
 
   await waitFor(async () => {
     const rows = screen.queryAllByRole('row');
-    expect(rows.length).toEqual(3);
+    expect(rows).toHaveLength(3);
   });
 
   // Open Completed tab
@@ -138,7 +138,7 @@ test('should display sessions', async () => {
 
   await waitFor(async () => {
     const rows = screen.queryAllByRole('row');
-    expect(rows.length).toEqual(2);
+    expect(rows).toHaveLength(2);
 
     // First session is session 1
     const cellsSession1 = within(rows[1]).queryAllByRole('cell');

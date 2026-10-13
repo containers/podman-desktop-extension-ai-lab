@@ -58,7 +58,7 @@ test('Should list all container provider connections', async () => {
   // get all options available
   const items: NodeListOf<HTMLElement> = container.querySelectorAll('div[class~="list-item"]');
   // ensure we have two options
-  expect(items.length).toBe(2);
+  expect(items).toHaveLength(2);
   expect(items[0]).toHaveTextContent(wslConnection.name);
   expect(items[1]).toHaveTextContent(qemuConnection.name);
 });

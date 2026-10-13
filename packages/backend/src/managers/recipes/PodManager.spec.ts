@@ -19,7 +19,7 @@
 import { beforeEach, describe, vi, expect, test } from 'vitest';
 import { PodManager } from './PodManager';
 import type { ContainerInspectInfo, ContainerJSONEvent, PodCreateOptions, PodInfo } from '@podman-desktop/api';
-import { EventEmitter, containerEngine } from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -34,18 +34,6 @@ beforeEach(() => {
       },
     } as unknown as ContainerInspectInfo;
   });
-
-  // mocking the EventEmitter mechanism
-  const listeners: ((value: unknown) => void)[] = [];
-
-  vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn().mockImplementation(callback => {
-      listeners.push(callback);
-    }),
-    fire: vi.fn().mockImplementation((content: unknown) => {
-      listeners.forEach(listener => listener(content));
-    }),
-  } as unknown as EventEmitter<unknown>);
 });
 
 test('getAllPods should use container engine list pods method', async () => {

@@ -18,7 +18,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { promises, existsSync, mkdirSync } from 'node:fs';
 import type { FileSystemWatcher } from '@podman-desktop/api';
-import { EventEmitter, fs } from '@podman-desktop/api';
+import { fs } from '@podman-desktop/api';
 import { JsonWatcher } from './JsonWatcher';
 
 vi.mock('node:fs', () => {
@@ -33,16 +33,6 @@ vi.mock('node:fs', () => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  // Mock event emitters
-  const listeners: ((value: unknown) => void)[] = [];
-  vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn().mockImplementation(callback => {
-      listeners.push(callback);
-    }),
-    fire: vi.fn().mockImplementation((content: unknown) => {
-      listeners.forEach(listener => listener(content));
-    }),
-  } as unknown as EventEmitter<unknown>);
 });
 
 test('should provide default value', async () => {

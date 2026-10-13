@@ -17,31 +17,20 @@
  ***********************************************************************/
 import { beforeEach, expect, test, vi } from 'vitest';
 import { CancellationTokenRegistry } from './CancellationTokenRegistry';
-import { CancellationTokenSource, EventEmitter } from '@podman-desktop/api';
+import { CancellationTokenSource } from '@podman-desktop/api';
 
 beforeEach(() => {
   vi.resetAllMocks();
 
-  // mock event emitters
-  const listeners: ((value: unknown) => void)[] = [];
-
-  vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn().mockImplementation(callback => {
-      listeners.push(callback);
-    }),
-    dispose: vi.fn(),
-    fire: vi.fn().mockImplementation((content: unknown) => {
-      listeners.forEach(listener => listener(content));
-    }),
-  } as unknown as EventEmitter<unknown>);
-
-  vi.mocked(CancellationTokenSource).mockReturnValue({
-    cancel: vi.fn(),
-    dispose: vi.fn(),
-    token: {
-      isCancellationRequested: false,
-      onCancellationRequested: vi.fn(),
-    },
+  vi.mocked(CancellationTokenSource).mockImplementation(function () {
+    return {
+      cancel: vi.fn(),
+      dispose: vi.fn(),
+      token: {
+        isCancellationRequested: false,
+        onCancellationRequested: vi.fn(),
+      },
+    } as unknown as CancellationTokenSource;
   });
 });
 

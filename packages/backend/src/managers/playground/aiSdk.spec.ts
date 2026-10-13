@@ -16,8 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import type { ToolSet } from 'ai';
 import * as ai from 'ai';
+import { jsonSchema, simulateStreamingMiddleware, tool, wrapLanguageModel } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import { AiStreamProcessor, toCoreMessage } from './aiSdk';
 import type {
@@ -29,12 +31,11 @@ import type {
   PendingChat,
   UserChat,
 } from '@shared/models/IPlaygroundMessage';
-import type { LanguageModelV4, LanguageModelV4StreamPart, LanguageModelV4GenerateResult } from '@ai-sdk/provider';
+import type { LanguageModelV4, LanguageModelV4GenerateResult } from '@ai-sdk/provider';
 import { ConversationRegistry } from '../../registries/ConversationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import type { ModelOptions } from '@shared/models/IModelOptions';
-import type { ToolSet } from 'ai';
-import { jsonSchema, simulateStreamingMiddleware, tool, wrapLanguageModel } from 'ai';
+import { createTestModel } from '../createTestModel';
 
 vi.mock('ai', async original => {
   const mod = (await original()) as object;
@@ -348,13 +349,3 @@ describe('aiSdk', () => {
     });
   });
 });
-
-export function createTestModel({
-  stream = ai.simulateReadableStream({ chunks: [] }),
-}: {
-  stream?: ReadableStream<LanguageModelV4StreamPart>;
-} = {}): LanguageModelV4 {
-  return new MockLanguageModelV4({
-    doStream: async () => ({ stream }),
-  });
-}

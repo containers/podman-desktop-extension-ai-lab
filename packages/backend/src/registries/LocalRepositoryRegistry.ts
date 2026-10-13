@@ -19,7 +19,8 @@ import type { LocalRepository } from '@shared/models/ILocalRepository';
 import { Disposable } from '@podman-desktop/api';
 import { Publisher } from '../utils/Publisher';
 import type { Recipe } from '@shared/models/IRecipe';
-import fs from 'node:fs';
+import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import type { CatalogManager } from '../managers/catalogManager';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
@@ -68,7 +69,7 @@ export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> implem
   }
 
   async deleteLocalRepository(path: string): Promise<void> {
-    await fs.promises.rm(path, { recursive: true, force: true, maxRetries: 3 });
+    await rm(path, { recursive: true, force: true, maxRetries: 3 });
     // once it has been removed, it also update the localRepo list
     this.unregister(path);
   }
@@ -80,7 +81,7 @@ export class LocalRepositoryRegistry extends Publisher<LocalRepository[]> implem
   private loadLocalRecipeRepositories(recipes: Recipe[]): void {
     recipes.forEach(recipe => {
       const recipeFolder = path.join(this.appUserDirectory, recipe.id);
-      if (fs.existsSync(recipeFolder)) {
+      if (existsSync(recipeFolder)) {
         this.register({
           path: recipeFolder,
           sourcePath: path.join(recipeFolder, recipe.basedir ?? ''),

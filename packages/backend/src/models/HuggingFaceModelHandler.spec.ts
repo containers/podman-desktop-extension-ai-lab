@@ -15,9 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { EventEmitter } from '@podman-desktop/api';
 import type { TelemetryLogger } from '@podman-desktop/api';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { expect, test, vi } from 'vitest';
 import { ModelsManager } from '../managers/modelsManager';
 import type { CatalogManager } from '../managers/catalogManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
@@ -84,23 +83,6 @@ const modelsManager: ModelsManager = new ModelsManager(
 );
 
 const huggingFaceModelHandler = new HuggingFaceModelHandler(modelsManager);
-
-beforeEach(() => {
-  const listeners: ((value: unknown) => void)[] = [];
-
-  const eventReturned = {
-    event: vi.fn(),
-    fire: vi.fn(),
-  };
-
-  vi.mocked(EventEmitter).mockReturnValue(eventReturned as unknown as EventEmitter<unknown>);
-  vi.mocked(eventReturned.event).mockImplementation(callback => {
-    listeners.push(callback);
-  });
-  vi.mocked(eventReturned.fire).mockImplementation((content: unknown) => {
-    listeners.forEach(listener => listener(content));
-  });
-});
 
 test('check http url are not supported', () => {
   expect(huggingFaceModelHandler.accept('http://example.com')).toBe(false);

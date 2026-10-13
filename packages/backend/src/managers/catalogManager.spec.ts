@@ -21,7 +21,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import content from '../tests/ai-test.json';
 import userContent from '../tests/ai-user-test.json';
-import { EventEmitter, window } from '@podman-desktop/api';
+import { window } from '@podman-desktop/api';
 import { CatalogManager } from './catalogManager';
 
 import type { Stats } from 'node:fs';
@@ -49,19 +49,6 @@ let catalogManager: CatalogManager;
 
 beforeEach(async () => {
   vi.resetAllMocks();
-
-  // mock EventEmitter logic for all tests
-  vi.mocked(EventEmitter).mockImplementation(() => {
-    const listeners: ((value: unknown) => void)[] = [];
-    return {
-      event: vi.fn().mockImplementation(callback => {
-        listeners.push(callback);
-      }),
-      fire: vi.fn().mockImplementation((content: unknown) => {
-        listeners.forEach(listener => listener(content));
-      }),
-    } as unknown as EventEmitter<unknown>;
-  });
 
   const appUserDirectory = '.';
 

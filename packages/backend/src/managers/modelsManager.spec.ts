@@ -21,7 +21,7 @@ import os from 'node:os';
 import fs, { type Stats, type PathLike } from 'node:fs';
 import path from 'node:path';
 import { ModelsManager } from './modelsManager';
-import { env, process as coreProcess } from '@podman-desktop/api';
+import { env, process as coreProcess, window } from '@podman-desktop/api';
 import type { RunResult, TelemetryLogger, ContainerProviderConnection } from '@podman-desktop/api';
 import type { CatalogManager } from './catalogManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
@@ -67,31 +67,6 @@ vi.mock('../utils/podman', () => ({
   getPodmanCli: mocks.getPodmanCliMock,
   getPodmanMachineName: vi.fn(),
 }));
-
-vi.mock('@podman-desktop/api', () => {
-  return {
-    Disposable: {
-      create: vi.fn(),
-    },
-    env: {
-      isWindows: false,
-    },
-    process: {
-      exec: vi.fn(),
-    },
-    fs: {
-      createFileSystemWatcher: (): unknown => ({
-        onDidCreate: vi.fn(),
-        onDidDelete: vi.fn(),
-        onDidChange: vi.fn(),
-      }),
-    },
-    window: {
-      showErrorMessage: mocks.showErrorMessageMock,
-    },
-    EventEmitter: vi.fn(),
-  };
-});
 
 vi.mock('../utils/downloader', () => ({
   isCompletionEvent: mocks.isCompletionEventMock,
@@ -556,7 +531,7 @@ describe('deleting models', () => {
         },
       },
     ]);
-    expect(mocks.showErrorMessageMock).toHaveBeenCalledOnce();
+    expect(window.showErrorMessage).toHaveBeenCalledOnce();
     expect(mocks.logErrorMock).toHaveBeenCalled();
   });
 
@@ -976,10 +951,12 @@ const modelMock: ModelInfo = {
 describe('uploadModelToPodmanMachine', () => {
   test('uploader should be used', async () => {
     const performMock = vi.fn().mockResolvedValue('uploader-result');
-    vi.mocked(Uploader).mockReturnValue({
-      onEvent: vi.fn(),
-      perform: performMock,
-    } as unknown as Uploader);
+    vi.mocked(Uploader).mockImplementation(function () {
+      return {
+        onEvent: vi.fn(),
+        perform: performMock,
+      } as unknown as Uploader;
+    });
 
     const manager = new ModelsManager(
       rpcExtensionMock,

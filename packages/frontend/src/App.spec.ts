@@ -24,6 +24,8 @@ import { getRouterState, rpcBrowser } from '/@/utils/client';
 import { configuration } from '/@/stores/extensionConfiguration';
 import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 
+vi.mock('@fortawesome/fontawesome-free/css/all.min.css', () => ({}));
+
 vi.mock('tinro', () => ({
   router: {
     goto: vi.fn(),

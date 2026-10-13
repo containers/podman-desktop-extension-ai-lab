@@ -19,32 +19,15 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { LocalRepositoryRegistry } from './LocalRepositoryRegistry';
 import type { Recipe } from '@shared/models/IRecipe';
 import fs from 'node:fs';
+import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import type { CatalogManager } from '../managers/catalogManager';
 import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_LOCAL_REPOSITORY_UPDATE } from '@shared/Messages';
 
-const mocks = vi.hoisted(() => ({
-  DisposableCreateMock: vi.fn(),
-}));
-
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    Disposable: {
-      create: mocks.DisposableCreateMock,
-    },
-  };
-});
-
-vi.mock('node:fs', () => {
-  return {
-    existsSync: vi.fn(),
-    promises: {
-      rm: vi.fn(),
-    },
-  };
-});
+vi.mock('node:fs');
+vi.mock('node:fs/promises');
 
 const catalogManagerMock = {
   onUpdate: vi.fn(),
@@ -76,7 +59,7 @@ test('should notify webview when register', () => {
 
 test('should notify webview when unregister', async () => {
   const localRepositories = new LocalRepositoryRegistry(rpcExtensionMock, '/appUserDirectory', catalogManagerMock);
-  vi.spyOn(fs.promises, 'rm').mockResolvedValue();
+  vi.mocked(rm).mockResolvedValue();
   localRepositories.register({ path: 'random', sourcePath: 'random', labels: { 'recipe-id': 'random' } });
   await localRepositories.deleteLocalRepository('random');
 

@@ -20,7 +20,7 @@
 
 import { afterEach, beforeEach, expect, test, vi, type MockInstance } from 'vitest';
 import { Studio } from './studio';
-import { type ExtensionContext, EventEmitter } from '@podman-desktop/api';
+import { type Webview, type WebviewPanel, type ExtensionContext, provider, window } from '@podman-desktop/api';
 import { CatalogManager } from './managers/catalogManager';
 
 import * as fs from 'node:fs';
@@ -44,67 +44,6 @@ const mocks = vi.hoisted(() => ({
   consoleLogMock: vi.fn(),
 }));
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    configuration: {
-      getConfiguration: (): unknown => ({
-        get: vi.fn(),
-      }),
-      onDidChangeConfiguration: vi.fn(),
-    },
-    fs: {
-      createFileSystemWatcher: (): unknown => ({
-        onDidCreate: vi.fn(),
-        onDidDelete: vi.fn(),
-        onDidChange: vi.fn(),
-      }),
-    },
-    EventEmitter: vi.fn(),
-    Uri: class {
-      static readonly joinPath = (): unknown => ({ fsPath: '.' });
-    },
-    window: {
-      createWebviewPanel: (): unknown => ({
-        webview: {
-          html: '',
-          onDidReceiveMessage: vi.fn(),
-          postMessage: mocks.postMessage,
-        },
-        onDidChangeViewState: vi.fn(),
-      }),
-      createStatusBarItem: (): unknown => ({
-        show: vi.fn(),
-      }),
-    },
-    env: {
-      createTelemetryLogger: (): unknown => ({
-        logUsage: vi.fn(),
-        logError: mocks.logErrorMock,
-      }),
-    },
-    containerEngine: {
-      onEvent: vi.fn(),
-      listContainers: mocks.listContainers,
-    },
-    navigation: {
-      register: vi.fn(),
-    },
-    provider: {
-      onDidRegisterContainerConnection: vi.fn(),
-      onDidUpdateContainerConnection: vi.fn(),
-      onDidUnregisterContainerConnection: vi.fn(),
-      onDidUpdateProvider: vi.fn(),
-      getContainerConnections: mocks.getContainerConnections,
-    },
-    commands: {
-      registerCommand: vi.fn(),
-    },
-    Disposable: {
-      create: vi.fn(),
-    },
-  };
-});
-
 /// mock console.log
 const originalConsoleLog = console.log;
 
@@ -113,18 +52,21 @@ beforeEach(() => {
   console.log = mocks.consoleLogMock;
   console.warn = mocks.consoleWarnMock;
 
-  vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn(),
-    fire: vi.fn(),
-  } as unknown as EventEmitter<unknown>);
+  vi.mocked(window.createWebviewPanel).mockReturnValue({
+    onDidChangeViewState: vi.fn(),
+    webview: {
+      onDidReceiveMessage: vi.fn(),
+      postMessage: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Webview,
+  } as unknown as WebviewPanel);
 
-  mocks.postMessage.mockResolvedValue(undefined);
-
-  vi.mocked(CatalogManager).mockReturnValue({
-    onUpdate: vi.fn(),
-    init: vi.fn(),
-    getRecipes: vi.fn().mockReturnValue([]),
-  } as unknown as CatalogManager);
+  vi.mocked(CatalogManager).mockImplementation(function () {
+    return {
+      onUpdate: vi.fn(),
+      init: vi.fn(),
+      getRecipes: vi.fn().mockReturnValue([]),
+    } as unknown as CatalogManager;
+  });
 });
 
 afterEach(() => {
@@ -133,7 +75,7 @@ afterEach(() => {
 
 test('check activate', async () => {
   mocks.listContainers.mockReturnValue([]);
-  mocks.getContainerConnections.mockReturnValue([]);
+  vi.mocked(provider.getContainerConnections).mockReturnValue([]);
   (vi.spyOn(fs.promises, 'readFile') as unknown as MockInstance<() => Promise<string>>).mockImplementation(() => {
     return Promise.resolve('<html></html>');
   });

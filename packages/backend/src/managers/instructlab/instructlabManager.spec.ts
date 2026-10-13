@@ -16,13 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { TaskRegistry } from '../../registries/TaskRegistry';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import type { ContainerCreateResult, ContainerInfo, ImageInfo, TelemetryLogger } from '@podman-desktop/api';
-import { containerEngine, EventEmitter } from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
 import type { PodmanConnection } from '../podmanConnection';
 import { INSTRUCTLAB_CONTAINER_LABEL, InstructlabManager } from './instructlabManager';
 import { ContainerRegistry } from '../../registries/ContainerRegistry';
-import { TestEventEmitter } from '../../tests/utils';
 import { VMType } from '@shared/models/IPodman';
 import type { Task } from '@shared/models/ITask';
 import instructlab_images from '../../assets/instructlab-images.json';
@@ -42,10 +41,6 @@ const telemetryMock = {
 } as unknown as TelemetryLogger;
 
 let instructlabManager: InstructlabManager;
-
-beforeAll(() => {
-  vi.mocked(EventEmitter).mockImplementation(() => new TestEventEmitter() as unknown as EventEmitter<unknown>);
-});
 
 beforeEach(() => {
   const containerRegistry = new ContainerRegistry();

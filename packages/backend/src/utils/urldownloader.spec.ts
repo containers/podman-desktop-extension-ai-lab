@@ -17,7 +17,6 @@
  ***********************************************************************/
 
 import { vi, test, expect, beforeEach } from 'vitest';
-import { EventEmitter } from '@podman-desktop/api';
 import { createWriteStream, existsSync, type WriteStream } from 'node:fs';
 import { rename, rm } from 'node:fs/promises';
 import https, { type RequestOptions } from 'node:https';
@@ -48,17 +47,6 @@ vi.mock('node:fs/promises', () => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-
-  const listeners: ((value: unknown) => void)[] = [];
-
-  vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn().mockImplementation(callback => {
-      listeners.push(callback);
-    }),
-    fire: vi.fn().mockImplementation((content: unknown) => {
-      listeners.forEach(listener => listener(content));
-    }),
-  } as unknown as EventEmitter<unknown>);
 
   vi.mocked(rm).mockResolvedValue(undefined);
   vi.mocked(rename).mockResolvedValue(undefined);

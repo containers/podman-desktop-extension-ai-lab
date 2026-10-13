@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { expect, test, vi, beforeEach, afterEach, describe } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { PlaygroundV2Manager } from './playgroundV2Manager';
 import type { TelemetryLogger } from '@podman-desktop/api';
@@ -33,6 +33,7 @@ import type { LanguageModelV4, LanguageModelV4StreamPart } from '@ai-sdk/provide
 import { type McpServerManager } from './playground/McpServerManager';
 import { MockLanguageModelV4 } from 'ai/test';
 import { simulateReadableStream } from 'ai';
+import { createTestModel as createTestModel1 } from './createTestModel';
 
 vi.mock('@ai-sdk/openai-compatible', () => ({
   createOpenAICompatible: vi.fn(),
@@ -76,7 +77,7 @@ beforeEach(async () => {
     getMcpSettings: vi.fn(() => {}),
     toMcpClients: vi.fn(() => []),
   } as unknown as McpServerManager;
-  createTestModel = (await import('./playground/aiSdk.spec')).createTestModel;
+  createTestModel = createTestModel1;
 });
 
 afterEach(async () => {

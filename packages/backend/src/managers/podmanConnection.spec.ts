@@ -29,7 +29,7 @@ import type {
   UnregisterContainerConnectionEvent,
   UpdateContainerConnectionEvent,
 } from '@podman-desktop/api';
-import { containerEngine, extensions, process, provider, EventEmitter, env } from '@podman-desktop/api';
+import { containerEngine, extensions, process, provider, env } from '@podman-desktop/api';
 import { VMType } from '@shared/models/IPodman';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { getPodmanCli, getPodmanMachineName } from '../utils/podman';
@@ -55,17 +55,6 @@ beforeEach(() => {
   vi.mocked(provider.getContainerConnections).mockReturnValue([]);
   vi.mocked(getPodmanCli).mockReturnValue('podman-executable');
   vi.mocked(getPodmanMachineName).mockImplementation(connection => connection.name);
-
-  const listeners: ((value: unknown) => void)[] = [];
-
-  vi.mocked(EventEmitter).mockReturnValue({
-    event: vi.fn().mockImplementation(callback => {
-      listeners.push(callback);
-    }),
-    fire: vi.fn().mockImplementation((content: unknown) => {
-      listeners.forEach(listener => listener(content));
-    }),
-  } as unknown as EventEmitter<unknown>);
 });
 
 const providerContainerConnectionMock: ProviderContainerConnection = {

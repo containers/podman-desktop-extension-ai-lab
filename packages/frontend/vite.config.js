@@ -44,6 +44,9 @@ export default defineConfig({
   },
   test: {
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    coverage: {
+      include: ['src/**/*.{js,jsx,ts,tsx,svelte}'],
+    },
     globals: true,
     environment: 'jsdom',
     alias: [
@@ -53,9 +56,6 @@ export default defineConfig({
         replacement: `${PACKAGE_ROOT}/../../node_modules/monaco-editor/esm/vs/editor/editor.api`,
       },
     ],
-    deps: {
-      inline: [],
-    },
   },
   base: '',
   server: {

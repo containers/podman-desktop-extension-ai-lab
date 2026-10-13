@@ -37,7 +37,9 @@ let appUserDirectory: string;
 let mcpServerManager: McpServerManager;
 beforeEach(async () => {
   vi.resetAllMocks();
-  vi.mocked(JsonWatcher).mockReturnValue(mockJsonWatcher);
+  vi.mocked(JsonWatcher).mockImplementation(function () {
+    return mockJsonWatcher;
+  });
   vi.mocked(toMcpClients).mockImplementation(async (...mcpServers) =>
     mcpServers.map(s => ({ name: s.name }) as unknown as McpClient),
   );

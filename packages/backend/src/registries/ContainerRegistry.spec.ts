@@ -38,7 +38,9 @@ vi.mock('@podman-desktop/api', async () => {
 });
 
 beforeAll(() => {
-  vi.mocked(EventEmitter).mockImplementation(() => new TestEventEmitter() as unknown as EventEmitter<unknown>);
+  vi.mocked(EventEmitter).mockImplementation(function () {
+    return new TestEventEmitter() as unknown as EventEmitter<unknown>;
+  });
 });
 
 test('ContainerRegistry init', () => {

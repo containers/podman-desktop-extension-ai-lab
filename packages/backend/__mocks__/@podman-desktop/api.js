@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 
 const mockFunction = () => vi.fn();
 
@@ -118,7 +118,15 @@ export const Disposable = {
   create: mockFunction(),
   from: mockFunction(),
 };
-export const EventEmitter = vi.fn(() => ({ fire: mockFunction(), event: mockFunction() }));
+export class EventEmitter  {
+  constructor() {
+    this.eventEmitterListeners = [];
+  }
+  event = (callback) => this.eventEmitterListeners.push(callback);
+  fire(data) { for (const listener of this.eventEmitterListeners) { listener(data); } }
+  dispose() {}
+}
+EventEmitter.prototype.dispose = vi.fn();
 export const CancellationTokenSource = vi.fn();
 export const ProgressLocation = { TASK_WIDGET: 'TASK_WIDGET' };
 export const version = '0.0.0-test';

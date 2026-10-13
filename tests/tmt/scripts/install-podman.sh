@@ -19,6 +19,22 @@
 #!/bin/bash
 set -euo pipefail
 
+# Handle "latest" version early: resolve the version and check if Koji RPM exists before uninstalling the preinstalled version.
+if [[ "$PODMAN_VERSION" == "latest" ]]; then
+    RESOLVED_PODMAN_VERSION="$(curl -fsS https://api.github.com/repos/podman-container-tools/podman/releases/latest | jq -er '.tag_name | sub("^v"; "")')"
+    COMPOSE_VERSION="fc$(echo "$COMPOSE" | cut -d'-' -f2)"
+    KOJI_RPM_URL="https://kojipkgs.fedoraproject.org//packages/podman/${RESOLVED_PODMAN_VERSION}/1.${COMPOSE_VERSION}/${ARCH}/podman-${RESOLVED_PODMAN_VERSION}-1.${COMPOSE_VERSION}.${ARCH}.rpm"
+
+    if ! curl -fsIL "$KOJI_RPM_URL" > /dev/null 2>&1; then
+        echo "Warning: Latest Podman RPM (version $RESOLVED_PODMAN_VERSION) is not available on Koji for this Fedora/arch combination."
+        echo "Info: Keeping existing Podman installation $(podman --version | cut -d' ' -f3)"
+        exit 0
+    fi
+
+    # RPM exists on Koji; proceed with the resolved version which will be installed later in the script.
+    PODMAN_VERSION="$RESOLVED_PODMAN_VERSION"
+fi
+
 # Uninstall a preinstalled Podman version to ensure the desired version will be installed.
 sudo dnf remove -y podman
 
@@ -26,18 +42,23 @@ sudo dnf remove -y podman
 COMPOSE_VERSION="fc$(echo "$COMPOSE" | cut -d'-' -f2)"
 
 # Install Podman based on the requested version:
+# "podman6": Podman 6 build from rhcontainerbot/f44-podman6 COPR repository (Fedora 44 only)
+if [[ "$PODMAN_VERSION" == "podman6" ]]; then
+    if [[ "$(rpm -E %fedora)" != "44" ]]; then
+        echo "Error: PODMAN_VERSION=podman6 requires Fedora 44 (rhcontainerbot/f44-podman6 has no builds for this OS version)."
+        exit 1
+    fi
+    sudo dnf copr enable -y rhcontainerbot/f44-podman6
+    sudo dnf install -y podman --disablerepo=testing-farm-tag-repository
 # "nightly": latest nightly build from rhcontainerbot/podman-next COPR repository
-if [[ "$PODMAN_VERSION" == "nightly" ]]; then
+elif [[ "$PODMAN_VERSION" == "nightly" ]]; then
     sudo dnf copr enable -y rhcontainerbot/podman-next
     sudo dnf install -y podman --disablerepo=testing-farm-tag-repository 
     PODMAN_VERSION="$(dnf --quiet \
         --repofrompath=podman-next,https://download.copr.fedorainfracloud.org/results/rhcontainerbot/podman-next/fedora-$(rpm -E %fedora)/${ARCH}/ \
         list --showduplicates podman 2>/dev/null | grep dev | tail -n1 | cut -d':' -f2 | cut -d'-' -f1 )"
 else
-    # For "latest" or specific version, fetch version if needed and install from RPM
-    if [[ "$PODMAN_VERSION" == "latest" ]]; then
-        PODMAN_VERSION="$(curl -s https://api.github.com/repos/containers/podman/releases/latest | jq -r .tag_name | sed 's/^v//')"
-    fi
+    # For specific version, fetch if needed and install from RPM
     CUSTOM_PODMAN_URL="https://kojipkgs.fedoraproject.org//packages/podman/${PODMAN_VERSION}/1.${COMPOSE_VERSION}/${ARCH}/podman-${PODMAN_VERSION}-1.${COMPOSE_VERSION}.${ARCH}.rpm"
     curl -Lo podman.rpm "$CUSTOM_PODMAN_URL"
     if [[ $? -ne 0 ]]; then
@@ -53,13 +74,20 @@ else
     rm -f podman.rpm
 fi
 
-# Verify that the installed Podman version matches the expected version. 
+# Verify that the installed Podman version matches the expected version.
 INSTALLED_PODMAN_VERSION="$(podman --version | cut -d' ' -f3)"
-NORMALIZED_PODMAN_VERSION="${PODMAN_VERSION//\~/-}"
 
-if [[ "$INSTALLED_PODMAN_VERSION" != "$NORMALIZED_PODMAN_VERSION" ]]; then
-    echo "Podman version mismatch: expected $NORMALIZED_PODMAN_VERSION but got $INSTALLED_PODMAN_VERSION"
-    exit 1
+if [[ "$PODMAN_VERSION" == "podman6" ]]; then
+    if [[ "$INSTALLED_PODMAN_VERSION" != 6.* ]]; then
+        echo "Podman version mismatch: expected a podman 6.x build from f44-podman6 but got $INSTALLED_PODMAN_VERSION"
+        exit 1
+    fi
+else
+    NORMALIZED_PODMAN_VERSION="${PODMAN_VERSION//\~/-}"
+    if [[ "$INSTALLED_PODMAN_VERSION" != "$NORMALIZED_PODMAN_VERSION" ]]; then
+        echo "Podman version mismatch: expected $NORMALIZED_PODMAN_VERSION but got $INSTALLED_PODMAN_VERSION"
+        exit 1
+    fi
 fi
 
 echo "Podman installed successfully: $INSTALLED_PODMAN_VERSION"

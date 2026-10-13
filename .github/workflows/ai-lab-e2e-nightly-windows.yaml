@@ -91,7 +91,7 @@ jobs:
     steps:
     - name: Fetch latest Podman version
       id: fetch-podman
-      uses: redhat-actions/podman-install/.github/actions/fetch-latest-podman-version-windows@6b757b792b67ec663765a4f2ca36226e12b2f4cd
+      uses: redhat-actions/podman-install/.github/actions/fetch-latest-podman-version-windows@6b9121eed76855854291b52c6bfbc278dbdf0288
       with:
         version_input: ${{ github.event.inputs.podman_version || 'latest' }}
         file_type: 'setup.exe'

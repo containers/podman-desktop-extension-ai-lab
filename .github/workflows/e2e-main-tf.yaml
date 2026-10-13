@@ -58,7 +58,7 @@ jobs:
         env:
           DEFAULT_NPM_TARGET: 'smoke'
           DEFAULT_PODMAN_VERSION: 'latest'
-          DEFAULT_NODE_VERSION: 'v24.11.1'
+          DEFAULT_NODE_VERSION: 'v24.21.0'
         run: |
           echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
           echo "PLAN=${{ matrix.plan }}" >> $GITHUB_ENV

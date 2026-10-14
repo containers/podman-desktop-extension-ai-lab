@@ -61,11 +61,11 @@ on:
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true... use EXT_TEST_RAG_CHATBOT=1 to run RAG Chatbot test"'
         type: string
         required: true
-      pde2e_image_version:
-        default: 'v0.0.3'
-        description: 'PDE2E runner, builder, podman image versions'
+      e2e_runner_version:
+        default: ''
+        description: 'ghcr.io/podman-desktop/e2e-runner tag (blank = vars.E2E_RUNNER_VERSION, or type nightly)'
         type: string
-        required: true
+        required: false
       mapt_params:
         description: |
           **Create instance(leave empty to use repo secrets/variables)**
@@ -91,7 +91,7 @@ jobs:
     steps:
     - name: Fetch latest Podman version
       id: fetch-podman
-      uses: redhat-actions/podman-install/.github/actions/fetch-latest-podman-version-windows@5b0fb16319979de14e2c7c2c1cc27c98f107ae52
+      uses: redhat-actions/podman-install/.github/actions/fetch-latest-podman-version-windows@6b9121eed76855854291b52c6bfbc278dbdf0288
       with:
         version_input: ${{ github.event.inputs.podman_version || 'latest' }}
         file_type: 'msi'
@@ -106,12 +106,11 @@ jobs:
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_EXT_TESTS_OPTIONS: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=1,EXT_TEST_GPU_SUPPORT_ENABLED=0'
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-ai-lab,FORK=containers,BRANCH=main'
-        DEFAULT_PDE2E_IMAGE_VERSION: 'v0.0.3'
       run: |
         echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
         echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
         echo "PODMAN_URL=${{ steps.fetch-podman.outputs.download_url }}" >> $GITHUB_ENV
-        echo "PDE2E_IMAGE_VERSION=${{ github.event.inputs.pde2e_image_version || env.DEFAULT_PDE2E_IMAGE_VERSION }}" >> $GITHUB_ENV
+        echo "E2E_RUNNER_VERSION=${{ github.event.inputs.e2e_runner_version || vars.E2E_RUNNER_VERSION }}" >> $GITHUB_ENV
         echo "${{ github.event.inputs.podman_desktop_repo_args || env.DEFAULT_PODMAN_DESKTOP_REPO_ARGS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ github.event.inputs.ext_tests_options || env.DEFAULT_EXT_TESTS_OPTIONS }}" | awk -F ',' \
@@ -130,7 +129,7 @@ jobs:
         echo "$mapt_params" | awk -F ';' '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "MAPT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Create instance
-      uses: podman-desktop/e2e/.github/actions/create-instance@213a276952d746324895f63cea0b23083013990f
+      uses: podman-desktop/e2e/.github/actions/create-instance@dbb48583aa0d9b97f95354aab9b60620ca5d7130
       with:
         mapt-image: ${{ env.MAPT_IMAGE || '' }}
         mapt-version: ${{ env.MAPT_VERSION_TAG || '' }}
@@ -145,28 +144,36 @@ jobs:
         arm-client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
 
     - name: Check instance system info
-      uses: podman-desktop/e2e/.github/actions/instance-system-info@3548105f45def129d5e3aaa5a3d922e09ac892d9
+      uses: podman-desktop/e2e/.github/actions/instance-system-info@dbb48583aa0d9b97f95354aab9b60620ca5d7130
 
     - name: Emulate X session
-      uses: podman-desktop/e2e/.github/actions/emulate-x-session@3548105f45def129d5e3aaa5a3d922e09ac892d9
+      uses: podman-desktop/e2e/.github/actions/emulate-x-session@dbb48583aa0d9b97f95354aab9b60620ca5d7130
 
-    - name: Download Podman, do not initialize
-      uses: podman-desktop/e2e/.github/actions/download-podman-nightly@952cafee20ca82b1ce48b29c848bac1c31062245
+    - name: Install nightly Podman on Windows host
+      if: steps.fetch-podman.outputs.is_nightly == 'true'
+      uses: podman-desktop/e2e/.github/actions/install-podman-nightly@dbb48583aa0d9b97f95354aab9b60620ca5d7130
       with:
-        podman-image-tag: ${{ env.PDE2E_IMAGE_VERSION }}
-        podman-download-url: ${{ env.PODMAN_URL }}
+        download-url: ${{ steps.fetch-podman.outputs.download_url }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Clear Podman download URL for nightly
+      if: steps.fetch-podman.outputs.is_nightly == 'true'
+      run: echo "PODMAN_URL=" >> $GITHUB_ENV
 
     - name: Build Podman Desktop Electron Inspect Enabled binary
-      uses: podman-desktop/e2e/.github/actions/build-podman-desktop@0c1f0a035e0949941fd6abf959ab556ceec13f03
+      uses: podman-desktop/e2e/.github/actions/build-podman-desktop@dbb48583aa0d9b97f95354aab9b60620ca5d7130
       with:
         fork: ${{ env.PD_FORK }}
         branch: ${{ env.PD_BRANCH }}
         env-vars: ${{ env.ENV_VARS }}
 
     - name: Run Podman Desktop Playwright E2E tests
-      uses: podman-desktop/e2e/.github/actions/run-playwright-test@15b800edab941d394b32aaaa3f7961bb7db7ec3a
+      uses: podman-desktop/e2e/.github/actions/run-playwright-test@dbb48583aa0d9b97f95354aab9b60620ca5d7130
       with:
-        pde2e-runner-tag: ${{ env.PDE2E_IMAGE_VERSION }}
+        e2e-runner-tag: ${{ env.E2E_RUNNER_VERSION }}
+        podman-download-url: ${{ env.PODMAN_URL }}
+        # When PODMAN_URL is cleared (nightly), prevents runner from reading podman-location.log
+        podman-path: ${{ env.PODMAN_URL != '' }}
         podman-desktop-path: true
         fork-repo: ${{ env.PD_FORK }}
         branch-name: ${{ env.PD_BRANCH }}
@@ -185,7 +192,7 @@ jobs:
 
     - name: Destroy instance
       if: always()
-      uses: podman-desktop/e2e/.github/actions/destroy-instance@36e440f2ac18193214f4ffa8f7f1c4c0cb8c9446
+      uses: podman-desktop/e2e/.github/actions/destroy-instance@dbb48583aa0d9b97f95354aab9b60620ca5d7130
       with:
         mapt-image: ${{ env.MAPT_IMAGE }}
         mapt-version: ${{ env.MAPT_VERSION_TAG }}
@@ -210,23 +217,9 @@ jobs:
       if: always()
       with:
         name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}
+        # The e2e-runner writes results (incl. videos/traces) under results/;
+        # keep them, exclude only the large model files.
         path: |
           results/*
           !./**/*.gguf
           !./**/*.bin
-          !./**/output/videos/*
-          !./**/output/traces/*
-
-    - name: Upload test videos
-      uses: actions/upload-artifact@v7
-      if: always()
-      with:
-        name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}-videos
-        path: ./**/output/videos/*
-
-    - name: Upload test traces
-      uses: actions/upload-artifact@v7
-      if: always()
-      with:
-        name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}-traces
-        path: ./**/output/traces/*

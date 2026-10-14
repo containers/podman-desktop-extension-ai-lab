@@ -59,7 +59,7 @@ export class WhisperCpp extends InferenceProvider {
       [LABEL_INFERENCE_SERVER]: JSON.stringify(config.modelsInfo.map(model => model.id)),
     };
 
-    let connection: ContainerProviderConnection | undefined = undefined;
+    let connection: ContainerProviderConnection | undefined;
     if (config.connection) {
       connection = this.podmanConnection.getContainerProviderConnection(config.connection);
     } else {

@@ -245,7 +245,7 @@ export class RecipeManager implements Disposable {
       aiConfig = parseYamlFile(configFile, goarch());
     } catch (err) {
       console.error('Cannot load configure file.', err);
-      throw new Error(`Cannot load configuration file.`);
+      throw new Error(`Cannot load configuration file.`, { cause: err });
     }
 
     // Mark as success.

@@ -264,7 +264,7 @@ export class LlamaCppPython extends InferenceProvider {
       gpu = gpus.find(({ vendor }) => vendor !== GPUVendor.UNKNOWN) ?? gpus[0];
     }
 
-    let connection: ContainerProviderConnection | undefined = undefined;
+    let connection: ContainerProviderConnection | undefined;
     if (config.connection) {
       connection = this.podmanConnection.getContainerProviderConnection(config.connection);
     } else {

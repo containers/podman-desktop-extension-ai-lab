@@ -174,7 +174,7 @@ export class OpenVINO extends InferenceProvider {
       throw new Error('The model info file provided is undefined');
     }
 
-    let connection: ContainerProviderConnection | undefined = undefined;
+    let connection: ContainerProviderConnection | undefined;
     if (config.connection) {
       connection = this.podmanConnection.getContainerProviderConnection(config.connection);
     } else {

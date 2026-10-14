@@ -234,7 +234,7 @@ export class StudioApiImpl implements StudioAPI {
     const recipe = this.catalogManager.getRecipes().find(recipe => recipe.id === options.recipeId);
     if (!recipe) throw new Error(`recipe with if ${options.recipeId} not found`);
 
-    let connection: ContainerProviderConnection | undefined = undefined;
+    let connection: ContainerProviderConnection | undefined;
     if (options.connection) {
       connection = this.podmanConnection.getContainerProviderConnection(options.connection);
     } else {

@@ -11,7 +11,7 @@ import RecipeCardTags from '/@/lib/RecipeCardTags.svelte';
 
 export let recipe: Recipe;
 
-let localPath: LocalRepository | undefined = undefined;
+let localPath: LocalRepository | undefined;
 $: localPath = findLocalRepositoryByRecipeId($localRepositories, recipe.id);
 
 function handleClick(): void {

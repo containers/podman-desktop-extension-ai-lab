@@ -22,9 +22,7 @@ $: recipe = $catalog.recipes.find(r => r.id === recipeId);
 $: categories = $catalog.categories;
 
 // Send recipe info to telemetry
-let recipeTelemetry: string | undefined = undefined;
-$: if (recipe && recipe.id !== recipeTelemetry) {
-  recipeTelemetry = recipe.id;
+$: if (recipe) {
   studioClient
     .telemetryLogUsage('recipe.open', { 'recipe.id': recipe.id, 'recipe.name': recipe.name })
     .catch(err => console.error(`Error reporting telemetry:`, err));

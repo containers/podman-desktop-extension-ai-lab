@@ -69,7 +69,7 @@ onDestroy(() => {
     <div class="flex flex-row w-full h-full overflow-hidden">
       <Navigation meta={meta} />
 
-      <div class="flex flex-col w-full h-full min-w-0">
+      <div class="flex flex-col w-full h-full min-w-0" role="region" aria-label="AI Lab content">
         <GPUPromotion />
 
         <!-- Dashboard -->

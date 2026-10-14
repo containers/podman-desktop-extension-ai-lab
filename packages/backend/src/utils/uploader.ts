@@ -94,7 +94,7 @@ export class Uploader {
           message: `Request cancelled: ${String(err)}.`,
         });
       }
-      throw new Error(`Unable to upload model. Error: ${String(err)}`);
+      throw new Error(`Unable to upload model. Error: ${String(err)}`, { cause: err });
     }
   }
 }

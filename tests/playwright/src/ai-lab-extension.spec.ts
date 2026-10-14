@@ -497,7 +497,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           if (AI_APP_HTTP_TEST_APP_NAMES.includes(appName)) {
             test(`Verify ${appName} app HTTP page is reachable`, async ({ request }) => {
               test.setTimeout(60_000);
-              let response: APIResponse | undefined = undefined;
+              let response: APIResponse | undefined;
 
               switch (appName) {
                 case 'Object Detection': {
@@ -517,8 +517,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
             test(`Verify that model service for the ${appName} is working`, async ({ request }) => {
               test.setTimeout(600_000);
 
-              let port: string = '';
-              let baseUrl: string = '';
+              let port: string;
+              let baseUrl: string;
               let response: APIResponse | undefined = undefined;
               let expectedResponse: string = '';
 

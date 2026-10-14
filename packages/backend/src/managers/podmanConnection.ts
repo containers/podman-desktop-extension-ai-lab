@@ -324,7 +324,7 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
       };
     }
 
-    let connection: ContainerProviderConnection | undefined = undefined;
+    let connection: ContainerProviderConnection | undefined;
     if (options.connection) {
       connection = this.getContainerProviderConnection(options.connection);
     } else {

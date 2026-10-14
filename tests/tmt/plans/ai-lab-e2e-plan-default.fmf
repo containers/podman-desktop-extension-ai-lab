@@ -45,7 +45,9 @@ prepare:
       sudo dnf update -y
       sudo dnf install -y \
       git curl xorg-x11-server-Xvfb \
-        nss nspr atk at-spi2-atk cups libXcomposite libXdamage libXfixes libXrandr cairo pango alsa-lib \
+        nss nspr atk at-spi2-atk at-spi2-core cups cups-libs dbus-libs cairo pango alsa-lib \
+        libX11 libXcomposite libXdamage libXext libXfixes libXrandr libXtst libxcb libxkbcommon libxshmfence libdrm \
+        mesa-libgbm mesa-libEGL mesa-dri-drivers \
         gcc-c++ gtk3 passt jq
       # Install Node.js directly from official binary (if not already installed)
       

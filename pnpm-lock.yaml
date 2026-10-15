@@ -99,11 +99,11 @@ importers:
         specifier: ^2.15.0
         version: 2.15.0(@types/node@26.1.1)(typescript@5.9.3)
       prettier:
-        specifier: ^3.9.6
-        version: 3.9.6
+        specifier: ^3.9.10
+        version: 3.9.10
       prettier-plugin-svelte:
         specifier: ^4.1.1
-        version: 4.1.1(prettier@3.9.6)(svelte@5.57.2(@typescript-eslint/types@8.71.2))
+        version: 4.1.1(prettier@3.9.10)(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       svelte-check:
         specifier: ^4.7.6
         version: 4.7.6(picomatch@4.0.7)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(typescript@5.9.3)
@@ -639,12 +639,6 @@ packages:
     resolution: {integrity: sha512-vWfq4GaIMP9AIe4yj1ZUW18RDhx6EPQKjwe7n8BbIecFtCQG4CfHGaHuh7fdfq+y3LIA2vGS/o9ZBGVxIDi9hw==}
     engines: {node: '>=18'}
     cpu: [arm]
-    os: [linux]
-
-  '@esbuild/linux-ia32@0.27.2':
-    resolution: {integrity: sha512-MJt5BRRSScPDwG2hLelYhAAKh9imjHK5+NE/tvnRLbIqUWa+0E9N4WNMjmp/kXXPHZGqPLxggwVhz7QP8CTR8w==}
-    engines: {node: '>=18'}
-    cpu: [ia32]
     os: [linux]
 
   '@esbuild/linux-loong64@0.27.2':
@@ -4068,8 +4062,8 @@ packages:
       prettier: ^3.0.0
       svelte: ^5.0.0
 
-  prettier@3.9.6:
-    resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
+  prettier@3.9.10:
+    resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -5268,9 +5262,6 @@ snapshots:
   '@esbuild/linux-arm@0.27.2':
     optional: true
 
-  '@esbuild/linux-ia32@0.27.2':
-    optional: true
-
   '@esbuild/linux-loong64@0.27.2':
     optional: true
 
@@ -6439,7 +6430,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@types/node@26.1.1)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.2(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@26.1.1)(typescript@5.9.3))(vite@8.3.4(@types/node@26.1.1)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.1))
+      vitest: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.2(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@24.13.3)(typescript@5.9.3))(vite@8.3.4(@types/node@24.13.3)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.1))
 
   '@vitest/expect@4.1.11':
     dependencies:
@@ -7157,7 +7148,6 @@ snapshots:
       '@esbuild/freebsd-x64': 0.27.2
       '@esbuild/linux-arm': 0.27.2
       '@esbuild/linux-arm64': 0.27.2
-      '@esbuild/linux-ia32': 0.27.2
       '@esbuild/linux-loong64': 0.27.2
       '@esbuild/linux-mips64el': 0.27.2
       '@esbuild/linux-ppc64': 0.27.2
@@ -8799,12 +8789,12 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-svelte@4.1.1(prettier@3.9.6)(svelte@5.57.2(@typescript-eslint/types@8.71.2)):
+  prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.2(@typescript-eslint/types@8.71.2)):
     dependencies:
-      prettier: 3.9.6
+      prettier: 3.9.10
       svelte: 5.57.2(@typescript-eslint/types@8.71.2)
 
-  prettier@3.9.6: {}
+  prettier@3.9.10: {}
 
   pretty-format@27.5.1:
     dependencies:

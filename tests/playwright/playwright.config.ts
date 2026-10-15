@@ -23,6 +23,10 @@ export default defineConfig({
   workers: 1,
   timeout: 60_000,
 
+  // Installs Playwright's chromium browser before the suite (via the framework's
+  // globalSetup); without it the Electron renderer never mounts (blank screen).
+  globalSetup: './src/globalSetup/global-setup.ts',
+
   reporter: [
     ['list'],
     ['junit', { outputFile: './output/junit-results.xml' }],

@@ -94,7 +94,11 @@ export class AILabCatalogPage extends AILabBasePage {
     await deleteButton.focus();
     await deleteButton.click();
     await this.page.waitForTimeout(1_000);
-    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+    await handleConfirmationDialog({
+      page: this.page,
+      dialogTitle: podmanAILabExtension.extensionName,
+      buttonName: 'Confirm',
+    });
     await playExpect.poll(async () => await this.isModelDownloaded(modelName), { timeout: 30_000 }).toBeFalsy();
   }
 

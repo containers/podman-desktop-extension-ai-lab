@@ -73,7 +73,11 @@ export class AILabPlaygroundDetailsPage extends AILabBasePage {
   async deletePlayground(): Promise<AILabPlaygroundsPage> {
     await playExpect(this.deletePlaygroundButton).toBeEnabled();
     await this.deletePlaygroundButton.click();
-    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+    await handleConfirmationDialog({
+      page: this.page,
+      dialogTitle: podmanAILabExtension.extensionName,
+      buttonName: 'Confirm',
+    });
     return new AILabPlaygroundsPage(this.page, this.webview);
   }
 

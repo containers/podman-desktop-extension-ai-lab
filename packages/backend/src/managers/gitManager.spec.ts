@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import { GitManager } from './gitManager';
+import { GitManager, withSymlinkFallback } from './gitManager';
 import { statSync, existsSync, mkdirSync, type Stats, rmSync } from 'node:fs';
 import { window } from '@podman-desktop/api';
 import type { ReadCommitResult } from 'isomorphic-git';
@@ -75,6 +75,35 @@ describe('cloneRepository', () => {
       singleBranch: true,
       depth: 1,
     });
+  });
+});
+
+describe('withSymlinkFallback', () => {
+  test('returns the base fs unchanged on non-Windows platforms', () => {
+    const base = { promises: {} } as unknown as typeof import('node:fs');
+    expect(withSymlinkFallback(base, 'linux')).toBe(base);
+  });
+
+  test('writes the target as a plain file when symlink is refused (EPERM) on Windows', async () => {
+    const symlink = vi.fn().mockRejectedValue(Object.assign(new Error('denied'), { code: 'EPERM' }));
+    const writeFile = vi.fn().mockResolvedValue(undefined);
+    const base = { promises: { symlink, writeFile } } as unknown as typeof import('node:fs');
+
+    const wrapped = withSymlinkFallback(base, 'win32');
+    await expect(wrapped.promises.symlink('the/target', 'the/path')).resolves.toBeUndefined();
+
+    expect(symlink).toHaveBeenCalledWith('the/target', 'the/path', undefined);
+    expect(writeFile).toHaveBeenCalledWith('the/path', 'the/target');
+  });
+
+  test('rethrows non-permission symlink errors without falling back', async () => {
+    const symlink = vi.fn().mockRejectedValue(Object.assign(new Error('boom'), { code: 'EEXIST' }));
+    const writeFile = vi.fn();
+    const base = { promises: { symlink, writeFile } } as unknown as typeof import('node:fs');
+
+    const wrapped = withSymlinkFallback(base, 'win32');
+    await expect(wrapped.promises.symlink('t', 'p')).rejects.toThrow('boom');
+    expect(writeFile).not.toHaveBeenCalled();
   });
 });
 

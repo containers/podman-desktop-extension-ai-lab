@@ -169,8 +169,10 @@ export class GitManager {
   }
 
   async pull(directory: string): Promise<void> {
+    // Updating a recipe also checks out the tree, so it needs the same Windows
+    // symlink tolerance as the initial clone (see withSymlinkFallback).
     return git.pull({
-      fs,
+      fs: withSymlinkFallback(fs),
       http,
       dir: directory,
     });

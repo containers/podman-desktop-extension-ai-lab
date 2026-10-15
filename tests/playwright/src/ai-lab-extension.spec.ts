@@ -66,6 +66,7 @@ const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLE
 const EXT_TEST_RAG_CHATBOT: boolean = process.env.EXT_TEST_RAG_CHATBOT === 'true';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 const AI_LAB_TESTS_WITH_GPU_ENABLED: boolean = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === 'true';
+const IMAGE_CLEANUP_TIMEOUT = 300_000;
 
 let aiLabPage: AILabDashboardPage;
 const runnerOptions = {
@@ -589,7 +590,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       test.afterAll(
         `Ensure cleanup of "${appModel}", related services, and images`,
         async ({ runner, page, navigationBar }) => {
-          test.setTimeout(180_000);
+          test.setTimeout(180_000 + IMAGE_CLEANUP_TIMEOUT);
           aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
           await cleanupServices();
           await deleteAllModels();
@@ -642,6 +643,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
+      test.setTimeout(120_000 + IMAGE_CLEANUP_TIMEOUT);
       const containersPage = await navigationBar.openContainers();
       await expect(containersPage.heading).toBeVisible();
       await containersPage.deleteContainer(exactInstructLabContainerName);
@@ -721,6 +723,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test.afterAll(`Stop Llama Stack containers`, async ({ navigationBar }) => {
+      test.setTimeout(120_000 + IMAGE_CLEANUP_TIMEOUT);
       for (const container of llamaStackContainerNames) {
         const containersPage = await navigationBar.openContainers();
         await expect(containersPage.heading).toBeVisible();
@@ -825,7 +828,9 @@ async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
   await imagesPage.deleteAllUnusedImages();
   // The status title is on the status element itself, not a descendant.
   // Wait for deletion to finish before the next test group builds images.
-  await expect(imagesPage.rowTable.getByTitle(/^(UNUSED|DELETING)$/)).toHaveCount(0, { timeout: 90_000 });
+  await expect(imagesPage.rowTable.getByTitle(/^(UNUSED|DELETING)$/)).toHaveCount(0, {
+    timeout: IMAGE_CLEANUP_TIMEOUT,
+  });
 }
 
 async function waitForCatalogModel(modelName: string): Promise<boolean> {

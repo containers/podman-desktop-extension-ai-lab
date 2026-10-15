@@ -147,8 +147,8 @@ importers:
         specifier: ^5.6.2
         version: 5.6.2(@types/json-schema@7.0.15)(express@5.3.0)
       isomorphic-git:
-        specifier: ^1.38.7
-        version: 1.38.7
+        specifier: ^1.44.1
+        version: 1.44.1
       js-yaml:
         specifier: ^5.4.3
         version: 5.4.3
@@ -3231,8 +3231,8 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  isomorphic-git@1.38.7:
-    resolution: {integrity: sha512-2J2rCV7gTgcpscEDT7PjU5shbsKKI10E4RqBlPDI3LmMXDjSKsN2w1jTIKiay14v87sPDfXjJkgp/Rrxc0zlSg==}
+  isomorphic-git@1.44.1:
+    resolution: {integrity: sha512-peRbSz7/oQtDgJYL2OOYrHE2jbKp5s7C0Qb5zPw1r9we+llMd8ON/kMjwCEEnKKOeM235cOCfg8svPZUD64xYg==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -4089,8 +4089,8 @@ packages:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
     engines: {node: '>= 6'}
 
-  readable-stream@4.7.0:
-    resolution: {integrity: sha512-oIGGmcpTLwPga8Bn6/Z75SVaH1z5dUut2ibSyAMVhmUggWpmDn2dapB0n7f8nwaSiRtepAsfJyfXIO5DCVAODg==}
+  readable-stream@4.8.0:
+    resolution: {integrity: sha512-2jhTTU3Eilp/2DMT71gbcoqC35eQHasMJH0RHkYxwlxIv3+FR6Y5xAFZIwEGLxKkjZYEFlsiMNIdwUqjK2lLHQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   readdirp@4.1.2:
@@ -7950,7 +7950,7 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  isomorphic-git@1.38.7:
+  isomorphic-git@1.44.1:
     dependencies:
       async-lock: 1.4.1
       clean-git-ref: 2.0.1
@@ -7960,7 +7960,7 @@ snapshots:
       minimisted: 2.0.1
       pako: 1.0.11
       pify: 4.0.1
-      readable-stream: 4.7.0
+      readable-stream: 4.8.0
       sha.js: 2.4.12
       simple-get: 4.0.1
 
@@ -8791,7 +8791,7 @@ snapshots:
       string_decoder: 1.3.0
       util-deprecate: 1.0.2
 
-  readable-stream@4.7.0:
+  readable-stream@4.8.0:
     dependencies:
       abort-controller: 3.0.0
       buffer: 6.0.3

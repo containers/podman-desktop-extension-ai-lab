@@ -314,8 +314,8 @@ importers:
         specifier: ^6.0.5
         version: 6.0.5(postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.29)(yaml@2.9.1))(postcss@8.5.29)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(typescript@5.9.3)
       svelte-select:
-        specifier: ^5.8.3
-        version: 5.8.3
+        specifier: ^6.0.0
+        version: 6.0.0(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -806,14 +806,14 @@ packages:
     resolution: {integrity: sha512-R11tGE6yIFwqpaIqcfkcg7AICXzFg14+5h5v0TfF/9+RMDL6jhzCy/pxHVOfbALGdtVYdt6JdR21tuxEgl34dw==}
     deprecated: Please update to a newer version.
 
-  '@floating-ui/core@1.7.3':
-    resolution: {integrity: sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==}
+  '@floating-ui/core@1.8.0':
+    resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
 
-  '@floating-ui/dom@1.7.4':
-    resolution: {integrity: sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==}
+  '@floating-ui/dom@1.8.0':
+    resolution: {integrity: sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg==}
 
-  '@floating-ui/utils@0.2.10':
-    resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+  '@floating-ui/utils@0.2.12':
+    resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
   '@fortawesome/fontawesome-common-types@7.3.1':
     resolution: {integrity: sha512-k0C0sdHmZtAo6dRDtd1Z/qcpyHbL0CKsjV8seMY/21xGhY5Wsv0XRmiI/xEEH4y2c9b1+jvgNs/3EqhV27yUEA==}
@@ -4519,8 +4519,10 @@ packages:
       typescript:
         optional: true
 
-  svelte-select@5.8.3:
-    resolution: {integrity: sha512-nQsvflWmTCOZjssdrNptzfD1Ok45hHVMTL5IHay5DINk7dfu5Er+8KsVJnZMJdSircqtR0YlT4YkCFlxOUhVPA==}
+  svelte-select@6.0.0:
+    resolution: {integrity: sha512-WJ1UDw0a1Z3I7oVFgaCS7G9D2rCSmYAPpufNEj/DNuk5Oyb2a5dju6F36o0urBVw9bTE3WkM9cZkI0x+Sfo8Bg==}
+    peerDependencies:
+      svelte: '>=5'
 
   svelte@5.57.2:
     resolution: {integrity: sha512-1YiPCAXT0Ct6g1vOMmSLa0Nsc3QRMvtDF32ihgglGVrugIuIK38RyDiFNXVDhtQ81TJjSO57NdMw6DyYLqSGDQ==}
@@ -5381,16 +5383,16 @@ snapshots:
 
   '@faker-js/faker@5.5.3': {}
 
-  '@floating-ui/core@1.7.3':
+  '@floating-ui/core@1.8.0':
     dependencies:
-      '@floating-ui/utils': 0.2.10
+      '@floating-ui/utils': 0.2.12
 
-  '@floating-ui/dom@1.7.4':
+  '@floating-ui/dom@1.8.0':
     dependencies:
-      '@floating-ui/core': 1.7.3
-      '@floating-ui/utils': 0.2.10
+      '@floating-ui/core': 1.8.0
+      '@floating-ui/utils': 0.2.12
 
-  '@floating-ui/utils@0.2.10': {}
+  '@floating-ui/utils@0.2.12': {}
 
   '@fortawesome/fontawesome-common-types@7.3.1': {}
 
@@ -6439,7 +6441,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@types/node@26.1.1)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.2(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@26.1.1)(typescript@5.9.3))(vite@8.3.4(@types/node@26.1.1)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.1))
+      vitest: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.2(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@24.13.3)(typescript@5.9.3))(vite@8.3.4(@types/node@24.13.3)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.1))
 
   '@vitest/expect@4.1.11':
     dependencies:
@@ -9308,8 +9310,8 @@ snapshots:
 
   svelte-floating-ui@1.5.8:
     dependencies:
-      '@floating-ui/core': 1.7.3
-      '@floating-ui/dom': 1.7.4
+      '@floating-ui/core': 1.8.0
+      '@floating-ui/dom': 1.8.0
 
   svelte-markdown@0.4.1(svelte@5.57.2(@typescript-eslint/types@8.71.2)):
     dependencies:
@@ -9325,8 +9327,9 @@ snapshots:
       postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.29)(yaml@2.9.1)
       typescript: 5.9.3
 
-  svelte-select@5.8.3:
+  svelte-select@6.0.0(svelte@5.57.2(@typescript-eslint/types@8.71.2)):
     dependencies:
+      svelte: 5.57.2(@typescript-eslint/types@8.71.2)
       svelte-floating-ui: 1.5.8
 
   svelte@5.57.2(@typescript-eslint/types@8.71.2):

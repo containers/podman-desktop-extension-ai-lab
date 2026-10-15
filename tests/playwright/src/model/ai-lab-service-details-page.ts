@@ -49,7 +49,11 @@ export class AILabServiceDetailsPage extends AILabBasePage {
   async deleteService(): Promise<AiModelServicePage> {
     await playExpect(this.deleteServiceButton).toBeEnabled();
     await this.deleteServiceButton.click();
-    await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+    await handleConfirmationDialog({
+      page: this.page,
+      dialogTitle: podmanAILabExtension.extensionName,
+      buttonName: 'Confirm',
+    });
     return new AiModelServicePage(this.page, this.webview);
   }
 

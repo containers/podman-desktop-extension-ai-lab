@@ -61,7 +61,11 @@ export class AiModelServicePage extends AILabBasePage {
       await playExpect(this.deleteSelectedItems).toBeEnabled();
       await this.deleteSelectedItems.click();
 
-      await handleConfirmationDialog(this.page, podmanAILabExtension.extensionName, true, 'Confirm');
+      await handleConfirmationDialog({
+        page: this.page,
+        dialogTitle: podmanAILabExtension.extensionName,
+        buttonName: 'Confirm',
+      });
 
       await playExpect.poll(async () => (await this.getCurrentModelCount()) === 0, { timeout: 60_000 }).toBeTruthy();
     } catch (error) {

@@ -66,6 +66,7 @@ const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLE
 const EXT_TEST_RAG_CHATBOT: boolean = process.env.EXT_TEST_RAG_CHATBOT === 'true';
 const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
 const AI_LAB_TESTS_WITH_GPU_ENABLED: boolean = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === 'true';
+const IMAGE_CLEANUP_TIMEOUT = 300_000;
 
 let aiLabPage: AILabDashboardPage;
 const runnerOptions = {
@@ -589,7 +590,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       test.afterAll(
         `Ensure cleanup of "${appModel}", related services, and images`,
         async ({ runner, page, navigationBar }) => {
-          test.setTimeout(180_000);
+          test.setTimeout(180_000 + IMAGE_CLEANUP_TIMEOUT);
           aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
           await cleanupServices();
           await deleteAllModels();
@@ -642,6 +643,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
+      test.setTimeout(120_000 + IMAGE_CLEANUP_TIMEOUT);
       const containersPage = await navigationBar.openContainers();
       await expect(containersPage.heading).toBeVisible();
       await containersPage.deleteContainer(exactInstructLabContainerName);
@@ -721,6 +723,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
     });
 
     test.afterAll(`Stop Llama Stack containers`, async ({ navigationBar }) => {
+      test.setTimeout(120_000 + IMAGE_CLEANUP_TIMEOUT);
       for (const container of llamaStackContainerNames) {
         const containersPage = await navigationBar.openContainers();
         await expect(containersPage.heading).toBeVisible();
@@ -821,11 +824,134 @@ async function stopAndDeleteApp(appName: string): Promise<void> {
 async function deleteUnusedImages(navigationBar: NavigationBar): Promise<void> {
   const imagesPage = await navigationBar.openImages();
   await expect(imagesPage.heading).toBeVisible();
+  const started = Date.now();
+  const snapshots: unknown[] = [];
 
-  await imagesPage.deleteAllUnusedImages();
-  // The status title is on the status element itself, not a descendant.
-  // Wait for deletion to finish before the next test group builds images.
-  await expect(imagesPage.rowTable.getByTitle(/^(UNUSED|DELETING)$/)).toHaveCount(0, { timeout: 90_000 });
+  async function recordRows(phase: string): Promise<number> {
+    const rows = await imagesPage.rowTable.getByRole('row').evaluateAll(elements =>
+      elements.map(row => ({
+        name: row.getAttribute('aria-label'),
+        // Cells include the image name, short ID, tag, and environment.
+        cells: Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent?.trim()),
+        statuses: Array.from(row.querySelectorAll('[title="UNUSED"], [title="DELETING"], [title="USED"]')).map(status =>
+          status.getAttribute('title'),
+        ),
+      })),
+    );
+    const remaining = rows.reduce(
+      (count, row) => count + row.statuses.filter(status => status === 'UNUSED' || status === 'DELETING').length,
+      0,
+    );
+    const snapshot = { phase, timestamp: new Date().toISOString(), elapsedMs: Date.now() - started, remaining, rows };
+    snapshots.push(snapshot);
+    console.log(`[image-cleanup] ${JSON.stringify(snapshot)}`);
+    return remaining;
+  }
+
+  async function recordBackend(phase: string): Promise<void> {
+    try {
+      const backend = await imagesPage.page.evaluate(async () => {
+        const api = window as unknown as {
+          getProviderInfos(): Promise<
+            {
+              id: string;
+              name: string;
+              containerConnections: { name: string; status: string; endpoint: { socketPath: string } }[];
+            }[]
+          >;
+          listImages(): Promise<
+            {
+              Id: string;
+              RepoTags?: string[];
+              engineId: string;
+              engineName: string;
+              Containers?: number;
+            }[]
+          >;
+        };
+        // Bound each diagnostic independently so a stuck image listing still
+        // leaves us with provider/socket details and the original test failure.
+        async function bounded<T>(request: Promise<T>): Promise<T | { error: string }> {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          try {
+            return await Promise.race([
+              request,
+              new Promise<never>((_resolve, reject) => {
+                timer = setTimeout(() => reject(new Error('Diagnostic request timed out after 10s')), 10_000);
+              }),
+            ]);
+          } catch (error) {
+            return { error: String(error) };
+          } finally {
+            clearTimeout(timer);
+          }
+        }
+        const [providers, images] = await Promise.all([
+          bounded(
+            api.getProviderInfos().then(providers =>
+              providers.map(provider => ({
+                id: provider.id,
+                name: provider.name,
+                connections: provider.containerConnections.map(connection => ({
+                  name: connection.name,
+                  status: connection.status,
+                  socketPath: connection.endpoint.socketPath,
+                })),
+              })),
+            ),
+          ),
+          bounded(
+            api.listImages().then(images =>
+              images.map(image => ({
+                id: image.Id,
+                tags: image.RepoTags,
+                engineId: image.engineId,
+                engineName: image.engineName,
+                containers: image.Containers,
+              })),
+            ),
+          ),
+        ]);
+        return { providers, images };
+      });
+      const snapshot = { phase, timestamp: new Date().toISOString(), elapsedMs: Date.now() - started, backend };
+      snapshots.push(snapshot);
+      console.log(`[image-cleanup] ${JSON.stringify(snapshot)}`);
+    } catch (error) {
+      console.warn(`[image-cleanup] Unable to collect ${phase} backend diagnostics: ${error}`);
+    }
+  }
+
+  try {
+    await recordBackend('before-delete');
+    await recordRows('before-delete');
+    await imagesPage.deleteAllUnusedImages();
+    // Keep the existing all-engine condition while testing a longer timeout.
+    // Read only the rendered rows during deletion; extra API polling adds load.
+    await expect
+      .poll(() => recordRows('waiting'), {
+        timeout: IMAGE_CLEANUP_TIMEOUT,
+        intervals: [1_000, 5_000, 10_000],
+      })
+      .toBe(0);
+  } catch (error) {
+    await Promise.allSettled([
+      recordRows('failure'),
+      recordBackend('failure'),
+      imagesPage.page
+        .screenshot({ timeout: 5_000 })
+        .then(body => test.info().attach('image-cleanup-failure', { body, contentType: 'image/png' })),
+    ]);
+    throw error;
+  } finally {
+    await test
+      .info()
+      .attach('image-cleanup-diagnostics', {
+        body: JSON.stringify({ timeoutMs: IMAGE_CLEANUP_TIMEOUT, snapshots }, undefined, 2),
+        contentType: 'application/json',
+      })
+      .catch((error: unknown) => console.warn(`[image-cleanup] Unable to attach diagnostics: ${error}`));
+  }
 }
 
 async function waitForCatalogModel(modelName: string): Promise<boolean> {

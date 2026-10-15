@@ -54,7 +54,6 @@ vi.mock('./utils/client', async () => ({
   studioClient: {
     getExtensionConfiguration: vi.fn(),
   },
-  instructlabClient: {},
   rpcBrowser: {
     subscribe: vi.fn(),
   },

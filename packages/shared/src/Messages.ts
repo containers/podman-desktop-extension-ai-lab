@@ -23,7 +23,6 @@ import type { Task } from './models/ITask';
 import type { ModelInfo } from './models/IModelInfo';
 import type { ContainerProviderConnectionInfo } from './models/IContainerConnectionInfo';
 import type { InferenceServer } from './models/IInference';
-import type { InstructlabSession } from './models/instructlab/IInstructlabSession';
 import type { LocalRepository } from './models/ILocalRepository';
 import type { Conversation } from './models/IPlaygroundMessage';
 import type { ExtensionConfiguration } from './models/IExtensionConfiguration';
@@ -38,7 +37,6 @@ export const MSG_NEW_MODELS_STATE = createRpcChannel<ModelInfo[]>('new-models-st
 export const MSG_PODMAN_CONNECTION_UPDATE =
   createRpcChannel<ContainerProviderConnectionInfo[]>('podman-connecting-update');
 export const MSG_INFERENCE_SERVERS_UPDATE = createRpcChannel<InferenceServer[]>('inference-servers-update');
-export const MSG_INSTRUCTLAB_SESSIONS_UPDATE = createRpcChannel<InstructlabSession[]>('instructlab-sessions-update');
 export const MSG_LOCAL_REPOSITORY_UPDATE = createRpcChannel<LocalRepository[]>('local-repository-update');
 export const MSG_CONVERSATIONS_UPDATE = createRpcChannel<Conversation[]>('conversations-update');
 export const MSG_CONFIGURATION_UPDATE = createRpcChannel<ExtensionConfiguration>('configuration-update');

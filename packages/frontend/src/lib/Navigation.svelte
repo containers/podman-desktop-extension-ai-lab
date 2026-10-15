@@ -1,28 +1,12 @@
 <script lang="ts">
 import type { TinroRouteMeta } from 'tinro';
 import Fa from 'svelte-fa';
-import {
-  faBookOpen,
-  faBrain,
-  faGaugeHigh,
-  faMessage,
-  faRocket,
-  faServer,
-  faHouse,
-  faGear,
-  faCircleDown,
-} from '@fortawesome/free-solid-svg-icons';
-import InstructLabIcon from '/@/lib/icons/InstructLabIcon.svelte';
+import { faBookOpen, faBrain, faMessage, faRocket, faServer, faHouse, faGear } from '@fortawesome/free-solid-svg-icons';
 import { SettingsNavItem } from '@podman-desktop/ui-svelte';
-import { onDestroy, onMount } from 'svelte';
-import { configuration } from '../stores/extensionConfiguration';
-import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
-import type { Unsubscriber } from 'svelte/store';
+import { onMount } from 'svelte';
 import type { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 
 export let meta: TinroRouteMeta;
-let experimentalTuning: boolean = false;
-let cfgUnsubscribe: Unsubscriber;
 
 // By default, faBookOpen is 576x512, but we want it to be 512x512
 // we cannot modify the width and height in SettingsNavItem so just modify the icon instead
@@ -31,14 +15,6 @@ let copyFaBookOpenIcon: IconDefinition | undefined = undefined;
 onMount(() => {
   copyFaBookOpenIcon = structuredClone(faBookOpen);
   copyFaBookOpenIcon.icon[0] = 512;
-
-  cfgUnsubscribe = configuration.subscribe((val: ExtensionConfiguration | undefined) => {
-    experimentalTuning = val?.experimentalTuning ?? false;
-  });
-});
-
-onDestroy(() => {
-  cfgUnsubscribe?.();
 });
 </script>
 
@@ -82,27 +58,5 @@ onDestroy(() => {
       <span class="text-[color:var(--pd-secondary-nav-header-text)]">SERVER INFORMATION</span>
     </div>
     <SettingsNavItem icon={faGear} title="Local Server" selected={meta.url === '/local-server'} href="/local-server" />
-
-    <!-- Tuning -->
-    <div class="pl-3 mt-2 ml-[4px]">
-      <span class="text-[color:var(--pd-secondary-nav-header-text)]">TUNING</span>
-    </div>
-    <SettingsNavItem
-      icon={InstructLabIcon}
-      title="About InstructLab"
-      selected={meta.url.startsWith('/about-instructlab')}
-      href="/about-instructlab" />
-    {#if experimentalTuning}
-      <SettingsNavItem
-        icon={faGaugeHigh}
-        title="Tune with InstructLab"
-        selected={meta.url.startsWith('/tune')}
-        href="/tune" />
-    {/if}
-    <SettingsNavItem
-      icon={faCircleDown}
-      title="Try InstructLab"
-      selected={meta.url.startsWith('/instructlab/try')}
-      href="/instructlab/try" />
   </div>
 </nav>

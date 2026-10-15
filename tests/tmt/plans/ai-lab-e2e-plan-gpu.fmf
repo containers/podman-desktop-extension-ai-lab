@@ -85,8 +85,3 @@ prepare:
   summary: Execute smoke Playwright E2E tests.
   discover+: 
     filter: 'tag:smoke'
-
-/instructlab: 
-  summary: Execute instructlab Playwright E2E tests.
-  discover+:
-    filter: 'tag:instructlab'

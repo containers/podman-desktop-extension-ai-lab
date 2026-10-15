@@ -26,7 +26,6 @@ import { AILabCatalogPage as AILabModelCatalogPage } from './ai-lab-model-catalo
 import { AILabPlaygroundsPage } from './ai-lab-playgrounds-page';
 import { AILabLocalServerPage } from './ai-lab-local-server-page';
 import { AILabDashboardPage } from './ai-lab-dashboard-page';
-import { AILabTryInstructLabPage } from './ai-lab-try-instructlab-page';
 import { AiLlamaStackPage } from './ai-lab-model-llamastack-page';
 
 export class AILabNavigationBar extends AILabBasePage {
@@ -38,9 +37,7 @@ export class AILabNavigationBar extends AILabBasePage {
   readonly servicesButton: Locator;
   readonly playgroundsButton: Locator;
   readonly llamaStackButton: Locator;
-  readonly tuneButton: Locator;
   readonly localServerButton: Locator;
-  readonly tryInstructLabButton: Locator;
 
   constructor(page: Page, webview: Page) {
     super(page, webview, undefined);
@@ -52,9 +49,7 @@ export class AILabNavigationBar extends AILabBasePage {
     this.servicesButton = this.navigationBar.getByRole('link', { name: 'Services' });
     this.playgroundsButton = this.navigationBar.getByRole('link', { name: 'Playgrounds' });
     this.llamaStackButton = this.navigationBar.getByRole('link', { name: 'Llama Stack' });
-    this.tuneButton = this.navigationBar.getByRole('link', { name: 'Tune with InstructLab' });
     this.localServerButton = this.navigationBar.getByRole('link', { name: 'Local Server' });
-    this.tryInstructLabButton = this.navigationBar.getByRole('link', { name: 'Try InstructLab' });
   }
 
   async waitForLoad(): Promise<void> {
@@ -107,11 +102,5 @@ export class AILabNavigationBar extends AILabBasePage {
     await playExpect(this.localServerButton).toBeVisible();
     await this.localServerButton.click();
     return new AILabLocalServerPage(this.page, this.webview);
-  }
-
-  async openTryInstructLab(): Promise<AILabTryInstructLabPage> {
-    await playExpect(this.tryInstructLabButton).toBeVisible();
-    await this.tryInstructLabButton.click();
-    return new AILabTryInstructLabPage(this.page, this.webview);
   }
 }

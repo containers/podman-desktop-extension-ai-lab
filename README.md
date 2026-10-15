@@ -3,6 +3,7 @@
 Podman AI Lab is an open source extension for Podman Desktop to work with LLMs (Large Language Models) on a local environment. Featuring a recipe catalog with common AI use cases, a curated set of open source models, and a playground for learning, prototyping and experimentation, Podman AI Lab helps you to quickly and easily get started bringing AI into your applications, without depending on infrastructure beyond your laptop ensuring data privacy and security.
 
 ## Topics
+
 - [Technology](#technology)
 - [Extension features](#extension-features)
 - [Requirements](#requirements)
@@ -95,7 +96,7 @@ Want to help develop and contribute to Podman AI Lab?
 You can use `pnpm watch --extension-folder` from the Podman Desktop directory to automatically rebuild and test the AI Lab extension:
 
 > **_Note_**: make sure you have the appropriate [prerequisites](https://github.com/containers/podman-desktop/blob/main/CONTRIBUTING.md#prerequisites-prepare-your-environment)
-  installed.
+> installed.
 
 ```sh
 git clone https://github.com/containers/podman-desktop
@@ -118,6 +119,7 @@ $ pnpm watch
 
 We'll be adding a way to let a user cleanup their environment: see issue https://github.com/containers/podman-desktop-extension-ai-lab/issues/469.
 For the time being, please consider the following actions:
+
 1. Remove the extension from Podman Desktop, from the Settings > Extensions
 2. Remove the running playground environments from the list of Pods
 3. Remove the images built by the recipes
@@ -145,11 +147,11 @@ Sample applications may be added to the catalog. See [packaging guide](https://g
 The roadmap is always open and we are looking for your feedback. Please create new issues and upvote on the issues that are feeling the most important for you.
 
 We will be working on the following items:
+
 - **Expanded Recipes**: Discover new use cases and samples to inspire and accelerate your applications.
 - **GPU Acceleration**: Speeding up processing times by leveraging GPU acceleration.
 - **API/CLI**: Interact with Podman AI Lab from CLI and APIs.
 - **Enhanced Playgrounds**: Streamlined workflows and UX giving a better space to experiment with LLMs and quickly iterate.
-- **Fine Tuning with [InstructLab](https://instructlab.ai/)**: Re-train LLMs with a set of taxonomy knowledges. Learn more about [the InstructLab project](https://github.com/instructlab).
 - **Enable Function Calling**: Use LLMs to retrieve or interact with external tools by doing API calls.
 - **Local RAG**: Explore RAG pattern, load your document and test behavior of the model.
 - **Bridge with AI Platforms (incl. K8s)**: Connect to remote models and ease deployment of applications.

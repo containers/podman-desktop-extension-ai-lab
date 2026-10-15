@@ -114,7 +114,6 @@ beforeEach(() => {
   vi.mocked(configurationRegistryMock.getExtensionConfiguration).mockReturnValue({
     modelUploadDisabled: false,
     modelsPath: '~/downloads',
-    experimentalTuning: false,
     apiPort: 0,
     inferenceRuntime: 'llama-cpp',
     experimentalGPU: false,
@@ -983,7 +982,6 @@ describe('uploadModelToPodmanMachine', () => {
       // disable upload
       modelUploadDisabled: true,
       modelsPath: '~/downloads',
-      experimentalTuning: false,
       apiPort: 0,
       inferenceRuntime: 'llama-cpp',
       experimentalGPU: false,

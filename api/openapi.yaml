@@ -261,7 +261,6 @@ components:
         model:
           type: string
           description: The name of the model to pull
-          example: instructlab/granite-7b-lab-GGUF
         insecure:
           type: boolean
           description: |

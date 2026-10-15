@@ -47,13 +47,9 @@ import { RecipeManager } from './managers/recipes/RecipeManager';
 import { GPUManager } from './managers/GPUManager';
 import { WhisperCpp } from './workers/provider/WhisperCpp';
 import { ApiServer } from './managers/apiServer';
-import { InstructlabManager } from './managers/instructlab/instructlabManager';
-import { InstructlabApiImpl } from './instructlab-api-impl';
 import { NavigationRegistry } from './registries/NavigationRegistry';
 import type { StudioAPI } from '@shared/StudioAPI';
 import { STUDIO_API_CHANNEL } from '@shared/StudioAPI';
-import type { InstructlabAPI } from '@shared/InstructlabAPI';
-import { INSTRUCTLAB_API_CHANNEL } from '@shared/InstructlabAPI';
 import { ModelHandlerRegistry } from './registries/ModelHandlerRegistry';
 import { URLModelHandler } from './models/URLModelHandler';
 import { HuggingFaceModelHandler } from './models/HuggingFaceModelHandler';
@@ -77,7 +73,6 @@ export class Studio {
    */
   #rpcExtension: RpcExtension | undefined;
   #studioApi: StudioApiImpl | undefined;
-  #instructlabApi: InstructlabApiImpl | undefined;
   #llamaStackApi: LlamaStackApiImpl | undefined;
 
   #localRepositoryRegistry: LocalRepositoryRegistry | undefined;
@@ -100,7 +95,6 @@ export class Studio {
   #configurationRegistry: ConfigurationRegistry | undefined;
   #gpuManager: GPUManager | undefined;
   #navigationRegistry: NavigationRegistry | undefined;
-  #instructlabManager: InstructlabManager | undefined;
   #llamaStackManager: LlamaStackManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
@@ -281,17 +275,6 @@ export class Studio {
     this.#inferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#inferenceManager);
 
-    /** The InstructLab tuning sessions manager */
-    this.#instructlabManager = new InstructlabManager(
-      appUserDirectory,
-      this.#taskRegistry,
-      this.#podmanConnection,
-      this.#containerRegistry,
-      this.#telemetry,
-    );
-    this.#instructlabManager.init();
-    this.#extensionContext.subscriptions.push(this.#instructlabManager);
-
     /** The Llama Stack manager */
     this.#llamaStackManager = new LlamaStackManager(
       appUserDirectory,
@@ -392,13 +375,6 @@ export class Studio {
     );
     await apiServer.init();
     this.#extensionContext.subscriptions.push(apiServer);
-
-    this.#instructlabApi = new InstructlabApiImpl(this.#instructlabManager);
-    // Register the instance
-    this.#rpcExtension.registerInstance<InstructlabAPI, InstructlabApiImpl>(
-      INSTRUCTLAB_API_CHANNEL,
-      this.#instructlabApi,
-    );
 
     this.#llamaStackApi = new LlamaStackApiImpl(this.#llamaStackManager);
     // Register the instance

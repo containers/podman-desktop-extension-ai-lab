@@ -283,7 +283,7 @@ describe('spy on catalogUtils.sanitize', () => {
           categories: ['natural-language-processing'],
           basedir: 'recipes/natural_language_processing/chatbot',
           readme: '',
-          models: ['hf.instructlab.granite-7b-lab-GGUF', 'hf.instructlab.merlinite-7b-lab-GGUF'],
+          models: [],
         },
       ],
       models: [],

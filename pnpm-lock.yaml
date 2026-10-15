@@ -136,8 +136,8 @@ importers:
         specifier: ^0.4.3
         version: 0.4.3
       '@huggingface/hub':
-        specifier: ^2.13.3
-        version: 2.13.3
+        specifier: ^2.17.6
+        version: 2.17.6
       ai:
         specifier: ^7.0.137
         version: 7.0.137(zod@4.6.7)
@@ -836,19 +836,19 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.13.3':
-    resolution: {integrity: sha512-qAEbZ0x1vUQIUSComJ5EPgII+eI3nJB3gTPNTzjir6Kk/aCHHvPfCNMreS4iUg6gT17YDkvt7XBTndzh7617KQ==}
+  '@huggingface/hub@2.17.6':
+    resolution: {integrity: sha512-0AQx/4pcy+a5HmlNPDyunAzOlN/a33Goky7y2ZjZG0fWGhBuUVA0uc8jj6+NXb8dN7sa68wUkud4REuZt5YVog==}
     engines: {node: '>=18'}
     hasBin: true
-
-  '@huggingface/tasks@0.21.26':
-    resolution: {integrity: sha512-6QGX2qBFEf3zU+qRz+kSTI8weoUpLtNINnl8i7NUC+VB1UBxKvgPrXGCLEEkUwcRGqC0DBpJBwB0OPFg1Aa25g==}
 
   '@huggingface/tasks@0.21.28':
     resolution: {integrity: sha512-PCduFL8/f3VfBIIY+fnjcBfRTLgsWHBWJls1xcYRNkJM4iKpwWfEsFnsH/4YP678zZRieNbTh8JUBP9/1NgMbg==}
 
-  '@huggingface/xetchunk-wasm@0.1.0':
-    resolution: {integrity: sha512-wWpp2qwPgf9kv1KLJjcDUk/OrpDOsFoQ3Qpz0U5LGn20csoymBf8eneOv6wm/GzPBzlWac1OYiR0aa1vT6aM2Q==}
+  '@huggingface/tasks@0.21.61':
+    resolution: {integrity: sha512-bAki2SyAkxYbzYCAcOmPYq++CzCHI1CkxeVQnF2jkXAh60wnIuR+jZJ+Eha1aaI049bB1aO8H+icr4C/kvLnuw==}
+
+  '@huggingface/xetchunk-wasm@0.2.0':
+    resolution: {integrity: sha512-cmp7oAAWeCpZGrVQTP/LxDtJdzGMfpxwkEVsZsk5jZQ2FwP2njm8LnyobhnQvLpkSAcJJwUzFJC0PYS9ZsqeTg==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -5350,18 +5350,18 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.21.28
 
-  '@huggingface/hub@2.13.3':
+  '@huggingface/hub@2.17.6':
     dependencies:
-      '@huggingface/tasks': 0.21.26
-      '@huggingface/xetchunk-wasm': 0.1.0
+      '@huggingface/tasks': 0.21.61
+      '@huggingface/xetchunk-wasm': 0.2.0
     optionalDependencies:
       cli-progress: 3.12.0
 
-  '@huggingface/tasks@0.21.26': {}
-
   '@huggingface/tasks@0.21.28': {}
 
-  '@huggingface/xetchunk-wasm@0.1.0':
+  '@huggingface/tasks@0.21.61': {}
+
+  '@huggingface/xetchunk-wasm@0.2.0':
     dependencies:
       '@huggingface/blake3-jit': 0.0.2
       gearhash-jit: 1.0.2

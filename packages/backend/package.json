@@ -61,12 +61,6 @@
           ],
           "description": "Choose the default inferencing runtime for AI Lab"
         },
-        "ai-lab.experimentalTuning": {
-          "type": "boolean",
-          "default": false,
-          "description": "Display InstructLab Tuning screens (experimental)",
-          "hidden": true
-        },
         "ai-lab.showGPUPromotion": {
           "type": "boolean",
           "default": true,

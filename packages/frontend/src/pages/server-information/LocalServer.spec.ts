@@ -49,7 +49,6 @@ const mockConfiguration: Writable<ExtensionConfiguration> = writable({
   apiPort: 10434,
   inferenceRuntime: 'llama-cpp',
   modelUploadDisabled: false,
-  experimentalTuning: false,
   showGPUPromotion: false,
   appearance: 'dark',
 });

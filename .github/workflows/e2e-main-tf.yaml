@@ -34,7 +34,6 @@ on:
         options:
           - e2e
           - smoke
-          - instructlab
       plan:
         description: plans to run
         type: choice

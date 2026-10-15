@@ -77,7 +77,21 @@ prepare:
       systemctl --user start podman.socket || exit 1
       systemctl --user is-active podman.socket || exit 1
 
-/e2e: 
+  - name: Pre-pull inference images
+    how: shell
+    script: |
+      # The ~1.7GB inference images pull much slower on some Fedora composes. When the pull
+      # happens *during* a test it holds the podman image-store lock long enough that
+      # podman-desktop's image listing times out (30s), derailing playground/recipe creation.
+      # Pre-pull them here (outside the test timeout) so the suite finds them ready.
+      # ponytail: image list tracked from the extension's inference-images.json (CPU defaults).
+      IMAGES_JSON="$TMT_TREE/packages/backend/src/assets/inference-images.json"
+      jq -r '[.. | .default? // empty] | unique[]' "$IMAGES_JSON" | while read -r image; do
+        echo "Pre-pulling ${image}"
+        podman pull "${image}" || echo "Warning: failed to pre-pull ${image}"
+      done
+
+/e2e:
   summary: Execute Playwright E2E tests.
   discover+: 
     filter: 'tag:e2e'

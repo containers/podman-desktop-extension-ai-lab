@@ -46,4 +46,20 @@ test: |
   )
   
   EXIT_CODE=$?
+
+  # --- TEMP DIAGNOSTICS (branch diag/fedora43-podman-env): why does podman image
+  # listing hang on Fedora-43 but not Fedora-42? Dump env + podman state to output.txt. ---
+  echo "===== PODMAN ENV DIAGNOSTICS ====="
+  echo "--- uname ---"; uname -a
+  echo "--- nproc/mem/disk ---"; nproc; free -h; df -h
+  echo "--- podman version ---"; timeout 30 podman version || echo "(podman version timed out)"
+  echo "--- podman info ---"; timeout 60 podman info || echo "(podman info timed out)"
+  echo "--- system storage.conf ---"; cat /etc/containers/storage.conf 2>/dev/null || echo "(none)"
+  echo "--- user storage.conf ---"; cat "$HOME/.config/containers/storage.conf" 2>/dev/null || echo "(none)"
+  echo "--- podman images -a (60s cap) ---"; time timeout 60 podman images -a || echo "(podman images timed out/failed)"
+  echo "--- podman system df ---"; timeout 60 podman system df || echo "(failed)"
+  echo "--- podman ps -a ---"; timeout 60 podman ps -a || echo "(failed)"
+  echo "--- journalctl --user -u podman (tail 400) ---"; journalctl --user -u podman --no-pager 2>/dev/null | tail -400 || echo "(no user journal)"
+  echo "===== END DIAGNOSTICS ====="
+
   bash "$TMT_TREE/tests/tmt/scripts/create-results.sh" "$EXIT_CODE" "smoke"

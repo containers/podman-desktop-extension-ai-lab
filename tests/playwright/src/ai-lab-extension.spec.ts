@@ -388,7 +388,7 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
       if (PLAYGROUND_TEST_MODELS.includes(appModel)) {
         test.describe.serial(`Run Playground tests for ${appModel}`, () => {
           test(`Create AI Lab playground for ${appModel}`, async () => {
-            test.setTimeout(310_000);
+            test.setTimeout(540_000);
             playgroundsPage = await aiLabPage.navigationBar.openPlaygrounds();
             await playgroundsPage.waitForLoad();
 

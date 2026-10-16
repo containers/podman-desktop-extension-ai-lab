@@ -72,6 +72,12 @@ let aiLabPage: AILabDashboardPage;
 const runnerOptions = {
   customFolder: 'ai-lab-tests-pd',
   aiLabModelUploadDisabled: isWindows ? true : false,
+  customSettings: {
+    // On slower CI pools a large inference-image pull holds podman's image-store lock
+    // longer than the 30s default, so image listing times out and playground/recipe
+    // creation derails. Raise it to the max podman-desktop allows (120s).
+    'container-registry.providerTimeout': 120,
+  },
 };
 
 const __filename = fileURLToPath(import.meta.url);

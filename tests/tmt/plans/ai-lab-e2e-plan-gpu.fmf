@@ -30,7 +30,6 @@ execute:
 provision: 
   hardware: 
     gpu:
-      device-name: GV100 (Tesla V100)
       vendor-name: NVIDIA
     memory: ">= 16 GB"
     cpu: 

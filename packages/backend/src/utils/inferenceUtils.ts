@@ -41,29 +41,38 @@ export async function getImageInfo(
   callback: (event: PullEvent) => void,
 ): Promise<ImageInfo> {
   let imageInfo: ImageInfo | undefined;
+  console.error(`[AILAB-DIAG] getImageInfo: looking for image "${image}"`);
   // Get image inspect
-  imageInfo = (
-    await containerEngine.listImages({
-      provider: connection,
-    } as ListImagesOptions)
-  ).find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
+  let before;
+  try {
+    before = await containerEngine.listImages({ provider: connection } as ListImagesOptions);
+    console.error(`[AILAB-DIAG] getImageInfo: initial listImages returned ${before.length} images; RepoTags=${JSON.stringify(before.flatMap(i => i.RepoTags ?? []))}`);
+  } catch (err: unknown) {
+    console.error('[AILAB-DIAG] getImageInfo: initial listImages FAILED:', err);
+    throw err;
+  }
+  imageInfo = before.find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
   if (!imageInfo) {
     try {
+      console.error(`[AILAB-DIAG] getImageInfo: not present, pulling "${image}"`);
       // Pull image
       await containerEngine.pullImage(connection, image, callback);
+      console.error('[AILAB-DIAG] getImageInfo: pull finished, re-listing');
       // Get image inspect
-      imageInfo = (
-        await containerEngine.listImages({
-          provider: connection,
-        } as ListImagesOptions)
-      ).find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
+      const after = await containerEngine.listImages({ provider: connection } as ListImagesOptions);
+      console.error(`[AILAB-DIAG] getImageInfo: post-pull listImages returned ${after.length} images; RepoTags=${JSON.stringify(after.flatMap(i => i.RepoTags ?? []))}; RepoDigests=${JSON.stringify(after.flatMap(i => i.RepoDigests ?? []))}`);
+      imageInfo = after.find(imageInfo => imageInfo.RepoTags?.some(tag => tag === image));
     } catch (err: unknown) {
       console.warn('Something went wrong while trying to get image inspect', err);
+      console.error('[AILAB-DIAG] getImageInfo: pull/relist FAILED:', err);
       throw err;
     }
   }
 
-  if (imageInfo === undefined) throw new Error(`image ${image} not found.`);
+  if (imageInfo === undefined) {
+    console.error(`[AILAB-DIAG] getImageInfo: image "${image}" NOT MATCHED after pull (RepoTags mismatch?) -> throwing not found`);
+    throw new Error(`image ${image} not found.`);
+  }
 
   return imageInfo;
 }

@@ -42,6 +42,9 @@ test: |
     cd "$TMT_TREE"
     pnpm install
     pnpm build
+    # DIAG: install the instrumented extension image built from this branch so the swallowed
+    # createInferenceServer/getImageInfo errors surface in the logs.
+    export EXTENSION_OCI_IMAGE=ghcr.io/containers/podman-desktop-extension-ai-lab:f43-debug
     pnpm test:e2e
   )
   

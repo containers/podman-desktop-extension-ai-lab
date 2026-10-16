@@ -79,6 +79,7 @@ export class PlaygroundV2Manager implements Disposable {
         });
       })
       .catch((err: unknown) => {
+        console.error('[AILAB-DIAG] createPlayground failed:', err);
         telemetry['errorMessage'] = `${String(err)}`;
 
         const tasks = this.taskRegistry.getTasksByLabels({

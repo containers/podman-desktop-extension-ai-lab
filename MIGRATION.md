@@ -37,6 +37,28 @@ Moreover, the `models` property has been changed to `recommended`.
 > [!TIP]
 > Before Podman AI Lab version v1.2 recipes uses the `models` property to list the models compatible. Now all models using the same `backend` could be used. We introduced `recommended` to highlight certain models.
 
+**Example**
+
+```diff
+{
+  "version": "1.0",
+  "recipes": [{
+    "id": "chatbot",
+    "description" : "This is a Streamlit chat demo application.",
+    "name" : "ChatBot",
+    "repository": "https://github.com/containers/ai-lab-recipes",
+-   "models": [
++   "recommended": [
+      "hf.ibm-granite.granite-4.0-micro-GGUF"
+-   ]
++   ],
++   "backend": "llama-cpp"
+  }],
+  "models": [],
+  "categories": []
+}
+```
+
 ### Models
 
 The model object has also the new property `backend`, which defines which framework is required.
@@ -44,3 +66,29 @@ Additionally, we have enhanced security by introducing a new optional `sha256` p
 
 > [!TIP]
 > To get the sha256 of a model, you can use the `sha256sum [model-file]` command in a terminal.
+
+**Example**
+
+```diff
+{
+  "version": "1.0",
+  "recipes": [],
+  "models": [{
+    "id": "hf.ibm-granite.granite-4.0-micro-GGUF",
+    "name": "ibm-granite/granite-4.0-micro-GGUF",
+    "description": "# IBM Granite 4.0 Micro",
+    "hw": "CPU",
+    "registry": "Hugging Face",
+    "license": "Apache-2.0",
+    "url": "https://huggingface.co/ibm-granite/granite-4.0-micro-GGUF/resolve/397e2dcbd97dcdfa016934bffed65cf5df3ca55f/granite-4.0-micro-Q4_K_M.gguf",
+    "memory": 2100000000,
+    "properties": {
+      "jinja": "true"
+-   }
++   },
++   "sha256": "6c02683809a8dc4eb05c78d44bc63bcd707703b078998fa58829c858ab337bb0",
++   "backend": "llama-cpp"
+  }],
+  "categories": []
+}
+```

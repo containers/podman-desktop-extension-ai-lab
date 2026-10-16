@@ -283,7 +283,7 @@ describe('spy on catalogUtils.sanitize', () => {
           categories: ['natural-language-processing'],
           basedir: 'recipes/natural_language_processing/chatbot',
           readme: '',
-          models: [],
+          models: ['hf.ibm-granite.granite-4.0-micro-GGUF'],
         },
       ],
       models: [],

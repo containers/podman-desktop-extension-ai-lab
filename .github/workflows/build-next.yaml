@@ -21,6 +21,13 @@ on:
   push:
     branches:
       - 'main'
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'OCI image tag to publish (use a non-nightly tag for branch debug images)'
+        default: 'nightly'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -49,11 +56,13 @@ jobs:
 
       - name: Publish Image
         id: publish-image
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag || 'nightly' }}
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-ai-lab
-          IMAGE_NIGHTLY=${IMAGE_NAME}:nightly
+          IMAGE_TAGGED=${IMAGE_NAME}:${IMAGE_TAG}
           IMAGE_SHA=${IMAGE_NAME}:${GITHUB_SHA}
-          podman build -t $IMAGE_NIGHTLY .
-          podman push $IMAGE_NIGHTLY
-          podman tag $IMAGE_NIGHTLY $IMAGE_SHA
-          podman push $IMAGE_SHA
+          podman build -t "$IMAGE_TAGGED" .
+          podman push "$IMAGE_TAGGED"
+          podman tag "$IMAGE_TAGGED" "$IMAGE_SHA"
+          podman push "$IMAGE_SHA"

@@ -19,7 +19,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { initWebview } from './webviewUtils';
 import { type Uri, type WebviewPanel, window } from '@podman-desktop/api';
-import { type PathLike, promises } from 'node:fs';
+import { promises } from 'node:fs';
 
 vi.mock('node:fs', () => ({
   promises: {
@@ -45,7 +45,7 @@ test.each([
   ],
   ['link href replacement', '<link rel="stylesheet" href="./styles.css">', '<link rel="stylesheet" href="dummy-src">'],
 ])('panel should handle %s content', async (_name, input, expected) => {
-  vi.mocked(promises.readFile as (path: PathLike) => Promise<string>).mockImplementation(() => {
+  vi.mocked(promises.readFile).mockImplementation(() => {
     return Promise.resolve(input);
   });
 

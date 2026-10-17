@@ -21,7 +21,6 @@ export interface ExtensionConfiguration {
   modelsPath: string;
   apiPort: number;
   inferenceRuntime: string;
-  experimentalTuning: boolean;
   modelUploadDisabled: boolean;
   showGPUPromotion: boolean;
   appearance: string;

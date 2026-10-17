@@ -21,23 +21,16 @@ import Playground from './pages/Playground.svelte';
 import PlaygroundCreate from './pages/PlaygroundCreate.svelte';
 import ImportModels from './pages/ImportModel.svelte';
 import StartRecipe from '/@/pages/StartRecipe.svelte';
-import TuneSessions from './pages/TuneSessions.svelte';
-import { configuration } from './stores/extensionConfiguration';
-import type { ExtensionConfiguration } from '@shared/models/IExtensionConfiguration';
 import type { Unsubscriber } from 'svelte/store';
 import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
-import NewInstructLabSession from '/@/pages/NewInstructLabSession.svelte';
 import LocalServer from './pages/server-information/LocalServer.svelte';
-import AboutInstructLab from './pages/instructlab/AboutInstructLab.svelte';
-import StartInstructLabContainer from '/@/pages/instructlab/StartInstructLabContainer.svelte';
 import StartLlamaStackContainer from './pages/llama-stack/StartLlamaStackContainer.svelte';
 
 router.mode.hash();
 
 let isMounted = false;
 
-let experimentalTuning: boolean = false;
 const unsubscribers: Unsubscriber[] = [];
 
 onMount(async () => {
@@ -45,12 +38,6 @@ onMount(async () => {
   const state = await getRouterState();
   router.goto(state.url);
   isMounted = true;
-
-  unsubscribers.push(
-    configuration.subscribe((val: ExtensionConfiguration | undefined) => {
-      experimentalTuning = val?.experimentalTuning ?? false;
-    }),
-  );
 
   unsubscribers.push(
     rpcBrowser.subscribe(MSG_NAVIGATION_ROUTE_UPDATE, location => {
@@ -101,25 +88,6 @@ onDestroy(() => {
         <Route path="/llamastack/*" firstmatch>
           <Route path="/try">
             <StartLlamaStackContainer />
-          </Route>
-        </Route>
-        {#if experimentalTuning}
-          <!-- Tune with InstructLab -->
-          <Route path="/tune/*" firstmatch>
-            <Route path="/start">
-              <NewInstructLabSession />
-            </Route>
-            <Route path="/*">
-              <TuneSessions />
-            </Route>
-          </Route>
-        {/if}
-        <Route path="/about-instructlab">
-          <AboutInstructLab />
-        </Route>
-        <Route path="/instructlab/*" firstmatch>
-          <Route path="/try">
-            <StartInstructLabContainer />
           </Route>
         </Route>
         <!-- Preferences -->

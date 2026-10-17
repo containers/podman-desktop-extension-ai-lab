@@ -26,7 +26,6 @@
 import type { APIResponse, Locator } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
-  ContainerDetailsPage,
   ContainerState,
   expect,
   test,
@@ -56,7 +55,6 @@ import {
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { AILabTryInstructLabPage } from './model/ai-lab-try-instructlab-page';
 import type { AiLlamaStackPage } from './model/ai-lab-model-llamastack-page';
 import type { ApplicationCatalog } from '../../../packages/shared/src/models/IApplicationCatalog';
 
@@ -182,7 +180,7 @@ test.afterAll(async ({ runner }) => {
 });
 
 test.describe.serial(`AI Lab extension installation and verification`, () => {
-  test.describe.serial(`AI Lab extension installation`, { tag: ['@smoke', '@instructLab'] }, () => {
+  test.describe.serial(`AI Lab extension installation`, { tag: '@smoke' }, () => {
     let extensionsPage: ExtensionsPage;
 
     test(`Open Settings -> Extensions page`, async ({ navigationBar }) => {
@@ -597,65 +595,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           await deleteUnusedImages(navigationBar);
         },
       );
-    });
-  });
-
-  test.describe.serial('InstructLab container startup', { tag: ['@smoke', '@instructLab'] }, () => {
-    let instructLabPage: AILabTryInstructLabPage;
-    const instructLabContainerName = /^instructlab-\d+$/;
-    let exactInstructLabContainerName = '';
-
-    test.beforeAll('Open Try InstructLab page', async ({ runner, page, navigationBar }) => {
-      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-      await aiLabPage.navigationBar.waitForLoad();
-
-      instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();
-      await instructLabPage.waitForLoad();
-    });
-
-    test('Start and verify InstructLab container', async ({ page }) => {
-      test.setTimeout(1_000_000);
-      await expect(instructLabPage.startInstructLabButton).toBeVisible();
-      await expect(instructLabPage.startInstructLabButton).toBeEnabled();
-      await instructLabPage.startInstructLabButton.click();
-
-      await expect(instructLabPage.openInstructLabButton).toBeVisible({ timeout: 900_000 });
-      await expect(instructLabPage.openInstructLabButton).toBeEnabled({ timeout: 10_000 });
-      await expect(instructLabPage.statusMessageBox).toContainText('Starting InstructLab container');
-
-      const checkMarkLocator = instructLabPage.statusMessageBox.locator('[class*="text-green"]');
-      await expect(checkMarkLocator).toHaveCount(3);
-      await instructLabPage.openInstructLabButton.click();
-
-      const containerName = await page
-        .getByRole('region', { name: 'Header' })
-        .getByLabel(instructLabContainerName)
-        .textContent();
-      if (typeof containerName === 'string') {
-        exactInstructLabContainerName = containerName;
-      }
-      const containerDetailsPage = new ContainerDetailsPage(page, exactInstructLabContainerName);
-      await expect(containerDetailsPage.heading).toBeVisible();
-      await expect(containerDetailsPage.heading).toContainText(exactInstructLabContainerName);
-      await expect
-        .poll(async () => containerDetailsPage.getState(), { timeout: 90_000, intervals: [1_000] })
-        .toContain(ContainerState.Running);
-    });
-
-    test('Cleanup the InstructLab container', async ({ runner, page, navigationBar }) => {
-      test.setTimeout(120_000 + IMAGE_CLEANUP_TIMEOUT);
-      const containersPage = await navigationBar.openContainers();
-      await expect(containersPage.heading).toBeVisible();
-      await containersPage.deleteContainer(exactInstructLabContainerName);
-      await expect
-        .poll(async () => await containersPage.containerExists(exactInstructLabContainerName), { timeout: 60_000 })
-        .toBeFalsy();
-      await deleteUnusedImages(navigationBar);
-      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-      await aiLabPage.navigationBar.waitForLoad();
-      instructLabPage = await aiLabPage.navigationBar.openTryInstructLab();
-      await instructLabPage.waitForLoad();
-      await expect(instructLabPage.startInstructLabButton).toBeEnabled();
     });
   });
 

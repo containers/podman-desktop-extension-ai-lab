@@ -47,7 +47,6 @@ const mockConfiguration: Writable<ExtensionConfiguration> = writable({
   apiPort: -1,
   inferenceRuntime: 'llama-cpp',
   modelUploadDisabled: false,
-  experimentalTuning: false,
   showGPUPromotion: false,
   appearance: 'dark',
 });
@@ -66,7 +65,6 @@ test('should show banner if gpu support if off and gpu promotion on', async () =
     modelUploadDisabled: false,
     modelsPath: '',
     inferenceRuntime: 'llama-cpp',
-    experimentalTuning: false,
     apiPort: -1,
     appearance: 'dark',
   });
@@ -88,7 +86,6 @@ test('should not show banner if gpu support if on and gpu promotion on', async (
     modelUploadDisabled: false,
     modelsPath: '',
     inferenceRuntime: 'llama-cpp',
-    experimentalTuning: false,
     apiPort: -1,
     appearance: 'dark',
   });
@@ -110,7 +107,6 @@ test('should not show banner if gpu support if off and gpu promotion off', async
     modelUploadDisabled: false,
     modelsPath: '',
     inferenceRuntime: 'llama-cpp',
-    experimentalTuning: false,
     apiPort: -1,
     appearance: 'dark',
   });
@@ -133,7 +129,6 @@ test('click enable should call client', async () => {
     modelUploadDisabled: false,
     modelsPath: '',
     inferenceRuntime: 'llama-cpp',
-    experimentalTuning: false,
     apiPort: -1,
     appearance: 'dark',
   });
@@ -161,7 +156,6 @@ test('click hide should call client', async () => {
     modelUploadDisabled: false,
     modelsPath: '',
     inferenceRuntime: 'llama-cpp',
-    experimentalTuning: false,
     apiPort: -1,
     appearance: 'dark',
   });

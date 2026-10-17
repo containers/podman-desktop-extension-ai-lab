@@ -33,6 +33,7 @@ vi.mock('@huggingface/hub', () => {
   return {
     scanCacheDir: vi.fn(),
     snapshotDownload: vi.fn(),
+    getHFHubCachePath: vi.fn(),
   };
 });
 

@@ -27,11 +27,70 @@ export interface GitCloneInfo {
   targetDirectory: string;
 }
 
+/**
+ * On Windows, creating a symlink requires the SeCreateSymbolicLinkPrivilege, which a
+ * normal (non-elevated, Developer-Mode-off) user does not have. isomorphic-git offers
+ * no option to skip symlinks, so cloning a repo that contains them (e.g. ai-lab-recipes)
+ * fails with EPERM and aborts the whole clone (MultipleGitError), breaking recipe
+ * installation for regular Windows users.
+ *
+ * Wrap the filesystem so a refused symlink degrades to a plain file whose content is the
+ * link target — exactly what git does with `core.symlinks=false` — letting the clone
+ * finish. No-op on macOS/Linux, where real symlinks work.
+ *
+ * ponytail: degrades symlinks to plain text files on Windows. If a recipe ever relies on
+ * a *followed* symlink at runtime, dereference (copy the target's content) for that case.
+ */
+export function withSymlinkFallback(baseFs: typeof fs, platform: NodeJS.Platform = process.platform): typeof fs {
+  if (platform !== 'win32') {
+    return baseFs;
+  }
+  const isPermissionError = (err: NodeJS.ErrnoException | null | undefined): boolean =>
+    !!err && (err.code === 'EPERM' || err.code === 'EACCES');
+
+  return {
+    ...baseFs,
+    // callback API (used when isomorphic-git promisifies the raw fs)
+    symlink(target: fs.PathLike, path: fs.PathLike, typeOrCallback: unknown, maybeCallback?: unknown): void {
+      const callback = (typeof typeOrCallback === 'function' ? typeOrCallback : maybeCallback) as (
+        err: NodeJS.ErrnoException | null,
+      ) => void;
+      const onResult = (err: NodeJS.ErrnoException | null): void => {
+        if (isPermissionError(err)) {
+          baseFs.writeFile(path, target.toString(), callback);
+        } else {
+          callback(err);
+        }
+      };
+      if (typeof typeOrCallback === 'function') {
+        baseFs.symlink(target, path, onResult);
+      } else {
+        baseFs.symlink(target, path, typeOrCallback as fs.symlink.Type, onResult);
+      }
+    },
+    // promise API (used when isomorphic-git detects fs.promises)
+    promises: {
+      ...baseFs.promises,
+      async symlink(target: fs.PathLike, path: fs.PathLike, type?: fs.symlink.Type): Promise<void> {
+        try {
+          await baseFs.promises.symlink(target, path, type);
+        } catch (err) {
+          if (isPermissionError(err as NodeJS.ErrnoException)) {
+            await baseFs.promises.writeFile(path, target.toString());
+          } else {
+            throw err;
+          }
+        }
+      },
+    },
+  } as unknown as typeof fs;
+}
+
 export class GitManager {
   async cloneRepository(gitCloneInfo: GitCloneInfo): Promise<void> {
     // clone repo
     await git.clone({
-      fs,
+      fs: withSymlinkFallback(fs),
       http,
       dir: gitCloneInfo.targetDirectory,
       url: gitCloneInfo.repository,
@@ -110,8 +169,10 @@ export class GitManager {
   }
 
   async pull(directory: string): Promise<void> {
+    // Updating a recipe also checks out the tree, so it needs the same Windows
+    // symlink tolerance as the initial clone (see withSymlinkFallback).
     return git.pull({
-      fs,
+      fs: withSymlinkFallback(fs),
       http,
       dir: directory,
     });

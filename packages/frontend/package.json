@@ -17,7 +17,7 @@
     "@fortawesome/free-regular-svg-icons": "^7.3.1",
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "@podman-desktop/ui-svelte": "1.21.0",
-    "filesize": "^11.0.22",
+    "filesize": "^11.0.26",
     "humanize-duration": "^3.35.0",
     "moment": "^2.31.0",
     "semver": "^7.8.5",

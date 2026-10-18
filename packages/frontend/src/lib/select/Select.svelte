@@ -11,8 +11,8 @@ export let label: string | undefined = undefined;
 export let name: string | undefined = undefined;
 export let onchange: ((value: T | undefined) => void) | undefined = undefined;
 
-function handleOnChange(e: CustomEvent<T | undefined>): void {
-  value = e.detail;
+function handleOnChange(newValue: T | undefined): void {
+  value = newValue;
   onchange?.(value);
 }
 
@@ -27,8 +27,8 @@ function handleOnClear(): void {
   name={name}
   disabled={disabled}
   value={value}
-  on:clear={handleOnClear}
-  on:change={handleOnChange}
+  onclear={handleOnClear}
+  onchange={handleOnChange}
   --item-color="var(--pd-dropdown-item-text)"
   --item-is-active-color="var(--pd-dropdown-item-text)"
   --item-hover-color="var(--pd-dropdown-item-hover-text)"
@@ -45,9 +45,9 @@ function handleOnClear(): void {
   class="bg-(--pd-content-bg)! text-(--pd-content-card-text)!"
   items={items}
   showChevron>
-  <div slot="item" let:item>
+  {#snippet item({ item })}
     <slot name="item" item={item}>
       <div>{item.label}</div>
     </slot>
-  </div>
+  {/snippet}
 </Select>

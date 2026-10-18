@@ -314,8 +314,8 @@ importers:
         specifier: ^6.0.5
         version: 6.0.5(postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.30)(yaml@2.9.1))(postcss@8.5.30)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(typescript@5.9.3)
       svelte-select:
-        specifier: ^5.8.3
-        version: 5.8.3
+        specifier: ^6.0.0
+        version: 6.0.0(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -4430,8 +4430,10 @@ packages:
       typescript:
         optional: true
 
-  svelte-select@5.8.3:
-    resolution: {integrity: sha512-nQsvflWmTCOZjssdrNptzfD1Ok45hHVMTL5IHay5DINk7dfu5Er+8KsVJnZMJdSircqtR0YlT4YkCFlxOUhVPA==}
+  svelte-select@6.0.0:
+    resolution: {integrity: sha512-WJ1UDw0a1Z3I7oVFgaCS7G9D2rCSmYAPpufNEj/DNuk5Oyb2a5dju6F36o0urBVw9bTE3WkM9cZkI0x+Sfo8Bg==}
+    peerDependencies:
+      svelte: '>=5'
 
   svelte@5.57.2:
     resolution: {integrity: sha512-1YiPCAXT0Ct6g1vOMmSLa0Nsc3QRMvtDF32ihgglGVrugIuIK38RyDiFNXVDhtQ81TJjSO57NdMw6DyYLqSGDQ==}
@@ -9136,8 +9138,9 @@ snapshots:
       postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.30)(yaml@2.9.1)
       typescript: 5.9.3
 
-  svelte-select@5.8.3:
+  svelte-select@6.0.0(svelte@5.57.2(@typescript-eslint/types@8.71.2)):
     dependencies:
+      svelte: 5.57.2(@typescript-eslint/types@8.71.2)
       svelte-floating-ui: 1.5.8
 
   svelte@5.57.2(@typescript-eslint/types@8.71.2):

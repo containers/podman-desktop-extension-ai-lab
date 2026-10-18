@@ -40,7 +40,6 @@ const rpcExtensionMock = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mock('node:fs');
   vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
 });
 

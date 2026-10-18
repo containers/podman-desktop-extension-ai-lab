@@ -156,8 +156,6 @@ beforeEach(async () => {
     podmanConnectionMock,
     {} as unknown as NavigationRegistry,
   );
-  vi.mock('node:fs');
-
   const listeners: ((value: unknown) => void)[] = [];
 
   vi.mocked(EventEmitter).mockReturnValue({
@@ -240,7 +238,6 @@ test('if requestDeleteLocalRepository fails an errorMessage should show up', asy
 
 describe.each([{ os: 'windows' }, { os: 'linux' }, { os: 'macos' }])('verify openVSCode', ({ os }) => {
   test(`check openVSCode generates the correct URL on ${os}`, async () => {
-    vi.mock('node:path');
     vi.spyOn(path, 'isAbsolute').mockReturnValue(true);
     vi.spyOn(path, 'normalize').mockImplementation((path: string) => {
       return path;
@@ -303,7 +300,6 @@ test('importModels should call catalogManager', async () => {
 
 describe('validateLocalModel', () => {
   test('Expect validateLocalModel to complete as path is valid', async () => {
-    vi.mock('node:path');
     vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
       return path;
     });
@@ -326,7 +322,6 @@ describe('validateLocalModel', () => {
   });
 
   test('Expect validateLocalModel to raise an error as path is valid', async () => {
-    vi.mock('node:path');
     vi.spyOn(path, 'resolve').mockImplementation((path: string) => {
       return path;
     });

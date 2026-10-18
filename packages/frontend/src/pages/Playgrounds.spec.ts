@@ -101,7 +101,6 @@ test('should display one model', async () => {
 
   const table = screen.getByRole('table');
   expect(table).toBeDefined();
-  screen.debug(table, 4096);
 
   const rows = screen.queryAllByRole('row');
   expect(rows.length > 0).toBeTruthy();

@@ -135,8 +135,8 @@ importers:
         specifier: ^0.4.6
         version: 0.4.6
       '@huggingface/hub':
-        specifier: ^2.17.7
-        version: 2.17.7
+        specifier: ^2.17.8
+        version: 2.17.8
       ai:
         specifier: ^7.0.141
         version: 7.0.141(zod@4.6.7)
@@ -833,8 +833,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@huggingface/hub@2.17.7':
-    resolution: {integrity: sha512-wPRdi0ogdTUHK+iDj/G4E8TzAI0s1sdVMwGIyc14+EF9GHhNA2BZMxKBCuwCab5fLaCa36dZoso8iyaahC+KUQ==}
+  '@huggingface/hub@2.17.8':
+    resolution: {integrity: sha512-FzZaxzt0f2pkFQxFB7hxicCRsB3KFDXM8l6VOjisFbJboE7nSAMcCKxxxO3ARoZMFXDFDigFWbYNaVvzB8w2mg==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -5319,7 +5319,7 @@ snapshots:
     dependencies:
       '@huggingface/tasks': 0.21.61
 
-  '@huggingface/hub@2.17.7':
+  '@huggingface/hub@2.17.8':
     dependencies:
       '@huggingface/tasks': 0.21.61
       '@huggingface/xetchunk-wasm': 0.2.0
@@ -6234,7 +6234,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@types/node@26.6.5)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@26.6.5)(typescript@5.9.3))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.1))
+      vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@24.19.2)(typescript@5.9.3))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.1))
 
   '@vitest/expect@4.1.11':
     dependencies:

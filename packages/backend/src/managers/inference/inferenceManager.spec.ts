@@ -344,7 +344,7 @@ describe('Create Inference Server', () => {
         modelsInfo: [],
         port: 8888,
       }),
-    ).rejects.toThrowError('inference manager failed to initialize');
+    ).rejects.toThrowError('failed to initialize');
     expect(provider.perform).not.toHaveBeenCalled();
 
     // The provider recovers; a later create must re-arm initialization and succeed.
@@ -509,6 +509,43 @@ describe('Start Inference Server', () => {
     const servers = inferenceManager.getServers();
     expect(servers).toHaveLength(1);
     expect(servers[0].status).toBe('running');
+  });
+
+  test('should wait for initialization instead of failing when triggered before init completes', async () => {
+    // Keep the initial load pending so the manager stays uninitialized; resolve with a known server.
+    let resolveListContainers: ((value: ContainerInfo[]) => void) | undefined;
+    vi.mocked(containerEngine.listContainers).mockReturnValue(
+      new Promise<ContainerInfo[]>(resolve => {
+        resolveListContainers = resolve;
+      }),
+    );
+
+    const manager = new InferenceManager(
+      rpcExtensionMock,
+      containerRegistryMock,
+      podmanConnectionMock,
+      modelsManager,
+      telemetryMock,
+      taskRegistryMock,
+      inferenceProviderRegistryMock,
+      catalogManager,
+    );
+    manager.init();
+    expect(manager.isInitialize()).toBeFalsy();
+
+    const startPromise = manager.startInferenceServer('dummyId');
+    expect(containerEngine.startContainer).not.toHaveBeenCalled();
+
+    // Let initialization finish with a matching server; start should then proceed rather than throwing.
+    resolveListContainers?.([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: { [LABEL_INFERENCE_SERVER]: '[]' },
+      },
+    ] as unknown as ContainerInfo[]);
+    await expect(startPromise).resolves.toBeUndefined();
+    expect(containerEngine.startContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
   });
 });
 

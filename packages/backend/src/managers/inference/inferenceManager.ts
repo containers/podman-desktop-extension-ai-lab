@@ -107,12 +107,16 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   private async initialize(): Promise<void> {
     const maxRetries = 3;
     for (let attempt = 1; ; attempt++) {
+      // A concurrent event-driven refresh may have already initialized the manager; if so we are done
+      // and must not keep retrying (and risk rejecting bound callers) just because our own attempt failed.
+      if (this.#initialized) return;
       try {
         await this.refreshInferenceServers();
         return;
       } catch (err: unknown) {
+        if (this.#initialized) return;
         if (attempt >= maxRetries) {
-          throw new Error('Cannot start the inference server: inference manager failed to initialize.', { cause: err });
+          throw new Error('Inference manager failed to initialize.', { cause: err });
         }
         console.warn(
           `Something went wrong while initializing inference servers. (attempt ${attempt}/${maxRetries})`,
@@ -508,7 +512,9 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
    * @param containerId the identifier of the container to start
    */
   async startInferenceServer(containerId: string): Promise<void> {
-    if (!this.isInitialize()) throw new Error('Cannot start the inference server.');
+    // Wait for the initial load instead of failing fast: the server map is only populated once it
+    // completes, so an early action would otherwise spuriously report the server as missing.
+    await this.whenInitialized();
 
     const server = this.#servers.get(containerId);
     if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);
@@ -537,7 +543,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
    * @param containerId the identifier of the container to stop
    */
   async stopInferenceServer(containerId: string): Promise<void> {
-    if (!this.isInitialize()) throw new Error('Cannot stop the inference server.');
+    await this.whenInitialized();
 
     const server = this.#servers.get(containerId);
     if (server === undefined) throw new Error(`cannot find a corresponding server for container id ${containerId}.`);

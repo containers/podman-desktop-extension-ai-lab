@@ -251,6 +251,59 @@ describe('Create Inference Server', () => {
     ).rejects.toThrowError('no enabled provider could be found.');
   });
 
+  test('should wait for initialization instead of failing when triggered before init completes', async () => {
+    // Keep the initial refresh pending so the manager stays uninitialized.
+    let resolveListContainers: ((value: ContainerInfo[]) => void) | undefined;
+    vi.mocked(containerEngine.listContainers).mockReturnValue(
+      new Promise<ContainerInfo[]>(resolve => {
+        resolveListContainers = resolve;
+      }),
+    );
+
+    const provider: InferenceProvider = {
+      enabled: () => true,
+      name: 'dummy-inference-provider',
+      dispose: () => {},
+      prePerform: vi.fn().mockResolvedValue(undefined),
+      perform: vi.fn<() => InferenceServer>().mockResolvedValue({
+        container: { containerId: 'dummy-container-id', engineId: 'dummy-engine-id' },
+        models: [],
+        status: 'running',
+        type: InferenceType.LLAMA_CPP,
+        connection: { port: 0 },
+        labels: {},
+      }),
+    } as unknown as InferenceProvider;
+    vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue(provider);
+
+    const manager = new InferenceManager(
+      rpcExtensionMock,
+      containerRegistryMock,
+      podmanConnectionMock,
+      modelsManager,
+      telemetryMock,
+      taskRegistryMock,
+      inferenceProviderRegistryMock,
+      catalogManager,
+    );
+    manager.init();
+    expect(manager.isInitialize()).toBeFalsy();
+
+    // Trigger creation before initialization completes: it must wait, not fail immediately.
+    const createPromise = manager.createInferenceServer({
+      inferenceProvider: 'dummy-inference-provider',
+      labels: {},
+      modelsInfo: [],
+      port: 8888,
+    });
+    expect(provider.perform).not.toHaveBeenCalled();
+
+    // Let initialization finish; creation should then proceed rather than having thrown.
+    resolveListContainers?.([]);
+    await expect(createPromise).resolves.toBeDefined();
+    expect(provider.perform).toHaveBeenCalled();
+  });
+
   test('inference provider provided should use get from InferenceProviderRegistry', async () => {
     vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue({
       enabled: () => false,

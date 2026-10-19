@@ -79,6 +79,9 @@ export class PlaygroundV2Manager implements Disposable {
         });
       })
       .catch((err: unknown) => {
+        // Log the failure as well: this runs detached from requestCreatePlayground's caller, so
+        // without this the only trace is the task state and the error is effectively silent.
+        console.error('Failed to create playground environment', err);
         telemetry['errorMessage'] = `${String(err)}`;
 
         const tasks = this.taskRegistry.getTasksByLabels({

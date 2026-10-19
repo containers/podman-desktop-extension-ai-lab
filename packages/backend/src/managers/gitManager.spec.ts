@@ -15,9 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { describe, expect, test, vi, beforeEach } from 'vitest';
-import { GitManager } from './gitManager';
-import { statSync, existsSync, mkdirSync, type Stats, rmSync } from 'node:fs';
+import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
+import { GitManager, withSymlinkFallback } from './gitManager';
+import type nodeFs from 'node:fs';
+import { statSync, existsSync, mkdirSync, type Stats, rmSync, type PathLike } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { window } from '@podman-desktop/api';
 import type { ReadCommitResult } from 'isomorphic-git';
 import git from 'isomorphic-git';
@@ -75,6 +78,91 @@ describe('cloneRepository', () => {
       singleBranch: true,
       depth: 1,
     });
+  });
+});
+
+describe('withSymlinkFallback', () => {
+  test('returns the base fs unchanged on non-Windows platforms', () => {
+    const base = { promises: {} } as unknown as Parameters<typeof withSymlinkFallback>[0];
+    expect(withSymlinkFallback(base, 'linux')).toBe(base);
+  });
+
+  test('writes the target as a plain file when symlink is refused (EPERM) on Windows', async () => {
+    const symlink = vi.fn().mockRejectedValue(Object.assign(new Error('denied'), { code: 'EPERM' }));
+    const writeFile = vi.fn().mockResolvedValue(undefined);
+    const base = { promises: { symlink, writeFile } } as unknown as Parameters<typeof withSymlinkFallback>[0];
+
+    const wrapped = withSymlinkFallback(base, 'win32');
+    await expect(wrapped.promises.symlink('the/target', 'the/path')).resolves.toBeUndefined();
+
+    expect(symlink).toHaveBeenCalledWith('the/target', 'the/path', undefined);
+    expect(writeFile).toHaveBeenCalledWith('the/path', 'the/target');
+  });
+
+  test('rethrows non-permission symlink errors without falling back', async () => {
+    const symlink = vi.fn().mockRejectedValue(Object.assign(new Error('boom'), { code: 'EEXIST' }));
+    const writeFile = vi.fn();
+    const base = { promises: { symlink, writeFile } } as unknown as Parameters<typeof withSymlinkFallback>[0];
+
+    const wrapped = withSymlinkFallback(base, 'win32');
+    await expect(wrapped.promises.symlink('t', 'p')).rejects.toThrow('boom');
+    expect(writeFile).not.toHaveBeenCalled();
+  });
+});
+
+// Integration test against the REAL isomorphic-git and node:fs (both mocked elsewhere in this file),
+// verifying that the symlink fallback actually intercepts the library's checkout. Windows EPERM is
+// simulated by forcing the underlying fs.symlink to throw, so this runs anywhere (incl. macOS/Linux).
+describe('withSymlinkFallback + real isomorphic-git', () => {
+  let fs: typeof nodeFs;
+  let realGit: typeof git;
+  let dir: string;
+
+  beforeEach(async () => {
+    fs = await vi.importActual<typeof nodeFs>('node:fs');
+    realGit = (await vi.importActual<{ default: typeof git }>('isomorphic-git')).default;
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ailab-git-symlink-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  test('checkout of a committed symlink falls back to a plain file when symlink is refused', async () => {
+    // Build a repo that contains a committed symlink (real symlink is fine on this host).
+    await realGit.init({ fs, dir, defaultBranch: 'main' });
+    fs.writeFileSync(path.join(dir, 'target.txt'), 'hello');
+    fs.symlinkSync('target.txt', path.join(dir, 'link.txt'));
+    await realGit.add({ fs, dir, filepath: '.' });
+    await realGit.commit({ fs, dir, message: 'add symlink', author: { name: 't', email: 't@example.com' } });
+
+    // Wipe the working tree so checkout has to re-materialize both entries.
+    fs.rmSync(path.join(dir, 'link.txt'));
+    fs.rmSync(path.join(dir, 'target.txt'));
+
+    // fs whose symlink always fails with EPERM (simulating a non-privileged Windows user),
+    // everything else delegating to the real fs.
+    const eperm = (): NodeJS.ErrnoException => Object.assign(new Error('EPERM'), { code: 'EPERM' });
+    const epermFs = {
+      ...fs,
+      symlink: (_t: PathLike, _p: PathLike, cbOrType: unknown, cb?: unknown): void =>
+        ((typeof cbOrType === 'function' ? cbOrType : cb) as (e: NodeJS.ErrnoException) => void)(eperm()),
+      promises: {
+        ...fs.promises,
+        symlink: (): Promise<void> => Promise.reject(eperm()),
+      },
+    } as unknown as typeof fs;
+
+    const wrapped = withSymlinkFallback(epermFs, 'win32');
+
+    // The real library must route its symlink creation through our wrapper; otherwise this
+    // throws (the failure we see on Windows today).
+    await expect(realGit.checkout({ fs: wrapped, dir, ref: 'main', force: true })).resolves.toBeUndefined();
+
+    // link.txt now exists as a plain file containing the link target, not a symlink.
+    const linkPath = path.join(dir, 'link.txt');
+    expect(fs.lstatSync(linkPath).isSymbolicLink()).toBe(false);
+    expect(fs.readFileSync(linkPath, 'utf8')).toBe('target.txt');
   });
 });
 

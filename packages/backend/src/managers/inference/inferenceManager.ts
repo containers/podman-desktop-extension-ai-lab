@@ -41,8 +41,8 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   #servers: Map<string, InferenceServer>;
   // Is initialized
   #initialized: boolean;
-  // Callers awaiting the initial refresh (see whenInitialized)
-  #initWaiters: { resolve: () => void; reject: (err: unknown) => void }[];
+  // In-flight initial load, awaited by whenInitialized (see whenInitialized)
+  #initialization: Promise<void> | undefined;
   // Disposables
   #disposables: Disposable[];
   #taskRunner: TaskRunner;
@@ -61,7 +61,6 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     this.#servers = new Map<string, InferenceServer>();
     this.#disposables = [];
     this.#initialized = false;
-    this.#initWaiters = [];
     this.#taskRunner = new TaskRunner(this.taskRegistry);
   }
 
@@ -71,7 +70,10 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     this.catalogManager.onUpdate(() => {
       this.retryableRefresh(1);
     });
-    this.retryableRefresh(3);
+    // Kick off the initial load; creation flows await the same attempt via whenInitialized.
+    this.whenInitialized().catch((err: unknown) => {
+      console.error('Inference manager failed to initialize.', err);
+    });
   }
 
   public isInitialize(): boolean {
@@ -79,19 +81,47 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
-   * Resolve once the manager has completed its initial refresh.
+   * Resolve once the manager has completed its initial load.
    *
-   * Initialization runs asynchronously (it lists containers, which can be slow on some container
+   * The initial load runs asynchronously (it lists containers, which can be slow on some container
    * providers), so creation flows await this instead of failing immediately when a user triggers an
-   * action shortly after the extension starts. Rejects if initialization gives up after exhausting
-   * its retries (see {@link retryableRefresh}). Resolving/rejecting is driven by the refresh outcome
-   * rather than a fixed timeout, so it waits exactly as long as initialization actually takes.
+   * action shortly after the extension starts. It waits exactly as long as the load actually takes
+   * rather than a fixed timeout. Bounded: {@link initialize} rejects once its retry budget is spent,
+   * and a later caller re-arms a fresh attempt, so callers never await a promise nothing will settle.
    */
   protected whenInitialized(): Promise<void> {
     if (this.#initialized) return Promise.resolve();
-    return new Promise<void>((resolve, reject) => {
-      this.#initWaiters.push({ resolve, reject });
+    this.#initialization ??= this.initialize().finally(() => {
+      this.#initialization = undefined;
     });
+    return this.#initialization;
+  }
+
+  /**
+   * Perform the initial load (listing containers) with bounded retries.
+   *
+   * Runs independently of the event-driven {@link retryableRefresh} chains so a transient failure in
+   * one of those (e.g. a catalog-update refresh) can never settle the initialization awaited by
+   * {@link whenInitialized}. Throws once the retry budget is exhausted.
+   */
+  private async initialize(): Promise<void> {
+    const maxRetries = 3;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await this.refreshInferenceServers();
+        return;
+      } catch (err: unknown) {
+        if (attempt >= maxRetries) {
+          throw new Error('Cannot start the inference server: inference manager failed to initialize.', { cause: err });
+        }
+        console.warn(
+          `Something went wrong while initializing inference servers. (attempt ${attempt}/${maxRetries})`,
+          err,
+        );
+        // eslint-disable-next-line sonarjs/pseudo-random
+        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
+      }
+    }
   }
 
   /**
@@ -101,6 +131,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     this.cleanDisposables();
     this.#servers.clear();
     this.#initialized = false;
+    this.#initialization = undefined;
   }
 
   /**
@@ -368,7 +399,6 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       this.cleanDisposables();
       this.#servers.clear();
       this.#initialized = false;
-      this.#rejectInitWaiters(new Error('Cannot start the inference server: inference manager failed to initialize.'));
       return;
     }
     this.refreshInferenceServers().catch((err: unknown): void => {
@@ -428,17 +458,8 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     // (re-)create container watchers
     this.#servers.forEach(server => this.watchContainerStatus(server.container.engineId, server.container.containerId));
     this.#initialized = true;
-    this.#resolveInitWaiters();
     // notify update
     this.notify();
-  }
-
-  #resolveInitWaiters(): void {
-    this.#initWaiters.splice(0).forEach(waiter => waiter.resolve());
-  }
-
-  #rejectInitWaiters(error: Error): void {
-    this.#initWaiters.splice(0).forEach(waiter => waiter.reject(error));
   }
 
   /**

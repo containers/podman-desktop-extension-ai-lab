@@ -17,23 +17,10 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { test, expect, vi } from 'vitest';
+import { test, expect } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import Navigation from './Navigation.svelte';
 import type { TinroRouteMeta } from 'tinro';
-
-vi.mock('../utils/client', async () => ({
-  studioClient: {
-    getExtensionConfiguration: vi.fn().mockResolvedValue({}),
-  },
-  rpcBrowser: {
-    subscribe: (): unknown => {
-      return {
-        unsubscribe: (): void => {},
-      };
-    },
-  },
-}));
 
 test('Expect panel to have correct styling', async () => {
   render(Navigation, { meta: { url: 'test' } as TinroRouteMeta });
@@ -43,4 +30,20 @@ test('Expect panel to have correct styling', async () => {
   expect(panel).toHaveClass('bg-[var(--pd-secondary-nav-bg)]');
   expect(panel).toHaveClass('border-[var(--pd-global-nav-bg-border)]');
   expect(panel).toHaveClass('border-r-[1px]');
+});
+
+test('renders only supported navigation links', () => {
+  render(Navigation, { meta: { url: '/' } as TinroRouteMeta });
+
+  expect(screen.getAllByRole('link').map(link => link.getAttribute('href'))).toEqual([
+    '/',
+    '/recipes',
+    '/applications',
+    '/models',
+    '/services',
+    '/playgrounds',
+    '/llamastack/try',
+    '/local-server',
+  ]);
+  expect(screen.queryByText('TUNING')).not.toBeInTheDocument();
 });

@@ -20,13 +20,13 @@ import * as fs from 'node:fs';
 import { getHash, hasValidSha } from './sha';
 import { Readable } from 'node:stream';
 
+vi.mock('node:fs');
+
 beforeEach(() => {
   vi.resetAllMocks();
 });
 
 test('return true if file has same hash of the expected one', () => {
-  vi.mock('node:fs');
-
   const readable = Readable.from('test');
 
   vi.spyOn(fs, 'createReadStream').mockImplementation(() => {
@@ -39,7 +39,6 @@ test('return true if file has same hash of the expected one', () => {
 });
 
 test('return false if file has different hash of the expected one', () => {
-  vi.mock('node:fs');
   const readable = Readable.from('test');
 
   vi.spyOn(fs, 'createReadStream').mockImplementation(() => {

@@ -6,6 +6,7 @@
     "resolveJsonModule": true,
     "lib": ["ES2022", "webworker", "dom"],
     "sourceMap": true,
+    "rootDir": "..",
     "outDir": "dist",
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,

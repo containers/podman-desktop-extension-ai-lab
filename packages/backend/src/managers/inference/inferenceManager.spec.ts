@@ -413,8 +413,10 @@ describe('Create Inference Server', () => {
       await vi.advanceTimersByTimeAsync(0);
 
       // A secondary, event-driven refresh fails and gives up entirely while init is still pending.
-      manager['retryableRefresh'](1);
+      // It is fire-and-forget, so its rejection is expected and ignored (as the real callers do).
+      const eventRefresh = expect(manager['retryableRefresh'](1)).rejects.toThrow();
       await vi.advanceTimersByTimeAsync(4000);
+      await eventRefresh;
       expect(containerEngine.listContainers).toHaveBeenCalledTimes(2);
 
       // The pending init now succeeds: the create must resolve, unaffected by the failed refresh.

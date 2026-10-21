@@ -68,7 +68,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     this.podmanConnection.onPodmanConnectionEvent(this.watchMachineEvent.bind(this));
     this.containerRegistry.onStartContainerEvent(this.watchContainerStart.bind(this));
     this.catalogManager.onUpdate(() => {
-      this.retryableRefresh(1);
+      this.retryableRefresh(1).catch(() => {});
     });
     // Kick off the initial load; creation flows await the same attempt via whenInitialized.
     this.whenInitialized().catch((err: unknown) => {
@@ -86,46 +86,16 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
    * The initial load runs asynchronously (it lists containers, which can be slow on some container
    * providers), so creation flows await this instead of failing immediately when a user triggers an
    * action shortly after the extension starts. It waits exactly as long as the load actually takes
-   * rather than a fixed timeout. Bounded: {@link initialize} rejects once its retry budget is spent,
-   * and a later caller re-arms a fresh attempt, so callers never await a promise nothing will settle.
+   * rather than a fixed timeout. Bounded: {@link retryableRefresh} rejects once its retry budget is
+   * spent, and a later caller re-arms a fresh attempt, so callers never await a promise nothing will
+   * settle.
    */
   protected whenInitialized(): Promise<void> {
     if (this.#initialized) return Promise.resolve();
-    this.#initialization ??= this.initialize().finally(() => {
+    this.#initialization ??= this.retryableRefresh(3, true).finally(() => {
       this.#initialization = undefined;
     });
     return this.#initialization;
-  }
-
-  /**
-   * Perform the initial load (listing containers) with bounded retries.
-   *
-   * Runs independently of the event-driven {@link retryableRefresh} chains so a transient failure in
-   * one of those (e.g. a catalog-update refresh) can never settle the initialization awaited by
-   * {@link whenInitialized}. Throws once the retry budget is exhausted.
-   */
-  private async initialize(): Promise<void> {
-    const maxRetries = 3;
-    for (let attempt = 1; ; attempt++) {
-      // A concurrent event-driven refresh may have already initialized the manager; if so we are done
-      // and must not keep retrying (and risk rejecting bound callers) just because our own attempt failed.
-      if (this.#initialized) return;
-      try {
-        await this.refreshInferenceServers();
-        return;
-      } catch (err: unknown) {
-        if (this.#initialized) return;
-        if (attempt >= maxRetries) {
-          throw new Error('Inference manager failed to initialize.', { cause: err });
-        }
-        console.warn(
-          `Something went wrong while initializing inference servers. (attempt ${attempt}/${maxRetries})`,
-          err,
-        );
-        // eslint-disable-next-line sonarjs/pseudo-random
-        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
-      }
-    }
   }
 
   /**
@@ -323,7 +293,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
           `Something went wrong while trying to inspect container ${containerId}. Trying to refresh servers.`,
           err,
         );
-        this.retryableRefresh(2);
+        this.retryableRefresh(2).catch(() => {});
       });
   }
 
@@ -364,7 +334,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   private watchMachineEvent(_event: PodmanConnectionEvent): void {
-    this.retryableRefresh(2);
+    this.retryableRefresh(2).catch(() => {});
   }
 
   /**
@@ -392,29 +362,41 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
-   * This non-async utility method is made to retry refreshing the inference server with some delay
-   * in case of error raised.
+   * Refresh the inference servers, retrying with backoff on failure.
    *
-   * @param retry the number of retry allowed
+   * Returns a promise so the initial load can be awaited (see {@link whenInitialized}); event-driven
+   * callers invoke it fire-and-forget. On exhausting the retry budget it cleans the manager and
+   * rejects.
+   *
+   * @param retry the number of attempts allowed
+   * @param untilInitialized when true, stop early if a concurrent refresh already initialized the
+   *   manager. Used by the initial load so a transient failure cannot reject callers the manager has,
+   *   in fact, finished initializing for. Event-driven refreshes leave this false: they must always
+   *   run to pick up changes, even once initialized.
    */
-  private retryableRefresh(retry: number = 3): void {
-    if (retry === 0) {
-      console.error('Cannot refresh inference servers: retry limit has been reached. Cleaning manager.');
-      this.cleanDisposables();
-      this.#servers.clear();
-      this.#initialized = false;
-      return;
-    }
-    this.refreshInferenceServers().catch((err: unknown): void => {
-      console.warn(`Something went wrong while trying to refresh inference server. (retry left ${retry})`, err);
-      setTimeout(
-        () => {
-          this.retryableRefresh(retry - 1);
-        },
+  private async retryableRefresh(retry: number = 3, untilInitialized = false): Promise<void> {
+    for (let attempt = 1; ; attempt++) {
+      if (untilInitialized && this.#initialized) return;
+      try {
+        await this.refreshInferenceServers();
+        return;
+      } catch (err: unknown) {
+        if (untilInitialized && this.#initialized) return;
+        if (attempt >= retry) {
+          console.error('Cannot refresh inference servers: retry limit has been reached. Cleaning manager.');
+          this.cleanDisposables();
+          this.#servers.clear();
+          this.#initialized = false;
+          throw new Error('Inference manager failed to initialize.', { cause: err });
+        }
+        console.warn(
+          `Something went wrong while trying to refresh inference server. (attempt ${attempt}/${retry})`,
+          err,
+        );
         // eslint-disable-next-line sonarjs/pseudo-random
-        2000 + Math.random() * 1000,
-      );
-    });
+        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
+      }
+    }
   }
 
   /**
@@ -503,7 +485,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     } catch (err: unknown) {
       console.error('Something went wrong while trying to delete the inference server.', err);
       this.setInferenceServerStatus(server.container.containerId, 'error');
-      this.retryableRefresh(2);
+      this.retryableRefresh(2).catch(() => {});
     }
   }
 
@@ -534,7 +516,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
         error: error,
       });
       this.setInferenceServerStatus(server.container.containerId, 'error');
-      this.retryableRefresh(1);
+      this.retryableRefresh(1).catch(() => {});
     }
   }
 
@@ -565,7 +547,7 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
       });
 
       this.setInferenceServerStatus(server.container.containerId, 'error');
-      this.retryableRefresh(1);
+      this.retryableRefresh(1).catch(() => {});
     }
   }
 

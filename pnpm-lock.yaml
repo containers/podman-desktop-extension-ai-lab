@@ -19,6 +19,7 @@ overrides:
   postcss-selector-parser@^6: ^7.1.7
   postcss-selector-parser@^7: ^7.1.7
   dompurify@^3: ^3.4.17
+  '@faker-js/faker@^5': ^10.5.0
 
 importers:
 
@@ -818,9 +819,9 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@faker-js/faker@5.5.3':
-    resolution: {integrity: sha512-R11tGE6yIFwqpaIqcfkcg7AICXzFg14+5h5v0TfF/9+RMDL6jhzCy/pxHVOfbALGdtVYdt6JdR21tuxEgl34dw==}
-    deprecated: Please update to a newer version.
+  '@faker-js/faker@10.6.0':
+    resolution: {integrity: sha512-3RQHgEtvL1Frl/d1cSreo7qhJ3Gk1OdNUai/CtZ8G+wYeRQnJih3s9xJ9/kgYekPQRdwgh0HXRPqMlzWGwivIQ==}
+    engines: {node: ^20.19.0 || ^22.13.0 || ^23.5.0 || >=24.0.0, npm: '>=10'}
 
   '@floating-ui/core@1.7.3':
     resolution: {integrity: sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==}
@@ -5304,7 +5305,7 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 1.8.0
 
-  '@faker-js/faker@5.5.3': {}
+  '@faker-js/faker@10.6.0': {}
 
   '@floating-ui/core@1.7.3':
     dependencies:
@@ -8586,7 +8587,7 @@ snapshots:
 
   postman-collection@5.3.1:
     dependencies:
-      '@faker-js/faker': 5.5.3
+      '@faker-js/faker': 10.6.0
       file-type: 3.9.0
       http-reasons: 0.1.0
       iconv-lite: 0.6.3

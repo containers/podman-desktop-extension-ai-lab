@@ -251,6 +251,184 @@ describe('Create Inference Server', () => {
     ).rejects.toThrowError('no enabled provider could be found.');
   });
 
+  test('should wait for initialization instead of failing when triggered before init completes', async () => {
+    // Keep the initial refresh pending so the manager stays uninitialized.
+    let resolveListContainers: ((value: ContainerInfo[]) => void) | undefined;
+    vi.mocked(containerEngine.listContainers).mockReturnValue(
+      new Promise<ContainerInfo[]>(resolve => {
+        resolveListContainers = resolve;
+      }),
+    );
+
+    const provider: InferenceProvider = {
+      enabled: () => true,
+      name: 'dummy-inference-provider',
+      dispose: () => {},
+      prePerform: vi.fn().mockResolvedValue(undefined),
+      perform: vi.fn<() => InferenceServer>().mockResolvedValue({
+        container: { containerId: 'dummy-container-id', engineId: 'dummy-engine-id' },
+        models: [],
+        status: 'running',
+        type: InferenceType.LLAMA_CPP,
+        connection: { port: 0 },
+        labels: {},
+      }),
+    } as unknown as InferenceProvider;
+    vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue(provider);
+
+    const manager = new InferenceManager(
+      rpcExtensionMock,
+      containerRegistryMock,
+      podmanConnectionMock,
+      modelsManager,
+      telemetryMock,
+      taskRegistryMock,
+      inferenceProviderRegistryMock,
+      catalogManager,
+    );
+    manager.init();
+    expect(manager.isInitialize()).toBeFalsy();
+
+    // Trigger creation before initialization completes: it must wait, not fail immediately.
+    const createPromise = manager.createInferenceServer({
+      inferenceProvider: 'dummy-inference-provider',
+      labels: {},
+      modelsInfo: [],
+      port: 8888,
+    });
+    expect(provider.perform).not.toHaveBeenCalled();
+
+    // Let initialization finish; creation should then proceed rather than having thrown.
+    resolveListContainers?.([]);
+    await expect(createPromise).resolves.toBeDefined();
+    expect(provider.perform).toHaveBeenCalled();
+  });
+
+  test('should re-arm initialization and succeed on a later create after init gave up', async () => {
+    // Initial load fails every retry -> initialization gives up and rejects.
+    vi.mocked(containerEngine.listContainers).mockRejectedValue(new Error('provider unavailable'));
+
+    const provider: InferenceProvider = {
+      enabled: () => true,
+      name: 'dummy-inference-provider',
+      dispose: () => {},
+      prePerform: vi.fn().mockResolvedValue(undefined),
+      perform: vi.fn<() => InferenceServer>().mockResolvedValue({
+        container: { containerId: 'dummy-container-id', engineId: 'dummy-engine-id' },
+        models: [],
+        status: 'running',
+        type: InferenceType.LLAMA_CPP,
+        connection: { port: 0 },
+        labels: {},
+      }),
+    } as unknown as InferenceProvider;
+    vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue(provider);
+
+    const manager = new InferenceManager(
+      rpcExtensionMock,
+      containerRegistryMock,
+      podmanConnectionMock,
+      modelsManager,
+      telemetryMock,
+      taskRegistryMock,
+      inferenceProviderRegistryMock,
+      catalogManager,
+    );
+    manager.init();
+
+    // First create fails because initialization exhausted its retries (instead of hanging forever).
+    await expect(
+      manager.createInferenceServer({
+        inferenceProvider: 'dummy-inference-provider',
+        labels: {},
+        modelsInfo: [],
+        port: 8888,
+      }),
+    ).rejects.toThrowError('failed to initialize');
+    expect(provider.perform).not.toHaveBeenCalled();
+
+    // The provider recovers; a later create must re-arm initialization and succeed.
+    vi.mocked(containerEngine.listContainers).mockResolvedValue([]);
+    await expect(
+      manager.createInferenceServer({
+        inferenceProvider: 'dummy-inference-provider',
+        labels: {},
+        modelsInfo: [],
+        port: 8888,
+      }),
+    ).resolves.toBeDefined();
+    expect(provider.perform).toHaveBeenCalled();
+  }, 15_000);
+
+  test('a failing event-driven refresh must not reject an in-flight create waiting on init', async () => {
+    // Keep the initial load pending so the create waits on it.
+    let resolveListContainers: ((value: ContainerInfo[]) => void) | undefined;
+    const pending = new Promise<ContainerInfo[]>(resolve => {
+      resolveListContainers = resolve;
+    });
+    // init + the create share the first (pending) call; a later catalog refresh gets a failing call.
+    vi.mocked(containerEngine.listContainers)
+      .mockReturnValueOnce(pending)
+      .mockRejectedValue(new Error('transient catalog refresh failure'));
+
+    const provider: InferenceProvider = {
+      enabled: () => true,
+      name: 'dummy-inference-provider',
+      dispose: () => {},
+      prePerform: vi.fn().mockResolvedValue(undefined),
+      perform: vi.fn<() => InferenceServer>().mockResolvedValue({
+        container: { containerId: 'dummy-container-id', engineId: 'dummy-engine-id' },
+        models: [],
+        status: 'running',
+        type: InferenceType.LLAMA_CPP,
+        connection: { port: 0 },
+        labels: {},
+      }),
+    } as unknown as InferenceProvider;
+    vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue(provider);
+
+    const manager = new InferenceManager(
+      rpcExtensionMock,
+      containerRegistryMock,
+      podmanConnectionMock,
+      modelsManager,
+      telemetryMock,
+      taskRegistryMock,
+      inferenceProviderRegistryMock,
+      catalogManager,
+    );
+    // Fake timers so the secondary refresh's backoff/give-up is driven deterministically before init
+    // resolves (and no stray timer leaks into later tests).
+    vi.useFakeTimers();
+    try {
+      manager.init();
+
+      const createPromise = manager.createInferenceServer({
+        inferenceProvider: 'dummy-inference-provider',
+        labels: {},
+        modelsInfo: [],
+        port: 8888,
+      });
+      // Let init's (pending) listContainers call happen.
+      await vi.advanceTimersByTimeAsync(0);
+
+      // A secondary, event-driven refresh fails and gives up entirely while init is still pending.
+      // It is fire-and-forget, so its rejection is expected and ignored (as the real callers do).
+      const eventRefresh = expect(manager['retryableRefresh'](1)).rejects.toThrow();
+      await vi.advanceTimersByTimeAsync(4000);
+      await eventRefresh;
+      expect(containerEngine.listContainers).toHaveBeenCalledTimes(2);
+
+      // The pending init now succeeds: the create must resolve, unaffected by the failed refresh.
+      resolveListContainers?.([]);
+      await vi.advanceTimersByTimeAsync(0);
+      await expect(createPromise).resolves.toBeDefined();
+      expect(provider.perform).toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   test('inference provider provided should use get from InferenceProviderRegistry', async () => {
     vi.mocked(inferenceProviderRegistryMock.get).mockReturnValue({
       enabled: () => false,
@@ -333,6 +511,43 @@ describe('Start Inference Server', () => {
     const servers = inferenceManager.getServers();
     expect(servers).toHaveLength(1);
     expect(servers[0].status).toBe('running');
+  });
+
+  test('should wait for initialization instead of failing when triggered before init completes', async () => {
+    // Keep the initial load pending so the manager stays uninitialized; resolve with a known server.
+    let resolveListContainers: ((value: ContainerInfo[]) => void) | undefined;
+    vi.mocked(containerEngine.listContainers).mockReturnValue(
+      new Promise<ContainerInfo[]>(resolve => {
+        resolveListContainers = resolve;
+      }),
+    );
+
+    const manager = new InferenceManager(
+      rpcExtensionMock,
+      containerRegistryMock,
+      podmanConnectionMock,
+      modelsManager,
+      telemetryMock,
+      taskRegistryMock,
+      inferenceProviderRegistryMock,
+      catalogManager,
+    );
+    manager.init();
+    expect(manager.isInitialize()).toBeFalsy();
+
+    const startPromise = manager.startInferenceServer('dummyId');
+    expect(containerEngine.startContainer).not.toHaveBeenCalled();
+
+    // Let initialization finish with a matching server; start should then proceed rather than throwing.
+    resolveListContainers?.([
+      {
+        Id: 'dummyId',
+        engineId: 'dummyEngineId',
+        Labels: { [LABEL_INFERENCE_SERVER]: '[]' },
+      },
+    ] as unknown as ContainerInfo[]);
+    await expect(startPromise).resolves.toBeUndefined();
+    expect(containerEngine.startContainer).toHaveBeenCalledWith('dummyEngineId', 'dummyId');
   });
 });
 

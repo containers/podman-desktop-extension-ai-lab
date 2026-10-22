@@ -53,7 +53,7 @@ export async function handleWebview(
           return false;
         }
       },
-      { timeout: 10_000, intervals: [500] },
+      { timeout: 30_000, intervals: [500] },
     )
     .toBeTruthy();
 

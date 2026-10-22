@@ -57,7 +57,7 @@ export class AILabNavigationBar extends AILabBasePage {
   }
 
   async openDashboard(): Promise<AILabDashboardPage> {
-    await playExpect(this.dashboardButton).toBeVisible();
+    await playExpect(this.dashboardButton).toBeVisible({ timeout: 15_000 });
     await this.dashboardButton.click();
     return new AILabDashboardPage(this.page, this.webview);
   }

@@ -50,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        fedora-version: ['Fedora-42', 'Fedora-44', 'Fedora-45']
+        fedora-version: ['Fedora-44', 'Fedora-45']
         plan: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.plan != '' && fromJSON(format('["{0}"]', github.event.inputs.plan)) || fromJSON('["default", "gpu"]') }}
     steps:
       - name: Set the default env. variables

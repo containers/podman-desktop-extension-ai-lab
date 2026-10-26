@@ -124,7 +124,7 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
-    "@ai-sdk/provider": "^4.0.27",
+    "@ai-sdk/provider": "^4.0.33",
     "@ai-sdk/provider-utils": "^5.0.67",
     "@podman-desktop/api": "1.13.0-202409181313-78725a6565",
     "@rollup/plugin-replace": "^6.0.3",

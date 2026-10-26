@@ -62,7 +62,8 @@ const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
 const AI_LAB_EXTENSION_PREINSTALLED: boolean = process.env.EXTENSION_PREINSTALLED === 'true';
 const EXT_TEST_RAG_CHATBOT: boolean = process.env.EXT_TEST_RAG_CHATBOT === 'true';
-const AI_LAB_CATALOG_STATUS_ACTIVE: string = 'ACTIVE';
+// PD >= podman-desktop#19485 shows 'Installed', older releases show 'ACTIVE'
+const AI_LAB_CATALOG_STATUS_ACTIVE = /^\s*(ACTIVE|Installed)\s*$/;
 const AI_LAB_TESTS_WITH_GPU_ENABLED: boolean = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === 'true';
 const IMAGE_CLEANUP_TIMEOUT = 300_000;
 

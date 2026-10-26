@@ -39,7 +39,7 @@ on:
 jobs:
   e2e-tests:
     name: Run E2E tests ${{ github.event_name == 'schedule' && '[nightly]' || '' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Set default env variables
         env:
@@ -86,12 +86,8 @@ jobs:
             ./podman-desktop
             ./podman-desktop-extension-ai-lab
 
-      - name: Update podman
-        uses: redhat-actions/podman-install@92eb12467c2fc271e7781d006c413e17770230ed
-        with:
-          ubuntu-repository: 'questing'
-
-      - name: Revert unprivileged user namespace restrictions in Ubuntu 24.04
+      # ubuntu-26.04 ships podman 5.x natively; no questing backport needed.
+      - name: Revert unprivileged user namespace restrictions
         run: |
           # allow unprivileged user namespace
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0

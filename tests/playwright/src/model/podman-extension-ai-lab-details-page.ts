@@ -31,7 +31,7 @@ export class AILabExtensionDetailsPage extends ExtensionDetailsPage {
     await playExpect(this.heading).toBeVisible();
   }
 
-  async checkIsActive(statusTest: string): Promise<void> {
+  async checkIsActive(statusTest: string | RegExp): Promise<void> {
     await playExpect(this.status).toHaveText(statusTest);
   }
 

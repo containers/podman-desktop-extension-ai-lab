@@ -9,7 +9,6 @@
     "noImplicitReturns": true,
     "resolveJsonModule": true,
     "preserveValueImports": false,
-    "baseUrl": ".",
     "paths": {
       "/@/*": ["./src/*"],
       "@shared/*": ["../shared/src/*"]

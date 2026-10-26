@@ -21,7 +21,5 @@ updates:
       ai-sdk:
         applies-to: version-updates
         patterns:
-          - "@ai-sdk/mcp"
-          - "@ai-sdk/provider"
-          - "@ai-sdk/provider-utils"
+          - "@ai-sdk/*"
           - "ai"

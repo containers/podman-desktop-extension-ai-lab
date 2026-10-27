@@ -19,7 +19,7 @@
 summary: Execute smoke Playwright E2E tests.
 tag:
   - smoke
-duration: 1h
+duration: 1h30m
 result: custom
 framework: shell
 test: |

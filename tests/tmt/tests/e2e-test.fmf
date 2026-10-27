@@ -19,7 +19,7 @@
 summary: Execute Playwright E2E tests.
 tag:
   - e2e
-duration: 1h
+duration: 1h30m
 result: custom
 framework: shell
 test: |

@@ -92,30 +92,5 @@
   "scarfSettings": {
     "enabled": false
   },
-  "pnpm": {
-    "overrides": {
-      "postman-collection>semver": "^7.5.2",
-      "minimatch@^3": "^3.1.5",
-      "minimatch@^5": "^5.1.9",
-      "minimatch@^9": "^9.0.9",
-      "minimatch@^10": "^10.2.6",
-      "fast-uri@^3": "^3.1.9",
-      "multer@^2": "^2.4.0",
-      "uuid@^8": "^11.1.1",
-      "qs@^6": "^6.16.1",
-      "postcss-selector-parser@^6": "^7.1.7",
-      "postcss-selector-parser@^7": "^7.1.7",
-      "dompurify@^3": "^3.4.17",
-      "path-to-regexp@^8": "^8.4.2"
-    },
-    "ignoredBuiltDependencies": [
-      "@scarf/scarf",
-      "@tailwindcss/oxide",
-      "esbuild",
-      "postman-code-generators",
-      "svelte-preprocess",
-      "unrs-resolver"
-    ]
-  },
-  "packageManager": "pnpm@10.12.4+sha512.5ea8b0deed94ed68691c9bad4c955492705c5eeb8a87ef86bc62c74a26b037b08ff9570f108b2e4dbd1dd1a9186fea925e527f141c648e85af45631074680184"
+  "packageManager": "pnpm@11.28.9+sha512.35421cea2720eca3f5ad722b67e8ef18f4d3cd4745ed2fcfeb0dc288d4e9437fad3870d91ee6e83f268f0f6f7e0f62723317b19617bb45ee4333172ef51159f8"
 }

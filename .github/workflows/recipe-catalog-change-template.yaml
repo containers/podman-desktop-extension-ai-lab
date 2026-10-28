@@ -1,6 +1,39 @@
 name: Run recipe tests on catalog change
 
 on:
+  # TEMP: manual testing only, drop before merge
+  workflow_dispatch:
+    inputs:
+      trigger-workflow-run-id:
+        type: string
+        required: false
+      trigger-workflow-fork:
+        type: string
+        required: false
+      trigger-workflow-repo-name:
+        type: string
+        required: false
+      trigger-workflow-branch:
+        type: string
+        required: false
+      trigger-workflow-commit-sha:
+        type: string
+        required: false
+      trigger-workflow-base-repo:
+        type: string
+        required: false
+      pd-fork:
+        type: string
+        required: false
+      pd-branch:
+        type: string
+        required: false
+      ext_tests_options:
+        type: string
+        required: false
+      e2e-runner-version:
+        type: string
+        required: false
   workflow_call:
     inputs:
       trigger-workflow-run-id:

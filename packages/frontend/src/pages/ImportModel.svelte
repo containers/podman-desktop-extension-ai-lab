@@ -165,10 +165,10 @@ function handleDragLeave(): void {
                 >Backend</label>
               <Tooltip left>
                 <Fa size="1.1x" class="cursor-pointer" icon={faCircleInfo} />
-                <svelte:fragment slot="tip">
+                {#snippet tipSnippet()}
                   <span class="inline-block py-2 px-4 rounded-md"
                     ><code>backends</code> represents the technology required to run the models.</span>
-                </svelte:fragment>
+                {/snippet}
               </Tooltip>
             </div>
             <select

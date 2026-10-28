@@ -46,9 +46,9 @@ function onClick(): void {
         {/if}
       </button>
     {/if}
-    <svelte:fragment slot="tip">
+    {#snippet tipSnippet()}
       <span class="inline-block py-2 px-4 rounded-md"
         >{loading ? 'Cloning...' : localRepository ? 'Recipe cloned' : 'Clone recipe'}</span>
-    </svelte:fragment>
+    {/snippet}
   </Tooltip>
 {/key}

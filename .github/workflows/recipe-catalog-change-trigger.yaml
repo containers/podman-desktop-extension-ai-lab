@@ -22,27 +22,35 @@ jobs:
       - name: Parse event data
         id: parse-event
         env:
-          WORKFLOW_RUN: ${{ toJson(github.event.workflow_run) }}
+          # Fork-controlled values, passed via env to avoid script injection
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          FORK_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+          FORK_REPO: ${{ github.event.workflow_run.head_repository.name }}
+          FORK_FULL_NAME: ${{ github.event.workflow_run.head_repository.full_name }}
+          FORK_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+          BASE_REPO: ${{ github.event.workflow_run.repository.full_name }}
+          BASE_REPO_NAME: ${{ github.event.workflow_run.repository.name }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
-          echo "workflow-run-id=${{ fromJson(env.WORKFLOW_RUN).id }}" >> $GITHUB_OUTPUT
-          echo "Fork owner: ${{ fromJson(env.WORKFLOW_RUN).head_repository.owner.login }}"
-          echo "fork-owner=${{ fromJson(env.WORKFLOW_RUN).head_repository.owner.login }}" >> $GITHUB_OUTPUT
-          echo "Fork repo: ${{ fromJson(env.WORKFLOW_RUN).head_repository.name }}"
-          echo "fork-repo=${{ fromJson(env.WORKFLOW_RUN).head_repository.name }}" >> $GITHUB_OUTPUT
-          echo "Fork branch: ${{ fromJson(env.WORKFLOW_RUN).head_branch }}"
-          echo "fork-branch=${{ fromJson(env.WORKFLOW_RUN).head_branch }}" >> $GITHUB_OUTPUT
-          echo "Commit SHA: ${{ fromJson(env.WORKFLOW_RUN).head_sha }}"
-          echo "commit-sha=${{ fromJson(env.WORKFLOW_RUN).head_sha }}" >> $GITHUB_OUTPUT
-          echo "Base repo: ${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}"
-          echo "base-repo=${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}" >> $GITHUB_OUTPUT
+          echo "Workflow run ID: ${RUN_ID}"
+          echo "workflow-run-id=${RUN_ID}" >> $GITHUB_OUTPUT
+          echo "Fork owner: ${FORK_OWNER}"
+          echo "fork-owner=${FORK_OWNER}" >> $GITHUB_OUTPUT
+          echo "Fork repo: ${FORK_REPO}"
+          echo "fork-repo=${FORK_REPO}" >> $GITHUB_OUTPUT
+          echo "Fork branch: ${FORK_BRANCH}"
+          echo "fork-branch=${FORK_BRANCH}" >> $GITHUB_OUTPUT
+          echo "Commit SHA: ${COMMIT_SHA}"
+          echo "commit-sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+          echo "Base repo: ${BASE_REPO}"
+          echo "base-repo=${BASE_REPO}" >> $GITHUB_OUTPUT
 
-          git clone "https://www.github.com/${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}" "${{ fromJson(env.WORKFLOW_RUN).repository.name }}" --depth 1
-          cd "${{ fromJson(env.WORKFLOW_RUN).repository.name }}"
-          git remote add upstream "https://www.github.com/${{ fromJson(env.WORKFLOW_RUN).head_repository.full_name }}"
+          git clone "https://www.github.com/${BASE_REPO}" "${BASE_REPO_NAME}" --depth 1
+          cd "${BASE_REPO_NAME}"
+          git remote add upstream "https://www.github.com/${FORK_FULL_NAME}"
           git fetch upstream
-          git diff --name-only upstream/${{ fromJson(env.WORKFLOW_RUN).head_branch }} HEAD > changes.txt
+          git diff --name-only "upstream/${FORK_BRANCH}" HEAD > changes.txt
           if grep -qe 'packages/backend/src/assets/ai.json' changes.txt; then
             echo "Changes detected in ai.json"
             echo "changes-detected=true" >> $GITHUB_OUTPUT

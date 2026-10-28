@@ -19,13 +19,8 @@ jobs:
           WORKFLOW_RUN: ${{ toJson(github.event.workflow_run) }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
-          echo "Fork owner: ${{ fromJson(env.WORKFLOW_RUN).head_repository.owner.login }}"
-          echo "Fork repo: ${{ fromJson(env.WORKFLOW_RUN).head_repository.name }}"
-          echo "Fork branch: ${{ fromJson(env.WORKFLOW_RUN).head_branch }}"
-          echo "Commit SHA: ${{ fromJson(env.WORKFLOW_RUN).head_sha }}"
-          echo "Base repo: ${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}"
-          echo "Conclusion: ${{ fromJson(env.WORKFLOW_RUN).conclusion }}"
+          # Read fork-controlled values from env, not expressions, to avoid script injection
+          echo "$WORKFLOW_RUN" | jq -r '"Workflow run ID: \(.id)\nFork owner: \(.head_repository.owner.login)\nFork repo: \(.head_repository.name)\nFork branch: \(.head_branch)\nCommit SHA: \(.head_sha)\nBase repo: \(.repository.full_name)\nConclusion: \(.conclusion)"'
           # Fetch job conclusions using the GitHub CLI
           echo "Fetching jobs for workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
             gh api \

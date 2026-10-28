@@ -168,7 +168,7 @@ jobs:
         if [ -n "${{ inputs.mapt_params }}" ]; then
           mapt_params="${{ inputs.mapt_params }}"
         else
-          mapt_params="IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }};VERSION_TAG=${{ vars.MAPT_VERSION_TAG || 'v0.14.5' }};CPUS=${{ vars.MAPT_CPUS || '8' }};MEMORY=${{ vars.MAPT_MEMORY || '32' }};EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\"
+          mapt_params="IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }};VERSION_TAG=${{ vars.MAPT_VERSION_TAG || 'v0.14.5' }};CPUS=${{ vars.MAPT_CPUS || '8' }};MEMORY=${{ vars.MAPT_MEMORY || '32' }};EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\""
         fi
         echo "$mapt_params" | awk -F ';' '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "MAPT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 

@@ -600,8 +600,9 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
   });
 
   test.describe.serial(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
+    // TODO: remove these tests together with Llama Stack, see https://github.com/containers/podman-desktop-extension-ai-lab/issues/4707
     // eslint-disable-next-line sonarjs/no-skipped-tests
-    test.skip(!!isCI && !!isWindows, 'Skipping Llama Stack tests on GitHub Actions with Windows platform');
+    test.skip(true, 'Llama Stack is being removed, see issue #4707');
     let llamaStackPage: AiLlamaStackPage;
     const llamaStackContainerNames: string[] = [];
 

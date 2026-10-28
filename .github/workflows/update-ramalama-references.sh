@@ -24,18 +24,25 @@ TMP_JSON="${JSON_PATH}.tmp"
 
 TAG=$1
 # Images and their keys in the JSON
+# whispercpp is not listed: ramalama stopped building whisper.cpp images after 0.16.0,
+# so it stays pinned to the last published digest.
+# openvino is not listed: newer ramalama openvino images no longer ship ovms.
 IMAGES=(
-  "whispercpp:ramalama/ramalama-whisper-server:default"
-  "llamacpp:ramalama/ramalama-llama-server:default"
-  "llamacpp:ramalama/cuda-llama-server:cuda"
-  "openvino:ramalama/openvino:default"
+  "llamacpp:ramalama/ramalama:default"
+  "llamacpp:ramalama/cuda:cuda"
+  "llamacpp:ramalama/intel-gpu:intel"
 )
 
 cp "$JSON_PATH" "$TMP_JSON"
 
 for entry in "${IMAGES[@]}"; do
   IFS=":" read -r key image jsonkey <<< "$entry"
-  digest=$(curl -s "https://quay.io/v2/$image/manifests/$TAG"  -H 'Accept: application/vnd.oci.image.index.v1+json' --head | grep -i Docker-Content-Digest | awk -e '{ print $2 }' | tr -d '\r')
+  digest=$(curl -s "https://quay.io/v2/$image/manifests/$TAG"  -H 'Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json' --head | grep -i Docker-Content-Digest | awk -e '{ print $2 }' | tr -d '\r')
+  if [ -z "$digest" ]; then
+    echo "Unable to resolve digest for quay.io/$image:$TAG" >&2
+    rm -f "$TMP_JSON"
+    exit 1
+  fi
   # Update the JSON file with the new digest
   jq --arg img "quay.io/$image" --arg dig "$digest" --arg key "$key" --arg jsonkey "$jsonkey" \
     '(.[$key][$jsonkey]) = ($img + "@" + $dig)' \

@@ -106,6 +106,19 @@ beforeEach(() => {
   });
 });
 
+const llamaServerArgs = (gpuLayers?: string): string[] => [
+  'llama-server',
+  '--model',
+  '/models/dummy-file.guff',
+  '--host',
+  '0.0.0.0',
+  '--port',
+  '8000',
+  '--ctx-size',
+  '4096',
+  ...(gpuLayers ? ['--n-gpu-layers', gpuLayers] : []),
+];
+
 test('LlamaCppPython being the default, it should always be enable', () => {
   const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
   expect(provider.enabled()).toBeTruthy();
@@ -189,16 +202,16 @@ describe('perform', () => {
     });
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
-      Cmd: [],
+      Cmd: llamaServerArgs(),
       Detach: true,
-      Env: ['MODEL_PATH=/models/dummy-file.guff', 'HOST=0.0.0.0', 'PORT=8000'],
+      Env: [],
       ExposedPorts: {
         '8888': {},
       },
       HealthCheck: {
         Interval: SECOND * 5,
         Retries: 20,
-        Test: ['CMD-SHELL', 'curl -sSf localhost:8000 > /dev/null'],
+        Test: ['CMD-SHELL', 'curl -sSf localhost:8000/health > /dev/null'],
       },
       HostConfig: {
         AutoRemove: false,
@@ -229,7 +242,7 @@ describe('perform', () => {
     });
   });
 
-  test('model properties should be made uppercased', async () => {
+  test('model properties should be passed as llama-server arguments', async () => {
     const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
 
     await provider.perform({
@@ -241,9 +254,8 @@ describe('perform', () => {
           ...DummyModel,
           properties: {
             basicProp: 'basicProp',
-            lotOfCamelCases: 'lotOfCamelCases',
-            lowercase: 'lowercase',
-            chatFormat: 'dummyChatFormat',
+            chatFormat: 'llama-2',
+            jinja: 'true',
           },
         },
       ],
@@ -251,13 +263,8 @@ describe('perform', () => {
     });
 
     expect(containerEngine.createContainer).toHaveBeenCalledWith(DummyImageInfo.engineId, {
-      Env: expect.arrayContaining([
-        'MODEL_BASIC_PROP=basicProp',
-        'MODEL_LOT_OF_CAMEL_CASES=lotOfCamelCases',
-        'MODEL_LOWERCASE=lowercase',
-        'MODEL_CHAT_FORMAT=dummyChatFormat',
-      ]),
-      Cmd: expect.anything(),
+      Env: [],
+      Cmd: [...llamaServerArgs(), '--chat-template', 'llama2', '--jinja'],
       HealthCheck: expect.anything(),
       HostConfig: expect.anything(),
       ExposedPorts: expect.anything(),
@@ -298,10 +305,13 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       DummyImageInfo.engineId,
       expect.objectContaining({
-        Cmd: [
+        Entrypoint: [
+          '/bin/sh',
           '-c',
-          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && export PATH="${PATH}:/usr/lib/wsl/lib/" && exec "$@"',
+          '--',
         ],
+        Cmd: llamaServerArgs(),
       }),
     );
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
@@ -346,10 +356,13 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       DummyImageInfo.engineId,
       expect.objectContaining({
-        Cmd: [
+        Entrypoint: [
+          '/bin/sh',
           '-c',
-          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && export PATH="${PATH}:/usr/lib/wsl/lib/" && exec "$@"',
+          '--',
         ],
+        Cmd: llamaServerArgs(),
       }),
     );
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
@@ -394,10 +407,13 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       DummyImageInfo.engineId,
       expect.objectContaining({
-        Cmd: [
+        Entrypoint: [
+          '/bin/sh',
           '-c',
-          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
+          '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && export PATH="${PATH}:/usr/lib/wsl/lib/" && exec "$@"',
+          '--',
         ],
+        Cmd: llamaServerArgs(),
       }),
     );
     expect(gpuManager.collectGPUs).toHaveBeenCalled();
@@ -468,6 +484,7 @@ describe('perform', () => {
       labels: {},
       modelsInfo: [DummyModel],
       connection: undefined,
+      gpuLayers: 999,
     });
 
     expect(getImageInfo).toHaveBeenCalledWith(expect.anything(), llamacpp.default, expect.any(Function));
@@ -477,7 +494,7 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       DummyImageInfo.engineId,
       expect.objectContaining({
-        Env: expect.arrayContaining(['GPU_LAYERS=999']),
+        Cmd: llamaServerArgs('999'),
       }),
     );
   });
@@ -564,7 +581,7 @@ describe('perform', () => {
     expect('gpu' in server.labels).toBeTruthy();
   });
 
-  test('WSL vmtype with Intel GPU should use llamacpp.intel image and no custom entrypoint', async () => {
+  test('WSL vmtype with Intel GPU should use llamacpp.intel image and run llama-server', async () => {
     vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
       ...dummyConnection,
       vmType: VMType.WSL,
@@ -601,13 +618,13 @@ describe('perform', () => {
       DummyImageInfo.engineId,
       expect.objectContaining({
         Entrypoint: undefined,
-        Cmd: [],
+        Cmd: llamaServerArgs(),
         Env: expect.arrayContaining(['ZES_ENABLE_SYSMAN=1']),
       }),
     );
   });
 
-  test('UNKNOWN vmtype with Intel GPU should use llamacpp.intel image and no custom entrypoint', async () => {
+  test('UNKNOWN vmtype with Intel GPU should use llamacpp.intel image and run llama-server', async () => {
     vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
       ...dummyConnection,
       vmType: VMType.UNKNOWN,
@@ -643,9 +660,9 @@ describe('perform', () => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith(
       DummyImageInfo.engineId,
       expect.objectContaining({
-        Entrypoint: undefined,
         User: '0',
-        Cmd: [],
+        Entrypoint: undefined,
+        Cmd: llamaServerArgs(),
         HostConfig: expect.objectContaining({
           DeviceRequests: [],
           Devices: expect.arrayContaining([

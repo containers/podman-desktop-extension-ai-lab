@@ -37,7 +37,7 @@ jobs:
       - name: Get latest ramalama version
         id: get_ramalama_version
         run: |
-          RAMALAMA_VERSION=$(curl -s https://quay.io/v2/ramalama/ramalama-llama-server/tags/list -s | jq .tags[] | grep -E '^"[0-9]+\.[0-9]+\.[0-9]+"$' | sort -V | tail -n 1 | tr -d '"')
+          RAMALAMA_VERSION=$(curl -s https://quay.io/v2/ramalama/ramalama/tags/list -s | jq .tags[] | grep -E '^"[0-9]+\.[0-9]+\.[0-9]+"$' | sort -V | tail -n 1 | tr -d '"')
           echo "RAMALAMA_VERSION=${RAMALAMA_VERSION}" >> $GITHUB_OUTPUT
 
       - name: Check if PR already exists

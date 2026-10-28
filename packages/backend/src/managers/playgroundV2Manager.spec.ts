@@ -435,7 +435,7 @@ test('creating a new playground with no model served should start an inference s
     'tracking-1',
   );
   expect(createInferenceServerMock).toHaveBeenCalledWith({
-    gpuLayers: expect.any(Number),
+    gpuLayers: undefined,
     image: undefined,
     providerId: undefined,
     inferenceProvider: undefined,

@@ -3,7 +3,7 @@ import { Tooltip } from '@podman-desktop/ui-svelte';
 import { studioClient } from '/@/utils/client';
 import type { ComponentProps } from 'svelte';
 
-interface Props extends Omit<ComponentProps<Tooltip>, 'tip'> {
+interface Props extends Omit<ComponentProps<typeof Tooltip>, 'tip'> {
   class?: string;
   content: string;
 }

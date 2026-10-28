@@ -251,8 +251,8 @@ importers:
         specifier: ^7.3.1
         version: 7.3.1
       '@podman-desktop/ui-svelte':
-        specifier: 1.21.0
-        version: 1.21.0(svelte-fa@4.0.4(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
+        specifier: ^1.30.5
+        version: 1.30.5(svelte-fa@4.0.4(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
       filesize:
         specifier: ^11.0.28
         version: 11.0.28
@@ -799,11 +799,20 @@ packages:
   '@floating-ui/core@1.7.3':
     resolution: {integrity: sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==}
 
+  '@floating-ui/core@1.8.0':
+    resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
+
   '@floating-ui/dom@1.7.4':
     resolution: {integrity: sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==}
 
+  '@floating-ui/dom@1.8.0':
+    resolution: {integrity: sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg==}
+
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@floating-ui/utils@0.2.12':
+    resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
   '@fortawesome/fontawesome-common-types@7.3.1':
     resolution: {integrity: sha512-k0C0sdHmZtAo6dRDtd1Z/qcpyHbL0CKsjV8seMY/21xGhY5Wsv0XRmiI/xEEH4y2c9b1+jvgNs/3EqhV27yUEA==}
@@ -981,8 +990,8 @@ packages:
   '@podman-desktop/tests-playwright@1.30.5':
     resolution: {integrity: sha512-ee+JQdu1Kci2ebcF8tavFppdEBltHyTFApkhxBwQKySTPB5smdaXvU+gqusQaW0HmIzF3MYEmP0e1r/Oj7INKw==}
 
-  '@podman-desktop/ui-svelte@1.21.0':
-    resolution: {integrity: sha512-5ptTIAflI191jgF5q0n4YHxCo588OC4eUEAJhgUz01EglCIRSCUluI7WzQ8ML7X90iLbcJ5O8gsbXj6eERdbkg==}
+  '@podman-desktop/ui-svelte@1.30.5':
+    resolution: {integrity: sha512-gJiXt7bQhEoNAwy6fi8dXZ9zr6WQVr6XGxlZrKl6LluL/nBcUCApjbbEZC+ws4icSoabSkrpCtN4p6VtvtTX9g==}
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0
       svelte-fa: ^4.0.0
@@ -5265,12 +5274,23 @@ snapshots:
     dependencies:
       '@floating-ui/utils': 0.2.10
 
+  '@floating-ui/core@1.8.0':
+    dependencies:
+      '@floating-ui/utils': 0.2.12
+
   '@floating-ui/dom@1.7.4':
     dependencies:
       '@floating-ui/core': 1.7.3
       '@floating-ui/utils': 0.2.10
 
+  '@floating-ui/dom@1.8.0':
+    dependencies:
+      '@floating-ui/core': 1.8.0
+      '@floating-ui/utils': 0.2.12
+
   '@floating-ui/utils@0.2.10': {}
+
+  '@floating-ui/utils@0.2.12': {}
 
   '@fortawesome/fontawesome-common-types@7.3.1': {}
 
@@ -5461,8 +5481,9 @@ snapshots:
 
   '@podman-desktop/tests-playwright@1.30.5': {}
 
-  '@podman-desktop/ui-svelte@1.21.0(svelte-fa@4.0.4(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(svelte@5.57.2(@typescript-eslint/types@8.72.0))':
+  '@podman-desktop/ui-svelte@1.30.5(svelte-fa@4.0.4(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(svelte@5.57.2(@typescript-eslint/types@8.72.0))':
     dependencies:
+      '@floating-ui/dom': 1.8.0
       '@fortawesome/fontawesome-free': 7.3.1
       '@fortawesome/free-brands-svg-icons': 7.3.1
       '@fortawesome/free-regular-svg-icons': 7.3.1

@@ -265,12 +265,12 @@ function handleOnClick(): void {
                       </div>
                       <Tooltip left>
                         <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                        <svelte:fragment slot="tip">
+                        {#snippet tipSnippet()}
                           <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
                             What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the
                             output more random, while lower values like 0.2 will make it more focused and deterministic.
                           </div>
-                        </svelte:fragment>
+                        {/snippet}
                       </Tooltip>
                     </div>
                     <div class="flex flex-row">
@@ -279,11 +279,11 @@ function handleOnClick(): void {
                       </div>
                       <Tooltip left>
                         <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                        <svelte:fragment slot="tip">
+                        {#snippet tipSnippet()}
                           <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
                             The maximum number of tokens that can be generated in the chat completion.
                           </div>
-                        </svelte:fragment>
+                        {/snippet}
                       </Tooltip>
                     </div>
                     <div class="flex flex-row">
@@ -292,13 +292,13 @@ function handleOnClick(): void {
                       </div>
                       <Tooltip left>
                         <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                        <svelte:fragment slot="tip">
+                        {#snippet tipSnippet()}
                           <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
                             An alternative to sampling with temperature, where the model considers the results of the
                             tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10%
                             probability mass are considered.
                           </div>
-                        </svelte:fragment>
+                        {/snippet}
                       </Tooltip>
                     </div>
                   </div>
@@ -316,11 +316,11 @@ function handleOnClick(): void {
                       </div>
                       <Tooltip left>
                         <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                        <svelte:fragment slot="tip">
+                        {#snippet tipSnippet()}
                           <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
                             The number of tokens in the prompt is used as input to the model.
                           </div>
-                        </svelte:fragment>
+                        {/snippet}
                       </Tooltip>
                     </div>
                     <div class="flex flex-row">
@@ -332,12 +332,12 @@ function handleOnClick(): void {
                       </div>
                       <Tooltip left>
                         <Fa class="text-[var(--pd-content-card-icon)]" icon={faCircleInfo} />
-                        <svelte:fragment slot="tip">
+                        {#snippet tipSnippet()}
                           <div class="inline-block py-2 px-4 rounded-md" aria-label="tooltip">
                             The number of tokens in the model's output to the prompt that has been used as an input to
                             the model.
                           </div>
-                        </svelte:fragment>
+                        {/snippet}
                       </Tooltip>
                     </div>
                   </div>

@@ -46,11 +46,12 @@ jobs:
           echo "Base repo: ${BASE_REPO}"
           echo "base-repo=${BASE_REPO}" >> $GITHUB_OUTPUT
 
-          git clone "https://www.github.com/${BASE_REPO}" "${BASE_REPO_NAME}" --depth 1
+          # Blobless clone keeps history for the merge-base diff; fetch only the PR branch
+          git clone --filter=blob:none "https://www.github.com/${BASE_REPO}" "${BASE_REPO_NAME}"
           cd "${BASE_REPO_NAME}"
           git remote add upstream "https://www.github.com/${FORK_FULL_NAME}"
-          git fetch upstream
-          git diff --name-only "upstream/${FORK_BRANCH}" HEAD > changes.txt
+          git fetch --filter=blob:none upstream "refs/heads/${FORK_BRANCH}"
+          git diff --name-only HEAD...FETCH_HEAD > changes.txt
           if grep -qe 'packages/backend/src/assets/ai.json' changes.txt; then
             echo "Changes detected in ai.json"
             echo "changes-detected=true" >> $GITHUB_OUTPUT
@@ -61,7 +62,7 @@ jobs:
 
   trigger-template:
     needs: extract-context
-    uses: containers/podman-desktop-extension-ai-lab/.github/workflows/recipe-catalog-change-template.yaml@main
+    uses: ./.github/workflows/recipe-catalog-change-template.yaml
     if: ${{ needs.extract-context.outputs.changes-detected == 'true' }}
     strategy:
       fail-fast: false
@@ -72,5 +73,5 @@ jobs:
       trigger-workflow-branch: ${{ needs.extract-context.outputs.fork-branch }}
       trigger-workflow-commit-sha: ${{ needs.extract-context.outputs.commit-sha }}
       trigger-workflow-base-repo: ${{ needs.extract-context.outputs.base-repo }}
-      ext_tests_options: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=0,EXT_TEST_GPU_SUPPORT_ENABLED=0'
+      ext_tests_options: 'EXT_RUN_TESTS_FROM_EXTENSION=1'
     secrets: inherit

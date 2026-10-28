@@ -42,6 +42,9 @@ on:
       npm-target:
         required: false
         type: string
+      e2e-runner-version:
+        required: false
+        type: string
       mapt_params:
         required: false
         type: string
@@ -51,6 +54,8 @@ jobs:
     name: recipe-catalog-windows-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}
     timeout-minutes: 180
     runs-on: ubuntu-24.04
+    # Runs PR code from forks on an Azure VM: add required reviewers to this environment to gate it
+    environment: recipe-catalog-tests
     strategy:
       fail-fast: false
       matrix:
@@ -77,11 +82,19 @@ jobs:
           https://api.github.com/repos/${{ inputs.trigger-workflow-base-repo }}/statuses/${{ inputs.trigger-workflow-commit-sha }} \
           -d "${data}"
 
-    - name: Fetch latest Podman version
+    - name: Get Podman version used by Podman Desktop
+      id: pd-podman
+      run: |
+        version=$(curl -fsSL https://raw.githubusercontent.com/podman-desktop/podman-desktop/main/extensions/podman/packages/extension/src/podman.json \
+          | jq -r '.versions[.platform.win32.arch.x64.versionRef].tagVersion // empty' || true)
+        echo "Podman version used by Podman Desktop on Windows: ${version:-latest}"
+        echo "version=${version:-latest}" >> "$GITHUB_OUTPUT"
+
+    - name: Fetch Podman installer
       id: fetch-podman
       uses: redhat-actions/podman-install/.github/actions/fetch-latest-podman-version-windows@5b0fb16319979de14e2c7c2c1cc27c98f107ae52
       with:
-        version_input: 'latest'
+        version_input: ${{ steps.pd-podman.outputs.version }}
         file_type: 'msi'
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -90,18 +103,25 @@ jobs:
         DEFAULT_NPM_TARGET: 'test:e2e'
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,ELECTRON_ENABLE_INSPECT=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
-        DEFAULT_EXT_TESTS_OPTIONS: 'EXT_RUN_TESTS_FROM_EXTENSION=1,EXT_RUN_TESTS_AS_ADMIN=1,EXT_TEST_GPU_SUPPORT_ENABLED=0'
+        DEFAULT_EXT_TESTS_OPTIONS: 'EXT_RUN_TESTS_FROM_EXTENSION=1'
         # Fork-controlled values, passed via env to avoid script injection
         TRIGGER_REPO: ${{ inputs.trigger-workflow-repo-name }}
         TRIGGER_FORK: ${{ inputs.trigger-workflow-fork }}
         TRIGGER_BRANCH: ${{ inputs.trigger-workflow-branch }}
       run: |
+        # run-playwright-test interpolates these into bash, so only allow plain ref characters
+        for value in "$TRIGGER_REPO" "$TRIGGER_FORK" "$TRIGGER_BRANCH"; do
+          if [[ ! "$value" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+            echo "::error::Fork, repository or branch name contains unsupported characters"
+            exit 1
+          fi
+        done
         echo "PD_FORK=${{ inputs.pd-fork || 'podman-desktop' }}" >> $GITHUB_ENV
         echo "PD_BRANCH=${{ inputs.pd-branch || 'main' }}" >> $GITHUB_ENV
         echo "NPM_TARGET=${{ inputs.npm-target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
         echo "ENV_VARS=${{ inputs.pd-env-vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
         echo "PODMAN_URL=${{ inputs.podman-download-url || steps.fetch-podman.outputs.download_url }}" >> $GITHUB_ENV
-        echo "E2E_RUNNER_VERSION=${{ vars.E2E_RUNNER_VERSION }}" >> $GITHUB_ENV
+        echo "E2E_RUNNER_VERSION=${{ inputs.e2e-runner-version || vars.E2E_RUNNER_VERSION || 'nightly' }}" >> $GITHUB_ENV
         # Test the extension from the PR fork/branch that changed the catalog
         echo "EXT_REPO=${TRIGGER_REPO}" >> $GITHUB_ENV
         echo "EXT_FORK=${TRIGGER_FORK}" >> $GITHUB_ENV
@@ -115,11 +135,12 @@ jobs:
         if [ -n "${{ inputs.mapt_params }}" ]; then
           mapt_params="${{ inputs.mapt_params }}"
         else
-          mapt_params="IMAGE=${{ vars.MAPT_IMAGE }};VERSION_TAG=${{ vars.MAPT_VERSION_TAG }};CPUS=${{ vars.MAPT_CPUS }};MEMORY=${{ vars.MAPT_MEMORY }};EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS }}\""
+          mapt_params="IMAGE=${{ vars.MAPT_IMAGE || 'quay.io/redhat-developer/mapt' }};VERSION_TAG=${{ vars.MAPT_VERSION_TAG || 'v0.14.5' }};CPUS=${{ vars.MAPT_CPUS || '8' }};MEMORY=${{ vars.MAPT_MEMORY || '32' }};EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS || 'westindia,centralindia,southindia,australiacentral,australiacentral2,australiaeast,australiasoutheast,southafricanorth,southafricawest' }}\"
         fi
         echo "$mapt_params" | awk -F ';' '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "MAPT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Create instance
+      id: create-instance
       uses: podman-desktop/e2e/.github/actions/create-instance@dbb48583aa0d9b97f95354aab9b60620ca5d7130
       with:
         mapt-image: ${{ env.MAPT_IMAGE || '' }}
@@ -140,17 +161,6 @@ jobs:
     - name: Emulate X session
       uses: podman-desktop/e2e/.github/actions/emulate-x-session@dbb48583aa0d9b97f95354aab9b60620ca5d7130
 
-    - name: Install nightly Podman on Windows host
-      if: steps.fetch-podman.outputs.is_nightly == 'true'
-      uses: podman-desktop/e2e/.github/actions/install-podman-nightly@dbb48583aa0d9b97f95354aab9b60620ca5d7130
-      with:
-        download-url: ${{ steps.fetch-podman.outputs.download_url }}
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Clear Podman download URL for nightly
-      if: steps.fetch-podman.outputs.is_nightly == 'true'
-      run: echo "PODMAN_URL=" >> $GITHUB_ENV
-
     - name: Build Podman Desktop Electron Inspect Enabled binary
       uses: podman-desktop/e2e/.github/actions/build-podman-desktop@dbb48583aa0d9b97f95354aab9b60620ca5d7130
       with:
@@ -163,8 +173,6 @@ jobs:
       with:
         e2e-runner-tag: ${{ env.E2E_RUNNER_VERSION }}
         podman-download-url: ${{ env.PODMAN_URL }}
-        # When PODMAN_URL is cleared (nightly), prevents runner from reading podman-location.log
-        podman-path: ${{ env.PODMAN_URL != '' }}
         podman-desktop-path: true
         fork-repo: ${{ env.PD_FORK }}
         branch-name: ${{ env.PD_BRANCH }}
@@ -216,7 +224,7 @@ jobs:
           -d "${data}"
 
     - name: Destroy instance
-      if: always()
+      if: always() && steps.create-instance.outcome != 'skipped'
       uses: podman-desktop/e2e/.github/actions/destroy-instance@dbb48583aa0d9b97f95354aab9b60620ca5d7130
       with:
         mapt-image: ${{ env.MAPT_IMAGE }}

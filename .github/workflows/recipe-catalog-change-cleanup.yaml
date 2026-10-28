@@ -17,14 +17,15 @@ jobs:
         id: prepare-context
         env:
           WORKFLOW_RUN: ${{ toJson(github.event.workflow_run) }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Read fork-controlled values from env, not expressions, to avoid script injection
           echo "$WORKFLOW_RUN" | jq -r '"Workflow run ID: \(.id)\nFork owner: \(.head_repository.owner.login)\nFork repo: \(.head_repository.name)\nFork branch: \(.head_branch)\nCommit SHA: \(.head_sha)\nBase repo: \(.repository.full_name)\nConclusion: \(.conclusion)"'
           # Fetch job conclusions using the GitHub CLI
-          echo "Fetching jobs for workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
+          echo "Fetching jobs for workflow run ID: ${RUN_ID}"
             gh api \
-            repos/${{ github.repository }}/actions/runs/${{ fromJson(env.WORKFLOW_RUN).id }}/jobs \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs" \
             --jq '.jobs[] | "\(.name)=\(.conclusion)"' | while read -r line; do
               echo "$line" >> $GITHUB_OUTPUT
             done
@@ -36,9 +37,10 @@ jobs:
     steps:
       - name: Remove skipped or cancelled workflow run
         env:
-          WORKFLOW_RUN: ${{ toJson(github.event.workflow_run) }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          BASE_REPO: ${{ github.event.workflow_run.repository.full_name }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Cleaning up workflow run ID: ${{ fromJson(env.WORKFLOW_RUN).id }}"
-          gh run delete ${{ fromJson(env.WORKFLOW_RUN).id }} --repo ${{ fromJson(env.WORKFLOW_RUN).repository.full_name }}
-          echo "Workflow run ID ${{ fromJson(env.WORKFLOW_RUN).id }} has been cleaned up."
+          echo "Cleaning up workflow run ID: ${RUN_ID}"
+          gh run delete "${RUN_ID}" --repo "${BASE_REPO}"
+          echo "Workflow run ID ${RUN_ID} has been cleaned up."

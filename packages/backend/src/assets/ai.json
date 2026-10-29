@@ -100,8 +100,7 @@
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
         "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF",
-        "hf.ibm-granite.granite-8b-code-instruct"
+        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["python"],
@@ -452,20 +451,6 @@
         "chatFormat": "openchat"
       },
       "sha256": "363f0bbc3200b9c9b0ab87efe237d77b1e05bb929d5d7e4b57c1447c911223e8",
-      "backend": "llama-cpp"
-    },
-    {
-      "id": "hf.ibm-granite.granite-8b-code-instruct",
-      "name": "ibm-granite/granite-8b-code-instruct-GGUF",
-      "description": "![image/png](https://cdn-uploads.huggingface.co/production/uploads/62cd5057674cdb524450093d/1hzxoPwqkBJXshKVVe6_9.png)\n\n# ibm-granite/granite-8b-code-instruct-GGUF\nThis is the Q4_K_M converted version of the original [`ibm-granite/granite-8b-code-instruct`](https://huggingface.co/ibm-granite/granite-8b-code-instruct).\nRefer to the [original model card](https://huggingface.co/ibm-granite/granite-8b-code-instruct) for more details.\n\n## Use with llama.cpp\n```shell\ngit clone https://github.com/ggerganov/llama.cpp\ncd llama.cpp\n\n# install\nmake\n\n# run generation\n./main -m granite-8b-code-instruct-GGUF/granite-8b-code-instruct.Q4_K_M.gguf -n 128 -p \"def generate_random(x: int):\" --color\n```",
-      "registry": "Hugging Face",
-      "license": "Apache-2.0",
-      "url": "https://huggingface.co/ibm-granite/granite-8b-code-instruct-GGUF/resolve/main/granite-8b-code-instruct.Q4_K_M.gguf",
-      "memory": 5347234284,
-      "properties": {
-        "chatFormat": "openchat"
-      },
-      "sha256": "bc8804cb43c4e1e82e2188658569b147587f83a89640600a64d5f7d7de2565b4",
       "backend": "llama-cpp"
     },
     {

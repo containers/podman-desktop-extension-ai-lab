@@ -370,6 +370,20 @@
       "backend": "llama-cpp"
     },
     {
+      "id": "hf.unsloth.qwen3.5-2b-GGUF",
+      "name": "qwen/Qwen3.5-2B-GGUF (Unsloth quantization)",
+      "description": "# Qwen3.5-2B-GGUF\n\n**Model Summary:**\nQwen3.5-2B is a 2B parameter model from the Qwen3.5 family, built on an efficient hybrid architecture combining Gated Delta Networks with gated attention. It operates in thinking mode by default, generating `<think>...</think>` reasoning content before the final response, and can be switched to a non-thinking (instruct) mode. This Q4_K_M quantized GGUF version, provided by Unsloth, offers a good balance between model size and quality.\n\n- **Developers:** Qwen Team, Alibaba Cloud\n- **Base Model:** [Qwen/Qwen3.5-2B](https://huggingface.co/Qwen/Qwen3.5-2B)\n- **Quantization:** [unsloth/Qwen3.5-2B-GGUF](https://huggingface.co/unsloth/Qwen3.5-2B-GGUF)\n- **Blog:** [Qwen3.5](https://qwen.ai/blog?id=qwen3.5)\n- **License:** [Apache 2.0](https://huggingface.co/Qwen/Qwen3.5-2B/blob/main/LICENSE)\n\n**Capabilities:**\n* Strong reasoning, coding and agentic performance, with reinforcement learning scaled across large agent environments\n* Thinking and non-thinking modes within a single model\n* Tool calling and agent workflows\n* Support for 201 languages and dialects\n\n**Model Details:**\n* Type: Causal Language Model (the vision encoder is not included in this text-only GGUF)\n* Number of Parameters: 2B\n* Number of Layers: 24\n* Hidden Layout: 6 × (3 × (Gated DeltaNet → FFN) → 1 × (Gated Attention → FFN))\n* Tied Word Embeddings: Yes\n* Context Length: 262,144 tokens natively",
+      "registry": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/unsloth/Qwen3.5-2B-GGUF/resolve/f6d5376be1edb4d416d56da11e5397a961aca8ae/Qwen3.5-2B-Q4_K_M.gguf",
+      "memory": 1280835840,
+      "properties": {
+        "jinja": "true"
+      },
+      "sha256": "aaf42c8b7c3cab2bf3d69c355048d4a0ee9973d48f16c731c0520ee914699223",
+      "backend": "llama-cpp"
+    },
+    {
       "id": "hf.ibm-granite.granite-4.2-3b-GGUF",
       "name": "ibm-granite/granite-4.2-3b-GGUF",
       "description": "# Granite-4.2-3B\n\n**Model Summary:**\nGranite-4.2-3B is the compact reasoning model in the Granite 4.2 family. Despite its small parameter count, it delivers strong performance on reasoning-intensive tasks by leveraging built-in `<think>...</think>` chain-of-thought. It supports flexible thinking modes (full thinking by default, non-thinking and low-effort), allowing users to balance depth vs. latency on a per-query basis. This Q4_K_M quantized GGUF version provides a good balance between model size and quality.\n\n- **Developers:** Granite Team, IBM\n- **HF Collection:** [Granite 4.2 Language Models HF Collection](https://huggingface.co/collections/ibm-granite/granite-42-language-models)\n- **GitHub Repository:** [ibm-granite/granite-4.2-language-models](https://github.com/ibm-granite/granite-4.2-language-models)\n- **Website**: [Granite Docs](https://www.ibm.com/granite/docs/)\n- **Release Date**: August 25, 2026\n- **License:** [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)\n\n**Supported Languages:**\nEnglish, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, Korean, Dutch, and Chinese. Other languages may work but have not been fully tested.\n\n**Capabilities:**\n* Built-in reasoning: native chain-of-thought that improves performance on math, coding, and complex multi-step problems\n* Flexible thinking modes: switch between full thinking, non-thinking, and low-effort modes within a single model\n* Reasoning-augmented tool calling: the model reasons about which tools to invoke and why, producing more accurate function calls\n* Long context: natively supports 128K tokens\n* Multilingual dialog use cases\n\n**Intended Use:**\nThe model is designed for reasoning, code generation, tool calling, agentic workflows and multilingual dialog, and can be used to build AI assistants for multiple domains, particularly in scenarios where model size and inference speed are important considerations.",

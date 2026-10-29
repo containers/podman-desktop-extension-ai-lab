@@ -60,7 +60,9 @@ test('Should list all container provider connections', async () => {
   // ensure we have two options
   expect(items).toHaveLength(2);
   expect(items[0]).toHaveTextContent(wslConnection.name);
+  expect(items[0]).toHaveTextContent(`(${VMType.WSL})`);
   expect(items[1]).toHaveTextContent(qemuConnection.name);
+  expect(items[1]).toHaveTextContent(`(${VMType.QEMU})`);
 });
 
 test('default value should be visible', async () => {

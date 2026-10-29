@@ -156,3 +156,21 @@ test('clearing value should call onchange callback with undefined', async () => 
     expect(onChangeMock).toHaveBeenCalledOnce();
   });
 });
+
+test('selected value passed to onchange should be cloneable (postMessage)', async () => {
+  const onChangeMock = vi.fn();
+  const items = [
+    { label: 'Dummy Item 1', value: 'item-1' },
+    { label: 'Dummy Item 2', value: 'item-2' },
+  ];
+  const { container } = render(Select, { label: 'Select Item', items, onchange: onChangeMock });
+
+  await fireEvent.pointerUp(within(container).getByLabelText('Select Item'));
+  await fireEvent.click(container.querySelectorAll('div[class~="list-item"]')[1]);
+
+  await vi.waitFor(() => expect(onChangeMock).toHaveBeenCalled());
+  const selected = onChangeMock.mock.calls[0][0];
+  // svelte-select internal state proxy cannot be sent through postMessage
+  expect(selected).toEqual(items[1]);
+  expect(() => structuredClone(selected)).not.toThrow();
+});

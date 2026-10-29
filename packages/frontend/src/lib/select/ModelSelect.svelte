@@ -56,20 +56,22 @@ function handleOnChange(nValue: (ModelInfo & { label: string; value: string }) |
   items={models
     .toSorted((a, b) => getModelSortingScore(a) - getModelSortingScore(b))
     .map(model => ({ ...model, value: model.id, label: model.name }))}>
-  <div slot="item" let:item>
-    <div class="flex items-center">
-      <div class="grow">
-        <span>{item.name}</span>
-        {#if recommended?.includes(item.id)}
-          <i class="fas fa-star fa-xs" title="Recommended model"></i>
+  {#snippet item(item)}
+    <div>
+      <div class="flex items-center">
+        <div class="grow">
+          <span>{item.name}</span>
+          {#if recommended?.includes(item.id)}
+            <i class="fas fa-star fa-xs" title="Recommended model"></i>
+          {/if}
+        </div>
+
+        {#if item.file !== undefined}
+          <Fa icon={faCheckCircle} />
+        {:else}
+          <Fa icon={faDownload} />
         {/if}
       </div>
-
-      {#if item.file !== undefined}
-        <Fa icon={faCheckCircle} />
-      {:else}
-        <Fa icon={faDownload} />
-      {/if}
     </div>
-  </div>
+  {/snippet}
 </Select>

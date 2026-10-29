@@ -38,15 +38,17 @@ function handleOnChange(nValue: ContainerProviderConnectionInfo | undefined): vo
     value: containerProviderConnection.name,
     label: containerProviderConnection.name,
   }))}>
-  <div slot="item" let:item>
-    <div class="flex items-center">
-      <div class="grow">
-        <span>{item.name}</span>
-      </div>
+  {#snippet item(item)}
+    <div>
+      <div class="flex items-center">
+        <div class="grow">
+          <span>{item.name}</span>
+        </div>
 
-      {#if item.vmType !== VMType.UNKNOWN}
-        <div>({item.vmType})</div>
-      {/if}
+        {#if item.vmType !== VMType.UNKNOWN}
+          <div>({item.vmType})</div>
+        {/if}
+      </div>
     </div>
-  </div>
+  {/snippet}
 </Select>

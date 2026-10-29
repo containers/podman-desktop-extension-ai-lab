@@ -1,24 +1,30 @@
-<script lang="ts">
+<script lang="ts" generics="T extends { label: string; value: string }">
 import Select from 'svelte-select';
+import type { Snippet } from 'svelte';
 
-type T = $$Generic<{ label: string; value: string }>;
-export let disabled: boolean = false;
+interface Props {
+  disabled?: boolean;
+  value?: T;
+  items?: T[];
+  placeholder?: string;
+  label?: string;
+  name?: string;
+  onchange?: (value: T | undefined) => void;
+  /**
+   * Custom rendering of an item, the label is displayed by default
+   */
+  item?: Snippet<[T]>;
+}
 
-export let value: T | undefined = undefined;
-export let items: T[] = [];
-export let placeholder: string | undefined = undefined;
-export let label: string | undefined = undefined;
-export let name: string | undefined = undefined;
-export let onchange: ((value: T | undefined) => void) | undefined = undefined;
+let { disabled = false, value, items = [], placeholder, label, name, onchange, item: itemSnippet }: Props = $props();
 
 function handleOnChange(newValue: T | undefined): void {
-  value = newValue;
-  onchange?.(value);
+  // svelte-select provides its internal state proxy, which cannot be cloned (e.g. sent through postMessage)
+  onchange?.($state.snapshot(newValue) as T | undefined);
 }
 
 function handleOnClear(): void {
-  value = undefined;
-  onchange?.(value);
+  onchange?.(undefined);
 }
 </script>
 
@@ -46,8 +52,10 @@ function handleOnClear(): void {
   items={items}
   showChevron>
   {#snippet item({ item })}
-    <slot name="item" item={item}>
+    {#if itemSnippet}
+      {@render itemSnippet(item as T)}
+    {:else}
       <div>{item.label}</div>
-    </slot>
+    {/if}
   {/snippet}
 </Select>

@@ -23,8 +23,9 @@ import type {
   MountConfig,
 } from '@podman-desktop/api';
 import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import { InferenceProvider } from './InferenceProvider';
-import { getModelPropertiesForEnvironment, getMountPath } from '../../utils/modelsUtils';
+import { getMountPath } from '../../utils/modelsUtils';
 import { DISABLE_SELINUX_LABEL_SECURITY_OPTION } from '../../utils/utils';
 import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
@@ -38,6 +39,10 @@ import { llamacpp } from '../../assets/inference-images.json';
 import * as fs from 'node:fs';
 
 export const SECOND: number = 1_000_000_000;
+
+// llama.cpp now defaults to the model training context (e.g. 128k), which does not fit in GPU memory
+// on podman machines; keep the 4096 default of previous llama.cpp releases
+export const LLAMA_SERVER_CTX_SIZE = 4096;
 
 interface Device {
   PathOnHost: string;
@@ -95,14 +100,12 @@ export class LlamaCppPython extends InferenceProvider {
       },
     ];
 
-    // provide envs
-    const envs: string[] = [`MODEL_PATH=${target}`, 'HOST=0.0.0.0', 'PORT=8000'];
-    envs.push(...getModelPropertiesForEnvironment(modelInfo));
+    const envs: string[] = [];
 
     const deviceRequests: DeviceRequest[] = [];
     const devices: Device[] = [];
-    let entrypoint: string | undefined = undefined;
-    let cmd: string[] = [];
+    let entrypoint: string[] | undefined = undefined;
+    let gpuLayers: number | undefined = undefined;
     let user: string | undefined = undefined;
 
     if (gpu) {
@@ -125,10 +128,12 @@ export class LlamaCppPython extends InferenceProvider {
 
             user = '0';
 
-            entrypoint = '/usr/bin/sh';
-            cmd = [
+            // expose the WSL driver libraries before running the llama-server command
+            entrypoint = [
+              '/bin/sh',
               '-c',
-              '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && PATH="${PATH}:/usr/lib/wsl/lib/" && /usr/bin/llama-server.sh',
+              '/usr/bin/ln -sfn /usr/lib/wsl/lib/* /usr/lib64/ && export PATH="${PATH}:/usr/lib/wsl/lib/" && exec "$@"',
+              '--',
             ];
           } else if (gpu.vendor === GPUVendor.INTEL) {
             supported = true;
@@ -195,7 +200,7 @@ export class LlamaCppPython extends InferenceProvider {
 
         // label the container
         labels['gpu'] = gpu.model;
-        envs.push(`GPU_LAYERS=${config.gpuLayers ?? 999}`);
+        gpuLayers = config.gpuLayers;
 
         // Add Intel-specific environment variables
         if (gpu.vendor === GPUVendor.INTEL) {
@@ -239,14 +244,44 @@ export class LlamaCppPython extends InferenceProvider {
       },
       HealthCheck: {
         // must be the port INSIDE the container not the exposed one
-        Test: ['CMD-SHELL', `curl -sSf localhost:8000 > /dev/null`],
+        Test: ['CMD-SHELL', `curl -sSf localhost:8000/health > /dev/null`],
         Interval: SECOND * 5,
         Retries: 4 * 5,
       },
       Labels: labels,
       Env: envs,
-      Cmd: cmd,
+      // the image entrypoint (if any, e.g. intel-gpu sourcing oneAPI) execs this command
+      Cmd: this.getLlamaServerArgs(modelInfo, target, gpuLayers),
     };
+  }
+
+  protected getLlamaServerArgs(modelInfo: ModelInfo, modelPath: string, gpuLayers?: number): string[] {
+    const args = [
+      'llama-server',
+      '--model',
+      modelPath,
+      '--host',
+      '0.0.0.0',
+      '--port',
+      '8000',
+      '--ctx-size',
+      `${LLAMA_SERVER_CTX_SIZE}`,
+    ];
+
+    // when unset, llama.cpp offloads as many layers as fit in the devices exposed to the container
+    if (gpuLayers !== undefined) {
+      args.push('--n-gpu-layers', `${gpuLayers}`);
+    }
+
+    const chatFormat = modelInfo.properties?.chatFormat;
+    if (chatFormat) {
+      // llama-cpp-python names this template llama-2, llama.cpp names it llama2
+      args.push('--chat-template', chatFormat === 'llama-2' ? 'llama2' : chatFormat);
+    }
+    if (modelInfo.properties?.jinja) {
+      args.push('--jinja');
+    }
+    return args;
   }
 
   async perform(config: InferenceServerConfig): Promise<InferenceServer> {

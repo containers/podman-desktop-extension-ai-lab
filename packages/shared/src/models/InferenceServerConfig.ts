@@ -47,8 +47,8 @@ export interface InferenceServerConfig {
    */
   modelsInfo: ModelInfo[];
   /**
-   * Number of layers to offload to the GPU
-   * @default undefined the GPU will not be used
+   * Number of layers to offload to the GPU when GPU acceleration is enabled
+   * @default undefined llama.cpp offloads as many layers as fit in device memory
    * 999 to offload all the layers
    */
   gpuLayers?: number;

@@ -16,8 +16,7 @@
         "hf.ibm-granite.granite-4.2-8b-GGUF",
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
-        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["python"],
@@ -53,8 +52,7 @@
         "hf.ibm-granite.granite-4.2-8b-GGUF",
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
-        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["python"],
@@ -75,8 +73,7 @@
         "hf.ibm-granite.granite-4.2-8b-GGUF",
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
-        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["python"],
@@ -100,8 +97,7 @@
         "hf.qwen.qwen2.5-coder-7b-instruct-GGUF",
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
-        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["python"],
@@ -122,8 +118,7 @@
         "hf.ibm-granite.granite-4.2-8b-GGUF",
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
-        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["python"],
@@ -144,8 +139,7 @@
         "hf.ibm-granite.granite-4.2-8b-GGUF",
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
-        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["javascript"],
@@ -166,8 +160,7 @@
         "hf.ibm-granite.granite-4.2-8b-GGUF",
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
-        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["java"],
@@ -188,8 +181,7 @@
         "hf.ibm-granite.granite-4.2-8b-GGUF",
         "hf.ibm-granite.granite-4.0-micro-GGUF",
         "hf.ibm-granite.granite-4.0-tiny-GGUF",
-        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF",
-        "hf.ibm-research.granite-3.2-8b-instruct-GGUF"
+        "hf.ibm-granite.granite-3.3-8b-instruct-GGUF"
       ],
       "backend": "llama-cpp",
       "languages": ["javascript"],
@@ -477,20 +469,6 @@
         "jinja": "true"
       },
       "sha256": "77bcee066a76dcdd10d0d123c87e32c8ec2c74e31b6ffd87ebee49c9ac215dca",
-      "backend": "llama-cpp"
-    },
-    {
-      "id": "hf.ibm-research.granite-3.2-8b-instruct-GGUF",
-      "name": "ibm-research/granite-3.2-8b-instruct-GGUF",
-      "description": "# Granite-3.2-8B-Instruct-GGUF\n\n**Model Summary:**\nGranite-3.2-8B-Instruct is an 8-billion-parameter, long-context AI model fine-tuned for thinking capabilities. Built on top of [Granite-3.1-8B-Instruct](https://huggingface.co/ibm-granite/granite-3.1-8b-instruct), it has been trained using a mix of permissively licensed open-source datasets and internally generated synthetic data designed for reasoning tasks. The model allows controllability of its thinking capability, ensuring it is applied only when required.\n\n- **Developers:** Granite Team, IBM\n- **Website**: [Granite Docs](https://www.ibm.com/granite/docs/)\n- **Release Date**: February 26th, 2025\n- **License:** [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)\n\n**Supported Languages:** \nEnglish, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, Korean, Dutch, and Chinese. However, users may finetune this Granite model for languages beyond these 12 languages.\n\n**Intended Use:** \nThis model is designed to handle general instruction-following tasks and can be integrated into AI assistants across various domains, including business applications.\n\n**Capabilities**\n* **Thinking**\n* Summarization\n* Text classification\n* Text extraction\n* Question-answering\n* Retrieval Augmented Generation (RAG)\n* Code related tasks\n* Function-calling tasks\n* Multilingual dialog use cases\n* Long-context tasks including long document/meeting summarization, long document QA, etc.",
-      "registry": "Hugging Face",
-      "license": "Apache-2.0",
-      "url": "https://huggingface.co/ibm-research/granite-3.2-8b-instruct-GGUF/resolve/main/granite-3.2-8b-instruct-Q4_K_M.gguf",
-      "memory": 4939212390,
-      "properties": {
-        "chatFormat": "openchat"
-      },
-      "sha256": "363f0bbc3200b9c9b0ab87efe237d77b1e05bb929d5d7e4b57c1447c911223e8",
       "backend": "llama-cpp"
     },
     {

@@ -409,6 +409,47 @@ test('filter recipes by tool', async () => {
   });
 });
 
+test('filter recipes by tool with recipes having several backends', async () => {
+  const recipe = {
+    name: 'Recipe',
+    description: 'Recipe',
+    repository: 'https://recipe.example.com',
+    categories: [],
+    readme: 'Readme for recipe',
+  };
+  vi.mocked(existsSync).mockReturnValue(true);
+  vi.mocked(promises.readFile).mockResolvedValue(
+    JSON.stringify({
+      version: catalogUtils.CatalogFormat.CURRENT,
+      recipes: [
+        // override recipe2 from the default catalog
+        { ...recipe, id: 'recipe2', backends: ['tool1', 'tool2'] },
+        { ...recipe, id: 'recipe4', backend: 'tool3' },
+      ],
+      models: [],
+      categories: [],
+    }),
+  );
+
+  await catalogManager.init();
+  await vi.waitUntil(() => catalogManager.getRecipes().some(recipe => recipe.id === 'recipe4'));
+
+  const result1 = catalogManager.filterRecipes({
+    tools: ['tool2'],
+  });
+  expect(result1.result.map(r => r.id)).toEqual(['recipe2']);
+  expect(result1.choices.tools).toEqual([
+    { name: 'tool1', count: 2 },
+    { name: 'tool2', count: 1 },
+    { name: 'tool3', count: 2 },
+  ]);
+
+  const result2 = catalogManager.filterRecipes({
+    tools: ['tool1'],
+  });
+  expect(result2.result.map(r => r.id)).toEqual(['recipe1', 'recipe2']);
+});
+
 test('filter recipes by framework', async () => {
   vi.mocked(existsSync).mockReturnValue(true);
   vi.mocked(promises.readFile).mockResolvedValue(JSON.stringify(userContent));

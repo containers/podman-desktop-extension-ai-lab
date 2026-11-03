@@ -21,16 +21,23 @@ import type { BuilderManager } from './BuilderManager';
 import type { GitManager } from '../gitManager';
 import type { LocalRepositoryRegistry } from '../../registries/LocalRepositoryRegistry';
 import { RecipeManager } from './RecipeManager';
-import { containerEngine, type ContainerProviderConnection } from '@podman-desktop/api';
+import { containerEngine, type ContainerProviderConnection, type TelemetryLogger } from '@podman-desktop/api';
 import type { Recipe } from '@shared/models/IRecipe';
 import type { Stats } from 'node:fs';
 import { existsSync, statSync } from 'node:fs';
 import { AIConfigFormat, parseYamlFile } from '../../models/AIConfig';
 import { goarch } from '../../utils/arch';
 import { VMType } from '@shared/models/IPodman';
-import type { InferenceManager } from '../inference/inferenceManager';
+import { InferenceManager } from '../inference/inferenceManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ApplicationOptions } from '../../models/ApplicationOptions';
+import type { InferenceServer } from '@shared/models/IInference';
+import type { RpcExtension } from '@shared/messages/MessageProxy';
+import type { ContainerRegistry } from '../../registries/ContainerRegistry';
+import type { PodmanConnection } from '../podmanConnection';
+import type { ModelsManager } from '../modelsManager';
+import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
+import type { CatalogManager } from '../catalogManager';
 
 const taskRegistryMock = {
   createTask: vi.fn(),
@@ -49,7 +56,16 @@ const localRepositoriesMock = {
   register: vi.fn(),
 } as unknown as LocalRepositoryRegistry;
 
-const inferenceManagerMock = {} as unknown as InferenceManager;
+const inferenceManagerMock = new InferenceManager(
+  {} as RpcExtension,
+  {} as ContainerRegistry,
+  {} as PodmanConnection,
+  {} as ModelsManager,
+  {} as TelemetryLogger,
+  taskRegistryMock,
+  {} as InferenceProviderRegistry,
+  {} as CatalogManager,
+);
 
 const recipeMock: Recipe = {
   id: 'recipe-test',
@@ -82,6 +98,8 @@ vi.mock('node:fs', () => ({
   existsSync: vi.fn(),
   statSync: vi.fn(),
 }));
+
+vi.mock('../inference/inferenceManager');
 
 vi.mock('../../utils/arch', () => ({
   goarch: vi.fn(),
@@ -233,5 +251,37 @@ describe.each([true, false])('buildRecipe, with model is %o', withModel => {
         'recipe-id': recipeMock.id,
       },
     );
+  });
+});
+
+describe('buildRecipe with inference server', () => {
+  const inferenceServerMock = {
+    status: 'running',
+    container: { containerId: 'inference-container' },
+  } as unknown as InferenceServer;
+
+  test.each<[string, string[] | undefined, boolean]>([
+    ['single matching backend', ['llama-cpp'], true],
+    ['one of several backends', ['openvino', 'llama-cpp'], true],
+    ['no matching backend', ['openvino', 'whisper-cpp'], false],
+    ['no backends', undefined, false],
+  ])('%s', async (_, backends, useInferenceServer) => {
+    vi.mocked(inferenceManagerMock.findServerByModel).mockReturnValue(inferenceServerMock);
+
+    const manager = await getInitializedRecipeManager();
+
+    const result = await manager.buildRecipe({
+      connection: connectionMock,
+      recipe: { ...recipeMock, backends },
+      model: { ...modelInfoMock, backend: 'llama-cpp' },
+    });
+
+    if (useInferenceServer) {
+      expect(inferenceManagerMock.findServerByModel).toHaveBeenCalled();
+      expect(result.inferenceServer).toBe(inferenceServerMock);
+    } else {
+      expect(inferenceManagerMock.findServerByModel).not.toHaveBeenCalled();
+      expect(result.inferenceServer).toBeUndefined();
+    }
   });
 });

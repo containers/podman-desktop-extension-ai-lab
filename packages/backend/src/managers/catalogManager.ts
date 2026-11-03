@@ -295,7 +295,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
           break;
         }
         case 'tools':
-          result = result.filter(r => values.includes(r.backend ?? ''));
+          result = result.filter(r => r.backends?.some(backend => values.includes(backend)));
           break;
         case 'frameworks': {
           let res: Recipe[] = [];
@@ -330,13 +330,12 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
       choices.tools = this.filterRecipes(subfilters).choices.tools;
     } else {
       choices.tools = result
-        .map(r => r.backend)
-        .filter(b => b !== undefined)
+        .flatMap(r => r.backends ?? [])
         .filter((value, index, array) => array.indexOf(value) === index)
         .sort((a, b) => a.localeCompare(b))
         .map(t => ({
           name: t,
-          count: result.filter(r => r.backend === t).length,
+          count: result.filter(r => r.backends?.includes(t)).length,
         }));
     }
 

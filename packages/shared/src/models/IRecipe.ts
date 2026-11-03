@@ -69,10 +69,10 @@ export interface Recipe {
   basedir?: string;
   recommended?: string[];
   /**
-   * The backend field aims to target which inference
-   * server the recipe requires
+   * The backends field aims to target which inference
+   * servers the recipe supports
    */
-  backend?: string;
+  backends?: string[];
   languages?: string[];
   frameworks?: string[];
 }

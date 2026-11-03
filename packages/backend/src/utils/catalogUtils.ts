@@ -59,7 +59,9 @@ function adaptToCurrent(raw: object): object & { version: string } {
   // for recipes - assume backend is llama-cpp and copy models field as recommended
   if ('recipes' in raw && Array.isArray(raw.recipes)) {
     raw.recipes.forEach(recipe => {
-      recipe.backend = recipe.backend ?? 'llama-cpp';
+      if (!recipe.backend && !recipe.backends) {
+        recipe.backend = 'llama-cpp';
+      }
       recipe.recommended = recipe.recommended ?? recipe.models ?? []; // Copy models to recommended if not present
       delete recipe.models; // Clear models to avoid duplication
     });
@@ -114,6 +116,23 @@ export function isStringArray(obj: unknown): obj is Array<string> {
   return Array.isArray(obj) && obj.every(item => typeof item === 'string');
 }
 
+/**
+ * In the catalog, a recipe may define its backends either with the `backend` (string)
+ * or the `backends` (array of string) property, but not both.
+ */
+function sanitizeRecipeBackends(recipe: object): string[] | undefined {
+  if ('backend' in recipe && 'backends' in recipe) {
+    throw new Error('invalid recipe format: backend and backends cannot be both defined');
+  }
+  if ('backend' in recipe && typeof recipe.backend === 'string') {
+    return [recipe.backend];
+  }
+  if ('backends' in recipe && isStringArray(recipe.backends)) {
+    return recipe.backends;
+  }
+  return undefined;
+}
+
 export function sanitizeRecipe(recipe: unknown): Recipe {
   if (
     isNonNullObject(recipe) &&
@@ -143,7 +162,7 @@ export function sanitizeRecipe(recipe: unknown): Recipe {
       icon: 'icon' in recipe && typeof recipe.icon === 'string' ? recipe.icon : undefined,
       basedir: 'basedir' in recipe && typeof recipe.basedir === 'string' ? recipe.basedir : undefined,
       recommended: 'recommended' in recipe && isStringArray(recipe.recommended) ? recipe.recommended : undefined,
-      backend: 'backend' in recipe && typeof recipe.backend === 'string' ? recipe.backend : undefined,
+      backends: sanitizeRecipeBackends(recipe),
       languages: 'languages' in recipe && isStringArray(recipe.languages) ? recipe.languages : undefined,
       frameworks: 'frameworks' in recipe && isStringArray(recipe.frameworks) ? recipe.frameworks : undefined,
     };

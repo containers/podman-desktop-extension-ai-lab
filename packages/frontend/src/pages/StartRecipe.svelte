@@ -42,7 +42,7 @@ let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = 
 let localPath: LocalRepository | undefined = $derived(findLocalRepositoryByRecipeId($localRepositories, recipe?.id));
 // Filter all models based on backend property
 let models: ModelInfo[] = $derived(
-  $modelsInfo.filter(model => (model.backend ?? InferenceType.NONE) === (recipe?.backend ?? InferenceType.NONE)),
+  $modelsInfo.filter(model => (recipe?.backends ?? [InferenceType.NONE]).includes(model.backend ?? InferenceType.NONE)),
 );
 // Hold the selected model
 let model: ModelInfo | undefined = $state(undefined);
@@ -119,7 +119,7 @@ async function submit(): Promise<void> {
       recipeId: $state.snapshot(recipe.id),
       connection: $state.snapshot(containerProviderConnection),
       dependencies: {
-        llamaStack: recipe.backend === 'llama-stack',
+        llamaStack: !!recipe.backends?.includes('llama-stack'),
       },
     };
     if (model) {
@@ -142,7 +142,7 @@ function handleOnClick(): void {
 }
 
 function isModelNeeded(recipe: Recipe): boolean {
-  return recipe.backend !== 'llama-stack';
+  return !recipe.backends?.includes('llama-stack');
 }
 </script>
 

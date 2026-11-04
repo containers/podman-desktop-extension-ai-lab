@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import podmanDesktop from '@podman-desktop/eslint-config';
 import globals from 'globals';
 import js from '@eslint/js';
 import typescriptLint from 'typescript-eslint';
@@ -45,6 +46,7 @@ const compat = new FlatCompat({
 const TYPESCRIPT_PROJECTS = ['packages/*/tsconfig.json', 'tests/*/tsconfig.json'];
 
 export default [
+  ...podmanDesktop,
   {
     ignores: [
       '*.config.*js',

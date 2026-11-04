@@ -17,6 +17,7 @@ overrides:
   dompurify@^3: ^3.4.17
   path-to-regexp@^8: ^8.4.2
   body-parser@^2: ^2.4.0
+  ajv@^8: ^8.20.0
 nodeLinker: hoisted
 allowBuilds:
   '@scarf/scarf': false

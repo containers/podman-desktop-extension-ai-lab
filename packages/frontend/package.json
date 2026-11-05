@@ -20,7 +20,7 @@
     "filesize": "^11.0.29",
     "humanize-duration": "^3.35.0",
     "moment": "^2.31.0",
-    "semver": "^7.8.5",
+    "semver": "^7.8.6",
     "tinro": "^0.6.12"
   },
   "devDependencies": {

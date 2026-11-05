@@ -62,7 +62,7 @@ vi.mock('../utils/client', async () => ({
 
 const fakeRecipe: Recipe = {
   id: 'dummy-recipe-id',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Recipe',
   description: 'Dummy description',
   recommended: ['dummy-model-1'],
@@ -71,7 +71,7 @@ const fakeRecipe: Recipe = {
 
 const fakeLlamaStackRecipe: Recipe = {
   id: 'dummy-llama-stack-recipe-id',
-  backend: 'llama-stack',
+  backends: ['llama-stack'],
   name: 'Dummy Llama Stack Recipe',
   description: 'Dummy description',
   categories: [],
@@ -245,6 +245,38 @@ test('Selecting model not downloaded should display a warning', async () => {
       'The selected model will be downloaded. This action can take some time depending on your connection',
     );
   });
+});
+
+test('Models of all recipe backends should be selectable', async () => {
+  const openvinoModel: ModelInfo = {
+    id: 'dummy-model-3',
+    backend: InferenceType.OPENVINO,
+    name: 'Dummy Model 3',
+  } as unknown as ModelInfo;
+  const whisperModel: ModelInfo = {
+    id: 'dummy-model-4',
+    backend: InferenceType.WHISPER_CPP,
+    name: 'Dummy Model 4',
+  } as unknown as ModelInfo;
+  vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
+    recipes: [{ ...fakeRecipe, backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO] }],
+    models: [],
+    categories: [],
+    version: '',
+  });
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([fakeRecommendedModel, openvinoModel, whisperModel]);
+
+  const { container } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  await fireEvent.pointerUp(screen.getByLabelText('Select Model'));
+  const labels = Array.from(container.querySelectorAll('div[class~="list-item"]')).map(
+    item => item.querySelector('span')?.textContent,
+  );
+  expect(labels).toContain(fakeRecommendedModel.name);
+  expect(labels).toContain(openvinoModel.name);
+  expect(labels).not.toContain(whisperModel.name);
 });
 
 test('Selecting model downloaded should not display a warning', async () => {

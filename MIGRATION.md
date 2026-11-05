@@ -32,6 +32,8 @@ If you want to keep the data, you can migrate it by updating certain properties 
 The recipe object has a new property `backend` which defines which framework is required.
 Value accepted are `llama-cpp`, `whisper-cpp` and `none`.
 
+A recipe supporting several frameworks can use the `backends` property instead, an array of the same values (E.g. `"backends": ["llama-cpp", "openvino"]`). Models using any of the listed backends can be used with the recipe. A recipe cannot define both `backend` and `backends`.
+
 Moreover, the `models` property has been changed to `recommended`.
 
 > [!TIP]

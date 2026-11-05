@@ -88,6 +88,16 @@ describe('sanitize', () => {
     expect(catalog.version).equals(CatalogFormat.CURRENT);
     expect(catalog.models[0].backend).equals('llama-cpp');
     expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
+    expect(catalog.recipes[0].backends).toStrictEqual(['llama-cpp']);
+  });
+
+  test('should keep recipe backends when adapting object not having any version to CURRENT format', () => {
+    const raw = {
+      recipes: [{ ...validRecipe, models: [], backends: ['openvino'] }],
+    };
+    expect(hasCatalogWrongFormat(raw)).toBeTruthy();
+    const catalog = sanitize(raw);
+    expect(catalog.recipes[0].backends).toStrictEqual(['openvino']);
   });
 
   test('should throw if version is different from CURRENT', () => {
@@ -172,6 +182,7 @@ describe('sanitize', () => {
     expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
     expect(catalog.recipes[0].languages).toStrictEqual(['lang1']);
     expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
+    expect(catalog.recipes[0].backends).toStrictEqual(['llama-cpp']);
   });
 });
 
@@ -249,6 +260,31 @@ describe('sanitizeRecipe', () => {
   test('missing mandatory fields', () => {
     const invalidRecipe = { ...validRecipe, id: undefined };
     expect(() => sanitizeRecipe(invalidRecipe)).toThrowError('invalid recipe format');
+  });
+
+  test('backend string should be loaded as backends array', () => {
+    expect(sanitizeRecipe({ ...validRecipe, backend: 'llama-cpp' }).backends).toStrictEqual(['llama-cpp']);
+  });
+
+  test('backends array should be loaded as backends array', () => {
+    expect(sanitizeRecipe({ ...validRecipe, backends: ['llama-cpp', 'openvino'] }).backends).toStrictEqual([
+      'llama-cpp',
+      'openvino',
+    ]);
+  });
+
+  test('backend and backends should not be both defined', () => {
+    expect(() => sanitizeRecipe({ ...validRecipe, backend: 'llama-cpp', backends: ['openvino'] })).toThrowError(
+      'invalid recipe format: backend and backends cannot be both defined',
+    );
+  });
+
+  test('invalid backend value should be ignored', () => {
+    expect(sanitizeRecipe({ ...validRecipe, backend: 1 }).backends).toBeUndefined();
+  });
+
+  test('invalid backends value should be ignored', () => {
+    expect(sanitizeRecipe({ ...validRecipe, backends: ['llama-cpp', 2] }).backends).toBeUndefined();
   });
 });
 

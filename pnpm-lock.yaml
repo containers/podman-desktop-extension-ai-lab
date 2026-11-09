@@ -420,8 +420,8 @@ importers:
         specifier: ^11.0.30
         version: 11.0.30
       humanize-duration:
-        specifier: ^3.35.0
-        version: 3.35.0
+        specifier: ^3.35.1
+        version: 3.35.1
       moment:
         specifier: ^2.31.0
         version: 2.31.0
@@ -3081,8 +3081,8 @@ packages:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
 
-  humanize-duration@3.35.0:
-    resolution: {integrity: sha512-+KYh+R85n1yadHHwy/QXF0JgPq5NPPBNrvigA5aAKrlKFd0bJpMx7wE3Xd6rM0kEaBQMCFrdMihkaDSgWERNvQ==}
+  humanize-duration@3.35.1:
+    resolution: {integrity: sha512-O4HQEzneiiAiPmFzvQKKK+Gbz3vFO9Obq6lnWsbGyUbJ54m7mDN+/lHpzilFxDd8pmrMzuHLw4dsoWnLCEq7dQ==}
 
   husky@9.1.7:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
@@ -5450,7 +5450,7 @@ snapshots:
       '@fortawesome/free-brands-svg-icons': 7.3.1
       '@fortawesome/free-regular-svg-icons': 7.3.1
       '@fortawesome/free-solid-svg-icons': 7.3.1
-      humanize-duration: 3.35.0
+      humanize-duration: 3.35.1
       moment: 2.31.0
       svelte: 5.57.3(@typescript-eslint/types@8.72.1)
       svelte-fa: 4.0.4(svelte@5.57.3(@typescript-eslint/types@8.72.1))
@@ -7453,7 +7453,7 @@ snapshots:
 
   human-signals@2.1.0: {}
 
-  humanize-duration@3.35.0: {}
+  humanize-duration@3.35.1: {}
 
   husky@9.1.7: {}
 

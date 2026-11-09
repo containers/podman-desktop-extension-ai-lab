@@ -104,11 +104,11 @@
     "typecheck": "pnpm run generate && tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/mcp": "^2.0.90",
-    "@ai-sdk/openai-compatible": "^3.0.84",
+    "@ai-sdk/mcp": "^2.0.92",
+    "@ai-sdk/openai-compatible": "^3.0.86",
     "@huggingface/gguf": "^0.4.6",
     "@huggingface/hub": "^2.17.10",
-    "ai": "^7.0.162",
+    "ai": "^7.0.164",
     "express": "^5.3.0",
     "express-openapi-validator": "^5.6.2",
     "isomorphic-git": "^1.44.11",
@@ -124,8 +124,8 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
-    "@ai-sdk/provider": "^4.0.35",
-    "@ai-sdk/provider-utils": "^5.0.74",
+    "@ai-sdk/provider": "^4.0.36",
+    "@ai-sdk/provider-utils": "^5.0.75",
     "@podman-desktop/api": "^1.30.5",
     "@rollup/plugin-replace": "^6.0.3",
     "@types/express": "^5.0.6",

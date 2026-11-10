@@ -57,9 +57,6 @@ let formValid = $derived.by<boolean>((): boolean => {
   if (!recipe) {
     return false;
   }
-  if (!isModelNeeded(recipe)) {
-    return true;
-  }
   return !!model;
 });
 
@@ -118,9 +115,6 @@ async function submit(): Promise<void> {
     const options: RecipePullOptions = {
       recipeId: $state.snapshot(recipe.id),
       connection: $state.snapshot(containerProviderConnection),
-      dependencies: {
-        llamaStack: !!recipe.backends?.includes('llama-stack'),
-      },
     };
     if (model) {
       (options as RecipePullOptionsWithModelInference).modelId = $state.snapshot(model.id);
@@ -139,10 +133,6 @@ export function goToUpPage(): void {
 
 function handleOnClick(): void {
   router.goto(`/recipe/${recipeId}/running`);
-}
-
-function isModelNeeded(recipe: Recipe): boolean {
-  return !recipe.backends?.includes('llama-stack');
 }
 </script>
 
@@ -205,18 +195,16 @@ function isModelNeeded(recipe: Recipe): boolean {
                 containerProviderConnections={startedContainerProviderConnectionInfo} />
             {/if}
 
-            {#if isModelNeeded(recipe)}
-              <!-- model form -->
-              <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-                >Model</label>
-              <ModelSelect bind:value={model} disabled={loading} recommended={recipe.recommended} models={models} />
-              {#if model && model.file === undefined}
-                <div class="text-gray-800 text-sm flex items-center">
-                  <Fa class="mr-2" icon={faWarning} />
-                  <span role="alert"
-                    >The selected model will be downloaded. This action can take some time depending on your connection</span>
-                </div>
-              {/if}
+            <!-- model form -->
+            <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+              >Model</label>
+            <ModelSelect bind:value={model} disabled={loading} recommended={recipe.recommended} models={models} />
+            {#if model && model.file === undefined}
+              <div class="text-gray-800 text-sm flex items-center">
+                <Fa class="mr-2" icon={faWarning} />
+                <span role="alert"
+                  >The selected model will be downloaded. This action can take some time depending on your connection</span>
+              </div>
             {/if}
           </div>
 

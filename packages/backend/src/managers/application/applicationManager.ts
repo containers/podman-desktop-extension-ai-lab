@@ -54,7 +54,6 @@ import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { TaskRunner } from '../TaskRunner';
 import { getInferenceType } from '../../utils/inferenceUtils';
-import type { LlamaStackManager } from '../llama-stack/llamaStackManager';
 import { isApplicationOptionsWithModelInference, type ApplicationOptions } from '../../models/ApplicationOptions';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
@@ -72,7 +71,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     private telemetry: TelemetryLogger,
     private podManager: PodManager,
     private recipeManager: RecipeManager,
-    private llamaStackManager: LlamaStackManager,
   ) {
     super(rpcExtension, MSG_APPLICATIONS_STATE_UPDATE, () => this.getApplicationsState());
     this.#applications = new ApplicationRegistry<ApplicationState>();
@@ -284,7 +282,7 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
           ...labels,
           'pod-id': podInfo.Id,
         }));
-        await this.createContainerAndAttachToPod(options, podInfo, components, modelPath, labels);
+        await this.createContainerAndAttachToPod(options, podInfo, components, modelPath);
         return podInfo;
       },
     );
@@ -295,7 +293,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
     podInfo: PodInfo,
     components: RecipeComponents,
     modelPath: string | undefined,
-    labels?: { [key: string]: string },
   ): Promise<void> {
     const vmType = options.connection.vmType ?? VMType.UNKNOWN;
     // temporary check to set Z flag or not - to be removed when switching to podman 5
@@ -329,15 +326,6 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
               const endPoint = `http://localhost:${modelService.ports[0]}`;
               envs = [`MODEL_ENDPOINT=${endPoint}`];
             }
-          }
-        } else if (options.dependencies?.llamaStack) {
-          let stack = await this.llamaStackManager.getLlamaStackContainers();
-          if (!stack) {
-            await this.llamaStackManager.createLlamaStackContainers(options.connection, labels ?? {});
-            stack = await this.llamaStackManager.getLlamaStackContainers();
-          }
-          if (stack) {
-            envs = [`MODEL_ENDPOINT=http://host.containers.internal:${stack.server?.port}`];
           }
         }
         if (image.ports.length > 0) {

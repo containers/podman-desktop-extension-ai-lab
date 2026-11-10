@@ -53,9 +53,6 @@ import { STUDIO_API_CHANNEL } from '@shared/StudioAPI';
 import { ModelHandlerRegistry } from './registries/ModelHandlerRegistry';
 import { URLModelHandler } from './models/URLModelHandler';
 import { HuggingFaceModelHandler } from './models/HuggingFaceModelHandler';
-import { LlamaStackApiImpl } from './llama-stack-api-impl';
-import { LLAMA_STACK_API_CHANNEL, type LlamaStackAPI } from '@shared/LlamaStackAPI';
-import { LlamaStackManager } from './managers/llama-stack/llamaStackManager';
 import { OpenVINO } from './workers/provider/OpenVINO';
 import { McpServerManager } from './managers/playground/McpServerManager';
 import os from 'node:os';
@@ -73,7 +70,6 @@ export class Studio {
    */
   #rpcExtension: RpcExtension | undefined;
   #studioApi: StudioApiImpl | undefined;
-  #llamaStackApi: LlamaStackApiImpl | undefined;
 
   #localRepositoryRegistry: LocalRepositoryRegistry | undefined;
   #catalogManager: CatalogManager | undefined;
@@ -95,7 +91,6 @@ export class Studio {
   #configurationRegistry: ConfigurationRegistry | undefined;
   #gpuManager: GPUManager | undefined;
   #navigationRegistry: NavigationRegistry | undefined;
-  #llamaStackManager: LlamaStackManager | undefined;
 
   constructor(readonly extensionContext: ExtensionContext) {
     this.#extensionContext = extensionContext;
@@ -275,19 +270,6 @@ export class Studio {
     this.#inferenceManager.init();
     this.#extensionContext.subscriptions.push(this.#inferenceManager);
 
-    /** The Llama Stack manager */
-    this.#llamaStackManager = new LlamaStackManager(
-      appUserDirectory,
-      this.#taskRegistry,
-      this.#podmanConnection,
-      this.#containerRegistry,
-      this.#configurationRegistry,
-      this.#telemetry,
-      this.#modelsManager,
-    );
-    this.#extensionContext.subscriptions.push(this.#llamaStackManager);
-    this.#llamaStackManager.init();
-
     /**
      * The recipe manage offer some andy methods to manage recipes, build get images etc.
      */
@@ -314,7 +296,6 @@ export class Studio {
       this.#telemetry,
       this.#podManager,
       this.#recipeManager,
-      this.#llamaStackManager,
     );
     this.#applicationManager.init();
     this.#extensionContext.subscriptions.push(this.#applicationManager);
@@ -375,10 +356,6 @@ export class Studio {
     );
     await apiServer.init();
     this.#extensionContext.subscriptions.push(apiServer);
-
-    this.#llamaStackApi = new LlamaStackApiImpl(this.#llamaStackManager);
-    // Register the instance
-    this.#rpcExtension.registerInstance<LlamaStackAPI, LlamaStackApiImpl>(LLAMA_STACK_API_CHANNEL, this.#llamaStackApi);
   }
 
   public async deactivate(): Promise<void> {

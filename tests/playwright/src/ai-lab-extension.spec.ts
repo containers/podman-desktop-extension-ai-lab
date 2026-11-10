@@ -26,7 +26,6 @@
 import type { APIResponse, Locator } from '@playwright/test';
 import type { NavigationBar, ExtensionsPage } from '@podman-desktop/tests-playwright';
 import {
-  ContainerState,
   expect,
   test,
   RunnerOptions,
@@ -55,7 +54,6 @@ import {
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { AiLlamaStackPage } from './model/ai-lab-model-llamastack-page';
 import type { ApplicationCatalog } from '../../../packages/shared/src/models/IApplicationCatalog';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
@@ -596,82 +594,6 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
           await deleteUnusedImages(navigationBar);
         },
       );
-    });
-  });
-
-  test.describe.serial(`Start Llama Stack from sidebar and verify containers`, { tag: '@smoke' }, () => {
-    // TODO: remove these tests together with Llama Stack, see https://github.com/containers/podman-desktop-extension-ai-lab/issues/4707
-    // eslint-disable-next-line sonarjs/no-skipped-tests
-    test.skip(true, 'Llama Stack is being removed, see issue #4707');
-    let llamaStackPage: AiLlamaStackPage;
-    const llamaStackContainerNames: string[] = [];
-
-    test.beforeAll(`Open Llama Stack`, async ({ runner, page, navigationBar }) => {
-      aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
-      await aiLabPage.navigationBar.waitForLoad();
-      llamaStackPage = await aiLabPage.navigationBar.openLlamaStack();
-      await llamaStackPage.waitForLoad();
-    });
-
-    test(`Start Llama Stack containers`, async () => {
-      test.setTimeout(300_000);
-      await llamaStackPage.waitForLoad();
-      await llamaStackPage.runLlamaStackContainer();
-      await expect(llamaStackPage.openLlamaStackContainerButton).toBeVisible({ timeout: 120_000 });
-      await expect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeVisible({ timeout: 120_000 });
-      await expect(llamaStackPage.openLlamaStackContainerButton).toBeEnabled({ timeout: 30_000 });
-      await expect(llamaStackPage.exploreLlamaStackEnvironmentButton).toBeEnabled({ timeout: 30_000 });
-    });
-
-    test(`Verify Llama Stack containers are running`, async ({ navigationBar }) => {
-      let containersPage = await navigationBar.openContainers();
-      await expect(containersPage.heading).toBeVisible();
-
-      await expect
-        .poll(
-          async () => {
-            const allRows = await containersPage.getAllTableRows();
-            llamaStackContainerNames.length = 0;
-            for (const row of allRows) {
-              const text = await row.textContent();
-              if (text?.includes('llama-stack')) {
-                const containerNameMatch = RegExp(/\b(llama-stack[^\s]*)/).exec(text);
-                if (containerNameMatch) {
-                  llamaStackContainerNames.push(containerNameMatch[1]);
-                }
-              }
-            }
-            return llamaStackContainerNames.length;
-          },
-          {
-            timeout: 30_000,
-            intervals: [5_000],
-          },
-        )
-        .toBe(2);
-
-      console.log(`Found containers: ${llamaStackContainerNames.join(', ')}`);
-
-      for (const container of llamaStackContainerNames) {
-        containersPage = await navigationBar.openContainers();
-        await expect(containersPage.heading).toBeVisible();
-        const containersDetailsPage = await containersPage.openContainersDetails(container);
-        await expect(containersDetailsPage.heading).toBeVisible();
-        await expect
-          .poll(async () => containersDetailsPage.getState(), { timeout: 30_000 })
-          .toContain(ContainerState.Running);
-      }
-    });
-
-    test.afterAll(`Stop Llama Stack containers`, async ({ navigationBar }) => {
-      test.setTimeout(120_000 + IMAGE_CLEANUP_TIMEOUT);
-      for (const container of llamaStackContainerNames) {
-        const containersPage = await navigationBar.openContainers();
-        await expect(containersPage.heading).toBeVisible();
-        await containersPage.deleteContainer(container);
-        await expect.poll(async () => await containersPage.containerExists(container), { timeout: 30_000 }).toBeFalsy();
-      }
-      await deleteUnusedImages(navigationBar);
     });
   });
 });

@@ -20,16 +20,12 @@ import type { StudioAPI } from '@shared/StudioAPI';
 import { STUDIO_API_CHANNEL } from '@shared/StudioAPI';
 import { RpcBrowser } from '@shared/messages/MessageProxy';
 import type { RouterState } from '/@/models/IRouterState';
-import { LLAMA_STACK_API_CHANNEL, type LlamaStackAPI } from '@shared/LlamaStackAPI';
 
 const podmanDesktopApi = acquirePodmanDesktopApi();
 export const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);
 
 export const studioClient: StudioAPI = rpcBrowser.getProxy<StudioAPI>(STUDIO_API_CHANNEL, {
   noTimeoutMethods: ['openDialog'],
-});
-export const llamaStackClient: LlamaStackAPI = rpcBrowser.getProxy<LlamaStackAPI>(LLAMA_STACK_API_CHANNEL, {
-  noTimeoutMethods: ['requestcreateLlamaStackContainerss'],
 });
 
 export const saveRouterState = (state: RouterState): void => {

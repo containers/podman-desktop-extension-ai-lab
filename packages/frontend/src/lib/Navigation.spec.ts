@@ -42,7 +42,6 @@ test('renders only supported navigation links', () => {
     '/models',
     '/services',
     '/playgrounds',
-    '/llamastack/try',
     '/local-server',
   ]);
   expect(screen.queryByText('TUNING')).not.toBeInTheDocument();

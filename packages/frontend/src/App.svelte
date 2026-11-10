@@ -25,7 +25,6 @@ import type { Unsubscriber } from 'svelte/store';
 import { MSG_NAVIGATION_ROUTE_UPDATE } from '@shared/Messages';
 import GPUPromotion from '/@/lib/notification/GPUPromotion.svelte';
 import LocalServer from './pages/server-information/LocalServer.svelte';
-import StartLlamaStackContainer from './pages/llama-stack/StartLlamaStackContainer.svelte';
 
 router.mode.hash();
 
@@ -84,11 +83,6 @@ onDestroy(() => {
           {:else}
             <Playground playgroundId={meta.params.id} />
           {/if}
-        </Route>
-        <Route path="/llamastack/*" firstmatch>
-          <Route path="/try">
-            <StartLlamaStackContainer />
-          </Route>
         </Route>
         <!-- Preferences -->
         <Route path="/preferences">

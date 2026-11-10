@@ -31,7 +31,6 @@ import { VMType } from '@shared/models/IPodman';
 import { POD_LABEL_MODEL_ID, POD_LABEL_RECIPE_ID } from '../../utils/RecipeConstants';
 import type { InferenceServer } from '@shared/models/IInference';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
-import type { LlamaStackManager } from '../llama-stack/llamaStackManager';
 import type { ApplicationOptions } from '../../models/ApplicationOptions';
 
 const taskRegistryMock = {
@@ -76,10 +75,6 @@ const recipeManager = {
   cloneRecipe: vi.fn(),
   buildRecipe: vi.fn(),
 } as unknown as RecipeManager;
-
-const llamaStackManager = {
-  getLlamaStackContainers: vi.fn(),
-} as unknown as LlamaStackManager;
 
 const recipeMock: Recipe = {
   id: 'recipe-test',
@@ -127,10 +122,6 @@ beforeEach(() => {
     id: 'fake-task',
   }));
   vi.mocked(modelsManagerMock.uploadModelToPodmanMachine).mockResolvedValue('downloaded-model-path');
-  vi.mocked(llamaStackManager.getLlamaStackContainers).mockResolvedValue({
-    server: { containerId: 'container1', port: 10001, state: 'running' },
-    playground: { containerId: 'playground1', port: 10002, state: 'running' },
-  });
 });
 
 function getInitializedApplicationManager(): ApplicationManager {
@@ -143,7 +134,6 @@ function getInitializedApplicationManager(): ApplicationManager {
     telemetryMock,
     podManager,
     recipeManager,
-    llamaStackManager,
   );
 
   manager.init();
@@ -295,9 +285,6 @@ describe.each([true, false])('pullApplication, with model is %o', withModel => {
       : {
           connection: connectionMock,
           recipe: recipeMock,
-          dependencies: {
-            llamaStack: true,
-          },
         };
   });
 
@@ -331,7 +318,6 @@ describe.each([true, false])('pullApplication, with model is %o', withModel => {
         connection: connectionMock,
         recipe: recipeMock,
         model: withModel ? remoteModelMock : undefined,
-        dependencies: applicationOptions.dependencies,
       },
       {
         'test-label': 'test-value',
@@ -360,7 +346,7 @@ describe.each([true, false])('pullApplication, with model is %o', withModel => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith('test-engine-id', {
       Image: recipeImageInfoMock.id,
       name: expect.any(String),
-      Env: withModel ? [] : ['MODEL_ENDPOINT=http://host.containers.internal:10001'],
+      Env: [],
       HealthCheck: undefined,
       HostConfig: undefined,
       Detach: true,
@@ -407,7 +393,6 @@ describe.each([true, false])('pullApplication, with model is %o', withModel => {
         connection: connectionMock,
         recipe: recipeMock,
         model: withModel ? remoteModelMock : undefined,
-        dependencies: applicationOptions.dependencies,
       },
       {
         'test-label': 'test-value',
@@ -436,9 +421,7 @@ describe.each([true, false])('pullApplication, with model is %o', withModel => {
     expect(containerEngine.createContainer).toHaveBeenCalledWith('test-engine-id', {
       Image: recipeImageInfoMock.id,
       name: expect.any(String),
-      Env: withModel
-        ? ['MODEL_ENDPOINT=http://host.containers.internal:56001']
-        : ['MODEL_ENDPOINT=http://host.containers.internal:10001'],
+      Env: withModel ? ['MODEL_ENDPOINT=http://host.containers.internal:56001'] : [],
       HealthCheck: undefined,
       HostConfig: undefined,
       Detach: true,

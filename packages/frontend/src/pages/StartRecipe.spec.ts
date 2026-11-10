@@ -69,14 +69,6 @@ const fakeRecipe: Recipe = {
   categories: [],
 } as unknown as Recipe;
 
-const fakeLlamaStackRecipe: Recipe = {
-  id: 'dummy-llama-stack-recipe-id',
-  backends: ['llama-stack'],
-  name: 'Dummy Llama Stack Recipe',
-  description: 'Dummy description',
-  categories: [],
-} as unknown as Recipe;
-
 const fakeRecommendedModel: ModelInfo = {
   id: 'dummy-model-1',
   backend: InferenceType.LLAMA_CPP,
@@ -108,7 +100,7 @@ beforeEach(() => {
   router.location.query.clear();
 
   vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
-    recipes: [fakeRecipe, fakeLlamaStackRecipe],
+    recipes: [fakeRecipe],
     models: [],
     categories: [],
     version: '',
@@ -165,18 +157,6 @@ test('Submit button should be disabled when model is required and no model is se
   const button = screen.getByTitle(`Start ${fakeRecipe.name} recipe`);
   expect(button).toBeDefined();
   expect(button).toBeDisabled();
-});
-
-test('Submit button should be enabled when model is not required', async () => {
-  vi.mocked(ModelsInfoStore).modelsInfo = readable([]);
-
-  render(StartRecipe, {
-    recipeId: 'dummy-llama-stack-recipe-id',
-  });
-
-  const button = screen.getByTitle(`Start ${fakeLlamaStackRecipe.name} recipe`);
-  expect(button).toBeDefined();
-  expect(button).toBeEnabled();
 });
 
 test('First recommended model should be selected as default model', async () => {
@@ -317,29 +297,6 @@ test('Submit button should call requestPullApplication with proper arguments', a
       connection: containerProviderConnection,
       recipeId: fakeRecipe.id,
       modelId: fakeRecommendedModel.id,
-      dependencies: {
-        llamaStack: false,
-      },
-    });
-  });
-});
-
-test('Submit button should call requestPullApplication with proper arguments for llama-stack recipe', async () => {
-  render(StartRecipe, {
-    recipeId: 'dummy-llama-stack-recipe-id',
-  });
-
-  const button = screen.getByTitle(`Start ${fakeLlamaStackRecipe.name} recipe`);
-  expect(button).toBeEnabled();
-  await fireEvent.click(button);
-
-  await vi.waitFor(() => {
-    expect(studioClient.requestPullApplication).toHaveBeenCalledWith({
-      connection: containerProviderConnection,
-      recipeId: fakeLlamaStackRecipe.id,
-      dependencies: {
-        llamaStack: true,
-      },
     });
   });
 });

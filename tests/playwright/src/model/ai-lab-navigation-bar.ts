@@ -26,7 +26,6 @@ import { AILabCatalogPage as AILabModelCatalogPage } from './ai-lab-model-catalo
 import { AILabPlaygroundsPage } from './ai-lab-playgrounds-page';
 import { AILabLocalServerPage } from './ai-lab-local-server-page';
 import { AILabDashboardPage } from './ai-lab-dashboard-page';
-import { AiLlamaStackPage } from './ai-lab-model-llamastack-page';
 
 export class AILabNavigationBar extends AILabBasePage {
   readonly navigationBar: Locator;
@@ -36,7 +35,6 @@ export class AILabNavigationBar extends AILabBasePage {
   readonly catalogButton: Locator;
   readonly servicesButton: Locator;
   readonly playgroundsButton: Locator;
-  readonly llamaStackButton: Locator;
   readonly localServerButton: Locator;
 
   constructor(page: Page, webview: Page) {
@@ -48,7 +46,6 @@ export class AILabNavigationBar extends AILabBasePage {
     this.catalogButton = this.navigationBar.getByRole('link', { name: 'Catalog', exact: true });
     this.servicesButton = this.navigationBar.getByRole('link', { name: 'Services' });
     this.playgroundsButton = this.navigationBar.getByRole('link', { name: 'Playgrounds' });
-    this.llamaStackButton = this.navigationBar.getByRole('link', { name: 'Llama Stack' });
     this.localServerButton = this.navigationBar.getByRole('link', { name: 'Local Server' });
   }
 
@@ -90,12 +87,6 @@ export class AILabNavigationBar extends AILabBasePage {
     await playExpect(this.playgroundsButton).toBeVisible();
     await this.playgroundsButton.click();
     return new AILabPlaygroundsPage(this.page, this.webview);
-  }
-
-  async openLlamaStack(): Promise<AiLlamaStackPage> {
-    await playExpect(this.llamaStackButton).toBeVisible();
-    await this.llamaStackButton.click();
-    return new AiLlamaStackPage(this.page, this.webview);
   }
 
   async openLocalServer(): Promise<AILabLocalServerPage> {

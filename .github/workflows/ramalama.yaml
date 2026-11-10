@@ -97,7 +97,6 @@ jobs:
         working-directory: ./podman-desktop-extension-ai-lab
         id: build-image
         run: |
-          pnpm build
           podman build -t local_ai_lab_image ./
           CONTAINER_ID=$(podman create localhost/local_ai_lab_image --entrypoint "")
           mkdir -p tests/playwright/tests/playwright/output/ai-lab-tests-pd/plugins

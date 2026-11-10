@@ -393,8 +393,8 @@ importers:
         specifier: ^7.13.0
         version: 7.13.0(typescript@6.0.3)
       supertest:
-        specifier: ^7.3.1
-        version: 7.3.1(supports-color@10.2.2)
+        specifier: ^7.3.2
+        version: 7.3.2(supports-color@10.2.2)
       vitest:
         specifier: ^5.0.5
         version: 5.0.5(@types/node@24.19.2)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.0(@noble/hashes@1.8.0))(msw@3.0.4(@types/node@26.6.5)(graphql@16.14.2)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.6(@types/node@26.6.5)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.6(@types/node@24.19.2)(esbuild@0.27.2)(jiti@2.7.0)(yaml@2.9.1))
@@ -4304,8 +4304,8 @@ packages:
     resolution: {integrity: sha512-PVMkMrhKrSTtFhUU8jiWuGh/gyRMKiyCTCmm0+qVzRNxlfntmRKJkDhlEXN62x3HIb33sQ4kmL8lcSdccWAchQ==}
     engines: {node: '>=14.18.0'}
 
-  supertest@7.3.1:
-    resolution: {integrity: sha512-vNaNCFoCR/edDbErQZp5KLNT8R4dSPHX7rlDLoE8hWLAm/878j6ShMbe8HK/E6RwwuhlSXVelXAIg9AxR5WWPw==}
+  supertest@7.3.2:
+    resolution: {integrity: sha512-hR0dKRUE+PwZhHLdq/GRhf97HbUQte+AhbpWBQ9nh02tpjujVJj0GY4aygd1dAKdNZ7UZexWHpeItyJi/jLsgw==}
     engines: {node: '>=14.18.0'}
 
   supports-color@10.2.2:
@@ -8673,7 +8673,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  supertest@7.3.1(supports-color@10.2.2):
+  supertest@7.3.2(supports-color@10.2.2):
     dependencies:
       cookie-signature: 1.2.2
       methods: 1.1.2

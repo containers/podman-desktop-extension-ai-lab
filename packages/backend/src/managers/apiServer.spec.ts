@@ -18,6 +18,7 @@
 
 /* eslint-disable sonarjs/no-nested-functions */
 
+import type { MockInstance } from 'vitest';
 import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ApiServer, PREFERENCE_RANDOM_PORT } from './apiServer';
 import request from 'supertest';
@@ -900,6 +901,289 @@ describe('/api/ps', () => {
           digest: 'b48fa42fa5b28c4363747ec0797532e274650f73004383a3054697137d9d1f30',
         },
       ],
+    });
+  });
+});
+
+describe('OpenAI compatible /v1 API', () => {
+  const modelInfo = {
+    id: 'modelId1',
+    name: 'model-name',
+    description: 'model 1',
+    file: {
+      file: 'a-file-name',
+      path: '/path/to/model-file',
+      creation: new Date(1_700_000_000_000),
+    },
+  };
+
+  function healthyServer(labels?: Record<string, string>): InferenceServer {
+    return {
+      models: [modelInfo],
+      container: {
+        engineId: 'engine1',
+        containerId: 'container1',
+      },
+      status: 'running',
+      health: {
+        Status: 'healthy',
+      },
+      connection: {
+        port: 8080,
+      },
+      labels,
+    } as unknown as InferenceServer;
+  }
+
+  function sseResponse(chunks: string[]): Response {
+    const encoder = new TextEncoder();
+    const body = new ReadableStream<Uint8Array>({
+      start(controller): void {
+        for (const chunk of chunks) {
+          controller.enqueue(encoder.encode(chunk));
+        }
+        controller.close();
+      },
+    });
+    return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } });
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe('GET /v1/models', () => {
+    test('returns an empty list', async () => {
+      vi.mocked(modelsManager.getModelsInfo).mockReturnValue([]);
+      const res = await request(server.getListener()!).get('/v1/models').expect(200);
+      expect(res.body).toEqual({ object: 'list', data: [] });
+    });
+
+    test('lists only downloaded models, in the OpenAI format', async () => {
+      vi.mocked(modelsManager.getModelsInfo).mockReturnValue([
+        modelInfo,
+        { id: 'modelId2', name: 'not-downloaded', description: 'model 2' },
+      ]);
+      vi.mocked(modelsManager.isModelOnDisk).mockImplementation(id => id === 'modelId1');
+      const res = await request(server.getListener()!).get('/v1/models').expect(200);
+      expect(res.body).toEqual({
+        object: 'list',
+        data: [{ id: 'model-name', object: 'model', created: 1_700_000_000, owned_by: 'ai-lab' }],
+      });
+    });
+
+    test('created is 0 when the model file has no creation date', async () => {
+      vi.mocked(modelsManager.getModelsInfo).mockReturnValue([{ id: 'modelId2', name: 'no-date', description: 'x' }]);
+      vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(true);
+      const res = await request(server.getListener()!).get('/v1/models').expect(200);
+      expect(res.body.data[0].created).toBe(0);
+    });
+
+    test('returns an OpenAI error if getting the models fails', async () => {
+      vi.mocked(modelsManager.getModelsInfo).mockImplementation(() => {
+        throw new Error('boom');
+      });
+      const res = await request(server.getListener()!).get('/v1/models').expect(500);
+      expect(res.body).toEqual({
+        // eslint-disable-next-line no-null/no-null
+        error: { message: 'unable to get models: boom', type: 'server_error', code: null },
+      });
+    });
+  });
+
+  describe('POST /v1/chat/completions', () => {
+    let fetchSpy: MockInstance<typeof fetch>;
+
+    beforeEach(() => {
+      fetchSpy = vi.spyOn(globalThis, 'fetch');
+      vi.mocked(catalogManager.getModelByName).mockReturnValue(modelInfo);
+      vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(true);
+      vi.mocked(inferenceManager.getServers).mockReturnValue([healthyServer()]);
+    });
+
+    test('returns 400 if model is missing', async () => {
+      const res = await request(server.getListener()!).post('/v1/chat/completions').send({ messages: [] }).expect(400);
+      expect(res.body.error).toMatchObject({ type: 'invalid_request_error' });
+      expect(typeof res.body.error.message).toBe('string');
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    test('returns 400 if body is not an object', async () => {
+      const res = await request(server.getListener()!).post('/v1/chat/completions').send([1, 2]).expect(400);
+      expect(res.body.error).toMatchObject({ type: 'invalid_request_error' });
+    });
+
+    test('returns 400 in the OpenAI shape for a malformed JSON body', async () => {
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .set('Content-Type', 'application/json')
+        .send('{ not json')
+        .expect(400);
+      expect(res.body.message).toBeUndefined();
+      expect(res.body.errors).toBeUndefined();
+      expect(res.body.error).toMatchObject({ type: 'invalid_request_error', code: 'entity.parse.failed' });
+    });
+
+    test('returns 404 model_not_found for an unknown model', async () => {
+      vi.mocked(catalogManager.getModelByName).mockImplementation(() => {
+        throw new Error('unknown');
+      });
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'unknown-model' })
+        .expect(404);
+      expect(res.body).toEqual({
+        error: {
+          message: 'model "unknown-model" does not exist',
+          type: 'invalid_request_error',
+          code: 'model_not_found',
+        },
+      });
+    });
+
+    test('returns 404 model_not_found for a model which is not downloaded', async () => {
+      vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(false);
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name' })
+        .expect(404);
+      expect(res.body).toEqual({
+        error: {
+          message: 'model "model-name" not found, try pulling it first',
+          type: 'invalid_request_error',
+          code: 'model_not_found',
+        },
+      });
+      expect(inferenceManager.createInferenceServer).not.toHaveBeenCalled();
+    });
+
+    test('returns 500 server_error if the inference server cannot be created', async () => {
+      vi.mocked(inferenceManager.getServers).mockReturnValue([]);
+      vi.mocked(inferenceManager.createInferenceServer).mockRejectedValue(new Error('cannot create'));
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name' })
+        .expect(500);
+      expect(res.body).toEqual({
+        error: { message: 'cannot create', type: 'server_error', code: 'inference_server_unavailable' },
+      });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    test('proxies a non-stream request, only rewriting the model', async () => {
+      const upstreamBody = { id: 'chatcmpl-1', object: 'chat.completion', choices: [], usage: { total_tokens: 3 } };
+      fetchSpy.mockResolvedValue(
+        new Response(JSON.stringify(upstreamBody), {
+          status: 200,
+          headers: { 'content-type': 'application/json; charset=utf-8' },
+        }),
+      );
+      const tools = [{ type: 'function', function: { name: 'f', parameters: { type: 'object' } } }];
+      const payload = {
+        model: 'model-name',
+        messages: [{ role: 'user', content: 'hello' }],
+        tools,
+        tool_choice: 'auto',
+        temperature: 0.2,
+        max_tokens: 42,
+        stream_options: { include_usage: true },
+      };
+      const res = await request(server.getListener()!).post('/v1/chat/completions').send(payload).expect(200);
+      expect(res.body).toEqual(upstreamBody);
+      expect(res.headers['content-type']).toBe('application/json; charset=utf-8');
+
+      expect(fetchSpy).toHaveBeenCalledOnce();
+      const [url, init] = fetchSpy.mock.calls[0];
+      expect(url).toBe('http://localhost:8080/v1/chat/completions');
+      expect(init?.method).toBe('POST');
+      expect(JSON.parse(init?.body as string)).toEqual(payload);
+    });
+
+    test('rewrites the model to the catalog model name', async () => {
+      fetchSpy.mockResolvedValue(new Response('{}', { headers: { 'content-type': 'application/json' } }));
+      vi.mocked(catalogManager.getModelByName).mockReturnValue({ ...modelInfo, name: 'catalog-name' });
+      await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'alias', messages: [] })
+        .expect(200);
+      expect(JSON.parse(fetchSpy.mock.calls[0][1]?.body as string).model).toBe('catalog-name');
+    });
+
+    test('uses labels.api as base url when present', async () => {
+      vi.mocked(inferenceManager.getServers).mockReturnValue([healthyServer({ api: 'http://localhost:1234/v3/' })]);
+      fetchSpy.mockResolvedValue(new Response('{}', { headers: { 'content-type': 'application/json' } }));
+      await request(server.getListener()!).post('/v1/chat/completions').send({ model: 'model-name' }).expect(200);
+      expect(fetchSpy.mock.calls[0][0]).toBe('http://localhost:1234/v3/chat/completions');
+    });
+
+    test('streams the upstream SSE response unchanged', async () => {
+      const chunks = [
+        'data: {"choices":[{"delta":{"content":"Hel"}}]}\n\n',
+        'data: {"choices":[{"delta":{"content":"lo"}}]}\n\n',
+        'data: {"choices":[],"usage":{"total_tokens":3}}\n\n',
+        'data: [DONE]\n\n',
+      ];
+      fetchSpy.mockResolvedValue(sseResponse(chunks));
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name', stream: true })
+        .expect(200)
+        .expect('Content-Type', /text\/event-stream/);
+      expect(res.text).toBe(chunks.join(''));
+      expect(res.headers['cache-control']).toBe('no-cache');
+      expect(res.headers['x-accel-buffering']).toBe('no');
+    });
+
+    test('passes upstream errors through', async () => {
+      // eslint-disable-next-line no-null/no-null
+      const errorBody = { error: { message: 'bad request', type: 'invalid_request_error', param: null, code: null } };
+      fetchSpy.mockResolvedValue(
+        new Response(JSON.stringify(errorBody), { status: 400, headers: { 'content-type': 'application/json' } }),
+      );
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name' })
+        .expect(400);
+      expect(res.body).toEqual(errorBody);
+    });
+
+    test('returns 502 upstream_unreachable if fetch rejects', async () => {
+      fetchSpy.mockRejectedValue(new TypeError('fetch failed'));
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name' })
+        .expect(502);
+      expect(res.body.error).toMatchObject({ type: 'server_error', code: 'upstream_unreachable' });
+    });
+
+    test('accepts an Authorization header but does not forward it', async () => {
+      fetchSpy.mockResolvedValue(new Response('{}', { headers: { 'content-type': 'application/json' } }));
+      await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .set('Authorization', 'Bearer dummy')
+        .send({ model: 'model-name' })
+        .expect(200);
+      const headers = Object.keys((fetchSpy.mock.calls[0][1]?.headers ?? {}) as Record<string, string>).map(h =>
+        h.toLowerCase(),
+      );
+      expect(headers).not.toContain('authorization');
+    });
+
+    test('accepts a request body larger than 100kB', async () => {
+      fetchSpy.mockResolvedValue(new Response('{}', { headers: { 'content-type': 'application/json' } }));
+      const content = 'a'.repeat(300 * 1024);
+      await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name', messages: [{ role: 'user', content }] })
+        .expect(200);
+      expect(JSON.parse(fetchSpy.mock.calls[0][1]?.body as string).messages[0].content).toHaveLength(content.length);
+    });
+  });
+
+  test('returns 404 in the OpenAI shape for an unknown /v1 route', async () => {
+    const res = await request(server.getListener()!).get('/v1/foo').expect(404);
+    expect(res.body).toEqual({
+      error: { message: 'Not found', type: 'invalid_request_error', code: 'not_found' },
     });
   });
 });

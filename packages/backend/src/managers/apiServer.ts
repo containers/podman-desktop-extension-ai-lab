@@ -42,6 +42,8 @@ import type { ChatCompletionMessageParam } from 'openai/resources';
 import type { ContainerRegistry } from '../registries/ContainerRegistry';
 import type { Stream } from 'openai/streaming';
 import crypto from 'node:crypto';
+import { Readable } from 'node:stream';
+import type { ReadableStream } from 'node:stream/web';
 import swaggerUi from 'swagger-ui-express';
 import { getAbsoluteFSPath } from 'swagger-ui-dist';
 import openAiApi from '../assets/openai.json';
@@ -53,6 +55,22 @@ export const PREFERENCE_RANDOM_PORT = 0;
 type ListModelResponse = components['schemas']['ListModelResponse'];
 type Message = components['schemas']['Message'];
 type ProcessModelResponse = components['schemas']['ProcessModelResponse'];
+
+type OpenAIErrorType = 'invalid_request_error' | 'server_error';
+
+interface OpenAIModel {
+  id: string;
+  object: 'model';
+  created: number;
+  owned_by: string;
+}
+
+// error shape set by body-parser (express.json)
+interface BodyParserError {
+  status?: number;
+  type?: string;
+  message?: string;
+}
 
 interface SwaggerRequest extends Request {
   swaggerDoc?: { servers: { description: string; url: string }[] };
@@ -66,6 +84,16 @@ function asListModelResponse(model: ModelInfo): ListModelResponse {
     size: model.file?.size,
     modified_at: model.file?.creation?.toISOString(),
     details: {},
+  };
+}
+
+function asOpenAIModel(model: ModelInfo): OpenAIModel {
+  const creation = model.file?.creation;
+  return {
+    id: model.name,
+    object: 'model',
+    created: creation ? Math.floor(new Date(creation).getTime() / 1000) : 0,
+    owned_by: 'ai-lab',
   };
 }
 
@@ -149,6 +177,28 @@ export class ApiServer implements Disposable {
     router.get('/ps', this.ps.bind(this));
     app.get('/', (_res, res) => res.sendStatus(200)); //required for the ollama client to work against us
     app.use('/api', router);
+
+    // OpenAI compatible API, proxied to the inference server.
+    // It is intentionally not validated by the OpenAPI validator, requests are passed through as is.
+    const v1Router = express.Router();
+    v1Router.use(express.json({ limit: '50mb' }));
+    v1Router.get('/models', this.listOpenAIModels.bind(this));
+    v1Router.post('/chat/completions', this.openAIChatCompletionsProxy.bind(this));
+    v1Router.use((_req: Request, res: Response) => {
+      this.sendOpenAIError(res, 404, 'Not found', 'invalid_request_error', 'not_found');
+    });
+    // the 4 parameters are required for express to treat this as an error handler
+    v1Router.use((err: BodyParserError, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status && err.status >= 400 && err.status < 600 ? err.status : 500;
+      this.sendOpenAIError(
+        res,
+        status,
+        err.message ?? 'Internal server error',
+        status < 500 ? 'invalid_request_error' : 'server_error',
+        err.type,
+      );
+    });
+    app.use('/v1', v1Router);
     app.use('/spec', this.getSpec.bind(this));
 
     // get swagger-ui path from dist/swagger-ui
@@ -275,6 +325,29 @@ export class ApiServer implements Disposable {
       res.status(200).json({ models: models });
     } catch (err: unknown) {
       this.doErr(res, 'unable to get models', err);
+    }
+  }
+
+  private sendOpenAIError(res: Response, status: number, message: string, type: OpenAIErrorType, code?: string): void {
+    // the OpenAI error format requires `code` to be present, with a null value when there is none
+    // eslint-disable-next-line no-null/no-null
+    res.status(status).json({ error: { message, type, code: code ?? null } });
+  }
+
+  listOpenAIModels(_req: Request, res: Response): void {
+    try {
+      const data = this.modelsManager
+        .getModelsInfo()
+        .filter(model => this.modelsManager.isModelOnDisk(model.id))
+        .map(model => asOpenAIModel(model));
+      res.status(200).json({ object: 'list', data });
+    } catch (err: unknown) {
+      this.sendOpenAIError(
+        res,
+        500,
+        `unable to get models: ${err instanceof Error ? err.message : String(err)}`,
+        'server_error',
+      );
     }
   }
 
@@ -409,6 +482,135 @@ export class ApiServer implements Disposable {
         resolve(server);
       }
     });
+  }
+
+  // openAIChatCompletionsProxy resolves the model, makes sure its inference server is available,
+  // then forwards the request as is (only `model` is rewritten) to the inference server OpenAI API
+  // and streams the upstream response back to the client.
+  async openAIChatCompletionsProxy(req: Request, res: Response): Promise<void> {
+    try {
+      const body: unknown = req.body;
+      if (typeof body !== 'object' || !body || Array.isArray(body)) {
+        this.sendOpenAIError(res, 400, 'request body must be a JSON object', 'invalid_request_error');
+        return;
+      }
+      const modelName: unknown = (body as Record<string, unknown>)['model'];
+      if (typeof modelName !== 'string' || modelName.length === 0) {
+        this.sendOpenAIError(res, 400, `'model' is required`, 'invalid_request_error', 'missing_model');
+        return;
+      }
+
+      let modelInfo: ModelInfo;
+      try {
+        modelInfo = this.catalogManager.getModelByName(modelName);
+      } catch {
+        this.sendOpenAIError(
+          res,
+          404,
+          `model "${modelName}" does not exist`,
+          'invalid_request_error',
+          'model_not_found',
+        );
+        return;
+      }
+      if (!this.modelsManager.isModelOnDisk(modelInfo.id)) {
+        this.sendOpenAIError(
+          res,
+          404,
+          `model "${modelName}" not found, try pulling it first`,
+          'invalid_request_error',
+          'model_not_found',
+        );
+        return;
+      }
+
+      let server: InferenceServer;
+      try {
+        server = await this.makeServerAvailable(modelInfo);
+      } catch (err: unknown) {
+        this.sendOpenAIError(
+          res,
+          500,
+          err instanceof Error ? err.message : String(err),
+          'server_error',
+          'inference_server_unavailable',
+        );
+        return;
+      }
+
+      // the client may have gone while the inference server was starting
+      if (res.destroyed || res.writableEnded) {
+        return;
+      }
+
+      // abort the upstream request if the client disconnects before the response is complete
+      // (res is used instead of req, as req emits 'close' as soon as its body has been read)
+      const controller = new AbortController();
+      res.on('close', () => {
+        if (!res.writableFinished) {
+          controller.abort();
+        }
+      });
+
+      const baseUrl = server.labels?.['api'] ?? `http://localhost:${server.connection.port}/v1`;
+      const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
+
+      let upstream: globalThis.Response;
+      try {
+        upstream = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            accept: req.headers.accept ?? '*/*',
+          },
+          body: JSON.stringify({ ...body, model: modelInfo.name }),
+          signal: controller.signal,
+        });
+      } catch (err: unknown) {
+        if (controller.signal.aborted) {
+          return;
+        }
+        this.sendOpenAIError(
+          res,
+          502,
+          `unable to reach the inference server: ${err instanceof Error ? err.message : String(err)}`,
+          'server_error',
+          'upstream_unreachable',
+        );
+        return;
+      }
+
+      res.status(upstream.status);
+      const contentType = upstream.headers.get('content-type');
+      if (contentType) {
+        res.setHeader('content-type', contentType);
+      }
+      if (contentType?.includes('text/event-stream')) {
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders();
+      }
+
+      if (!upstream.body) {
+        res.end();
+        return;
+      }
+      const stream = Readable.fromWeb(upstream.body as ReadableStream);
+      stream.on('error', (err: unknown) => {
+        if (!controller.signal.aborted) {
+          console.error(`error while streaming the inference server response: ${err}`);
+        }
+        res.destroy();
+      });
+      stream.pipe(res);
+    } catch (err: unknown) {
+      console.error(`unable to proxy chat completion request: ${err}`);
+      if (res.headersSent) {
+        res.destroy();
+        return;
+      }
+      this.sendOpenAIError(res, 500, err instanceof Error ? err.message : String(err), 'server_error');
+    }
   }
 
   // openAIChatCompletions executes a chat completion on an OpenAI compatible API

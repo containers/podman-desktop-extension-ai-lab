@@ -17,6 +17,7 @@ import { router } from 'tinro';
 import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ModelSelect from '/@/lib/select/ModelSelect.svelte';
+import ModelRuntimeSelect from '/@/lib/select/ModelRuntimeSelect.svelte';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
 import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
@@ -50,6 +51,8 @@ let models: ModelInfo[] = $derived(
 );
 // Hold the selected model
 let model: ModelInfo | undefined = $state(undefined);
+// The runtime used to run the model, when the model supports several runtimes
+let backend: InferenceType | undefined = $state(undefined);
 // loading state
 let loading = $state(false);
 // All tasks are successful (not any in error)
@@ -122,6 +125,7 @@ async function submit(): Promise<void> {
     };
     if (model) {
       (options as RecipePullOptionsWithModelInference).modelId = $state.snapshot(model.id);
+      (options as RecipePullOptionsWithModelInference).backend = $state.snapshot(backend);
     }
     const trackingId = await studioClient.requestPullApplication(options);
     router.location.query.set('trackingId', trackingId);
@@ -210,6 +214,13 @@ function handleOnClick(): void {
                   >The selected model will be downloaded. This action can take some time depending on your connection</span>
               </div>
             {/if}
+            <!-- inference runtime input, when the model supports several runtimes -->
+            <ModelRuntimeSelect
+              model={model}
+              allowed={recipe.backends}
+              bind:value={backend}
+              reuseServer={true}
+              disabled={loading} />
           </div>
 
           {#if errorMsg !== undefined || !containerProviderConnection}

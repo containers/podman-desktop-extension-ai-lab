@@ -19,6 +19,7 @@
 import type { ContainerProviderConnection } from '@podman-desktop/api';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { Recipe } from '@shared/models/IRecipe';
+import type { InferenceType } from '@shared/models/IInference';
 
 export type ApplicationOptions = ApplicationOptionsDefault | ApplicationOptionsWithModelInference;
 
@@ -29,6 +30,10 @@ export interface ApplicationOptionsDefault {
 
 export type ApplicationOptionsWithModelInference = ApplicationOptionsDefault & {
   model: ModelInfo;
+  /**
+   * The backend used to run the model, when the model supports several backends
+   */
+  backend?: InferenceType;
 };
 
 export function isApplicationOptionsWithModelInference(

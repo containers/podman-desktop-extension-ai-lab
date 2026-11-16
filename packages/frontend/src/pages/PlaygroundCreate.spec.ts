@@ -25,9 +25,10 @@ import { writable } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
 import * as tasksStore from '/@/stores/tasks';
 import * as modelsInfoStore from '/@/stores/modelsInfo';
+import * as inferenceServersStore from '/@/stores/inferenceServers';
 import type { Task } from '@shared/models/ITask';
 import PlaygroundCreate from './PlaygroundCreate.svelte';
-import { InferenceType } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import * as path from 'node:path';
 import * as os from 'node:os';
 
@@ -96,11 +97,18 @@ vi.mock('/@/stores/modelsInfo', async () => {
   };
 });
 
+vi.mock('/@/stores/inferenceServers', async () => {
+  return {
+    inferenceServers: vi.fn(),
+  };
+});
+
 beforeEach(() => {
   window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
   const tasksList = writable<Task[]>([]);
   vi.mocked(tasksStore).tasks = tasksList;
+  vi.mocked(inferenceServersStore).inferenceServers = writable<InferenceServer[]>([]);
   vi.mocked(studioClient.getRegisteredProviders).mockResolvedValue([
     InferenceType.LLAMA_CPP,
     InferenceType.WHISPER_CPP,
@@ -189,6 +197,7 @@ test('model supporting several backends should be displayed for each of its runt
     backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
   };
   vi.mocked(modelsInfoStore).modelsInfo = writable<ModelInfo[]>([multiBackendModel]);
+  vi.mocked(studioClient.requestCreatePlayground).mockResolvedValue('tracking-id');
 
   const { container } = render(PlaygroundCreate, { props: { exclude: [InferenceType.NONE] } });
 
@@ -197,4 +206,75 @@ test('model supporting several backends should be displayed for each of its runt
   await userEvent.click(within(container).getByText(InferenceType.OPENVINO));
 
   expect(within(container).getByText(multiBackendModel.name)).toBeInTheDocument();
+
+  await userEvent.click(within(container).getByTitle('Create playground'));
+  expect(studioClient.requestCreatePlayground).toHaveBeenCalledWith(
+    undefined,
+    expect.objectContaining({ id: multiBackendModel.id }),
+    InferenceType.OPENVINO,
+  );
+});
+
+test('should show a note when the model is already served using another runtime', async () => {
+  const multiBackendModel = {
+    ...dummyLlamaCppModel,
+    backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+  };
+  vi.mocked(modelsInfoStore).modelsInfo = writable<ModelInfo[]>([multiBackendModel]);
+  vi.mocked(inferenceServersStore).inferenceServers = writable<InferenceServer[]>([
+    { models: [multiBackendModel], type: InferenceType.LLAMA_CPP } as unknown as InferenceServer,
+  ]);
+
+  const { container } = render(PlaygroundCreate, { props: { exclude: [InferenceType.NONE] } });
+
+  const dropdown = within(container).getByLabelText('Select Inference Runtime');
+  await userEvent.click(dropdown);
+  await userEvent.click(within(container).getByText(InferenceType.OPENVINO));
+
+  expect(
+    within(container).getByText('The model is already served by a llama-cpp inference server, which will be used.'),
+  ).toBeInTheDocument();
+});
+
+test('model runtime should be selectable among the runtimes supported by the model', async () => {
+  const multiBackendModel = {
+    ...dummyLlamaCppModel,
+    backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+  };
+  vi.mocked(modelsInfoStore).modelsInfo = writable<ModelInfo[]>([multiBackendModel, dummyWhisperCppModel]);
+  vi.mocked(studioClient.requestCreatePlayground).mockResolvedValue('tracking-id');
+
+  const { container } = render(PlaygroundCreate);
+
+  const modelRuntime = await vi.waitFor(() => within(container).getByLabelText('Select Model Runtime'));
+  await userEvent.click(modelRuntime);
+  // only the runtimes supported by the model are listed
+  expect(within(container).queryByText(InferenceType.WHISPER_CPP)).toBeNull();
+  await userEvent.click(within(container).getByText(InferenceType.OPENVINO));
+
+  await userEvent.click(within(container).getByTitle('Create playground'));
+  expect(studioClient.requestCreatePlayground).toHaveBeenCalledWith(
+    undefined,
+    expect.objectContaining({ id: multiBackendModel.id }),
+    InferenceType.OPENVINO,
+  );
+});
+
+test('model runtime should not be displayed for a model supporting a single runtime', async () => {
+  vi.mocked(modelsInfoStore).modelsInfo = writable<ModelInfo[]>([dummyLlamaCppModel]);
+  vi.mocked(studioClient.requestCreatePlayground).mockResolvedValue('tracking-id');
+
+  const { container } = render(PlaygroundCreate);
+
+  await vi.waitFor(() => expect(studioClient.getRegisteredProviders).toHaveBeenCalled());
+  expect(within(container).queryByLabelText('Select Model Runtime')).toBeNull();
+
+  await userEvent.click(within(container).getByTitle('Create playground'));
+  await vi.waitFor(() =>
+    expect(studioClient.requestCreatePlayground).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ id: dummyLlamaCppModel.id }),
+      InferenceType.LLAMA_CPP,
+    ),
+  );
 });

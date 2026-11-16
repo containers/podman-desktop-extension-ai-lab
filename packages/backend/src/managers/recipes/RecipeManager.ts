@@ -114,8 +114,11 @@ export class RecipeManager implements Disposable {
             const inferenceContainerId = await this.inferenceManager.createInferenceServer(
               await withDefaultConfiguration({
                 modelsInfo: [options.model],
-                // use the preferred backend of the model supported by the recipe
-                backend: this.inferenceManager.getPreferredBackend([options.model], backends),
+                // use the backend selected by the user if supported by the recipe
+                backend:
+                  options.backend && backends.includes(options.backend)
+                    ? options.backend
+                    : this.inferenceManager.getPreferredBackend([options.model], backends),
               }),
             );
             inferenceServer = this.inferenceManager.get(inferenceContainerId);

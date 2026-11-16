@@ -64,7 +64,7 @@ Moreover, the `models` property has been changed to `recommended`.
 ### Models
 
 The model object has also the new property `backend`, which defines which framework is required.
-A model supporting several frameworks can use the `backends` property instead, an array of the same values in order of preference (E.g. `"backends": ["llama-cpp", "openvino"]`). The first backend listed having an available inference provider is used to run the model. A model is served by a single inference server: an existing one is reused by playgrounds and recipes. A model cannot define both `backend` and `backends`.
+A model supporting several frameworks can use the `backends` property instead, an array of the same values in order of preference (E.g. `"backends": ["llama-cpp", "openvino"]`). The inference runtime can be selected when creating a model service, a playground or starting a recipe, the first backend listed having an available inference provider being selected by default. A model is served by a single inference server: an existing one is reused by playgrounds and recipes. A model cannot define both `backend` and `backends`.
 Additionally, we have enhanced security by introducing a new optional `sha256` property.
 
 > [!TIP]

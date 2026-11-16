@@ -310,4 +310,30 @@ describe('buildRecipe with inference server', () => {
     );
     expect(result.inferenceServer).toBe(inferenceServerMock);
   });
+
+  test.each<[string, string[], InferenceType]>([
+    ['selected backend supported by the recipe should be used', ['llama-cpp', 'openvino'], InferenceType.OPENVINO],
+    ['selected backend not supported by the recipe should be ignored', ['llama-cpp'], InferenceType.LLAMA_CPP],
+  ])('%s', async (_, recipeBackends, expected) => {
+    vi.mocked(inferenceManagerMock.findServerByModel).mockReturnValue(undefined);
+    vi.mocked(inferenceManagerMock.getPreferredBackend).mockReturnValue(InferenceType.LLAMA_CPP);
+    vi.mocked(inferenceManagerMock.createInferenceServer).mockResolvedValue('inference-container');
+    vi.mocked(inferenceManagerMock.get).mockReturnValue(inferenceServerMock);
+
+    const manager = await getInitializedRecipeManager();
+    const model = { ...modelInfoMock, backends: ['llama-cpp', 'openvino'] };
+
+    await manager.buildRecipe({
+      connection: connectionMock,
+      recipe: { ...recipeMock, backends: recipeBackends },
+      model,
+      backend: InferenceType.OPENVINO,
+    });
+
+    expect(inferenceManagerMock.createInferenceServer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        backend: expected,
+      }),
+    );
+  });
 });

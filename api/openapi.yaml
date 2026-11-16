@@ -15,6 +15,8 @@ servers:
 tags:
   - name: server
     description: Server information
+  - name: openai
+    description: OpenAI-compatible endpoints
 
 paths:
   /api/version:
@@ -176,6 +178,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProcessResponse'
+
+  /v1/models:
+    get:
+      operationId: listOpenAIModels
+      tags:
+        - openai
+      description: |
+        List the models that are available locally, in the OpenAI API format.
+        This is the OpenAI-compatible equivalent of /api/tags: it lists the
+        models downloaded by the user, whether their inference server is
+        running or not.
+      summary: List the locally available models in the OpenAI API format
+      responses:
+        '200':
+          description: The models were successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIModelListResponse'
+        '500':
+          description: The models could not be fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIErrorResponse'
+
+  /v1/chat/completions:
+    post:
+      operationId: createOpenAIChatCompletion
+      tags:
+        - openai
+        - chat
+        - generate
+      description: |
+        Create a chat completion for a provided model, in the OpenAI API
+        format. The inference server for the model is created and started if
+        necessary. The request is forwarded as is to the inference server's
+        OpenAI endpoint (only the model field is rewritten), so any OpenAI
+        chat completion field (tools, tool_choice, temperature, max_tokens,
+        stream_options, ...) is passed through, and the inference server
+        response (including streaming server-sent events) is returned
+        unchanged.
+      summary: Create a chat completion in the OpenAI API format
+      requestBody:
+        required: true
+        description: OpenAI chat completion request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAIChatCompletionRequest'
+      responses:
+        '200':
+          description: |
+            The completion was successfully generated. When stream is true the
+            response is a stream of server-sent events terminated by a
+            "data: [DONE]" event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIChatCompletionResponse'
+            text/event-stream:
+              schema:
+                type: string
+        '400':
+          description: The request is invalid (malformed body or missing model)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIErrorResponse'
+        '404':
+          description: The model does not exist or has not been downloaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIErrorResponse'
+        '413':
+          description: The request body is too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIErrorResponse'
+        '500':
+          description: The inference server could not be created or started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIErrorResponse'
+        '502':
+          description: The inference server could not be reached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIErrorResponse'
 
 components:
   schemas:
@@ -729,7 +824,127 @@ components:
         num_thread:
           type: integer
           description: |
-            Specifies the number of threads to use for processing. A value of 
-            0 uses all available threads. 
+            Specifies the number of threads to use for processing. A value of
+            0 uses all available threads.
             (Default: 0)
           example: 0
+
+    OpenAIModelListResponse:
+      type: object
+      description: Response listing the locally available models, in the OpenAI API format
+      properties:
+        object:
+          type: string
+          description: The object type, always 'list'
+        data:
+          type: array
+          description: The locally available models
+          items:
+            $ref: '#/components/schemas/OpenAIModel'
+      required:
+        - object
+        - data
+
+    OpenAIModel:
+      type: object
+      description: A locally available model, in the OpenAI API format
+      properties:
+        id:
+          type: string
+          description: The model name, to be used as the model field of chat completion requests
+        object:
+          type: string
+          description: The object type, always 'model'
+        created:
+          type: integer
+          description: Unix timestamp (seconds) of the model file creation, 0 when unknown
+        owned_by:
+          type: string
+          description: The owner of the model, always 'Podman AI Lab'
+      required:
+        - id
+        - object
+        - created
+        - owned_by
+
+    OpenAIChatCompletionRequest:
+      type: object
+      description: |
+        Chat completion request in the OpenAI API format. The request is
+        forwarded as is to the inference server's OpenAI endpoint: only the
+        model field is rewritten, and every other OpenAI field (tools,
+        tool_choice, temperature, max_tokens, stream_options, ...) is passed
+        through.
+      properties:
+        model:
+          type: string
+          description: The model name
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIMessage'
+          description: The messages of the chat
+        stream:
+          type: boolean
+          description: Enable streaming of the response as server-sent events
+      required:
+        - model
+        - messages
+
+    OpenAIMessage:
+      type: object
+      description: A message in a chat, in the OpenAI API format
+      properties:
+        role:
+          type: string
+          description: The role of the message author (e.g. system, user, assistant, tool)
+        content:
+          type: string
+          description: The content of the message
+
+    OpenAIChatCompletionResponse:
+      type: object
+      description: |
+        Chat completion response in the OpenAI API format, returned by the
+        inference server and passed through unchanged. Only the most common
+        fields are described here; the complete shape is the OpenAI chat
+        completion object served by the inference server.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the completion
+        object:
+          type: string
+          description: The object type (chat.completion, or chat.completion.chunk when streaming)
+        created:
+          type: integer
+          description: Unix timestamp (seconds) of the creation
+        model:
+          type: string
+          description: The model name
+        choices:
+          type: array
+          description: The list of completion choices
+          items:
+            type: object
+
+    OpenAIErrorResponse:
+      type: object
+      description: Error response in the OpenAI API format
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+              description: A human-readable description of the error
+            type:
+              type: string
+              description: The type of the error (invalid_request_error or server_error)
+            code:
+              type: string
+              nullable: true
+              description: A machine-readable error code (e.g. model_not_found, upstream_unreachable), null when none
+          required:
+            - message
+            - type

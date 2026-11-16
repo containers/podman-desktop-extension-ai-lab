@@ -53,7 +53,7 @@ function setWithBackend(set: (value: ConversationWithBackend[]) => void, convers
     .then(modelsInfo => {
       const conversationsWithBackend: ConversationWithBackend[] = conversations.map(conversation => ({
         ...conversation,
-        backend: getModelBackend(modelsInfo, conversation.modelId),
+        backend: getModelPreferredBackend(modelsInfo, conversation.modelId),
       }));
       set(conversationsWithBackend);
     })
@@ -62,7 +62,9 @@ function setWithBackend(set: (value: ConversationWithBackend[]) => void, convers
     });
 }
 
-function getModelBackend(modelsInfo: ModelInfo[], modelId: string): InferenceType {
-  const backend = modelsInfo.find(modelInfo => modelInfo.id === modelId)?.backend;
+// default to the first backend of the model: no model declares several backends yet,
+// this is subject to change once a proper backend selection is implemented
+function getModelPreferredBackend(modelsInfo: ModelInfo[], modelId: string): InferenceType {
+  const backend = modelsInfo.find(modelInfo => modelInfo.id === modelId)?.backends?.[0];
   return toInferenceType(backend);
 }

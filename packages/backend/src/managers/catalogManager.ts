@@ -231,7 +231,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
             creation: statFile.mtime,
           },
           memory: statFile.size,
-          backend: local.backend ?? InferenceType.NONE,
+          backends: [local.backend ?? InferenceType.NONE],
         };
       }),
     );

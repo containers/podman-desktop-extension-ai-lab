@@ -40,7 +40,11 @@ onMount(async () => {
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(
-  model => model.file && (!runtime || model.backend === runtime) && !exclude.includes(model.backend as InferenceType),
+  model =>
+    model.file &&
+    (model.backends ?? []).some(
+      backend => (!runtime || backend === runtime) && !exclude.includes(backend as InferenceType),
+    ),
 );
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;

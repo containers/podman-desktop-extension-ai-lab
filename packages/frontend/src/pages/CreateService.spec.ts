@@ -427,7 +427,7 @@ test('models with backend "none" should be filtered out', async () => {
       id: 'model-valid',
       name: 'Valid Model',
       description: 'A model with a valid backend',
-      backend: 'llama-cpp',
+      backends: ['llama-cpp'],
       file: {
         file: 'file',
         path: '/valid-path',
@@ -437,7 +437,7 @@ test('models with backend "none" should be filtered out', async () => {
       id: 'model-none',
       name: 'None Backend Model',
       description: 'A model with backend none',
-      backend: 'none',
+      backends: ['none'],
       file: {
         file: 'file',
         path: '/none-path',

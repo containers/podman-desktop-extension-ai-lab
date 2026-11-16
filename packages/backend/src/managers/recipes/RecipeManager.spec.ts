@@ -273,7 +273,7 @@ describe('buildRecipe with inference server', () => {
     const result = await manager.buildRecipe({
       connection: connectionMock,
       recipe: { ...recipeMock, backends },
-      model: { ...modelInfoMock, backend: 'llama-cpp' },
+      model: { ...modelInfoMock, backends: ['llama-cpp'] },
     });
 
     if (useInferenceServer) {

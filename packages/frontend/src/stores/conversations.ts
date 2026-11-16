@@ -63,6 +63,6 @@ function setWithBackend(set: (value: ConversationWithBackend[]) => void, convers
 }
 
 function getModelBackend(modelsInfo: ModelInfo[], modelId: string): InferenceType {
-  const backend = modelsInfo.find(modelInfo => modelInfo.id === modelId)?.backend;
+  const backend = modelsInfo.find(modelInfo => modelInfo.id === modelId)?.backends?.[0];
   return toInferenceType(backend);
 }

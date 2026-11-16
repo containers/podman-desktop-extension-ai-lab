@@ -347,8 +347,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(express@5.3.0(supports-color@10.2.2))
       systeminformation:
-        specifier: ^5.33.19
-        version: 5.33.19
+        specifier: ^5.33.21
+        version: 5.33.21
       xml-js:
         specifier: ^1.6.11
         version: 1.6.11
@@ -4401,8 +4401,8 @@ packages:
     peerDependencies:
       express: '>=4.0.0 || >=5.0.0-beta'
 
-  systeminformation@5.33.19:
-    resolution: {integrity: sha512-Zm7wGeCG7PqfvzegMJIzrxICopWqYCeLATVmvxOOci1isLcNVKgY4Fr0hhYQzvc7cgtK3377jQVChTFAnznOiA==}
+  systeminformation@5.33.21:
+    resolution: {integrity: sha512-bkG5ftzjV7XahdI5tTHReUeJYSJLxJOGU3QDFhTvJDBKgEOCDehcsVXYPW/NY60QqQYGv5OI+izJ6uGTVCpK2w==}
     engines: {node: '>=10.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -8767,7 +8767,7 @@ snapshots:
       express: 5.3.0(supports-color@10.2.2)
       swagger-ui-dist: 5.35.0
 
-  systeminformation@5.33.19: {}
+  systeminformation@5.33.21: {}
 
   tagged-tag@1.0.0: {}
 

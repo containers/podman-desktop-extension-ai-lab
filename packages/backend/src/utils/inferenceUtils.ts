@@ -28,6 +28,11 @@ import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 
 export const LABEL_INFERENCE_SERVER: string = 'ai-lab-inference-server';
+/**
+ * Label storing the backend ({@link InferenceType}) used by an inference server,
+ * as a model may support several backends.
+ */
+export const LABEL_INFERENCE_TYPE: string = 'ai-lab-inference-type';
 
 /**
  * Given an image name, it will return the ImageInspectInfo corresponding. Will raise an error if not found.
@@ -80,6 +85,7 @@ export async function withDefaultConfiguration(
     modelsInfo: options.modelsInfo,
     connection: options.connection,
     inferenceProvider: options.inferenceProvider,
+    backend: options.backend,
     gpuLayers: options.gpuLayers,
   };
 }

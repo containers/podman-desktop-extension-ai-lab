@@ -20,7 +20,14 @@ import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnectio
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import type { ContainerInfo, TelemetryLogger, ContainerProviderConnection } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerEvent } from '../../registries/ContainerRegistry';
-import { getInferenceType, isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
+import {
+  getInferenceType,
+  getInferenceTypes,
+  isTransitioning,
+  LABEL_INFERENCE_SERVER,
+  LABEL_INFERENCE_TYPE,
+  parseInferenceType,
+} from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
@@ -140,16 +147,34 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
   }
 
   /**
-   * return the first inference server which is using the specific model
-   * it throws if the model backend is not currently supported
+   * return the enabled inference providers supporting the given backend
    */
-  public findServerByModel(model: ModelInfo): InferenceServer | undefined {
-    // check if model backend is supported
-    const backend: InferenceType = getInferenceType([model]);
-    const providers: InferenceProvider[] = this.inferenceProviderRegistry
-      .getByType(backend)
-      .filter(provider => provider.enabled());
-    if (providers.length === 0) {
+  private getEnabledProviders(backend: InferenceType): InferenceProvider[] {
+    return this.inferenceProviderRegistry.getByType(backend).filter(provider => provider.enabled());
+  }
+
+  /**
+   * Return the backend to use to run the given models: the first backend supported by all the models,
+   * in their order of preference, having an enabled inference provider.
+   * @param modelsInfo the models to run
+   * @param allowed if defined, restrict the backends to choose from
+   * @return the backend to use, or undefined if no enabled provider supports the models
+   */
+  public getPreferredBackend(modelsInfo: ModelInfo[], allowed?: string[]): InferenceType | undefined {
+    return getInferenceTypes(modelsInfo)
+      .filter(backend => !allowed || allowed.includes(backend))
+      .find(backend => this.getEnabledProviders(backend).length > 0);
+  }
+
+  /**
+   * return the inference server which is using the specific model, a model is served by a single inference server
+   * it throws if none of the model backends is currently supported
+   * @param model the model used by the inference server
+   * @param allowed if defined, restrict the backends considered when checking the support
+   */
+  public findServerByModel(model: ModelInfo, allowed?: string[]): InferenceServer | undefined {
+    // check if a model backend is supported
+    if (!this.getPreferredBackend([model], allowed)) {
       throw new Error('no enabled provider could be found.');
     }
     return this.getServers().find(s => s.models.some(m => m.id === model.id));
@@ -205,20 +230,27 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     // which is especially likely on slow container providers.
     await this.whenInitialized();
 
-    // Get the backend for the model inference server {@link InferenceType}
-    const backend: InferenceType = getInferenceType(config.modelsInfo);
+    // a model may support several backends {@link InferenceType}: use the requested one, or the preferred one
+    if (config.backend && !getInferenceTypes(config.modelsInfo).includes(config.backend)) {
+      throw new Error(`backend ${config.backend} is not supported by the models.`);
+    }
 
     let provider: InferenceProvider;
     if (config.inferenceProvider) {
       provider = this.inferenceProviderRegistry.get(config.inferenceProvider);
       if (!provider.enabled()) throw new Error('provider requested is not enabled.');
     } else {
-      const providers: InferenceProvider[] = this.inferenceProviderRegistry
-        .getByType(backend)
-        .filter(provider => provider.enabled());
+      const backend = config.backend ?? this.getPreferredBackend(config.modelsInfo);
+      const providers: InferenceProvider[] = backend ? this.getEnabledProviders(backend) : [];
       if (providers.length === 0) throw new Error('no enabled provider could be found.');
       provider = providers[0];
     }
+
+    // keep track of the backend used, as a model may support several backends
+    config.labels = {
+      ...config.labels,
+      [LABEL_INFERENCE_TYPE]: provider.type,
+    };
 
     let connection: ContainerProviderConnection | undefined = undefined;
     if (config.connection) {
@@ -434,7 +466,9 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
             },
             status: containerInfo.Status === 'running' ? 'running' : 'stopped',
             models: modelInfos,
-            type: getInferenceType(modelInfos),
+            type: containerInfo.Labels[LABEL_INFERENCE_TYPE]
+              ? parseInferenceType(containerInfo.Labels[LABEL_INFERENCE_TYPE])
+              : getInferenceType(modelInfos),
             labels: containerInfo.Labels || {},
           },
         ];

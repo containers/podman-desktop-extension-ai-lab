@@ -22,7 +22,7 @@ import { MSG_CONVERSATIONS_UPDATE } from '@shared/Messages';
 import { rpcBrowser, studioClient } from '/@/utils/client';
 import type { Conversation } from '@shared/models/IPlaygroundMessage';
 import type { ModelInfo } from '@shared/models/IModelInfo';
-import type { InferenceType } from '@shared/models/IInference';
+import type { InferenceServer, InferenceType } from '@shared/models/IInference';
 import { toInferenceType } from '@shared/models/IInference';
 
 export interface ConversationWithBackend extends Conversation {
@@ -48,12 +48,11 @@ export const conversations: Readable<ConversationWithBackend[]> = readable<Conve
 });
 
 function setWithBackend(set: (value: ConversationWithBackend[]) => void, conversations: Conversation[]): void {
-  studioClient
-    .getModelsInfo()
-    .then(modelsInfo => {
+  Promise.all([studioClient.getModelsInfo(), studioClient.getInferenceServers()])
+    .then(([modelsInfo, servers]) => {
       const conversationsWithBackend: ConversationWithBackend[] = conversations.map(conversation => ({
         ...conversation,
-        backend: getModelBackend(modelsInfo, conversation.modelId),
+        backend: getModelBackend(modelsInfo, servers, conversation.modelId),
       }));
       set(conversationsWithBackend);
     })
@@ -62,7 +61,11 @@ function setWithBackend(set: (value: ConversationWithBackend[]) => void, convers
     });
 }
 
-function getModelBackend(modelsInfo: ModelInfo[], modelId: string): InferenceType {
+// a model may support several backends: use the one of the inference server serving the model,
+// or the preferred backend of the model
+function getModelBackend(modelsInfo: ModelInfo[], servers: InferenceServer[], modelId: string): InferenceType {
+  const server = servers.find(server => server.models.some(model => model.id === modelId));
+  if (server) return server.type;
   const backend = modelsInfo.find(modelInfo => modelInfo.id === modelId)?.backends?.[0];
   return toInferenceType(backend);
 }

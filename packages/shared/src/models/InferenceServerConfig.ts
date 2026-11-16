@@ -17,6 +17,7 @@
  ***********************************************************************/
 import type { ModelInfo } from './IModelInfo';
 import type { ContainerProviderConnectionInfo } from './IContainerConnectionInfo';
+import type { InferenceType } from './IInference';
 
 export type CreationInferenceServerOptions = Partial<InferenceServerConfig> & { modelsInfo: ModelInfo[] };
 
@@ -33,6 +34,11 @@ export interface InferenceServerConfig {
    * The name of the inference provider to use
    */
   inferenceProvider?: string;
+  /**
+   * The backend to use to run the models, it must be supported by all the models.
+   * @default the first backend supported by all the models having an enabled inference provider
+   */
+  backend?: InferenceType;
   /**
    * Image to use
    */

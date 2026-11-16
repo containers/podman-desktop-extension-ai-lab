@@ -948,8 +948,8 @@ describe('OpenAI compatible /v1 API', () => {
     return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } });
   }
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  beforeEach(() => {
+    vi.resetAllMocks();
   });
 
   describe('GET /v1/models', () => {
@@ -968,7 +968,7 @@ describe('OpenAI compatible /v1 API', () => {
       const res = await request(server.getListener()!).get('/v1/models').expect(200);
       expect(res.body).toEqual({
         object: 'list',
-        data: [{ id: 'model-name', object: 'model', created: 1_700_000_000, owned_by: 'ai-lab' }],
+        data: [{ id: 'model-name', object: 'model', created: 1_700_000_000, owned_by: 'Podman AI Lab' }],
       });
     });
 
@@ -999,6 +999,11 @@ describe('OpenAI compatible /v1 API', () => {
       vi.mocked(catalogManager.getModelByName).mockReturnValue(modelInfo);
       vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(true);
       vi.mocked(inferenceManager.getServers).mockReturnValue([healthyServer()]);
+    });
+
+    afterEach(() => {
+      // fetch is a global: put the real implementation back once this block is done
+      fetchSpy.mockRestore();
     });
 
     test('returns 400 if model is missing', async () => {

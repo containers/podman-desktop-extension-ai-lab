@@ -93,7 +93,7 @@ function asOpenAIModel(model: ModelInfo): OpenAIModel {
     id: model.name,
     object: 'model',
     created: creation ? Math.floor(new Date(creation).getTime() / 1000) : 0,
-    owned_by: 'ai-lab',
+    owned_by: 'Podman AI Lab',
   };
 }
 

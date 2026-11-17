@@ -899,8 +899,19 @@ components:
           type: string
           description: The role of the message author (e.g. system, user, assistant, tool)
         content:
-          type: string
-          description: The content of the message
+          description: |
+            The content of the message: a string, an array of content parts, or
+            null (e.g. for an assistant message carrying tool_calls). The
+            content parts are not described here, as the inference server is
+            the authority on them.
+          anyOf:
+            - type: string
+              nullable: true
+            - type: array
+              items:
+                type: object
+      required:
+        - role
 
     OpenAIChatCompletionResponse:
       type: object

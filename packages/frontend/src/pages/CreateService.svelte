@@ -2,6 +2,12 @@
 import { faExclamationCircle, faLocationArrow, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { modelsInfo } from '/@/stores/modelsInfo';
 import type { ModelInfo } from '@shared/models/IModelInfo';
+import { InferenceType } from '@shared/models/IInference';
+import {
+  LLAMA_CPP_DEFAULT_CTX_SIZE,
+  LLAMA_CPP_MAX_CTX_SIZE,
+  LLAMA_CPP_MIN_CTX_SIZE,
+} from '@shared/models/InferenceServerConfig';
 import Fa from 'svelte-fa';
 import { router } from 'tinro';
 import { onMount } from 'svelte';
@@ -10,7 +16,7 @@ import { tasks } from '/@/stores/tasks';
 import type { Task } from '@shared/models/ITask';
 import { inferenceServers } from '/@/stores/inferenceServers';
 import type { ContainerProviderConnectionInfo } from '@shared/models/IContainerConnectionInfo';
-import { Button, ErrorMessage, FormPage, Input } from '@podman-desktop/ui-svelte';
+import { Button, ErrorMessage, FormPage, Input, NumberInput } from '@podman-desktop/ui-svelte';
 import ModelSelect from '../lib/select/ModelSelect.svelte';
 import { containerProviderConnections } from '/@/stores/containerProviderConnections';
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
@@ -40,6 +46,10 @@ let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = 
 let containerPort: number | undefined = $state(undefined);
 // The model is the bind value to ModelSelect form
 let model: ModelInfo | undefined = $state(undefined);
+// The context size is the bind value to the context size form input (llama.cpp models only)
+let ctxSize: number = $state(LLAMA_CPP_DEFAULT_CTX_SIZE);
+let ctxSizeError: string | undefined = $state(undefined);
+let isLlamaCpp: boolean = $derived.by(() => model?.backend === InferenceType.LLAMA_CPP);
 // If the creation of a new inference service fail
 let errorMsg: string | undefined = $state(undefined);
 // The containerId will be included in the tasks when the creation
@@ -83,6 +93,7 @@ const submit = async (): Promise<void> => {
       modelsInfo: [$state.snapshot(model)],
       port: $state.snapshot(containerPort),
       connection: $state.snapshot(containerProviderConnection),
+      ctxSize: isLlamaCpp ? $state.snapshot(ctxSize) : undefined,
     });
     router.location.query.set('trackingId', trackingId);
   } catch (err: unknown) {
@@ -219,6 +230,26 @@ export function goToUpPage(): void {
             disabled={loading}
             required />
           <!-- Removed "type" above, svelte 5 "Input" no longer uses it -->
+          <!-- context size input (llama.cpp only) -->
+          {#if isLlamaCpp}
+            <label for="ctxSize" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
+              >Context size</label>
+            <NumberInput
+              type="integer"
+              name="ctxSize"
+              aria-label="Context size input"
+              bind:value={ctxSize}
+              bind:error={ctxSizeError}
+              minimum={LLAMA_CPP_MIN_CTX_SIZE}
+              maximum={LLAMA_CPP_MAX_CTX_SIZE}
+              step={1024}
+              disabled={loading}
+              class="w-full" />
+            <div class="text-sm pt-1 text-[var(--pd-content-card-text)]">
+              Maximum number of tokens (prompt and response) the model can handle. Larger values use more memory. It
+              cannot be changed once the service is created: delete and recreate the service to change it.
+            </div>
+          {/if}
         </div>
         {#if errorMsg !== undefined || !containerProviderConnection}
           <ErrorMessage error={errorMsg ?? 'No running container engine found'} />
@@ -230,7 +261,10 @@ export function goToUpPage(): void {
                 title="Create service"
                 inProgress={loading}
                 on:click={submit}
-                disabled={!model || !containerPort || !containerProviderConnection}
+                disabled={!model ||
+                  !containerPort ||
+                  !containerProviderConnection ||
+                  (isLlamaCpp && ctxSizeError !== undefined)}
                 icon={faPlusCircle}>
                 Create service
               </Button>

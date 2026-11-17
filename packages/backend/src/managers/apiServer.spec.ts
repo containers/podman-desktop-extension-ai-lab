@@ -1018,6 +1018,73 @@ describe('OpenAI compatible /v1 API', () => {
       expect(res.body.error).toMatchObject({ type: 'invalid_request_error' });
     });
 
+    test('returns 400 if messages is missing, without starting an inference server', async () => {
+      vi.mocked(inferenceManager.getServers).mockReturnValue([]);
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name' })
+        .expect(400);
+      expect(res.body.error).toMatchObject({ type: 'invalid_request_error' });
+      expect(res.body.error.message).toContain('messages');
+      expect(res.body.message).toBeUndefined();
+      expect(inferenceManager.createInferenceServer).not.toHaveBeenCalled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    test('returns 400 if messages is not an array', async () => {
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name', messages: 'hello' })
+        .expect(400);
+      expect(res.body.error).toMatchObject({ type: 'invalid_request_error' });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    test('returns 400 if a message has no role', async () => {
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name', messages: [{ content: 'hello' }] })
+        .expect(400);
+      expect(res.body.error).toMatchObject({ type: 'invalid_request_error' });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    test('returns 400 if a message content is neither a string, an array nor null', async () => {
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name', messages: [{ role: 'user', content: 42 }] })
+        .expect(400);
+      expect(res.body.error).toMatchObject({ type: 'invalid_request_error' });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    test('accepts null and array message contents, and unknown fields, and passes them through', async () => {
+      fetchSpy.mockResolvedValue(new Response('{}', { headers: { 'content-type': 'application/json' } }));
+      const payload = {
+        model: 'model-name',
+        messages: [
+          { role: 'user', content: [{ type: 'text', text: 'what is the weather?' }] },
+          // eslint-disable-next-line no-null/no-null
+          { role: 'assistant', content: null, tool_calls: [{ id: 'call_1', type: 'function', function: {} }] },
+          { role: 'tool', tool_call_id: 'call_1', content: 'sunny' },
+        ],
+        parallel_tool_calls: false,
+        some_server_specific_option: { a: 1 },
+      };
+      await request(server.getListener()!).post('/v1/chat/completions').send(payload).expect(200);
+      expect(JSON.parse(fetchSpy.mock.calls[0][1]?.body as string)).toEqual(payload);
+    });
+
+    test('ignores unknown query parameters', async () => {
+      fetchSpy.mockResolvedValue(new Response('{}', { headers: { 'content-type': 'application/json' } }));
+      const res = await request(server.getListener()!)
+        .post('/v1/chat/completions?api-version=2024-01-01')
+        .send({ model: 'model-name', messages: [] })
+        .expect(200);
+      expect(res.body).toEqual({});
+      expect(fetchSpy.mock.calls[0][0]).toBe('http://localhost:8080/v1/chat/completions');
+    });
+
     test('returns 400 in the OpenAI shape for a malformed JSON body', async () => {
       const res = await request(server.getListener()!)
         .post('/v1/chat/completions')
@@ -1035,7 +1102,7 @@ describe('OpenAI compatible /v1 API', () => {
       });
       const res = await request(server.getListener()!)
         .post('/v1/chat/completions')
-        .send({ model: 'unknown-model' })
+        .send({ model: 'unknown-model', messages: [] })
         .expect(404);
       expect(res.body).toEqual({
         error: {
@@ -1050,7 +1117,7 @@ describe('OpenAI compatible /v1 API', () => {
       vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(false);
       const res = await request(server.getListener()!)
         .post('/v1/chat/completions')
-        .send({ model: 'model-name' })
+        .send({ model: 'model-name', messages: [] })
         .expect(404);
       expect(res.body).toEqual({
         error: {
@@ -1067,7 +1134,7 @@ describe('OpenAI compatible /v1 API', () => {
       vi.mocked(inferenceManager.createInferenceServer).mockRejectedValue(new Error('cannot create'));
       const res = await request(server.getListener()!)
         .post('/v1/chat/completions')
-        .send({ model: 'model-name' })
+        .send({ model: 'model-name', messages: [] })
         .expect(500);
       expect(res.body).toEqual({
         error: { message: 'cannot create', type: 'server_error', code: 'inference_server_unavailable' },
@@ -1117,7 +1184,10 @@ describe('OpenAI compatible /v1 API', () => {
     test('uses labels.api as base url when present', async () => {
       vi.mocked(inferenceManager.getServers).mockReturnValue([healthyServer({ api: 'http://localhost:1234/v3/' })]);
       fetchSpy.mockResolvedValue(new Response('{}', { headers: { 'content-type': 'application/json' } }));
-      await request(server.getListener()!).post('/v1/chat/completions').send({ model: 'model-name' }).expect(200);
+      await request(server.getListener()!)
+        .post('/v1/chat/completions')
+        .send({ model: 'model-name', messages: [] })
+        .expect(200);
       expect(fetchSpy.mock.calls[0][0]).toBe('http://localhost:1234/v3/chat/completions');
     });
 
@@ -1131,7 +1201,7 @@ describe('OpenAI compatible /v1 API', () => {
       fetchSpy.mockResolvedValue(sseResponse(chunks));
       const res = await request(server.getListener()!)
         .post('/v1/chat/completions')
-        .send({ model: 'model-name', stream: true })
+        .send({ model: 'model-name', stream: true, messages: [] })
         .expect(200)
         .expect('Content-Type', /text\/event-stream/);
       expect(res.text).toBe(chunks.join(''));
@@ -1147,7 +1217,7 @@ describe('OpenAI compatible /v1 API', () => {
       );
       const res = await request(server.getListener()!)
         .post('/v1/chat/completions')
-        .send({ model: 'model-name' })
+        .send({ model: 'model-name', messages: [] })
         .expect(400);
       expect(res.body).toEqual(errorBody);
     });
@@ -1156,7 +1226,7 @@ describe('OpenAI compatible /v1 API', () => {
       fetchSpy.mockRejectedValue(new TypeError('fetch failed'));
       const res = await request(server.getListener()!)
         .post('/v1/chat/completions')
-        .send({ model: 'model-name' })
+        .send({ model: 'model-name', messages: [] })
         .expect(502);
       expect(res.body.error).toMatchObject({ type: 'server_error', code: 'upstream_unreachable' });
     });
@@ -1166,7 +1236,7 @@ describe('OpenAI compatible /v1 API', () => {
       await request(server.getListener()!)
         .post('/v1/chat/completions')
         .set('Authorization', 'Bearer dummy')
-        .send({ model: 'model-name' })
+        .send({ model: 'model-name', messages: [] })
         .expect(200);
       const headers = Object.keys((fetchSpy.mock.calls[0][1]?.headers ?? {}) as Record<string, string>).map(h =>
         h.toLowerCase(),

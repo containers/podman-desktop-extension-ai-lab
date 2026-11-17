@@ -179,14 +179,26 @@ export class ApiServer implements Disposable {
     app.use('/api', router);
 
     // OpenAI compatible API, proxied to the inference server.
-    // It is intentionally not validated by the OpenAPI validator, requests are passed through as is.
+    // Requests are validated against api/openapi.yaml (which only describes the fields required by the proxy:
+    // any other OpenAI field is allowed and passed through as is). Responses are not validated, as they are
+    // streamed from the inference server unchanged.
     const v1Router = express.Router();
     v1Router.use(express.json({ limit: '50mb' }));
+    v1Router.use(
+      OpenApiValidator.middleware({
+        apiSpec: this.getSpecFile(),
+        validateRequests: { allowUnknownQueryParameters: true },
+        validateResponses: false,
+        // unknown routes are answered by the 404 handler below, in the OpenAI error format
+        ignoreUndocumented: true,
+      }),
+    );
     v1Router.get('/models', this.listOpenAIModels.bind(this));
     v1Router.post('/chat/completions', this.openAIChatCompletionsProxy.bind(this));
     v1Router.use((_req: Request, res: Response) => {
       this.sendOpenAIError(res, 404, 'Not found', 'invalid_request_error', 'not_found');
     });
+    // handles the errors from the body parser and from the validator,
     // the 4 parameters are required for express to treat this as an error handler
     v1Router.use((err: BodyParserError, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status && err.status >= 400 && err.status < 600 ? err.status : 500;

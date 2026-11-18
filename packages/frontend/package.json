@@ -30,7 +30,7 @@
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/svelte": "^5.4.2",
-    "@testing-library/user-event": "^14.6.9",
+    "@testing-library/user-event": "^14.6.10",
     "@tsconfig/svelte": "^5.0.9",
     "@types/humanize-duration": "^3.27.4",
     "@typescript-eslint/eslint-plugin": "8.72.2",

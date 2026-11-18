@@ -62,7 +62,8 @@ async function onAiLabPortInput(event: Event): Promise<void> {
           <p>
             Integrate Podman AI Lab directly into your development workflows by using its REST API endpoints. Compatible
             with Ollama's endpoints, you can seamlessly access and utilize the capabilities of Podman AI Lab without
-            relying on its graphical interface.
+            relying on its graphical interface. An OpenAI-compatible API is also served under
+            <code>/v1</code> (for example <code>http://localhost:{aiLabPort ?? 10434}/v1</code>).
           </p>
         </div>
         <div class="px-5 space-y-5">

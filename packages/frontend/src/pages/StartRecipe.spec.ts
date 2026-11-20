@@ -71,7 +71,7 @@ const fakeRecipe: Recipe = {
 
 const fakeRecommendedModel: ModelInfo = {
   id: 'dummy-model-1',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Model 1',
   file: {
     file: 'dummy-model-file',
@@ -81,7 +81,7 @@ const fakeRecommendedModel: ModelInfo = {
 
 const fakeRemoteModel: ModelInfo = {
   id: 'dummy-model-2',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Model 2',
 } as unknown as ModelInfo;
 
@@ -230,12 +230,12 @@ test('Selecting model not downloaded should display a warning', async () => {
 test('Models of all recipe backends should be selectable', async () => {
   const openvinoModel: ModelInfo = {
     id: 'dummy-model-3',
-    backend: InferenceType.OPENVINO,
+    backends: [InferenceType.OPENVINO],
     name: 'Dummy Model 3',
   } as unknown as ModelInfo;
   const whisperModel: ModelInfo = {
     id: 'dummy-model-4',
-    backend: InferenceType.WHISPER_CPP,
+    backends: [InferenceType.WHISPER_CPP],
     name: 'Dummy Model 4',
   } as unknown as ModelInfo;
   vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
@@ -257,6 +257,38 @@ test('Models of all recipe backends should be selectable', async () => {
   expect(labels).toContain(fakeRecommendedModel.name);
   expect(labels).toContain(openvinoModel.name);
   expect(labels).not.toContain(whisperModel.name);
+});
+
+test('Models supporting one of the recipe backends should be selectable', async () => {
+  const multiBackendModel: ModelInfo = {
+    id: 'dummy-model-3',
+    backends: [InferenceType.OPENVINO, InferenceType.LLAMA_CPP],
+    name: 'Dummy Model 3',
+  } as unknown as ModelInfo;
+  const otherModel: ModelInfo = {
+    id: 'dummy-model-4',
+    backends: [InferenceType.OPENVINO],
+    name: 'Dummy Model 4',
+  } as unknown as ModelInfo;
+  vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
+    recipes: [fakeRecipe],
+    models: [],
+    categories: [],
+    version: '',
+  });
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([fakeRecommendedModel, multiBackendModel, otherModel]);
+
+  const { container } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  await fireEvent.pointerUp(screen.getByLabelText('Select Model'));
+  const labels = Array.from(container.querySelectorAll('div[class~="list-item"]')).map(
+    item => item.querySelector('span')?.textContent,
+  );
+  expect(labels).toContain(fakeRecommendedModel.name);
+  expect(labels).toContain(multiBackendModel.name);
+  expect(labels).not.toContain(otherModel.name);
 });
 
 test('Selecting model downloaded should not display a warning', async () => {

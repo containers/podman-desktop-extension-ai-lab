@@ -31,7 +31,7 @@ import { VMType } from '@shared/models/IPodman';
 import { InferenceManager } from '../inference/inferenceManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ApplicationOptions } from '../../models/ApplicationOptions';
-import type { InferenceServer } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import type { ContainerRegistry } from '../../registries/ContainerRegistry';
 import type { PodmanConnection } from '../podmanConnection';
@@ -273,7 +273,7 @@ describe('buildRecipe with inference server', () => {
     const result = await manager.buildRecipe({
       connection: connectionMock,
       recipe: { ...recipeMock, backends },
-      model: { ...modelInfoMock, backend: 'llama-cpp' },
+      model: { ...modelInfoMock, backends: ['llama-cpp'] },
     });
 
     if (useInferenceServer) {
@@ -283,5 +283,31 @@ describe('buildRecipe with inference server', () => {
       expect(inferenceManagerMock.findServerByModel).not.toHaveBeenCalled();
       expect(result.inferenceServer).toBeUndefined();
     }
+  });
+
+  test('model with several backends should use the preferred backend supported by the recipe', async () => {
+    vi.mocked(inferenceManagerMock.findServerByModel).mockReturnValue(undefined);
+    vi.mocked(inferenceManagerMock.getPreferredBackend).mockReturnValue(InferenceType.LLAMA_CPP);
+    vi.mocked(inferenceManagerMock.createInferenceServer).mockResolvedValue('inference-container');
+    vi.mocked(inferenceManagerMock.get).mockReturnValue(inferenceServerMock);
+
+    const manager = await getInitializedRecipeManager();
+    const model = { ...modelInfoMock, backends: ['openvino', 'llama-cpp'] };
+
+    const result = await manager.buildRecipe({
+      connection: connectionMock,
+      recipe: { ...recipeMock, backends: ['llama-cpp'] },
+      model,
+    });
+
+    expect(inferenceManagerMock.findServerByModel).toHaveBeenCalledWith(model, ['llama-cpp']);
+    expect(inferenceManagerMock.getPreferredBackend).toHaveBeenCalledWith([model], ['llama-cpp']);
+    expect(inferenceManagerMock.createInferenceServer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelsInfo: [model],
+        backend: InferenceType.LLAMA_CPP,
+      }),
+    );
+    expect(result.inferenceServer).toBe(inferenceServerMock);
   });
 });

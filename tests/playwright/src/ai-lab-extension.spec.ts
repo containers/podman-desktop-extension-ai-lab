@@ -365,8 +365,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
        * Model Download
        */
       test.beforeAll(`Download model ${appModel} via AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        // 600s download + up to 120s network probe
-        test.setTimeout(760_000);
+        // 600s download + up to 8 min network probe
+        test.setTimeout(1_100_000);
         aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await aiLabPage.navigationBar.waitForLoad();
 

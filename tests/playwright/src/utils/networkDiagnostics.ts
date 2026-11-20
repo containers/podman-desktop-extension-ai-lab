@@ -20,6 +20,7 @@ import { lookup } from 'node:dns/promises';
 
 const PROBE_BYTES = 100 * 1024 * 1024;
 const PROBE_TIMEOUT_MS = 60_000;
+const FULL_STREAM_TIMEOUT_MS = 240_000;
 // Headers that identify the CDN / edge serving the request.
 const EDGE_HEADERS = ['server', 'via', 'x-cache', 'x-amz-cf-pop', 'x-amz-cf-id', 'cf-ray', 'x-served-by', 'age'];
 
@@ -42,9 +43,79 @@ async function logDns(host: string): Promise<void> {
   }
 }
 
+/** Reads PROBE_BYTES from `offset` into memory, logs throughput, returns the file size (from Content-Range). */
+async function probeRange(target: URL, offset: number): Promise<number | undefined> {
+  const start = performance.now();
+  try {
+    const resp = await fetch(target, {
+      headers: { Range: `bytes=${offset}-${offset + PROBE_BYTES - 1}` },
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    });
+    const ttfbMs = Math.round(performance.now() - start);
+    log(`cdn ${target.host} offset=${offset} status=${resp.status} ttfb=${ttfbMs}ms ${edgeHeaders(resp)}`);
+    let received = 0;
+    try {
+      for await (const chunk of resp.body ?? []) {
+        received += (chunk as Uint8Array).length;
+      }
+    } catch (err) {
+      log(`probe stream ended early: ${String(err)}`);
+    }
+    const seconds = (performance.now() - start) / 1000;
+    const mb = received / 1024 / 1024;
+    log(
+      `throughput offset=${offset} ${mb.toFixed(1)} MB in ${seconds.toFixed(1)}s = ${(mb / seconds).toFixed(2)} MB/s`,
+    );
+    const total = /\/(\d+)$/.exec(resp.headers.get('content-range') ?? '')?.[1];
+    return total ? Number(total) : undefined;
+  } catch (err) {
+    log(`probe offset=${offset} failed: ${String(err)}`);
+    return undefined;
+  }
+}
+
+/**
+ * Streams the whole file over ONE connection into memory (no disk), logging every 250 MB and the longest
+ * gap between chunks. Stalling here like the real download does = network/CDN; clean here = client disk.
+ */
+async function probeFullStream(target: URL): Promise<void> {
+  const start = performance.now();
+  let received = 0;
+  let nextMark = 250 * 1024 * 1024;
+  let lastChunk = start;
+  let maxGapMs = 0;
+  let maxGapAt = 0;
+  try {
+    const resp = await fetch(target, { signal: AbortSignal.timeout(FULL_STREAM_TIMEOUT_MS) });
+    for await (const chunk of resp.body ?? []) {
+      const now = performance.now();
+      if (now - lastChunk > maxGapMs) {
+        maxGapMs = now - lastChunk;
+        maxGapAt = received;
+      }
+      lastChunk = now;
+      received += (chunk as Uint8Array).length;
+      if (received >= nextMark) {
+        log(`full-stream ${(received / 1024 / 1024).toFixed(0)} MB at ${((now - start) / 1000).toFixed(1)}s`);
+        nextMark += 250 * 1024 * 1024;
+      }
+    }
+    log(`full-stream completed`);
+  } catch (err) {
+    log(`full-stream ended early: ${String(err)}`);
+  } finally {
+    const seconds = (performance.now() - start) / 1000;
+    const mb = received / 1024 / 1024;
+    log(
+      `full-stream ${mb.toFixed(1)} MB in ${seconds.toFixed(1)}s = ${(mb / seconds).toFixed(2)} MB/s, longest gap ${(maxGapMs / 1000).toFixed(1)}s at ${(maxGapAt / 1024 / 1024).toFixed(0)} MB`,
+    );
+  }
+}
+
 /**
  * Logs where a model URL is actually served from (redirect target, DNS, CDN edge headers)
- * and the raw throughput of a single connection over the first 100 MB.
+ * single-connection throughput of 100 MB at the start, middle and end of the file,
+ * and a full single-connection stream of the file into memory.
  * Never throws: diagnostics must not fail the test.
  */
 export async function probeModelDownload(url: string): Promise<void> {
@@ -60,26 +131,14 @@ export async function probeModelDownload(url: string): Promise<void> {
       await logDns(target.host);
     }
 
-    const start = performance.now();
-    const resp = await fetch(target, {
-      headers: { Range: `bytes=0-${PROBE_BYTES - 1}` },
-      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-    });
-    const ttfbMs = Math.round(performance.now() - start);
-    log(`cdn ${target.host} status=${resp.status} ttfb=${ttfbMs}ms ${edgeHeaders(resp)}`);
-
-    let received = 0;
-    try {
-      for await (const chunk of resp.body ?? []) {
-        received += (chunk as Uint8Array).length;
-      }
-    } catch (err) {
-      log(`probe stream ended early: ${String(err)}`);
+    // Probe the start, middle and end of the file straight into memory (no disk writes):
+    // a slow middle/end means the CDN is the bottleneck, fast everywhere points at the client side.
+    const total = await probeRange(target, 0);
+    if (total) {
+      await probeRange(target, Math.floor(total / 2));
+      await probeRange(target, Math.max(0, total - PROBE_BYTES));
     }
-    const seconds = (performance.now() - start) / 1000;
-    log(
-      `throughput ${(received / 1024 / 1024).toFixed(1)} MB in ${seconds.toFixed(1)}s = ${(received / 1024 / 1024 / seconds).toFixed(2)} MB/s`,
-    );
+    await probeFullStream(target);
   } catch (err) {
     log(`probe failed: ${String(err)}`);
   }

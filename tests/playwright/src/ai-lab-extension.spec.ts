@@ -55,6 +55,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ApplicationCatalog } from '../../../packages/shared/src/models/IApplicationCatalog';
+import { probeModelDownload } from './utils/networkDiagnostics';
 
 const AI_LAB_EXTENSION_OCI_IMAGE =
   process.env.EXTENSION_OCI_IMAGE ?? 'ghcr.io/containers/podman-desktop-extension-ai-lab:nightly';
@@ -364,7 +365,8 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
        * Model Download
        */
       test.beforeAll(`Download model ${appModel} via AI Lab Catalog`, async ({ runner, page, navigationBar }) => {
-        test.setTimeout(620_000);
+        // 600s download + up to 120s network probe
+        test.setTimeout(760_000);
         aiLabPage = await reopenAILabDashboard(runner, page, navigationBar);
         await aiLabPage.navigationBar.waitForLoad();
 
@@ -372,15 +374,31 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         await catalogPage.waitForLoad();
 
         if (!(await catalogPage.isModelDownloaded(appModel))) {
+          const modelUrl = AI_JSON.models.find(model => model.name === appModel)?.url;
+          if (modelUrl?.startsWith('https://')) {
+            await probeModelDownload(modelUrl);
+          }
           await catalogPage.downloadModel(appModel);
         }
         let downloadRetries = 0;
+        const downloadStart = Date.now();
+        let lastProgress: string | undefined;
         await expect
           // eslint-disable-next-line sonarjs/no-nested-functions
           .poll(
             async () => {
               if (await waitForCatalogModel(appModel)) {
+                console.log(
+                  `[download-diag] ${appModel} downloaded after ${Math.round((Date.now() - downloadStart) / 1000)}s`,
+                );
                 return true;
+              }
+              const progress = await catalogPage.getDownloadProgress(appModel);
+              if (progress !== lastProgress) {
+                lastProgress = progress;
+                console.log(
+                  `[download-diag] t=${Math.round((Date.now() - downloadStart) / 1000)}s ${progress ?? 'no download task shown'}`,
+                );
               }
               // Download button is back = the download failed (e.g. ECONNRESET), so start it again.
               if (downloadRetries < MAX_MODEL_DOWNLOAD_RETRIES && (await catalogPage.canDownloadModel(appModel))) {

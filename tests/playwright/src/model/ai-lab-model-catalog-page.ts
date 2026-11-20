@@ -152,6 +152,15 @@ export class AILabCatalogPage extends AILabBasePage {
     return (await modelRow.getByRole('button', { name: 'Download Model' }).count()) > 0;
   }
 
+  /** Text of the "Downloading model <name> (N%)" task, or undefined when no download is shown. */
+  async getDownloadProgress(modelName: string): Promise<string | undefined> {
+    const task = this.webview.getByText(`Downloading model ${modelName}`, { exact: false });
+    if ((await task.count()) === 0) {
+      return undefined;
+    }
+    return (await task.first().textContent())?.trim();
+  }
+
   async isModelDownloaded(modelName: string): Promise<boolean> {
     const modelRow = await this.getModelRowByName(modelName);
     if (!modelRow) {

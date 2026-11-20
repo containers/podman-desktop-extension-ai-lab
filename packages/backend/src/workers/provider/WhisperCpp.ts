@@ -48,9 +48,9 @@ export class WhisperCpp extends InferenceProvider {
       throw new Error('The model info file provided is undefined');
     }
 
-    if (modelInfo.backend !== InferenceType.WHISPER_CPP) {
+    if (!modelInfo.backends?.includes(InferenceType.WHISPER_CPP)) {
       throw new Error(
-        `Whisper requires models with backend type ${InferenceType.WHISPER_CPP} got ${modelInfo.backend}.`,
+        `Whisper requires models with backend type ${InferenceType.WHISPER_CPP} got ${modelInfo.backends?.join(', ')}.`,
       );
     }
 

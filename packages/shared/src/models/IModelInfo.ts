@@ -33,10 +33,10 @@ export interface ModelInfo {
   };
   sha256?: string;
   /**
-   * The backend field aims to target which inference
-   * server the model requires
+   * The backends field aims to target which inference
+   * servers can run the model, in order of preference
    */
-  backend?: string;
+  backends?: string[];
 }
 
 export type ModelCheckerContext = 'inference' | 'recipe';

@@ -8,6 +8,6 @@
     "intel": "quay.io/ramalama/intel-gpu@sha256:6d744c82b904b5e5a81fc0fc89fcb0c0ad54a048dea4a049a4b9c45043cef323"
   },
   "openvino": {
-    "default": "quay.io/ramalama/openvino@sha256:e026ecbdf6ae222a193badad5b0dd2253362e366e22c8b402f5a492803b10fd5"
+    "default": "quay.io/ramalama/openvino@sha256:ecb3d459357fd9e2310f1caee2ccb4ad755f39e5c5dfbea81fa2296e58032acf"
   }
 }

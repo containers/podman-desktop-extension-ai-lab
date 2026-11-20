@@ -22,7 +22,12 @@ import {
   type ListImagesOptions,
   type PullEvent,
 } from '@podman-desktop/api';
-import type { CreationInferenceServerOptions, InferenceServerConfig } from '@shared/models/InferenceServerConfig';
+import {
+  type CreationInferenceServerOptions,
+  type InferenceServerConfig,
+  LLAMA_CPP_MAX_CTX_SIZE,
+  LLAMA_CPP_MIN_CTX_SIZE,
+} from '@shared/models/InferenceServerConfig';
 import { getFreeRandomPort } from './ports';
 import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { ModelInfo } from '@shared/models/IModelInfo';
@@ -73,6 +78,15 @@ export async function withDefaultConfiguration(
 ): Promise<InferenceServerConfig> {
   if (options.modelsInfo.length === 0) throw new Error('modelsInfo need to contain at least one element.');
 
+  if (
+    options.ctxSize !== undefined &&
+    (!Number.isInteger(options.ctxSize) ||
+      options.ctxSize < LLAMA_CPP_MIN_CTX_SIZE ||
+      options.ctxSize > LLAMA_CPP_MAX_CTX_SIZE)
+  ) {
+    throw new Error(`ctxSize must be an integer between ${LLAMA_CPP_MIN_CTX_SIZE} and ${LLAMA_CPP_MAX_CTX_SIZE}.`);
+  }
+
   return {
     port: options.port ?? (await getFreeRandomPort('0.0.0.0')),
     image: options.image,
@@ -81,6 +95,7 @@ export async function withDefaultConfiguration(
     connection: options.connection,
     inferenceProvider: options.inferenceProvider,
     gpuLayers: options.gpuLayers,
+    ctxSize: options.ctxSize,
   };
 }
 

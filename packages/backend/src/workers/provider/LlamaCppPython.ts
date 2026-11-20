@@ -22,7 +22,7 @@ import type {
   ImageInfo,
   MountConfig,
 } from '@podman-desktop/api';
-import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
+import { type InferenceServerConfig, LLAMA_CPP_DEFAULT_CTX_SIZE } from '@shared/models/InferenceServerConfig';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { InferenceProvider } from './InferenceProvider';
 import { getMountPath } from '../../utils/modelsUtils';
@@ -39,10 +39,6 @@ import { llamacpp } from '../../assets/inference-images.json';
 import * as fs from 'node:fs';
 
 export const SECOND: number = 1_000_000_000;
-
-// llama.cpp now defaults to the model training context (e.g. 128k), which does not fit in GPU memory
-// on podman machines; keep the 4096 default of previous llama.cpp releases
-export const LLAMA_SERVER_CTX_SIZE = 4096;
 
 interface Device {
   PathOnHost: string;
@@ -222,6 +218,11 @@ export class LlamaCppPython extends InferenceProvider {
     labels['docs'] = aiLabDocsLink;
     labels['api'] = `http://localhost:${config.port}/v1`;
 
+    // the context size is always applied (not only with a GPU) as the KV cache also uses the machine memory.
+    // It is stored in a label as the value is fixed at creation and the server is restored from the container.
+    const ctxSize = config.ctxSize ?? LLAMA_CPP_DEFAULT_CTX_SIZE;
+    labels['ctx-size'] = `${ctxSize}`;
+
     return {
       Image: imageInfo.Id,
       Detach: true,
@@ -251,11 +252,11 @@ export class LlamaCppPython extends InferenceProvider {
       Labels: labels,
       Env: envs,
       // the image entrypoint (if any, e.g. intel-gpu sourcing oneAPI) execs this command
-      Cmd: this.getLlamaServerArgs(modelInfo, target, gpuLayers),
+      Cmd: this.getLlamaServerArgs(modelInfo, target, ctxSize, gpuLayers),
     };
   }
 
-  protected getLlamaServerArgs(modelInfo: ModelInfo, modelPath: string, gpuLayers?: number): string[] {
+  protected getLlamaServerArgs(modelInfo: ModelInfo, modelPath: string, ctxSize: number, gpuLayers?: number): string[] {
     const args = [
       'llama-server',
       '--model',
@@ -265,7 +266,7 @@ export class LlamaCppPython extends InferenceProvider {
       '--port',
       '8000',
       '--ctx-size',
-      `${LLAMA_SERVER_CTX_SIZE}`,
+      `${ctxSize}`,
     ];
 
     // when unset, llama.cpp offloads as many layers as fit in the devices exposed to the container

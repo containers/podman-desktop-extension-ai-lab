@@ -106,7 +106,7 @@ beforeEach(() => {
   });
 });
 
-const llamaServerArgs = (gpuLayers?: string): string[] => [
+const llamaServerArgs = (gpuLayers?: string, ctxSize = '4096'): string[] => [
   'llama-server',
   '--model',
   '/models/dummy-file.guff',
@@ -115,7 +115,7 @@ const llamaServerArgs = (gpuLayers?: string): string[] => [
   '--port',
   '8000',
   '--ctx-size',
-  '4096',
+  ctxSize,
   ...(gpuLayers ? ['--n-gpu-layers', gpuLayers] : []),
 ];
 
@@ -192,6 +192,7 @@ describe('perform', () => {
         [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
         api: 'http://localhost:8888/v1',
         docs: 'http://localhost:10434/api-docs/8888',
+        'ctx-size': '4096',
       },
       models: [DummyModel],
       status: 'running',
@@ -238,8 +239,72 @@ describe('perform', () => {
         [LABEL_INFERENCE_SERVER]: `["${DummyModel.id}"]`,
         api: 'http://localhost:8888/v1',
         docs: 'http://localhost:10434/api-docs/8888',
+        'ctx-size': '4096',
       },
     });
+  });
+
+  test('custom ctxSize should be used as --ctx-size argument and stored in a label', async () => {
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+
+    const server = await provider.perform({
+      port: 8888,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+      ctxSize: 32768,
+    });
+
+    expect(server.labels['ctx-size']).toBe('32768');
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Cmd: llamaServerArgs(undefined, '32768'),
+        Labels: expect.objectContaining({ 'ctx-size': '32768' }),
+      }),
+    );
+  });
+
+  test('custom ctxSize should be combined with gpu layers', async () => {
+    vi.mocked(podmanConnection.findRunningContainerProviderConnection).mockReturnValue({
+      ...dummyConnection,
+      vmType: VMType.LIBKRUN,
+    });
+    vi.mocked(configurationRegistry.getExtensionConfiguration).mockReturnValue({
+      experimentalGPU: true,
+      modelsPath: '',
+      apiPort: 10434,
+      inferenceRuntime: 'llama-cpp',
+      modelUploadDisabled: false,
+      showGPUPromotion: false,
+      appearance: 'dark',
+    });
+    vi.mocked(gpuManager.collectGPUs).mockResolvedValue([
+      {
+        vram: 1024,
+        model: 'dummy-model',
+        vendor: GPUVendor.APPLE,
+      },
+    ]);
+
+    const provider = new LlamaCppPython(taskRegistry, podmanConnection, gpuManager, configurationRegistry);
+    await provider.perform({
+      port: 8000,
+      image: undefined,
+      labels: {},
+      modelsInfo: [DummyModel],
+      connection: undefined,
+      gpuLayers: 999,
+      ctxSize: 16384,
+    });
+
+    expect(containerEngine.createContainer).toHaveBeenCalledWith(
+      DummyImageInfo.engineId,
+      expect.objectContaining({
+        Cmd: llamaServerArgs('999', '16384'),
+      }),
+    );
   });
 
   test('model properties should be passed as llama-server arguments', async () => {

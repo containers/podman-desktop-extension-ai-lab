@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import '@testing-library/jest-dom/vitest';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { studioClient } from '/@/utils/client';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
@@ -463,4 +463,87 @@ test('models with backend "none" should be filtered out', async () => {
       modelsInfo: [expect.objectContaining({ id: 'model-valid' })],
     }),
   );
+});
+
+describe('context size', () => {
+  const DUMMY_LLAMA_MODEL: ModelInfo = {
+    ...DUMMY_DOWNLOADED_MODEL,
+    id: 'dummy-llama-id',
+    name: 'dummy-llama-name',
+    backend: 'llama-cpp',
+  };
+
+  const DUMMY_OPENVINO_MODEL: ModelInfo = {
+    ...DUMMY_DOWNLOADED_MODEL,
+    id: 'dummy-openvino-id',
+    name: 'dummy-openvino-name',
+    backend: 'openvino',
+  };
+
+  test('context size input should be hidden for models not using llama.cpp', async () => {
+    vi.mocked(ModelsInfoStore).modelsInfo = readable([DUMMY_OPENVINO_MODEL]);
+
+    render(CreateService);
+
+    await vi.waitFor(() => {
+      expect(screen.getByTitle('Create service')).toBeEnabled();
+    });
+    expect(screen.queryByLabelText('Context size input')).toBeNull();
+  });
+
+  test('context size input should be visible with the default value for llama.cpp models', async () => {
+    vi.mocked(ModelsInfoStore).modelsInfo = readable([DUMMY_LLAMA_MODEL]);
+
+    render(CreateService);
+
+    const input = await vi.waitFor(() => screen.getByLabelText('Context size input'));
+    expect(input).toHaveValue('4096');
+  });
+
+  test('default context size should be sent when creating a llama.cpp service', async () => {
+    vi.mocked(ModelsInfoStore).modelsInfo = readable([DUMMY_LLAMA_MODEL]);
+
+    render(CreateService);
+
+    const createBtn = screen.getByTitle('Create service');
+    await vi.waitFor(() => expect(createBtn).toBeEnabled());
+    await fireEvent.click(createBtn);
+
+    expect(studioClient.requestCreateInferenceServer).toHaveBeenCalledWith({
+      modelsInfo: [DUMMY_LLAMA_MODEL],
+      port: 8888,
+      connection: containerProviderConnection,
+      ctxSize: 4096,
+    });
+  });
+
+  test('context size set by the user should be sent when creating a llama.cpp service', async () => {
+    vi.mocked(ModelsInfoStore).modelsInfo = readable([DUMMY_LLAMA_MODEL]);
+
+    render(CreateService);
+
+    const input = await vi.waitFor(() => screen.getByLabelText('Context size input'));
+    await userEvent.clear(input);
+    await userEvent.type(input, '32768');
+
+    const createBtn = screen.getByTitle('Create service');
+    await vi.waitFor(() => expect(createBtn).toBeEnabled());
+    await fireEvent.click(createBtn);
+
+    expect(studioClient.requestCreateInferenceServer).toHaveBeenCalledWith(expect.objectContaining({ ctxSize: 32768 }));
+  });
+
+  test('create button should be disabled when the context size is out of range', async () => {
+    vi.mocked(ModelsInfoStore).modelsInfo = readable([DUMMY_LLAMA_MODEL]);
+
+    render(CreateService);
+
+    const input = await vi.waitFor(() => screen.getByLabelText('Context size input'));
+    await userEvent.clear(input);
+    await userEvent.type(input, '100');
+
+    await vi.waitFor(() => {
+      expect(screen.getByTitle('Create service')).toBeDisabled();
+    });
+  });
 });

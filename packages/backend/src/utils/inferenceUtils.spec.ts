@@ -48,6 +48,34 @@ describe('withDefaultConfiguration', () => {
     expect(result.image).toBeUndefined();
     expect(result.labels).toStrictEqual({});
     expect(result.connection).toBeUndefined();
+    expect(result.ctxSize).toBeUndefined();
+  });
+
+  test('ctxSize should be passed through', async () => {
+    const result = await withDefaultConfiguration({
+      modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
+      ctxSize: 32768,
+    });
+
+    expect(result.ctxSize).toBe(32768);
+  });
+
+  test.each([512, 131072])('ctxSize %d on the boundaries should be accepted', async ctxSize => {
+    const result = await withDefaultConfiguration({
+      modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
+      ctxSize,
+    });
+
+    expect(result.ctxSize).toBe(ctxSize);
+  });
+
+  test.each([0, -1, 511, 131073, 4096.5, Number.NaN])('ctxSize %d should be rejected', async ctxSize => {
+    await expect(
+      withDefaultConfiguration({
+        modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
+        ctxSize,
+      }),
+    ).rejects.toThrowError('ctxSize must be an integer between 512 and 131072.');
   });
 
   test('expect no default values', async () => {

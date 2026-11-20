@@ -21,6 +21,7 @@ on:
   push:
     branches:
       - 'main'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -37,7 +38,11 @@ jobs:
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-ai-lab
           IMAGE_NIGHTLY=${IMAGE_NAME}:nightly
           IMAGE_SHA=${IMAGE_NAME}:${GITHUB_SHA}
-          podman build -t $IMAGE_NIGHTLY .
-          podman push $IMAGE_NIGHTLY
-          podman tag $IMAGE_NIGHTLY $IMAGE_SHA
+          podman build -t $IMAGE_SHA .
           podman push $IMAGE_SHA
+          # only main updates :nightly; manual runs on other branches publish just the commit tag
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            podman tag $IMAGE_SHA $IMAGE_NIGHTLY
+            podman push $IMAGE_NIGHTLY
+          fi
+          echo "Published ${IMAGE_SHA}" >> "$GITHUB_STEP_SUMMARY"

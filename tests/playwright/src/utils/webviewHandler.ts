@@ -39,25 +39,31 @@ export async function handleWebview(
   const webView = page.getByRole('document', { name: AI_LAB_PAGE_BODY_LABEL });
   await playExpect(webView).toBeVisible();
 
+  // Reopening the webview can leave a stale page in the window list (e.g. over CDP),
+  // so probe every non-main page, newest first, instead of assuming index 1.
+  let webViewPage: Page | undefined;
   await playExpect
     .poll(
       async () => {
-        const windows = runner.getWindows();
-        if (windows.length < 2 || !windows[1]) {
-          return false;
+        for (const window of runner
+          .getWindows()
+          .filter(w => w !== page)
+          .reverse()) {
+          try {
+            await window.evaluate(() => true);
+            webViewPage = window;
+            return true;
+          } catch {
+            // stale or closed page, try the next one
+          }
         }
-        try {
-          await windows[1].evaluate(() => true);
-          return true;
-        } catch {
-          return false;
-        }
+        return false;
       },
       { timeout: 30_000, intervals: [500] },
     )
     .toBeTruthy();
 
-  const [mainPage, webViewPage] = runner.getWindows();
+  const mainPage = page;
 
   try {
     await mainPage.evaluate(() => {
@@ -70,6 +76,7 @@ export async function handleWebview(
     console.log(`Warning: Could not focus webview element: ${error}`);
   }
 
+  if (!webViewPage) throw new Error('AI Lab webview page not found');
   const aiLabNavigationBar = new AILabNavigationBar(mainPage, webViewPage);
   return [mainPage, webViewPage, aiLabNavigationBar];
 }

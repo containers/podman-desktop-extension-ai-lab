@@ -29,7 +29,7 @@ import type { BuilderManager } from './BuilderManager';
 import type { Disposable } from '@podman-desktop/api';
 import { CONFIG_FILENAME } from '../../utils/RecipeConstants';
 import type { InferenceManager } from '../inference/inferenceManager';
-import { withDefaultConfiguration } from '../../utils/inferenceUtils';
+import { getModelInferenceTypes, withDefaultConfiguration } from '../../utils/inferenceUtils';
 import type { InferenceServer } from '@shared/models/IInference';
 import { type ApplicationOptions, isApplicationOptionsWithModelInference } from '../../models/ApplicationOptions';
 
@@ -101,16 +101,24 @@ export class RecipeManager implements Disposable {
 
     let inferenceServer: InferenceServer | undefined;
     if (isApplicationOptionsWithModelInference(options)) {
-      // if the recipe has a defined backend, we gives priority to using an inference server
-      if (options.model.backend && options.recipe.backends?.includes(options.model.backend)) {
+      // if the recipe and the model have a backend in common, we gives priority to using an inference server
+      const backends = getModelInferenceTypes(options.model).filter(backend =>
+        options.recipe.backends?.includes(backend),
+      );
+      if (backends.length > 0) {
         let task: Task | undefined;
         try {
-          inferenceServer = this.inferenceManager.findServerByModel(options.model);
+          inferenceServer = this.inferenceManager.findServerByModel(options.model, backends);
           task = this.taskRegistry.createTask('Starting Inference server', 'loading', labels);
           if (!inferenceServer) {
             const inferenceContainerId = await this.inferenceManager.createInferenceServer(
               await withDefaultConfiguration({
                 modelsInfo: [options.model],
+                // use the backend selected by the user if supported by the recipe
+                backend:
+                  options.backend && backends.includes(options.backend)
+                    ? options.backend
+                    : this.inferenceManager.getPreferredBackend([options.model], backends),
               }),
             );
             inferenceServer = this.inferenceManager.get(inferenceContainerId);

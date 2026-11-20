@@ -53,7 +53,8 @@ import { VMType } from '@shared/models/IPodman';
 import { RECIPE_START_ROUTE } from '../../registries/NavigationRegistry';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { TaskRunner } from '../TaskRunner';
-import { getInferenceType } from '../../utils/inferenceUtils';
+import { getInferenceType, getInferenceTypes } from '../../utils/inferenceUtils';
+import type { InferenceType } from '@shared/models/IInference';
 import { isApplicationOptionsWithModelInference, type ApplicationOptions } from '../../models/ApplicationOptions';
 
 export class ApplicationManager extends Publisher<ApplicationState[]> implements Disposable {
@@ -531,9 +532,19 @@ export class ApplicationManager extends Publisher<ApplicationState[]> implements
       appPorts,
       modelPorts,
       health: 'starting',
-      backend: getInferenceType(this.modelsManager.getModelsInfo().filter(m => m.id === modelId)),
+      backend: this.getApplicationBackend(recipeId, modelId),
     };
     this.updateApplicationState(recipeId, modelId, state);
+  }
+
+  /**
+   * Return the backend used by an application: the preferred backend of the model supported by the recipe
+   */
+  private getApplicationBackend(recipeId: string, modelId: string): InferenceType {
+    const models = this.modelsManager.getModelsInfo().filter(m => m.id === modelId);
+    const recipe = this.catalogManager.getRecipes().find(r => r.id === recipeId);
+    const backend = getInferenceTypes(models).find(backend => recipe?.backends?.includes(backend));
+    return backend ?? getInferenceType(models);
   }
 
   protected forgetPodById(podId: string): void {

@@ -20,7 +20,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { PlaygroundV2Manager } from './playgroundV2Manager';
 import type { TelemetryLogger } from '@podman-desktop/api';
-import type { InferenceServer } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { InferenceManager } from './inference/inferenceManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { TaskRegistry } from '../registries/TaskRegistry';
@@ -518,6 +518,69 @@ test('creating a new playground with the model server stopped should start the i
   expect(startInferenceServerMock).toHaveBeenCalledWith('container-1');
 });
 
+test('creating a new playground with a backend should start an inference server with this backend', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
+  const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
+  const manager = new PlaygroundV2Manager(
+    rpcExtensionMock,
+    inferenceManagerMock,
+    taskRegistryMock,
+    telemetryMock,
+    cancellationTokenRegistryMock,
+    mcpServerManager,
+  );
+  await manager.createPlayground(
+    'a name',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+      backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+    } as unknown as ModelInfo,
+    'tracking-1',
+    InferenceType.OPENVINO,
+  );
+  expect(createInferenceServerMock).toHaveBeenCalledWith(
+    expect.objectContaining({
+      backend: InferenceType.OPENVINO,
+    }),
+  );
+});
+
+test('creating a new playground with the model served using another backend should use the existing server', async () => {
+  vi.mocked(inferenceManagerMock.getServers).mockReturnValue([
+    {
+      models: [
+        {
+          id: 'model-1',
+        },
+      ],
+      type: InferenceType.LLAMA_CPP,
+    },
+  ] as InferenceServer[]);
+  const createInferenceServerMock = vi.mocked(inferenceManagerMock.createInferenceServer);
+  const manager = new PlaygroundV2Manager(
+    rpcExtensionMock,
+    inferenceManagerMock,
+    taskRegistryMock,
+    telemetryMock,
+    cancellationTokenRegistryMock,
+    mcpServerManager,
+  );
+  await manager.createPlayground(
+    'a name',
+    {
+      id: 'model-1',
+      name: 'Model 1',
+      backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+    } as unknown as ModelInfo,
+    'tracking-1',
+    InferenceType.OPENVINO,
+  );
+  // a model is served by a single inference server
+  expect(createInferenceServerMock).not.toHaveBeenCalled();
+  expect(manager.getConversations()).toHaveLength(1);
+});
+
 test('delete conversation should delete the conversation', async () => {
   vi.mocked(inferenceManagerMock.getServers).mockReturnValue([]);
 
@@ -597,7 +660,12 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
 
   const id = await manager.requestCreatePlayground('a name', { id: 'model-1' } as ModelInfo);
 
-  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo, expect.any(String));
+  expect(createPlaygroundSpy).toHaveBeenCalledWith(
+    'a name',
+    { id: 'model-1' } as ModelInfo,
+    expect.any(String),
+    undefined,
+  );
   expect(createTaskMock).toHaveBeenCalledWith('Creating Playground environment', 'loading', {
     trackingId: id,
   });
@@ -633,7 +701,12 @@ test('requestCreatePlayground should call createPlayground and createTask, then 
 
   const id = await manager.requestCreatePlayground('a name', { id: 'model-1' } as ModelInfo);
 
-  expect(createPlaygroundSpy).toHaveBeenCalledWith('a name', { id: 'model-1' } as ModelInfo, expect.any(String));
+  expect(createPlaygroundSpy).toHaveBeenCalledWith(
+    'a name',
+    { id: 'model-1' } as ModelInfo,
+    expect.any(String),
+    undefined,
+  );
   expect(createTaskMock).toHaveBeenCalledWith('Creating Playground environment', 'loading', {
     trackingId: id,
   });

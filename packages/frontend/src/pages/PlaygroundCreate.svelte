@@ -16,6 +16,7 @@ import ModelSelect from '/@/lib/select/ModelSelect.svelte';
 import { InferenceType } from '@shared/models/IInference';
 import InferenceRuntimeSelect from '/@/lib/select/InferenceRuntimeSelect.svelte';
 import { configuration } from '../stores/extensionConfiguration';
+import ModelRuntimeSelect from '/@/lib/select/ModelRuntimeSelect.svelte';
 
 // Get recommended runtime
 let runtime: InferenceType | undefined = undefined;
@@ -40,10 +41,19 @@ onMount(async () => {
 
 let localModels: ModelInfo[];
 $: localModels = $modelsInfo.filter(
-  model => model.file && (!runtime || model.backend === runtime) && !exclude.includes(model.backend as InferenceType),
+  model =>
+    model.file &&
+    (model.backends ?? []).some(
+      backend => (!runtime || backend === runtime) && !exclude.includes(backend as InferenceType),
+    ),
 );
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;
+// The runtime used to run the model, among the runtimes supported by the model
+let backend: InferenceType | undefined = undefined;
+// The runtimes the model can be run with: the runtime filter if set, otherwise the runtimes not excluded
+let allowedRuntimes: InferenceType[];
+$: allowedRuntimes = runtime ? [runtime] : Object.values(InferenceType).filter(type => !exclude.includes(type));
 let submitted: boolean = false;
 let playgroundName: string;
 let errorMsg: string | undefined = undefined;
@@ -82,7 +92,7 @@ async function submit(): Promise<void> {
   submitted = true;
   try {
     // Using || and not && as we want to have the empty string systemPrompt passed as undefined
-    trackingId = await studioClient.requestCreatePlayground(playgroundName, model);
+    trackingId = await studioClient.requestCreatePlayground(playgroundName, model, backend);
   } catch (err: unknown) {
     trackingId = undefined;
     console.error('Something wrong while trying to create the playground.', err);
@@ -180,6 +190,13 @@ export function goToUpPage(): void {
           <!-- model input -->
           <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">Model</label>
           <ModelSelect models={localModels} disabled={submitted} bind:value={model} />
+          <!-- model runtime, when the model supports several runtimes -->
+          <ModelRuntimeSelect
+            model={model}
+            allowed={allowedRuntimes}
+            bind:value={backend}
+            reuseServer={true}
+            disabled={submitted} />
           {#if localModels.length === 0}
             <div class="text-red-500 p-1 flex flex-row items-center">
               <Fa size="1.1x" class="cursor-pointer text-red-500" icon={faExclamationCircle} />

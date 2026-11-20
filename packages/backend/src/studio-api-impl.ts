@@ -99,9 +99,9 @@ export class StudioApiImpl implements StudioAPI {
       });
   }
 
-  async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
+  async requestCreatePlayground(name: string, model: ModelInfo, backend?: InferenceType): Promise<string> {
     try {
-      return await this.playgroundV2.requestCreatePlayground(name, model);
+      return await this.playgroundV2.requestCreatePlayground(name, model, backend);
     } catch (err: unknown) {
       console.error('Something went wrong while trying to create playground environment', err);
       throw err;
@@ -251,6 +251,7 @@ export class StudioApiImpl implements StudioAPI {
         connection,
         recipe,
         model,
+        backend: options.backend,
       };
     } else {
       opts = {

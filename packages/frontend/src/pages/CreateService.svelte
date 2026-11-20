@@ -16,6 +16,8 @@ import { containerProviderConnections } from '/@/stores/containerProviderConnect
 import ContainerProviderConnectionSelect from '/@/lib/select/ContainerProviderConnectionSelect.svelte';
 import ContainerConnectionWrapper from '/@/lib/notification/ContainerConnectionWrapper.svelte';
 import TrackedTasks from '/@/lib/progress/TrackedTasks.svelte';
+import ModelRuntimeSelect from '/@/lib/select/ModelRuntimeSelect.svelte';
+import type { InferenceType } from '@shared/models/IInference';
 
 interface Props {
   // The tracking id is a unique identifier provided by the
@@ -26,7 +28,9 @@ interface Props {
 let { trackingId }: Props = $props();
 
 // List of the models available locally exlude models with none backend
-let localModels: ModelInfo[] = $derived($modelsInfo.filter(model => model.file && model.backend !== 'none'));
+let localModels: ModelInfo[] = $derived(
+  $modelsInfo.filter(model => model.file && (!model.backends || model.backends.some(backend => backend !== 'none'))),
+);
 
 // The container provider connection to use
 let containerProviderConnection: ContainerProviderConnectionInfo | undefined = $state(undefined);
@@ -40,6 +44,8 @@ let startedContainerProviderConnectionInfo: ContainerProviderConnectionInfo[] = 
 let containerPort: number | undefined = $state(undefined);
 // The model is the bind value to ModelSelect form
 let model: ModelInfo | undefined = $state(undefined);
+// The runtime used to run the model, when the model supports several runtimes
+let backend: InferenceType | undefined = $state(undefined);
 // If the creation of a new inference service fail
 let errorMsg: string | undefined = $state(undefined);
 // The containerId will be included in the tasks when the creation
@@ -83,6 +89,7 @@ const submit = async (): Promise<void> => {
       modelsInfo: [$state.snapshot(model)],
       port: $state.snapshot(containerPort),
       connection: $state.snapshot(containerProviderConnection),
+      backend: $state.snapshot(backend),
     });
     router.location.query.set('trackingId', trackingId);
   } catch (err: unknown) {
@@ -206,6 +213,8 @@ export function goToUpPage(): void {
               </div>
             </div>
           {/if}
+          <!-- inference runtime input, when the model supports several runtimes -->
+          <ModelRuntimeSelect model={model} bind:value={backend} disabled={loading} />
           <!-- container port input -->
           <label for="containerPort" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
             >Container port</label>

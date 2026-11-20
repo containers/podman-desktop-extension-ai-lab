@@ -205,7 +205,13 @@ export interface StudioAPI {
    */
   createSnippet(options: RequestOptions, language: string, variant: string): Promise<string>;
 
-  requestCreatePlayground(name: string, model: ModelInfo): Promise<string>;
+  /**
+   * Create a playground environment
+   * @param name the name of the playground
+   * @param model the model to use
+   * @param backend the backend used to run the model, default to the first backend supported by the model
+   */
+  requestCreatePlayground(name: string, model: ModelInfo, backend?: InferenceType): Promise<string>;
 
   /**
    * Delete a conversation

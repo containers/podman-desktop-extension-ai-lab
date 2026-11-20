@@ -22,6 +22,7 @@ import { ConversationRegistry } from '../registries/ConversationRegistry';
 import type { Conversation, SystemPrompt, UserChat } from '@shared/models/IPlaygroundMessage';
 import { isSystemPrompt } from '@shared/models/IPlaygroundMessage';
 import type { ModelInfo } from '@shared/models/IModelInfo';
+import type { InferenceType } from '@shared/models/IInference';
 import { withDefaultConfiguration } from '../utils/inferenceUtils';
 import { getRandomString } from '../utils/randomUtils';
 import type { TaskRegistry } from '../registries/TaskRegistry';
@@ -57,7 +58,7 @@ export class PlaygroundV2Manager implements Disposable {
     this.#conversationRegistry.deleteConversation(conversationId);
   }
 
-  async requestCreatePlayground(name: string, model: ModelInfo): Promise<string> {
+  async requestCreatePlayground(name: string, model: ModelInfo, backend?: InferenceType): Promise<string> {
     const trackingId: string = getRandomString();
     const task = this.taskRegistry.createTask('Creating Playground environment', 'loading', {
       trackingId: trackingId,
@@ -67,7 +68,7 @@ export class PlaygroundV2Manager implements Disposable {
       hasName: !!name,
       modelId: getHash(model.id),
     };
-    this.createPlayground(name, model, trackingId)
+    this.createPlayground(name, model, trackingId, backend)
       .then((playgroundId: string) => {
         this.taskRegistry.updateTask({
           ...task,
@@ -109,7 +110,7 @@ export class PlaygroundV2Manager implements Disposable {
     return trackingId;
   }
 
-  async createPlayground(name: string, model: ModelInfo, trackingId: string): Promise<string> {
+  async createPlayground(name: string, model: ModelInfo, trackingId: string, backend?: InferenceType): Promise<string> {
     if (!name) {
       name = this.getFreeName();
     }
@@ -121,12 +122,14 @@ export class PlaygroundV2Manager implements Disposable {
     const conversationId = this.#conversationRegistry.createConversation(name, model.id);
 
     // create/start inference server if necessary
+    // a model is served by a single inference server: an existing one is used whatever its backend
     const servers = this.inferenceManager.getServers();
     const server = servers.find(s => s.models.map(mi => mi.id).includes(model.id));
     if (!server) {
       await this.inferenceManager.createInferenceServer(
         await withDefaultConfiguration({
           modelsInfo: [model],
+          backend,
           labels: {
             trackingId: trackingId,
           },

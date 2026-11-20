@@ -17,7 +17,7 @@
  ***********************************************************************/
 import type { ContainerProviderConnectionInfo } from './IContainerConnectionInfo';
 
-import type { InferenceServer } from './IInference';
+import type { InferenceServer, InferenceType } from './IInference';
 
 export type RecipePullOptions = RecipePullOptionsDefault | RecipePullOptionsWithModelInference;
 
@@ -28,6 +28,10 @@ export interface RecipePullOptionsDefault {
 
 export type RecipePullOptionsWithModelInference = RecipePullOptionsDefault & {
   modelId: string;
+  /**
+   * The backend used to run the model, when the model supports several backends
+   */
+  backend?: InferenceType;
 };
 
 export function isRecipePullOptionsWithModelInference(

@@ -23,7 +23,7 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import CreateService from '/@/pages/CreateService.svelte';
 import type { Task } from '@shared/models/ITask';
 import userEvent from '@testing-library/user-event';
-import type { InferenceServer } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import { readable, writable } from 'svelte/store';
@@ -49,6 +49,7 @@ vi.mock('../utils/client', () => ({
     getHostFreePort: vi.fn(),
     checkContainerConnectionStatusAndResources: vi.fn(),
     getExtensionConfiguration: vi.fn(),
+    getRegisteredProviders: vi.fn(),
   },
   rpcBrowser: {
     subscribe: (): unknown => {
@@ -114,6 +115,11 @@ beforeEach(() => {
   vi.mocked(studioClient.checkContainerConnectionStatusAndResources).mockResolvedValue(runningMachineConnectionInfo);
   vi.mocked(studioClient.requestCreateInferenceServer).mockResolvedValue('dummyTrackingId');
   vi.mocked(studioClient.getHostFreePort).mockResolvedValue(8888);
+  vi.mocked(studioClient.getRegisteredProviders).mockResolvedValue([
+    InferenceType.LLAMA_CPP,
+    InferenceType.WHISPER_CPP,
+    InferenceType.OPENVINO,
+  ]);
   vi.mocked(studioClient.getExtensionConfiguration).mockResolvedValue({
     experimentalGPU: false,
     apiPort: 0,
@@ -427,7 +433,7 @@ test('models with backend "none" should be filtered out', async () => {
       id: 'model-valid',
       name: 'Valid Model',
       description: 'A model with a valid backend',
-      backend: 'llama-cpp',
+      backends: ['llama-cpp'],
       file: {
         file: 'file',
         path: '/valid-path',
@@ -437,7 +443,7 @@ test('models with backend "none" should be filtered out', async () => {
       id: 'model-none',
       name: 'None Backend Model',
       description: 'A model with backend none',
-      backend: 'none',
+      backends: ['none'],
       file: {
         file: 'file',
         path: '/none-path',
@@ -461,6 +467,63 @@ test('models with backend "none" should be filtered out', async () => {
   expect(vi.mocked(studioClient.requestCreateInferenceServer)).toHaveBeenCalledWith(
     expect.objectContaining({
       modelsInfo: [expect.objectContaining({ id: 'model-valid' })],
+    }),
+  );
+});
+
+test('model with a single runtime should not display the inference runtime select', async () => {
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([
+    { ...DUMMY_DOWNLOADED_MODEL, backends: [InferenceType.LLAMA_CPP] },
+  ]);
+  render(CreateService);
+
+  const createBtn = screen.getByTitle('Create service');
+  await vi.waitFor(() => {
+    expect(createBtn).toBeEnabled();
+  });
+  expect(screen.queryByLabelText('Select Model Runtime')).toBeNull();
+});
+
+test('model with several runtimes should allow to select the inference runtime', async () => {
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([
+    { ...DUMMY_DOWNLOADED_MODEL, backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO] },
+  ]);
+  render(CreateService);
+
+  const runtimeSelect = await vi.waitFor(() => screen.getByLabelText('Select Model Runtime'));
+  await userEvent.click(runtimeSelect);
+  await userEvent.click(screen.getByText(InferenceType.OPENVINO));
+
+  const createBtn = screen.getByTitle('Create service');
+  await vi.waitFor(() => {
+    expect(createBtn).toBeEnabled();
+  });
+  await fireEvent.click(createBtn);
+  expect(studioClient.requestCreateInferenceServer).toHaveBeenCalledWith(
+    expect.objectContaining({
+      backend: InferenceType.OPENVINO,
+    }),
+  );
+});
+
+test('runtimes without registered provider should not be selectable', async () => {
+  vi.mocked(studioClient.getRegisteredProviders).mockResolvedValue([InferenceType.LLAMA_CPP]);
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([
+    { ...DUMMY_DOWNLOADED_MODEL, backends: [InferenceType.OPENVINO, InferenceType.LLAMA_CPP] },
+  ]);
+  render(CreateService);
+
+  const createBtn = screen.getByTitle('Create service');
+  await vi.waitFor(() => expect(studioClient.getRegisteredProviders).toHaveBeenCalled());
+  await vi.waitFor(() => {
+    expect(createBtn).toBeEnabled();
+  });
+  expect(screen.queryByLabelText('Select Model Runtime')).toBeNull();
+
+  await fireEvent.click(createBtn);
+  expect(studioClient.requestCreateInferenceServer).toHaveBeenCalledWith(
+    expect.objectContaining({
+      backend: InferenceType.LLAMA_CPP,
     }),
   );
 });

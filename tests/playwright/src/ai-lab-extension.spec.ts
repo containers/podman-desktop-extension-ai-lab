@@ -64,6 +64,7 @@ const EXT_TEST_RAG_CHATBOT: boolean = process.env.EXT_TEST_RAG_CHATBOT === 'true
 const AI_LAB_CATALOG_STATUS_ACTIVE = /^\s*(ACTIVE|Installed)\s*$/;
 const AI_LAB_TESTS_WITH_GPU_ENABLED: boolean = process.env.EXT_TEST_GPU_SUPPORT_ENABLED === 'true';
 const IMAGE_CLEANUP_TIMEOUT = 300_000;
+const MAX_MODEL_DOWNLOAD_RETRIES = 3;
 
 let aiLabPage: AILabDashboardPage;
 const runnerOptions = {
@@ -373,9 +374,26 @@ test.describe.serial(`AI Lab extension installation and verification`, () => {
         if (!(await catalogPage.isModelDownloaded(appModel))) {
           await catalogPage.downloadModel(appModel);
         }
+        let downloadRetries = 0;
         await expect
           // eslint-disable-next-line sonarjs/no-nested-functions
-          .poll(async () => await waitForCatalogModel(appModel), { timeout: 600_000, intervals: [5_000] })
+          .poll(
+            async () => {
+              if (await waitForCatalogModel(appModel)) {
+                return true;
+              }
+              // Download button is back = the download failed (e.g. ECONNRESET), so start it again.
+              if (downloadRetries < MAX_MODEL_DOWNLOAD_RETRIES && (await catalogPage.canDownloadModel(appModel))) {
+                downloadRetries++;
+                console.log(
+                  `Model ${appModel} download failed, retrying (${downloadRetries}/${MAX_MODEL_DOWNLOAD_RETRIES})`,
+                );
+                await catalogPage.downloadModel(appModel);
+              }
+              return false;
+            },
+            { timeout: 600_000, intervals: [5_000] },
+          )
           .toBeTruthy();
       });
 

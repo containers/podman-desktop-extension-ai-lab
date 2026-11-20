@@ -139,6 +139,19 @@ export class AILabCatalogPage extends AILabBasePage {
     }
   }
 
+  /**
+   * True when the model row offers "Download Model", i.e. no download is running.
+   * A running download hides the row; a failed one shows it again with this button.
+   */
+  async canDownloadModel(modelName: string): Promise<boolean> {
+    const modelRow = await this.getModelRowByName(modelName);
+    if (!modelRow) {
+      return false;
+    }
+
+    return (await modelRow.getByRole('button', { name: 'Download Model' }).count()) > 0;
+  }
+
   async isModelDownloaded(modelName: string): Promise<boolean> {
     const modelRow = await this.getModelRowByName(modelName);
     if (!modelRow) {

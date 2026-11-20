@@ -16,183 +16,221 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { vi, test, expect, beforeEach } from 'vitest';
-import { createWriteStream, existsSync, type WriteStream } from 'node:fs';
-import { rename, rm } from 'node:fs/promises';
-import https, { type RequestOptions } from 'node:https';
-import type { ClientRequest, IncomingMessage } from 'node:http';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { existsSync, readFileSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import crypto from 'node:crypto';
 import { URLDownloader } from './urldownloader';
 
-vi.mock('node:https', () => {
-  return {
-    default: {
-      get: vi.fn(),
-    },
-  };
+// Route the downloader's https.get to a local plain-http server.
+vi.mock('node:https', async () => {
+  const http = await import('node:http');
+  return { default: { get: http.get } };
 });
 
-vi.mock('node:fs', () => {
-  return {
-    createWriteStream: vi.fn(),
-    existsSync: vi.fn(),
-  };
-});
+const CONTENT = crypto.randomBytes(512 * 1024);
+const SHA256 = crypto.createHash('sha256').update(CONTENT).digest('hex');
 
-vi.mock('node:fs/promises', () => {
-  return {
-    rename: vi.fn(),
-    rm: vi.fn(),
-  };
-});
+type Handler = (req: IncomingMessage, res: ServerResponse, requestIndex: number) => void;
 
-beforeEach(() => {
-  vi.resetAllMocks();
+let server: Server | undefined;
+let dir: string;
+let requests: IncomingMessage[];
 
-  vi.mocked(rm).mockResolvedValue(undefined);
-  vi.mocked(rename).mockResolvedValue(undefined);
-});
+class TestDownloader extends URLDownloader {
+  protected override stallTimeoutMs = 300;
+  protected override retryDelayMs = 0;
+  protected override maxAttemptsWithoutProgress = 2;
 
-test('Downloader constructor', async () => {
-  const downloader = new URLDownloader('dummyUrl', 'dummyTarget');
-  expect(downloader.getTarget()).toBe('dummyTarget');
-});
-
-test('perform download failed', async () => {
-  const downloader = new URLDownloader('dummyUrl', 'dummyTarget');
-
-  let onResponse: ((msg: IncomingMessage) => void) | undefined;
-  vi.mocked(
-    https.get as (url: string | URL, options: RequestOptions, callback: (_: IncomingMessage) => void) => ClientRequest,
-  ).mockImplementation((_url, _options, callback) => {
-    onResponse = callback;
-    return {} as unknown as ClientRequest;
-  });
-
-  const closeMock = vi.fn();
-  const onMock = vi.fn();
-  vi.mocked(createWriteStream).mockReturnValue({
-    close: closeMock,
-    on: onMock,
-  } as unknown as WriteStream);
-  vi.mocked(existsSync).mockReturnValue(true);
-
-  onMock.mockImplementation((event: string, callback: (err: Error) => void) => {
-    if (event === 'error') {
-      callback(new Error('dummyError'));
-    }
-  });
-  // capture downloader event(s)
-  const listenerMock = vi.fn();
-  downloader.onEvent(listenerMock);
-
-  const rejectSpy = vi.fn();
-
-  // perform download logic (do not wait)
-  downloader.perform('followUpId').catch((e: unknown) => rejectSpy(e));
-
-  // wait for listener to be registered
-  await vi.waitFor(() => {
-    expect(onResponse).toBeDefined();
-  });
-
-  if (onResponse === undefined) throw new Error('onResponse undefined');
-
-  onResponse({
-    pipe: vi.fn(),
-    on: vi.fn(),
-    headers: { location: undefined },
-  } as unknown as IncomingMessage);
-
-  await vi.waitFor(() => {
-    expect(downloader.completed).toBeTruthy();
-  });
-
-  expect(listenerMock).toHaveBeenCalledWith({
-    id: 'followUpId',
-    message: 'Something went wrong: dummyError.',
-    status: 'error',
-  });
-  expect(rm).toHaveBeenCalledWith('dummyTarget.tmp');
-
-  expect(rejectSpy).toHaveBeenCalledWith('dummyError');
-});
-
-test('perform download successfully', async () => {
-  const downloader = new URLDownloader('dummyUrl', 'dummyTarget');
-  let onResponse: ((msg: IncomingMessage) => void) | undefined;
-  vi.mocked(
-    https.get as (url: string | URL, options: RequestOptions, callback: (_: IncomingMessage) => void) => ClientRequest,
-  ).mockImplementation((_url, _options, callback) => {
-    onResponse = callback;
-    return {} as unknown as ClientRequest;
-  });
-
-  const closeMock = vi.fn();
-  const onMock = vi.fn();
-  vi.mocked(createWriteStream).mockReturnValue({
-    close: closeMock,
-    on: onMock,
-  } as unknown as WriteStream);
-  vi.mocked(existsSync).mockReturnValue(true);
-
-  onMock.mockImplementation((event: string, callback: () => void) => {
-    if (event === 'finish') {
-      callback();
-    }
-  });
-
-  // capture downloader event(s)
-  const listenerMock = vi.fn();
-  downloader.onEvent(listenerMock);
-
-  // perform download logic
-  downloader.perform('followUpId').catch((err: unknown) => console.error(err));
-
-  // wait for listener to be registered
-  await vi.waitFor(() => {
-    expect(onResponse).toBeDefined();
-  });
-
-  if (onResponse === undefined) throw new Error('onResponse undefined');
-
-  onResponse({
-    pipe: vi.fn(),
-    on: vi.fn(),
-    headers: { location: undefined },
-  } as unknown as IncomingMessage);
-
-  await vi.waitFor(() => {
-    expect(downloader.completed).toBeTruthy();
-  });
-
-  expect(rename).toHaveBeenCalledWith('dummyTarget.tmp', 'dummyTarget');
-  expect(downloader.completed).toBeTruthy();
-  expect(listenerMock).toHaveBeenCalledWith({
-    id: 'followUpId',
-    duration: expect.anything(),
-    message: expect.anything(),
-    status: 'completed',
-  });
-  expect(rm).not.toHaveBeenCalled();
-});
-
-class DownloaderTest extends URLDownloader {
   public override getRedirect(url: string, location: string): string {
     return super.getRedirect(url, location);
   }
 }
 
+async function serve(handler: Handler): Promise<string> {
+  requests = [];
+  server = createServer((req, res) => {
+    requests.push(req);
+    handler(req, res, requests.length - 1);
+  });
+  const listening = server;
+  await new Promise<void>(resolve => listening.listen(0, '127.0.0.1', resolve));
+  return `http://127.0.0.1:${(listening.address() as AddressInfo).port}/model.gguf`;
+}
+
+/** Serves CONTENT, honouring `Range: bytes=N-`. */
+function sendContent(req: IncomingMessage, res: ServerResponse): void {
+  const start = Number(/bytes=(\d+)-/.exec(req.headers.range ?? '')?.[1] ?? 0);
+  if (start > 0) {
+    res.writeHead(206, {
+      'content-length': CONTENT.length - start,
+      'content-range': `bytes ${start}-${CONTENT.length - 1}/${CONTENT.length}`,
+    });
+  } else {
+    res.writeHead(200, { 'content-length': CONTENT.length });
+  }
+  res.end(CONTENT.subarray(start));
+}
+
+/** Sends the headers and half of the body, then calls `then` (reset or hang). */
+function sendHalf(res: ServerResponse, then: () => void): void {
+  res.writeHead(200, { 'content-length': CONTENT.length });
+  res.write(CONTENT.subarray(0, CONTENT.length / 2), then);
+}
+
+async function download(
+  url: string,
+  sha256: string | undefined = SHA256,
+): Promise<{ target: string; result: Promise<void> }> {
+  const target = join(dir, 'model.gguf');
+  const downloader = new TestDownloader(url, target, sha256);
+  return { target, result: downloader.perform('model-id') };
+}
+
+beforeEach(async () => {
+  dir = await mkdtemp(join(tmpdir(), 'urldownloader-'));
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+});
+
+afterEach(async () => {
+  if (server) {
+    server.closeAllConnections();
+    await new Promise(resolve => server?.close(resolve));
+    server = undefined;
+  }
+  await rm(dir, { recursive: true, force: true });
+});
+
+test('Downloader constructor', () => {
+  const downloader = new URLDownloader('dummyUrl', 'dummyTarget');
+  expect(downloader.getTarget()).toBe('dummyTarget');
+});
+
+test('downloads, verifies the checksum and renames the tmp file', async () => {
+  const url = await serve(sendContent);
+  const { target, result } = await download(url);
+
+  await result;
+
+  expect(readFileSync(target).equals(CONTENT)).toBeTruthy();
+  expect(existsSync(`${target}.tmp`)).toBeFalsy();
+  expect(requests).toHaveLength(1);
+});
+
+test('emits progress and completed events', async () => {
+  const url = await serve(sendContent);
+  const downloader = new TestDownloader(url, join(dir, 'model.gguf'), SHA256);
+  const listener = vi.fn();
+  downloader.onEvent(listener);
+
+  await downloader.perform('model-id');
+
+  expect(listener).toHaveBeenCalledWith(expect.objectContaining({ id: 'model-id', status: 'progress', value: 100 }));
+  expect(listener).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'model-id', status: 'completed' }));
+});
+
+test('resumes with a Range request when the connection is reset mid-download', async () => {
+  const url = await serve((req, res, i) =>
+    i === 0 ? sendHalf(res, () => res.socket?.destroy()) : sendContent(req, res),
+  );
+  const { target, result } = await download(url);
+
+  await result;
+
+  expect(readFileSync(target).equals(CONTENT)).toBeTruthy();
+  expect(requests).toHaveLength(2);
+  expect(requests[1].headers.range).toMatch(/^bytes=[1-9]\d*-$/);
+});
+
+test('resumes when the connection stalls without being closed', async () => {
+  const url = await serve((req, res, i) => (i === 0 ? sendHalf(res, () => {}) : sendContent(req, res)));
+  const { target, result } = await download(url);
+
+  await result;
+
+  expect(readFileSync(target).equals(CONTENT)).toBeTruthy();
+  expect(requests[1].headers.range).toMatch(/^bytes=[1-9]\d*-$/);
+});
+
+test('restarts from scratch when the server ignores the Range header', async () => {
+  const url = await serve((_req, res, i) => {
+    if (i === 0) {
+      sendHalf(res, () => res.socket?.destroy());
+    } else {
+      res.writeHead(200, { 'content-length': CONTENT.length });
+      res.end(CONTENT);
+    }
+  });
+  const { target, result } = await download(url);
+
+  await result;
+
+  expect(readFileSync(target).equals(CONTENT)).toBeTruthy();
+});
+
+test('follows redirects on every attempt', async () => {
+  const url = await serve((req, res, i) => {
+    if (req.url === '/model.gguf') {
+      res.writeHead(302, { location: '/cdn/model.gguf' });
+      res.end();
+    } else if (i === 1) {
+      sendHalf(res, () => res.socket?.destroy());
+    } else {
+      sendContent(req, res);
+    }
+  });
+  const { target, result } = await download(url);
+
+  await result;
+
+  expect(readFileSync(target).equals(CONTENT)).toBeTruthy();
+  expect(requests.map(r => r.url)).toEqual(['/model.gguf', '/cdn/model.gguf', '/model.gguf', '/cdn/model.gguf']);
+});
+
+test('gives up after consecutive attempts without progress and removes the tmp file', async () => {
+  const url = await serve(req => req.socket.destroy());
+  const { target, result } = await download(url);
+
+  await expect(result).rejects.toThrow();
+
+  expect(requests).toHaveLength(2);
+  expect(existsSync(`${target}.tmp`)).toBeFalsy();
+});
+
+test('fails without retrying on a client error status', async () => {
+  const url = await serve((_req, res) => {
+    res.writeHead(404);
+    res.end();
+  });
+  const { result } = await download(url);
+
+  await expect(result).rejects.toThrow('HTTP 404');
+  expect(requests).toHaveLength(1);
+});
+
+test('fails without retrying on checksum mismatch', async () => {
+  const url = await serve(sendContent);
+  const { target, result } = await download(url, 'not-the-right-sha');
+
+  await expect(result).rejects.toThrow('SHA-256');
+  expect(requests).toHaveLength(1);
+  expect(existsSync(target)).toBeFalsy();
+  expect(existsSync(`${target}.tmp`)).toBeFalsy();
+});
+
 const SITE_EXAMPLE = 'https://example.com/hello';
 const SITE_DUMMY = 'https://dummy.com/world';
 
 test('redirect should use location if parsable', () => {
-  const downloader = new DownloaderTest(SITE_EXAMPLE, '/home/file.guff');
-  const result = downloader.getRedirect(SITE_EXAMPLE, SITE_DUMMY);
-  expect(result).toBe(SITE_DUMMY);
+  const downloader = new TestDownloader(SITE_EXAMPLE, '/home/file.guff');
+  expect(downloader.getRedirect(SITE_EXAMPLE, SITE_DUMMY)).toBe(SITE_DUMMY);
 });
 
 test('redirect should concat base url and location if not parsable', () => {
-  const downloader = new DownloaderTest(SITE_EXAMPLE, '/home/file.guff');
-  const result = downloader.getRedirect(SITE_EXAMPLE, '/world');
-  expect(result).toBe('https://example.com/world');
+  const downloader = new TestDownloader(SITE_EXAMPLE, '/home/file.guff');
+  expect(downloader.getRedirect(SITE_EXAMPLE, '/world')).toBe('https://example.com/world');
 });

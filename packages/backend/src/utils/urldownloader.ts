@@ -17,16 +17,30 @@
  ***********************************************************************/
 
 import { getDurationSecondsSince } from './utils';
-import { createWriteStream, existsSync } from 'node:fs';
-import { mkdir, rename, rm } from 'node:fs/promises';
+import { createReadStream, createWriteStream, existsSync } from 'node:fs';
+import { mkdir, rename, rm, stat } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import crypto from 'node:crypto';
 import https from 'node:https';
+import type { IncomingMessage } from 'node:http';
+import { pipeline } from 'node:stream/promises';
+import { setTimeout } from 'node:timers/promises';
 import type { CompletionEvent, ProgressEvent } from '../models/baseEvent';
 import { Downloader } from './downloader';
 
+const MAX_REDIRECTS = 10;
+
+/** Errors that retrying cannot fix (bad checksum, 404, ...). */
+class FatalDownloadError extends Error {}
+
 export class URLDownloader extends Downloader {
   private requestedIdentifier: string | undefined;
+
+  /** A connection that delivers no data for this long is treated as stalled and resumed on a new one. */
+  protected stallTimeoutMs = 30_000;
+  /** Give up after this many consecutive attempts that did not add a single byte. */
+  protected maxAttemptsWithoutProgress = 5;
+  protected retryDelayMs = 2_000;
 
   constructor(
     url: string,
@@ -46,7 +60,7 @@ export class URLDownloader extends Downloader {
     const startTime = performance.now();
 
     try {
-      await this.download(this.url);
+      await this.download();
       const durationSeconds = getDurationSecondsSince(startTime);
       this._onEvent.fire({
         id: this.requestedIdentifier,
@@ -55,36 +69,24 @@ export class URLDownloader extends Downloader {
         duration: durationSeconds,
       } as CompletionEvent);
     } catch (err: unknown) {
+      const reason = err instanceof Error ? err.message : String(err);
       if (!this.abortSignal?.aborted) {
         this._onEvent.fire({
           id: this.requestedIdentifier,
           status: 'error',
-          message: `Something went wrong: ${String(err)}.`,
+          message: `Something went wrong: ${reason}.`,
         });
       } else {
         this._onEvent.fire({
           id: this.requestedIdentifier,
           status: 'canceled',
-          message: `Request cancelled: ${String(err)}.`,
+          message: `Request cancelled: ${reason}.`,
         });
       }
       throw err;
     } finally {
       this.completed = true;
     }
-  }
-
-  private download(url: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const callback = (result: { ok?: boolean; error?: string }): void => {
-        if (result.ok) {
-          resolve();
-        } else {
-          reject(result.error);
-        }
-      };
-      this.followRedirects(url, callback);
-    });
   }
 
   /**
@@ -103,102 +105,130 @@ export class URLDownloader extends Downloader {
     return location;
   }
 
-  private followRedirects(url: string, callback: (message: { ok?: boolean; error?: string }) => void): void {
+  private async download(): Promise<void> {
     const tmpFile = `${this.target}.tmp`;
+    try {
+      await this.downloadWithResume(tmpFile);
+      await this.verifyChecksum(tmpFile);
+      await rename(tmpFile, this.target);
+    } catch (err: unknown) {
+      await rm(tmpFile, { force: true }).catch((rmErr: unknown) => {
+        console.error(`Something went wrong while trying to delete ${tmpFile}`, rmErr);
+      });
+      throw err;
+    }
+  }
 
-    let totalFileSize = 0;
-    let progress = 0;
-    let previousProgressValue = -1;
-    let checkSum: crypto.Hash;
-    if (this.sha256) {
-      checkSum = crypto.createHash('sha256');
+  /**
+   * Large files over a single connection regularly get reset or stall mid-way (CDN / network idle timeouts).
+   * Instead of starting over, reconnect and continue from the bytes already on disk using an HTTP Range request.
+   */
+  private async downloadWithResume(tmpFile: string): Promise<void> {
+    let attemptsWithoutProgress = 0;
+    let offset = 0;
+    for (;;) {
+      try {
+        await this.downloadFrom(tmpFile, offset);
+        return;
+      } catch (err: unknown) {
+        if (this.abortSignal?.aborted || err instanceof FatalDownloadError) throw err;
+
+        const onDisk = await fileSize(tmpFile);
+        attemptsWithoutProgress = onDisk > offset ? 0 : attemptsWithoutProgress + 1;
+        if (attemptsWithoutProgress >= this.maxAttemptsWithoutProgress) throw err;
+
+        console.warn(`Download of ${this.url} interrupted at ${onDisk} bytes (${String(err)}), resuming`);
+        offset = onDisk;
+        await setTimeout(this.retryDelayMs, undefined, { signal: this.abortSignal });
+      }
+    }
+  }
+
+  private async downloadFrom(tmpFile: string, offset: number): Promise<void> {
+    const resp = await this.get(this.url, offset, MAX_REDIRECTS);
+    if (resp.statusCode === 416) {
+      // Range not satisfiable: we already have the whole file (the checksum check guards the result).
+      resp.resume();
+      return;
     }
 
-    https.get(url, { signal: this.abortSignal }, resp => {
-      // Determine the total size
-      if (resp.headers.location) {
-        const redirect = this.getRedirect(url, resp.headers.location);
-        this.followRedirects(redirect, callback);
-        return;
+    // 206 = server honoured the Range, anything else = it sent the whole file again.
+    const start = resp.statusCode === 206 ? offset : 0;
+    const contentLength = Number(resp.headers['content-length'] ?? 0);
+    const total = contentLength > 0 ? start + contentLength : 0;
+
+    let received = start;
+    let previousProgressValue = -1;
+    resp.on('data', (chunk: Buffer) => {
+      received += chunk.length;
+      if (!total) return;
+      const progressValue = (received * 100) / total;
+      // Only fire events for progress greater than 1
+      if (progressValue === 100 || progressValue - previousProgressValue > 1) {
+        previousProgressValue = progressValue;
+        this._onEvent.fire({
+          id: this.requestedIdentifier,
+          status: 'progress',
+          value: progressValue,
+          total,
+        } as ProgressEvent);
       }
+    });
 
-      if (totalFileSize === 0 && resp.headers['content-length']) {
-        totalFileSize = parseFloat(resp.headers['content-length']);
-      }
+    await pipeline(resp, createWriteStream(tmpFile, { flags: start > 0 ? 'a' : 'w' }), { signal: this.abortSignal });
 
-      const stream = createWriteStream(tmpFile, {
-        signal: this.abortSignal,
-      });
+    if (total && (await fileSize(tmpFile)) < total) {
+      throw new Error('connection closed before the download completed');
+    }
+  }
 
-      // Capture potential errors
-      resp.on('error', (err: Error) => {
-        stream.destroy(err); // propagate to stream
-      });
-
-      // On data
-      resp.on('data', chunk => {
-        if (checkSum) {
-          checkSum.update(chunk);
-        }
-        progress += chunk.length;
-        const progressValue = (progress * 100) / totalFileSize;
-
-        // Only fire events for progress greater than 1
-        if (progressValue === 100 || progressValue - previousProgressValue > 1) {
-          previousProgressValue = progressValue;
-          this._onEvent.fire({
-            id: this.requestedIdentifier,
-            status: 'progress',
-            value: progressValue,
-            total: totalFileSize,
-          } as ProgressEvent);
-        }
-      });
-      // Pipe to stream
-      resp.pipe(stream);
-
-      // Handle error case
-      stream.on('error', (err: Error) => {
-        rm(tmpFile)
-          .then(() => {
-            callback({
-              error: err.message,
-            });
-          })
-          .catch((err: unknown) => {
-            console.error(`Something went wrong while trying to delete ${tmpFile}`, err);
-          });
-      });
-
-      // On close event
-      stream.on('finish', () => {
-        // check if _parent_ is errored
-        if (resp.errored) {
-          return;
-        }
-
-        if (checkSum) {
-          const actualSha = checkSum.digest('hex');
-          if (this.sha256 !== actualSha) {
-            callback({
-              error: `The file's security hash (SHA-256) does not match the expected value. The file may have been altered or corrupted during the download process`,
-            });
-            rm(tmpFile).catch((err: unknown) => {
-              console.error(`Something went wrong while trying to delete ${tmpFile}`, err);
-            });
+  /** GET following redirects. Resolves with a 2xx (or 416) response, rejects otherwise. */
+  private get(url: string, offset: number, redirectsLeft: number): Promise<IncomingMessage> {
+    return new Promise((resolve, reject) => {
+      const headers = offset > 0 ? { Range: `bytes=${offset}-` } : undefined;
+      const req = https.get(url, { signal: this.abortSignal, headers, timeout: this.stallTimeoutMs }, resp => {
+        const status = resp.statusCode ?? 0;
+        if (resp.headers.location) {
+          resp.resume();
+          if (redirectsLeft <= 0) {
+            reject(new FatalDownloadError(`Too many redirects while downloading ${this.url}`));
             return;
           }
+          this.get(this.getRedirect(url, resp.headers.location), offset, redirectsLeft - 1).then(resolve, reject);
+          return;
         }
-
-        // If everything is fine we simply rename the tmp file to the expected one
-        rename(tmpFile, this.target)
-          .then(() => {
-            callback({ ok: true });
-          })
-          .catch((err: unknown) => {
-            callback({ error: `Something went wrong while trying to rename downloaded file: ${String(err)}.` });
-          });
+        if ((status >= 200 && status < 300) || status === 416) {
+          resolve(resp);
+          return;
+        }
+        resp.resume();
+        const message = `HTTP ${status} while downloading ${this.url}`;
+        const retryable = status >= 500 || status === 408 || status === 429;
+        reject(retryable ? new Error(message) : new FatalDownloadError(message));
       });
+      req.on('timeout', () => req.destroy(new Error(`no data received for ${this.stallTimeoutMs / 1000}s`)));
+      req.on('error', reject);
     });
+  }
+
+  private async verifyChecksum(file: string): Promise<void> {
+    if (!this.sha256) return;
+    const hash = crypto.createHash('sha256');
+    for await (const chunk of createReadStream(file)) {
+      hash.update(chunk as Buffer);
+    }
+    if (hash.digest('hex') !== this.sha256) {
+      throw new FatalDownloadError(
+        `The file's security hash (SHA-256) does not match the expected value. The file may have been altered or corrupted during the download process`,
+      );
+    }
+  }
+}
+
+async function fileSize(file: string): Promise<number> {
+  try {
+    return (await stat(file)).size;
+  } catch {
+    return 0;
   }
 }

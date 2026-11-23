@@ -9,6 +9,7 @@ import Card from '/@/lib/Card.svelte';
 import { onMount } from 'svelte';
 import ModelColumnSize from '../lib/table/model/ModelColumnSize.svelte';
 import ModelColumnAge from '../lib/table/model/ModelColumnAge.svelte';
+import ModelColumnContext from '../lib/table/model/ModelColumnContext.svelte';
 import ModelColumnActions from '../lib/table/model/ModelColumnActions.svelte';
 import { EmptyScreen, Tab, Button, Table, TableColumn, TableRow, NavPage } from '@podman-desktop/ui-svelte';
 import Route from '/@/Route.svelte';
@@ -33,6 +34,11 @@ const columns = [
     width: 'minmax(10px,50px)',
     renderer: ModelColumnSize,
     comparator: (a, b): number => (a.file?.size ?? 0) - (b.file?.size ?? 0),
+  }),
+  new TableColumn<ModelInfo>('Max context size', {
+    width: 'minmax(10px,130px)',
+    renderer: ModelColumnContext,
+    comparator: (a, b): number => (a.maxCtxSize ?? 0) - (b.maxCtxSize ?? 0),
   }),
   new TableColumn<ModelInfo>('Age', {
     width: 'minmax(10px,70px)',

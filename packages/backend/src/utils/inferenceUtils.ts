@@ -78,13 +78,13 @@ export async function withDefaultConfiguration(
 ): Promise<InferenceServerConfig> {
   if (options.modelsInfo.length === 0) throw new Error('modelsInfo need to contain at least one element.');
 
+  // the upper bound is the maximum context of the model when the catalog provides it
+  const maxCtxSize = options.modelsInfo[0].maxCtxSize ?? LLAMA_CPP_MAX_CTX_SIZE;
   if (
     options.ctxSize !== undefined &&
-    (!Number.isInteger(options.ctxSize) ||
-      options.ctxSize < LLAMA_CPP_MIN_CTX_SIZE ||
-      options.ctxSize > LLAMA_CPP_MAX_CTX_SIZE)
+    (!Number.isInteger(options.ctxSize) || options.ctxSize < LLAMA_CPP_MIN_CTX_SIZE || options.ctxSize > maxCtxSize)
   ) {
-    throw new Error(`ctxSize must be an integer between ${LLAMA_CPP_MIN_CTX_SIZE} and ${LLAMA_CPP_MAX_CTX_SIZE}.`);
+    throw new Error(`ctxSize must be an integer between ${LLAMA_CPP_MIN_CTX_SIZE} and ${maxCtxSize}.`);
   }
 
   return {

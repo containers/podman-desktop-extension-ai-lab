@@ -50,6 +50,8 @@ let model: ModelInfo | undefined = $state(undefined);
 let ctxSize: number = $state(LLAMA_CPP_DEFAULT_CTX_SIZE);
 let ctxSizeError: string | undefined = $state(undefined);
 let isLlamaCpp: boolean = $derived.by(() => model?.backend === InferenceType.LLAMA_CPP);
+// The context size cannot exceed the maximum of the model, when the catalog provides it
+let maxCtxSize: number = $derived.by(() => model?.maxCtxSize ?? LLAMA_CPP_MAX_CTX_SIZE);
 // If the creation of a new inference service fail
 let errorMsg: string | undefined = $state(undefined);
 // The containerId will be included in the tasks when the creation
@@ -241,13 +243,14 @@ export function goToUpPage(): void {
               bind:value={ctxSize}
               bind:error={ctxSizeError}
               minimum={LLAMA_CPP_MIN_CTX_SIZE}
-              maximum={LLAMA_CPP_MAX_CTX_SIZE}
+              maximum={maxCtxSize}
               step={1024}
               disabled={loading}
               class="w-full" />
             <div class="text-sm pt-1 text-[var(--pd-content-card-text)]">
-              Maximum number of tokens (prompt and response) the model can handle. Larger values use more memory. It
-              cannot be changed once the service is created: delete and recreate the service to change it.
+              Maximum number of tokens (prompt and response) the model can handle, up to {maxCtxSize} for this model. Larger
+              values use more memory: the service may stop if the machine does not have enough. It cannot be changed once
+              the service is created: delete and recreate the service to change it.
             </div>
           {/if}
         </div>

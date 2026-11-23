@@ -533,6 +533,47 @@ describe('context size', () => {
     expect(studioClient.requestCreateInferenceServer).toHaveBeenCalledWith(expect.objectContaining({ ctxSize: 32768 }));
   });
 
+  test('create button should be disabled when the context size exceeds the model maximum', async () => {
+    vi.mocked(ModelsInfoStore).modelsInfo = readable([{ ...DUMMY_LLAMA_MODEL, maxCtxSize: 32768 }]);
+
+    render(CreateService);
+
+    const input = await vi.waitFor(() => screen.getByLabelText('Context size input'));
+    await userEvent.clear(input);
+    await userEvent.type(input, '32769');
+
+    await vi.waitFor(() => {
+      expect(screen.getByTitle('Create service')).toBeDisabled();
+    });
+  });
+
+  test('a context size above the global limit should be accepted when the model supports it', async () => {
+    vi.mocked(ModelsInfoStore).modelsInfo = readable([{ ...DUMMY_LLAMA_MODEL, maxCtxSize: 262144 }]);
+
+    render(CreateService);
+
+    const input = await vi.waitFor(() => screen.getByLabelText('Context size input'));
+    await userEvent.clear(input);
+    await userEvent.type(input, '200000');
+
+    const createBtn = screen.getByTitle('Create service');
+    await vi.waitFor(() => expect(createBtn).toBeEnabled());
+    await fireEvent.click(createBtn);
+
+    expect(studioClient.requestCreateInferenceServer).toHaveBeenCalledWith(
+      expect.objectContaining({ ctxSize: 200000 }),
+    );
+  });
+
+  test('the model maximum should be shown in the help text', async () => {
+    vi.mocked(ModelsInfoStore).modelsInfo = readable([{ ...DUMMY_LLAMA_MODEL, maxCtxSize: 32768 }]);
+
+    render(CreateService);
+
+    await vi.waitFor(() => screen.getByLabelText('Context size input'));
+    expect(screen.getByText(/up to 32768 for this model/)).toBeInTheDocument();
+  });
+
   test('create button should be disabled when the context size is out of range', async () => {
     vi.mocked(ModelsInfoStore).modelsInfo = readable([DUMMY_LLAMA_MODEL]);
 

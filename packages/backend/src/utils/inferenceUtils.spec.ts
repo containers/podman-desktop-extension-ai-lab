@@ -78,6 +78,27 @@ describe('withDefaultConfiguration', () => {
     ).rejects.toThrowError('ctxSize must be an integer between 512 and 131072.');
   });
 
+  describe('model maximum context size', () => {
+    const model = { id: 'dummyId', maxCtxSize: 32768 } as unknown as ModelInfo;
+
+    test('ctxSize up to the model maximum should be accepted', async () => {
+      const result = await withDefaultConfiguration({ modelsInfo: [model], ctxSize: 32768 });
+      expect(result.ctxSize).toBe(32768);
+    });
+
+    test('ctxSize above the model maximum should be rejected, even below the global limit', async () => {
+      await expect(withDefaultConfiguration({ modelsInfo: [model], ctxSize: 32769 })).rejects.toThrowError(
+        'ctxSize must be an integer between 512 and 32768.',
+      );
+    });
+
+    test('a model maximum above the global limit should be honoured', async () => {
+      const big = { id: 'dummyId', maxCtxSize: 1048576 } as unknown as ModelInfo;
+      const result = await withDefaultConfiguration({ modelsInfo: [big], ctxSize: 262144 });
+      expect(result.ctxSize).toBe(262144);
+    });
+  });
+
   test('expect no default values', async () => {
     const connectionMock = {
       name: 'Dummy Connection',

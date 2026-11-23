@@ -273,6 +273,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/unsloth/Mistral-Small-3.2-24B-Instruct-2506-GGUF/resolve/main/Mistral-Small-3.2-24B-Instruct-2506-Q4_K_M.gguf",
       "memory": 14300000000,
+      "maxCtxSize": 131072,
       "sha256": "a3cc56310807ed0d145eaf9f018ccda9ae7ad8edb41ec870aa2454b0d4700b3c",
       "backend": "llama-cpp",
       "properties": {
@@ -287,6 +288,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/mistralai/Ministral-3-8B-Instruct-2512-GGUF/resolve/0102285ad796bd99af90f58de616092e5630e970/Ministral-3-8B-Instruct-2512-Q4_K_M.gguf",
       "memory": 5198911904,
+      "maxCtxSize": 262144,
       "sha256": "33e7a72cf5e6e2cfc2f2847075acc013d68bba023e35310cef86b5cf8fdca761",
       "backend": "llama-cpp",
       "properties": {
@@ -301,6 +303,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF/resolve/6e458b8add42681bfd023de5eab93637694aaf82/Devstral-Small-2-24B-Instruct-2512-Q4_K_M.gguf",
       "memory": 14334446752,
+      "maxCtxSize": 393216,
       "sha256": "d14ba9edee1bb4c4996a726deb81e49ae81800a3216f0774634238c380aee496",
       "backend": "llama-cpp",
       "properties": {
@@ -315,6 +318,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/unsloth/gpt-oss-20b-GGUF/resolve/main/gpt-oss-20b-Q4_K_M.gguf",
       "memory": 11600000000,
+      "maxCtxSize": 131072,
       "sha256": "c27536640e410032865dc68781d80a08b98f8db5e93575919af8ccc0568aeb4f",
       "backend": "llama-cpp"
     },
@@ -326,6 +330,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/f86cb2c1fa58255f8052cc32aeede1b7482d4361/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
       "memory": 1117320768,
+      "maxCtxSize": 32768,
       "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
       "backend": "llama-cpp"
     },
@@ -337,6 +342,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/13fb94bfda8c8cf22497dc57b78f391a9acb426a/qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "memory": 4683073536,
+      "maxCtxSize": 131072,
       "sha256": "509287f78cb4d4cf6b3843734733b914b2c158e43e22a7f4bf5e963800894d3c",
       "backend": "llama-cpp"
     },
@@ -348,6 +354,7 @@
       "license": "MIT",
       "url": "https://huggingface.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF/resolve/eb48357c179d34dbf515983f798dfb8752a0f261/DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf",
       "memory": 5027785216,
+      "maxCtxSize": 131072,
       "sha256": "a86349a4180c4e6bb43f874c29c404fa2be3f90b15509bd6d86f697dba724ec1",
       "backend": "llama-cpp",
       "properties": {
@@ -362,6 +369,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/3885219b6810b007914f3a7950a8d1b469d598a5/Qwen3.5-9B-Q4_K_M.gguf",
       "memory": 5680522464,
+      "maxCtxSize": 262144,
       "properties": {
         "jinja": "true"
       },
@@ -376,6 +384,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/unsloth/Qwen3.5-2B-GGUF/resolve/f6d5376be1edb4d416d56da11e5397a961aca8ae/Qwen3.5-2B-Q4_K_M.gguf",
       "memory": 1280835840,
+      "maxCtxSize": 262144,
       "properties": {
         "jinja": "true"
       },
@@ -390,6 +399,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/e87f176479d0855a907a41277aca2f8ee7a09523/Qwen3.5-4B-Q4_K_M.gguf",
       "memory": 2740937888,
+      "maxCtxSize": 262144,
       "properties": {
         "jinja": "true"
       },
@@ -404,6 +414,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ibm-granite/granite-4.2-3b-GGUF/resolve/c40945d71cd90f249a56985e8155551a9188dc30/granite-4.2-3b-Q4_K_M.gguf",
       "memory": 2244011552,
+      "maxCtxSize": 131072,
       "properties": {
         "jinja": "true"
       },
@@ -418,6 +429,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ibm-granite/granite-4.2-8b-GGUF/resolve/93f3f6a8938ee922b784cf4e5b4203cd3428df8f/granite-4.2-8b-Q4_K_M.gguf",
       "memory": 5347917952,
+      "maxCtxSize": 131072,
       "properties": {
         "jinja": "true"
       },
@@ -432,6 +444,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ibm-granite/granite-guardian-4.1-8b-GGUF/resolve/bc78f0995361543a70438fe44a60bb7613fed2f0/granite-guardian-4.1-8b-Q4_K_M.gguf",
       "memory": 5116703808,
+      "maxCtxSize": 131072,
       "properties": {
         "jinja": "true"
       },
@@ -446,6 +459,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ibm-granite/granite-4.0-h-tiny-GGUF/resolve/3971ea11968c34d4e4dbee55cfb55b9cba134b21/granite-4.0-h-tiny-Q4_K_M.gguf",
       "memory": 4224733676,
+      "maxCtxSize": 131072,
       "properties": {
         "jinja": "true"
       },
@@ -460,6 +474,7 @@
       "license": "Apache-2.0",
       "url": "https://huggingface.co/ibm-granite/granite-4.0-micro-GGUF/resolve/397e2dcbd97dcdfa016934bffed65cf5df3ca55f/granite-4.0-micro-Q4_K_M.gguf",
       "memory": 2100000000,
+      "maxCtxSize": 131072,
       "properties": {
         "jinja": "true"
       },
@@ -502,6 +517,7 @@
         "jinja": "true"
       },
       "memory": 2480343613,
+      "maxCtxSize": 131072,
       "sha256": "81878401a2f8160473649af89560a7fc0932f3623e4f6e58143d5dcbf71d6480",
       "backend": "llama-cpp"
     },
@@ -513,6 +529,7 @@
       "license": "mit",
       "url": "https://huggingface.co/unsloth/Phi-4-reasoning-plus-GGUF/resolve/main/Phi-4-reasoning-plus-Q4_K_M.gguf",
       "memory": 9715463520,
+      "maxCtxSize": 32768,
       "properties": {
         "jinja": "true"
       },
@@ -527,6 +544,7 @@
       "license": "gemma",
       "url": "https://huggingface.co/unsloth/gemma-3n-E4B-it-GGUF/resolve/main/gemma-3n-E4B-it-Q4_K_M.gguf",
       "memory": 4425974,
+      "maxCtxSize": 32768,
       "properties": {
         "jinja": "true"
       },
@@ -541,6 +559,7 @@
       "license": "gemma",
       "url": "https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/resolve/5a3566e716d80f709ed7b79817eaf7733d2a1fce/gemma-3-4b-it-Q4_K_M.gguf",
       "memory": 2489894016,
+      "maxCtxSize": 131072,
       "properties": {
         "jinja": "true"
       },

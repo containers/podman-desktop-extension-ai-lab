@@ -28,6 +28,7 @@ export type CreationInferenceServerOptions = Partial<InferenceServerConfig> & { 
 export const LLAMA_CPP_DEFAULT_CTX_SIZE = 4096;
 // 0 is not allowed: llama.cpp interprets it as "use the model training context"
 export const LLAMA_CPP_MIN_CTX_SIZE = 512;
+// Upper bound for models that do not declare their own maximum (ModelInfo.maxCtxSize), e.g. imported models
 export const LLAMA_CPP_MAX_CTX_SIZE = 131072;
 
 export interface InferenceServerConfig {

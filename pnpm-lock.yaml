@@ -417,8 +417,8 @@ importers:
         specifier: ^1.30.5
         version: 1.30.5(svelte-fa@4.0.4(svelte@5.59.1(@typescript-eslint/types@8.73.0)))(svelte@5.59.1(@typescript-eslint/types@8.73.0))
       filesize:
-        specifier: ^11.0.34
-        version: 11.0.34
+        specifier: ^11.0.35
+        version: 11.0.35
       humanize-duration:
         specifier: ^3.35.1
         version: 3.35.1
@@ -2840,8 +2840,8 @@ packages:
     resolution: {integrity: sha512-RLoqTXE8/vPmMuTI88DAzhMYC99I8BWv7zYP4A1puo5HIjEJ5EX48ighy4ZyKMG9EDXxBgW6e++cn7d1xuFghA==}
     engines: {node: '>=0.10.0'}
 
-  filesize@11.0.34:
-    resolution: {integrity: sha512-IlP6n9IeHCAmwM/iOMQz1NgJ3g3uLvp8JMl0oWEfPmULJhuh73XYQNWEqFitklYbBrlxaIHRMuMPcIUnkgTtuw==}
+  filesize@11.0.35:
+    resolution: {integrity: sha512-nYIrQN/m4a0VYYoUeENvFf8mCDaB9PNbKETinw4DRdBcX5yB2nY3YtFz9iMfg/YDQWyYPOn/THVtsqLN/IH0Ag==}
     engines: {node: '>= 10.8.0'}
 
   fill-range@7.1.1:
@@ -7118,7 +7118,7 @@ snapshots:
 
   file-type@3.9.0: {}
 
-  filesize@11.0.34: {}
+  filesize@11.0.35: {}
 
   fill-range@7.1.1:
     dependencies:

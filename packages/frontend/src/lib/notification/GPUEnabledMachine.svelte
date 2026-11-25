@@ -20,9 +20,10 @@ function executeCommand(): void {
     </div>
     <div class="flex flex-col grow">
       <span class="font-medium" aria-label="title">Non GPU enabled machine</span>
-      <span aria-label="description"
-        >The selected Podman machine is not GPU enabled. On MacOS, you can run GPU workloads using the krunkit
-        environment. Do you want to create a GPU enabled machine ?</span>
+      <span aria-label="description">
+        The selected Podman machine is not GPU enabled. On MacOS, you can run GPU workloads using the krunkit
+        environment. Do you want to create a GPU enabled machine ?
+      </span>
     </div>
     <div class="flex items-center">
       <Button class="grow text-gray-500" on:click={executeCommand} aria-label={actionName}>{actionName}</Button>

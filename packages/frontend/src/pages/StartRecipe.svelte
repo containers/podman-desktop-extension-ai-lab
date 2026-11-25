@@ -169,8 +169,9 @@ function handleOnClick(): void {
         <div class="space-y-6 bg-[var(--pd-content-card-bg)] m-5 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
           <div>
             <!-- selected recipe -->
-            <label for="recipe" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Recipe</label>
+            <label for="recipe" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+              Recipe
+            </label>
 
             <div
               class="py-2 px-4 rounded-lg w-full flex flex-col bg-[var(--pd-content-bg)] text-[var(--pd-content-card-text)]">
@@ -188,22 +189,25 @@ function handleOnClick(): void {
 
             <!-- container provider connection input -->
             {#if startedContainerProviderConnectionInfo.length > 1}
-              <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-                >Container engine</label>
+              <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+                Container engine
+              </label>
               <ContainerProviderConnectionSelect
                 bind:value={containerProviderConnection}
                 containerProviderConnections={startedContainerProviderConnectionInfo} />
             {/if}
 
             <!-- model form -->
-            <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Model</label>
+            <label for="select-model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+              Model
+            </label>
             <ModelSelect bind:value={model} disabled={loading} recommended={recipe.recommended} models={models} />
             {#if model && model.file === undefined}
               <div class="text-gray-800 text-sm flex items-center">
                 <Fa class="mr-2" icon={faWarning} />
-                <span role="alert"
-                  >The selected model will be downloaded. This action can take some time depending on your connection</span>
+                <span role="alert">
+                  The selected model will be downloaded. This action can take some time depending on your connection
+                </span>
               </div>
             {/if}
           </div>

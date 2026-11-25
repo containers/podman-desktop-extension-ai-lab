@@ -25,8 +25,9 @@ const toggle = (): void => {
           <div class="flex flex-col lg:px-4 space-y-4 mx-auto">
             <div class="w-full flex flex-row justify-between max-lg:hidden">
               <span>{detailsTitle}</span>
-              <button on:click={toggle} aria-label={`hide ${detailsLabel}`}
-                ><i class="fas fa-angle-right text-[var(--pd-content-card-icon)]"></i></button>
+              <button on:click={toggle} aria-label={`hide ${detailsLabel}`}>
+                <i class="fas fa-angle-right text-[var(--pd-content-card-icon)]"></i>
+              </button>
             </div>
             <slot name="details" />
           </div>
@@ -36,8 +37,9 @@ const toggle = (): void => {
           class:block={!open}
           class="bg-[var(--pd-content-card-bg)] mt-5 p-4 rounded-md h-fit max-lg:hidden"
           aria-label={`toggle ${detailsLabel}`}>
-          <button on:click={toggle} aria-label={`show ${detailsLabel}`} title={detailsSummary}
-            ><i class="fas fa-angle-left text-[var(--pd-content-card-icon)]"></i></button>
+          <button on:click={toggle} aria-label={`show ${detailsLabel}`} title={detailsSummary}>
+            <i class="fas fa-angle-left text-[var(--pd-content-card-icon)]"></i>
+          </button>
         </div>
       </div>
     </div>

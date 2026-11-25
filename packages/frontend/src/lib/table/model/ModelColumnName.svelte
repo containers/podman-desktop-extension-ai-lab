@@ -16,8 +16,9 @@ function openDetails(): void {
     {object.name}
   </div>
   {#if object.registry ?? object.license}
-    <span class="text-sm text-[var(--pd-table-body-text)]" aria-label="Model Info"
-      >{object.registry} - {object.license}</span>
+    <span class="text-sm text-[var(--pd-table-body-text)]" aria-label="Model Info">
+      {object.registry} - {object.license}
+    </span>
   {/if}
   {#if !object.registry && !object.license && !object.url}
     <span class="text-sm text-[var(--pd-table-body-text)]" aria-label="Imported Model Info">Imported by User</span>

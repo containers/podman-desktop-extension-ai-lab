@@ -160,8 +160,9 @@ export function goToUpPage(): void {
       <div class="bg-[var(--pd-content-card-bg)] m-5 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg h-fit">
         <div class="w-full">
           <!-- playground name input -->
-          <label for="playgroundName" class="block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-            >Playground name</label>
+          <label for="playgroundName" class="block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+            Playground name
+          </label>
           <Input
             disabled={submitted}
             id="playgroundName"
@@ -188,8 +189,9 @@ export function goToUpPage(): void {
                   href="javascript:void(0);"
                   class="underline"
                   title="Models page"
-                  on:click={openModelsPage}>models page</a
-                >.
+                  on:click={openModelsPage}>
+                  models page
+                </a>.
               </div>
             </div>
           {:else if availModels.length > 0}
@@ -200,8 +202,9 @@ export function goToUpPage(): void {
                   href="javascript:void(0);"
                   class="underline"
                   title="Models page"
-                  on:click={openModelsPage}>models page</a
-                >.
+                  on:click={openModelsPage}>
+                  models page
+                </a>.
               </div>
             </div>
           {/if}

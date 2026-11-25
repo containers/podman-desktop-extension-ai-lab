@@ -183,8 +183,9 @@ export function goToUpPage(): void {
         <div class="w-full">
           <!-- container provider connection input -->
           {#if startedContainerProviderConnectionInfo.length > 1}
-            <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Container engine</label>
+            <label for="model" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+              Container engine
+            </label>
             <ContainerProviderConnectionSelect
               bind:value={containerProviderConnection}
               containerProviderConnections={startedContainerProviderConnectionInfo} />
@@ -201,14 +202,16 @@ export function goToUpPage(): void {
                   href="javascript:void(0);"
                   class="underline"
                   title="Models page"
-                  on:click={openModelsPage}>models page</a
-                >.
+                  on:click={openModelsPage}>
+                  models page
+                </a>.
               </div>
             </div>
           {/if}
           <!-- container port input -->
-          <label for="containerPort" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-            >Container port</label>
+          <label for="containerPort" class="pt-4 block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+            Container port
+          </label>
           <Input
             value={String(containerPort ?? 0)}
             on:input={onContainerPortInput}

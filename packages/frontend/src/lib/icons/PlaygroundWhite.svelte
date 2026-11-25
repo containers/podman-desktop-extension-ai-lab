@@ -6,13 +6,13 @@
     version="1.1"
     id="svg3"
     xml:space="preserve"
-    xmlns="http://www.w3.org/2000/svg"
-    ><path
+    xmlns="http://www.w3.org/2000/svg">
+    <path
       style="color:#000000;fill:#3c8d47;fill-opacity:1;stroke-width:0.752434;stroke-linecap:round;stroke-linejoin:round;-inkscape-stroke:none"
       d="M 3.0097361,0 C 1.3553589,0 0,1.355359 0,3.0097361 V 20.990264 C 0,22.644641 1.3553589,24 3.0097361,24 H 20.990264 C 22.644641,24 24,22.644641 24,20.990264 V 3.0097361 C 24,1.355359 22.644641,0 20.990264,0 Z"
       id="rect5"></path
-    ><g id="g5" transform="matrix(0.9420863,0,0,0.9420863,-5.6137888,-12.058117)" style="fill:#ffffff"
-      ><circle
+    ><g id="g5" transform="matrix(0.9420863,0,0,0.9420863,-5.6137888,-12.058117)" style="fill:#ffffff">
+      <circle
         cx="16.541031"
         cy="23.271023"
         r="0.80865288"
@@ -40,7 +40,7 @@
         r="0.80865288"
         fill="currentColor"
         id="circle3"
-        style="fill:#ffffff;stroke-width:0.808654"></circle
-      ></g
-    ></svg>
+        style="fill:#ffffff;stroke-width:0.808654"></circle>
+    </g>
+  </svg>
 </div>

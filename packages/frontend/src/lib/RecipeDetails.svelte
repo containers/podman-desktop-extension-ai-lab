@@ -69,7 +69,8 @@ const deleteLocalClone = (): void => {
     </div>
   </div>
   {#if localPath}
-    <Button type="secondary" on:click={openVSCode} title="Open in VS Code Desktop" icon={VSCodeIcon}
-      >Open in VSCode</Button>
+    <Button type="secondary" on:click={openVSCode} title="Open in VS Code Desktop" icon={VSCodeIcon}>
+      Open in VSCode
+    </Button>
   {/if}
 </div>

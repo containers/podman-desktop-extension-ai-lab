@@ -30,8 +30,9 @@ function handleClick(): void {
         <!-- left column -->
         <div class="flex flex-col">
           <span class="text-[var(--pd-content-card-header-text)]" aria-label="{recipe.name} name">{recipe.name}</span>
-          <span class="text-sm text-[var(--pd-content-card-text)]" aria-label="{recipe.name} description"
-            >{recipe.description}</span>
+          <span class="text-sm text-[var(--pd-content-card-text)]" aria-label="{recipe.name} description">
+            {recipe.description}
+          </span>
         </div>
 
         <!-- right column -->

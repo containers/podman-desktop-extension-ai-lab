@@ -33,16 +33,17 @@ const content =
     class="w-full bg-[var(--pd-content-card-bg)] text-[var(--pd-content-card-text)] border-t-[3px] border-amber-500 p-4 mt-5 shadow-inner"
     aria-label="GPU promotion banner">
     <div class="flex flex-col space-x-3">
-      <span class="font-normal items-center" aria-label="title"
-        >⚡️ Supercharge Your AI: Enable GPU Acceleration and watch your LLM respond in a flash!
+      <span class="font-normal items-center" aria-label="title">
+        ⚡️ Supercharge Your AI: Enable GPU Acceleration and watch your LLM respond in a flash!
       </span>
       <div class="flex flex-row">
         <div class="grow">
           <MarkdownRenderer source={content} />
         </div>
         <div class="flex flex-col space-y-1">
-          <Button class="w-auto ml-1" on:click={enableGPUSupport} aria-label="Enable GPU support"
-            >Enable GPU support</Button>
+          <Button class="w-auto ml-1" on:click={enableGPUSupport} aria-label="Enable GPU support">
+            Enable GPU support
+          </Button>
           <Button class="w-auto ml-1" on:click={hideGPUPromotionBanner} aria-label={actionName}>{actionName}</Button>
         </div>
       </div>

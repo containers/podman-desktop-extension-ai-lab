@@ -49,11 +49,13 @@ function createNewService(): void {
 <NavPage title="Model Services" searchEnabled={false}>
   {#snippet additionalActions()}
     {#if selectedItemsNumber > 0}
-      <Button title="Delete selected items" on:click={deleteSelected} icon={faTrash}
-        >Delete {selectedItemsNumber} selected items</Button>
+      <Button title="Delete selected items" on:click={deleteSelected} icon={faTrash}>
+        Delete {selectedItemsNumber} selected items
+      </Button>
     {/if}
-    <Button icon={faPlusCircle} title="Create a new model service" on:click={createNewService}
-      >New Model Service</Button>
+    <Button icon={faPlusCircle} title="Create a new model service" on:click={createNewService}>
+      New Model Service
+    </Button>
   {/snippet}
   {#snippet content()}
     <div class="flex min-w-full min-h-full">

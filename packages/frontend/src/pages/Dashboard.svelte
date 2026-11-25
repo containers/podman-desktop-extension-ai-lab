@@ -67,8 +67,9 @@ const openDiscussionsPage = (): void => {
         <h1 class="text-lg first-letter:uppercase underline">Recipes Catalog</h1>
         <p>
           Podman AI Lab ships with a so-called
-          <button class="underline" title="Open the Recipes Catalog page" on:click={openRecipesCatalog}
-            >Recipes Catalog</button>
+          <button class="underline" title="Open the Recipes Catalog page" on:click={openRecipesCatalog}>
+            Recipes Catalog
+          </button>
           that helps you navigate a number of core AI use cases and problem domains such as Chat Bots, Code Generators and
           Text Summarizers. Each recipe comes with detailed explanations and sample applications that can be run with various
           large language models (LLMs). Experimenting with multiple models allows finding the optimal one for your use case.
@@ -91,8 +92,9 @@ const openDiscussionsPage = (): void => {
         <h1 class="text-lg first-letter:uppercase underline">Playgrounds</h1>
         <p>
           The integrated
-          <button class="underline" title="Open the Playgrounds page" on:click={openPlaygroundsPage}
-            >Playground environments</button>
+          <button class="underline" title="Open the Playgrounds page" on:click={openPlaygroundsPage}>
+            Playground environments
+          </button>
           allow for experimenting with available models in a local environment. An intuitive user prompt helps in exploring
           the capabilities and accuracy of various models and aids in finding the best model for the use case at hand.
         </p>
@@ -100,7 +102,9 @@ const openDiscussionsPage = (): void => {
           Once started, each playground ships with a generic chat client to interact with the model service. The <button
             class="underline"
             title="Open the Services page"
-            on:click={openServicesPage}>Services</button>
+            on:click={openServicesPage}>
+            Services
+          </button>
           page allows for accessing running model services and provides further details and code snippets to interact with
           them.
         </p>

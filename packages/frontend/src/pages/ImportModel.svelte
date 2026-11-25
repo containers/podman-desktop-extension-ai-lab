@@ -150,8 +150,9 @@ function handleDragLeave(): void {
             <Input class="grow" bind:value={localModel.path} name="path" aria-label="model path" readonly={true} />
 
             <!-- Model name -->
-            <label for="name" class="pt-4 w-full block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-              >Name</label>
+            <label for="name" class="pt-4 w-full block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+              Name
+            </label>
             <Input
               bind:value={localModel.name}
               name="name"
@@ -161,13 +162,15 @@ function handleDragLeave(): void {
 
             <!-- selecting backend -->
             <div class="flex flex-row items-center justify-center">
-              <label for="backend" class="pt-4 grow block mb-2 font-bold text-[var(--pd-content-card-header-text)]"
-                >Backend</label>
+              <label for="backend" class="pt-4 grow block mb-2 font-bold text-[var(--pd-content-card-header-text)]">
+                Backend
+              </label>
               <Tooltip left>
                 <Fa size="1.1x" class="cursor-pointer" icon={faCircleInfo} />
                 {#snippet tipSnippet()}
-                  <span class="inline-block py-2 px-4 rounded-md"
-                    ><code>backends</code> represents the technology required to run the models.</span>
+                  <span class="inline-block py-2 px-4 rounded-md">
+                    <code>backends</code> represents the technology required to run the models.
+                  </span>
                 {/snippet}
               </Tooltip>
             </div>

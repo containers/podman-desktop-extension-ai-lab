@@ -47,8 +47,9 @@ function onClick(): void {
       </button>
     {/if}
     {#snippet tipSnippet()}
-      <span class="inline-block py-2 px-4 rounded-md"
-        >{loading ? 'Cloning...' : localRepository ? 'Recipe cloned' : 'Clone recipe'}</span>
+      <span class="inline-block py-2 px-4 rounded-md">
+        {loading ? 'Cloning...' : localRepository ? 'Recipe cloned' : 'Clone recipe'}
+      </span>
     {/snippet}
   </Tooltip>
 {/key}

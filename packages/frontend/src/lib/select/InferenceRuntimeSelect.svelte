@@ -7,8 +7,9 @@ interface Props {
   value: InferenceType | undefined;
   providers: InferenceType[];
   exclude?: InferenceType[];
+  label?: string;
 }
-let { value = $bindable(), disabled, providers, exclude = [] }: Props = $props();
+let { value = $bindable(), disabled, providers, exclude = [], label = 'Select Inference Runtime' }: Props = $props();
 
 // Filter options based on optional exclude list
 const options = $derived(() =>
@@ -25,7 +26,7 @@ function handleOnChange(nValue: { value: string } | undefined): void {
 </script>
 
 <Select
-  label="Select Inference Runtime"
+  label={label}
   name="select-inference-runtime"
   disabled={disabled}
   value={value ? { label: value, value: value } : undefined}

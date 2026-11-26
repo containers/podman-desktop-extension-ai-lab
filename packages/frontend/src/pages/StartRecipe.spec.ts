@@ -21,8 +21,9 @@ import { vi, beforeEach, test, expect } from 'vitest';
 import { studioClient } from '/@/utils/client';
 import { render, screen, fireEvent, within } from '@testing-library/svelte';
 import StartRecipe from '/@/pages/StartRecipe.svelte';
+import userEvent from '@testing-library/user-event';
 import type { Recipe } from '@shared/models/IRecipe';
-import { InferenceType } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { Task } from '@shared/models/ITask';
 import { router } from 'tinro';
@@ -33,6 +34,7 @@ import * as ConnectionStore from '/@/stores/containerProviderConnections';
 import * as ModelsInfoStore from '/@/stores/modelsInfo';
 import * as TaskStore from '/@/stores/tasks';
 import * as CatalogStore from '/@/stores/catalog';
+import * as InferenceServersStore from '/@/stores/inferenceServers';
 import { readable, writable } from 'svelte/store';
 import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 
@@ -43,6 +45,7 @@ vi.mock('/@/stores/modelsInfo');
 vi.mock('/@/stores/tasks');
 vi.mock('/@/stores/catalog');
 vi.mock('/@/stores/extensionConfiguration');
+vi.mock('/@/stores/inferenceServers');
 
 vi.mock('tinro', () => ({
   router: {
@@ -57,6 +60,7 @@ vi.mock('../utils/client', async () => ({
   studioClient: {
     checkContainerConnectionStatusAndResources: vi.fn(),
     requestPullApplication: vi.fn(),
+    getRegisteredProviders: vi.fn(),
   },
 }));
 
@@ -71,7 +75,7 @@ const fakeRecipe: Recipe = {
 
 const fakeRecommendedModel: ModelInfo = {
   id: 'dummy-model-1',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Model 1',
   file: {
     file: 'dummy-model-file',
@@ -81,7 +85,7 @@ const fakeRecommendedModel: ModelInfo = {
 
 const fakeRemoteModel: ModelInfo = {
   id: 'dummy-model-2',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Model 2',
 } as unknown as ModelInfo;
 
@@ -111,6 +115,12 @@ beforeEach(() => {
   vi.mocked(TaskStore).tasks = readable([]);
 
   vi.mocked(studioClient.requestPullApplication).mockResolvedValue('fake-tracking-id');
+  vi.mocked(studioClient.getRegisteredProviders).mockResolvedValue([
+    InferenceType.LLAMA_CPP,
+    InferenceType.WHISPER_CPP,
+    InferenceType.OPENVINO,
+  ]);
+  vi.mocked(InferenceServersStore).inferenceServers = readable<InferenceServer[]>([]);
 
   // mock scrollIntoView
   window.HTMLElement.prototype.scrollIntoView = vi.fn();
@@ -230,12 +240,12 @@ test('Selecting model not downloaded should display a warning', async () => {
 test('Models of all recipe backends should be selectable', async () => {
   const openvinoModel: ModelInfo = {
     id: 'dummy-model-3',
-    backend: InferenceType.OPENVINO,
+    backends: [InferenceType.OPENVINO],
     name: 'Dummy Model 3',
   } as unknown as ModelInfo;
   const whisperModel: ModelInfo = {
     id: 'dummy-model-4',
-    backend: InferenceType.WHISPER_CPP,
+    backends: [InferenceType.WHISPER_CPP],
     name: 'Dummy Model 4',
   } as unknown as ModelInfo;
   vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
@@ -257,6 +267,38 @@ test('Models of all recipe backends should be selectable', async () => {
   expect(labels).toContain(fakeRecommendedModel.name);
   expect(labels).toContain(openvinoModel.name);
   expect(labels).not.toContain(whisperModel.name);
+});
+
+test('Models supporting one of the recipe backends should be selectable', async () => {
+  const multiBackendModel: ModelInfo = {
+    id: 'dummy-model-3',
+    backends: [InferenceType.OPENVINO, InferenceType.LLAMA_CPP],
+    name: 'Dummy Model 3',
+  } as unknown as ModelInfo;
+  const otherModel: ModelInfo = {
+    id: 'dummy-model-4',
+    backends: [InferenceType.OPENVINO],
+    name: 'Dummy Model 4',
+  } as unknown as ModelInfo;
+  vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
+    recipes: [fakeRecipe],
+    models: [],
+    categories: [],
+    version: '',
+  });
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([fakeRecommendedModel, multiBackendModel, otherModel]);
+
+  const { container } = render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  await fireEvent.pointerUp(screen.getByLabelText('Select Model'));
+  const labels = Array.from(container.querySelectorAll('div[class~="list-item"]')).map(
+    item => item.querySelector('span')?.textContent,
+  );
+  expect(labels).toContain(fakeRecommendedModel.name);
+  expect(labels).toContain(multiBackendModel.name);
+  expect(labels).not.toContain(otherModel.name);
 });
 
 test('Selecting model downloaded should not display a warning', async () => {
@@ -297,7 +339,77 @@ test('Submit button should call requestPullApplication with proper arguments', a
       connection: containerProviderConnection,
       recipeId: fakeRecipe.id,
       modelId: fakeRecommendedModel.id,
+      backend: InferenceType.LLAMA_CPP,
     });
+  });
+});
+
+test('model supporting several runtimes of the recipe should allow to select the runtime', async () => {
+  const multiBackendModel = {
+    ...fakeRecommendedModel,
+    backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+  };
+  vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
+    recipes: [{ ...fakeRecipe, backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO] }],
+    models: [],
+    categories: [],
+    version: '',
+  });
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([multiBackendModel]);
+
+  render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  const runtimeSelect = await vi.waitFor(() => screen.getByLabelText('Select Model Runtime'));
+  await userEvent.click(runtimeSelect);
+  await userEvent.click(screen.getByText(InferenceType.OPENVINO));
+
+  await fireEvent.click(screen.getByTitle(`Start ${fakeRecipe.name} recipe`));
+
+  await vi.waitFor(() => {
+    expect(studioClient.requestPullApplication).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelId: multiBackendModel.id,
+        backend: InferenceType.OPENVINO,
+      }),
+    );
+  });
+});
+
+test('runtime should not be selectable when the model is already served', async () => {
+  const multiBackendModel = {
+    ...fakeRecommendedModel,
+    backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+  };
+  vi.mocked(CatalogStore).catalog = readable<ApplicationCatalog>({
+    recipes: [{ ...fakeRecipe, backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO] }],
+    models: [],
+    categories: [],
+    version: '',
+  });
+  vi.mocked(ModelsInfoStore).modelsInfo = readable([multiBackendModel]);
+  vi.mocked(InferenceServersStore).inferenceServers = readable<InferenceServer[]>([
+    { models: [multiBackendModel], type: InferenceType.OPENVINO } as unknown as InferenceServer,
+  ]);
+
+  render(StartRecipe, {
+    recipeId: 'dummy-recipe-id',
+  });
+
+  await vi.waitFor(() =>
+    expect(
+      screen.getByText('The model is already served by a openvino inference server, which will be used.'),
+    ).toBeInTheDocument(),
+  );
+  await fireEvent.click(screen.getByTitle(`Start ${fakeRecipe.name} recipe`));
+
+  await vi.waitFor(() => {
+    expect(studioClient.requestPullApplication).toHaveBeenCalledWith(
+      expect.objectContaining({
+        backend: InferenceType.OPENVINO,
+      }),
+    );
   });
 });
 

@@ -31,7 +31,7 @@ import { VMType } from '@shared/models/IPodman';
 import { InferenceManager } from '../inference/inferenceManager';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { ApplicationOptions } from '../../models/ApplicationOptions';
-import type { InferenceServer } from '@shared/models/IInference';
+import { type InferenceServer, InferenceType } from '@shared/models/IInference';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 import type { ContainerRegistry } from '../../registries/ContainerRegistry';
 import type { PodmanConnection } from '../podmanConnection';
@@ -103,6 +103,10 @@ vi.mock('../inference/inferenceManager');
 
 vi.mock('../../utils/arch', () => ({
   goarch: vi.fn(),
+}));
+
+vi.mock('../../utils/ports', () => ({
+  getFreeRandomPort: vi.fn(),
 }));
 
 beforeEach(() => {
@@ -260,20 +264,22 @@ describe('buildRecipe with inference server', () => {
     container: { containerId: 'inference-container' },
   } as unknown as InferenceServer;
 
-  test.each<[string, string[] | undefined, boolean]>([
-    ['single matching backend', ['llama-cpp'], true],
-    ['one of several backends', ['openvino', 'llama-cpp'], true],
-    ['no matching backend', ['openvino', 'whisper-cpp'], false],
-    ['no backends', undefined, false],
-  ])('%s', async (_, backends, useInferenceServer) => {
+  test.each<[string, string[] | undefined, string[], boolean]>([
+    ['single matching backend', ['llama-cpp'], ['llama-cpp'], true],
+    ['one of several backends', ['openvino', 'llama-cpp'], ['llama-cpp'], true],
+    ['no matching backend', ['openvino', 'whisper-cpp'], ['llama-cpp'], false],
+    ['no backends', undefined, ['llama-cpp'], false],
+    ['second backend of the model matching', ['openvino'], ['llama-cpp', 'openvino'], true],
+    ['no matching backend among several model backends', ['whisper-cpp'], ['llama-cpp', 'openvino'], false],
+  ])('%s', async (_, recipeBackends, modelBackends, useInferenceServer) => {
     vi.mocked(inferenceManagerMock.findServerByModel).mockReturnValue(inferenceServerMock);
 
     const manager = await getInitializedRecipeManager();
 
     const result = await manager.buildRecipe({
       connection: connectionMock,
-      recipe: { ...recipeMock, backends },
-      model: { ...modelInfoMock, backends: ['llama-cpp'] },
+      recipe: { ...recipeMock, backends: recipeBackends },
+      model: { ...modelInfoMock, backends: modelBackends },
     });
 
     if (useInferenceServer) {
@@ -283,5 +289,32 @@ describe('buildRecipe with inference server', () => {
       expect(inferenceManagerMock.findServerByModel).not.toHaveBeenCalled();
       expect(result.inferenceServer).toBeUndefined();
     }
+  });
+
+  test.each<[string, string[], string[], InferenceType]>([
+    ['first backend of the model', ['llama-cpp', 'openvino'], ['llama-cpp', 'openvino'], InferenceType.LLAMA_CPP],
+    [
+      'first backend of the model supported by the recipe',
+      ['openvino'],
+      ['llama-cpp', 'openvino'],
+      InferenceType.OPENVINO,
+    ],
+  ])('inference server should be created with the %s', async (_, recipeBackends, modelBackends, expectedBackend) => {
+    vi.mocked(inferenceManagerMock.findServerByModel).mockReturnValue(undefined);
+    vi.mocked(inferenceManagerMock.createInferenceServer).mockResolvedValue('inference-container');
+    vi.mocked(inferenceManagerMock.get).mockReturnValue(inferenceServerMock);
+
+    const manager = await getInitializedRecipeManager();
+
+    const result = await manager.buildRecipe({
+      connection: connectionMock,
+      recipe: { ...recipeMock, backends: recipeBackends },
+      model: { ...modelInfoMock, backends: modelBackends },
+    });
+
+    expect(inferenceManagerMock.createInferenceServer).toHaveBeenCalledWith(
+      expect.objectContaining({ backend: expectedBackend }),
+    );
+    expect(result.inferenceServer).toBe(inferenceServerMock);
   });
 });

@@ -20,7 +20,12 @@ import type { PodmanConnection, PodmanConnectionEvent } from '../podmanConnectio
 import { containerEngine, Disposable } from '@podman-desktop/api';
 import type { ContainerInfo, TelemetryLogger, ContainerProviderConnection } from '@podman-desktop/api';
 import type { ContainerRegistry, ContainerEvent } from '../../registries/ContainerRegistry';
-import { getInferenceType, isTransitioning, LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
+import {
+  getInferenceType,
+  getInferenceTypes,
+  isTransitioning,
+  LABEL_INFERENCE_SERVER,
+} from '../../utils/inferenceUtils';
 import { Publisher } from '../../utils/Publisher';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
@@ -205,8 +210,11 @@ export class InferenceManager extends Publisher<InferenceServer[]> implements Di
     // which is especially likely on slow container providers.
     await this.whenInitialized();
 
-    // Get the backend for the model inference server {@link InferenceType}
-    const backend: InferenceType = getInferenceType(config.modelsInfo);
+    // a model may support several backends {@link InferenceType}: use the requested one, or the preferred one
+    if (config.backend && !getInferenceTypes(config.modelsInfo).includes(config.backend)) {
+      throw new Error(`backend ${config.backend} is not supported by the models.`);
+    }
+    const backend: InferenceType = config.backend ?? getInferenceType(config.modelsInfo);
 
     let provider: InferenceProvider;
     if (config.inferenceProvider) {

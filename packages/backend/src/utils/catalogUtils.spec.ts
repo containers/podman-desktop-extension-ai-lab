@@ -323,7 +323,7 @@ describe('sanitizeModel', () => {
   });
 
   test('backend and backends should not be both defined', () => {
-    expect(() => sanitizeModel({ ...validModel, backend: 'llama-cpp', backends: ['openvino'] })).toThrowError(
+    expect(() => sanitizeModel({ ...validModel, backend: 'llama-cpp', backends: ['openvino'] })).toThrow(
       'invalid model format: backend and backends cannot be both defined',
     );
   });

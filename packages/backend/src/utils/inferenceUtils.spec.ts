@@ -67,6 +67,7 @@ describe('withDefaultConfiguration', () => {
       connection: connectionMock,
       image: 'random-image',
       labels: { hello: 'world' },
+      backend: InferenceType.OPENVINO,
     });
 
     expect(getFreeRandomPort).not.toHaveBeenCalled();
@@ -75,6 +76,7 @@ describe('withDefaultConfiguration', () => {
     expect(result.image).toBe('random-image');
     expect(result.labels).toStrictEqual({ hello: 'world' });
     expect(result.connection).toBe(connectionMock);
+    expect(result.backend).toBe(InferenceType.OPENVINO);
   });
 });
 

@@ -80,6 +80,7 @@ export async function withDefaultConfiguration(
     modelsInfo: options.modelsInfo,
     connection: options.connection,
     inferenceProvider: options.inferenceProvider,
+    backend: options.backend,
     gpuLayers: options.gpuLayers,
   };
 }

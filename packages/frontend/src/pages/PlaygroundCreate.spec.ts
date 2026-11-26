@@ -40,7 +40,7 @@ const dummyLlamaCppModel: ModelInfo = {
   },
   properties: {},
   description: '',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
 };
 
 const dummyWhisperCppModel: ModelInfo = {
@@ -52,7 +52,7 @@ const dummyWhisperCppModel: ModelInfo = {
   },
   properties: {},
   description: '',
-  backend: InferenceType.WHISPER_CPP,
+  backends: [InferenceType.WHISPER_CPP],
 };
 
 const dummyOpenVinoModel: ModelInfo = {
@@ -64,7 +64,7 @@ const dummyOpenVinoModel: ModelInfo = {
   },
   properties: {},
   description: '',
-  backend: InferenceType.OPENVINO,
+  backends: [InferenceType.OPENVINO],
 };
 
 vi.mock('../utils/client', async () => {
@@ -179,4 +179,22 @@ test('should display error message if createPlayground fails', async () => {
   const errorMessageAfterSubmit = within(container).queryByLabelText('Error Message Content');
   expect(errorMessageAfterSubmit).toBeInTheDocument();
   expect(errorMessageAfterSubmit?.textContent).equal('error creating playground');
+});
+
+test('model supporting several backends should be displayed for each of its runtimes', async () => {
+  const multiBackendModel = {
+    ...dummyLlamaCppModel,
+    id: 'multi-backend-model',
+    name: 'Multi Backend Model',
+    backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+  };
+  vi.mocked(modelsInfoStore).modelsInfo = writable<ModelInfo[]>([multiBackendModel]);
+
+  const { container } = render(PlaygroundCreate, { props: { exclude: [InferenceType.NONE] } });
+
+  const dropdown = within(container).getByLabelText('Select Inference Runtime');
+  await userEvent.click(dropdown);
+  await userEvent.click(within(container).getByText(InferenceType.OPENVINO));
+
+  expect(within(container).getByText(multiBackendModel.name)).toBeInTheDocument();
 });

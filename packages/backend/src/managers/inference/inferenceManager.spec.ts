@@ -17,16 +17,18 @@
  ***********************************************************************/
 import {
   containerEngine,
+  Disposable,
   type ContainerInfo,
   type ContainerInspectInfo,
   type TelemetryLogger,
 } from '@podman-desktop/api';
 import type { ContainerRegistry } from '../../registries/ContainerRegistry';
 import type { PodmanConnection } from '../podmanConnection';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { InferenceManager } from './inferenceManager';
 import type { ModelsManager } from '../modelsManager';
-import { LABEL_INFERENCE_SERVER } from '../../utils/inferenceUtils';
+import { LABEL_INFERENCE_SERVER, LABEL_INFERENCE_TYPE } from '../../utils/inferenceUtils';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { InferenceServerConfig } from '@shared/models/InferenceServerConfig';
 import type { TaskRegistry } from '../../registries/TaskRegistry';
 import type { InferenceProviderRegistry } from '../../registries/InferenceProviderRegistry';
@@ -59,6 +61,8 @@ const podmanConnectionMock = {
 const modelsManager = {
   getLocalModelPath: vi.fn(),
   uploadModelToPodmanMachine: vi.fn(),
+  isModelOnDisk: vi.fn(),
+  getModelInfo: vi.fn(),
 } as unknown as ModelsManager;
 
 const telemetryMock = {
@@ -82,6 +86,9 @@ const catalogManager = {
   onUpdate: vi.fn(),
 } as unknown as CatalogManager;
 
+// managers created by a test, disposed after it to stop watching the containers of their servers
+const managers: InferenceManager[] = [];
+
 const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
   const manager = new InferenceManager(
     rpcExtensionMock,
@@ -93,6 +100,7 @@ const getInitializedInferenceManager = async (): Promise<InferenceManager> => {
     inferenceProviderRegistryMock,
     catalogManager,
   );
+  managers.push(manager);
   manager.init();
   await vi.waitUntil(manager.isInitialize.bind(manager), {
     interval: 200,
@@ -105,8 +113,15 @@ const mockListContainers = (containers: Partial<ContainerInfo>[]): void => {
   vi.mocked(containerEngine.listContainers).mockResolvedValue(containers as unknown as ContainerInfo[]);
 };
 
+afterEach(() => {
+  managers.splice(0).forEach(manager => manager.dispose());
+});
+
 beforeEach(() => {
   vi.resetAllMocks();
+  // allow the container watchers (status polling) to be disposed
+  vi.mocked(Disposable.create).mockImplementation(func => ({ dispose: func }));
+  vi.mocked(containerRegistryMock.subscribe).mockReturnValue({ dispose: vi.fn() });
   // Default listContainers is empty
   mockListContainers([]);
   vi.mocked(rpcExtensionMock.fire).mockResolvedValue(true);
@@ -201,6 +216,22 @@ describe('init Inference Manager', () => {
         },
       },
     ]);
+  });
+
+  test('should use the backend stored in the container label', async () => {
+    mockListContainers([
+      {
+        Id: 'dummyContainerId',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: '[]',
+          [LABEL_INFERENCE_TYPE]: InferenceType.OPENVINO,
+        },
+      },
+    ]);
+
+    const inferenceManager = await getInitializedInferenceManager();
+    expect(inferenceManager.getServers()[0].type).toBe(InferenceType.OPENVINO);
   });
 
   test('should have adopted all existing container with proper label', async () => {
@@ -479,6 +510,153 @@ describe('Create Inference Server', () => {
     expect(provider.perform).toHaveBeenCalledWith(config);
 
     expect(result).toBe('dummy-container-id');
+  });
+});
+
+describe('Create Inference Server with models supporting several backends', () => {
+  const model: ModelInfo = {
+    id: 'model-1',
+    name: 'Model 1',
+    description: '',
+    backends: [InferenceType.OPENVINO, InferenceType.LLAMA_CPP],
+  };
+
+  const createProvider = (type: InferenceType, enabled: boolean): InferenceProvider =>
+    ({
+      type,
+      enabled: () => enabled,
+      prePerform: vi.fn().mockResolvedValue(undefined),
+      perform: vi.fn<() => Promise<InferenceServer>>().mockResolvedValue({
+        container: {
+          containerId: `${type}-container-id`,
+          engineId: 'dummy-engine-id',
+        },
+        models: [model],
+        status: 'running',
+        type,
+        connection: { port: 0 },
+        labels: {},
+      }),
+    }) as unknown as InferenceProvider;
+
+  let providers: Record<string, InferenceProvider>;
+  const mockProviders = (enabled: { [key in InferenceType]?: boolean }): void => {
+    providers = Object.fromEntries(
+      Object.entries(enabled).map(([type, isEnabled]) => [type, createProvider(type as InferenceType, isEnabled)]),
+    );
+    vi.mocked(inferenceProviderRegistryMock.getByType).mockImplementation(type =>
+      providers[type] ? [providers[type]] : [],
+    );
+  };
+
+  test('backend not supported by the models should throw an error', async () => {
+    mockProviders({ [InferenceType.WHISPER_CPP]: true });
+    const inferenceManager = await getInitializedInferenceManager();
+    await expect(
+      inferenceManager.createInferenceServer({
+        labels: {},
+        modelsInfo: [model],
+        port: 8888,
+        backend: InferenceType.WHISPER_CPP,
+      }),
+    ).rejects.toThrowError('backend whisper-cpp is not supported by the models.');
+  });
+
+  test('requested backend should be used and stored in the labels', async () => {
+    mockProviders({ [InferenceType.OPENVINO]: true, [InferenceType.LLAMA_CPP]: true });
+    const inferenceManager = await getInitializedInferenceManager();
+    const result = await inferenceManager.createInferenceServer({
+      labels: { trackingId: 'tracking-1' },
+      modelsInfo: [model],
+      port: 8888,
+      backend: InferenceType.LLAMA_CPP,
+    });
+
+    expect(result).toBe('llama-cpp-container-id');
+    expect(providers[InferenceType.OPENVINO].perform).not.toHaveBeenCalled();
+    expect(providers[InferenceType.LLAMA_CPP].perform).toHaveBeenCalledWith(
+      expect.objectContaining({
+        labels: {
+          trackingId: 'tracking-1',
+          [LABEL_INFERENCE_TYPE]: InferenceType.LLAMA_CPP,
+        },
+      }),
+    );
+  });
+
+  test('without backend requested, the first backend of the models should be used', async () => {
+    mockProviders({ [InferenceType.OPENVINO]: true, [InferenceType.LLAMA_CPP]: true });
+    const inferenceManager = await getInitializedInferenceManager();
+    const result = await inferenceManager.createInferenceServer({
+      labels: {},
+      modelsInfo: [model],
+      port: 8888,
+    });
+
+    expect(result).toBe('openvino-container-id');
+  });
+
+  test('without backend requested, the next backend should be used if the first one is not enabled', async () => {
+    mockProviders({ [InferenceType.OPENVINO]: false, [InferenceType.LLAMA_CPP]: true });
+    const inferenceManager = await getInitializedInferenceManager();
+    const result = await inferenceManager.createInferenceServer({
+      labels: {},
+      modelsInfo: [model],
+      port: 8888,
+    });
+
+    expect(result).toBe('llama-cpp-container-id');
+  });
+
+  test('requested backend not enabled should throw an error', async () => {
+    mockProviders({ [InferenceType.OPENVINO]: false, [InferenceType.LLAMA_CPP]: true });
+    const inferenceManager = await getInitializedInferenceManager();
+    await expect(
+      inferenceManager.createInferenceServer({
+        labels: {},
+        modelsInfo: [model],
+        port: 8888,
+        backend: InferenceType.OPENVINO,
+      }),
+    ).rejects.toThrowError('no enabled provider could be found.');
+  });
+
+  test('getPreferredBackend should only consider the allowed backends', async () => {
+    mockProviders({ [InferenceType.OPENVINO]: true, [InferenceType.LLAMA_CPP]: true });
+    const inferenceManager = await getInitializedInferenceManager();
+
+    expect(inferenceManager.getPreferredBackend([model])).toBe(InferenceType.OPENVINO);
+    expect(inferenceManager.getPreferredBackend([model], [InferenceType.LLAMA_CPP])).toBe(InferenceType.LLAMA_CPP);
+    expect(inferenceManager.getPreferredBackend([model], [InferenceType.WHISPER_CPP])).toBeUndefined();
+  });
+
+  test('findServerByModel should return the server of the model whatever its backend', async () => {
+    mockProviders({ [InferenceType.OPENVINO]: true, [InferenceType.LLAMA_CPP]: true });
+    mockListContainers([
+      {
+        Id: 'openvino-container-id',
+        engineId: 'dummyEngineId',
+        Labels: {
+          [LABEL_INFERENCE_SERVER]: JSON.stringify([model.id]),
+          [LABEL_INFERENCE_TYPE]: InferenceType.OPENVINO,
+        },
+      },
+    ]);
+    vi.mocked(modelsManager.isModelOnDisk).mockReturnValue(true);
+    vi.mocked(modelsManager.getModelInfo).mockReturnValue(model);
+
+    const inferenceManager = await getInitializedInferenceManager();
+    expect(inferenceManager.findServerByModel(model)?.container.containerId).toBe('openvino-container-id');
+    expect(inferenceManager.findServerByModel(model, [InferenceType.OPENVINO])?.container.containerId).toBe(
+      'openvino-container-id',
+    );
+    // a model is served by a single inference server
+    expect(inferenceManager.findServerByModel(model, [InferenceType.LLAMA_CPP])?.container.containerId).toBe(
+      'openvino-container-id',
+    );
+    expect(() => inferenceManager.findServerByModel(model, [InferenceType.WHISPER_CPP])).toThrowError(
+      'no enabled provider could be found.',
+    );
   });
 });
 

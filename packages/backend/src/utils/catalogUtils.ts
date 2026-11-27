@@ -70,7 +70,9 @@ function adaptToCurrent(raw: object): object & { version: string } {
   // for models - assume backend is llama-cpp
   if ('models' in raw && Array.isArray(raw.models)) {
     raw.models.forEach(model => {
-      model.backend = model.backend ?? 'llama-cpp';
+      if (!model.backend && !model.backends) {
+        model.backend = 'llama-cpp';
+      }
     });
   }
 
@@ -117,18 +119,20 @@ export function isStringArray(obj: unknown): obj is Array<string> {
 }
 
 /**
- * In the catalog, a recipe may define its backends either with the `backend` (string)
+ * In the catalog, a recipe or a model may define its backends either with the `backend` (string)
  * or the `backends` (array of string) property, but not both.
+ * @param item the recipe or model to read the backends from
+ * @param kind the kind of item, used in the error message
  */
-function sanitizeRecipeBackends(recipe: object): string[] | undefined {
-  if ('backend' in recipe && 'backends' in recipe) {
-    throw new Error('invalid recipe format: backend and backends cannot be both defined');
+function sanitizeBackends(item: object, kind: 'recipe' | 'model'): string[] | undefined {
+  if ('backend' in item && 'backends' in item) {
+    throw new Error(`invalid ${kind} format: backend and backends cannot be both defined`);
   }
-  if ('backend' in recipe && typeof recipe.backend === 'string') {
-    return [recipe.backend];
+  if ('backend' in item && typeof item.backend === 'string') {
+    return [item.backend];
   }
-  if ('backends' in recipe && isStringArray(recipe.backends)) {
-    return recipe.backends;
+  if ('backends' in item && isStringArray(item.backends)) {
+    return item.backends;
   }
   return undefined;
 }
@@ -162,7 +166,7 @@ export function sanitizeRecipe(recipe: unknown): Recipe {
       icon: 'icon' in recipe && typeof recipe.icon === 'string' ? recipe.icon : undefined,
       basedir: 'basedir' in recipe && typeof recipe.basedir === 'string' ? recipe.basedir : undefined,
       recommended: 'recommended' in recipe && isStringArray(recipe.recommended) ? recipe.recommended : undefined,
-      backends: sanitizeRecipeBackends(recipe),
+      backends: sanitizeBackends(recipe, 'recipe'),
       languages: 'languages' in recipe && isStringArray(recipe.languages) ? recipe.languages : undefined,
       frameworks: 'frameworks' in recipe && isStringArray(recipe.frameworks) ? recipe.frameworks : undefined,
     };
@@ -201,7 +205,7 @@ export function sanitizeModel(model: unknown): ModelInfo {
       memory: 'memory' in model && typeof model.memory === 'number' ? model.memory : undefined,
       properties: 'properties' in model && isStringRecord(model.properties) ? model.properties : undefined,
       sha256: 'sha256' in model && typeof model.sha256 === 'string' ? model.sha256 : undefined,
-      backend: 'backend' in model && typeof model.backend === 'string' ? model.backend : undefined,
+      backends: sanitizeBackends(model, 'model'),
       file:
         'file' in model && isLocalModelInfo(model.file)
           ? {

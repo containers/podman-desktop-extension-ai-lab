@@ -117,7 +117,7 @@ test('provider requires a model with backend type Whisper', async () => {
             file: 'random-file',
             path: 'path-to-file',
           },
-          backend: InferenceType.LLAMA_CPP,
+          backends: [InferenceType.LLAMA_CPP],
         },
       ],
     });
@@ -138,7 +138,7 @@ test('custom image in inference server config should overwrite default', async (
       file: 'random-file',
       path: 'path-to-file',
     },
-    backend: InferenceType.WHISPER_CPP,
+    backends: [InferenceType.WHISPER_CPP],
   };
 
   await provider.perform({
@@ -165,7 +165,7 @@ test('provider should propagate labels', async () => {
       file: 'random-file',
       path: 'path-to-file',
     },
-    backend: InferenceType.WHISPER_CPP,
+    backends: [InferenceType.WHISPER_CPP],
   };
 
   const server: InferenceServer = await provider.perform({
@@ -214,7 +214,7 @@ test('provided connection should be used for pulling the image', async () => {
       file: 'random-file',
       path: 'path-to-file',
     },
-    backend: InferenceType.WHISPER_CPP,
+    backends: [InferenceType.WHISPER_CPP],
   };
 
   await provider.perform({

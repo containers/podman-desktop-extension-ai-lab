@@ -25,8 +25,9 @@ interface Props {
 
 let { trackingId }: Props = $props();
 
-// List of the models available locally exlude models with none backend
-let localModels: ModelInfo[] = $derived($modelsInfo.filter(model => model.file && model.backend !== 'none'));
+// List of the models available locally exlude models with none backend, defaulting to the first backend of the model:
+// no model declares several backends yet, this is subject to change once a proper backend selection is implemented
+let localModels: ModelInfo[] = $derived($modelsInfo.filter(model => model.file && model.backends?.[0] !== 'none'));
 
 // The container provider connection to use
 let containerProviderConnection: ContainerProviderConnectionInfo | undefined = $state(undefined);

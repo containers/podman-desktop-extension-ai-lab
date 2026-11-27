@@ -28,7 +28,7 @@ import type { Stats } from 'node:fs';
 import { promises, existsSync } from 'node:fs';
 import type { ApplicationCatalog } from '@shared/models/IApplicationCatalog';
 import path from 'node:path';
-import { version } from '../assets/ai.json';
+import defaultCatalog, { version } from '../assets/ai.json';
 import * as catalogUtils from '../utils/catalogUtils';
 import type { RpcExtension } from '@shared/messages/MessageProxy';
 
@@ -256,6 +256,52 @@ test('malformed catalog should create a notification', async () => {
       body: 'Something went wrong while trying to load the user catalog: Error: invalid model format',
     }),
   );
+});
+
+describe('default catalog used when the user catalog cannot be loaded', () => {
+  // the default catalog (ai.json) defines the backends with the `backend` property
+  const defaultModel = {
+    id: 'default-backend-model',
+    name: 'Default Model',
+    description: 'model',
+    backend: 'llama-cpp',
+  };
+  const defaultRecipe = {
+    id: 'default-backend-recipe',
+    name: 'Default Recipe',
+    description: 'recipe',
+    categories: [],
+    repository: 'http://example.com',
+    readme: 'readme',
+    backend: 'llama-cpp',
+  };
+
+  beforeEach(() => {
+    const catalog = defaultCatalog as unknown as ApplicationCatalog;
+    catalog.models.push(defaultModel as unknown as ApplicationCatalog['models'][number]);
+    catalog.recipes.push(defaultRecipe as unknown as ApplicationCatalog['recipes'][number]);
+  });
+
+  afterEach(() => {
+    const catalog = defaultCatalog as unknown as ApplicationCatalog;
+    catalog.models = catalog.models.filter(model => model.id !== defaultModel.id);
+    catalog.recipes = catalog.recipes.filter(recipe => recipe.id !== defaultRecipe.id);
+  });
+
+  test.each([
+    ['incompatible version', { version: catalogUtils.CatalogFormat.UNKNOWN }],
+    [
+      'malformed user catalog',
+      { version: catalogUtils.CatalogFormat.CURRENT, models: [{ fakeProperty: 'hello' }], recipes: [], categories: [] },
+    ],
+  ])('%s should still load the backends of the default catalog', (_, userCatalog) => {
+    catalogManager['onUserCatalogUpdate'](userCatalog);
+
+    expect(catalogManager.getModelById(defaultModel.id).backends).toStrictEqual(['llama-cpp']);
+    expect(catalogManager.getRecipes().find(recipe => recipe.id === defaultRecipe.id)?.backends).toStrictEqual([
+      'llama-cpp',
+    ]);
+  });
 });
 
 describe('spy on catalogUtils.sanitize', () => {

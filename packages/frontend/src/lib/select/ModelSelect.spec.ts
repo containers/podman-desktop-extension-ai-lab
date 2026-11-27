@@ -25,7 +25,7 @@ import { InferenceType } from '@shared/models/IInference';
 
 const fakeRecommendedModel: ModelInfo = {
   id: 'dummy-model-1',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Model 1',
   file: {
     file: 'dummy-model-file',
@@ -35,13 +35,13 @@ const fakeRecommendedModel: ModelInfo = {
 
 const fakeRemoteModel: ModelInfo = {
   id: 'dummy-model-2',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Model 2',
 } as unknown as ModelInfo;
 
 const fakeRecommendedRemoteModel: ModelInfo = {
   id: 'dummy-model-3',
-  backend: InferenceType.LLAMA_CPP,
+  backends: [InferenceType.LLAMA_CPP],
   name: 'Dummy Model 3',
 } as unknown as ModelInfo;
 

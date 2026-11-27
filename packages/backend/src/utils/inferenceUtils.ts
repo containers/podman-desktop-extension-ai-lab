@@ -80,6 +80,7 @@ export async function withDefaultConfiguration(
     modelsInfo: options.modelsInfo,
     connection: options.connection,
     inferenceProvider: options.inferenceProvider,
+    backend: options.backend,
     gpuLayers: options.gpuLayers,
   };
 }
@@ -109,12 +110,28 @@ export function parseInferenceType(value: string | undefined): InferenceType {
 }
 
 /**
- * Let's collect the backend required by the provided models
- * we only support one backend for all the models, if multiple are provided, NONE will be return
+ * Return the backends supported by a model, in order of preference.
+ * A model without backend is considered as having the NONE backend.
+ */
+export function getModelInferenceTypes(modelInfo: ModelInfo): InferenceType[] {
+  const backends = (modelInfo.backends ?? []).map(backend => parseInferenceType(backend));
+  return backends.length > 0 ? [...new Set(backends)] : [InferenceType.NONE];
+}
+
+/**
+ * Let's collect the backends supported by all the provided models,
+ * in the order of preference of the first model.
+ */
+export function getInferenceTypes(modelsInfo: ModelInfo[]): InferenceType[] {
+  if (modelsInfo.length === 0) return [];
+  const [first, ...others] = modelsInfo.map(info => getModelInferenceTypes(info));
+  return first.filter(backend => others.every(backends => backends.includes(backend)));
+}
+
+/**
+ * Let's collect the preferred backend supported by all the provided models.
+ * If the models do not have any backend in common, NONE will be returned
  */
 export function getInferenceType(modelsInfo: ModelInfo[]): InferenceType {
-  const backends: InferenceType[] = modelsInfo.map(info => parseInferenceType(info.backend));
-  if (new Set(backends).size !== 1) return InferenceType.NONE;
-
-  return backends[0];
+  return getInferenceTypes(modelsInfo)[0] ?? InferenceType.NONE;
 }

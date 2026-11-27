@@ -78,7 +78,9 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
   }
 
   private loadDefaultCatalog(): void {
-    this.catalog = defaultCatalog as ApplicationCatalog;
+    // the default catalog must be sanitized like in the normal path: it uses the `backend` property
+    // which is loaded as `backends`
+    this.catalog = sanitize(defaultCatalog);
     this.notify();
   }
 
@@ -231,7 +233,7 @@ export class CatalogManager extends Publisher<ApplicationCatalog> implements Dis
             creation: statFile.mtime,
           },
           memory: statFile.size,
-          backend: local.backend ?? InferenceType.NONE,
+          backends: [local.backend ?? InferenceType.NONE],
         };
       }),
     );

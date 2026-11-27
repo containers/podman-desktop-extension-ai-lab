@@ -16,7 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { withDefaultConfiguration, isTransitioning, parseInferenceType, getInferenceType } from './inferenceUtils';
+import {
+  withDefaultConfiguration,
+  isTransitioning,
+  parseInferenceType,
+  getInferenceType,
+  getInferenceTypes,
+  getModelInferenceTypes,
+} from './inferenceUtils';
 import { getFreeRandomPort } from './ports';
 import type { ModelInfo } from '@shared/models/IModelInfo';
 import type { InferenceServer, InferenceServerStatus } from '@shared/models/IInference';
@@ -60,6 +67,7 @@ describe('withDefaultConfiguration', () => {
       connection: connectionMock,
       image: 'random-image',
       labels: { hello: 'world' },
+      backend: InferenceType.OPENVINO,
     });
 
     expect(getFreeRandomPort).not.toHaveBeenCalled();
@@ -68,6 +76,7 @@ describe('withDefaultConfiguration', () => {
     expect(result.image).toBe('random-image');
     expect(result.labels).toStrictEqual({ hello: 'world' });
     expect(result.connection).toBe(connectionMock);
+    expect(result.backend).toBe(InferenceType.OPENVINO);
   });
 });
 
@@ -109,7 +118,7 @@ describe('getInferenceType', () => {
     expect(
       getInferenceType([
         {
-          backend: undefined,
+          backends: undefined,
         } as unknown as ModelInfo,
       ]),
     ).toBe(InferenceType.NONE);
@@ -119,7 +128,7 @@ describe('getInferenceType', () => {
     expect(
       getInferenceType([
         {
-          backend: 'llama-cpp',
+          backends: ['llama-cpp'],
         } as unknown as ModelInfo,
       ]),
     ).toBe(InferenceType.LLAMA_CPP);
@@ -129,10 +138,10 @@ describe('getInferenceType', () => {
     expect(
       getInferenceType([
         {
-          backend: 'llama-cpp',
+          backends: ['llama-cpp'],
         },
         {
-          backend: 'llama-cpp',
+          backends: ['llama-cpp'],
         },
       ] as unknown as ModelInfo[]),
     ).toBe(InferenceType.LLAMA_CPP);
@@ -142,12 +151,69 @@ describe('getInferenceType', () => {
     expect(
       getInferenceType([
         {
-          backend: 'llama-cpp',
+          backends: ['llama-cpp'],
         },
         {
-          backend: 'whisper-cpp',
+          backends: ['whisper-cpp'],
         },
       ] as unknown as ModelInfo[]),
     ).toBe(InferenceType.NONE);
+  });
+
+  test('multiple models with several backends should return the preferred common backend', () => {
+    expect(
+      getInferenceType([
+        {
+          backends: ['openvino', 'llama-cpp'],
+        },
+        {
+          backends: ['llama-cpp', 'openvino'],
+        },
+      ] as unknown as ModelInfo[]),
+    ).toBe(InferenceType.OPENVINO);
+  });
+});
+
+describe('getModelInferenceTypes', () => {
+  test('model without backend should return InferenceType.NONE', () => {
+    expect(getModelInferenceTypes({} as unknown as ModelInfo)).toStrictEqual([InferenceType.NONE]);
+  });
+
+  test('model with several backends should return them in order', () => {
+    expect(getModelInferenceTypes({ backends: ['openvino', 'llama-cpp'] } as unknown as ModelInfo)).toStrictEqual([
+      InferenceType.OPENVINO,
+      InferenceType.LLAMA_CPP,
+    ]);
+  });
+});
+
+describe('getInferenceTypes', () => {
+  test('empty array should return an empty array', () => {
+    expect(getInferenceTypes([])).toStrictEqual([]);
+  });
+
+  test('should return the backends in the order of the first model', () => {
+    expect(
+      getInferenceTypes([
+        { backends: ['openvino', 'llama-cpp'] },
+        { backends: ['llama-cpp', 'openvino'] },
+      ] as unknown as ModelInfo[]),
+    ).toStrictEqual([InferenceType.OPENVINO, InferenceType.LLAMA_CPP]);
+  });
+
+  test('should return the backends common to all the models', () => {
+    expect(
+      getInferenceTypes([
+        { backends: ['openvino', 'llama-cpp'] },
+        { backends: ['llama-cpp', 'openvino'] },
+        { backends: ['llama-cpp'] },
+      ] as unknown as ModelInfo[]),
+    ).toStrictEqual([InferenceType.LLAMA_CPP]);
+  });
+
+  test('should return an empty array if the models do not have any backend in common', () => {
+    expect(
+      getInferenceTypes([{ backends: ['openvino'] }, { backends: ['llama-cpp'] }] as unknown as ModelInfo[]),
+    ).toStrictEqual([]);
   });
 });

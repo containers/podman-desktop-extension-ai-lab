@@ -39,8 +39,13 @@ onMount(async () => {
 });
 
 let localModels: ModelInfo[];
+// filter on the first backend of the model: no model declares several backends yet,
+// this is subject to change once a proper backend selection is implemented
 $: localModels = $modelsInfo.filter(
-  model => model.file && (!runtime || model.backend === runtime) && !exclude.includes(model.backend as InferenceType),
+  model =>
+    model.file &&
+    (!runtime || model.backends?.[0] === runtime) &&
+    !exclude.includes(model.backends?.[0] as InferenceType),
 );
 $: availModels = $modelsInfo.filter(model => !model.file);
 let model: ModelInfo | undefined = undefined;

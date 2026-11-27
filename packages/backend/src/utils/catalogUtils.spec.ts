@@ -86,9 +86,18 @@ describe('sanitize', () => {
     expect(hasCatalogWrongFormat(raw)).toBeTruthy();
     const catalog = sanitize(raw);
     expect(catalog.version).equals(CatalogFormat.CURRENT);
-    expect(catalog.models[0].backend).equals('llama-cpp');
+    expect(catalog.models[0].backends).toStrictEqual(['llama-cpp']);
     expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
     expect(catalog.recipes[0].backends).toStrictEqual(['llama-cpp']);
+  });
+
+  test('should keep model backends when adapting object not having any version to CURRENT format', () => {
+    const raw = {
+      models: [{ ...validModel, backends: ['openvino', 'llama-cpp'] }],
+    };
+    expect(hasCatalogWrongFormat(raw)).toBeTruthy();
+    const catalog = sanitize(raw);
+    expect(catalog.models[0].backends).toStrictEqual(['openvino', 'llama-cpp']);
   });
 
   test('should keep recipe backends when adapting object not having any version to CURRENT format', () => {
@@ -178,7 +187,7 @@ describe('sanitize', () => {
     expect(hasCatalogWrongFormat(raw)).toBeFalsy();
     const catalog = sanitize(raw);
     expect(catalog.version).equals(CatalogFormat.CURRENT);
-    expect(catalog.models[0].backend).toBeUndefined();
+    expect(catalog.models[0].backends).toBeUndefined();
     expect(catalog.models[0].name).equals('Mistral-7B-Instruct-v0.3-Q4_K_M');
     expect(catalog.recipes[0].languages).toStrictEqual(['lang1']);
     expect(catalog.recipes[0].frameworks).toStrictEqual(['fw1']);
@@ -300,6 +309,31 @@ describe('sanitizeModel', () => {
   test('missing mandatory fields', () => {
     const invalidModel = { ...validModel, id: undefined };
     expect(() => sanitizeModel(invalidModel)).toThrowError('invalid model format');
+  });
+
+  test('backend string should be loaded as backends array', () => {
+    expect(sanitizeModel({ ...validModel, backend: 'llama-cpp' }).backends).toStrictEqual(['llama-cpp']);
+  });
+
+  test('backends array should be loaded as backends array', () => {
+    expect(sanitizeModel({ ...validModel, backends: ['llama-cpp', 'openvino'] }).backends).toStrictEqual([
+      'llama-cpp',
+      'openvino',
+    ]);
+  });
+
+  test('backend and backends should not be both defined', () => {
+    expect(() => sanitizeModel({ ...validModel, backend: 'llama-cpp', backends: ['openvino'] })).toThrow(
+      'invalid model format: backend and backends cannot be both defined',
+    );
+  });
+
+  test('invalid backend value should be ignored', () => {
+    expect(sanitizeModel({ ...validModel, backend: 1 }).backends).toBeUndefined();
+  });
+
+  test('invalid backends value should be ignored', () => {
+    expect(sanitizeModel({ ...validModel, backends: ['llama-cpp', 2] }).backends).toBeUndefined();
   });
 });
 

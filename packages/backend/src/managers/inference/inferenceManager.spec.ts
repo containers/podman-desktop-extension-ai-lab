@@ -39,6 +39,7 @@ import type { RpcExtension } from '@shared/messages/MessageProxy';
 import { MSG_INFERENCE_SERVERS_UPDATE } from '@shared/Messages';
 import * as randomUtils from '../../utils/randomUtils';
 import type { Task } from '@shared/models/ITask';
+import type { ModelInfo } from '@shared/models/IModelInfo';
 
 vi.mock('../../utils/randomUtils');
 
@@ -479,6 +480,76 @@ describe('Create Inference Server', () => {
     expect(provider.perform).toHaveBeenCalledWith(config);
 
     expect(result).toBe('dummy-container-id');
+  });
+
+  describe('backend', () => {
+    const multiBackendModel = {
+      id: 'multi-backend-model',
+      backends: [InferenceType.LLAMA_CPP, InferenceType.OPENVINO],
+    } as unknown as ModelInfo;
+
+    const provider: InferenceProvider = {
+      enabled: () => true,
+      name: 'dummy-inference-provider',
+      dispose: () => {},
+      prePerform: vi.fn(),
+      perform: vi.fn(),
+    } as unknown as InferenceProvider;
+
+    beforeEach(() => {
+      vi.mocked(provider.prePerform).mockResolvedValue(undefined);
+      vi.mocked(provider.perform).mockResolvedValue({
+        container: { containerId: 'dummy-container-id', engineId: 'dummy-engine-id' },
+        models: [multiBackendModel],
+        status: 'running',
+        type: InferenceType.OPENVINO,
+        connection: { port: 0 },
+        labels: {},
+      });
+      vi.mocked(inferenceProviderRegistryMock.getByType).mockReturnValue([provider]);
+    });
+
+    test('requested backend should be used to select the inference provider', async () => {
+      const inferenceManager = await getInitializedInferenceManager();
+
+      await inferenceManager.createInferenceServer({
+        labels: {},
+        modelsInfo: [multiBackendModel],
+        port: 8888,
+        backend: InferenceType.OPENVINO,
+      });
+
+      expect(inferenceProviderRegistryMock.getByType).toHaveBeenCalledWith(InferenceType.OPENVINO);
+      expect(provider.perform).toHaveBeenCalled();
+    });
+
+    test('preferred backend of the models should be used when no backend is requested', async () => {
+      const inferenceManager = await getInitializedInferenceManager();
+
+      await inferenceManager.createInferenceServer({
+        labels: {},
+        modelsInfo: [multiBackendModel],
+        port: 8888,
+      });
+
+      expect(inferenceProviderRegistryMock.getByType).toHaveBeenCalledWith(InferenceType.LLAMA_CPP);
+      expect(provider.perform).toHaveBeenCalled();
+    });
+
+    test('requested backend not supported by the models should throw an error', async () => {
+      const inferenceManager = await getInitializedInferenceManager();
+
+      await expect(
+        inferenceManager.createInferenceServer({
+          labels: {},
+          modelsInfo: [multiBackendModel],
+          port: 8888,
+          backend: InferenceType.WHISPER_CPP,
+        }),
+      ).rejects.toThrow(`backend ${InferenceType.WHISPER_CPP} is not supported by the models.`);
+      expect(inferenceProviderRegistryMock.getByType).not.toHaveBeenCalled();
+      expect(provider.perform).not.toHaveBeenCalled();
+    });
   });
 });
 

@@ -29,7 +29,7 @@ import type { BuilderManager } from './BuilderManager';
 import type { Disposable } from '@podman-desktop/api';
 import { CONFIG_FILENAME } from '../../utils/RecipeConstants';
 import type { InferenceManager } from '../inference/inferenceManager';
-import { withDefaultConfiguration } from '../../utils/inferenceUtils';
+import { getModelInferenceTypes, withDefaultConfiguration } from '../../utils/inferenceUtils';
 import type { InferenceServer } from '@shared/models/IInference';
 import { type ApplicationOptions, isApplicationOptionsWithModelInference } from '../../models/ApplicationOptions';
 
@@ -101,8 +101,10 @@ export class RecipeManager implements Disposable {
 
     let inferenceServer: InferenceServer | undefined;
     if (isApplicationOptionsWithModelInference(options)) {
-      // if the recipe has a defined backend, we gives priority to using an inference server
-      if (options.model.backend && options.recipe.backends?.includes(options.model.backend)) {
+      // elect the first backend of the model, in its order of preference, that is supported by the recipe
+      const backend = getModelInferenceTypes(options.model).find(type => options.recipe.backends?.includes(type));
+      // if the recipe and the model have a backend in common, we give priority to using an inference server
+      if (backend) {
         let task: Task | undefined;
         try {
           inferenceServer = this.inferenceManager.findServerByModel(options.model);
@@ -111,6 +113,7 @@ export class RecipeManager implements Disposable {
             const inferenceContainerId = await this.inferenceManager.createInferenceServer(
               await withDefaultConfiguration({
                 modelsInfo: [options.model],
+                backend,
               }),
             );
             inferenceServer = this.inferenceManager.get(inferenceContainerId);

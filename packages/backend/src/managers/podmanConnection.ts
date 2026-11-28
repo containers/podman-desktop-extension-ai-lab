@@ -316,8 +316,10 @@ export class PodmanConnection extends Publisher<ContainerProviderConnectionInfo[
     // starting from podman desktop 1.10 we have the navigate functions
     const hasNavigateFunction = !!navigation.navigateToResources;
 
-    // if we do not precise the connection and are on linux we assume native usage
-    if (env.isLinux && !options.connection) {
+    // on Linux, podman runs natively without a VM, so the podman machine
+    // resource checks below (and their "Update your Podman Machine" messaging)
+    // do not apply, regardless of whether a specific connection was requested
+    if (env.isLinux) {
       return {
         status: 'native',
         canRedirect: hasNavigateFunction,

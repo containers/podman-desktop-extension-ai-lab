@@ -203,6 +203,10 @@ export function sanitizeModel(model: unknown): ModelInfo {
       license: 'license' in model && typeof model.license === 'string' ? model.license : undefined,
       url: 'url' in model && typeof model.url === 'string' ? model.url : undefined,
       memory: 'memory' in model && typeof model.memory === 'number' ? model.memory : undefined,
+      maxCtxSize:
+        'maxCtxSize' in model && typeof model.maxCtxSize === 'number' && Number.isInteger(model.maxCtxSize)
+          ? model.maxCtxSize
+          : undefined,
       properties: 'properties' in model && isStringRecord(model.properties) ? model.properties : undefined,
       sha256: 'sha256' in model && typeof model.sha256 === 'string' ? model.sha256 : undefined,
       backends: sanitizeBackends(model, 'model'),

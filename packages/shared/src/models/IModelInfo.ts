@@ -28,6 +28,11 @@ export interface ModelInfo {
   file?: LocalModelInfo;
   state?: 'deleting';
   memory?: number;
+  /**
+   * Maximum context size (in tokens) the model supports, i.e. its training context.
+   * Only meaningful for llama.cpp models: it bounds the context size that can be requested for a service.
+   */
+  maxCtxSize?: number;
   properties?: {
     [key: string]: string;
   };

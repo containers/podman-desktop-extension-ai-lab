@@ -310,6 +310,30 @@ describe('labels', () => {
     expect(span).toBeDefined();
   });
 
+  test('ctx-size label should display the context size', async () => {
+    mocks.getInferenceServersMock.mockReturnValue([
+      {
+        ...inferenceServerMock,
+        labels: {
+          'ctx-size': '32768',
+        },
+      },
+    ]);
+    render(InferenceServerDetails, {
+      containerId: 'dummyContainerId',
+    });
+
+    expect(screen.getByText('Context: 32768')).toBeDefined();
+  });
+
+  test('no ctx-size label should not display the context size', async () => {
+    render(InferenceServerDetails, {
+      containerId: 'dummyContainerId',
+    });
+
+    expect(screen.queryByLabelText('Context size')).toBeNull();
+  });
+
   test('no label should display CPU Inference', async () => {
     render(InferenceServerDetails, {
       containerId: 'dummyContainerId',

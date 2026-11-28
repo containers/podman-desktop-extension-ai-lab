@@ -306,6 +306,14 @@ describe('sanitizeModel', () => {
     expect(sanitizeModel(validModel)).toEqual(validModel);
   });
 
+  test('maxCtxSize is kept when it is an integer', () => {
+    expect(sanitizeModel({ ...validModel, maxCtxSize: 131072 }).maxCtxSize).toBe(131072);
+  });
+
+  test.each(['131072', 4096.5, true, {}])('invalid maxCtxSize %o is ignored', maxCtxSize => {
+    expect(sanitizeModel({ ...validModel, maxCtxSize }).maxCtxSize).toBeUndefined();
+  });
+
   test('missing mandatory fields', () => {
     const invalidModel = { ...validModel, id: undefined };
     expect(() => sanitizeModel(invalidModel)).toThrowError('invalid model format');

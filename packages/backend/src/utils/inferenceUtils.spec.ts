@@ -55,6 +55,55 @@ describe('withDefaultConfiguration', () => {
     expect(result.image).toBeUndefined();
     expect(result.labels).toStrictEqual({});
     expect(result.connection).toBeUndefined();
+    expect(result.ctxSize).toBeUndefined();
+  });
+
+  test('ctxSize should be passed through', async () => {
+    const result = await withDefaultConfiguration({
+      modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
+      ctxSize: 32768,
+    });
+
+    expect(result.ctxSize).toBe(32768);
+  });
+
+  test.each([512, 131072])('ctxSize %d on the boundaries should be accepted', async ctxSize => {
+    const result = await withDefaultConfiguration({
+      modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
+      ctxSize,
+    });
+
+    expect(result.ctxSize).toBe(ctxSize);
+  });
+
+  test.each([0, -1, 511, 131073, 4096.5, Number.NaN])('ctxSize %d should be rejected', async ctxSize => {
+    await expect(
+      withDefaultConfiguration({
+        modelsInfo: [{ id: 'dummyId' } as unknown as ModelInfo],
+        ctxSize,
+      }),
+    ).rejects.toThrowError('ctxSize must be an integer between 512 and 131072.');
+  });
+
+  describe('model maximum context size', () => {
+    const model = { id: 'dummyId', maxCtxSize: 32768 } as unknown as ModelInfo;
+
+    test('ctxSize up to the model maximum should be accepted', async () => {
+      const result = await withDefaultConfiguration({ modelsInfo: [model], ctxSize: 32768 });
+      expect(result.ctxSize).toBe(32768);
+    });
+
+    test('ctxSize above the model maximum should be rejected, even below the global limit', async () => {
+      await expect(withDefaultConfiguration({ modelsInfo: [model], ctxSize: 32769 })).rejects.toThrowError(
+        'ctxSize must be an integer between 512 and 32768.',
+      );
+    });
+
+    test('a model maximum above the global limit should be honoured', async () => {
+      const big = { id: 'dummyId', maxCtxSize: 1048576 } as unknown as ModelInfo;
+      const result = await withDefaultConfiguration({ modelsInfo: [big], ctxSize: 262144 });
+      expect(result.ctxSize).toBe(262144);
+    });
   });
 
   test('expect no default values', async () => {

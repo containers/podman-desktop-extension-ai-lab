@@ -155,6 +155,19 @@ test('should display one model', async () => {
   expect(name).not.toBeNull();
 });
 
+test('should display the maximum context size of the models', async () => {
+  mocks.modelsInfoSubscribeMock.mockReturnValue([
+    { id: 'dummy-id', name: 'dummy-name', memory: 1024, maxCtxSize: 131072 },
+    { id: 'dummy-id-2', name: 'dummy-name-2', memory: 1024 },
+  ]);
+  mocks.tasksSubscribeMock.mockReturnValue([]);
+
+  render(Models);
+
+  expect(screen.getByRole('columnheader', { name: 'Max context size' })).toBeDefined();
+  expect(screen.getByText('131072')).toBeDefined();
+});
+
 test('should display downloaded model first', async () => {
   mocks.modelsInfoSubscribeMock.mockReturnValue([
     {

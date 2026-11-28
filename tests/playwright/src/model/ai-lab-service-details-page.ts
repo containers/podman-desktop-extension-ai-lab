@@ -68,9 +68,9 @@ export class AILabServiceDetailsPage extends AILabBasePage {
   }
 
   async getInferenceServerPort(): Promise<string> {
-    const split = (await this.endpointURL.textContent())?.split(':');
-    const port = split ? split[split.length - 1].split('/')[0] : '';
-    return port;
+    // the container also holds other elements (documentation link, badges), so only look at the URL part
+    const text = (await this.endpointURL.textContent()) ?? '';
+    return /:\/\/[^/:\s]+:(\d+)/.exec(text)?.[1] ?? '';
   }
 
   async getServiceState(): Promise<string> {
